@@ -79,6 +79,7 @@ fn main() {
     //初始化tcpserver
     tcpsocket::new();
 
+    println!("hahahhaha");
     //初始化websocket
     let mut setting = Settings::default();
     //websocket最大连接数
