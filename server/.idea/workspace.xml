@@ -12,37 +12,7 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5618307-3fde-4731-9e8f-1782f4238040" name="Default Changelist" comment="提交">
-      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/protos.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/protos.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/prototools.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/prototools.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/server.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/server.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/protos/base.proto" beforeDir="false" afterPath="$PROJECT_DIR$/protos/base.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/dbtool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/dbtool.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity/user.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/user.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/channel.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/channel.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcpsocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcpsocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/protos/base.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/protos/base.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/redispool/redistool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/redispool/redistool.rs" afterDir="false" />
-    </list>
+    <list default="true" id="a5618307-3fde-4731-9e8f-1782f4238040" name="Default Changelist" comment="提交" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -225,8 +195,16 @@
       <workItem from="1571205952636" duration="16209000" />
       <workItem from="1571276888575" duration="10408000" />
       <workItem from="1571362929132" duration="13377000" />
-      <workItem from="1571386218960" duration="5554000" />
+      <workItem from="1571386218960" duration="5807000" />
     </task>
+    <task id="LOCAL-00001" summary="提交">
+      <created>1571398989190</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1571398989190</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -246,7 +224,8 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="LAST_COMMIT_MESSAGE" value="" />
+    <MESSAGE value="提交" />
+    <option name="LAST_COMMIT_MESSAGE" value="提交" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
