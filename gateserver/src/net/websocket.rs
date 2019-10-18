@@ -17,14 +17,14 @@ impl Handler for WebSocketHandler {
         //如果是二进制数据
         if msg.is_binary() {
             //转换成u8集合
-            let mut test = Test::new();
+            //let mut test = Test::new();
             //封装到proto里面去
-            test.merge_from_bytes(&msg.into_data()[..]);
-            println!("{}", test.get_a());
+            // test.merge_from_bytes(&msg.into_data()[..]);
+            // println!("{}", test.get_a());
             //写回去
-            test.set_a(939434);
+            // test.set_a(939434);
 
-            self.ws.send(&test.write_to_bytes().unwrap()[..]);
+            //self.ws.send(&test.write_to_bytes().unwrap()[..]);
         }
 
         // echo it back

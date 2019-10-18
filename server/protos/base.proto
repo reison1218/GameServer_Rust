@@ -3,5 +3,22 @@ package protos;
 
 
 message Test {
-    uint32 a = 1;
+    uint32 cmd = 1;
+    uint32 userId = 2;
+    bytes body = 3;
 }
+
+message loginReq{
+    uint32 userId = 1;
+}
+
+message loginRsp{
+    uint32 userId = 1;
+    string account = 2;
+    string channel = 3;
+    string platform = 4;
+    double gold = 5;
+    string token = 6;
+    uint32 login_time = 7;
+}
+

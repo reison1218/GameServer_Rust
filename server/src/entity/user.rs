@@ -3,13 +3,13 @@ use super::*;
 
 #[derive(Debug, Clone)]
 pub struct User {
-    id: u32,
-    account: String,
-    channel: String,
-    platform: String,
-    gold: u64,
-    token: String,
-    login_time: chrono::NaiveDateTime,
+    pub id: u32,
+    pub account: String,
+    pub channel: String,
+    pub platform: String,
+    pub gold: f64,
+    pub token: String,
+    pub login_time: chrono::NaiveDateTime,
 }
 
 impl User {
@@ -18,7 +18,7 @@ impl User {
         account: String,
         channel: String,
         platform: String,
-        gold: u64,
+        gold: f64,
         token: String,
         login_time: chrono::NaiveDateTime,
     ) -> User {

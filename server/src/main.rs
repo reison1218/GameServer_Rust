@@ -7,6 +7,7 @@ mod prototools;
 mod redispool;
 use crate::db::dbtool::DbPool;
 use crate::entity::Entity;
+use crate::mgr::channel_mgr::ChannelMgr;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::bytebuf::ByteBuf;
 use crate::net::tcpsocket;
@@ -21,7 +22,9 @@ use redis::Value;
 use simplelog::{
     CombinedLogger, SharedLogger, SimpleLogger, TermLogger, TerminalMode, WriteLogger,
 };
+use std::collections::HashMap;
 use std::fs::File;
+use std::rc::Rc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -30,7 +33,7 @@ use std::time::SystemTime;
 use threadpool::ThreadPool;
 use ws::{
     Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request, Response,
-    Result, Sender, Settings, WebSocket,
+    Result, Sender as WsSender, Settings, WebSocket,
 };
 
 ///初始化日志
@@ -45,12 +48,12 @@ fn init_log() {
         WriteLogger::new(
             LevelFilter::Info,
             config.build(),
-            File::create("/tmp/info.log").unwrap(),
+            File::create("F:/rustLog/info.log").unwrap(),
         ),
         WriteLogger::new(
             LevelFilter::Error,
             config.build(),
-            File::create("/tmp/error.log").unwrap(),
+            File::create("F:/rustLog/error.log").unwrap(),
         ),
     ])
     .unwrap();
@@ -77,9 +80,8 @@ fn main() {
     let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
 
     //初始化tcpserver
-    tcpsocket::new();
+    //tcpsocket::new();
 
-    println!("hahahhaha");
     //初始化websocket
     let mut setting = Settings::default();
     //websocket最大连接数
@@ -91,10 +93,13 @@ fn main() {
 
     let mut server = Builder::new()
         .with_settings(setting)
-        .build(|out| WebSocketHandler {
-            ws: out,
-            add: None,
-            gm: game_mgr.clone(),
+        .build(|out| {
+            let mut rc: Rc<WsSender> = Rc::new(out);
+            WebSocketHandler {
+                ws: rc,
+                add: None,
+                gm: game_mgr.clone(),
+            }
         })
         .unwrap();
     let mut web_socket = server.listen("127.0.0.1:9999").unwrap();

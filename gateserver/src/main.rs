@@ -4,6 +4,7 @@ mod protos;
 mod prototools;
 use crate::mgr::channelmgr::ChannelMgr;
 use crate::mgr::gatemgr::GateMgr;
+use crate::prototools::proto;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use net::websocket::WebSocketHandler;
 use simplelog::{
@@ -30,12 +31,12 @@ fn init_log() {
         WriteLogger::new(
             LevelFilter::Info,
             config.build(),
-            File::create("/tmp/info.log").unwrap(),
+            File::create("F:/rustLog/info.log").unwrap(),
         ),
         WriteLogger::new(
             LevelFilter::Error,
             config.build(),
-            File::create("/tmp/error.log").unwrap(),
+            File::create("F:/rustLog/error.log").unwrap(),
         ),
     ])
     .unwrap();
@@ -46,6 +47,7 @@ fn init_log() {
 }
 
 fn main() {
+    //prototools::proto();
     let mut server_time = SystemTime::now();
     //初始化日志
     init_log();

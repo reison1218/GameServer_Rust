@@ -12,7 +12,31 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e36c377e-e54e-40fc-9a12-5a758d117a46" name="Default Changelist" comment="" />
+    <list default="true" id="e36c377e-e54e-40fc-9a12-5a758d117a46" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../server/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../clearlog/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gateserver.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gateserver.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/protos.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/protos.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/protos/base.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/prototools.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/prototools.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/server.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/server.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../server/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/db/dbtool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/db/dbtool.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/net/tcpsocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/net/tcpsocket.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/redispool/redistool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/redispool/redistool.rs" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,15 +53,21 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="UPDATE_TYPE" value="MERGE" />
+  </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="oZkLcVmh" />
   </component>
   <component name="ProjectId" id="1RBm9m81SndkX517FnHfQrlabP0" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/net" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../clearlog" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="language.rust.rustfmt" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.tools" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -95,10 +125,49 @@
       <workItem from="1569148714503" duration="7735000" />
       <workItem from="1569251726692" duration="150000" />
       <workItem from="1569251890521" duration="560000" />
+      <workItem from="1569573911075" duration="1002000" />
+      <workItem from="1569722283191" duration="4289000" />
+      <workItem from="1569744616035" duration="1859000" />
+      <workItem from="1569748571300" duration="2947000" />
+      <workItem from="1569813632019" duration="1890000" />
+      <workItem from="1569817511929" duration="680000" />
+      <workItem from="1569823523409" duration="12685000" />
+      <workItem from="1570536056535" duration="1424000" />
+      <workItem from="1570612887544" duration="1256000" />
+      <workItem from="1570614164710" duration="4822000" />
+      <workItem from="1570679688220" duration="6862000" />
+      <workItem from="1570700972061" duration="2803000" />
+      <workItem from="1570758836345" duration="1215000" />
+      <workItem from="1570845553220" duration="1802000" />
+      <workItem from="1571018484955" duration="901000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/protoc-rust-2.9.0/src/lib.rs</url>
+          <line>37</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

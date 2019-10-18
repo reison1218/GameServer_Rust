@@ -2,7 +2,7 @@ pub mod bytebuf;
 pub mod channel;
 pub mod packet;
 pub mod websocket;
-use crate::protos::base::Test;
+//use crate::protos::base::Test;
 use crate::mgr::gatemgr::GateMgr;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::Message;

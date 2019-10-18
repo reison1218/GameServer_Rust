@@ -78,7 +78,7 @@ pub fn test_mysql() {
     str = "insert into test(id,name,create_time) values(:id,:name,:create_time)";
     let mut v: Vec<Value> = Vec::new();
     v.push(Value::Int(3));
-    let _str = "mysql".to_string();
+    let _str = "mysql".to_owned();
     v.push(_str.to_value());
     let local: DateTime<Local> = Local::now();
     v.push(local.naive_local().to_value());
