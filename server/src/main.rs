@@ -6,7 +6,7 @@ mod protos;
 mod prototools;
 mod redispool;
 use crate::db::dbtool::DbPool;
-use crate::entity::Entity;
+use crate::entity::{dao, Entity};
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::bytebuf::ByteBuf;
@@ -19,17 +19,20 @@ use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::Message;
 use redis::RedisResult;
 use redis::Value;
+use scheduled_thread_pool::ScheduledThreadPool;
 use simplelog::{
     CombinedLogger, SharedLogger, SimpleLogger, TermLogger, TerminalMode, WriteLogger,
 };
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::fs::File;
 use std::rc::Rc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread::Thread;
 use std::time;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
 use ws::{
     Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request, Response,
@@ -67,6 +70,7 @@ fn main() {
     let mut server_time = time::SystemTime::now();
     ///初始化日志模块
     init_log();
+
     info!("开始测试mysql");
     let mut db_pool = DbPool::new();
     let mut game_mgr: Arc<std::sync::Mutex<GameMgr>> = Arc::new(Mutex::new(GameMgr::new(db_pool)));
@@ -82,6 +86,10 @@ fn main() {
     //初始化tcpserver
     //tcpsocket::new();
 
+    //初始化定时器线程池
+    let gm = game_mgr.clone();
+    save_timer(gm, &mut net_pool);
+
     //初始化websocket
     let mut setting = Settings::default();
     //websocket最大连接数
@@ -94,9 +102,9 @@ fn main() {
     let mut server = Builder::new()
         .with_settings(setting)
         .build(|out| {
-            let mut rc: Rc<WsSender> = Rc::new(out);
+            let mut arc: Arc<WsSender> = Arc::new(out);
             WebSocketHandler {
-                ws: rc,
+                ws: arc,
                 add: None,
                 gm: game_mgr.clone(),
             }
@@ -108,4 +116,16 @@ fn main() {
         9999,
         server_time.elapsed().unwrap().as_millis()
     );
+}
+
+fn save_timer(gm: Arc<Mutex<GameMgr>>, net_pool: &mut ThreadPool) {
+    let m = move || {
+        let mut gm = gm.lock().unwrap();
+        let d = Duration::from_secs(5);
+        loop {
+            std::thread::sleep(d);
+            gm.save_user();
+        }
+    };
+    net_pool.execute(m);
 }

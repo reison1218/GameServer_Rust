@@ -5,10 +5,11 @@ use crate::net::channel::Channel;
 use crate::protos::base::loginRsp;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use std::rc::Rc;
+
 ///websockethandler
 /// 监听websocket网络事件
 pub struct WebSocketHandler {
-    pub ws: Rc<WsSender>,    //相当于channel
+    pub ws: Arc<WsSender>,   //相当于channel
     pub add: Option<String>, //客户端地址
     pub gm: Arc<Mutex<GameMgr>>,
 }
@@ -81,11 +82,10 @@ impl Handler for WebSocketHandler {
 
 ///当websocket断开时候调用
 fn close(handler: &mut WebSocketHandler) {
-    //移除内存中的channel
     let token = handler.ws.token().0;
     let mut gm = handler.gm.lock().unwrap();
-    //删除会话信息
-    gm.channels.close_remove(&token);
+    //调用离线函数
+    gm.logOff(&token);
     println!("客户端断开连接,{}", handler.add.as_ref().unwrap());
 }
 

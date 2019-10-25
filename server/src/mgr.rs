@@ -7,6 +7,7 @@ use crate::net::packet::Packet;
 use crate::protos::base::*;
 use crate::DbPool;
 use chrono::{NaiveDate, NaiveDateTime};
+use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;

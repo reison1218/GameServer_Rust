@@ -43,7 +43,7 @@ impl ChannelMgr {
         if user_id.is_none() {
             return;
         }
-        println!("{}", user_id.unwrap());
+        println!("玩家断线，{}", user_id.unwrap());
         let channel = self.user_channel.get(&user_id.unwrap());
         if channel.is_none() {
             return;
