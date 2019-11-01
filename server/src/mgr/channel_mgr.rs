@@ -1,8 +1,10 @@
 use super::*;
 
 pub struct ChannelMgr {
-    pub user_channel: HashMap<u32, Channel>,
-    pub channels: HashMap<usize, u32>,
+    //user_id,channel
+    user_channel: HashMap<u32, Channel>,
+    //token,user_id
+    channels: HashMap<usize, u32>,
 }
 
 impl ChannelMgr {
@@ -15,29 +17,38 @@ impl ChannelMgr {
         }
     }
 
+    ///插入channel,key：userid,v:channel
     pub fn insert_user_channel(&mut self, k: u32, v: Channel) {
         self.user_channel.insert(k, v);
     }
+    ///插入token-userid的映射
     pub fn insert_channels(&mut self, k: usize, v: u32) {
         self.channels.insert(k, v);
     }
-
+    ///获得玩家channel k:userid
     pub fn get_user_channel(&mut self, k: &u32) -> Option<&Channel> {
         self.user_channel.get(k)
     }
 
+    ///根据token获得userid
     pub fn get_channels(&mut self, k: &usize) -> Option<&u32> {
         self.channels.get(k)
     }
 
+    ///通过userid获得channel
     pub fn get_mut_user_channel(&mut self, k: &u32) -> Option<&mut Channel> {
         self.user_channel.get_mut(k)
     }
 
-    pub fn get_mut_channels(&mut self, k: &usize) -> Option<&mut u32> {
-        self.channels.get_mut(k)
+    ///通过token获得userid
+    pub fn get_mut_channels(&mut self, k: &usize) -> u32 {
+        if self.channels.get(k).is_none() {
+            return 0;
+        }
+        *self.channels.get(k).unwrap()
     }
 
+    ///关闭channel句柄，并从内存中删除
     pub fn close_remove(&mut self, k: &usize) {
         let user_id = self.channels.remove(k);
         if user_id.is_none() {

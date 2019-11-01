@@ -52,7 +52,7 @@ fn main() {
 pub fn test_mysql() {
     info!("创建连接mysql");
     let mut pool = DbPool::new();
-    let mut qr = pool.exe_sql("select * from test", None).unwrap();
+    let qr = pool.exe_sql("select * from test", None).unwrap();
     for _qr in qr {
         let (name, create_time, id) = mysql::from_row(_qr.unwrap());
         let obtl = TestDb {
@@ -82,7 +82,7 @@ pub fn test_mysql() {
     v.push(_str.to_value());
     let local: DateTime<Local> = Local::now();
     v.push(local.naive_local().to_value());
-    let mut re = pool.exe_sql(str, Some(v));
+    let re = pool.exe_sql(str, Some(v));
     if re.is_err() {
         println!("{:?}", re.err().unwrap().to_string());
     }

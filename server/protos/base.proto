@@ -2,6 +2,13 @@ syntax = "proto3";
 package protos;
 
 
+//消息包
+message MessPacketPt {
+    uint32 len = 1;//长度
+    uint32 cmd = 2;//命令号
+    bytes data = 3;//数据
+}
+
 //玩家信息
 message PlayerPt{
 	uint32 maxScore = 1;//最高得分
@@ -48,27 +55,5 @@ message RankInfoPt{
 //星球图鉴数据
 message HeatBallTuJiaonPt{
 	uint32 heatBallId = 1;//星球id
-}
-
-
-
-message Test {
-    uint32 cmd = 1;
-    uint32 userId = 2;
-    bytes body = 3;
-}
-
-message loginReq{
-    uint32 userId = 1;
-}
-
-message loginRsp{
-    uint32 userId = 1;
-    string account = 2;
-    string channel = 3;
-    string platform = 4;
-    double gold = 5;
-    string token = 6;
-    uint32 login_time = 7;
 }
 

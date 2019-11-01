@@ -1,14 +1,10 @@
 use super::*;
-use chrono::DateTime;
-use std::alloc::System;
-use std::time::Duration;
-
 ///gameMgr结构体
 pub struct GameMgr {
     pub players: HashMap<u32, User>, //玩家数据
     pub pool: DbPool,                //db连接池
     pub channels: ChannelMgr,        //会话管理
-    pub cmdMap: HashMap<u32, fn(&mut GameMgr, &Packet), RandomState>, //命令管理
+    pub cmd_map: HashMap<u32, fn(&mut GameMgr, &Packet), RandomState>, //命令管理
 }
 
 impl GameMgr {
@@ -20,7 +16,7 @@ impl GameMgr {
             players: players,
             pool: pool,
             channels: channels,
-            cmdMap: HashMap::new(),
+            cmd_map: HashMap::new(),
         };
         //初始化命令
         gm.cmd_init();
@@ -47,7 +43,8 @@ impl GameMgr {
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
     pub fn invok(&mut self, packet: Packet) {
-        let f = self.cmdMap.get_mut(&packet.packet_des.cmd);
+        let cmd = packet.get_cmd();
+        let f = self.cmd_map.get_mut(&cmd);
         if f.is_none() {
             return;
         }
@@ -56,28 +53,28 @@ impl GameMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
-        self.cmdMap.insert(123, sync);
+        self.cmd_map.insert(123, sync);
     }
 
     ///退出，离线
     pub fn logOff(&mut self, token: &usize) {
-        let mut value = self.channels.channels.get(token);
-        if value.is_none() {
+        let mut user_id = self.channels.get_mut_channels(token);
+        if user_id == 0 {
             return;
         }
         //删除内存数据
-        self.players.remove(&value.unwrap());
+        self.players.remove(&user_id);
         //删除会话信息,释放tcp句柄
-        self.channels.close_remove(&token);
+        self.channels.close_remove(token);
     }
 }
 
 ///同步数据
 fn sync(gm: &mut GameMgr, packet: &Packet) {
-    let user_id = packet.packet_des.user_id;
-    let user = gm.players.get_mut(&user_id);
+    let user_id = packet.get_user_id();
+    let user = gm.players.get_mut(&user_id.unwrap());
     if user.is_none() {
-        error!("user data is null for id:{}", user_id);
+        error!("user data is null for id:{}", user_id.unwrap());
         return;
     }
     let user = user.unwrap();

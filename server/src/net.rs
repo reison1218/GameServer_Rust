@@ -4,12 +4,7 @@ pub mod packet;
 pub mod tcpsocket;
 pub mod websocket;
 use crate::mgr::game_mgr::GameMgr;
-use crate::protos::base::Test;
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::Message;
-use simplelog::{
-    CombinedLogger, SharedLogger, SimpleLogger, TermLogger, TerminalMode, WriteLogger,
-};
 use std::io::Read;
 use std::mem::transmute;
 use std::net::{TcpListener, TcpStream};
@@ -20,5 +15,22 @@ use ws::{
     Result, Sender as WsSender, Settings, WebSocket,
 };
 
-use crate::net::packet::Packet;
-use crate::net::packet::PacketDes;
+use crate::entity::contants::*;
+use crate::entity::user::User;
+use crate::entity::{Dao, Data};
+use crate::net::bytebuf::ByteBuf;
+use crate::net::channel::Channel;
+use crate::net::packet::{Packet, PacketDes};
+use crate::protos::base;
+use crate::protos::base::{MessPacketPt, PlayerPt};
+use crate::protos::message;
+use crate::protos::message::MsgEnum_MsgCode::C_USER_LOGIN;
+use crate::protos::message::MsgEnum_MsgCode::S_USER_LOGIN;
+use crate::protos::protocol::{
+    C_USER_LOGIN as C_USER_LOGIN_PROTO, S_USER_LOGIN as S_USER_LOGIN_PROTO,
+};
+use log::{debug, error, info, warn, LevelFilter, Log, Record};
+use protobuf::ProtobufEnum;
+use serde_json::map::Entry::Vacant;
+use std::convert::TryFrom;
+use std::rc::Rc;

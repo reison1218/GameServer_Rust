@@ -1,10 +1,9 @@
 pub mod channel_mgr;
 pub mod game_mgr;
-use crate::entity::{dao, user::User, Entity};
+use crate::entity::{user::User, Dao, Entity};
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::channel::Channel;
 use crate::net::packet::Packet;
-use crate::protos::base::*;
 use crate::DbPool;
 use chrono::{NaiveDate, NaiveDateTime};
 use log::{debug, error, info, warn, LevelFilter, Log, Record};

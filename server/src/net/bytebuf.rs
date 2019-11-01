@@ -1,15 +1,25 @@
 use super::*;
 
-pub enum ReadError{
+pub enum ReadError {
     None,
     NotEnough,
-    Zero
+    Zero,
 }
 
 #[derive(Clone)]
 pub struct ByteBuf {
     bytes: Vec<u8>,
     index: usize,
+}
+
+impl From<&[u8]> for ByteBuf {
+    fn from(bytes: &[u8]) -> Self {
+        let mut byte = ByteBuf::new();
+        for i in bytes {
+            byte.push(*i);
+        }
+        byte
+    }
 }
 
 impl ByteBuf {
@@ -20,9 +30,9 @@ impl ByteBuf {
         }
     }
 
-    pub fn to_string(&self)->String{
+    pub fn to_string(&self) -> String {
         let v = self.bytes.clone();
-        let mut s = String::from_utf8(v);
+        let s = String::from_utf8(v);
         s.unwrap()
     }
 
@@ -39,8 +49,6 @@ impl ByteBuf {
         &self.bytes[..]
     }
 
-    
-
     pub fn push(&mut self, byte: u8) {
         self.bytes.push(byte);
     }
@@ -51,7 +59,7 @@ impl ByteBuf {
         }
     }
 
-    pub fn push_str(&mut self, _str: String) {
+    pub fn push_str(&mut self, _str: &str) {
         for i in _str.as_bytes() {
             self.bytes.push(*i);
         }
@@ -69,7 +77,7 @@ impl ByteBuf {
 
     pub fn push_u16(&mut self, i: u16) {
         unsafe {
-            let mut byte = transmute::<u16, [u8; 2]>(i);
+            let byte = transmute::<u16, [u8; 2]>(i);
 
             for i in &byte {
                 self.bytes.push(*i);
@@ -79,7 +87,7 @@ impl ByteBuf {
 
     pub fn push_u64(&mut self, i: u64) {
         unsafe {
-            let mut byte = transmute::<u64, [u8; 8]>(i);
+            let byte = transmute::<u64, [u8; 8]>(i);
 
             for i in &byte {
                 self.bytes.push(*i);
@@ -92,16 +100,13 @@ impl ByteBuf {
     }
 
     pub fn push_string(&mut self, s: String) {
-        
-
-        for i in s.as_bytes(){
+        for i in s.as_bytes() {
             self.bytes.push(*i);
         }
-       
     }
 
-    pub fn read_u32(&mut self) -> ByteBufResult<u32,&str> {
-        if self.bytes.len()-self.index<4{
+    pub fn read_u32(&mut self) -> ByteBufResult<u32, &str> {
+        if self.bytes.len() - self.index < 4 {
             return Err("NotEnough");
         }
         let b = &self.bytes[self.index..=self.index + 3];
@@ -118,11 +123,11 @@ impl ByteBuf {
         Ok(int)
     }
 
-    pub fn read_u16(&mut self) -> ByteBufResult<u16,&str> {
-        if self.bytes.len()-self.index<2{
+    pub fn read_u16(&mut self) -> ByteBufResult<u16, &str> {
+        if self.bytes.len() - self.index < 2 {
             return Err("NotEnough");
         }
-            
+
         let b = &self.bytes[self.index..=self.index + 1];
         self.index += 2;
         let mut short = 0;
@@ -137,11 +142,11 @@ impl ByteBuf {
         Ok(short)
     }
 
-    pub fn read_u64(&mut self) -> ByteBufResult<u64,&str> {
-        if self.bytes.len()-self.index<8{
+    pub fn read_u64(&mut self) -> ByteBufResult<u64, &str> {
+        if self.bytes.len() - self.index < 8 {
             return Err("NotEnough");
         }
-            
+
         let b = &self.bytes[self.index..=self.index + 7];
         self.index += 8;
         let mut long = 0;
@@ -156,19 +161,19 @@ impl ByteBuf {
         Ok(long)
     }
 
-    pub fn read_u8(&mut self) -> ByteBufResult<u8,&str> {
-        if self.bytes.len()-self.index<1{
+    pub fn read_u8(&mut self) -> ByteBufResult<u8, &str> {
+        if self.bytes.len() - self.index < 1 {
             return Err("NotEnough");
         }
-        
-       let b = self.bytes.get(self.index).unwrap();
-       self.index+=1;
+
+        let b = self.bytes.get(self.index).unwrap();
+        self.index += 1;
         Ok(*b)
     }
 
-    pub fn read_bytes(&mut self) -> ByteBufResult<&[u8],&str> {
-        let  v = &self.bytes[self.index..];
-        self.index = self.bytes.len()-1;
+    pub fn read_bytes(&mut self) -> ByteBufResult<&[u8], &str> {
+        let v = &self.bytes[self.index..];
+        self.index = self.bytes.len() - 1;
         Ok(v)
     }
 }

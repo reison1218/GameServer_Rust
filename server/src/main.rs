@@ -6,17 +6,15 @@ mod protos;
 mod prototools;
 mod redispool;
 use crate::db::dbtool::DbPool;
-use crate::entity::{dao, Entity};
+use crate::entity::Dao;
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::bytebuf::ByteBuf;
 use crate::net::tcpsocket;
 use crate::net::websocket;
 use crate::net::websocket::WebSocketHandler;
-use crate::protos::base::Test;
 use crate::redispool::redistool;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use protobuf::Message;
 use redis::RedisResult;
 use redis::Value;
 use scheduled_thread_pool::ScheduledThreadPool;
@@ -26,6 +24,9 @@ use simplelog::{
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::fs::File;
+
+use std::convert::TryFrom;
+use std::ops::Index;
 use std::rc::Rc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
@@ -36,8 +37,13 @@ use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
 use ws::{
     Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request, Response,
-    Result, Sender as WsSender, Settings, WebSocket,
+    Result, Sender as WsSender, Sender, Settings, WebSocket,
 };
+
+use serde::{Deserialize, Serialize};
+use serde_json::value::Value::Object;
+use serde_json::{json, Value as JsonValue};
+use std::sync::mpsc::channel;
 
 ///初始化日志
 fn init_log() {
@@ -64,6 +70,37 @@ fn init_log() {
         "日志模块初始化完成！耗时{}ms",
         log_time.elapsed().unwrap().as_millis()
     );
+}
+
+struct test {
+    pub data: JsonValue,
+}
+
+const id: &str = "id";
+const token: &str = "token";
+
+static mut id2: &str = "id2";
+
+fn test_json() {
+    let mut db_pool = DbPool::new();
+    let sql = "select * from t_u_player";
+    let mut re = db_pool.exe_sql(sql, None);
+    let mut re = re.unwrap();
+    let mut data = (0, "".to_string());
+    for _qr in re {
+        data = mysql::from_row(_qr.unwrap());
+        let mut js: JsonValue = serde_json::from_str(data.1.as_str()).unwrap();
+
+        let mut map = js.as_object_mut();
+        if map.is_none() {
+            println!("map is none!");
+            continue;
+        }
+
+        println!("{:?}", map);
+        let v = map.unwrap().get("gold").unwrap();
+        println!("{:?}", v.as_i64());
+    }
 }
 
 fn main() {
@@ -119,13 +156,14 @@ fn main() {
 }
 
 fn save_timer(gm: Arc<Mutex<GameMgr>>, net_pool: &mut ThreadPool) {
-    let m = move || {
-        let mut gm = gm.lock().unwrap();
-        let d = Duration::from_secs(5);
-        loop {
-            std::thread::sleep(d);
+    let m = move || loop {
+        {
+            let gm = gm.clone();
+            let mut gm = gm.lock().unwrap();
             gm.save_user();
         }
+        let d = Duration::from_secs(60 * 5);
+        std::thread::sleep(d);
     };
     net_pool.execute(m);
 }
