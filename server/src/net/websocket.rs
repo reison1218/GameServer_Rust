@@ -123,36 +123,32 @@ impl WebSocketHandler {
         //校验是否已经登录
         let user_id = packet.get_user_id();
         let user_id = user_id.unwrap();
-        if !gm.players.contains_key(&user_id) {
-            info!("玩家id不存在，无法登录！{}", user_id);
-            return;
-        }
 
-        //走登录流程
-        let user = User::query(user_id, &mut gm.pool);
-        if user.is_none() {
-            info!("玩家数据不存在，无法登录！{}", user_id);
-            return;
-        }
-        let mut user = user.unwrap();
-        let mut time = std::time::SystemTime::now().elapsed().unwrap();
-        let mut date_time =
-            chrono::NaiveDateTime::from_timestamp(time.as_secs() as i64, time.subsec_nanos());
-        user.set_time("login_time".to_owned(), date_time);
+        let mut user_data = gm.players.get_mut(&user_id);
 
-        //封装到内存中
-        gm.players.insert(user_id.clone(), user);
+        if user_data.is_none() {
+            //走登录流程
+            let user = User::query(user_id, &mut gm.pool);
+            if user.is_none() {
+                info!("玩家数据不存在，无法登录！{}", user_id);
+                return;
+            }
+            let mut user = user.unwrap();
+            let mut time = std::time::SystemTime::now().elapsed().unwrap();
+            let mut date_time =
+                chrono::NaiveDateTime::from_timestamp(time.as_secs() as i64, time.subsec_nanos());
+            user.set_time("login_time".to_owned(), date_time);
+            //封装到内存中
+            gm.players.insert(user_id.clone(), user);
+        }
 
         //封装会话
-        let channel = Channel::init(user_id.clone(), self.ws.clone());
-        let token = channel.sender.token().0;
-        gm.channels.insert_user_channel(user_id.clone(), channel);
-        gm.channels.insert_channels(token, user_id.clone());
         let user = gm.players.get_mut(&user_id).unwrap();
         //返回客户端
         let mut lr = user2proto(user);
-        info!("用户完成登录！{}", &user_id);
+        info!("用户完成登录！user_id:{}", &user_id);
 
+        //返回客户端
         gm.channels
             .get_mut_user_channel(&user_id)
             .unwrap()

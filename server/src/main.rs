@@ -40,9 +40,11 @@ use ws::{
     Result, Sender as WsSender, Sender, Settings, WebSocket,
 };
 
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::value::Value::Object;
 use serde_json::{json, Value as JsonValue};
+use std::str::FromStr;
 use std::sync::mpsc::channel;
 
 ///初始化日志
@@ -72,6 +74,7 @@ fn init_log() {
     );
 }
 
+//测试代码开始
 struct test {
     pub data: JsonValue,
 }
@@ -97,12 +100,18 @@ fn test_json() {
             continue;
         }
 
-        println!("{:?}", map);
-        let v = map.unwrap().get("gold").unwrap();
-        println!("{:?}", v.as_i64());
+        let mut map = map.unwrap();
+        let str = map.get("ctime").unwrap();
+        let str = str.as_str().unwrap();
+        println!("{:?}", str);
+        let time = "2015-09-18T23:56:04".parse::<NaiveDateTime>();
+        let t = time.unwrap();
+        println!("{:?}", t.to_string());
     }
 }
+//测试代码结束
 
+///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket
 fn main() {
     let mut server_time = time::SystemTime::now();
     ///初始化日志模块

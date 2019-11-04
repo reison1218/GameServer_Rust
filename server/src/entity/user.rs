@@ -38,14 +38,15 @@ impl Dao for User {
         let mut v: Vec<Value> = Vec::new();
         v.push(Value::Int(user_id as i64));
         let mut q = pool
-            .exe_sql("select * from t_u_player where UserId=:id", Some(v))
+            .exe_sql("select * from t_u_player where UserId=:user_id", Some(v))
             .unwrap();
 
         let mut user: Option<User> = None;
         for _qr in q {
             let (id, js) = mysql::from_row(_qr.unwrap());
             let mut u = User::init(id, js);
-            println!("查询时间:{}", u.get_time("login_time").unwrap());
+            println!("{}", u.get_usize("gold").unwrap());
+            println!("查询时间:{:?}", u.get_time("lastLoginTime").unwrap());
             user = Some(u);
         }
         user

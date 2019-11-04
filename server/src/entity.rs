@@ -67,7 +67,8 @@ pub trait Data {
         if jv.is_none() {
             return None;
         }
-        let nt = chrono::NaiveDateTime::from_str(jv.unwrap().as_str().unwrap());
+        let str = jv.unwrap().as_str().unwrap();
+        let nt = str.parse::<NaiveDateTime>();
         return Some(nt.unwrap());
     }
 
