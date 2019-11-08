@@ -59,7 +59,7 @@ impl ChannelMgr {
         if channel.is_none() {
             return;
         }
-        channel.unwrap().sender.close(CloseCode::Invalid);
+        channel.unwrap().sender.close(CloseCode::Invalid).unwrap();
         self.user_channel.remove(&user_id.unwrap());
         println!("玩家断开连接，关闭句柄释放资源：{}", user_id.unwrap());
     }

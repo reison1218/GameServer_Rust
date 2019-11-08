@@ -13,11 +13,87 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5618307-3fde-4731-9e8f-1782f4238040" name="Default Changelist" comment="提交">
+      <change afterPath="$PROJECT_DIR$/src/mgr/thread_pool_mgr.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/dbtool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/dbtool.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/entity.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/contants.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/contants.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/entity/user.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/user.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/prototools.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/prototools.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/redispool/redistool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/redispool/redistool.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/.rustc_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/target/.rustc_info.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/.fingerprint/redis-88daa2938b8427ee/dep-lib-redis-88daa2938b8427ee" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/.fingerprint/redis-88daa2938b8427ee/invoked.timestamp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/.fingerprint/redis-88daa2938b8427ee/lib-redis-88daa2938b8427ee" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/.fingerprint/redis-88daa2938b8427ee/lib-redis-88daa2938b8427ee.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/arrayvec-35301c45546c6fe6/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/arrayvec-35301c45546c6fe6/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/arrayvec-35301c45546c6fe6/build_script_build-35301c45546c6fe6.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/arrayvec-35301c45546c6fe6/build_script_build-35301c45546c6fe6.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/bitflags-5362c869b3532cd0/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/bitflags-5362c869b3532cd0/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/bitflags-5362c869b3532cd0/build_script_build-5362c869b3532cd0.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/bitflags-5362c869b3532cd0/build_script_build-5362c869b3532cd0.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/byteorder-d8206c2cc9ef1184/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/byteorder-d8206c2cc9ef1184/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/byteorder-d8206c2cc9ef1184/build_script_build-d8206c2cc9ef1184.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/byteorder-d8206c2cc9ef1184/build_script_build-d8206c2cc9ef1184.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/crc32fast-f641fd838f615c38/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/crc32fast-f641fd838f615c38/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/crc32fast-f641fd838f615c38/build_script_build-f641fd838f615c38.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/crc32fast-f641fd838f615c38/build_script_build-f641fd838f615c38.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/getrandom-0bbea98cb2407de5/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/getrandom-0bbea98cb2407de5/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/getrandom-0bbea98cb2407de5/build_script_build-0bbea98cb2407de5.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/getrandom-0bbea98cb2407de5/build_script_build-0bbea98cb2407de5.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/httparse-7f9be07cd3f01230/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/httparse-7f9be07cd3f01230/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/httparse-7f9be07cd3f01230/build_script_build-7f9be07cd3f01230.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/httparse-7f9be07cd3f01230/build_script_build-7f9be07cd3f01230.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/kernel32-sys-b6b33a9679b3097e/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/kernel32-sys-b6b33a9679b3097e/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/kernel32-sys-b6b33a9679b3097e/build_script_build-b6b33a9679b3097e.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/kernel32-sys-b6b33a9679b3097e/build_script_build-b6b33a9679b3097e.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/lexical-615f4524aa26dcdc/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/lexical-615f4524aa26dcdc/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/lexical-615f4524aa26dcdc/build_script_build-615f4524aa26dcdc.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/lexical-615f4524aa26dcdc/build_script_build-615f4524aa26dcdc.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/lexical-core-c2bbe213bc174081/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/lexical-core-c2bbe213bc174081/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/lexical-core-c2bbe213bc174081/build_script_build-c2bbe213bc174081.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/lexical-core-c2bbe213bc174081/build_script_build-c2bbe213bc174081.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/libc-9dc999fd45b0123a/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/libc-9dc999fd45b0123a/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/libc-9dc999fd45b0123a/build_script_build-9dc999fd45b0123a.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/libc-9dc999fd45b0123a/build_script_build-9dc999fd45b0123a.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/log-d119c6934fd88741/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/log-d119c6934fd88741/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/log-d119c6934fd88741/build_script_build-d119c6934fd88741.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/log-d119c6934fd88741/build_script_build-d119c6934fd88741.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/memchr-38d72905082b113d/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/memchr-38d72905082b113d/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/memchr-38d72905082b113d/build_script_build-38d72905082b113d.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/memchr-38d72905082b113d/build_script_build-38d72905082b113d.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/mysql-283fb7657b61ee9c/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/mysql-283fb7657b61ee9c/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/mysql-283fb7657b61ee9c/build_script_build-283fb7657b61ee9c.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/mysql-283fb7657b61ee9c/build_script_build-283fb7657b61ee9c.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-bigint-32c7759b8a227e8d/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-bigint-32c7759b8a227e8d/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-bigint-32c7759b8a227e8d/build_script_build-32c7759b8a227e8d.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-bigint-32c7759b8a227e8d/build_script_build-32c7759b8a227e8d.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-complex-3bef95f9fa41ac42/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-complex-3bef95f9fa41ac42/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-complex-3bef95f9fa41ac42/build_script_build-3bef95f9fa41ac42.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-complex-3bef95f9fa41ac42/build_script_build-3bef95f9fa41ac42.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-integer-59f5069903e7d5a6/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-integer-59f5069903e7d5a6/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-integer-59f5069903e7d5a6/build_script_build-59f5069903e7d5a6.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-integer-59f5069903e7d5a6/build_script_build-59f5069903e7d5a6.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-iter-b773ca6477a58905/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-iter-b773ca6477a58905/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-iter-b773ca6477a58905/build_script_build-b773ca6477a58905.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-iter-b773ca6477a58905/build_script_build-b773ca6477a58905.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-rational-54d2adf216490853/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-rational-54d2adf216490853/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-rational-54d2adf216490853/build_script_build-54d2adf216490853.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-rational-54d2adf216490853/build_script_build-54d2adf216490853.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-traits-c1bd444d600b8ca8/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-traits-c1bd444d600b8ca8/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/num-traits-c1bd444d600b8ca8/build_script_build-c1bd444d600b8ca8.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/num-traits-c1bd444d600b8ca8/build_script_build-c1bd444d600b8ca8.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/parking_lot-33e6f369a8c65c20/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/parking_lot-33e6f369a8c65c20/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/parking_lot-33e6f369a8c65c20/build_script_build-33e6f369a8c65c20.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/parking_lot-33e6f369a8c65c20/build_script_build-33e6f369a8c65c20.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/parking_lot_core-a541f8f0a86d71f3/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/parking_lot_core-a541f8f0a86d71f3/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/parking_lot_core-a541f8f0a86d71f3/build_script_build-a541f8f0a86d71f3.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/parking_lot_core-a541f8f0a86d71f3/build_script_build-a541f8f0a86d71f3.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/protobuf-8b621119a25b52dc/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/protobuf-8b621119a25b52dc/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/protobuf-8b621119a25b52dc/build_script_build-8b621119a25b52dc.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/protobuf-8b621119a25b52dc/build_script_build-8b621119a25b52dc.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/ryu-a69afadc040e933d/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/ryu-a69afadc040e933d/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/ryu-a69afadc040e933d/build_script_build-a69afadc040e933d.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/ryu-a69afadc040e933d/build_script_build-a69afadc040e933d.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/typenum-f55da9b3e899f53d/build-script-main.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/typenum-f55da9b3e899f53d/build-script-main.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/typenum-f55da9b3e899f53d/build_script_main-f55da9b3e899f53d.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/typenum-f55da9b3e899f53d/build_script_main-f55da9b3e899f53d.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/winapi-718af21390555a36/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/winapi-718af21390555a36/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/winapi-718af21390555a36/build_script_build-718af21390555a36.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/winapi-718af21390555a36/build_script_build-718af21390555a36.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/winapi-8792438a777b3fd9/output" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/winapi-8792438a777b3fd9/output" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/winapi-x86_64-pc-windows-gnu-ea5f7f01f38f6c34/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/winapi-x86_64-pc-windows-gnu-ea5f7f01f38f6c34/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/winapi-x86_64-pc-windows-gnu-ea5f7f01f38f6c34/build_script_build-ea5f7f01f38f6c34.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/winapi-x86_64-pc-windows-gnu-ea5f7f01f38f6c34/build_script_build-ea5f7f01f38f6c34.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/ws2_32-sys-d50d9bf0437af096/build-script-build.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/ws2_32-sys-d50d9bf0437af096/build-script-build.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/build/ws2_32-sys-d50d9bf0437af096/build_script_build-d50d9bf0437af096.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/build/ws2_32-sys-d50d9bf0437af096/build_script_build-d50d9bf0437af096.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/deps/lexical_core-1246bb071308e27f.dll" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/deps/lexical_core-1246bb071308e27f.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/deps/lexical_core-1246bb071308e27f.dll.lib" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/deps/lexical_core-1246bb071308e27f.dll.lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/deps/libredis-88daa2938b8427ee.rlib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/deps/libredis-88daa2938b8427ee.rmeta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/deps/redis-88daa2938b8427ee.d" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/debug/server.d" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/server.d" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/debug/server.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/server.exe" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -224,7 +300,12 @@
       <workItem from="1572490153973" duration="626000" />
       <workItem from="1572491335972" duration="23063000" />
       <workItem from="1572573899186" duration="25143000" />
-      <workItem from="1572834153284" duration="11423000" />
+      <workItem from="1572834153284" duration="20238000" />
+      <workItem from="1572919910931" duration="747000" />
+      <workItem from="1572920668160" duration="19645000" />
+      <workItem from="1573025377220" duration="5371000" />
+      <workItem from="1573093086282" duration="3192000" />
+      <workItem from="1573179175532" duration="18313000" />
     </task>
     <task id="LOCAL-00001" summary="提交">
       <created>1571398989190</created>
@@ -281,8 +362,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/entity.rs</url>
-          <line>71</line>
+          <line>73</line>
           <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/net/websocket.rs</url>
+          <line>121</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

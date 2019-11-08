@@ -7,7 +7,6 @@ use mysql::Value;
 use serde_json::{Map, Value as JsonValue};
 use std::cell::Cell;
 use std::ops::Add;
-use std::str::FromStr;
 
 pub trait Entity: Clone {
     fn to_vec_value(&mut self) -> Vec<Value>;
@@ -67,6 +66,9 @@ pub trait Data {
         if jv.is_none() {
             return None;
         }
+        //        let time = "2015-09-18T23:56:04".parse::<NaiveDateTime>();
+        //        let t = time.unwrap();
+        //        println!("{:?}", t.to_string());
         let str = jv.unwrap().as_str().unwrap();
         let nt = str.parse::<NaiveDateTime>();
         return Some(nt.unwrap());

@@ -1,4 +1,5 @@
 use super::*;
+
 ///gameMgr结构体
 pub struct GameMgr {
     pub players: HashMap<u32, User>, //玩家数据
@@ -29,11 +30,20 @@ impl GameMgr {
 
         let time = std::time::SystemTime::now();
         let mut pool = &mut self.pool;
+        let mut re: Option<Result<u32, String>> = None;
         for (k, mut v) in &mut self.players {
             if v.get_version() <= 0 {
                 continue;
             }
-            v.update(pool);
+            re = Some(v.update(pool));
+            if re.is_some() {
+                match re.unwrap() {
+                    Err(str) => {
+                        error!("玩家数据保存异常user_id：{}，message:{:?}", k, str);
+                    }
+                    _ => {}
+                }
+            }
         }
         info!(
             "玩家数据保存结束，耗时：{}ms",
@@ -57,7 +67,7 @@ impl GameMgr {
     }
 
     ///退出，离线
-    pub fn logOff(&mut self, token: &usize) {
+    pub fn log_off(&mut self, token: &usize) {
         let mut user_id = self.channels.get_mut_channels(token);
         if user_id == 0 {
             return;

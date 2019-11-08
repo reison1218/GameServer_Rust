@@ -32,11 +32,6 @@ pub struct TestDb {
     time: chrono::NaiveDateTime,
 }
 
-#[test]
-fn main() {
-    test_mysql();
-}
-
 //fn test_postgres() {
 //    let mut db_pool = Connection::connect(
 //        "postgressql://root:root@localhot:3306/reison",
@@ -49,6 +44,7 @@ fn main() {
 //    }
 //}
 
+#[test]
 pub fn test_mysql() {
     info!("创建连接mysql");
     let mut pool = DbPool::new();
@@ -73,7 +69,7 @@ pub fn test_mysql() {
     let mut v: Vec<Value> = Vec::new();
     v.push(time.to_string().as_str().to_value());
 
-    pool.exe_sql(str, Some(v));
+    pool.exe_sql(str, Some(v)).unwrap();
 
     str = "insert into test(id,name,create_time) values(:id,:name,:create_time)";
     let mut v: Vec<Value> = Vec::new();

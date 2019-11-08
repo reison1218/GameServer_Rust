@@ -1,4 +1,3 @@
-use super::*;
 ///玩家本身数据的常量
 //玩家id
 pub const USER_ID: &str = "userId";

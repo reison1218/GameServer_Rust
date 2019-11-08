@@ -78,6 +78,7 @@ pub fn get_pip() -> Pipeline {
     redis::pipe()
 }
 
+#[test]
 pub fn test_redis() {
     // connect to redis
     let client = redis::Client::open("redis://127.0.0.1:6379/").unwrap();

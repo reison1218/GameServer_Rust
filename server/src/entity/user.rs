@@ -4,7 +4,7 @@ use super::*;
 pub struct User {
     pub user_id: u32,    //玩家id
     pub data: JsonValue, //数据
-    version: Cell<u32>,  //数据版本号
+    version: u32,        //数据版本号
 }
 
 impl Data for User {
@@ -74,13 +74,13 @@ impl Entity for User {
     }
 
     fn add_version(&mut self) {
-        self.version.get_mut().add(1);
+        self.version += 1;
     }
     fn clear_version(&mut self) {
-        self.version.replace(0);
+        self.version = 0;
     }
     fn get_version(&self) -> u32 {
-        self.version.get()
+        self.version
     }
 
     ///初始化函数
@@ -89,7 +89,7 @@ impl Entity for User {
         User {
             user_id: id,
             data: js,
-            version: Cell::new(0),
+            version: 0,
         }
     }
 }
