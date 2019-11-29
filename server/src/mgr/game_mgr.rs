@@ -63,7 +63,7 @@ impl GameMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
-        self.cmd_map.insert(123, sync);
+        self.cmd_map.insert(SYNC, sync);
     }
 
     ///退出，离线

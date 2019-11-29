@@ -1,8 +1,10 @@
 pub mod channel_mgr;
+pub mod cmd_code_mgr;
 pub mod game_mgr;
 pub mod thread_pool_mgr;
 use crate::entity::{user::User, Dao, Entity};
 use crate::mgr::channel_mgr::ChannelMgr;
+use crate::mgr::cmd_code_mgr::*;
 use crate::mgr::thread_pool_mgr::MyThreadPool;
 use crate::net::channel::Channel;
 use crate::net::packet::Packet;

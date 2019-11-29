@@ -1,9 +1,8 @@
 use super::*;
-use threadpool::ThreadPool;
 
 struct TcpServer {}
 
-pub fn new() {
+pub async fn new(game_mgr: Arc<RwLock<GameMgr>>) {
     let tl = std::net::TcpListener::bind("127.0.0.1:8888").unwrap();
     //设置非阻塞
     // tl.set_nonblocking(true).expect("Cannot set non-blocking");
@@ -16,12 +15,13 @@ pub fn new() {
         match stream {
             Ok(mut s) => {
                 let cl = move || loop {
-                    let mut bytes: [u8; 512] = [0; 512];
+                    let mut bytes: [u8; 1024] = [0; 1024];
                     let size = s.read(&mut bytes).unwrap();
                     if size == 0 {
                         continue;
                     }
-                    info!("读取到gate数据{}", size);
+                    info!("读取到gate数据,数据长度:{}", size);
+
                 };
                 net_pool.execute(cl);
             }

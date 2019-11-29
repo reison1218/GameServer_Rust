@@ -46,9 +46,6 @@ use futures::executor::block_on;
 #[macro_use]
 extern crate lazy_static;
 
-const ID: &str = "id";
-const TOKEN: &str = "token";
-
 ///初始化全局线程池
 lazy_static! {
     static ref THREAD_POOL: MyThreadPool = {
@@ -65,47 +62,64 @@ lazy_static! {
     };
 }
 
+const ID: &str = "id";
+const TOKEN: &str = "token";
+
+
 struct Test {
     id: u32,
     name: String,
 }
 
 
-async fn test1(){
+async fn test1()->u32{
     println!("test1");
     println!("test1");
+    let d = Duration::from_secs(5);
+    std::thread::sleep(d);
+    1
 }
 
-async fn test(){
+async fn test()->u32{
     let f = test1();
 
     println!("test");
     println!("test");
-    f.await;
+    f.await
 }
+
+///测试async/await
+fn test_async_await(){
+    let mut a = test();
+    let a = block_on(a);
+
+    let mut int = 1;
+    let ay =async{
+        int+=1;
+    };
+    block_on(ay);
+    println!("int:{}",int);
+
+
+    println!("future return u32:{}",a);
+}
+
+
 
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket
 fn main() {
-
-    let mut a = test();
-    block_on(a);
-
         let mut server_time = time::SystemTime::now();
         //初始化日志模块
         init_log();
         info!("开始测试mysql");
+        //初始化数据库连接池
         let mut db_pool = DbPool::new();
-        //初始化线程池
-        //let mut net_pool = MyThreadPool::init("game_pool", 4, "user_pool", 8, "sys_pool", 2);
 
         //gameMgr引用计数器
         let mut game_mgr: Arc<RwLock<GameMgr>> = Arc::new(RwLock::new(GameMgr::new(db_pool)));
 
         info!("开始测试redis");
         redistool::test_api();
-
-        //初始化tcpserver
-        //tcpsocket::new();
 
         //初始化定时器线程池
         save_timer(game_mgr.clone());
@@ -132,12 +146,19 @@ fn main() {
             })
             .unwrap();
         //开始监听
-        let mut web_socket = server.listen("127.0.0.1:9999").unwrap();
+        let mut web_socket =
+            async{
+                server.listen("127.0.0.1:9999").unwrap();
+            };
+
         info!(
             "服务器启动完成，监听端口：{},耗时：{}ms",
             9999,
             server_time.elapsed().unwrap().as_millis()
         );
+    //初始化tcpserver
+    block_on(tcpsocket::new(game_mgr.clone()));
+    //block_on(web_socket);
 }
 
 ///初始化日志
