@@ -5,3 +5,11 @@ package protos;
 message Test {
     uint32 a = 1;
 }
+
+//消息包
+message MessPacketPt {
+    uint32 len = 1;//长度
+    uint32 cmd = 2;//命令号
+    bytes data = 3;//数据
+}
+

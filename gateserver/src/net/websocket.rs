@@ -3,9 +3,9 @@ use super::*;
 ///websockethandler
 /// 监听websocket网络事件
 pub struct WebSocketHandler {
-    pub ws: WsSender,        //相当于channel
-    pub add: Option<String>, //客户端地址
-    pub gm: Arc<Mutex<GateMgr>>,
+    pub ws: WsSender,                //相当于channel
+    pub add: Option<String>,         //客户端地址
+    pub cm: Arc<RwLock<ChannelMgr>>, //channel管理器
 }
 
 ///实现相应的handler函数
@@ -16,18 +16,13 @@ impl Handler for WebSocketHandler {
 
         //如果是二进制数据
         if msg.is_binary() {
-            //转换成u8集合
-            //let mut test = Test::new();
-            //封装到proto里面去
-            // test.merge_from_bytes(&msg.into_data()[..]);
-            // println!("{}", test.get_a());
-            //写回去
-            // test.set_a(939434);
-
-            //self.ws.send(&test.write_to_bytes().unwrap()[..]);
+            let bytes = &msg.into_data()[..];
+            println!("{:?}", bytes);
+            self.handle_binary(bytes);
+        } else if msg.is_text() {
+            //如果是文本数据
+            self.ws.send("hello client!");
         }
-
-        // echo it back
         Ok(())
     }
 
@@ -56,4 +51,38 @@ impl Handler for WebSocketHandler {
     fn on_error(&mut self, err: Error) {
         self.ws.close(CloseCode::Error);
     }
+}
+
+impl WebSocketHandler {
+    fn handle_binary(&mut self, bytes: &[u8]) {
+        let mut mess = MessPacketPt::new();
+        mess.merge_from_bytes(bytes);
+
+        let mut packet = build_packet(mess);
+
+        self.arrange_packet(packet);
+    }
+
+    ///数据包转发
+    fn arrange_packet(&mut self, packet: Packet) {
+        //转发到游戏服
+        if packet.get_cmd() >= GAME_MIN && packet.get_cmd() <= GAME_MAX {
+            let lock = self.cm.write();
+            lock.unwrap().write_to_game(packet);
+            return;
+        }
+        //转发到房间服
+        if packet.get_cmd() >= ROOM_MIN && packet.get_cmd() <= ROOM_MAX {
+            return;
+        }
+    }
+}
+
+///byte数组转换Packet
+pub fn build_packet(mess: MessPacketPt) -> Packet {
+    //封装成packet
+    let pd = PacketDes::new(mess.cmd);
+    let mut packet = Packet::new(pd);
+    packet.set_bytes(&mess.data[..]);
+    packet
 }

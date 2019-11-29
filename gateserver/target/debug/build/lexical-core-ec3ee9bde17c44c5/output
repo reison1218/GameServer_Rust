@@ -1,0 +1,10 @@
+cargo:rerun-if-changed=build.rs
+cargo:rustc-cfg=has_range_bounds
+cargo:rustc-cfg=has_slice_index
+cargo:rustc-cfg=has_full_range_inclusive
+cargo:rustc-cfg=has_const_index
+cargo:rustc-cfg=has_i128
+cargo:rustc-cfg=has_ops_bound
+cargo:rustc-cfg=has_pointer_methods
+cargo:rustc-cfg=has_range_inclusive
+cargo:rustc-cfg=limb_width_64
