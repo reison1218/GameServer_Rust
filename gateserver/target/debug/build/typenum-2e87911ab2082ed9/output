@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_OP=F:\rust\MyRust\gateserver\target\debug\build\typenum-2e87911ab2082ed9\out\consts.rs
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=F:\rust\MyRust\gateserver\target\debug\build\typenum-2e87911ab2082ed9\out\op.rs

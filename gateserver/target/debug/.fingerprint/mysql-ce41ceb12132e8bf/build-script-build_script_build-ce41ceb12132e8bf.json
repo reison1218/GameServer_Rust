@@ -1,1 +1,0 @@
-{"rustc":17817003663943870818,"features":"[\"default\", \"flate2\", \"mysql_common\"]","target":10429514197457385088,"profile":9935990280773120926,"path":1145959959557788686,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"debug\\.fingerprint\\mysql-ce41ceb12132e8bf\\dep-build-script-build_script_build-ce41ceb12132e8bf"}}],"rustflags":[],"metadata":13434975158182416464}
