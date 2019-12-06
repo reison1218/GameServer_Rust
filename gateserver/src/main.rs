@@ -22,11 +22,14 @@ use std::collections::HashMap;
 use crate::mgr::thread_pool_mgr::ThreadPoolHandler;
 use futures::task::Poll;
 use futures::future::join;
+
 use std::sync::mpsc::channel;
 
 use crossbeam::atomic::AtomicCell;
 use std::thread::sleep;
 use std::borrow::BorrowMut;
+
+use async_std::task;
 
 mod entity;
 #[macro_use]
@@ -53,48 +56,51 @@ struct Test {
     name: String,
 }
 
-async fn test()->u32{
-   1 as u32
+async fn test(){
+    let a  = async{
+        let mut count :u32 = 0;
+        loop{
+            count+=1;
+            if count>=9999999{
+                println!("{}",count);
+                break;
+            }
+
+        }
+
+    };
+
+    let b = async{
+        //loop{
+        //   let d = Duration::from_secs(2);
+        //  std::thread::sleep(d);
+        println!("haha");
+        //}
+    };
+    let j = join(a,b);
+    j.await;
+
 }
 
 fn main() {
-//    let mut lock :Arc<AtomicCell<u32>>= Arc::new(AtomicCell::new(1 as u32));
+
+    block_on(test());
+
+
+//    let mut server_time = SystemTime::now();
+//    //初始化日志
+//    init_log();
+//    //初始化线程池
+//    let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
 //
-//    let lock2 :AtomicCell<u32>= AtomicCell::new(1 as u32);
+//    //初始化网络，其中涉及到websocket和连接游戏服
+//    block_on(init_net());
 //
-//    let mut lock_cp= lock.clone();
-//    let m =move ||{
-//        let d = Duration::from_secs(2000);
-//        loop{
-//           // sleep(d);
-//            lock_cp.borrow_mut().store(2);
-//        }
-//
-//    };
-//    std::thread::spawn(m);
-//    loop{
-//        let d = Duration::from_secs(2000);
-//        sleep(d);
-//        println!("{}",lock.borrow_mut().load());
-//    }
-
-
-
-
-    let mut server_time = SystemTime::now();
-    //初始化日志
-    init_log();
-    //初始化线程池
-    let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
-
-    //初始化网络，其中涉及到websocket和连接游戏服
-    block_on(init_net());
-
-    info!(
-        "服务器启动完成，监听端口：{},耗时：{}ms",
-        9999,
-        server_time.elapsed().unwrap().as_millis()
-    );
+//    info!(
+//        "服务器启动完成，监听端口：{},耗时：{}ms",
+//        9999,
+//        server_time.elapsed().unwrap().as_millis()
+//    );
 }
 
 async fn init_net(){
