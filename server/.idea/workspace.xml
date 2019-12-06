@@ -13,17 +13,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5618307-3fde-4731-9e8f-1782f4238040" name="Default Changelist" comment="提交">
-      <change afterPath="$PROJECT_DIR$/src/mgr/cmd_code_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcpsocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcpsocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/.rustc_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/target/.rustc_info.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/debug/server.d" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/server.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/debug/server.exe" beforeDir="false" afterPath="$PROJECT_DIR$/target/debug/server.exe" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -252,7 +244,12 @@
       <workItem from="1575014227297" duration="79000" />
       <workItem from="1575014326599" duration="38000" />
       <workItem from="1575014375213" duration="187000" />
-      <workItem from="1575014602348" duration="1255000" />
+      <workItem from="1575014602348" duration="2104000" />
+      <workItem from="1575373149223" duration="135000" />
+      <workItem from="1575373295400" duration="276000" />
+      <workItem from="1575532137462" duration="625000" />
+      <workItem from="1575543329905" duration="1228000" />
+      <workItem from="1575600780711" duration="1540000" />
     </task>
     <task id="LOCAL-00001" summary="提交">
       <created>1571398989190</created>
@@ -304,30 +301,30 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="706" y="281" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1575014622451" />
-    <state width="1030" height="411" key="GridCell.Tab.0.bottom" timestamp="1575017761947">
+    <state width="1030" height="411" key="GridCell.Tab.0.bottom" timestamp="1575029178966">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1030" height="411" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1575017761947" />
-    <state width="1030" height="411" key="GridCell.Tab.0.center" timestamp="1575017761947">
+    <state width="1030" height="411" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1575029178966" />
+    <state width="1030" height="411" key="GridCell.Tab.0.center" timestamp="1575029178966">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1030" height="411" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1575017761947" />
-    <state width="1030" height="411" key="GridCell.Tab.0.left" timestamp="1575017761947">
+    <state width="1030" height="411" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1575029178966" />
+    <state width="1030" height="411" key="GridCell.Tab.0.left" timestamp="1575029178965">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1030" height="411" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1575017761947" />
-    <state width="1030" height="411" key="GridCell.Tab.0.right" timestamp="1575017761947">
+    <state width="1030" height="411" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1575029178965" />
+    <state width="1030" height="411" key="GridCell.Tab.0.right" timestamp="1575029178966">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1030" height="411" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1575017761947" />
+    <state width="1030" height="411" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1575029178966" />
     <state x="433" y="148" key="SettingsEditor" timestamp="1575014304561">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="433" y="148" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1575014304561" />
-    <state x="969" y="349" key="com.intellij.ide.util.TipDialog" timestamp="1575014602898">
+    <state x="969" y="349" key="com.intellij.ide.util.TipDialog" timestamp="1575547606723">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="969" y="349" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1575014602898" />
+    <state x="969" y="349" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1575547606723" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
