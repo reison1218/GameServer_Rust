@@ -28,8 +28,11 @@ use std::sync::mpsc::channel;
 use crossbeam::atomic::AtomicCell;
 use std::thread::sleep;
 use std::borrow::BorrowMut;
-
 use async_std::task;
+
+use async_std::task::spawn;
+
+use futures::join;
 
 mod entity;
 #[macro_use]
@@ -44,67 +47,54 @@ lazy_static! {
         let mtp = MyThreadPool::init(game_name, 4, user_name, 8, sys_name, 2);
         mtp
     };
-    static ref DATA_MAP: RwLock<HashMap<String, Test>> = {
-        let mut m: HashMap<String, Test> = HashMap::new();
-        let mut lock = RwLock::new(m);
-        lock
-    };
 }
 
-struct Test {
-    id: u32,
-    name: String,
-}
-
-async fn test(){
-    let a  = async{
-        let mut count :u32 = 0;
+fn test_async(){
+    let a = async{
         loop{
-            count+=1;
-            if count>=9999999{
-                println!("{}",count);
-                break;
-            }
-
+            println!("123");
+            let t = std::thread::current();
+            println!("------{:?}",t.name().unwrap());
         }
-
     };
 
     let b = async{
-        //loop{
-        //   let d = Duration::from_secs(2);
-        //  std::thread::sleep(d);
-        println!("haha");
-        //}
-    };
-    let j = join(a,b);
-    j.await;
+        let d = Duration::from_secs(2);
 
+        loop{
+            async_std::task::sleep(d);
+            println!("321");
+            let t = std::thread::current();
+            println!("=========={:?}",t.name().unwrap());
+        }
+    };
+
+    let aa:task::JoinHandle<_> = task::spawn(a);
+    let bb:task::JoinHandle<_> = task::spawn(b);
+    block_on(aa);
+    block_on(bb);
 }
 
 fn main() {
+    let mut server_time = SystemTime::now();
+    //初始化日志
+    init_log();
+    //初始化线程池
+    let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
 
-    block_on(test());
+    //初始化网络，其中涉及到websocket和连接游戏服
+    let net = task::spawn(init_net());
+    block_on(net);
 
-
-//    let mut server_time = SystemTime::now();
-//    //初始化日志
-//    init_log();
-//    //初始化线程池
-//    let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
-//
-//    //初始化网络，其中涉及到websocket和连接游戏服
-//    block_on(init_net());
-//
-//    info!(
-//        "服务器启动完成，监听端口：{},耗时：{}ms",
-//        9999,
-//        server_time.elapsed().unwrap().as_millis()
-//    );
+    info!(
+        "服务器启动完成，监听端口：{},耗时：{}ms",
+        9999,
+        server_time.elapsed().unwrap().as_millis()
+    );
 }
 
 async fn init_net(){
-    let cm  = init_tcp_client().await;
+    let cm = init_tcp_client().await;
     init_web_socket(cm).await;
 }
 
@@ -114,11 +104,17 @@ async fn init_tcp_client()->Arc<RwLock<ChannelMgr>>{
     let mut cm = Arc::new(lock);
     let cm = cm.clone();
     let cm_cp = cm.clone();
-//    let cg =  move ||  {
-//        cm.write().unwrap().connect_game();
-//    };
-//    THREAD_POOL.submit_game(cg);
-    cm_cp
+
+    let mut rs_send = Arc::new(channel());
+    {
+        let mut rs = rs_send.clone();
+
+        let lock = cm_cp.write().unwrap();
+        let cg = lock.connect_game();
+        let cg = task::spawn(cg);
+        block_on(cg);
+    };
+    cm.clone()
 }
 
 async fn init_web_socket(cm :Arc<RwLock<ChannelMgr>> ) {
@@ -137,13 +133,8 @@ async fn init_web_socket(cm :Arc<RwLock<ChannelMgr>> ) {
             cm:cm.clone(),
         })
         .unwrap();
-
     let mut web_socket = server.listen("127.0.0.1:9999").unwrap();
     info!("websocket启动完成，监听：{}",9999);
-    {
-        cm_cp.write().unwrap().connect_game();
-    }
-
 }
 
 ///初始化日志

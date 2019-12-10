@@ -27,14 +27,13 @@ impl ChannelMgr {
     }
 
     ///连接游戏服
-    pub fn connect_game(&mut self) {
+    pub async  fn connect_game(&mut self) {
 
         let mut v: [u8; 1024] = [0; 1024];
         info!("连接GameServer成功！");
         loop{
-
             let size = self.game_channel.read(&mut v);
-            if size.unwrap() ==0{
+            if size.unwrap() == 0{
                 continue;
             }
 
