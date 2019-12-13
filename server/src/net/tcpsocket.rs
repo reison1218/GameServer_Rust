@@ -23,12 +23,15 @@ pub async fn new(game_mgr: Arc<RwLock<GameMgr>>) {
                         continue;
                     }
                     info!("读取到gate数据,数据长度:{}", size);
-                    let mut bytes = ByteBuf::from(&bytes);
-                    let len = bytes.read_u32();
-                    let cmd = bytes.read_u32();
+                    let mut bb = ByteBuf::new();
+
+                   bb.push_array(&bytes);
+
+                    let len = bb.read_u32().unwrap();
+                    let cmd = bb.read_u32().unwrap();
                     let pd = PacketDes::new(cmd);
                     let packet = Packet::new(pd);
-
+                    println!("cmd:{}",packet.get_cmd());
                 };
                 net_pool.execute(cl);
             }
