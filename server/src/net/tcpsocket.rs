@@ -1,4 +1,6 @@
 use super::*;
+use std::io::Write;
+use chrono::Duration;
 
 struct TcpServer {}
 
@@ -21,6 +23,11 @@ pub async fn new(game_mgr: Arc<RwLock<GameMgr>>) {
                         continue;
                     }
                     info!("读取到gate数据,数据长度:{}", size);
+                    let mut bytes = ByteBuf::from(&bytes);
+                    let len = bytes.read_u32();
+                    let cmd = bytes.read_u32();
+                    let pd = PacketDes::new(cmd);
+                    let packet = Packet::new(pd);
 
                 };
                 net_pool.execute(cl);
