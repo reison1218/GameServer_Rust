@@ -1,11 +1,13 @@
 use super::*;
+use std::io::Write;
+use std::net::TcpStream;
 
 ///websockethandler
 /// 监听websocket网络事件
 pub struct WebSocketHandler {
-    pub ws: WsSender,                //相当于channel
-    pub add: Option<String>,         //客户端地址
-    pub cm: Arc<RwLock<ChannelMgr>>, //channel管理器
+    pub ws: WsSender,        //相当于channel
+    pub add: Option<String>, //客户端地址
+    pub game_net: TcpStream, //游戏服连接
 }
 
 ///实现相应的handler函数
@@ -17,7 +19,6 @@ impl Handler for WebSocketHandler {
         //如果是二进制数据
         if msg.is_binary() {
             let bytes = &msg.into_data()[..];
-            println!("{:?}", bytes);
             self.handle_binary(bytes);
         } else if msg.is_text() {
             //如果是文本数据
@@ -67,8 +68,8 @@ impl WebSocketHandler {
     fn arrange_packet(&mut self, packet: Packet) {
         //转发到游戏服
         if packet.get_cmd() >= GAME_MIN && packet.get_cmd() <= GAME_MAX {
-            let lock = self.cm.write();
-            lock.unwrap().write_to_game(packet);
+            self.game_net.write(packet.get_data());
+            self.game_net.flush();
             return;
         }
         //转发到房间服

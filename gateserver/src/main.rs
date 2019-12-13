@@ -2,7 +2,7 @@ mod mgr;
 mod net;
 mod protos;
 mod prototools;
-use crate::mgr::channelmgr::ChannelMgr;
+use crate::mgr::channelmgr::{ChannelMgr, new_tcp_client};
 use crate::protos::base;
 use crate::prototools::proto;
 use futures::executor::block_on;
@@ -17,13 +17,12 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::{SystemTime, Duration};
 use threadpool::ThreadPool;
 use ws::{Builder, Settings};
-use crate::mgr::thread_pool_mgr::{MyThreadPool,ThreadPoolType};
 use std::collections::HashMap;
-use crate::mgr::thread_pool_mgr::ThreadPoolHandler;
+use crate::mgr::{channelmgr,thread_pool_mgr::ThreadPoolHandler,thread_pool_mgr::{MyThreadPool,ThreadPoolType}};
 use futures::task::Poll;
 use futures::future::join;
 
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crossbeam::atomic::AtomicCell;
 use std::thread::sleep;
@@ -40,6 +39,7 @@ extern crate lazy_static;
 
 ///初始化全局线程池
 lazy_static! {
+    //初始化线程池
     static ref THREAD_POOL: MyThreadPool = {
         let game_name = "game_name".to_string();
         let user_name = "user_name".to_string();
@@ -51,7 +51,10 @@ lazy_static! {
 
 fn test_async(){
     let a = async{
+
         loop{
+            let d = Duration::from_secs(5);
+            async_std::task::sleep(d).await;
             println!("123");
             let t = std::thread::current();
             println!("------{:?}",t.name().unwrap());
@@ -59,10 +62,10 @@ fn test_async(){
     };
 
     let b = async{
-        let d = Duration::from_secs(2);
-
         loop{
-            async_std::task::sleep(d);
+            let d = Duration::from_secs(2);
+            async_std::task::sleep(d).await;
+
             println!("321");
             let t = std::thread::current();
             println!("=========={:?}",t.name().unwrap());
@@ -82,55 +85,42 @@ fn main() {
     //初始化线程池
     let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
 
-    //初始化网络，其中涉及到websocket和连接游戏服
-    let net = task::spawn(init_net());
-    block_on(net);
+    //连接游戏服务器
+    let cg = async{
+        let mut cm = ChannelMgr::new();
+        let cg = cm.connect_game();
+        cg.await;
+    };
+
+    let cg = task::spawn(cg);
+
+    //初始化websocket
+    let is = init_web_socket();
+    let is = task::spawn(is);
 
     info!(
         "服务器启动完成，监听端口：{},耗时：{}ms",
         9999,
         server_time.elapsed().unwrap().as_millis()
     );
+    block_on(cg);
+    block_on(is);
 }
 
-async fn init_net(){
-    let cm = init_tcp_client().await;
-    init_web_socket(cm).await;
-}
 
-async fn init_tcp_client()->Arc<RwLock<ChannelMgr>>{
-    let cm = ChannelMgr::new().await;
-    let lock = RwLock::new(cm);
-    let mut cm = Arc::new(lock);
-    let cm = cm.clone();
-    let cm_cp = cm.clone();
-
-    let mut rs_send = Arc::new(channel());
-    {
-        let mut rs = rs_send.clone();
-
-        let lock = cm_cp.write().unwrap();
-        let cg = lock.connect_game();
-        let cg = task::spawn(cg);
-        block_on(cg);
-    };
-    cm.clone()
-}
-
-async fn init_web_socket(cm :Arc<RwLock<ChannelMgr>> ) {
+async fn init_web_socket() {
     let mut setting = Settings::default();
     setting.max_connections = 2048;
     //websocket队列大小
     setting.queue_size = setting.max_connections * 2;
     //是否组合数据包
     setting.tcp_nodelay = true;
-    let mut cm_cp = cm.clone();
     let mut server = Builder::new()
         .with_settings(setting)
         .build(|out| WebSocketHandler {
             ws: out,
             add: None,
-            cm:cm.clone(),
+            game_net:new_tcp_client()
         })
         .unwrap();
     let mut web_socket = server.listen("127.0.0.1:9999").unwrap();
