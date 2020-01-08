@@ -1,0 +1,2 @@
+cargo:rustc-cfg=has_i128
+cargo:rerun-if-changed=C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\num-bigint-0.2.3\build.rs

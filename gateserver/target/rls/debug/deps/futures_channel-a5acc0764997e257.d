@@ -1,0 +1,10 @@
+f:\rust\MyRust\gateserver\target\rls\debug\deps\futures_channel-a5acc0764997e257.rmeta: C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lib.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lock.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\mod.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\queue.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\sink_impl.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\oneshot.rs
+
+f:\rust\MyRust\gateserver\target\rls\debug\deps\futures_channel-a5acc0764997e257.d: C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lib.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lock.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\mod.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\queue.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\sink_impl.rs C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\oneshot.rs
+
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lib.rs:
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\lock.rs:
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\mod.rs:
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\queue.rs:
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\mpsc\sink_impl.rs:
+C:\Users\Administrator\.cargo\registry\src\github.com-1ecc6299db9ec823\futures-channel-0.3.1\src\oneshot.rs:
