@@ -27,7 +27,7 @@ impl ChannelMgr {
     }
 
     ///连接游戏服
-     pub  async fn connect_game(&mut self) {
+    pub async fn connect_game(&mut self) {
         let mut v: [u8; 1024] = [0; 1024];
         info!("连接GameServer成功！");
         loop {
@@ -79,6 +79,7 @@ pub fn build_Mess(packet: Packet) -> MessPacketPt {
 
 ///新建tpc连接客户端
 pub fn new_tcp_client() -> TcpStream {
+    println!("new_tcp_client");
     let mut ts: Option<Result<TcpStream>> = None;
     let mut result: Option<TcpStream> = None;
     let dur = Duration::from_secs(2);

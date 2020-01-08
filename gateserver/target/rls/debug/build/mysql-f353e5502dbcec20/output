@@ -1,2 +1,0 @@
-cargo:rustc-env=CARGO_CFG_TARGET_OS=windows
-cargo:rustc-env=CARGO_CFG_TARGET_ARCH=x86_64

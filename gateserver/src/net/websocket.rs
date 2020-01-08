@@ -1,6 +1,7 @@
 use super::*;
 use std::io::Write;
 use std::net::TcpStream;
+use std::process::id;
 
 ///websockethandler
 /// 监听websocket网络事件
@@ -82,8 +83,8 @@ impl WebSocketHandler {
 ///byte数组转换Packet
 pub fn build_packet(mess: MessPacketPt) -> Packet {
     //封装成packet
-    let pd = PacketDes::new(mess.cmd);
+    let mut pd = PacketDes::new(mess.cmd);
     let mut packet = Packet::new(pd);
-    packet.set_bytes(&mess.data[..]);
+    packet.set_bytes(&mess.write_to_bytes().unwrap()[..]);
     packet
 }

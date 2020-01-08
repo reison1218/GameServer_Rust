@@ -2,32 +2,36 @@ mod mgr;
 mod net;
 mod protos;
 mod prototools;
-use crate::mgr::channelmgr::{ChannelMgr, new_tcp_client};
+use crate::mgr::channelmgr::{new_tcp_client, ChannelMgr};
+use crate::mgr::{
+    channelmgr,
+    thread_pool_mgr::ThreadPoolHandler,
+    thread_pool_mgr::{MyThreadPool, ThreadPoolType},
+};
 use crate::protos::base;
 use crate::prototools::proto;
 use futures::executor::block_on;
+use futures::future::join;
+use futures::task::Poll;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use net::websocket::WebSocketHandler;
 use simplelog::{
     CombinedLogger, SharedLogger, SimpleLogger, TermLogger, TerminalMode, WriteLogger,
 };
+use std::collections::HashMap;
 use std::fs::File;
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex, RwLock};
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
 use ws::{Builder, Settings};
-use std::collections::HashMap;
-use crate::mgr::{channelmgr,thread_pool_mgr::ThreadPoolHandler,thread_pool_mgr::{MyThreadPool,ThreadPoolType}};
-use futures::task::Poll;
-use futures::future::join;
 
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-use crossbeam::atomic::AtomicCell;
-use std::thread::sleep;
-use std::borrow::BorrowMut;
 use async_std::task;
+use crossbeam::atomic::AtomicCell;
+use std::borrow::BorrowMut;
+use std::thread::sleep;
 
 use async_std::task::spawn;
 
@@ -47,35 +51,94 @@ lazy_static! {
         let mtp = MyThreadPool::init(game_name, 4, user_name, 8, sys_name, 2);
         mtp
     };
+    static ref i:  Arc<RwLock<test>> = {
+        let mut arc: Arc<RwLock<test>> = Arc::new(RwLock::new(test { i: 0 }));
+        arc
+    };
 }
 
-fn test_async(){
-    let a = async{
-
-        loop{
+fn test_async() {
+    let a = async {
+        loop {
             let d = Duration::from_secs(5);
             async_std::task::sleep(d).await;
             println!("123");
             let t = std::thread::current();
-            println!("------{:?}",t.name().unwrap());
+            println!("------{:?}", t.name().unwrap());
         }
     };
 
-    let b = async{
-        loop{
+    let b = async {
+        loop {
             let d = Duration::from_secs(2);
             async_std::task::sleep(d).await;
 
             println!("321");
             let t = std::thread::current();
-            println!("=========={:?}",t.name().unwrap());
+            println!("=========={:?}", t.name().unwrap());
         }
     };
 
-    let aa:task::JoinHandle<_> = task::spawn(a);
-    let bb:task::JoinHandle<_> = task::spawn(b);
+    let aa: task::JoinHandle<_> = task::spawn(a);
+    let bb: task::JoinHandle<_> = task::spawn(b);
     block_on(aa);
     block_on(bb);
+}
+struct test {
+    i: u32,
+}
+fn test_async_thread() {
+    let a = async {
+        for j in 0..10 {
+            i.write().unwrap().i += 1;
+            let d = Duration::from_secs(1);
+            std::thread::sleep(d);
+            println!(
+                "{:?},{:?},{}",
+                std::thread::current().id(),
+                std::thread::current().name(),
+                i.read().unwrap().i
+            );
+        }
+    };
+    //let i2 = i.clone();
+    let b = async {
+        for j in 0..10 {
+            i.write().unwrap().i += 1;
+            let d = Duration::from_secs(1);
+            std::thread::sleep(d);
+            println!(
+                "{:?},{:?},{}",
+                std::thread::current().id(),
+                std::thread::current().name(),
+                i.read().unwrap().i
+            );
+        }
+    };
+
+    let i3 = i.clone();
+    let m = move || {
+        for j in 0..10 {
+            i3.write().unwrap().i += 1;
+            let d = Duration::from_secs(1);
+            std::thread::sleep(d);
+            println!(
+                "{:?},{:?},{}",
+                std::thread::current().id(),
+                std::thread::current().name(),
+                i.read().unwrap().i
+            );
+        }
+    };
+    &THREAD_POOL.submit_game(m);
+    let a = task::spawn(a);
+    let b = task::spawn(b);
+    block_on(a);
+    block_on(b);
+
+    let d = Duration::from_secs(5);
+    std::thread::sleep(d);
+    println!("{}", i.read().unwrap().i);
 }
 
 fn main() {
@@ -86,7 +149,7 @@ fn main() {
     let mut net_pool = ThreadPool::new_with_name("net_thread_pool".to_owned(), 4);
 
     //连接游戏服务器
-    let cg = async{
+    let cg = async {
         let mut cm = ChannelMgr::new();
         let cg = cm.connect_game();
         cg.await;
@@ -107,7 +170,6 @@ fn main() {
     block_on(is);
 }
 
-
 async fn init_web_socket() {
     let mut setting = Settings::default();
     setting.max_connections = 2048;
@@ -120,11 +182,11 @@ async fn init_web_socket() {
         .build(|out| WebSocketHandler {
             ws: out,
             add: None,
-            game_net:new_tcp_client()
+            game_net: new_tcp_client(),
         })
         .unwrap();
     let mut web_socket = server.listen("127.0.0.1:9999").unwrap();
-    info!("websocket启动完成，监听：{}",9999);
+    info!("websocket启动完成，监听：{}", 9999);
 }
 
 ///初始化日志

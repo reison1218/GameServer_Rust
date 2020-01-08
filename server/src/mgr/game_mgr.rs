@@ -2,9 +2,10 @@ use super::*;
 
 ///gameMgr结构体
 pub struct GameMgr {
-    pub players: HashMap<u32, User>, //玩家数据
-    pub pool: DbPool,                //db连接池
-    pub channels: ChannelMgr,        //会话管理
+    pub players: HashMap<u32, User>,   //玩家数据
+    pub pool: DbPool,                  //db连接池
+    pub channels: WebSocketChannelMgr, //会话管理
+    //pub tcpserver: TcpServer,
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, &Packet), RandomState>, //命令管理
 }
 
@@ -12,7 +13,7 @@ impl GameMgr {
     ///创建gamemgr结构体
     pub fn new(pool: DbPool) -> GameMgr {
         let mut players: HashMap<u32, User> = HashMap::new();
-        let mut channels = ChannelMgr::new();
+        let mut channels = WebSocketChannelMgr::new();
         let mut gm = GameMgr {
             players: players,
             pool: pool,
