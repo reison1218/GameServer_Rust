@@ -1,2 +1,4 @@
 pub mod redistool;
-use redis::{transaction, Commands, PipelineCommands,Pipeline,Client,RedisResult,Value,Connection};
+use redis::{
+    transaction, Client, Commands, Connection, Pipeline, PipelineCommands, RedisResult, Value,
+};

@@ -1,5 +1,9 @@
 use super::*;
-
+use crate::entity::user::User;
+use crate::entity::{Dao, Entity};
+use crate::CONF_MAP;
+use serde_json::json;
+use serde_json::{Map, Value as JsonValue};
 pub struct DbPool {
     pub pool: Pool,
 }
@@ -7,7 +11,8 @@ pub struct DbPool {
 impl DbPool {
     ///创建一个db结构体
     pub fn new() -> DbPool {
-        let mut pool = mysql::Pool::new("mysql://root:root@localhost:3306/reison").unwrap();
+        let str: &str = CONF_MAP.get_str("mysql");
+        let mut pool = mysql::Pool::new(str).unwrap();
         DbPool { pool: pool }
     }
 
@@ -32,11 +37,6 @@ pub struct TestDb {
     time: chrono::NaiveDateTime,
 }
 
-#[test]
-fn main() {
-    test_mysql();
-}
-
 //fn test_postgres() {
 //    let mut db_pool = Connection::connect(
 //        "postgressql://root:root@localhot:3306/reison",
@@ -49,10 +49,29 @@ fn main() {
 //    }
 //}
 
+pub fn test_mysql2() {
+    let mut pool = DbPool::new();
+    let mut str = "insert into t_u_player(user_id,content) values(:user_id,:content)";
+    let mut v: Vec<mysql::Value> = Vec::new();
+    v.push(mysql::Value::Int(3));
+    let local: DateTime<Local> = Local::now();
+    let mut map = serde_json::map::Map::new();
+    let jv = JsonValue::String(local.naive_local().to_string());
+    map.insert("time".to_string(), jv);
+    let mut jv = JsonValue::Object(map);
+    v.push(jv.to_value());
+    let re = pool.exe_sql(str, Some(v));
+    if re.is_err() {
+        println!("{:?}", re.err().unwrap().to_string());
+    }
+    let user = User::query(3, &mut pool);
+}
+
+#[test]
 pub fn test_mysql() {
     info!("创建连接mysql");
     let mut pool = DbPool::new();
-    let mut qr = pool.exe_sql("select * from test", None).unwrap();
+    let qr = pool.exe_sql("select * from test", None).unwrap();
     for _qr in qr {
         let (name, create_time, id) = mysql::from_row(_qr.unwrap());
         let obtl = TestDb {
@@ -73,16 +92,16 @@ pub fn test_mysql() {
     let mut v: Vec<Value> = Vec::new();
     v.push(time.to_string().as_str().to_value());
 
-    pool.exe_sql(str, Some(v));
+    pool.exe_sql(str, Some(v)).unwrap();
 
     str = "insert into test(id,name,create_time) values(:id,:name,:create_time)";
     let mut v: Vec<Value> = Vec::new();
     v.push(Value::Int(3));
-    let _str = "mysql".to_string();
+    let _str = "mysql".to_owned();
     v.push(_str.to_value());
     let local: DateTime<Local> = Local::now();
     v.push(local.naive_local().to_value());
-    let mut re = pool.exe_sql(str, Some(v));
+    let re = pool.exe_sql(str, Some(v));
     if re.is_err() {
         println!("{:?}", re.err().unwrap().to_string());
     }
