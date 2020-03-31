@@ -1,6 +1,6 @@
 use protoc_rust::Customize;
 
-pub fn proto(){
+pub fn proto() {
     protoc_rust::run(protoc_rust::Args {
         out_dir: "src/protos",
         input: &["protos/base.proto"],
@@ -8,5 +8,6 @@ pub fn proto(){
         customize: Customize {
             ..Default::default()
         },
-    }).expect("protoc");
+    })
+    .expect("protoc");
 }
