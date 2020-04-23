@@ -1,6 +1,3 @@
-pub mod base;
-pub mod protocol;
-
 use protoc_rust::Customize;
 
 pub fn proto() {
@@ -12,5 +9,5 @@ pub fn proto() {
             ..Default::default()
         },
     })
-        .expect("protoc");
+    .expect("protoc");
 }
