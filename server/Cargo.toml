@@ -4,25 +4,29 @@ version = "0.1.0"
 authors = ["GXHINF8OL4LO0IV\\Administrator <tijay830@163.com>"]
 edition = "2018"
 
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.release]
+opt-level = 3 #release
+lto = "fat"
+codegen-units = 1
 
 [dependencies]
 ws="0.9.1"
-#postgres ={version="0.15.2"}
+#postgres ="0.15.2"
 num_cpus="1.10.1"
-protobuf="2.10.1"
-protoc-rust = "2.10.1"
-protobuf-codegen="2.10.1"
 threadpool="1.7.1"
 log="0.4.8"
-chrono = "0.4.9"
+chrono = "0.4.11"
 redis="0.13.0"
-mysql="17.0.0"
-simplelog = "0.7.3"
-scheduled-thread-pool = "0.2.2"
-serde = "1.0.102"
+mysql="16.1.0"
+serde = {version="1.0.105",features = ["derive"]}
 serde_json = "1.0.41"
 lazy_static = "1.4.0"
 futures = "0.3.1"
 async-std="1.5.0"
-tcp = { path = "../tcp" }
+http-types = "1.1.0"
+async-h1 = "1.0.2"
+protobuf="2.14.0"
+tools = { path = "../tools" }
+#Rayon

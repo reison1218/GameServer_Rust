@@ -1,0 +1,18 @@
+[package]
+name = "roomserver"
+version = "0.1.0"
+authors = ["reison <tijay830@163.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+protobuf="2.10.1"
+protoc-rust = "2.10.1"
+protobuf-codegen="2.10.1"
+futures = "0.3.1"
+async-std="1.5.0"
+log="0.4.8"
+chrono = "0.4.11"
+lazy_static = "1.4.0"
+tools = { path = "../tools" }

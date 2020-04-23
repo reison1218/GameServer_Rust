@@ -1,5 +1,5 @@
 use super::*;
-use crate::entity::user::User;
+use crate::entity::user_info::User;
 use crate::entity::{Dao, Entity};
 use crate::CONF_MAP;
 use serde_json::json;
@@ -13,12 +13,13 @@ impl DbPool {
     pub fn new() -> DbPool {
         let str: &str = CONF_MAP.get_str("mysql");
         let mut pool = mysql::Pool::new(str).unwrap();
+        info!("初始化dbpool完成!");
         DbPool { pool: pool }
     }
 
     ///执行sql
     pub fn exe_sql(
-        &mut self,
+        &self,
         sql: &str,
         params: Option<Vec<Value>>,
     ) -> Result<QueryResult<'static>, Error> {
@@ -49,23 +50,6 @@ pub struct TestDb {
 //    }
 //}
 
-pub fn test_mysql2() {
-    let mut pool = DbPool::new();
-    let mut str = "insert into t_u_player(user_id,content) values(:user_id,:content)";
-    let mut v: Vec<mysql::Value> = Vec::new();
-    v.push(mysql::Value::Int(3));
-    let local: DateTime<Local> = Local::now();
-    let mut map = serde_json::map::Map::new();
-    let jv = JsonValue::String(local.naive_local().to_string());
-    map.insert("time".to_string(), jv);
-    let mut jv = JsonValue::Object(map);
-    v.push(jv.to_value());
-    let re = pool.exe_sql(str, Some(v));
-    if re.is_err() {
-        println!("{:?}", re.err().unwrap().to_string());
-    }
-    let user = User::query(3, &mut pool);
-}
 
 #[test]
 pub fn test_mysql() {

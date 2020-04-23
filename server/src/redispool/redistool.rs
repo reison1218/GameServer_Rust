@@ -10,8 +10,8 @@ pub struct RedisPoolTool {
 impl RedisPoolTool {
     ///初始化结构体
     pub fn init() -> RedisPoolTool {
-        let mut client = redis::Client::open("redis://cwredis@127.0.0.1:6379/").unwrap();
-
+        let mut client = redis::Client::open("redis://reison@127.0.0.1:6379/").unwrap();
+        info!("初始化redis客户端完成!");
         RedisPoolTool {
             client: client.clone(),
             conn: client.get_connection().unwrap(),

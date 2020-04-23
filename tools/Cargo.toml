@@ -1,0 +1,25 @@
+[package]
+name = "tools"
+version = "0.1.0"
+authors = ["reison <tijay830@163.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std="1.5.0"
+num_cpus="1.10.1"
+threadpool="1.7.1"
+simplelog = "0.7.3"
+log="0.4.8"
+futures = "0.3.1"
+serde = "1.0.102"
+serde_json = "1.0.41"
+lazy_static = "1.4.0"
+protobuf="2.14.0"
+protoc-rust = "2.14.0"
+protobuf-codegen="2.14.0"
+http-types = "1.1.0"
+async-h1 = "1.0.2"
+net2 = "0.2.33"
+mio = {version="0.7.0",features = ["os-poll", "tcp"]}

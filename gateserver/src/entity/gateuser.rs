@@ -1,15 +1,15 @@
 use super::*;
-use tcp::tcp::MySyncSender;
+use tools::tcp::TcpSender;
 
 ///玩家会话封装结构体
 pub struct GateUser {
     user_id: u32,              //玩家id
     ws: Option<Arc<WsSender>>, //websocket会话封装
-    tcp: Option<MySyncSender>, //tcp的stream
+    tcp: Option<TcpSender>,   //tcp的stream
 }
 
 impl GateUser {
-    pub fn new(user_id: u32, ws: Option<Arc<WsSender>>, tcp: Option<MySyncSender>) -> Self {
+    pub fn new(user_id: u32, ws: Option<Arc<WsSender>>, tcp: Option<TcpSender>) -> Self {
         GateUser {
             user_id: user_id,
             ws: ws,
@@ -36,11 +36,11 @@ impl GateUser {
         self.ws.as_mut().unwrap()
     }
 
-    pub fn get_tcp_ref(&self) -> &MySyncSender {
+    pub fn get_tcp_ref(&self) -> &TcpSender {
         self.tcp.as_ref().unwrap()
     }
 
-    pub fn get_tcp_mut_ref(&mut self) -> &mut MySyncSender {
+    pub fn get_tcp_mut_ref(&mut self) -> &mut TcpSender {
         self.tcp.as_mut().unwrap()
     }
 }
