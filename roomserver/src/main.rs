@@ -1,7 +1,6 @@
 mod net;
 mod mgr;
 mod entity;
-mod protos;
 
 #[macro_use]
 extern crate lazy_static;

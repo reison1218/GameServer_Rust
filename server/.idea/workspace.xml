@@ -13,74 +13,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../clearlog/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/.idea/clearlog.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/Cargo.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../clearlog/src/main.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../gateserver/src/mgr/cmd_code_mgr.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../gateserver/src/mgr/thread_pool_mgr.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/protos/message.proto" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/protos/protocol.proto" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/mgr/cmd_code_mgr.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/mgr/thread_pool_mgr.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/mgr/websocket_channel_mgr.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/protos/protocol.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/.idea/tcp.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/Cargo.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/src/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/src/tcp.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/src/thread_pool.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../tcp/src/util.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/.vscode/launch.json" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.vscode/launch.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/protos/base.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/protos/base.proto" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/channelmgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/mgr/channelmgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/packet.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/packet.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/protos.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/protos.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/protos/message.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/protos/message.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/server.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/server.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/protos/base.proto" beforeDir="false" afterPath="$PROJECT_DIR$/protos/base.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/dbtool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/dbtool.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity/contants.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/contants.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity/user.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/user.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/bytebuf.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/bytebuf.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/channel.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/channel.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/packet.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/packet.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcpsocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcpsocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/protos.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/protos.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/protos/base.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/protos/base.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/protos/message.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/protos/message.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/prototools.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/prototools.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/redispool/redistool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/redispool/redistool.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/protos.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -251,8 +189,8 @@
       <screen x="0" y="23" width="1680" height="977" />
     </state>
     <state x="736" y="317" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1680.977@0.23.1680.977" timestamp="1587546700836" />
-    <state width="1309" height="190" key="GridCell.Tab.0.bottom" timestamp="1587634003283">
-      <screen x="0" y="23" width="1680" height="981" />
+    <state width="1308" height="303" key="GridCell.Tab.0.bottom" timestamp="1587637723882">
+      <screen x="0" y="23" width="1680" height="980" />
     </state>
     <state width="1381" height="383" key="GridCell.Tab.0.bottom/0.23.1680.958@0.23.1680.958" timestamp="1587405265223" />
     <state width="1380" height="339" key="GridCell.Tab.0.bottom/0.23.1680.960@0.23.1680.960" timestamp="1587438105466" />
@@ -269,11 +207,11 @@
     <state width="1231" height="293" key="GridCell.Tab.0.bottom/0.23.1680.977@0.23.1680.977" timestamp="1587547955060" />
     <state width="1313" height="72" key="GridCell.Tab.0.bottom/0.23.1680.978@0.23.1680.978" timestamp="1587548559342" />
     <state width="1388" height="339" key="GridCell.Tab.0.bottom/0.23.1680.979@0.23.1680.979" timestamp="1587027728908" />
-    <state width="1381" height="329" key="GridCell.Tab.0.bottom/0.23.1680.980@0.23.1680.980" timestamp="1587366282510" />
-    <state width="1309" height="190" key="GridCell.Tab.0.bottom/0.23.1680.981@0.23.1680.981" timestamp="1587634003283" />
+    <state width="1308" height="303" key="GridCell.Tab.0.bottom/0.23.1680.980@0.23.1680.980" timestamp="1587637723882" />
+    <state width="1308" height="46" key="GridCell.Tab.0.bottom/0.23.1680.981@0.23.1680.981" timestamp="1587637644753" />
     <state width="1388" height="301" key="GridCell.Tab.0.bottom/0.23.1680.982@0.23.1680.982" timestamp="1587025355445" />
-    <state width="1309" height="190" key="GridCell.Tab.0.center" timestamp="1587634003282">
-      <screen x="0" y="23" width="1680" height="981" />
+    <state width="1308" height="303" key="GridCell.Tab.0.center" timestamp="1587637723881">
+      <screen x="0" y="23" width="1680" height="980" />
     </state>
     <state width="1381" height="383" key="GridCell.Tab.0.center/0.23.1680.958@0.23.1680.958" timestamp="1587405265222" />
     <state width="1380" height="339" key="GridCell.Tab.0.center/0.23.1680.960@0.23.1680.960" timestamp="1587438105458" />
@@ -290,11 +228,11 @@
     <state width="1231" height="293" key="GridCell.Tab.0.center/0.23.1680.977@0.23.1680.977" timestamp="1587547955059" />
     <state width="1313" height="72" key="GridCell.Tab.0.center/0.23.1680.978@0.23.1680.978" timestamp="1587548559341" />
     <state width="1388" height="339" key="GridCell.Tab.0.center/0.23.1680.979@0.23.1680.979" timestamp="1587027728908" />
-    <state width="1381" height="329" key="GridCell.Tab.0.center/0.23.1680.980@0.23.1680.980" timestamp="1587366282510" />
-    <state width="1309" height="190" key="GridCell.Tab.0.center/0.23.1680.981@0.23.1680.981" timestamp="1587634003282" />
+    <state width="1308" height="303" key="GridCell.Tab.0.center/0.23.1680.980@0.23.1680.980" timestamp="1587637723881" />
+    <state width="1308" height="46" key="GridCell.Tab.0.center/0.23.1680.981@0.23.1680.981" timestamp="1587637644752" />
     <state width="1388" height="301" key="GridCell.Tab.0.center/0.23.1680.982@0.23.1680.982" timestamp="1587025355445" />
-    <state width="1309" height="190" key="GridCell.Tab.0.left" timestamp="1587634003282">
-      <screen x="0" y="23" width="1680" height="981" />
+    <state width="1308" height="303" key="GridCell.Tab.0.left" timestamp="1587637723881">
+      <screen x="0" y="23" width="1680" height="980" />
     </state>
     <state width="1381" height="383" key="GridCell.Tab.0.left/0.23.1680.958@0.23.1680.958" timestamp="1587405265222" />
     <state width="1380" height="339" key="GridCell.Tab.0.left/0.23.1680.960@0.23.1680.960" timestamp="1587438105458" />
@@ -311,11 +249,11 @@
     <state width="1231" height="293" key="GridCell.Tab.0.left/0.23.1680.977@0.23.1680.977" timestamp="1587547955059" />
     <state width="1313" height="72" key="GridCell.Tab.0.left/0.23.1680.978@0.23.1680.978" timestamp="1587548559341" />
     <state width="1388" height="339" key="GridCell.Tab.0.left/0.23.1680.979@0.23.1680.979" timestamp="1587027728907" />
-    <state width="1381" height="329" key="GridCell.Tab.0.left/0.23.1680.980@0.23.1680.980" timestamp="1587366282509" />
-    <state width="1309" height="190" key="GridCell.Tab.0.left/0.23.1680.981@0.23.1680.981" timestamp="1587634003282" />
+    <state width="1308" height="303" key="GridCell.Tab.0.left/0.23.1680.980@0.23.1680.980" timestamp="1587637723881" />
+    <state width="1308" height="46" key="GridCell.Tab.0.left/0.23.1680.981@0.23.1680.981" timestamp="1587637644752" />
     <state width="1388" height="301" key="GridCell.Tab.0.left/0.23.1680.982@0.23.1680.982" timestamp="1587025355444" />
-    <state width="1309" height="190" key="GridCell.Tab.0.right" timestamp="1587634003283">
-      <screen x="0" y="23" width="1680" height="981" />
+    <state width="1308" height="303" key="GridCell.Tab.0.right" timestamp="1587637723882">
+      <screen x="0" y="23" width="1680" height="980" />
     </state>
     <state width="1381" height="383" key="GridCell.Tab.0.right/0.23.1680.958@0.23.1680.958" timestamp="1587405265223" />
     <state width="1380" height="339" key="GridCell.Tab.0.right/0.23.1680.960@0.23.1680.960" timestamp="1587438105465" />
@@ -332,8 +270,8 @@
     <state width="1231" height="293" key="GridCell.Tab.0.right/0.23.1680.977@0.23.1680.977" timestamp="1587547955059" />
     <state width="1313" height="72" key="GridCell.Tab.0.right/0.23.1680.978@0.23.1680.978" timestamp="1587548559342" />
     <state width="1388" height="339" key="GridCell.Tab.0.right/0.23.1680.979@0.23.1680.979" timestamp="1587027728908" />
-    <state width="1381" height="329" key="GridCell.Tab.0.right/0.23.1680.980@0.23.1680.980" timestamp="1587366282510" />
-    <state width="1309" height="190" key="GridCell.Tab.0.right/0.23.1680.981@0.23.1680.981" timestamp="1587634003283" />
+    <state width="1308" height="303" key="GridCell.Tab.0.right/0.23.1680.980@0.23.1680.980" timestamp="1587637723882" />
+    <state width="1308" height="46" key="GridCell.Tab.0.right/0.23.1680.981@0.23.1680.981" timestamp="1587637644753" />
     <state width="1388" height="301" key="GridCell.Tab.0.right/0.23.1680.982@0.23.1680.982" timestamp="1587025355445" />
     <state width="808" height="317" key="GridCell.Tab.1.bottom" timestamp="1587465809169">
       <screen x="0" y="23" width="1680" height="972" />
@@ -422,7 +360,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/main.rs</url>
-          <line>101</line>
+          <line>97</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>

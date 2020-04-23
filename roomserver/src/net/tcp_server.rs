@@ -2,7 +2,6 @@ use super::*;
 use std::sync::{Arc, RwLock};
 use crate::entity::room::Room;
 use crate::mgr::room_mgr::RoomMgr;
-use crate::protos::base::MessPacketPt;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::{Message, ProtobufEnum};
 use tools::cmd_code::RoomCode;
@@ -10,6 +9,7 @@ use std::path::Component::RootDir;
 use tools::util::packet::Packet;
 use tools::tcp::{TcpSender,Data};
 use tools::tcp::tcp_server;
+use tools::protos::base::MessPacketPt;
 
 pub struct TcpServerHandler{
     pub sender:Option<TcpSender>,

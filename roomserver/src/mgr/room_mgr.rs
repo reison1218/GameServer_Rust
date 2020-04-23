@@ -1,4 +1,5 @@
 use super::*;
+use tools::protos::base::MessPacketPt;
 
 
 pub struct RoomMgr{

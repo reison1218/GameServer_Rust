@@ -1,5 +1,6 @@
 mod mgr;
 mod net;
+mod entity;
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
 use tools::protos::base;
@@ -43,7 +44,6 @@ use tools::util::packet::{Packet, PacketDes};
 use crate::net::tcp_client::TcpClientType;
 use tools::my_log::init_log;
 
-mod entity;
 #[macro_use]
 extern crate lazy_static;
 

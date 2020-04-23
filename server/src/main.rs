@@ -24,10 +24,6 @@ use std::sync::{atomic::AtomicUsize, Arc, Mutex, RwLock};
 use std::thread::Thread;
 use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
-use ws::{
-    Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request, Response,
-    Result, Sender as WsSender, Settings, WebSocket,
-};
 
 use async_std::task;
 use chrono::{DateTime, Local, NaiveDateTime, Utc, Datelike, Timelike};
