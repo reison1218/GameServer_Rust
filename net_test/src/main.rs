@@ -152,7 +152,7 @@ async fn test_async_std(){
 
 fn main() -> io::Result<()> {
 
-    //tcp_client::test_tcp_client();
+    tcp_client::test_tcp_client();
     // web_socket::test_websocket();
     //template::Templates::init("");
     // let mut name = "test.json".to_string();
@@ -165,16 +165,17 @@ fn main() -> io::Result<()> {
     // if !envmnt::exists("MY_ENV_VAR") {
     //     envmnt::set("MY_ENV_VAR", "SOME VALUE");
     // }
-    let a:u32 = random();
-    println!("{}",a);
-
-    // We can also interact with iterators and slices:
-    let mut rng = thread_rng();
-    let arrows_iter = "➡⬈⬆⬉⬅⬋⬇⬊".chars();
-    println!("Lets go in this direction: {}", arrows_iter.choose(&mut rng).unwrap());
-    let mut nums = [1, 2, 3, 4, 5];
-    nums.shuffle(&mut rng);
-    println!("I shuffled my {:?}", nums);
+    // let a:u32 = random();
+    // println!("{}",a);
+    //
+    // // We can also interact with iterators and slices:
+    // let mut rng = thread_rng();
+    // let arrows_iter = "➡⬈⬆⬉⬅⬋⬇⬊".chars();
+    // println!("Lets go in this direction: {}", arrows_iter.choose(&mut rng).unwrap());
+    // let mut nums = [1, 2, 3, 4, 5];
+    // nums.shuffle(&mut rng);
+    // println!("I shuffled my {:?}", nums);
+    //block_on(web::test_http_client());
     Ok(())
 }
 

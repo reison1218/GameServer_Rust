@@ -5,19 +5,29 @@ use http_types::{Error as HttpTypesError,Body, Url, Method, Request,Response, St
 use std::ops::Index;
 use async_h1::client;
 use serde_json::Error;
+use futures::TryFutureExt;
 
 pub async fn test_http_client()->Result<(), HttpTypesError>{
-    let stream = TcpStream::connect("localhost:8080").await?;
+    let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 
-    for i in 0usize..2 {
-        println!("making request {}/2", i + 1);
-        let url = Url::parse(&format!("http://{}/save", peer_addr)).unwrap();
-        let req = Request::new(Method::Post, url);
-        let res = client::connect(stream.clone(), req).await?;
-        println!("{:?}", res);
-    }
+    let url = Url::parse(&format!("http://{}/center/getUserId", peer_addr)).unwrap();
+    let mut req = Request::new(Method::Post, url);
+    let data = r#"
+        {
+            "platform_id": "test",
+            "game_id": 101
+        }"#;
+    //serde_json::Value::from(data);
+    let mut body = Body::from(data);
+    req.set_body(body);
+
+    let mut res = client::connect(stream.clone(), req).await?;
+
+    let mut str = String::new();
+    res.take_body().read_to_string(&mut str).await.unwrap();
+    println!("{:?}", str);
     Ok(())
 }
 

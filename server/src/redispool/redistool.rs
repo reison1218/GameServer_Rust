@@ -1,4 +1,5 @@
 use super::*;
+use crate::CONF_MAP;
 
 ///redis客户端封装结构体
 pub struct RedisPoolTool {
@@ -10,7 +11,8 @@ pub struct RedisPoolTool {
 impl RedisPoolTool {
     ///初始化结构体
     pub fn init() -> RedisPoolTool {
-        let mut client = redis::Client::open("redis://reison@127.0.0.1:6379/").unwrap();
+        let str: &str = CONF_MAP.get_str("redis");
+        let mut client = redis::Client::open(str).unwrap();
         info!("初始化redis客户端完成!");
         RedisPoolTool {
             client: client.clone(),
