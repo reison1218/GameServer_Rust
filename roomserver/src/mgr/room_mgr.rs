@@ -1,20 +1,24 @@
 use super::*;
 use tools::protos::base::MessPacketPt;
 
-
-pub struct RoomMgr{
-    pub players:HashMap<u32,u32>,//key:玩家id    value:房间id
-    pub rooms:HashMap<u32,Room>,//key:房间id    value:房间结构体
-    pub sender:Option<TcpSender>,
+pub struct RoomMgr {
+    pub players: HashMap<u32, u32>, //key:玩家id    value:房间id
+    pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
+    pub sender: Option<TcpSender>,
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, MessPacketPt), RandomState>, //命令管理
 }
 
 impl RoomMgr {
-    pub fn new()->RoomMgr{
-        let players:HashMap<u32,u32> = HashMap::new();
-        let rooms:HashMap<u32,Room> = HashMap::new();
-        let cmd_map:HashMap<u32, fn(&mut RoomMgr, MessPacketPt), RandomState> = HashMap::new();
-        let mut rm = RoomMgr{players,rooms,sender:None,cmd_map};
+    pub fn new() -> RoomMgr {
+        let players: HashMap<u32, u32> = HashMap::new();
+        let rooms: HashMap<u32, Room> = HashMap::new();
+        let cmd_map: HashMap<u32, fn(&mut RoomMgr, MessPacketPt), RandomState> = HashMap::new();
+        let mut rm = RoomMgr {
+            players,
+            rooms,
+            sender: None,
+            cmd_map,
+        };
         rm.cmd_init();
         rm
     }
@@ -31,7 +35,8 @@ impl RoomMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
-        self.cmd_map.insert(RoomCode::CreateRoom as u32, create_room);
+        self.cmd_map
+            .insert(RoomCode::CreateRoom as u32, create_room);
         self.cmd_map.insert(RoomCode::LeaveRoom as u32, leave_room);
     }
 }
@@ -47,6 +52,6 @@ fn create_room(rm: &mut RoomMgr, packet: MessPacketPt) {
     info!("执行同步函数");
 }
 
-fn leave_room(rm: &mut RoomMgr, packet: MessPacketPt){
+fn leave_room(rm: &mut RoomMgr, packet: MessPacketPt) {}
 
-}
+fn change_target(rm: &mut RoomMgr, packet: MessPacketPt) {}
