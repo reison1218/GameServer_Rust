@@ -275,8 +275,15 @@ pub mod tcp_server {
                     Ok(0) => {
                         // Reading 0 bytes means the other side has closed the
                         // connection or is done writing, then so are we.
-                        connection.shutdown(Shutdown::Both);
                         handler.on_close();
+                        let addr = connection.peer_addr();
+                        match addr {
+                            Ok(add)=>{
+                                info!("The client is disconnect!{:?}",addr);
+                            },
+                            Err(e)=>{error!("{:?}",e)}
+                        }
+                        connection.shutdown(Shutdown::Both);
                         return Ok(true);
                     }
                     Ok(n) => {
