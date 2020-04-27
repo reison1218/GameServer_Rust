@@ -82,7 +82,9 @@ fn main() {
     //初始化日志
     init_log(info_log, error_log);
 
+    //创建核心结构体，channel管理器，因为涉及到多线程异步，所以创建结构体的arc引用计数器指针
     let mut cm = Arc::new(RwLock::new(ChannelMgr::new()));
+
     //连接游戏服务器
     init_game_tcp_connect(cm.clone());
 

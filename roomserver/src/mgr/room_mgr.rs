@@ -36,7 +36,7 @@ impl RoomMgr {
     }
 }
 
-///同步数据
+///创建房间
 fn create_room(rm: &mut RoomMgr, packet: MessPacketPt) {
     let user_id = packet.get_user_id();
     let user = rm.players.get_mut(&user_id);
