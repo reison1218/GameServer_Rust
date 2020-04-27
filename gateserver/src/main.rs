@@ -78,19 +78,39 @@ fn main() {
     //获得日志配置
     let info_log = CONF_MAP.get_str("infoLogPath");
     let error_log = CONF_MAP.get_str("errorLogPath");
+
     //初始化日志
     init_log(info_log, error_log);
 
     let mut cm = Arc::new(RwLock::new(ChannelMgr::new()));
     //连接游戏服务器
     init_game_tcp_connect(cm.clone());
+
     //连接房间服务器
     init_room_tcp_connect(cm.clone());
-    //初始化websocket
-    //init_web_socket(cm.clone());
 
-    //初始化tcp服务端
-    init_tcp_server(cm.clone());
+    //初始化与客户端通信的模块
+    init_net_server(cm);
+}
+
+///初始化网络服务这块
+fn init_net_server(cm: Arc<RwLock<ChannelMgr>>){
+    //获取通信模块
+    let net_module = CONF_MAP.get_str("netModule");
+    match net_module {
+        "tcp"=>{
+            //初始化tcp服务端
+            init_tcp_server(cm);
+        },
+        "webSocket"=>{
+            //初始化websocket
+            init_web_socket(cm);
+        },
+        _=>{
+            //初始化tcp服务端
+            init_tcp_server(cm);
+        }
+    }
 }
 
 ///初始化游戏服务器tcp客户端链接
