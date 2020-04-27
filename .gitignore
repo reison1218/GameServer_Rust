@@ -1,6 +1,2 @@
-
-gateserver/.idea/workspace.xml
-server/.idea/workspace.xml
-net_test/.idea/workspace.xml
-server/.idea/workspace.xml
-server/.idea/workspace.xml
+*/target/*
+*.xml
