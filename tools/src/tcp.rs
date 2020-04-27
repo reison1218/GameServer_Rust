@@ -76,15 +76,15 @@ unsafe impl Sync for Data{}
 ///     fn try_clone(&self) -> Self {
 ///         self.clone();//Here, implement the clone function yourself, or add #[derive(clone)] to the ServerHandler as above
 ///     }
-///     ///当有新客户端链接当时候调用
+///     ///Called when there is a new client connection
 ///     fn on_open(&mut self, sender: TcpSender) {
 ///         //do something here what u need
 ///      }
-///     ///当客户端断开链接当时候调用
+///     ///Called when the client connection is invalid
 ///     fn on_close(&mut self) {
 ///         //do something here what u need
 ///     }
-///     ///当客户端发消息过来的时候调用
+///     ///Called when has message from client
 ///     fn on_message(&mut self, mess: Vec<u8>) {
 ///         //do something here what u need
 ///     }
@@ -122,7 +122,7 @@ pub mod tcp_server {
         let mut poll = Poll::new()?;
         // Create storage for events.
         let mut events = Events::with_capacity(512);
-        // tcp监听地址
+        // tcp listenner address
         let address = SocketAddr::from_str(addr).unwrap();
         // Setup the TCP server socket.
         let mut server = MioTcpListener::bind(address)?;
@@ -133,9 +133,9 @@ pub mod tcp_server {
         let mut handler_map = HashMap::new();
         // Unique token for each incoming connection.
         let mut unique_token = Token(SERVER.0 + 1);
-        //异步消息管道，用来接收所有handler的sender消息
+        // async_channel message ，for receiver all sender of handler's message
         let (sender,rec) = std::sync::mpsc::sync_channel(102400);
-        //clone一份指针给read_sender_mess用
+        //clone an conn_map to read_sender_mess func
         let mut conn_map_cp = conn_map.clone();
 
         //读取sender的数据
@@ -162,7 +162,7 @@ pub mod tcp_server {
                         //缓存handler
                         handler_map.insert(token.0,hd);
 
-                        //为每个tcpstream注册事件
+                        //register event for every tcpstream
                         poll.registry().register(
                             &mut connection,
                             token,
