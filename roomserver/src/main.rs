@@ -1,18 +1,19 @@
-mod net;
-mod mgr;
 mod entity;
+mod mgr;
+mod net;
 
 #[macro_use]
 extern crate lazy_static;
 
-use tools::conf::Conf;
-use std::sync::Arc;
-use std::sync::RwLock;
-use std::sync::atomic::AtomicU32;
-use tools::my_log::init_log;
 use crate::entity::room::Room;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
+use std::sync::atomic::AtomicU32;
+use std::sync::atomic::AtomicU64;
+use std::sync::Arc;
+use std::sync::RwLock;
+use tools::conf::Conf;
+use tools::my_log::init_log;
 
 ///初始化全局线程池
 lazy_static! {
@@ -25,7 +26,7 @@ lazy_static! {
 }
 
 ///全局静态变量，用来初始化房间id
-pub static ROOM_ID:AtomicU32 = AtomicU32::new(101);
+pub static ROOM_ID: AtomicU64 = AtomicU64::new(101);
 
 fn main() {
     let info_log = CONF_MAP.get_str("infoLogPath");

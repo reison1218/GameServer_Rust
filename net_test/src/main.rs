@@ -3,7 +3,7 @@ mod tcp_client;
 mod web_socket;
 mod mio_test;
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use protobuf::Message;
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -41,6 +41,8 @@ use std::any::Any;
 use envmnt::{ExpandOptions, ExpansionType};
 use std::ops::DerefMut;
 use rand::prelude::*;
+use std::collections::BTreeMap;
+use std::alloc::System;
 
 
 macro_rules! test{
@@ -152,7 +154,7 @@ async fn test_async_std(){
 
 fn main() -> io::Result<()> {
 
-    tcp_client::test_tcp_client();
+    //tcp_client::test_tcp_client();
     // web_socket::test_websocket();
     //template::Templates::init("");
     // let mut name = "test.json".to_string();
@@ -176,7 +178,36 @@ fn main() -> io::Result<()> {
     // nums.shuffle(&mut rng);
     // println!("I shuffled my {:?}", nums);
     //block_on(web::test_http_client());
+    let mut v = Vec::new();
+    for i in 0..99999{
+        v.push(RoomCache {room_id:i,count:i});
+    }
+
+    let time = SystemTime::now();
+    for i in 0..1{
+        v.sort_by(|a, b| b.count.partial_cmp(&a.count).unwrap());
+    }
+    println!("{}",time.elapsed().unwrap().as_millis());
+
+    //println!("{:?}",v);
+    let mut map = HashMap::new();
+    for i in 0..99999{
+        map.insert(i,RoomCache {room_id:i,count:i});
+    }
+    let time = SystemTime::now();
+    for i in 0..1{
+        for va in map.values(){
+            va.count;
+        }
+    }
+    println!("{}",time.elapsed().unwrap().as_millis());
     Ok(())
+}
+
+#[derive(Hash, Eq, PartialEq, Debug)]
+pub struct RoomCache {
+    room_id: u32,
+    count: u32,
 }
 
 fn test_channel(){

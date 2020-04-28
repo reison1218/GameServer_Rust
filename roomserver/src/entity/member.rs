@@ -1,9 +1,23 @@
 use super::*;
 
+#[derive(Clone, Debug)]
+pub enum UserType {
+    Real = 1,
+    Robot = 2,
+}
+
+#[derive(Clone, Debug)]
+pub enum MemberState {
+    Ready = 1,
+    NotReady = 2,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Member {
-    user_id: u32,
-    target: Target,
+    pub user_id: u32,   //玩家id
+    pub user_type: u8,  //玩家类型，分为真实玩家和机器人
+    pub state: u8,      //玩家状态
+    pub target: Target, //玩家目标
 }
 
 impl Member {
