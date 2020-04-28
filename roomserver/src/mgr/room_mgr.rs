@@ -23,6 +23,11 @@ impl RoomMgr {
         rm
     }
 
+    ///检查玩家是否已经在房间里
+    pub fn check_player(&self, user_id: u32) -> bool {
+        self.players.contains_key(&user_id)
+    }
+
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
     pub fn invok(&mut self, packet: MessPacketPt) {
         let cmd = packet.get_cmd();

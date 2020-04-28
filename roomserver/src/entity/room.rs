@@ -5,6 +5,8 @@ use chrono::{DateTime, Local, Utc};
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 
+pub struct ActionOrder {}
+
 ///房间结构体，封装房间必要信息
 pub struct Room {
     id: u32,
