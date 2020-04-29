@@ -5,14 +5,14 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default)]
 pub struct Team {
-    id: u32,
-    members: HashMap<u32, Member>,
+    pub id: u8,
+    pub members: HashMap<u32, Member>,
 }
 
 impl Team {
     ///判断是否存在该成员
-    pub fn is_exist_member(&self, id: &u32) -> bool {
-        let result = self.members.contains_key(id);
+    pub fn is_exist_member(&self, user_id: &u32) -> bool {
+        let result = self.members.contains_key(user_id);
         result
     }
 
@@ -29,6 +29,11 @@ impl Team {
     ///添加成员
     pub fn add_member(&mut self, member: Member) {
         self.members.insert(member.get_user_id(), member);
+    }
+
+    ///移除玩家
+    pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
+        self.members.remove(user_id)
     }
 
     ///获取成员的可变指针

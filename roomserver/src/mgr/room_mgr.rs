@@ -8,23 +8,23 @@ pub struct RoomCache {
 }
 
 pub struct RoomMgr {
-    pub players: HashMap<u32, u64>,  //key:玩家id    value:房间id
-    pub rooms: HashMap<u64, Room>,   //key:房间id    value:房间结构体
-    pub room_member: Vec<RoomCache>, //key:房间id    value:房间人数
+    pub player_room: HashMap<u32, u64>, //key:玩家id    value:房间id
+    pub rooms: HashMap<u64, Room>,      //key:房间id    value:房间结构体
+    pub room_cache: Vec<RoomCache>,     //key:房间id    value:房间人数
     pub sender: Option<TcpSender>,
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, MessPacketPt), RandomState>, //命令管理
 }
 
 impl RoomMgr {
     pub fn new() -> RoomMgr {
-        let players: HashMap<u32, u64> = HashMap::new();
+        let player_room: HashMap<u32, u64> = HashMap::new();
         let rooms: HashMap<u64, Room> = HashMap::new();
         let cmd_map: HashMap<u32, fn(&mut RoomMgr, MessPacketPt), RandomState> = HashMap::new();
-        let room_member: Vec<RoomCache> = Vec::new();
+        let room_cache: Vec<RoomCache> = Vec::new();
         let mut rm = RoomMgr {
-            players,
+            player_room,
             rooms,
-            room_member,
+            room_cache,
             sender: None,
             cmd_map,
         };
@@ -34,7 +34,7 @@ impl RoomMgr {
 
     ///检查玩家是否已经在房间里
     pub fn check_player(&self, user_id: &u32) -> bool {
-        self.players.contains_key(user_id)
+        self.player_room.contains_key(user_id)
     }
 
     ///检查玩家准备状态
@@ -64,12 +64,25 @@ impl RoomMgr {
             .insert(RoomCode::CreateRoom as u32, create_room);
         self.cmd_map.insert(RoomCode::LeaveRoom as u32, leave_room);
     }
+
+    ///删除缓存房间
+    fn remove_room_cache(&mut self, room_id: &u64) {
+        let mut index: usize = 0;
+        for i in self.room_cache.iter() {
+            index += 1;
+            if i.room_id != *room_id {
+                continue;
+            }
+            break;
+        }
+        self.room_cache.remove(index);
+    }
 }
 
 ///创建房间
 fn create_room(rm: &mut RoomMgr, packet: MessPacketPt) {
     let user_id = packet.get_user_id();
-    let user = rm.players.get_mut(&user_id);
+    let user = rm.player_room.get_mut(&user_id);
     if user.is_none() {
         error!("user data is null for id:{}", user_id);
         return;
@@ -78,14 +91,32 @@ fn create_room(rm: &mut RoomMgr, packet: MessPacketPt) {
 }
 
 ///离开房间
-fn leave_room(rm: &mut RoomMgr, packet: MessPacketPt) {}
+fn leave_room(rm: &mut RoomMgr, packet: MessPacketPt) {
+    let user_id = packet.user_id;
+    let mut res = rm.player_room.get_mut(&user_id);
+    if res.is_none() {
+        return;
+    }
+    let room_id = res.unwrap();
+    let room_id = *room_id;
+    let room = rm.rooms.get_mut(&room_id);
+    if room.is_none() {
+        return;
+    }
+    let mut room = room.unwrap();
+    room.remove_member(&user_id);
+    rm.player_room.remove(&user_id);
+    rm.room_cache.retain(|x| x.room_id != room_id);
+}
 
 ///改变目标
 fn change_target(rm: &mut RoomMgr, packet: MessPacketPt) {}
 
 ///寻找房间并加入房间
 fn search_room(rm: &mut RoomMgr, packet: MessPacketPt) {
-    let result = rm.room_member.first_mut();
+    let result = rm.room_cache.last_mut();
+    let mut need_remove = false;
+    let mut add_res = false;
     match result {
         Some(rc) => {
             let room_id = rc.room_id;
@@ -100,20 +131,30 @@ fn search_room(rm: &mut RoomMgr, packet: MessPacketPt) {
                     };
                     room.add_member(member);
                     rc.count += 1;
-                    rm.players.insert(packet.user_id, room.get_room_id());
+                    rm.player_room.insert(packet.user_id, room.get_room_id());
+                    add_res = true;
+                    if rc.count >= 4 {
+                        need_remove = true;
+                    }
                 }
                 None => {}
             }
         }
         None => {}
     }
+    rm.room_cache
+        .sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
+    if !need_remove {
+        return;
+    }
+    rm.room_cache.pop();
 }
 
 ///准备
 fn prepare_cancel(rm: &mut RoomMgr, packet: MessPacketPt) {
     let user_id = packet.user_id;
     //校验玩家是否在房间
-    let res = rm.players.contains_key(&user_id);
+    let res = rm.player_room.contains_key(&user_id);
     if !res {
         return;
     }
@@ -121,5 +162,28 @@ fn prepare_cancel(rm: &mut RoomMgr, packet: MessPacketPt) {
 
 ///开始
 fn start(rm: &mut RoomMgr, packet: MessPacketPt) {
-    //rm.check_ready(1 a);
+    let room_id = packet.get_cmd() as u64;
+    let res = rm.check_ready(&room_id);
+    if !res {
+        return;
+    }
+    rm.remove_room_cache(&room_id);
+}
+
+///换队伍
+fn change_team(rm: &mut RoomMgr, packet: MessPacketPt) {
+    let user_id = packet.user_id;
+    let room_id = rm.player_room.get(&user_id);
+    if room_id.is_none() {
+        return;
+    }
+    let room_id = room_id.unwrap();
+    let mut room = rm.rooms.get_mut(room_id);
+    if room.is_none() {
+        return;
+    }
+    let mut room = room.unwrap();
+    room.change_team(&user_id, &(0 as u8));
+    rm.player_room.remove(&user_id);
+    rm.player_room.insert(user_id, team_id);
 }

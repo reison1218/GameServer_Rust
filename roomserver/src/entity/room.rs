@@ -20,13 +20,14 @@ pub struct ActionUnit {
 ///房间结构体，封装房间必要信息
 #[derive(Clone, Debug)]
 pub struct Room {
-    id: u64,                   //房间id
-    owner_id: u32,             //房主id
-    map_id: u32,               //地图id
-    teams: HashMap<u32, Team>, //队伍map
-    orders: Vec<ActionUnit>,   //action队列
-    state: u8,                 //房间状态
-    time: DateTime<Utc>,       //房间创建时间
+    id: u64,                       //房间id
+    owner_id: u32,                 //房主id
+    map_id: u32,                   //地图id
+    player_team: HashMap<u32, u8>, //玩家对应的队伍
+    teams: HashMap<u8, Team>,      //队伍map
+    orders: Vec<ActionUnit>,       //action队列
+    state: u8,                     //房间状态
+    time: DateTime<Utc>,           //房间创建时间
 }
 
 impl Room {
@@ -34,12 +35,14 @@ impl Room {
     fn new(map_id: u32, owner_id: u32) -> Room {
         let id: u64 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
         let time = Utc::now();
-        let teams: HashMap<u32, Team> = HashMap::new();
+        let teams: HashMap<u8, Team> = HashMap::new();
         let orders: Vec<ActionUnit> = Vec::new();
+        let player_team: HashMap<u32, u8> = HashMap::new();
         Room {
             id,
             owner_id,
             map_id,
+            player_team,
             teams,
             orders,
             state: RoomState::Await as u8,
@@ -70,7 +73,7 @@ impl Room {
     }
 
     ///判断成员是否存在
-    fn is_exist_member(&self, team_id: &u32, user_id: &u32) -> bool {
+    fn is_exist_member(&self, team_id: &u8, user_id: &u32) -> bool {
         let mut result = self.teams.contains_key(team_id);
         if !result {
             return result;
@@ -80,7 +83,7 @@ impl Room {
     }
 
     ///获得玩家的可变指针
-    fn get_member_mut(&mut self, team_id: &u32, user_id: &u32) -> Option<&mut Member> {
+    fn get_member_mut(&mut self, team_id: &u8, user_id: &u32) -> Option<&mut Member> {
         let mut result = self.teams.contains_key(team_id);
         if !result {
             return None;
@@ -100,9 +103,43 @@ impl Room {
 
     ///添加成员
     pub fn add_member(&mut self, member: Member) {
-        let size = self.teams.len() as u32;
+        let mut size = self.teams.len() as u8;
+        size += 1;
         let mut team = Team::default();
+        let user_id = member.user_id;
         team.add_member(member);
+        team.id = size;
         self.teams.insert(size + 1, team);
+        self.player_team.insert(user_id, size);
+    }
+
+    ///移除玩家
+    pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
+        let source_team_id = self.player_team.get_mut(user_id);
+        if source_team_id.is_none() {
+            return None;
+        }
+        let source_team = self.teams.get_mut(source_team_id.unwrap());
+        if source_team.is_none() {
+            return None;
+        }
+        let source_team = source_team.unwrap();
+        self.player_team.remove(user_id);
+        source_team.remove_member(user_id)
+    }
+
+    ///换队伍
+    pub fn change_team(&mut self, user_id: &u32, team_id: &u8) {
+        let member = self.remove_member(user_id);
+        if member.is_none() {
+            return;
+        }
+        let team = self.teams.get_mut(team_id);
+        if team.is_none() {
+            return;
+        }
+        let team = team.unwrap();
+        team.add_member(member.unwrap());
+        self.player_team.insert(*user_id, *team_id);
     }
 }
