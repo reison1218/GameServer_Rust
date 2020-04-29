@@ -149,21 +149,22 @@ impl Room {
     ///T人
     pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> Result<(), &str> {
         if self.owner_id != *user_id {
-            Err("不是房主，无法执行该操作")
+            return Err("不是房主，无法执行该操作");
         }
         if !self.player_team.contains_key(target_id) {
-            Err("该玩家不在房间内")
+            return Err("该玩家不在房间内");
         }
         let team_id = self.player_team.get(target_id).unwrap();
         let team = self.teams.get_mut(team_id);
         if team.is_none() {
-            Err("队伍不存在")
+            return Err("队伍不存在");
         }
         let team = team.unwrap();
         team.members.remove(target_id);
         //如果队伍没人了，直接删除队伍
         if team.members.len() == 0 {
-            self.teams.remove(&team.id);
+            std::mem::drop(team);
+            self.teams.remove(team_id);
         }
         self.player_team.remove(target_id);
         Ok(())

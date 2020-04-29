@@ -38,17 +38,6 @@ impl RoomMgr {
         self.player_room.contains_key(user_id)
     }
 
-    ///检查玩家准备状态
-    pub fn check_ready(&self, room_id: &u64) -> bool {
-        let res = self.rooms.contains_key(room_id);
-        if !res {
-            return false;
-        }
-        let res = self.rooms.get(room_id).unwrap();
-
-        res.check_ready()
-    }
-
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
     pub fn invok(&mut self, packet: MessPacketPt) {
         let cmd = packet.get_cmd();
@@ -83,12 +72,11 @@ impl RoomMgr {
 ///创建房间
 fn create_room(rm: &mut RoomMgr, packet: MessPacketPt) {
     let user_id = packet.get_user_id();
-    let user = rm.player_room.get_mut(&user_id);
-    if user.is_none() {
+    let room_id = rm.player_room.get_mut(&user_id);
+    if room_id.is_some() {
         error!("user data is null for id:{}", user_id);
         return;
     }
-    info!("执行同步函数");
 }
 
 ///离开房间
@@ -167,11 +155,12 @@ fn start(rm: &mut RoomMgr, packet: MessPacketPt) {
         return;
     }
     let room = room.unwrap();
-    let res = rm.check_ready(&room.get_room_id());
+    let res = room.check_ready();
     if !res {
         return;
     }
-    rm.remove_room_cache(&room.get_room_id());
+    let room_id = room.get_room_id();
+    rm.remove_room_cache(&room_id);
 }
 
 ///换队伍
@@ -181,7 +170,7 @@ fn change_team(rm: &mut RoomMgr, packet: MessPacketPt) {
         return;
     }
     let room = room.unwrap();
-    room.change_team(&user_id, &(0 as u8));
+    room.change_team(&packet.user_id, &(0 as u8));
 }
 ///T人
 fn kick_member(rm: &mut RoomMgr, packet: MessPacketPt) {
