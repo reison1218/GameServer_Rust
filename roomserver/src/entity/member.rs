@@ -2,14 +2,14 @@ use super::*;
 
 #[derive(Clone, Debug)]
 pub enum UserType {
+    Robot = 0,
     Real = 1,
-    Robot = 2,
 }
 
 #[derive(Clone, Debug)]
 pub enum MemberState {
+    NotReady = 0,
     Ready = 1,
-    NotReady = 2,
 }
 
 #[derive(Clone, Debug, Default)]

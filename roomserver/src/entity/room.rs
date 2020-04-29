@@ -3,11 +3,17 @@ use crate::entity::member::Member;
 use crate::entity::team::Team;
 use chrono::{DateTime, Local, Utc};
 use std::collections::HashMap;
+use std::error::Error;
 use std::sync::atomic::Ordering;
 
 pub enum RoomState {
     Await = 0,   //等待
     Started = 1, //已经开始
+}
+
+pub enum Permission {
+    Private = 0, //私有房间
+    Public = 1,  //公开房间
 }
 
 ///行动单位
@@ -27,6 +33,7 @@ pub struct Room {
     teams: HashMap<u8, Team>,      //队伍map
     orders: Vec<ActionUnit>,       //action队列
     state: u8,                     //房间状态
+    permission: u8,                //房间权限
     time: DateTime<Utc>,           //房间创建时间
 }
 
@@ -46,6 +53,7 @@ impl Room {
             teams,
             orders,
             state: RoomState::Await as u8,
+            permission: Permission::Public as u8,
             time,
         }
     }
@@ -73,17 +81,12 @@ impl Room {
     }
 
     ///判断成员是否存在
-    fn is_exist_member(&self, team_id: &u8, user_id: &u32) -> bool {
-        let mut result = self.teams.contains_key(team_id);
-        if !result {
-            return result;
-        }
-        let team = self.teams.get(team_id).unwrap();
-        team.is_exist_member(user_id)
+    pub fn is_exist_member(&self, user_id: &u32) -> bool {
+        self.player_team.contains_key(user_id)
     }
 
     ///获得玩家的可变指针
-    fn get_member_mut(&mut self, team_id: &u8, user_id: &u32) -> Option<&mut Member> {
+    pub fn get_member_mut(&mut self, team_id: &u8, user_id: &u32) -> Option<&mut Member> {
         let mut result = self.teams.contains_key(team_id);
         if !result {
             return None;
@@ -141,5 +144,28 @@ impl Room {
         let team = team.unwrap();
         team.add_member(member.unwrap());
         self.player_team.insert(*user_id, *team_id);
+    }
+
+    ///T人
+    pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> Result<(), &str> {
+        if self.owner_id != *user_id {
+            Err("不是房主，无法执行该操作")
+        }
+        if !self.player_team.contains_key(target_id) {
+            Err("该玩家不在房间内")
+        }
+        let team_id = self.player_team.get(target_id).unwrap();
+        let team = self.teams.get_mut(team_id);
+        if team.is_none() {
+            Err("队伍不存在")
+        }
+        let team = team.unwrap();
+        team.members.remove(target_id);
+        //如果队伍没人了，直接删除队伍
+        if team.members.len() == 0 {
+            self.teams.remove(&team.id);
+        }
+        self.player_team.remove(target_id);
+        Ok(())
     }
 }

@@ -1,6 +1,7 @@
 use super::*;
 use crate::entity::member::{Member, MemberState, Target, UserType};
 use tools::protos::base::MessPacketPt;
+use tools::thread_pool::ThreadPoolType::user;
 
 pub struct RoomCache {
     room_id: u64,
@@ -152,9 +153,8 @@ fn search_room(rm: &mut RoomMgr, packet: MessPacketPt) {
 
 ///准备
 fn prepare_cancel(rm: &mut RoomMgr, packet: MessPacketPt) {
-    let user_id = packet.user_id;
     //校验玩家是否在房间
-    let res = rm.player_room.contains_key(&user_id);
+    let res = rm.player_room.contains_key(&packet.user_id);
     if !res {
         return;
     }
@@ -162,28 +162,52 @@ fn prepare_cancel(rm: &mut RoomMgr, packet: MessPacketPt) {
 
 ///开始
 fn start(rm: &mut RoomMgr, packet: MessPacketPt) {
-    let room_id = packet.get_cmd() as u64;
-    let res = rm.check_ready(&room_id);
+    let room = check_player_in_room(&packet.user_id, rm);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    let res = rm.check_ready(&room.get_room_id());
     if !res {
         return;
     }
-    rm.remove_room_cache(&room_id);
+    rm.remove_room_cache(&room.get_room_id());
 }
 
 ///换队伍
 fn change_team(rm: &mut RoomMgr, packet: MessPacketPt) {
-    let user_id = packet.user_id;
-    let room_id = rm.player_room.get(&user_id);
-    if room_id.is_none() {
-        return;
-    }
-    let room_id = room_id.unwrap();
-    let mut room = rm.rooms.get_mut(room_id);
+    let room = check_player_in_room(&packet.user_id, rm);
     if room.is_none() {
         return;
     }
-    let mut room = room.unwrap();
+    let room = room.unwrap();
     room.change_team(&user_id, &(0 as u8));
-    rm.player_room.remove(&user_id);
-    rm.player_room.insert(user_id, team_id);
+}
+///T人
+fn kick_member(rm: &mut RoomMgr, packet: MessPacketPt) {
+    let room = check_player_in_room(&packet.user_id, rm);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    let taret_user: u32 = 0;
+    let res = room.kick_member(&packet.user_id, &taret_user);
+    if res.is_err() {
+        res.unwrap_err();
+        return;
+    }
+}
+
+///检查玩家是否在房间里
+fn check_player_in_room<'a, 'b: 'a>(user_id: &'b u32, rm: &'b mut RoomMgr) -> Option<&'a mut Room> {
+    let room_id = rm.player_room.get(user_id);
+    if room_id.is_none() {
+        return None;
+    }
+    let room_id = room_id.unwrap();
+    let room = rm.rooms.get_mut(room_id);
+    if room.is_none() {
+        return None;
+    }
+    room
 }

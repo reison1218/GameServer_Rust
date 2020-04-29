@@ -369,7 +369,7 @@ pub trait ClientHandler: Send + Sync {
 pub fn new_tcp_client(address: &str) -> TcpStream {
     let mut ts: Option<std::io::Result<TcpStream>> = None;
     let mut result: Option<TcpStream> = None;
-    let dur = Duration::from_secs(2);
+    let dur = Duration::from_secs(5);
     loop {
         ts = Some(connect(address));
         let re = ts.unwrap();
