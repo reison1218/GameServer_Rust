@@ -379,7 +379,7 @@ pub fn new_tcp_client(address: &str) -> TcpStream {
                 address,
                 re.err().unwrap().to_string()
             );
-            //睡2s
+            //睡5s
             std::thread::sleep(dur);
             continue;
         }
