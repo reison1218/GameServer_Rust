@@ -7,7 +7,7 @@ use std::collections::HashMap;
 /// user_id:玩家ID
 /// data：作为玩家具体数据，由jsonvalue封装
 /// version：数据版本号，大于0则代表有改动，需要update到db
-#[derive(Debug, Clone,Default)]
+#[derive(Debug, Clone, Default)]
 pub struct User {
     pub user_id: u32,    //玩家id
     pub data: JsonValue, //数据
@@ -15,7 +15,7 @@ pub struct User {
 }
 
 ///为User实现Entiry
-impl Entity for User{
+impl Entity for User {
     fn to_insert_vec_value(&self) -> Vec<Value> {
         let mut v: Vec<Value> = Vec::new();
         v.push(self.user_id.to_value());
@@ -56,7 +56,7 @@ impl Entity for User{
 
 impl EntityData for User {
     fn try_clone(&self) -> Box<EntityData> {
-        let user = User::init(self.get_user_id(),None,self.data.clone());
+        let user = User::init(self.get_user_id(), None, self.data.clone());
         Box::new(user)
     }
 
@@ -84,13 +84,12 @@ impl EntityData for User {
     }
 
     ///设置玩家id
-    fn set_ids(&mut self, user_id: u32,tem_id:u32) {
+    fn set_ids(&mut self, user_id: u32, tem_id: u32) {
         self.user_id = user_id;
         self.add_version();
     }
 
-
-    fn update_login_time(&mut self){
+    fn update_login_time(&mut self) {
         let mut map = self.get_mut_json_value();
         let mut time = Local::now();
         let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
@@ -98,12 +97,10 @@ impl EntityData for User {
         self.add_version();
     }
 
-    fn day_reset(&mut self) {
-        self.version+=1;
-    }
+    fn day_reset(&mut self) {}
 }
 
-impl Dao for User{
+impl Dao for User {
     //获得表名
     fn get_table_name(&mut self) -> &str {
         "t_u_player"
@@ -116,35 +113,32 @@ impl User {
         js_data.insert(USER_OL.to_string(), JsonValue::from(1));
         js_data.insert(AVATAR.to_string(), JsonValue::from(avatar));
         js_data.insert(NICK_NAME.to_string(), JsonValue::from(nick_name));
-        let mut user = User::init(user_id, None,serde_json::Value::from(js_data));
+        let mut user = User::init(user_id, None, serde_json::Value::from(js_data));
         user
     }
 
-    pub fn query(table_name:&str,user_id: u32,tem_id:Option<u32>) -> Option<Self>{
+    pub fn query(table_name: &str, user_id: u32, tem_id: Option<u32>) -> Option<Self> {
         let mut v: Vec<Value> = Vec::new();
         v.push(Value::UInt(user_id as u64));
-
 
         let mut sql = String::new();
         sql.push_str("select * from ");
         sql.push_str(table_name);
         sql.push_str(" where user_id=:user_id");
-        if tem_id.is_some()
-        {
+        if tem_id.is_some() {
             sql.push_str(" and tem_id:tem_id");
         }
 
-        let mut q:Result<QueryResult,Error> = DB_POOL
-            .exe_sql(sql.as_str(), Some(v));
-        if q.is_err(){
+        let mut q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        if q.is_err() {
             ()
         }
-        let mut q  = q.unwrap();
+        let mut q = q.unwrap();
 
         let mut data = None;
         for _qr in q {
             let (id, js) = mysql::from_row(_qr.unwrap());
-            let mut u= User::init(id, tem_id,js);
+            let mut u = User::init(id, tem_id, js);
             data = Some(u);
         }
         data

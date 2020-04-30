@@ -63,6 +63,7 @@ impl GameMgr {
             if ud.get_version() <= 0 {
                 continue;
             };
+            //由于这里是深拷贝，所以在这里提前清空版本号，不然在接收方那边执行update，清空的版本号也是clone的
             ud.clear_version();
             v.push(ud.get_user_info_ref().try_clone());
         }

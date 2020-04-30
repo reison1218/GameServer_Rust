@@ -47,7 +47,8 @@ fn zero_day(gm: Arc<RwLock<GameMgr>>) {
             u.update();
         }
         info!(
-            "零点重制完成！耗时{:?}ms",
+            "零点重制完成！重制玩家数量:{},耗时{:?}ms",
+            write.users.len(),
             now_time.elapsed().unwrap().as_millis()
         );
         next_time_tmp = next_time.timestamp();
