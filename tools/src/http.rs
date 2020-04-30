@@ -19,9 +19,13 @@ pub trait HttpServerHandler: Send + Sync {
     ) -> Result<serde_json::Value, HttpTypesError>;
 }
 
-pub async fn http_server(handler_vec: Vec<Box<dyn HttpServerHandler>>) -> http_types::Result<()> {
+pub async fn http_server(
+    address: &str,
+    handler_vec: Vec<Box<dyn HttpServerHandler>>,
+) -> http_types::Result<()> {
     // Open up a TCP connection and create a URL.
-    let listener = TcpListener::bind(("127.0.0.1", 8080)).await?;
+    //let listener = TcpListener::bind(("127.0.0.1", 8080)).await?;
+    let listener = TcpListener::bind(address).await?;
     let addr = format!("http://{}", listener.local_addr()?);
     info!("HTTP-SERVER listening on {}", addr);
 

@@ -116,7 +116,8 @@ fn init_http_server(gm: Arc<RwLock<GameMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
     http_vec.push(Box::new(StopPlayerHttpHandler::new(gm.clone())));
-    async_std::task::spawn(tools::http::http_server(http_vec));
+    let httpPort: &str = CONF_MAP.get_str("httpPort");
+    async_std::task::spawn(tools::http::http_server(httpPort, http_vec));
 }
 
 ///init tcp server
