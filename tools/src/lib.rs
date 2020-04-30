@@ -2,6 +2,7 @@
 mod tests {
     #[test]
     fn it_works() {
+        crate::protos::proto();
     }
 }
 pub mod tcp;

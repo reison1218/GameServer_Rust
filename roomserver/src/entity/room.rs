@@ -30,7 +30,7 @@ pub struct Room {
     owner_id: u32,                 //房主id
     map_id: u32,                   //地图id
     player_team: HashMap<u32, u8>, //玩家对应的队伍
-    teams: HashMap<u8, Team>,      //队伍map
+    teams: HashMap<u8, Team>,      //队伍数据
     orders: Vec<ActionUnit>,       //action队列
     state: u8,                     //房间状态
     permission: u8,                //房间权限

@@ -59,3 +59,32 @@ message HeatBallTuJiaonPt{
 	uint32 heatBallId = 1;//星球id
 }
 
+//目标结构体
+message TargetPt{
+    uint32 team_id = 1;//目标队伍
+    uint32 user_id = 2;//目标队伍所在的目标玩家
+}
+
+//队伍成员结构体
+message MemberPt{
+    uint32 user_id = 1;//玩家id
+    string nick_name=2;//玩家昵称
+    uint32 state = 3;//玩家状态，是否已经准备
+
+}
+
+//队伍结构体
+message TeamPt{
+    uint32 team_id = 1;//队伍id
+    repeated MemberPt members = 2;//队伍里的玩家
+}
+
+//房间数据
+message RoomPt{
+    uint64 room_id = 1;//房间id
+    uint32 owner_id = 2;//房主ID
+    uint32 map_id = 3;//地图配置id
+    uint32 permission = 4;//房间权限
+    repeated TeamPt teams = 5;//房间里的队伍
+}
+

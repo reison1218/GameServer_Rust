@@ -3,6 +3,7 @@ use crate::entity::member::{Member, MemberState, Target, UserType};
 use tools::protos::base::MessPacketPt;
 use tools::thread_pool::ThreadPoolType::user;
 
+///房间缓存
 pub struct RoomCache {
     room_id: u64,
     count: u32,
@@ -114,6 +115,7 @@ fn search_room(rm: &mut RoomMgr, packet: MessPacketPt) {
                 Some(room) => {
                     let mut member = Member {
                         user_id: packet.user_id,
+                        nick_name: "test".to_string(),
                         user_type: UserType::Real as u8,
                         state: MemberState::NotReady as u8,
                         target: Target::default(),

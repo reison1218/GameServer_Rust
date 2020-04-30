@@ -1,0 +1,60 @@
+syntax = "proto3";
+package protos;
+import "base.proto";
+
+//创建房间
+message C_CREATE_ROOM{
+
+}
+
+//邀请好友进入房间
+message C_INVITE_FRIEND{
+    repeated uint32 friends = 1;
+}
+
+//离开房间
+message C_LEAVE_ROOM{
+
+}
+
+//T人
+message C_KICK_MEMBER{
+    uint32 target_id = 1;
+}
+
+//换队伍
+message C_CHANGE_TEAM{
+    uint32 target_team_id = 1;
+}
+
+//准备与取消准备
+message C_PREPARE_CANCEL{
+    bool prepare = 1;//true代表准备，false代表取消准备
+}
+
+//更改房间权限
+message C_CHANGE_ROOM_SETTING{
+    uint32 permission = 1;//0:公开，1：私有
+}
+
+//快速开始
+message C_SEARCH_ROOM{
+
+}
+
+message S_ROOM{
+    bool isSucc = 1;//是否成功;
+    string errMess = 2;//错误信息;
+    RoomPt room = 3;//房间数据
+}
+
+//开始游戏
+message C_START{
+
+}
+
+//开始游戏返回
+message S_START{
+    bool isSucc = 1;//是否成功;
+    string errMess = 2;//错误信息;
+}
