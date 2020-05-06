@@ -10,7 +10,7 @@ use protobuf::Message;
 // use tcp::util::bytebuf::ByteBuf;
 // use tcp::util::packet::Packet;
 use futures::executor::block_on;
-use std::collections::{HashMap, BinaryHeap};
+use std::collections::{HashMap, BinaryHeap, LinkedList};
 use std::sync::mpsc::Receiver;
 
 //use tokio::net::{TcpListener as TokioTcpListener,TcpStream as TokioTcpStream};
@@ -154,7 +154,7 @@ async fn test_async_std(){
 
 fn main() -> io::Result<()> {
 
-    //tcp_client::test_tcp_client();
+    tcp_client::test_tcp_client();
     // web_socket::test_websocket();
     //template::Templates::init("");
     // let mut name = "test.json".to_string();
@@ -178,29 +178,19 @@ fn main() -> io::Result<()> {
     // nums.shuffle(&mut rng);
     // println!("I shuffled my {:?}", nums);
     //block_on(web::test_http_client());
-    let mut v = Vec::new();
-    for i in 0..99999{
-        v.push(RoomCache {room_id:i,count:i});
-    }
 
-    let time = SystemTime::now();
-    for i in 0..1{
-        v.sort_by(|a, b| b.count.partial_cmp(&a.count).unwrap());
-    }
-    println!("{}",time.elapsed().unwrap().as_millis());
-
-    //println!("{:?}",v);
-    let mut map = HashMap::new();
-    for i in 0..99999{
-        map.insert(i,RoomCache {room_id:i,count:i});
-    }
-    let time = SystemTime::now();
-    for i in 0..1{
-        for va in map.values(){
-            va.count;
-        }
-    }
-    println!("{}",time.elapsed().unwrap().as_millis());
+    // let mut v = Vec::new();
+    // for i in 1..11{
+    //     v.push(RoomCache {room_id:i,count:i});
+    // }
+    //
+    // let time = SystemTime::now();
+    // for i in 0..1{
+    //     v.sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
+    // }
+    // v.push(RoomCache {room_id:11,count:1});
+    // println!("{}",time.elapsed().unwrap().as_millis());
+    // println!("{:?}",v);
     Ok(())
 }
 

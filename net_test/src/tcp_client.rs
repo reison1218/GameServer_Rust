@@ -8,11 +8,11 @@ use tools::tcp::ClientHandler;
 use tools::cmd_code::GameCode;
 
 pub fn test_tcp_client(){
-    for i in 0..50000{
+    for i in 0..5000{
         let m = move || {
             let mut tcp_client = TcpClientHandler::new();
-            tcp_client.on_read("192.168.1.100:16801".to_string());
-            //tcp_client.on_read("localhost:16801".to_string());
+            //tcp_client.on_read("192.168.1.100:16801".to_string());
+            tcp_client.on_read("localhost:16801".to_string());
         };
         std::thread::spawn(m);
         std::thread::sleep(Duration::from_millis(100));
@@ -48,8 +48,8 @@ impl ClientHandler for TcpClientHandler {
 
     fn on_close(&mut self) {
         println!("断开链接");
-        let address = "192.168.1.100:16801";
-        //let address = "localhost:16801";
+        //let address = "192.168.1.100:16801";
+        let address = "localhost:16801";
         self.on_read(address.to_string());
     }
 
@@ -61,8 +61,8 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn get_address(&self) -> &str {
-        let address = "192.168.1.100:16801";
-        //let address = "localhost:16801";
+        //let address = "192.168.1.100:16801";
+        let address = "localhost:16801";
         address
     }
 }
