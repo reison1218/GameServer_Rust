@@ -151,15 +151,22 @@ pub mod tcp_server {
                     SERVER => {
                         // Received an event for the TCP server socket.
                         // Accept an connection.
-                        let (mut connection, address) = server.accept()?;
+                        let result:std::io::Result<(MioTcpStream, SocketAddr)> = server.accept();
+                        // if is error,print it and continue;
+                        if result.is_err(){
+                            error!("{:?}",result.err().unwrap());
+                            continue;
+                        }
+                        let (mut connection, address) = result.unwrap();
                         connection.set_nodelay(true);
                         let token = next(&mut unique_token);
                         info!("Accepted connection from: {}", address);
                         //clone a handler for tcpstream
                         let mut hd = handler.try_clone();
+                        //trigger the open event
                         hd.on_open(TcpSender{sender:sender.clone(),token:token.0});
 
-                        //缓存handler
+                        //save the handler
                         handler_map.insert(token.0,hd);
 
                         //register event for every tcpstream
