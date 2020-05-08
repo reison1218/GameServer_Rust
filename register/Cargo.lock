@@ -821,6 +821,10 @@ dependencies = [
 name = "register"
 version = "0.1.0"
 dependencies = [
+ "async-std",
+ "lazy_static",
+ "log",
+ "protobuf",
  "tools",
 ]
 

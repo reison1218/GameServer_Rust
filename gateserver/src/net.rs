@@ -13,25 +13,22 @@ use std::mem::transmute;
 use std::result::Result as ByteBufResult;
 use std::sync::{Arc, Mutex};
 use ws::{
-    Builder, CloseCode, Error as WsError, Factory, Handler, Handshake, Message as WMessage, Request, Response,
-    Result, Sender as WsSender, Settings, WebSocket,
+    Builder, CloseCode, Error as WsError, Factory, Handler, Handshake, Message as WMessage,
+    Request, Response, Result, Sender as WsSender, Settings, WebSocket,
 };
 
 use crate::mgr::channel_mgr::ChannelMgr;
-use tools::protos::base::MessPacketPt;
 use crate::THREAD_POOL;
 use std::borrow::Borrow;
 use std::sync::RwLock;
+use tools::protos::server_protocol::MessPacketPt;
 
 use tools::util::packet::{Packet, PacketDes};
 
-use tools::protos::protocol::{
-    C_USER_LOGIN  ,S_USER_LOGIN
-};
 use tools::cmd_code::GameCode;
+use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 
-
-pub fn bytes_to_mess_packet_pt(mess:&[u8])->MessPacketPt{
+pub fn bytes_to_mess_packet_pt(mess: &[u8]) -> MessPacketPt {
     let mut bb = ByteBuf::from(mess);
     let mut packet = Packet::from(bb);
     let mut mp = MessPacketPt::new();

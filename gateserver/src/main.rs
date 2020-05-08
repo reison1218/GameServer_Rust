@@ -1,9 +1,8 @@
+mod entity;
 mod mgr;
 mod net;
-mod entity;
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
-use tools::protos::base;
 use futures::executor::block_on;
 use futures::future::join;
 use futures::task::Poll;
@@ -17,6 +16,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
 use tools::conf::Conf;
+use tools::protos::base;
 use tools::thread_pool::ThreadPoolHandler;
 use ws::{
     connect, Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request,
@@ -31,18 +31,18 @@ use std::thread::sleep;
 
 use async_std::task::spawn;
 
+use crate::net::tcp_client::TcpClientType;
 use crate::net::tcp_server;
 use crate::net::websocket::ClientSender;
-use tools::protos::base::MessPacketPt;
 use futures::join;
 use protobuf::Message;
 use std::io::Read;
+use tools::my_log::init_log;
+use tools::protos::server_protocol::MessPacketPt;
 use tools::tcp::ClientHandler;
 use tools::thread_pool::MyThreadPool;
 use tools::util::bytebuf::ByteBuf;
 use tools::util::packet::{Packet, PacketDes};
-use crate::net::tcp_client::TcpClientType;
-use tools::my_log::init_log;
 
 #[macro_use]
 extern crate lazy_static;
@@ -96,19 +96,19 @@ fn main() {
 }
 
 ///初始化网络服务这块
-fn init_net_server(cm: Arc<RwLock<ChannelMgr>>){
+fn init_net_server(cm: Arc<RwLock<ChannelMgr>>) {
     //获取通信模块
     let net_module = CONF_MAP.get_str("netModule");
     match net_module {
-        "tcp"=>{
+        "tcp" => {
             //初始化tcp服务端
             init_tcp_server(cm);
-        },
-        "webSocket"=>{
+        }
+        "webSocket" => {
             //初始化websocket
             init_web_socket(cm);
-        },
-        _=>{
+        }
+        _ => {
             //初始化tcp服务端
             init_tcp_server(cm);
         }
@@ -118,9 +118,9 @@ fn init_net_server(cm: Arc<RwLock<ChannelMgr>>){
 ///初始化游戏服务器tcp客户端链接
 fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let game = async {
-        let mut tch = TcpClientHandler::new(cp,TcpClientType::GameServer);
+        let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("gamePort");
-        info!("开始链接游戏服:{:?}",address);
+        info!("开始链接游戏服:{:?}", address);
         tch.on_read(address.to_string());
     };
     async_std::task::spawn(game);
@@ -129,9 +129,9 @@ fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
 ///初始化房间服务器tcp客户端链接
 fn init_room_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let room = async {
-        let mut tch = TcpClientHandler::new(cp,TcpClientType::RoomServer);
+        let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
         let address = CONF_MAP.get_str("roomPort");
-        info!("开始链接房间服:{:?}",address);
+        info!("开始链接房间服:{:?}", address);
         tch.on_read(address.to_string());
     };
     async_std::task::spawn(room);
@@ -145,23 +145,23 @@ fn init_tcp_server(cm: Arc<RwLock<ChannelMgr>>) {
 
 ///初始化websocket
 fn init_web_socket(cp: Arc<RwLock<ChannelMgr>>) {
-        let mut setting = Settings::default();
-        setting.max_connections = 2048;
-        //websocket队列大小
-        setting.queue_size = setting.max_connections * 2;
-        //是否组合数据包
-        setting.tcp_nodelay = true;
-        let mut server = Builder::new()
-            .with_settings(setting)
-            .build(|out| {
-                let mut arc: Arc<WsSender> = Arc::new(out);
-                WebSocketHandler {
-                    ws: arc,
-                    add: None,
-                    cm: cp.clone(),
-                }
-            })
-            .unwrap();
-        let str = CONF_MAP.get_str("websocketPort");
-        let mut web_socket = server.listen(str).unwrap();
+    let mut setting = Settings::default();
+    setting.max_connections = 2048;
+    //websocket队列大小
+    setting.queue_size = setting.max_connections * 2;
+    //是否组合数据包
+    setting.tcp_nodelay = true;
+    let mut server = Builder::new()
+        .with_settings(setting)
+        .build(|out| {
+            let mut arc: Arc<WsSender> = Arc::new(out);
+            WebSocketHandler {
+                ws: arc,
+                add: None,
+                cm: cp.clone(),
+            }
+        })
+        .unwrap();
+    let str = CONF_MAP.get_str("websocketPort");
+    let mut web_socket = server.listen(str).unwrap();
 }

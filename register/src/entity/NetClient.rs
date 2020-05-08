@@ -6,9 +6,9 @@ pub enum ClientType{
 }
 
 ///gateserver客户端封装
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Clone)]
 pub struct NetClient {
-    cient_type:u8,          //客户端类型
+    client_type:u8,          //客户端类型
     id: u32,                //gateserver id
     address: String,        //gateserver 地址
     tcp: Option<TcpSender>, //tcp的stream

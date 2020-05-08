@@ -27,6 +27,7 @@ use ws::{
 use crate::db::table_contants::*;
 use crate::THREAD_POOL;
 use std::sync::{MutexGuard, RwLock, RwLockWriteGuard};
-use tools::protos::base::{MessPacketPt, PlayerPt};
+use tools::protos::base::PlayerPt;
+use tools::protos::server_protocol::MessPacketPt;
 use tools::util::bytebuf::ByteBuf;
 use ws::Sender;

@@ -1,16 +1,16 @@
 use super::*;
 
-use tools::protos::base::MessPacketPt;
 use crate::CONF_MAP;
 use futures::executor::block_on;
 use protobuf::Message;
 use std::io::{Result, Write};
+use std::ops::DerefMut;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex, RwLock};
-use tools::util::bytebuf::ByteBuf;
-use tools::tcp::TcpSender;
 use tools::cmd_code::{GameCode, RoomCode};
-use std::ops::DerefMut;
+use tools::protos::server_protocol::MessPacketPt;
+use tools::tcp::TcpSender;
+use tools::util::bytebuf::ByteBuf;
 
 ///channel管理结构体
 pub struct ChannelMgr {
@@ -39,21 +39,21 @@ impl ChannelMgr {
 
     ///处理离线事件
     /// token：sender唯一标识
-    pub fn off_line(&mut self,token:usize){
+    pub fn off_line(&mut self, token: usize) {
         let user_id = self.get_channels_user_id(&token);
         match user_id {
-            Some(user_id)=>{
+            Some(user_id) => {
                 let user_id = *user_id;
-                self.notice_off_line(user_id,&token);
-            },
-            None=>{
+                self.notice_off_line(user_id, &token);
+            }
+            None => {
                 info!("user_id is none for token:{}", token);
             }
         }
     }
 
     ///通知下线
-    fn notice_off_line(&mut self,user_id:u32,token:&usize){
+    fn notice_off_line(&mut self, user_id: u32, token: &usize) {
         let mut mess = MessPacketPt::new();
         mess.set_cmd(GameCode::LineOff as u32);
         mess.set_user_id(user_id);

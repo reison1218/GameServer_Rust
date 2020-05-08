@@ -1,16 +1,13 @@
 pub mod base;
 pub mod protocol;
 pub mod room;
-
-use protoc_rust::Customize;
+pub mod server_protocol;
 
 pub fn proto() {
-    protoc_rust::run(protoc_rust::Args {
-        out_dir: "src/protos",
-        input: &["protos/room.proto"],
-        includes: &["protos"],
-        customize: Customize {
-            ..Default::default()
-        },
-    }).expect("protoc");
+    protoc_rust::Codegen::new()
+             .out_dir("src/protos")
+             .inputs(&["protos/base.proto", "protos/protocol.proto","protos/room.proto","protos/server_protocol.proto"])
+             .include("protos")
+             .run()
+             .expect("Running protoc failed!");
 }

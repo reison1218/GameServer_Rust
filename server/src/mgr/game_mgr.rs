@@ -12,8 +12,8 @@ use std::convert::TryFrom;
 use std::sync::mpsc::{channel, Sender, SyncSender};
 use std::time::Duration;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::MessPacketPt;
 use tools::protos::protocol::S_SYNC_DATA;
+use tools::protos::server_protocol::MessPacketPt;
 use tools::tcp::TcpSender;
 use tools::util::packet::PacketDes;
 

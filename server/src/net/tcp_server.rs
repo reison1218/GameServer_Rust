@@ -3,31 +3,31 @@ use chrono::{Duration, Local, NaiveDateTime, NaiveTime};
 use std::io::Write;
 use tools::thread_pool::ThreadPoolHandler;
 
-use tools::protos::base::{MessPacketPt, ResourcesPt};
+use tools::protos::base::ResourcesPt;
 use tools::tcp::TcpSender;
 
-use crate::entity::{Entity};
+use crate::db::table_contants;
+use crate::entity::user::UserData;
+use crate::entity::Entity;
+use crate::DB_POOL;
 use futures::executor::block_on;
 use mysql::prelude::ToValue;
 use mysql::Value;
+use protobuf::Message;
 use std::str::FromStr;
 use std::sync::mpsc::{Sender, SyncSender};
+use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::protocol::C_USER_LOGIN;
-use protobuf::Message;
-use tools::cmd_code::{GameCode, ClientCode};
-use crate::DB_POOL;
-use crate::db::table_contants;
-use crate::entity::user::UserData;
 
 #[derive(Clone)]
-struct TcpServerHandler{
+struct TcpServerHandler {
     sender: Option<TcpSender>,
     gm: Arc<RwLock<GameMgr>>,
 }
 
 unsafe impl Send for TcpServerHandler {}
 
-unsafe impl  Sync for TcpServerHandler {}
+unsafe impl Sync for TcpServerHandler {}
 
 impl tools::tcp::Handler for TcpServerHandler {
     fn try_clone(&self) -> Self {
@@ -59,7 +59,10 @@ impl tools::tcp::Handler for TcpServerHandler {
 
 async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, mut mp: MessPacketPt) {
     //如果为空，什么都不执行
-    if mp.get_cmd() != GameCode::Login as u32 && mp.get_cmd() != GameCode::LineOff as u32 && mp.get_data().is_empty() {
+    if mp.get_cmd() != GameCode::Login as u32
+        && mp.get_cmd() != GameCode::LineOff as u32
+        && mp.get_data().is_empty()
+    {
         error!("packet bytes is null!");
         return;
     }
@@ -92,13 +95,13 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut mess: MessPacketPt) {
     let mut gm_lock = gm.write().unwrap();
     //如果内存没有数据，则从数据库里面找
     if !user_data {
-        let mut user = User::query(USER,user_id, None);
+        let mut user = User::query(USER, user_id, None);
         //数据库没有则创建新号
         if user.is_none() {
             user = Some(User::new(user_id, "test", "test"));
             //以下入库采用异步执行，以免造成io堵塞
             let mut user_mut = user.as_mut().unwrap().clone();
-            async_std::task::spawn(insert_user( user_mut));
+            async_std::task::spawn(insert_user(user_mut));
         }
         //封装到内存中
         gm_lock.users.insert(user_id, UserData::new(user.unwrap()));
@@ -137,42 +140,16 @@ async fn insert_user(mut user: User) {
 }
 
 ///user结构体转proto
-fn user2proto(user:&mut User) -> S_USER_LOGIN_PROTO {
+fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     let mut lr = S_USER_LOGIN_PROTO::new();
     lr.set_isSucc(true);
-    lr.userId = user.get_user_id();
-    lr.avatar = user.get_str(AVATAR).unwrap().to_owned();
-    lr.nickName = user.get_str(NICK_NAME).unwrap().to_owned();
-    let signIn = user.get_usize("signIn");
-    if signIn.is_some() {
-        lr.signIn = signIn.unwrap() as u32;
-    }
+    // let result = user.get_json_value("signInTime");
+    // if result.is_some() {
+    //     let str = result.unwrap().as_str().unwrap();
+    //     let mut sign_in_Time = str.parse::<NaiveDateTime>();
+    //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
+    // }
 
-    let result = user.get_json_value("signInTime");
-    if result.is_some() {
-        let str = result.unwrap().as_str().unwrap();
-        let mut sign_in_Time = str.parse::<NaiveDateTime>();
-        lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
-    }
-    let battlepos_id = user.get_usize("battlePosId");
-    if battlepos_id.is_some() {
-        lr.battlePosId = battlepos_id.unwrap() as u32;
-    }
-
-    lr.offLineGold = user.get_usize("offLineGold").unwrap() as f64;
-    let dayRankReward = user.get_usize("dayRankReward");
-    if dayRankReward.is_some() {
-        lr.dayRankReward = dayRankReward.unwrap() as u32;
-    }
-
-    let dayRank = user.get_usize("dayRank");
-    if dayRank.is_some() {
-        lr.dayRank = dayRank.unwrap() as u32;
-    }
-    let turnCount = user.get_usize("turnCount");
-    if turnCount.is_some() {
-        lr.turnCount = turnCount.unwrap() as u32;
-    }
     let mut result = user.get_time("syncTime");
     let mut time = 0 as u32;
     if result.is_some() {
@@ -180,15 +157,16 @@ fn user2proto(user:&mut User) -> S_USER_LOGIN_PROTO {
     }
     lr.syncTime = time;
     let mut ppt = PlayerPt::new();
-    ppt.maxcp = user.get_usize(MAX_CP).unwrap() as u32;
-    ppt.maxJumpLevel = user.get_usize(MAX_JUMP_LEVEL).unwrap() as u32;
-    ppt.maxMultiple = user.get_usize(MAX_MULTIPLE).unwrap() as u32;
-    ppt.maxJumpRange = user.get_usize(MAX_JUMP_RANGE).unwrap() as u32;
-    ppt.maxScore = user.get_usize(MAX_SCORE).unwrap() as u32;
-
+    ppt.set_nick_name(
+        user.get_json_value(NICK_NAME)
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_string(),
+    );
+    ppt.dlc.push(1);
     lr.playerPt = protobuf::SingularPtrField::some(ppt);
     result = user.get_time("lastLoginTime");
-
     time = 0;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
@@ -203,14 +181,10 @@ fn user2proto(user:&mut User) -> S_USER_LOGIN_PROTO {
     }
 
     lr.lastLogOffTime = time;
-    lr.tujianHeatBallId = 1;
-    let mut v = Vec::new();
-    v.push(1 as u32);
-    lr.specialId = v;
     let mut res = ResourcesPt::new();
     res.id = 1;
     res.field_type = 1;
-    res.num = 100 as f64;
+    res.num = 100 as u32;
     let mut v = Vec::new();
     v.push(res);
     let resp = protobuf::RepeatedField::from(v);
@@ -223,7 +197,7 @@ pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
         sender: None,
         gm: gm,
     };
-    tools::tcp::tcp_server::new(address,sh);
+    tools::tcp::tcp_server::new(address, sh);
 }
 ///byte数组转换Packet
 pub fn build_packet_mess_pt(mess: &MessPacketPt) -> Packet {

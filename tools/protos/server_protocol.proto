@@ -1,0 +1,11 @@
+syntax = "proto3";
+package protos;
+
+//消息包
+message MessPacketPt {
+    uint32 user_id = 1;//长度
+    uint32 cmd = 2;//命令号
+    bool is_broad = 3;//是否需要广播
+    bool is_client = 4;//是否需要广播
+    bytes data = 5;//数据
+}

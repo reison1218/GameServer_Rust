@@ -16,8 +16,11 @@ pub async fn test_http_client()->Result<(), HttpTypesError>{
     let mut req = Request::new(Method::Post, url);
     let data = r#"
         {
-            "platform_id": "test",
-            "game_id": 101
+            "register_platform":"test",
+            "platform_id": "1",
+            "game_id": 101,
+            "nick_name":"test",
+            "phone_no":"1231312414"
         }"#;
     //serde_json::Value::from(data);
     let mut body = Body::from(data);

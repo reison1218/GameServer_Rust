@@ -1,62 +1,17 @@
 syntax = "proto3";
 package protos;
 
-
-//消息包
-message MessPacketPt {
-    uint32 user_id = 1;//长度
-    uint32 cmd = 2;//命令号
-    bool is_broad = 3;//是否需要广播
-    bool is_client = 4;//是否需要广播
-    bytes data = 5;//数据
-}
-
 //玩家信息
 message PlayerPt{
-	uint32 maxScore = 1;//最高得分
-	uint32 maxJumpRange = 2;//最高跳跃范围
-	uint32 maxMultiple = 3;//最大高倍数
-	uint32 maxJumpLevel = 4;//最大跳跃段数
-	uint32 maxcp = 5;//最大关卡
+	string nick_name = 1;//昵称
+	repeated uint32 dlc = 2;//dlc
 }
 
 // 资源封装
 message ResourcesPt{
-	uint32 type = 1;//类型（1：碎片 2：资源）
+	uint32 type = 1;//类型
     uint32 id = 2;//资源id
-    double num = 3;//数量
-}
-
-//buff封装
-message BuffPt{
-	uint32 buffCategory = 1;//buff分类
-	uint32 buffStartTime = 2;//buff开始时间
-	uint32 buffEndTime = 3;//buff结束时间
-}
-
-//星球封装
-message HeatBallPt{
-	uint32 index = 1;//下标（0开始）
-	uint32 heatBallId = 2;//对应配置表的星球id
-}
-
-//星球购买次数封装
-message HeatBallBuyTimesPt{
-	uint32 heatBallId = 1;//对应配置表的星球id
-	uint32 buyTimes = 2;//购买次数
-}
-
-//排行榜数据
-message RankInfoPt{
-	uint32 index = 1;//排行榜下标
-	string avatar = 2;//头像url
-	string nickName = 3;//昵称
-	uint32 score = 4;//积分
-}
-
-//星球图鉴数据
-message HeatBallTuJiaonPt{
-	uint32 heatBallId = 1;//星球id
+    uint32 num = 3;//数量
 }
 
 //目标结构体
@@ -70,7 +25,6 @@ message MemberPt{
     uint32 user_id = 1;//玩家id
     string nick_name=2;//玩家昵称
     uint32 state = 3;//玩家状态，是否已经准备
-
 }
 
 //队伍结构体
