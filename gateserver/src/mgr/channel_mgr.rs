@@ -8,7 +8,6 @@ use std::ops::DerefMut;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex, RwLock};
 use tools::cmd_code::{GameCode, RoomCode};
-use tools::protos::server_protocol::MessPacketPt;
 use tools::tcp::TcpSender;
 use tools::util::bytebuf::ByteBuf;
 
@@ -47,29 +46,36 @@ impl ChannelMgr {
                 self.notice_off_line(user_id, &token);
             }
             None => {
-                info!("user_id is none for token:{}", token);
+                info!("user_id is none for token:{},so do nothing!", token);
             }
         }
     }
 
     ///通知下线
     fn notice_off_line(&mut self, user_id: u32, token: &usize) {
-        let mut mess = MessPacketPt::new();
-        mess.set_cmd(GameCode::LineOff as u32);
-        mess.set_user_id(user_id);
-        self.write_to_game(mess.clone());
-        mess.set_cmd(RoomCode::LineOff as u32);
-        self.write_to_room(mess);
+        //初始化包
+        let mut packet = Packet::default();
+        packet.set_user_id(user_id);
+        packet.set_len(16 as u32);
+        packet.set_is_client(false);
+        packet.set_is_broad(false);
+        //发给游戏服
+        packet.set_cmd(GameCode::LineOff as u32);
+        self.write_to_game(packet.clone());
+        //发给房间服
+        packet.set_cmd(RoomCode::LineOff as u32);
+        self.write_to_room(packet);
+        //关闭连接
         self.close_remove(token);
     }
 
     ///写到游戏服
-    pub fn write_to_game(&mut self, mess: MessPacketPt) {
+    pub fn write_to_game(&mut self, packet: Packet) {
         let size = self
             .game_client_channel
             .as_mut()
             .unwrap()
-            .write(&mess.write_to_bytes().unwrap()[..]);
+            .write(&packet.build_server_bytes()[..]);
         match size {
             Ok(s) => info!("write to server size:{}", s),
             Err(e) => {
@@ -81,20 +87,20 @@ impl ChannelMgr {
     }
 
     ///写到房间服
-    pub fn write_to_room(&mut self, mess: MessPacketPt) {
-        let size = self
-            .room_client_channel
-            .as_mut()
-            .unwrap()
-            .write(&mess.write_to_bytes().unwrap()[..]);
-        match size {
-            Ok(s) => info!("write to roomserver size:{}", s),
-            Err(e) => {
-                error!("{:?}", e.to_string());
-                return;
-            }
-        }
-        self.game_client_channel.as_mut().unwrap().flush();
+    pub fn write_to_room(&mut self, packet: Packet) {
+        // let size = self
+        //     .room_client_channel
+        //     .as_mut()
+        //     .unwrap()
+        //     .write(&packet.build_server_bytes()[..]);
+        // match size {
+        //     Ok(s) => info!("write to roomserver size:{}", s),
+        //     Err(e) => {
+        //         error!("{:?}", e.to_string());
+        //         return;
+        //     }
+        // }
+        // self.room_client_channel.as_mut().unwrap().flush();
     }
 
     //添加gateuser
@@ -146,7 +152,7 @@ impl ChannelMgr {
             return;
         }
         let user_id = &user_id.unwrap();
-        let gate_user = self.user_channel.get(user_id);
+        let gate_user = self.user_channel.get_mut(user_id);
         if gate_user.is_none() {
             info!("channel_mgr:gate_user is none for user_id:{}", user_id);
             return;

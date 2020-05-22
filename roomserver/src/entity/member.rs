@@ -30,6 +30,6 @@ impl Member {
 
 #[derive(Clone, Debug, Default)]
 pub struct Target {
-    team_id: u32,
-    user_id: u32,
+    pub team_id: u8,
+    pub user_id: u32,
 }

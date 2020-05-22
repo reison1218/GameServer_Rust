@@ -9,7 +9,7 @@ message PlayerPt{
 
 // 资源封装
 message ResourcesPt{
-	uint32 type = 1;//类型
+	  uint32 type = 1;//类型
     uint32 id = 2;//资源id
     uint32 num = 3;//数量
 }
@@ -33,12 +33,22 @@ message TeamPt{
     repeated MemberPt members = 2;//队伍里的玩家
 }
 
+//地图数据
+message TileMapPt{
+    uint64 id = 1;//map的ID
+    repeated CellPt cell_array = 2;//格子数组
+}
+
+//格子数据
+message CellPt{
+    uint32 type = 1;//值类型（0:正常地图值 1:角色id 2:其他）
+    uint32 value = 2;//值
+}
+
 //房间数据
 message RoomPt{
     uint64 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
-    uint32 map_id = 3;//地图配置id
-    uint32 permission = 4;//房间权限
-    repeated TeamPt teams = 5;//房间里的队伍
+    TileMapPt tile_map = 3;//地图数据
+    repeated TeamPt teams = 4;//房间里的队伍
 }
-

@@ -5,41 +5,38 @@ import "base.proto";
 // 登录
 //cmd:1003
 message C_USER_LOGIN {
-   uint32 userId = 1;//玩家id
-   string avatar = 2; // 头像URL
-   string nickName = 3; // 昵称
+   uint32 user_id = 1;//玩家id
 }
 
 // 登录返回
 //cmd:10003
 message S_USER_LOGIN {
-   bool isSucc = 1;//是否成功;
-   string errMess = 2;//错误信息;
-   uint32 syncTime = 3; //最近一次同步数据时间(32位整型unix时间戳)
-   uint32 lastLoginTime = 4; // 当前登录的时间(服务器当前时间)
-   uint32 lastLogOffTime = 5; // 最后一次退出时间
-   PlayerPt playerPt = 6;//玩家记录信息
+   bool is_succ = 1;//是否成功;
+   string err_mess = 2;//错误信息;
+   uint32 sync_time = 3; //最近一次同步数据时间(32位整型unix时间戳)
+   uint32 last_login_time = 4; // 当前登录的时间(服务器当前时间)
+   uint32 last_logoff_time = 5; // 最后一次退出时间
+   PlayerPt player_pt = 6;//玩家记录信息
    repeated ResourcesPt resp= 7; //玩家资源
-
 }
 
 //心跳包请求，返回同一个，请求需要带参数
 //cmd:10002
 message HEART_BEAT{
-  uint32 sysTime = 1;//服务器当前时间
+  uint32 sys_time = 1;//服务器当前时间
 }
 
 //同步数据请求
 //cmd:1004
 message C_SYNC_DATA{
-    PlayerPt playerPt = 1;//玩家记录
+    PlayerPt player_pt = 1;//玩家记录
 	repeated ResourcesPt resp = 2; //玩家资源
 }
 
 //同步数据返回
 //cmd:10004
 message S_SYNC_DATA{
-	bool isSucc = 1;//是否成功;
-	string errMess = 2;//错误信息;
-    uint32 syncTime = 3;//同步数据时间(32位整型unix时间戳)
+	bool is_succ = 1;//是否成功;
+	string err_mess = 2;//错误信息;
+    uint32 sync_time = 3;//同步数据时间(32位整型unix时间戳)
 }

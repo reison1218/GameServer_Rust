@@ -28,6 +28,6 @@ use crate::db::table_contants::*;
 use crate::THREAD_POOL;
 use std::sync::{MutexGuard, RwLock, RwLockWriteGuard};
 use tools::protos::base::PlayerPt;
-use tools::protos::server_protocol::MessPacketPt;
+use tools::tcp::TcpSender;
 use tools::util::bytebuf::ByteBuf;
 use ws::Sender;

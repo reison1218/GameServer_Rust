@@ -1,12 +1,17 @@
 use super::*;
-use async_h1::client;
-use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
-use serde_json::json;
-use serde_json::Value;
-use std::time::Duration;
-use tools::http::HttpServerHandler;
 use crate::entity::save_player_http;
 use crate::entity::Entity;
+use crate::helper::redis_helper::modify_redis_user;
+use crate::CONF_MAP;
+use crate::REDIS_POOL;
+use async_h1::client;
+use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
+use serde_json::value::Value as JsonValue;
+use serde_json::Value;
+use serde_json::{json, Map};
+use std::str::FromStr;
+use std::time::Duration;
+use tools::http::HttpServerHandler;
 
 pub struct SavePlayerHttpHandler {
     gm: Arc<RwLock<GameMgr>>,
@@ -43,7 +48,7 @@ impl StopPlayerHttpHandler {
     }
 }
 
-impl  HttpServerHandler for StopPlayerHttpHandler {
+impl HttpServerHandler for StopPlayerHttpHandler {
     fn get_path(&self) -> &str {
         "exit"
     }
@@ -62,4 +67,22 @@ impl  HttpServerHandler for StopPlayerHttpHandler {
         async_std::task::spawn(exit);
         Ok(value)
     }
+}
+
+///异步通知用户中心
+pub async fn notice_user_center(user_id: u32, _type: &str) {
+    let mut login = false;
+    if _type.eq("login") {
+        login = true;
+    }
+    modify_redis_user(user_id, login);
+    //通知用户中心
+    let httpPort: &str = CONF_MAP.get_str("user_center_state");
+    let game_id: usize = CONF_MAP.get_usize("game_id");
+    let mut map: Map<String, JsonValue> = Map::new();
+    map.insert("user_id".to_owned(), JsonValue::from(user_id));
+    map.insert("game_id".to_owned(), JsonValue::from(game_id));
+    map.insert("type".to_owned(), JsonValue::from(_type));
+    let value = JsonValue::from(map);
+    tools::http::send_http_request(httpPort, "center/user_state", "post", Some(value)).await;
 }

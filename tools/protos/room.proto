@@ -2,9 +2,9 @@ syntax = "proto3";
 package protos;
 import "base.proto";
 
-//创建房间
+//创建房间请求
 message C_CREATE_ROOM{
-
+    uint32 map_id = 1;   //地图id
 }
 
 //离开房间
@@ -33,8 +33,8 @@ message C_SEARCH_ROOM{
 }
 
 message S_ROOM{
-    bool isSucc = 1;//是否成功;
-    string errMess = 2;//错误信息;
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
     RoomPt room = 3;//房间数据
 }
 
@@ -45,6 +45,6 @@ message C_START{
 
 //开始游戏返回
 message S_START{
-    bool isSucc = 1;//是否成功;
-    string errMess = 2;//错误信息;
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
 }

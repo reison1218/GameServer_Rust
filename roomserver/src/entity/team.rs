@@ -2,6 +2,7 @@ use super::*;
 use crate::entity::member::Member;
 use crate::entity::member::MemberState;
 use std::collections::HashMap;
+use tools::protos::base::{MemberPt, TeamPt};
 
 #[derive(Clone, Debug, Default)]
 pub struct Team {
@@ -44,5 +45,22 @@ impl Team {
     ///获得玩家数量
     pub fn get_member_count(&self) -> usize {
         self.members.len()
+    }
+
+    ///转换protobuf
+    pub fn convert_to_pt(&self) -> TeamPt {
+        let mut pt = TeamPt::new();
+        pt.team_id = self.id as u32;
+        let mut v = Vec::new();
+        for (user_id, member) in self.members.iter() {
+            let mut mp = MemberPt::new();
+            mp.set_user_id(member.user_id);
+            mp.set_nick_name(member.nick_name.clone());
+            mp.set_state(member.state as u32);
+            v.push(mp);
+        }
+        let res = protobuf::RepeatedField::from(v);
+        pt.set_members(res);
+        pt
     }
 }

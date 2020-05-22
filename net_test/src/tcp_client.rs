@@ -1,14 +1,33 @@
-use tools::protos::protocol::S_USER_LOGIN;
+use tools::protos::protocol::{S_USER_LOGIN, C_USER_LOGIN};
 use std::time::Duration;
 use tools::util::packet::Packet;
 use std::io::Write;
 use protobuf::Message;
 use std::net::TcpStream;
 use tools::tcp::ClientHandler;
-use tools::cmd_code::GameCode;
+use tools::cmd_code::{GameCode, RoomCode, ClientCode};
+use futures::executor::block_on;
+use std::sync::{Arc, RwLock, RwLockWriteGuard};
+use crate::ID;
+use futures::AsyncWriteExt;
+use std::sync::atomic::Ordering;
+use std::sync::atomic::AtomicU32;
+use tools::protos::room::S_ROOM;
 
-pub fn test_tcp_client(){
-    for i in 0..5000{
+pub fn test_tcp_client(pid:&str){
+        let uid = block_on(crate::test_http_client(pid));
+        let uid = uid.unwrap();
+        let mut tcp_client = TcpClientHandler::new();
+        //tcp_client.on_read("192.168.1.100:16801".to_string());
+        tcp_client.on_read("localhost:16801".to_string());
+}
+
+pub fn test_tcp_clients(){
+    for i in 1..=2000{
+        let sr = i.to_string();
+        let uid = block_on(crate::test_http_client(sr.as_str()));
+        let uid = uid.unwrap();
+
         let m = move || {
             let mut tcp_client = TcpClientHandler::new();
             //tcp_client.on_read("192.168.1.100:16801".to_string());
@@ -36,14 +55,27 @@ impl TcpClientHandler {
 impl ClientHandler for TcpClientHandler {
     fn on_open(&mut self, ts: TcpStream) {
         self.ts = Some(ts);
-        let mut packet = Packet::new(GameCode::Login as u32);
+        let mut packet = Packet::default();
+        packet.set_cmd(GameCode::Login as u32);
+
         let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
-        s_l.set_avatar("test".to_owned());
-        s_l.set_nickName("test".to_owned());
-        s_l.set_userId(2 as u32);
+        let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
+        write.fetch_add(1, Ordering::Relaxed);
+        let id = write.load(Ordering::Relaxed);
+        s_l.set_user_id(id);
         packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
-        self.ts.as_mut().unwrap().write(&packet.all_to_vec()[..]).unwrap();
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
+
+        // std::thread::sleep(Duration::from_secs(2));
+        // let mut c_r = tools::protos::room::C_CREATE_ROOM::new();
+        // c_r.set_map_id(1002);
+        // packet.set_cmd(RoomCode::CreateRoom as u32);
+        // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
     }
 
     fn on_close(&mut self) {
@@ -54,10 +86,16 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-
-        let mut s = S_USER_LOGIN::new();
-        s.merge_from_bytes(&mess[..]);
-        println!("from server:{:?}",s);
+        let packet = Packet::from_only_client(mess).unwrap();
+        if packet.get_cmd() == ClientCode::Login as u32{
+            let mut s = S_USER_LOGIN::new();
+            s.merge_from_bytes(packet.get_data());
+            println!("from server-login:{:?}----{:?}",packet,s);
+        }else if packet.get_cmd() == ClientCode::Room as u32{
+            let mut s = S_ROOM::new();
+            s.merge_from_bytes(packet.get_data());
+            println!("from server-room:{:?}----{:?}",packet,s);
+        }
     }
 
     fn get_address(&self) -> &str {

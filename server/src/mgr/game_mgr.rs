@@ -1,8 +1,7 @@
 use super::*;
 use crate::entity::user::UserData;
 use crate::entity::EntityData;
-use crate::redispool::redistool;
-use crate::redispool::redistool::RedisPoolTool;
+use crate::net::http::notice_user_center;
 use crate::DB_POOL;
 use chrono::{Local, Timelike};
 use protobuf::well_known_types::Any;
@@ -13,7 +12,7 @@ use std::sync::mpsc::{channel, Sender, SyncSender};
 use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::S_SYNC_DATA;
-use tools::protos::server_protocol::MessPacketPt;
+use tools::redis_pool::RedisPoolTool;
 use tools::tcp::TcpSender;
 use tools::util::packet::PacketDes;
 
@@ -21,7 +20,7 @@ use tools::util::packet::PacketDes;
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
     pub sender: Option<TcpSender>,     //tcpchannel
-    pub cmd_map: HashMap<u32, fn(&mut GameMgr, MessPacketPt), RandomState>, //命令管理
+    pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet), RandomState>, //命令管理
 }
 
 impl GameMgr {
@@ -79,7 +78,7 @@ impl GameMgr {
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
-    pub fn invok(&mut self, packet: MessPacketPt) {
+    pub fn invok(&mut self, packet: Packet) {
         let cmd = packet.get_cmd();
         let f = self.cmd_map.get_mut(&cmd);
         if f.is_none() {
@@ -96,28 +95,28 @@ impl GameMgr {
 }
 
 ///同步数据
-fn sync(gm: &mut GameMgr, mut mess: MessPacketPt) {
-    let user_id = mess.get_user_id();
+fn sync(gm: &mut GameMgr, mut packet: Packet) {
+    let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         error!("user data is null for id:{}", user_id);
         return;
     }
-    mess.is_client = true;
-    mess.cmd = ClientCode::SyncData as u32;
+    packet.set_is_client(true);
+    packet.set_cmd(ClientCode::SyncData as u32);
     let mut s_s_d = S_SYNC_DATA::new();
-    s_s_d.isSucc = true;
-    s_s_d.syncTime = Local::now().naive_local().timestamp_subsec_micros();
-    mess.set_data(s_s_d.write_to_bytes().unwrap());
+    s_s_d.is_succ = true;
+    s_s_d.sync_time = Local::now().naive_local().timestamp_subsec_micros();
+    packet.set_data_from_vec(s_s_d.write_to_bytes().unwrap());
     gm.sender
         .as_mut()
         .unwrap()
-        .write(mess.write_to_bytes().unwrap());
+        .write(packet.build_server_bytes());
     info!("执行同步函数");
 }
 
 ///玩家离线
-fn off_line(gm: &mut GameMgr, packet: MessPacketPt) {
+fn off_line(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let user = gm.users.remove(&user_id);
     if user.is_some() {
@@ -125,4 +124,6 @@ fn off_line(gm: &mut GameMgr, packet: MessPacketPt) {
         user.update();
         info!("游戏服已处理玩家离线 for id:{}", user.get_user_id());
     }
+    //通知用户中心
+    async_std::task::spawn(notice_user_center(user_id, "off_line"));
 }

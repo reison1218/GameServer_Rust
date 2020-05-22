@@ -121,7 +121,7 @@ pub mod tcp_server {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
-        let mut events = Events::with_capacity(512);
+        let mut events = Events::with_capacity(1024);
         // tcp listenner address
         let address = SocketAddr::from_str(addr).unwrap();
         // Setup the TCP server socket.
@@ -217,11 +217,12 @@ pub mod tcp_server {
                         let res:Option<&mut MioTcpStream> = write.get_mut(&token);
                         match res {
                             Some(ts)=>{
+                                //send mess to client
                                 ts.write(bytes.as_slice());
                                 ts.flush();
                             },
                             None=>{
-                                error!("connections has no value for token:{}",token);
+                                warn!("connections has no value for token:{}",token);
                             }
                         }
                     },
@@ -277,7 +278,7 @@ pub mod tcp_server {
         // We can (maybe) read from the connection.
         if event.is_readable() {
             loop {
-                let mut buf = [0; 256];
+                let mut buf = [0; 25600];
                 match connection.read(&mut buf) {
                     Ok(0) => {
                         // Reading 0 bytes means the other side has closed the
@@ -340,7 +341,7 @@ pub trait ClientHandler: Send + Sync {
         let mut read = new_tcp_client(address.as_str());
         let  write = read.try_clone().unwrap();
         self.on_open(write);
-        let mut read_bytes: [u8; 512] = [0; 512];
+        let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
         loop {
             //读取从tcp服务端发过来的数据

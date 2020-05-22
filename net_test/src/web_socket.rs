@@ -17,13 +17,16 @@ pub fn test_websocket() {
         let m = move|| {
             let result = connect("ws://127.0.0.1:16801", |out| {
                 // Queue a message to be sent when the WebSocket is open
-                let mut packet = Packet::new(GameCode::Login as u32);
+                let mut packet = Packet::default();
+                packet.set_cmd(GameCode::Login as u32);
+
                 let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
-                s_l.set_avatar("test".to_owned());
-                s_l.set_nickName("test".to_owned());
-                s_l.set_userId(2 as u32);
-                packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
-                out.send(&packet.all_to_vec()[..]).unwrap();
+                // s_l.set_avatar("test".to_owned());
+                // s_l.set_nickName("test".to_owned());
+                s_l.set_user_id(1011000002 as u32);
+                packet.set_data_from_vec(s_l.write_to_bytes().unwrap());
+                packet.set_len(16+packet.get_data().len() as u32);
+                out.send(&packet.build_client_bytes()[..]).unwrap();
 
                 // The handler needs to take ownership of out, so we use move
                 move |msg| {

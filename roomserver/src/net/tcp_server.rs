@@ -6,7 +6,6 @@ use protobuf::{Message, ProtobufEnum};
 use std::path::Component::RootDir;
 use std::sync::{Arc, RwLock};
 use tools::cmd_code::RoomCode;
-use tools::protos::base::MessPacketPt;
 use tools::tcp::tcp_server;
 use tools::tcp::{Data, TcpSender};
 use tools::util::packet::Packet;
@@ -41,56 +40,34 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let mut mp = MessPacketPt::new();
-        mp.merge_from_bytes(&mess[..]);
-        //判断是否是房间服的命令，如果不是，则直接无视掉
-        if mp.get_cmd() < RoomCode::Min as u32 || mp.get_cmd() > RoomCode::Max as u32 {
-            error!("the cmd:{} is not belong roomserver!", mp.get_cmd());
+        let mut packet = Packet::from_only_server(mess);
+        if packet.is_err() {
+            error!("{:?}", packet.err().unwrap());
             return;
         }
-        if mp.get_data().is_empty() && mp.get_cmd() != RoomCode::LineOff as u32 {
-            error!("the cmd:{}'s mess's data is null!", mp.get_cmd());
+        let mut packet = packet.unwrap();
+
+        //判断是否是房间服的命令，如果不是，则直接无视掉
+        if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {
+            error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
+            return;
+        }
+        if packet.get_data().is_empty() && packet.get_cmd() != RoomCode::LineOff as u32 {
+            error!("the cmd:{}'s mess's data is null!", packet.get_cmd());
             return;
         }
         //异步处理业务逻辑
-        async_std::task::spawn(handler_mess_s(self.rm.clone(), mp));
+        async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));
     }
 }
 
-async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, mut mess: MessPacketPt) {
+async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, mut packet: Packet) {
     let mut write = rm.write().unwrap();
-    write.invok(mess);
+    write.invok(packet);
 }
 
 ///创建新的tcp服务器
 pub fn new(address: &str, rm: Arc<RwLock<RoomMgr>>) {
     let sh = TcpServerHandler { sender: None, rm };
     tcp_server::new(address, sh).unwrap();
-}
-
-///byte数组转换Packet
-pub fn build_packet_mess_pt(mess: &MessPacketPt) -> Packet {
-    //封装成packet
-    let mut packet = Packet::new(mess.cmd);
-    packet.set_data(&mess.write_to_bytes().unwrap()[..]);
-    packet
-}
-
-///byte数组转换Packet
-pub fn build_packet_bytes(bytes: &[u8]) -> Packet {
-    let mut mpp = MessPacketPt::new();
-    mpp.merge_from_bytes(bytes);
-
-    //封装成packet
-    let mut packet = Packet::new(mpp.cmd);
-    packet.set_data(&mpp.write_to_bytes().unwrap()[..]);
-    packet
-}
-
-///byte数组转换Packet
-pub fn build_packet(mess: MessPacketPt) -> Packet {
-    //封装成packet
-    let mut packet = Packet::new(mess.cmd);
-    packet.set_data(&mess.write_to_bytes().unwrap()[..]);
-    packet
 }

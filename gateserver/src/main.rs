@@ -36,9 +36,10 @@ use crate::net::tcp_server;
 use crate::net::websocket::ClientSender;
 use futures::join;
 use protobuf::Message;
+use std::env;
 use std::io::Read;
 use tools::my_log::init_log;
-use tools::protos::server_protocol::MessPacketPt;
+use tools::redis_pool::RedisPoolTool;
 use tools::tcp::ClientHandler;
 use tools::thread_pool::MyThreadPool;
 use tools::util::bytebuf::ByteBuf;
@@ -58,13 +59,24 @@ lazy_static! {
         mtp
     };
     static ref CONF_MAP: Conf = {
-        //let conf = Conf::init("/Users/tangjian/git/MyRust/gateserver/configs/config.conf");
-        let conf = Conf::init("/game/game_server/gate_server/config/config.conf");
+        let path = env::current_dir().unwrap();
+        let mut str = path.as_os_str().to_str().unwrap();
+        let res = str.to_string()+"/config/config.conf";
+        let conf = Conf::init(res.as_str());
         conf
     };
 
+   ///reids客户端
+    static ref REDIS_POOL:Arc<RwLock<RedisPoolTool>>={
+        let add: &str = CONF_MAP.get_str("redis_add");
+        let pass: &str = CONF_MAP.get_str("redis_pass");
+        let redis = RedisPoolTool::init(add,pass);
+        let redis:Arc<RwLock<RedisPoolTool>> = Arc::new(RwLock::new(redis));
+        redis
+    };
+
     static ref ID:Arc<RwLock<Test>> ={
-        let t = Test{id:0};
+        let t = Test{id:1011000000};
         let mut arc: Arc<RwLock<Test>> = Arc::new(RwLock::new(t));
         arc
     };
@@ -76,8 +88,8 @@ struct Test {
 
 fn main() {
     //获得日志配置
-    let info_log = CONF_MAP.get_str("infoLogPath");
-    let error_log = CONF_MAP.get_str("errorLogPath");
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
 
     //初始化日志
     init_log(info_log, error_log);
@@ -98,7 +110,7 @@ fn main() {
 ///初始化网络服务这块
 fn init_net_server(cm: Arc<RwLock<ChannelMgr>>) {
     //获取通信模块
-    let net_module = CONF_MAP.get_str("netModule");
+    let net_module = CONF_MAP.get_str("net_module");
     match net_module {
         "tcp" => {
             //初始化tcp服务端
@@ -119,7 +131,7 @@ fn init_net_server(cm: Arc<RwLock<ChannelMgr>>) {
 fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let game = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
-        let address = CONF_MAP.get_str("gamePort");
+        let address = CONF_MAP.get_str("game_port");
         info!("开始链接游戏服:{:?}", address);
         tch.on_read(address.to_string());
     };
@@ -130,7 +142,7 @@ fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
 fn init_room_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let room = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
-        let address = CONF_MAP.get_str("roomPort");
+        let address = CONF_MAP.get_str("room_port");
         info!("开始链接房间服:{:?}", address);
         tch.on_read(address.to_string());
     };
@@ -139,7 +151,7 @@ fn init_room_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
 
 ///初始化tcp服务端
 fn init_tcp_server(cm: Arc<RwLock<ChannelMgr>>) {
-    let str = CONF_MAP.get_str("tcpPort");
+    let str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(str, cm);
 }
 
@@ -162,6 +174,6 @@ fn init_web_socket(cp: Arc<RwLock<ChannelMgr>>) {
             }
         })
         .unwrap();
-    let str = CONF_MAP.get_str("websocketPort");
+    let str = CONF_MAP.get_str("web_socket_port");
     let mut web_socket = server.listen(str).unwrap();
 }

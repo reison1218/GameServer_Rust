@@ -1,10 +1,15 @@
 use super::*;
-use crate::entity::member::Member;
+use crate::entity::map_data::TileMap;
+use crate::entity::member::{Member, Target};
 use crate::entity::team::Team;
+use crate::template::templates::Template;
 use chrono::{DateTime, Local, Utc};
+use std::alloc::handle_alloc_error;
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::atomic::Ordering;
+use tools::protos::base::RoomPt;
 
 pub enum RoomState {
     Await = 0,   //等待
@@ -28,34 +33,35 @@ pub struct ActionUnit {
 pub struct Room {
     id: u64,                       //房间id
     owner_id: u32,                 //房主id
-    map_id: u32,                   //地图id
+    tile_map: TileMap,             //地图数据
     player_team: HashMap<u32, u8>, //玩家对应的队伍
     teams: HashMap<u8, Team>,      //队伍数据
     orders: Vec<ActionUnit>,       //action队列
     state: u8,                     //房间状态
-    permission: u8,                //房间权限
     time: DateTime<Utc>,           //房间创建时间
 }
 
 impl Room {
     ///构建一个房间的结构体
-    fn new(map_id: u32, owner_id: u32) -> Room {
+    pub fn new(map_temp: &Template, owner_id: &u32) -> Result<Room, String> {
+        //转换成tilemap数据
+        let tile_map = TileMap::new(&map_temp.value)?;
         let id: u64 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
         let time = Utc::now();
         let teams: HashMap<u8, Team> = HashMap::new();
         let orders: Vec<ActionUnit> = Vec::new();
         let player_team: HashMap<u32, u8> = HashMap::new();
-        Room {
+        let room = Room {
             id,
-            owner_id,
-            map_id,
+            owner_id: *owner_id,
+            tile_map,
             player_team,
             teams,
             orders,
             state: RoomState::Await as u8,
-            permission: Permission::Public as u8,
             time,
-        }
+        };
+        Ok(room)
     }
 
     ///检查准备状态
@@ -73,6 +79,11 @@ impl Room {
     pub fn get_last_action_mut(&mut self) -> Option<&mut ActionUnit> {
         let result = self.orders.last_mut();
         result
+    }
+
+    ///获得房主ID
+    pub fn get_owner_id(&self) -> u32 {
+        self.owner_id
     }
 
     ///获取房号
@@ -163,10 +174,73 @@ impl Room {
         team.members.remove(target_id);
         //如果队伍没人了，直接删除队伍
         if team.members.len() == 0 {
-            std::mem::drop(team);
             self.teams.remove(team_id);
         }
         self.player_team.remove(target_id);
+        Ok(())
+    }
+
+    pub fn get_teams(&self) -> Iter<u8, Team> {
+        let res = self.teams.iter();
+        res
+    }
+
+    ///判断房间是否有成员
+    pub fn is_empty(&self) -> bool {
+        for i in self.teams.iter() {
+            if !i.1.members.is_empty() {
+                return false;
+            }
+        }
+        true
+    }
+
+    ///转换成protobuf
+    pub fn convert_to_pt(&self) -> RoomPt {
+        let mut v = Vec::new();
+        for (team_id, team) in self.teams.iter() {
+            let team_pt = team.convert_to_pt();
+            v.push(team_pt);
+        }
+        let mut rp = RoomPt::new();
+        rp.owner_id = self.owner_id;
+        rp.room_id = self.get_room_id();
+        let res = protobuf::RepeatedField::from(v);
+        rp.set_teams(res);
+        rp.set_tile_map(self.tile_map.convert_pt());
+        rp
+    }
+
+    ///更换目标
+    pub fn change_target(&mut self, user_id: &u32, target_id: &u32) -> Result<(), String> {
+        let mut team_id = self.player_team.get(user_id);
+        if team_id.is_none() {
+            let s = format!(
+                "this player is not in this room!,user_id:{},room_id:{}",
+                user_id,
+                self.get_room_id()
+            );
+            return Err(s);
+        }
+        let team_id = *team_id.unwrap();
+        let team_id = &team_id;
+        let target_team_id = self.player_team.get(target_id);
+        if target_team_id.is_none() {
+            let s = format!(
+                "this target_player is not in this room!user_id:{},room_id:{}",
+                target_id,
+                self.get_room_id()
+            );
+            return Err(s);
+        }
+        let target_team_id = *target_team_id.unwrap();
+        let target_team_id = &target_team_id;
+
+        let member = self.get_member_mut(team_id, user_id).unwrap();
+        let mut target = Target::default();
+        target.team_id = *target_team_id;
+        target.user_id = *target_id;
+        member.target = target;
         Ok(())
     }
 }

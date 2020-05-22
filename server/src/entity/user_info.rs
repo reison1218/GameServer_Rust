@@ -131,7 +131,8 @@ impl User {
 
         let mut q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if q.is_err() {
-            ()
+            error!("{:?}", q.err().unwrap());
+            return None;
         }
         let mut q = q.unwrap();
 

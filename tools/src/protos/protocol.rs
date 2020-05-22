@@ -29,9 +29,7 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(PartialEq,Clone,Default)]
 pub struct C_USER_LOGIN {
     // message fields
-    pub userId: u32,
-    pub avatar: ::std::string::String,
-    pub nickName: ::std::string::String,
+    pub user_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -48,71 +46,19 @@ impl C_USER_LOGIN {
         ::std::default::Default::default()
     }
 
-    // uint32 userId = 1;
+    // uint32 user_id = 1;
 
 
-    pub fn get_userId(&self) -> u32 {
-        self.userId
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
     }
-    pub fn clear_userId(&mut self) {
-        self.userId = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_userId(&mut self, v: u32) {
-        self.userId = v;
-    }
-
-    // string avatar = 2;
-
-
-    pub fn get_avatar(&self) -> &str {
-        &self.avatar
-    }
-    pub fn clear_avatar(&mut self) {
-        self.avatar.clear();
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_avatar(&mut self, v: ::std::string::String) {
-        self.avatar = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_avatar(&mut self) -> &mut ::std::string::String {
-        &mut self.avatar
-    }
-
-    // Take field
-    pub fn take_avatar(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.avatar, ::std::string::String::new())
-    }
-
-    // string nickName = 3;
-
-
-    pub fn get_nickName(&self) -> &str {
-        &self.nickName
-    }
-    pub fn clear_nickName(&mut self) {
-        self.nickName.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_nickName(&mut self, v: ::std::string::String) {
-        self.nickName = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_nickName(&mut self) -> &mut ::std::string::String {
-        &mut self.nickName
-    }
-
-    // Take field
-    pub fn take_nickName(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.nickName, ::std::string::String::new())
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
     }
 }
 
@@ -130,13 +76,7 @@ impl ::protobuf::Message for C_USER_LOGIN {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.userId = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.avatar)?;
-                },
-                3 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.nickName)?;
+                    self.user_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -150,14 +90,8 @@ impl ::protobuf::Message for C_USER_LOGIN {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.userId != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.userId, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if !self.avatar.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.avatar);
-        }
-        if !self.nickName.is_empty() {
-            my_size += ::protobuf::rt::string_size(3, &self.nickName);
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -165,14 +99,8 @@ impl ::protobuf::Message for C_USER_LOGIN {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.userId != 0 {
-            os.write_uint32(1, self.userId)?;
-        }
-        if !self.avatar.is_empty() {
-            os.write_string(2, &self.avatar)?;
-        }
-        if !self.nickName.is_empty() {
-            os.write_string(3, &self.nickName)?;
+        if self.user_id != 0 {
+            os.write_uint32(1, self.user_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -214,19 +142,9 @@ impl ::protobuf::Message for C_USER_LOGIN {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "userId",
-                    |m: &C_USER_LOGIN| { &m.userId },
-                    |m: &mut C_USER_LOGIN| { &mut m.userId },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "avatar",
-                    |m: &C_USER_LOGIN| { &m.avatar },
-                    |m: &mut C_USER_LOGIN| { &mut m.avatar },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "nickName",
-                    |m: &C_USER_LOGIN| { &m.nickName },
-                    |m: &mut C_USER_LOGIN| { &mut m.nickName },
+                    "user_id",
+                    |m: &C_USER_LOGIN| { &m.user_id },
+                    |m: &mut C_USER_LOGIN| { &mut m.user_id },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_USER_LOGIN>(
                     "C_USER_LOGIN",
@@ -247,9 +165,7 @@ impl ::protobuf::Message for C_USER_LOGIN {
 
 impl ::protobuf::Clear for C_USER_LOGIN {
     fn clear(&mut self) {
-        self.userId = 0;
-        self.avatar.clear();
-        self.nickName.clear();
+        self.user_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -269,12 +185,12 @@ impl ::protobuf::reflect::ProtobufValue for C_USER_LOGIN {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_USER_LOGIN {
     // message fields
-    pub isSucc: bool,
-    pub errMess: ::std::string::String,
-    pub syncTime: u32,
-    pub lastLoginTime: u32,
-    pub lastLogOffTime: u32,
-    pub playerPt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
+    pub sync_time: u32,
+    pub last_login_time: u32,
+    pub last_logoff_time: u32,
+    pub player_pt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
     pub resp: ::protobuf::RepeatedField<super::base::ResourcesPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -292,123 +208,123 @@ impl S_USER_LOGIN {
         ::std::default::Default::default()
     }
 
-    // bool isSucc = 1;
+    // bool is_succ = 1;
 
 
-    pub fn get_isSucc(&self) -> bool {
-        self.isSucc
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
     }
-    pub fn clear_isSucc(&mut self) {
-        self.isSucc = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_isSucc(&mut self, v: bool) {
-        self.isSucc = v;
-    }
-
-    // string errMess = 2;
-
-
-    pub fn get_errMess(&self) -> &str {
-        &self.errMess
-    }
-    pub fn clear_errMess(&mut self) {
-        self.errMess.clear();
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
     }
 
     // Param is passed by value, moved
-    pub fn set_errMess(&mut self, v: ::std::string::String) {
-        self.errMess = v;
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_errMess(&mut self) -> &mut ::std::string::String {
-        &mut self.errMess
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
     }
 
     // Take field
-    pub fn take_errMess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.errMess, ::std::string::String::new())
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
 
-    // uint32 syncTime = 3;
+    // uint32 sync_time = 3;
 
 
-    pub fn get_syncTime(&self) -> u32 {
-        self.syncTime
+    pub fn get_sync_time(&self) -> u32 {
+        self.sync_time
     }
-    pub fn clear_syncTime(&mut self) {
-        self.syncTime = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_syncTime(&mut self, v: u32) {
-        self.syncTime = v;
-    }
-
-    // uint32 lastLoginTime = 4;
-
-
-    pub fn get_lastLoginTime(&self) -> u32 {
-        self.lastLoginTime
-    }
-    pub fn clear_lastLoginTime(&mut self) {
-        self.lastLoginTime = 0;
+    pub fn clear_sync_time(&mut self) {
+        self.sync_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_lastLoginTime(&mut self, v: u32) {
-        self.lastLoginTime = v;
+    pub fn set_sync_time(&mut self, v: u32) {
+        self.sync_time = v;
     }
 
-    // uint32 lastLogOffTime = 5;
+    // uint32 last_login_time = 4;
 
 
-    pub fn get_lastLogOffTime(&self) -> u32 {
-        self.lastLogOffTime
+    pub fn get_last_login_time(&self) -> u32 {
+        self.last_login_time
     }
-    pub fn clear_lastLogOffTime(&mut self) {
-        self.lastLogOffTime = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_lastLogOffTime(&mut self, v: u32) {
-        self.lastLogOffTime = v;
-    }
-
-    // .protos.PlayerPt playerPt = 6;
-
-
-    pub fn get_playerPt(&self) -> &super::base::PlayerPt {
-        self.playerPt.as_ref().unwrap_or_else(|| super::base::PlayerPt::default_instance())
-    }
-    pub fn clear_playerPt(&mut self) {
-        self.playerPt.clear();
-    }
-
-    pub fn has_playerPt(&self) -> bool {
-        self.playerPt.is_some()
+    pub fn clear_last_login_time(&mut self) {
+        self.last_login_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_playerPt(&mut self, v: super::base::PlayerPt) {
-        self.playerPt = ::protobuf::SingularPtrField::some(v);
+    pub fn set_last_login_time(&mut self, v: u32) {
+        self.last_login_time = v;
+    }
+
+    // uint32 last_logoff_time = 5;
+
+
+    pub fn get_last_logoff_time(&self) -> u32 {
+        self.last_logoff_time
+    }
+    pub fn clear_last_logoff_time(&mut self) {
+        self.last_logoff_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_last_logoff_time(&mut self, v: u32) {
+        self.last_logoff_time = v;
+    }
+
+    // .protos.PlayerPt player_pt = 6;
+
+
+    pub fn get_player_pt(&self) -> &super::base::PlayerPt {
+        self.player_pt.as_ref().unwrap_or_else(|| super::base::PlayerPt::default_instance())
+    }
+    pub fn clear_player_pt(&mut self) {
+        self.player_pt.clear();
+    }
+
+    pub fn has_player_pt(&self) -> bool {
+        self.player_pt.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_player_pt(&mut self, v: super::base::PlayerPt) {
+        self.player_pt = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_playerPt(&mut self) -> &mut super::base::PlayerPt {
-        if self.playerPt.is_none() {
-            self.playerPt.set_default();
+    pub fn mut_player_pt(&mut self) -> &mut super::base::PlayerPt {
+        if self.player_pt.is_none() {
+            self.player_pt.set_default();
         }
-        self.playerPt.as_mut().unwrap()
+        self.player_pt.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_playerPt(&mut self) -> super::base::PlayerPt {
-        self.playerPt.take().unwrap_or_else(|| super::base::PlayerPt::new())
+    pub fn take_player_pt(&mut self) -> super::base::PlayerPt {
+        self.player_pt.take().unwrap_or_else(|| super::base::PlayerPt::new())
     }
 
     // repeated .protos.ResourcesPt resp = 7;
@@ -439,7 +355,7 @@ impl S_USER_LOGIN {
 
 impl ::protobuf::Message for S_USER_LOGIN {
     fn is_initialized(&self) -> bool {
-        for v in &self.playerPt {
+        for v in &self.player_pt {
             if !v.is_initialized() {
                 return false;
             }
@@ -461,34 +377,34 @@ impl ::protobuf::Message for S_USER_LOGIN {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_bool()?;
-                    self.isSucc = tmp;
+                    self.is_succ = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.errMess)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.syncTime = tmp;
+                    self.sync_time = tmp;
                 },
                 4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.lastLoginTime = tmp;
+                    self.last_login_time = tmp;
                 },
                 5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.lastLogOffTime = tmp;
+                    self.last_logoff_time = tmp;
                 },
                 6 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.playerPt)?;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.player_pt)?;
                 },
                 7 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.resp)?;
@@ -505,22 +421,22 @@ impl ::protobuf::Message for S_USER_LOGIN {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.isSucc != false {
+        if self.is_succ != false {
             my_size += 2;
         }
-        if !self.errMess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.errMess);
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
-        if self.syncTime != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.syncTime, ::protobuf::wire_format::WireTypeVarint);
+        if self.sync_time != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.sync_time, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.lastLoginTime != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.lastLoginTime, ::protobuf::wire_format::WireTypeVarint);
+        if self.last_login_time != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.last_login_time, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.lastLogOffTime != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.lastLogOffTime, ::protobuf::wire_format::WireTypeVarint);
+        if self.last_logoff_time != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.last_logoff_time, ::protobuf::wire_format::WireTypeVarint);
         }
-        if let Some(ref v) = self.playerPt.as_ref() {
+        if let Some(ref v) = self.player_pt.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
@@ -534,22 +450,22 @@ impl ::protobuf::Message for S_USER_LOGIN {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.isSucc != false {
-            os.write_bool(1, self.isSucc)?;
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
         }
-        if !self.errMess.is_empty() {
-            os.write_string(2, &self.errMess)?;
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
         }
-        if self.syncTime != 0 {
-            os.write_uint32(3, self.syncTime)?;
+        if self.sync_time != 0 {
+            os.write_uint32(3, self.sync_time)?;
         }
-        if self.lastLoginTime != 0 {
-            os.write_uint32(4, self.lastLoginTime)?;
+        if self.last_login_time != 0 {
+            os.write_uint32(4, self.last_login_time)?;
         }
-        if self.lastLogOffTime != 0 {
-            os.write_uint32(5, self.lastLogOffTime)?;
+        if self.last_logoff_time != 0 {
+            os.write_uint32(5, self.last_logoff_time)?;
         }
-        if let Some(ref v) = self.playerPt.as_ref() {
+        if let Some(ref v) = self.player_pt.as_ref() {
             os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -599,34 +515,34 @@ impl ::protobuf::Message for S_USER_LOGIN {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "isSucc",
-                    |m: &S_USER_LOGIN| { &m.isSucc },
-                    |m: &mut S_USER_LOGIN| { &mut m.isSucc },
+                    "is_succ",
+                    |m: &S_USER_LOGIN| { &m.is_succ },
+                    |m: &mut S_USER_LOGIN| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "errMess",
-                    |m: &S_USER_LOGIN| { &m.errMess },
-                    |m: &mut S_USER_LOGIN| { &mut m.errMess },
+                    "err_mess",
+                    |m: &S_USER_LOGIN| { &m.err_mess },
+                    |m: &mut S_USER_LOGIN| { &mut m.err_mess },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "syncTime",
-                    |m: &S_USER_LOGIN| { &m.syncTime },
-                    |m: &mut S_USER_LOGIN| { &mut m.syncTime },
+                    "sync_time",
+                    |m: &S_USER_LOGIN| { &m.sync_time },
+                    |m: &mut S_USER_LOGIN| { &mut m.sync_time },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "lastLoginTime",
-                    |m: &S_USER_LOGIN| { &m.lastLoginTime },
-                    |m: &mut S_USER_LOGIN| { &mut m.lastLoginTime },
+                    "last_login_time",
+                    |m: &S_USER_LOGIN| { &m.last_login_time },
+                    |m: &mut S_USER_LOGIN| { &mut m.last_login_time },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "lastLogOffTime",
-                    |m: &S_USER_LOGIN| { &m.lastLogOffTime },
-                    |m: &mut S_USER_LOGIN| { &mut m.lastLogOffTime },
+                    "last_logoff_time",
+                    |m: &S_USER_LOGIN| { &m.last_logoff_time },
+                    |m: &mut S_USER_LOGIN| { &mut m.last_logoff_time },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::PlayerPt>>(
-                    "playerPt",
-                    |m: &S_USER_LOGIN| { &m.playerPt },
-                    |m: &mut S_USER_LOGIN| { &mut m.playerPt },
+                    "player_pt",
+                    |m: &S_USER_LOGIN| { &m.player_pt },
+                    |m: &mut S_USER_LOGIN| { &mut m.player_pt },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::ResourcesPt>>(
                     "resp",
@@ -652,12 +568,12 @@ impl ::protobuf::Message for S_USER_LOGIN {
 
 impl ::protobuf::Clear for S_USER_LOGIN {
     fn clear(&mut self) {
-        self.isSucc = false;
-        self.errMess.clear();
-        self.syncTime = 0;
-        self.lastLoginTime = 0;
-        self.lastLogOffTime = 0;
-        self.playerPt.clear();
+        self.is_succ = false;
+        self.err_mess.clear();
+        self.sync_time = 0;
+        self.last_login_time = 0;
+        self.last_logoff_time = 0;
+        self.player_pt.clear();
         self.resp.clear();
         self.unknown_fields.clear();
     }
@@ -678,7 +594,7 @@ impl ::protobuf::reflect::ProtobufValue for S_USER_LOGIN {
 #[derive(PartialEq,Clone,Default)]
 pub struct HEART_BEAT {
     // message fields
-    pub sysTime: u32,
+    pub sys_time: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -695,19 +611,19 @@ impl HEART_BEAT {
         ::std::default::Default::default()
     }
 
-    // uint32 sysTime = 1;
+    // uint32 sys_time = 1;
 
 
-    pub fn get_sysTime(&self) -> u32 {
-        self.sysTime
+    pub fn get_sys_time(&self) -> u32 {
+        self.sys_time
     }
-    pub fn clear_sysTime(&mut self) {
-        self.sysTime = 0;
+    pub fn clear_sys_time(&mut self) {
+        self.sys_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_sysTime(&mut self, v: u32) {
-        self.sysTime = v;
+    pub fn set_sys_time(&mut self, v: u32) {
+        self.sys_time = v;
     }
 }
 
@@ -725,7 +641,7 @@ impl ::protobuf::Message for HEART_BEAT {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.sysTime = tmp;
+                    self.sys_time = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -739,8 +655,8 @@ impl ::protobuf::Message for HEART_BEAT {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.sysTime != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.sysTime, ::protobuf::wire_format::WireTypeVarint);
+        if self.sys_time != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.sys_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -748,8 +664,8 @@ impl ::protobuf::Message for HEART_BEAT {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.sysTime != 0 {
-            os.write_uint32(1, self.sysTime)?;
+        if self.sys_time != 0 {
+            os.write_uint32(1, self.sys_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -791,9 +707,9 @@ impl ::protobuf::Message for HEART_BEAT {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "sysTime",
-                    |m: &HEART_BEAT| { &m.sysTime },
-                    |m: &mut HEART_BEAT| { &mut m.sysTime },
+                    "sys_time",
+                    |m: &HEART_BEAT| { &m.sys_time },
+                    |m: &mut HEART_BEAT| { &mut m.sys_time },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<HEART_BEAT>(
                     "HEART_BEAT",
@@ -814,7 +730,7 @@ impl ::protobuf::Message for HEART_BEAT {
 
 impl ::protobuf::Clear for HEART_BEAT {
     fn clear(&mut self) {
-        self.sysTime = 0;
+        self.sys_time = 0;
         self.unknown_fields.clear();
     }
 }
@@ -834,7 +750,7 @@ impl ::protobuf::reflect::ProtobufValue for HEART_BEAT {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_SYNC_DATA {
     // message fields
-    pub playerPt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
+    pub player_pt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
     pub resp: ::protobuf::RepeatedField<super::base::ResourcesPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -852,37 +768,37 @@ impl C_SYNC_DATA {
         ::std::default::Default::default()
     }
 
-    // .protos.PlayerPt playerPt = 1;
+    // .protos.PlayerPt player_pt = 1;
 
 
-    pub fn get_playerPt(&self) -> &super::base::PlayerPt {
-        self.playerPt.as_ref().unwrap_or_else(|| super::base::PlayerPt::default_instance())
+    pub fn get_player_pt(&self) -> &super::base::PlayerPt {
+        self.player_pt.as_ref().unwrap_or_else(|| super::base::PlayerPt::default_instance())
     }
-    pub fn clear_playerPt(&mut self) {
-        self.playerPt.clear();
+    pub fn clear_player_pt(&mut self) {
+        self.player_pt.clear();
     }
 
-    pub fn has_playerPt(&self) -> bool {
-        self.playerPt.is_some()
+    pub fn has_player_pt(&self) -> bool {
+        self.player_pt.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_playerPt(&mut self, v: super::base::PlayerPt) {
-        self.playerPt = ::protobuf::SingularPtrField::some(v);
+    pub fn set_player_pt(&mut self, v: super::base::PlayerPt) {
+        self.player_pt = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_playerPt(&mut self) -> &mut super::base::PlayerPt {
-        if self.playerPt.is_none() {
-            self.playerPt.set_default();
+    pub fn mut_player_pt(&mut self) -> &mut super::base::PlayerPt {
+        if self.player_pt.is_none() {
+            self.player_pt.set_default();
         }
-        self.playerPt.as_mut().unwrap()
+        self.player_pt.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_playerPt(&mut self) -> super::base::PlayerPt {
-        self.playerPt.take().unwrap_or_else(|| super::base::PlayerPt::new())
+    pub fn take_player_pt(&mut self) -> super::base::PlayerPt {
+        self.player_pt.take().unwrap_or_else(|| super::base::PlayerPt::new())
     }
 
     // repeated .protos.ResourcesPt resp = 2;
@@ -913,7 +829,7 @@ impl C_SYNC_DATA {
 
 impl ::protobuf::Message for C_SYNC_DATA {
     fn is_initialized(&self) -> bool {
-        for v in &self.playerPt {
+        for v in &self.player_pt {
             if !v.is_initialized() {
                 return false;
             }
@@ -931,7 +847,7 @@ impl ::protobuf::Message for C_SYNC_DATA {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.playerPt)?;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.player_pt)?;
                 },
                 2 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.resp)?;
@@ -948,7 +864,7 @@ impl ::protobuf::Message for C_SYNC_DATA {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if let Some(ref v) = self.playerPt.as_ref() {
+        if let Some(ref v) = self.player_pt.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
@@ -962,7 +878,7 @@ impl ::protobuf::Message for C_SYNC_DATA {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if let Some(ref v) = self.playerPt.as_ref() {
+        if let Some(ref v) = self.player_pt.as_ref() {
             os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -1012,9 +928,9 @@ impl ::protobuf::Message for C_SYNC_DATA {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::PlayerPt>>(
-                    "playerPt",
-                    |m: &C_SYNC_DATA| { &m.playerPt },
-                    |m: &mut C_SYNC_DATA| { &mut m.playerPt },
+                    "player_pt",
+                    |m: &C_SYNC_DATA| { &m.player_pt },
+                    |m: &mut C_SYNC_DATA| { &mut m.player_pt },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::ResourcesPt>>(
                     "resp",
@@ -1040,7 +956,7 @@ impl ::protobuf::Message for C_SYNC_DATA {
 
 impl ::protobuf::Clear for C_SYNC_DATA {
     fn clear(&mut self) {
-        self.playerPt.clear();
+        self.player_pt.clear();
         self.resp.clear();
         self.unknown_fields.clear();
     }
@@ -1061,9 +977,9 @@ impl ::protobuf::reflect::ProtobufValue for C_SYNC_DATA {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_SYNC_DATA {
     // message fields
-    pub isSucc: bool,
-    pub errMess: ::std::string::String,
-    pub syncTime: u32,
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
+    pub sync_time: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1080,60 +996,60 @@ impl S_SYNC_DATA {
         ::std::default::Default::default()
     }
 
-    // bool isSucc = 1;
+    // bool is_succ = 1;
 
 
-    pub fn get_isSucc(&self) -> bool {
-        self.isSucc
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
     }
-    pub fn clear_isSucc(&mut self) {
-        self.isSucc = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_isSucc(&mut self, v: bool) {
-        self.isSucc = v;
-    }
-
-    // string errMess = 2;
-
-
-    pub fn get_errMess(&self) -> &str {
-        &self.errMess
-    }
-    pub fn clear_errMess(&mut self) {
-        self.errMess.clear();
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
     }
 
     // Param is passed by value, moved
-    pub fn set_errMess(&mut self, v: ::std::string::String) {
-        self.errMess = v;
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_errMess(&mut self) -> &mut ::std::string::String {
-        &mut self.errMess
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
     }
 
     // Take field
-    pub fn take_errMess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.errMess, ::std::string::String::new())
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
 
-    // uint32 syncTime = 3;
+    // uint32 sync_time = 3;
 
 
-    pub fn get_syncTime(&self) -> u32 {
-        self.syncTime
+    pub fn get_sync_time(&self) -> u32 {
+        self.sync_time
     }
-    pub fn clear_syncTime(&mut self) {
-        self.syncTime = 0;
+    pub fn clear_sync_time(&mut self) {
+        self.sync_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_syncTime(&mut self, v: u32) {
-        self.syncTime = v;
+    pub fn set_sync_time(&mut self, v: u32) {
+        self.sync_time = v;
     }
 }
 
@@ -1151,17 +1067,17 @@ impl ::protobuf::Message for S_SYNC_DATA {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_bool()?;
-                    self.isSucc = tmp;
+                    self.is_succ = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.errMess)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.syncTime = tmp;
+                    self.sync_time = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1175,14 +1091,14 @@ impl ::protobuf::Message for S_SYNC_DATA {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.isSucc != false {
+        if self.is_succ != false {
             my_size += 2;
         }
-        if !self.errMess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.errMess);
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
-        if self.syncTime != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.syncTime, ::protobuf::wire_format::WireTypeVarint);
+        if self.sync_time != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.sync_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1190,14 +1106,14 @@ impl ::protobuf::Message for S_SYNC_DATA {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.isSucc != false {
-            os.write_bool(1, self.isSucc)?;
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
         }
-        if !self.errMess.is_empty() {
-            os.write_string(2, &self.errMess)?;
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
         }
-        if self.syncTime != 0 {
-            os.write_uint32(3, self.syncTime)?;
+        if self.sync_time != 0 {
+            os.write_uint32(3, self.sync_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1239,19 +1155,19 @@ impl ::protobuf::Message for S_SYNC_DATA {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "isSucc",
-                    |m: &S_SYNC_DATA| { &m.isSucc },
-                    |m: &mut S_SYNC_DATA| { &mut m.isSucc },
+                    "is_succ",
+                    |m: &S_SYNC_DATA| { &m.is_succ },
+                    |m: &mut S_SYNC_DATA| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "errMess",
-                    |m: &S_SYNC_DATA| { &m.errMess },
-                    |m: &mut S_SYNC_DATA| { &mut m.errMess },
+                    "err_mess",
+                    |m: &S_SYNC_DATA| { &m.err_mess },
+                    |m: &mut S_SYNC_DATA| { &mut m.err_mess },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "syncTime",
-                    |m: &S_SYNC_DATA| { &m.syncTime },
-                    |m: &mut S_SYNC_DATA| { &mut m.syncTime },
+                    "sync_time",
+                    |m: &S_SYNC_DATA| { &m.sync_time },
+                    |m: &mut S_SYNC_DATA| { &mut m.sync_time },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SYNC_DATA>(
                     "S_SYNC_DATA",
@@ -1272,9 +1188,9 @@ impl ::protobuf::Message for S_SYNC_DATA {
 
 impl ::protobuf::Clear for S_SYNC_DATA {
     fn clear(&mut self) {
-        self.isSucc = false;
-        self.errMess.clear();
-        self.syncTime = 0;
+        self.is_succ = false;
+        self.err_mess.clear();
+        self.sync_time = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1292,22 +1208,20 @@ impl ::protobuf::reflect::ProtobufValue for S_SYNC_DATA {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"Z\n\x0cC_USER_LOGIN\
-    \x12\x16\n\x06userId\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06avatar\
-    \x18\x02\x20\x01(\tR\x06avatar\x12\x1a\n\x08nickName\x18\x03\x20\x01(\tR\
-    \x08nickName\"\x81\x02\n\x0cS_USER_LOGIN\x12\x16\n\x06isSucc\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x18\n\x07errMess\x18\x02\x20\x01(\tR\x07errMess\
-    \x12\x1a\n\x08syncTime\x18\x03\x20\x01(\rR\x08syncTime\x12$\n\rlastLogin\
-    Time\x18\x04\x20\x01(\rR\rlastLoginTime\x12&\n\x0elastLogOffTime\x18\x05\
-    \x20\x01(\rR\x0elastLogOffTime\x12,\n\x08playerPt\x18\x06\x20\x01(\x0b2\
-    \x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x07\x20\x03(\x0b2\
-    \x13.protos.ResourcesPtR\x04resp\"&\n\nHEART_BEAT\x12\x18\n\x07sysTime\
-    \x18\x01\x20\x01(\rR\x07sysTime\"d\n\x0bC_SYNC_DATA\x12,\n\x08playerPt\
-    \x18\x01\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\
-    \x18\x02\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\"[\n\x0bS_SYNC_DA\
-    TA\x12\x16\n\x06isSucc\x18\x01\x20\x01(\x08R\x06isSucc\x12\x18\n\x07errM\
-    ess\x18\x02\x20\x01(\tR\x07errMess\x12\x1a\n\x08syncTime\x18\x03\x20\x01\
-    (\rR\x08syncTimeb\x06proto3\
+    \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"'\n\x0cC_USER_LOGIN\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\x89\x02\n\x0cS_USE\
+    R_LOGIN\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
+    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\
+    \x20\x01(\rR\x08syncTime\x12&\n\x0flast_login_time\x18\x04\x20\x01(\rR\r\
+    lastLoginTime\x12(\n\x10last_logoff_time\x18\x05\x20\x01(\rR\x0elastLogo\
+    ffTime\x12-\n\tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08p\
+    layerPt\x12'\n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04\
+    resp\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\x20\x01(\rR\x07sysTi\
+    me\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\x20\x01(\x0b2\x10.proto\
+    s.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\x20\x03(\x0b2\x13.protos.\
+    ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\x17\n\x07is_succ\x18\x01\
+    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
+    rMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08syncTimeb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

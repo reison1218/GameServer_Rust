@@ -2,7 +2,7 @@ mod web;
 mod tcp_client;
 mod web_socket;
 mod mio_test;
-
+use serde_json::json;
 use std::time::{Duration, SystemTime};
 use protobuf::Message;
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -26,9 +26,7 @@ use async_std::net::{TcpListener as AsyncTcpListener, TcpStream as AsyncTcpStrea
 use async_std::prelude::*;
 use async_std::task;
 
-use tools::protos::server_protocol::MessPacketPt;
 
-use std::sync::{Arc, RwLock};
 use std::io::{Write, Read};
 use tools::tcp::ClientHandler;
 use tools::util::packet::Packet;
@@ -43,8 +41,26 @@ use std::ops::DerefMut;
 use rand::prelude::*;
 use std::collections::BTreeMap;
 use std::alloc::System;
+use std::cell::{Cell, RefCell};
+use serde_json::Value;
+use serde::private::de::IdentifierDeserializer;
+use std::str::FromStr;
+use std::sync::{Arc, RwLock};
+use std::sync::atomic::AtomicU32;
+use tools::redis_pool::RedisPoolTool;
+use tools::util::bytebuf::ByteBuf;
+use std::panic::catch_unwind;
+use std::fs::File;
+use std::env;
 
-
+#[macro_use]
+extern crate lazy_static;
+lazy_static! {
+    static ref ID:Arc<RwLock<AtomicU32>>={
+        let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1011000000)));
+        id
+    };
+}
 macro_rules! test{
     ($a:expr)=>{
         if $a>0 {
@@ -152,16 +168,23 @@ async fn test_async_std(){
     }
 }
 
-fn main() -> io::Result<()> {
-   // tcp_client::test_tcp_client();
-    block_on(web::test_http_client());
-    Ok(())
+#[derive(Debug)]
+struct TestBox {
+    i:u32
 }
 
-#[derive(Hash, Eq, PartialEq, Debug)]
-pub struct RoomCache {
-    room_id: u32,
-    count: u32,
+
+pub fn max_level_sum(num: RefCell<Option<i32>>) {
+    let num = num;
+
+    if let None = *num.borrow() {
+        println!("none");
+    };
+}
+
+fn test(b:&mut TestBox){
+    println!("{:p}",b);
+    println!("{:?}",b);
 }
 
 fn test_channel(){
@@ -182,7 +205,7 @@ fn test_channel(){
     let mut i = 1;
     loop{
         let res = rec.recv();
-         i += res.unwrap();
+        i += res.unwrap();
         if i >= 1000000{
             break;
         }
@@ -205,12 +228,23 @@ fn test_channel(){
     // loop{
     //     let t = test_cp.read().unwrap();
     //     if t.i>=100000{
-            println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.read().unwrap().i);
+    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.read().unwrap().i);
     //         break;
     //     }
     // }
 }
 
-struct  Test{
+pub struct  Test{
     pub i:u32
+}
+
+fn main() -> anyhow::Result<()> {
+    //tcp_client::test_tcp_client("platform_id");
+    //block_on(web::test_http_client("1"));
+    let mut path = env::current_dir()?;
+    //path.push("/config");
+    let mut str = path.as_os_str().to_str().unwrap();
+    let res = str.to_string()+"/config";
+    println!("{:?}",res);
+    Ok(())
 }

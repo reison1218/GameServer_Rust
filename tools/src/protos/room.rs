@@ -28,6 +28,8 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
 pub struct C_CREATE_ROOM {
+    // message fields
+    pub map_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -43,6 +45,21 @@ impl C_CREATE_ROOM {
     pub fn new() -> C_CREATE_ROOM {
         ::std::default::Default::default()
     }
+
+    // uint32 map_id = 1;
+
+
+    pub fn get_map_id(&self) -> u32 {
+        self.map_id
+    }
+    pub fn clear_map_id(&mut self) {
+        self.map_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_map_id(&mut self, v: u32) {
+        self.map_id = v;
+    }
 }
 
 impl ::protobuf::Message for C_CREATE_ROOM {
@@ -54,6 +71,13 @@ impl ::protobuf::Message for C_CREATE_ROOM {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.map_id = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -66,12 +90,18 @@ impl ::protobuf::Message for C_CREATE_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.map_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.map_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.map_id != 0 {
+            os.write_uint32(1, self.map_id)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -110,7 +140,12 @@ impl ::protobuf::Message for C_CREATE_ROOM {
         static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
             descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "map_id",
+                    |m: &C_CREATE_ROOM| { &m.map_id },
+                    |m: &mut C_CREATE_ROOM| { &mut m.map_id },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CREATE_ROOM>(
                     "C_CREATE_ROOM",
                     fields,
@@ -130,6 +165,7 @@ impl ::protobuf::Message for C_CREATE_ROOM {
 
 impl ::protobuf::Clear for C_CREATE_ROOM {
     fn clear(&mut self) {
+        self.map_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -857,8 +893,8 @@ impl ::protobuf::reflect::ProtobufValue for C_SEARCH_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_ROOM {
     // message fields
-    pub isSucc: bool,
-    pub errMess: ::std::string::String,
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
     pub room: ::protobuf::SingularPtrField<super::base::RoomPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -876,45 +912,45 @@ impl S_ROOM {
         ::std::default::Default::default()
     }
 
-    // bool isSucc = 1;
+    // bool is_succ = 1;
 
 
-    pub fn get_isSucc(&self) -> bool {
-        self.isSucc
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
     }
-    pub fn clear_isSucc(&mut self) {
-        self.isSucc = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_isSucc(&mut self, v: bool) {
-        self.isSucc = v;
-    }
-
-    // string errMess = 2;
-
-
-    pub fn get_errMess(&self) -> &str {
-        &self.errMess
-    }
-    pub fn clear_errMess(&mut self) {
-        self.errMess.clear();
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
     }
 
     // Param is passed by value, moved
-    pub fn set_errMess(&mut self, v: ::std::string::String) {
-        self.errMess = v;
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_errMess(&mut self) -> &mut ::std::string::String {
-        &mut self.errMess
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
     }
 
     // Take field
-    pub fn take_errMess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.errMess, ::std::string::String::new())
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
 
     // .protos.RoomPt room = 3;
@@ -970,10 +1006,10 @@ impl ::protobuf::Message for S_ROOM {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_bool()?;
-                    self.isSucc = tmp;
+                    self.is_succ = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.errMess)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
                 3 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.room)?;
@@ -990,11 +1026,11 @@ impl ::protobuf::Message for S_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.isSucc != false {
+        if self.is_succ != false {
             my_size += 2;
         }
-        if !self.errMess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.errMess);
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
         if let Some(ref v) = self.room.as_ref() {
             let len = v.compute_size();
@@ -1006,11 +1042,11 @@ impl ::protobuf::Message for S_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.isSucc != false {
-            os.write_bool(1, self.isSucc)?;
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
         }
-        if !self.errMess.is_empty() {
-            os.write_string(2, &self.errMess)?;
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
         }
         if let Some(ref v) = self.room.as_ref() {
             os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -1057,14 +1093,14 @@ impl ::protobuf::Message for S_ROOM {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "isSucc",
-                    |m: &S_ROOM| { &m.isSucc },
-                    |m: &mut S_ROOM| { &mut m.isSucc },
+                    "is_succ",
+                    |m: &S_ROOM| { &m.is_succ },
+                    |m: &mut S_ROOM| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "errMess",
-                    |m: &S_ROOM| { &m.errMess },
-                    |m: &mut S_ROOM| { &mut m.errMess },
+                    "err_mess",
+                    |m: &S_ROOM| { &m.err_mess },
+                    |m: &mut S_ROOM| { &mut m.err_mess },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RoomPt>>(
                     "room",
@@ -1090,8 +1126,8 @@ impl ::protobuf::Message for S_ROOM {
 
 impl ::protobuf::Clear for S_ROOM {
     fn clear(&mut self) {
-        self.isSucc = false;
-        self.errMess.clear();
+        self.is_succ = false;
+        self.err_mess.clear();
         self.room.clear();
         self.unknown_fields.clear();
     }
@@ -1232,8 +1268,8 @@ impl ::protobuf::reflect::ProtobufValue for C_START {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_START {
     // message fields
-    pub isSucc: bool,
-    pub errMess: ::std::string::String,
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1250,45 +1286,45 @@ impl S_START {
         ::std::default::Default::default()
     }
 
-    // bool isSucc = 1;
+    // bool is_succ = 1;
 
 
-    pub fn get_isSucc(&self) -> bool {
-        self.isSucc
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
     }
-    pub fn clear_isSucc(&mut self) {
-        self.isSucc = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_isSucc(&mut self, v: bool) {
-        self.isSucc = v;
-    }
-
-    // string errMess = 2;
-
-
-    pub fn get_errMess(&self) -> &str {
-        &self.errMess
-    }
-    pub fn clear_errMess(&mut self) {
-        self.errMess.clear();
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
     }
 
     // Param is passed by value, moved
-    pub fn set_errMess(&mut self, v: ::std::string::String) {
-        self.errMess = v;
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_errMess(&mut self) -> &mut ::std::string::String {
-        &mut self.errMess
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
     }
 
     // Take field
-    pub fn take_errMess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.errMess, ::std::string::String::new())
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
 }
 
@@ -1306,10 +1342,10 @@ impl ::protobuf::Message for S_START {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_bool()?;
-                    self.isSucc = tmp;
+                    self.is_succ = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.errMess)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1323,11 +1359,11 @@ impl ::protobuf::Message for S_START {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.isSucc != false {
+        if self.is_succ != false {
             my_size += 2;
         }
-        if !self.errMess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.errMess);
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1335,11 +1371,11 @@ impl ::protobuf::Message for S_START {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.isSucc != false {
-            os.write_bool(1, self.isSucc)?;
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
         }
-        if !self.errMess.is_empty() {
-            os.write_string(2, &self.errMess)?;
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1381,14 +1417,14 @@ impl ::protobuf::Message for S_START {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "isSucc",
-                    |m: &S_START| { &m.isSucc },
-                    |m: &mut S_START| { &mut m.isSucc },
+                    "is_succ",
+                    |m: &S_START| { &m.is_succ },
+                    |m: &mut S_START| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "errMess",
-                    |m: &S_START| { &m.errMess },
-                    |m: &mut S_START| { &mut m.errMess },
+                    "err_mess",
+                    |m: &S_START| { &m.err_mess },
+                    |m: &mut S_START| { &mut m.err_mess },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START>(
                     "S_START",
@@ -1409,8 +1445,8 @@ impl ::protobuf::Message for S_START {
 
 impl ::protobuf::Clear for S_START {
     fn clear(&mut self) {
-        self.isSucc = false;
-        self.errMess.clear();
+        self.is_succ = false;
+        self.err_mess.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1428,16 +1464,17 @@ impl ::protobuf::reflect::ProtobufValue for S_START {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\"\x0f\n\rC_CREATE_ROOM\"\
-    \x0e\n\x0cC_LEAVE_ROOM\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\
-    \x20\x01(\rR\x08targetId\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\
-    \x18\x01\x20\x01(\rR\x0ctargetTeamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\
-    \x07prepare\x18\x01\x20\x01(\x08R\x07prepare\"\x0f\n\rC_SEARCH_ROOM\"^\n\
-    \x06S_ROOM\x12\x16\n\x06isSucc\x18\x01\x20\x01(\x08R\x06isSucc\x12\x18\n\
-    \x07errMess\x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\
-    \x01(\x0b2\x0e.protos.RoomPtR\x04room\"\t\n\x07C_START\";\n\x07S_START\
-    \x12\x16\n\x06isSucc\x18\x01\x20\x01(\x08R\x06isSucc\x12\x18\n\x07errMes\
-    s\x18\x02\x20\x01(\tR\x07errMessb\x06proto3\
+    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\"&\n\rC_CREATE_ROOM\x12\x15\
+    \n\x06map_id\x18\x01\x20\x01(\rR\x05mapId\"\x0e\n\x0cC_LEAVE_ROOM\",\n\r\
+    C_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\"5\n\
+    \rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctargetTe\
+    amId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\
+    \x07prepare\"\x0f\n\rC_SEARCH_ROOM\"`\n\x06S_ROOM\x12\x17\n\x07is_succ\
+    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
+    \tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\x0e.protos.RoomPtR\
+    \x04room\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\
+    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
+    rMessb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

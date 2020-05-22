@@ -4,34 +4,52 @@ use async_std::task;
 use http_types::{Error as HttpTypesError,Body, Url, Method, Request,Response, StatusCode};
 use std::ops::Index;
 use async_h1::client;
-use serde_json::Error;
+use serde_json::{Error, Map, Value};
 use futures::TryFutureExt;
+use serde_json::value::Value as JsonValue;
+use std::str::FromStr;
 
-pub async fn test_http_client()->Result<(), HttpTypesError>{
+pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
+    //let stream = TcpStream::connect("localhost:8888").await?;
     let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 
-    let url = Url::parse(&format!("http://{}/center/getUserId", peer_addr)).unwrap();
+    let url = Url::parse(&format!("http://{}/center/user_id", peer_addr)).unwrap();
     let mut req = Request::new(Method::Post, url);
-    let data = r#"
-        {
-            "register_platform":"test",
-            "platform_id": "1",
-            "game_id": 101,
-            "nick_name":"test",
-            "phone_no":"1231312414"
-        }"#;
-    //serde_json::Value::from(data);
-    let mut body = Body::from(data);
+    // let data = r#"
+    //     {
+    //         "register_platform":"test",
+    //         "platform_id": "1",
+    //         "game_id": 101,
+    //         "nick_name":"test",
+    //         "phone_no":"1231312414"
+    //     }"#;
+    // let mut value = serde_json::Value::from(data);
+
+    let mut map: Map<String, JsonValue> = Map::new();
+    map.insert("register_platform".to_owned(), JsonValue::from("test"));
+    map.insert("game_id".to_owned(), JsonValue::from(101));
+    map.insert("nick_name".to_owned(), JsonValue::from("test"));
+    map.insert("avatar".to_owned(), JsonValue::from("test123"));
+    map.insert("phone_no".to_owned(), JsonValue::from("1231312414"));
+    map.insert("platform_id".to_owned(), JsonValue::from(pid.to_owned()));
+    let value = JsonValue::from(map);
+
+    let mut body = Body::from(value.to_string());
     req.set_body(body);
 
     let mut res = client::connect(stream.clone(), req).await?;
 
     let mut str = String::new();
     res.take_body().read_to_string(&mut str).await.unwrap();
-    println!("{:?}", str);
-    Ok(())
+    println!("{:?}",&str);
+    let mut res_json = Value::from_str(str.as_str());
+    let mut res_json = res_json.unwrap();
+    let map = res_json.as_object_mut().unwrap();
+    println!("{:?}", map);
+    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    Ok(user_id)
 }
 
 pub async fn test_http_server() -> http_types::Result<()> {

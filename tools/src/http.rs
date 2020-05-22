@@ -156,7 +156,7 @@ pub async fn send_http_request(
     }
     let stream = TcpStream::connect(ip_port).await?;
     let peer_addr = stream.peer_addr()?;
-    info!("connecting to {}", peer_addr);
+    info!("connecting to {}", ip_port);
     let url = Url::parse(&format!("http://{}/{}", peer_addr, path)).unwrap();
     let mut req = Request::new(http_method.unwrap(), url);
     req.insert_header("Content-Type", "application/json")

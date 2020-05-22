@@ -9,10 +9,10 @@ use tools::tcp::TcpSender;
 use crate::db::table_contants;
 use crate::entity::user::UserData;
 use crate::entity::Entity;
+use crate::helper::redis_helper::get_user_from_redis;
+use crate::net::http::notice_user_center;
 use crate::DB_POOL;
 use futures::executor::block_on;
-use mysql::prelude::ToValue;
-use mysql::Value;
 use protobuf::Message;
 use std::str::FromStr;
 use std::sync::mpsc::{Sender, SyncSender};
@@ -50,43 +50,48 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let mut mp = MessPacketPt::new();
-        mp.merge_from_bytes(&mess[..]);
-        let mut gm = self.gm.clone();
-        async_std::task::spawn(handler_mess_s(gm, mp));
+        let packet = Packet::from_only_server(mess);
+        match packet {
+            Ok(p) => {
+                let mut gm = self.gm.clone();
+                async_std::task::spawn(handler_mess_s(gm, p));
+            }
+            Err(e) => {
+                error!("{:?}", e);
+            }
+        }
     }
 }
 
-async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, mut mp: MessPacketPt) {
+async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
-    if mp.get_cmd() != GameCode::Login as u32
-        && mp.get_cmd() != GameCode::LineOff as u32
-        && mp.get_data().is_empty()
+    if packet.get_cmd() != GameCode::Login as u32
+        && packet.get_cmd() != GameCode::LineOff as u32
+        && packet.get_data().is_empty()
     {
         error!("packet bytes is null!");
         return;
     }
     //判断是否执行登录
-    if mp.get_cmd() == GameCode::Login as u32 {
+    if packet.get_cmd() == GameCode::Login as u32 {
         let mut c_login = C_USER_LOGIN_PROTO::new();
-        let result = c_login.merge_from_bytes(mp.get_data());
+        let result = c_login.merge_from_bytes(packet.get_data());
         if result.is_err() {
             error!("{:?}", result.err().unwrap());
             return;
         }
-        mp.set_user_id(c_login.userId);
         //执行登录
-        login(gm, mp);
+        login(gm, packet);
     } else {
         //不登录就执行其他命令
-        gm.write().unwrap().invok(mp);
+        gm.write().unwrap().invok(packet);
     }
 }
 
 //登录函数，执行登录
-fn login(gm: Arc<RwLock<GameMgr>>, mut mess: MessPacketPt) {
+fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) {
     //玩家id
-    let user_id = mess.user_id;
+    let user_id = packet.get_user_id();
     let mut user_data = false;
     {
         user_data = gm.read().unwrap().users.contains_key(&user_id);
@@ -95,10 +100,28 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut mess: MessPacketPt) {
     let mut gm_lock = gm.write().unwrap();
     //如果内存没有数据，则从数据库里面找
     if !user_data {
+        //判断redis里面有没有,用户中心没有则直接代表不合法，不与执行
+        let value = get_user_from_redis(user_id);
+        if value.is_none() {
+            warn!("redis has no data for user_id:{}", user_id);
+            return;
+        }
+
         let mut user = User::query(USER, user_id, None);
         //数据库没有则创建新号
         if user.is_none() {
-            user = Some(User::new(user_id, "test", "test"));
+            let json_value = value.unwrap();
+            let nick_name = json_value.get("nick_name");
+            let avatar = json_value.get("avatar");
+            if nick_name.is_none() || avatar.is_none() {
+                error!("nick_name or avatar is none for user_id:{}", user_id);
+                return;
+            }
+            user = Some(User::new(
+                user_id,
+                avatar.unwrap().as_str().unwrap(),
+                nick_name.unwrap().as_str().unwrap(),
+            ));
             //以下入库采用异步执行，以免造成io堵塞
             let mut user_mut = user.as_mut().unwrap().clone();
             async_std::task::spawn(insert_user(user_mut));
@@ -115,20 +138,24 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut mess: MessPacketPt) {
 
     let user = user.unwrap().get_user_info_mut_ref();
     user.update_login_time();
+
+    //通知用户中心
+    async_std::task::spawn(notice_user_center(user_id, "login"));
+
     //返回客户端
     let mut lr = user2proto(user);
     let bytes = lr.write_to_bytes().unwrap();
-    mess.set_user_id(user_id);
-    mess.is_client = true;
-    mess.cmd = ClientCode::Login as u32;
-    mess.set_data(bytes);
-    info!("用户完成登录！user_id:{}", &user_id);
+    packet.set_user_id(user_id);
+    packet.set_is_client(true);
+    packet.set_cmd(ClientCode::Login as u32);
+    packet.set_data_from_vec(bytes);
+
     let result = gm_lock
         .sender
         .as_mut()
         .unwrap()
-        .write(mess.write_to_bytes().unwrap());
-    info!("发送给客户端!");
+        .write(packet.build_server_bytes());
+    info!("用户完成登录！user_id:{}", &user_id);
 }
 
 async fn insert_user(mut user: User) {
@@ -142,7 +169,7 @@ async fn insert_user(mut user: User) {
 ///user结构体转proto
 fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     let mut lr = S_USER_LOGIN_PROTO::new();
-    lr.set_isSucc(true);
+    lr.set_is_succ(true);
     // let result = user.get_json_value("signInTime");
     // if result.is_some() {
     //     let str = result.unwrap().as_str().unwrap();
@@ -150,43 +177,42 @@ fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
     // }
 
-    let mut result = user.get_time("syncTime");
+    let mut result = user.get_time(SYNC_TIME);
     let mut time = 0 as u32;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }
-    lr.syncTime = time;
+    lr.sync_time = time;
     let mut ppt = PlayerPt::new();
-    ppt.set_nick_name(
-        user.get_json_value(NICK_NAME)
-            .unwrap()
-            .as_str()
-            .unwrap()
-            .to_string(),
-    );
+    let mut nick_name = user.get_json_value(NICK_NAME).unwrap().as_str().unwrap();
+    ppt.set_nick_name(nick_name.to_string());
     ppt.dlc.push(1);
-    lr.playerPt = protobuf::SingularPtrField::some(ppt);
-    result = user.get_time("lastLoginTime");
+    lr.player_pt = protobuf::SingularPtrField::some(ppt);
+    result = user.get_time(LAST_LOGIN_TIME);
     time = 0;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }
 
-    lr.lastLoginTime = time;
+    lr.last_login_time = time;
 
     time = 0;
-    result = user.get_time("lastLogOffTime");
+    result = user.get_time(OFF_TIME);
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }
 
-    lr.lastLogOffTime = time;
-    let mut res = ResourcesPt::new();
-    res.id = 1;
-    res.field_type = 1;
-    res.num = 100 as u32;
+    lr.last_logoff_time = time;
+
     let mut v = Vec::new();
-    v.push(res);
+    for i in 0..1000 {
+        let mut res = ResourcesPt::new();
+        res.id = 1;
+        res.field_type = 1;
+        res.num = 100 as u32;
+        v.push(res);
+    }
+
     let resp = protobuf::RepeatedField::from(v);
     lr.resp = resp;
     lr
@@ -197,31 +223,5 @@ pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
         sender: None,
         gm: gm,
     };
-    tools::tcp::tcp_server::new(address, sh);
-}
-///byte数组转换Packet
-pub fn build_packet_mess_pt(mess: &MessPacketPt) -> Packet {
-    //封装成packet
-    let mut packet = Packet::new(mess.cmd);
-    packet.set_data(&mess.write_to_bytes().unwrap()[..]);
-    packet
-}
-
-///byte数组转换Packet
-pub fn build_packet_bytes(bytes: &[u8]) -> Packet {
-    let mut mpp = MessPacketPt::new();
-    mpp.merge_from_bytes(bytes);
-
-    //封装成packet
-    let mut packet = Packet::new(mpp.cmd);
-    packet.set_data(&mpp.write_to_bytes().unwrap()[..]);
-    packet
-}
-
-///byte数组转换Packet
-pub fn build_packet(mess: MessPacketPt) -> Packet {
-    //封装成packet
-    let mut packet = Packet::new(mess.cmd);
-    packet.set_data(&mess.write_to_bytes().unwrap()[..]);
-    packet
+    tools::tcp::tcp_server::new(address, sh).unwrap();
 }

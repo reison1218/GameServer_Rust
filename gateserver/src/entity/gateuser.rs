@@ -1,11 +1,11 @@
 use super::*;
-use tools::tcp::TcpSender;
+use tools::tcp::{Data, TcpSender};
 
 ///玩家会话封装结构体
 pub struct GateUser {
     user_id: u32,              //玩家id
     ws: Option<Arc<WsSender>>, //websocket会话封装
-    tcp: Option<TcpSender>,   //tcp的stream
+    tcp: Option<TcpSender>,    //tcp的stream
 }
 
 impl GateUser {
@@ -17,7 +17,7 @@ impl GateUser {
         }
     }
 
-    pub fn close(&self) {
+    pub fn close(&mut self) {
         if self.ws.is_some() {
             self.get_ws_ref().close(CloseCode::Invalid).unwrap();
         }

@@ -1,17 +1,15 @@
 mod db;
 mod entity;
+mod helper;
 mod mgr;
 mod net;
-mod redispool;
 mod template;
 use crate::db::dbtool::DbPool;
 use crate::entity::{Dao, Entity, EntityData};
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopPlayerHttpHandler};
 use crate::net::tcp_server;
-use crate::redispool::redistool;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use redis::{Commands, RedisResult, Value};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::fs::File;
@@ -41,10 +39,12 @@ use crate::template::templates::Templates;
 use futures::AsyncWriteExt;
 use mysql::prelude::ToValue;
 use std::cell::RefCell;
+use std::env;
 use std::sync::mpsc::{Receiver, Sender};
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
+use tools::redis_pool::RedisPoolTool;
 use tools::util::bytebuf::ByteBuf;
 
 #[macro_use]
@@ -70,23 +70,28 @@ lazy_static! {
 
     ///配置文件
     static ref CONF_MAP: Conf = {
-        //let conf = Conf::init("/Users/tangjian/git/MyRust/server/configs/config.conf");
-        let conf = Conf::init("/game/game_server/server/config/config.conf");
+        let path = env::current_dir().unwrap();
+        let mut str = path.as_os_str().to_str().unwrap();
+        let res = str.to_string()+"/config/config.conf";
+        let conf = Conf::init(res.as_str());
         conf
     };
 
     ///静态配置文件
     static ref TEMPLATES: Templates = {
-        //let path = "/Users/tangjian/git/MyRust/template";
-        let path = "/game/game_server/server/template";
-        let conf = Templates::new(path);
+        let path = env::current_dir().unwrap();
+        let mut str = path.as_os_str().to_str().unwrap();
+        let res = str.to_string()+"/template";
+        let conf = Templates::new(res.as_str());
         conf
     };
 
     ///reids客户端
-    static ref REDIS_POOL:Arc<RwLock<redistool::RedisPoolTool>>={
-        let redis = redistool::RedisPoolTool::init();
-        let redis:Arc<RwLock<redistool::RedisPoolTool>> = Arc::new(RwLock::new(redis));
+    static ref REDIS_POOL:Arc<RwLock<RedisPoolTool>>={
+        let add: &str = CONF_MAP.get_str("redis_add");
+        let pass: &str = CONF_MAP.get_str("redis_pass");
+        let redis = RedisPoolTool::init(add,pass);
+        let redis:Arc<RwLock<RedisPoolTool>> = Arc::new(RwLock::new(redis));
         redis
     };
 }
@@ -95,8 +100,8 @@ lazy_static! {
 fn main() {
     let mut game_mgr: Arc<RwLock<GameMgr>> = Arc::new(RwLock::new(GameMgr::new()));
 
-    let info_log = CONF_MAP.get_str("infoLogPath");
-    let error_log = CONF_MAP.get_str("errorLogPath");
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
 
     //初始化日志模块
     init_log(info_log, error_log);
@@ -116,12 +121,12 @@ fn init_http_server(gm: Arc<RwLock<GameMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
     http_vec.push(Box::new(StopPlayerHttpHandler::new(gm.clone())));
-    let httpPort: &str = CONF_MAP.get_str("httpPort");
+    let httpPort: &str = CONF_MAP.get_str("http_port");
     async_std::task::spawn(tools::http::http_server(httpPort, http_vec));
 }
 
 ///init tcp server
 fn init_tcp_server(gm: Arc<RwLock<GameMgr>>) {
-    let tcpPort: &str = CONF_MAP.get_str("tcpPort");
+    let tcpPort: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcpPort, gm);
 }
