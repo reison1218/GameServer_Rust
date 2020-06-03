@@ -1,5 +1,3 @@
-use super::*;
-
 #[derive(Clone, Debug)]
 pub enum UserType {
     Robot = 0,

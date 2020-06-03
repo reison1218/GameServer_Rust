@@ -1,6 +1,5 @@
 use super::*;
 
-use std::rc::Rc;
 pub struct WebSocketChannel {
     pub user_id: u32,
     pub sender: Arc<WsSender>,

@@ -1,22 +1,16 @@
 use super::*;
 
-use crate::CONF_MAP;
-use futures::executor::block_on;
-use protobuf::Message;
-use std::io::{Result, Write};
-use std::ops::DerefMut;
-use std::rc::Rc;
-use std::sync::{Arc, Mutex, RwLock};
+use std::io::Write;
+use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
 use tools::tcp::TcpSender;
-use tools::util::bytebuf::ByteBuf;
 
 ///channel管理结构体
 pub struct ChannelMgr {
     //游戏服tcpstream
-    pub game_client_channel: Option<TcpStream>,
+    game_client_channel: Option<TcpStream>,
     //房间服stream
-    pub room_client_channel: Option<TcpStream>,
+    room_client_channel: Option<TcpStream>,
     //玩家channels
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
@@ -34,6 +28,14 @@ impl ChannelMgr {
             channels: HashMap::new(),
         };
         cm
+    }
+
+    pub fn set_game_client_channel(&mut self, ts: TcpStream) {
+        self.game_client_channel = Some(ts);
+    }
+
+    pub fn set_room_client_channel(&mut self, ts: TcpStream) {
+        self.room_client_channel = Some(ts);
     }
 
     ///处理离线事件
@@ -71,36 +73,46 @@ impl ChannelMgr {
 
     ///写到游戏服
     pub fn write_to_game(&mut self, packet: Packet) {
-        let size = self
-            .game_client_channel
-            .as_mut()
-            .unwrap()
-            .write(&packet.build_server_bytes()[..]);
+        if self.game_client_channel.is_none() {
+            error!("disconnect with Game-Server,pls connect Game-Server before send packet!");
+            return;
+        }
+        let gc = self.game_client_channel.as_mut().unwrap();
+        let size = gc.write(&packet.build_server_bytes()[..]);
         match size {
-            Ok(s) => info!("write to server size:{}", s),
+            Ok(s) => {
+                info!("write to server size:{}", s);
+                let res = gc.flush();
+                if res.is_err() {
+                    error!("flush has error!mess:{:?}", res.err().unwrap().to_string());
+                }
+            }
             Err(e) => {
                 error!("{:?}", e.to_string());
                 return;
             }
         }
-        self.game_client_channel.as_mut().unwrap().flush();
     }
 
     ///写到房间服
+    #[warn(unused_must_use)]
     pub fn write_to_room(&mut self, packet: Packet) {
-        // let size = self
-        //     .room_client_channel
-        //     .as_mut()
-        //     .unwrap()
-        //     .write(&packet.build_server_bytes()[..]);
-        // match size {
-        //     Ok(s) => info!("write to roomserver size:{}", s),
-        //     Err(e) => {
-        //         error!("{:?}", e.to_string());
-        //         return;
-        //     }
-        // }
-        // self.room_client_channel.as_mut().unwrap().flush();
+        if self.room_client_channel.is_none() {
+            error!("disconnect with Room-Server,pls connect Room-Server before send packet!");
+            return;
+        }
+        let rc = self.room_client_channel.as_mut().unwrap();
+        let size = rc.write(&packet.build_server_bytes()[..]);
+        match size {
+            Ok(s) => {
+                info!("write to server size:{}", s);
+                rc.flush();
+            }
+            Err(e) => {
+                error!("{:?}", e.to_string());
+                return;
+            }
+        }
     }
 
     //添加gateuser

@@ -1,9 +1,9 @@
 use super::*;
-use crate::entity::user_info::User;
-use crate::entity::{Dao, Entity};
+use crate::entity::Entity;
 use crate::CONF_MAP;
-use serde_json::json;
-use serde_json::{Map, Value as JsonValue};
+use chrono::{DateTime, Local, NaiveDate, NaiveTime};
+use mysql::prelude::ToValue;
+
 pub struct DbPool {
     pub pool: Pool,
 }
@@ -49,7 +49,6 @@ pub struct TestDb {
 //        println!("name: {}", name);
 //    }
 //}
-
 
 #[test]
 pub fn test_mysql() {

@@ -4,36 +4,29 @@ pub mod websocket;
 pub mod websocket_channel;
 use crate::CONF_MAP;
 use crate::REDIS_POOL;
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
+use log::{debug, error, info, warn};
 use protobuf::Message;
-use std::mem::transmute;
 use std::net::TcpStream;
-use std::result::Result as ByteBufResult;
-use std::sync::{Arc, Mutex, RwLockWriteGuard};
-use tools::tcp::{ClientHandler, TcpSender};
-use tools::util::bytebuf::ByteBuf;
+use std::sync::{Arc, RwLockWriteGuard};
+use tools::tcp::ClientHandler;
 use ws::{
     Builder, CloseCode, Error as WsError, Factory, Handler, Handshake, Message as WMessage,
     Request, Response, Result, Sender as WsSender, Settings, WebSocket,
 };
 
 use crate::mgr::channel_mgr::ChannelMgr;
-use crate::THREAD_POOL;
-use std::borrow::Borrow;
 use std::sync::RwLock;
 
-use tools::util::packet::{Packet, PacketDes};
+use tools::util::packet::Packet;
 
-use futures::SinkExt;
 use tools::cmd_code::GameCode;
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 
 use serde_json::Value;
 use std::str::FromStr;
-use tools::tcp::Data;
 
 ///校验用户中心是否在线
-fn check_uc_online(user_id: &u32, write: &mut RwLockWriteGuard<ChannelMgr>) -> bool {
+fn check_uc_online(user_id: &u32) -> bool {
     //校验用户中心是否登陆过，如果有，则不往下执行
     let mut redis_write = REDIS_POOL.write().unwrap();
     let pid: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
@@ -87,12 +80,12 @@ fn modify_redis_user(user_id: u32, is_login: bool) {
     if res.is_none() {
         return;
     }
-    let mut res = res.unwrap();
+    let res = res.unwrap();
     let json = Value::from_str(res.as_str());
 
     match json {
         Ok(mut json_value) => {
-            let mut json_res = json_value.as_object_mut();
+            let json_res = json_value.as_object_mut();
             if json_res.is_some() {
                 json_res
                     .unwrap()

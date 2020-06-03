@@ -1,24 +1,21 @@
 mod entity;
 mod mgr;
 mod net;
-mod template;
 #[macro_use]
 extern crate lazy_static;
 
 use crate::entity::room::Room;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
-use crate::template::template_contants::CELL_TEMPLATE;
-use crate::template::templates::{Template, Templates};
 use std::env;
-use std::sync::atomic::AtomicU32;
-use std::sync::atomic::AtomicU64;
+use std::sync::atomic::{AtomicU32, AtomicU64};
 use std::sync::Arc;
 use std::sync::RwLock;
 use tools::conf::Conf;
 use tools::my_log::init_log;
+use tools::templates::template::{init_temps, TemplateMgrTrait, TemplatesMgr};
 
-///初始化全局线程池
+//初始化全局线程池
 lazy_static! {
 
     static ref CONF_MAP: Conf = {
@@ -29,17 +26,17 @@ lazy_static! {
         conf
     };
     ///静态配置文件
-    static ref TEMPLATES: Templates = {
+    static ref TEMPLATES: TemplatesMgr = {
         let path = env::current_dir().unwrap();
         let mut str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/template";
-        let conf = Templates::new(res.as_str());
+        let conf = init_temps(res.as_str());
         conf
     };
 }
 
 ///全局静态变量，用来初始化房间id
-pub static ROOM_ID: AtomicU64 = AtomicU64::new(101);
+pub static ROOM_ID: AtomicU32 = AtomicU32::new(101);
 
 fn main() {
     let info_log = CONF_MAP.get_str("info_log_path");
@@ -53,6 +50,6 @@ fn main() {
 
 ///初始化tcp服务端
 fn init_tcp_server(rm: Arc<RwLock<RoomMgr>>) {
-    let tcpPort: &str = CONF_MAP.get_str("tcp_port");
-    tcp_server::new(tcpPort, rm);
+    let tcp_port: &str = CONF_MAP.get_str("tcp_port");
+    tcp_server::new(tcp_port, rm);
 }

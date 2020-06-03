@@ -10,8 +10,8 @@ use serde_json::value::Value as JsonValue;
 use std::str::FromStr;
 
 pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
-    //let stream = TcpStream::connect("localhost:8888").await?;
-    let stream = TcpStream::connect("192.168.1.100:8888").await?;
+    let stream = TcpStream::connect("localhost:8888").await?;
+    //let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 
@@ -110,3 +110,94 @@ async fn accept(addr: String, stream: TcpStream) -> http_types::Result<()> {
     }).await?;
     Ok(())
 }
+// async fn new_tokio_client(mut stream:TokioTcpStream){
+//     let (mut read,mut write) = stream.split();
+//     let read_s = async move{
+//         println!("start write");
+//         let mut bytes:[u8;1024] = [0;1024];
+//         loop{
+//             let size = read.read(&mut bytes[..]).await.unwrap();
+//             println!("{:?}",&bytes[..]);
+//         }
+//     };
+//     let write_s = async move{
+//         println!("start write");
+//         let mut bytes_w:[u8;1024] = [0;1024];
+//         write.write(&mut bytes_w);
+//         write.flush();
+//     };
+//     tokio::task::spawn(read_s);
+//     tokio::task::spawn(write_s);
+//     println!("new client!");
+// }
+
+// fn test_tokio(){
+//     let mut runtime = TokioRuntime::new().unwrap();
+//     let tcp_server = async{
+//         let mut listener = TokioTcpListener::bind("127.0.0.1:8080").await.unwrap();
+//         while let Some(stream) = listener.next().await {
+//             match stream {
+//                 Ok(mut stream) => {
+//                     stream.set_recv_buffer_size(1024*32 as usize);
+//                     stream.set_send_buffer_size(1024*32 as usize);
+//                     stream.set_linger(Some(Duration::from_secs(5)));
+//                     stream.set_keepalive(Some(Duration::from_secs(3600)));
+//                     stream.set_nodelay(true);
+//                     new_tokio_client(stream);
+//                     println!("new client!");
+//                 },
+//                 Err(e) => { /* connection failed */ }
+//             }
+//         }
+//     };
+//     runtime.block_on(tcp_server);
+// }
+
+
+//
+// fn test_channel(){
+//
+//     let (sender,rec) = std::sync::mpsc::sync_channel(1024000);
+//
+//     let time = std::time::SystemTime::now();
+//     for i in 0..1000
+//     {
+//         let sender_cp = sender.clone();
+//         let m = move ||{
+//             for i in 0..1000{
+//                 sender_cp.send(1);
+//             }
+//         };
+//         std::thread::spawn(m);
+//     }
+//     let mut i = 1;
+//     loop{
+//         let res = rec.recv();
+//         i += res.unwrap();
+//         if i >= 1000000{
+//             break;
+//         }
+//     }
+//     println!("channel:{}ms,{}",time.elapsed().unwrap().as_millis(),i);
+//     let time = std::time::SystemTime::now();
+//     let test=Arc::new(RwLock::new(Test{i:0}));
+//     for i in 0..1000{
+//         let t_cp = test.clone();
+//         let m = move ||{
+//             for j in 0..1000{
+//                 let i = t_cp.write().unwrap().i;
+//                 t_cp.write().unwrap().i+=1;
+//             }
+//         };
+//         let j = std::thread::spawn(m);
+//         j.join();
+//     }
+//     let test_cp = test.clone();
+//     // loop{
+//     //     let t = test_cp.read().unwrap();
+//     //     if t.i>=100000{
+//     println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.read().unwrap().i);
+//     //         break;
+//     //     }
+//     // }
+// }

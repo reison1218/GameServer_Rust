@@ -1,17 +1,10 @@
 pub mod http;
 pub mod tcp_server;
-use crate::entity::contants::*;
 use crate::entity::user_info::User;
-use crate::entity::{Dao, EntityData};
+use crate::entity::Dao;
 use crate::mgr::game_mgr::GameMgr;
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use serde_json::map::Entry::Vacant;
-use std::convert::TryFrom;
+use log::{error, info, warn};
 use std::io::Read;
-use std::mem::transmute;
-use std::net::{TcpListener, TcpStream};
-use std::rc::Rc;
-use std::result::Result as ByteBufResult;
 use std::sync::{Arc, Mutex};
 use threadpool::ThreadPool;
 use tools::protos::protocol::{

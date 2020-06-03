@@ -1,27 +1,32 @@
 use super::*;
 use crate::entity::battle_model::{FriendRoom, PVPModel, PubRoom, RoomModel};
 use crate::entity::member::{Member, MemberState, Target, UserType};
-use crate::template::template_contants::TILE_MAP_TEMPLATE;
-use crate::template::templates::Template;
 use crate::TEMPLATES;
+use futures::future::err;
 use protobuf::Message;
 use serde_json::{Map, Value};
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomPt, TeamPt};
 use tools::protos::room::S_ROOM;
-use tools::thread_pool::ThreadPoolType::user;
+use tools::templates::template::{Template, TemplateMgrTrait};
+use tools::templates::tile_map_temp::TileMapTempMgr;
 use tools::util::packet::Packet;
 
 pub struct RoomMgr {
     pub friend_room: FriendRoom,         //好友房
     pub pub_rooms: HashMap<u8, PubRoom>, //公共房
     pub sender: Option<TcpSender>,
-    pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>, //命令管理
+    pub cmd_map:
+        HashMap<u32, fn(&mut RoomMgr, Packet) -> tools::result::errors::Result<()>, RandomState>, //命令管理
 }
 
 impl RoomMgr {
     pub fn new() -> RoomMgr {
-        let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet), RandomState> = HashMap::new();
+        let cmd_map: HashMap<
+            u32,
+            fn(&mut RoomMgr, Packet) -> tools::result::errors::Result<()>,
+            RandomState,
+        > = HashMap::new();
         let friend_room = FriendRoom::default();
         let pub_rooms: HashMap<u8, PubRoom> = HashMap::new();
         let mut rm = RoomMgr {
@@ -58,38 +63,25 @@ impl RoomMgr {
 }
 
 ///创建房间
-fn create_room(rm: &mut RoomMgr, mut packet: Packet) {
+fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> tools::result::errors::Result<()> {
     let user_id = packet.get_user_id();
     //校验这个用户在不在房间内
     let in_room = rm.friend_room.check_is_in_room(&user_id);
     if in_room {
-        error!("user data is null for id:{}", user_id);
-        return;
+        let s = format!("user data is null for id:{}", user_id);
+        return error_chain::bail!(s);
     }
     //解析protobuf
     let mut cr = tools::protos::room::C_CREATE_ROOM::new();
-    let result = cr.merge_from_bytes(packet.get_data());
-    if result.is_err() {
-        error!("{:?}", result.err().unwrap());
-        return;
-    }
+    cr.merge_from_bytes(packet.get_data())?;
 
-    let map_id = cr.map_id as u64;
+    let map_id = cr.map_id as u32;
     //校验地图配置
-    let res: Option<&Template> = TEMPLATES.get(TILE_MAP_TEMPLATE, &map_id);
-    if res.is_none() {
-        error!("this map config is None,map_id:{}", map_id);
-        return;
-    }
+    let map_temp: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
     //创建房间
-    let map_temp = res.unwrap();
-    let res = rm.friend_room.create_room(&user_id, map_temp);
-    if res.is_err() {
-        return;
-    }
-
+    let temp = map_temp.get_temp(map_id)?;
+    let room = rm.friend_room.create_room(&user_id, temp)?;
     //组装protobuf
-    let room = res.unwrap();
     let mut s_r = S_ROOM::new();
     s_r.is_succ = true;
     let rp = room.convert_to_pt();
@@ -101,45 +93,48 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) {
     packet.set_cmd(ClientCode::Room as u32);
     packet.set_data_from_vec(s_r.write_to_bytes().unwrap());
     let v = packet.build_server_bytes();
-    rm.sender.as_mut().unwrap().write(v);
+    let res = rm.sender.as_mut().unwrap().write(v)?;
+    Ok(res)
 }
 
 ///离开房间
-fn leave_room(rm: &mut RoomMgr, packet: Packet) {
+fn leave_room(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     let user_id = packet.get_user_id();
-
-    rm.friend_room.leave_room(&user_id);
-
-    info!("已处理离线玩家！id:{}", packet.get_user_id());
+    let res = rm.friend_room.leave_room(&user_id)?;
+    Ok(res)
 }
 
 ///改变目标
-fn change_target(rm: &mut RoomMgr, packet: Packet) {}
+fn change_target(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+    Ok(())
+}
 
 ///寻找房间并加入房间
-fn search_room(rm: &mut RoomMgr, packet: Packet) {
+fn search_room(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     let room_model = 1 as u8;
     let user_id = packet.get_user_id();
     let result = rm.pub_rooms.get_mut(&room_model);
     if result.is_none() {
-        error!("this model is not exist!model_type:{}", room_model);
-        return;
+        let s = format!("this model is not exist!model_type:{}", room_model);
+        return error_chain::bail!(s);
     }
     let mut pub_room = result.unwrap();
-    pub_room.quickly_start(&user_id);
+    let res = pub_room.quickly_start(&user_id)?;
+    Ok(res)
 }
 
 ///准备
-fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
+fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     //校验玩家是否在房间
     // let res = rm.player_room.contains_key(&packet.get_user_id());
     // if !res {
     //     return;
     // }
+    Ok(())
 }
 
 ///开始
-fn start(rm: &mut RoomMgr, packet: Packet) {
+fn start(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {
@@ -152,10 +147,11 @@ fn start(rm: &mut RoomMgr, packet: Packet) {
     // }
     // let room_id = room.get_room_id();
     // rm.remove_room_cache(&room_id);
+    Ok(())
 }
 
 ///换队伍
-fn change_team(rm: &mut RoomMgr, packet: Packet) {
+fn change_team(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {
@@ -163,9 +159,11 @@ fn change_team(rm: &mut RoomMgr, packet: Packet) {
     // }
     // let room = room.unwrap();
     // room.change_team(&packet.get_user_id(), &(0 as u8));
+    Ok(())
 }
+
 ///T人
-fn kick_member(rm: &mut RoomMgr, packet: Packet) {
+fn kick_member(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {
@@ -178,4 +176,5 @@ fn kick_member(rm: &mut RoomMgr, packet: Packet) {
     //     res.unwrap_err();
     //     return;
     // }
+    Ok(())
 }

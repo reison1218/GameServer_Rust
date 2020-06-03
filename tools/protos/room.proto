@@ -27,17 +27,6 @@ message C_PREPARE_CANCEL{
     bool prepare = 1;//true代表准备，false代表取消准备
 }
 
-//快速开始
-message C_SEARCH_ROOM{
-
-}
-
-message S_ROOM{
-    bool is_succ = 1;//是否成功;
-    string err_mess = 2;//错误信息;
-    RoomPt room = 3;//房间数据
-}
-
 //开始游戏
 message C_START{
 
@@ -48,3 +37,20 @@ message S_START{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
 }
+
+//快速开始
+message C_SEARCH_ROOM{
+
+}
+
+//房间推送消息
+message S_ROOM_NOTICE{
+
+}
+
+message S_ROOM{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+    RoomPt room = 3;//房间数据
+}
+

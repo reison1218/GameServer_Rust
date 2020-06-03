@@ -10,8 +10,12 @@ pub enum GameCode{
     Login = 1003,
     //同步数据
     SyncData = 1004,
-    //请求排行榜
-    Rank = 1005,
+    //请求修改昵称
+    ModifyNickName = 1005,
+    //创建房间
+    CreateRoom = 1006,
+    //加入房间
+    JoinRoom = 1007,
     //范围最大值
     Max = 10000,
 }
@@ -26,8 +30,10 @@ pub enum ClientCode{
     Login = 10003,
     //返回同步命令号
     SyncData = 10004,
-    //房间操作返回命令号
-    Room = 10005,
+    //请求修改昵称返回
+    NickNameModify = 10005,
+    //房间命令号
+    Room = 10006,
     //最大命令号
     Max = 20000,
 }
@@ -42,6 +48,14 @@ pub enum RoomCode{
     CreateRoom = 20003,
     //离开房间
     LeaveRoom = 20004,
+    //T人
+    Kick = 20005,
+    //换队伍
+    ChangeTeam = 20006,
+    //准备与取消
+    PrepareCancel = 20007,
+    //开始游戏
+    StartGame = 20008,
     //返回最大值
     Max = 30000,
 }

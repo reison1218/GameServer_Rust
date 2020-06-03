@@ -3,27 +3,18 @@ mod entity;
 mod helper;
 mod mgr;
 mod net;
-mod template;
 use crate::db::dbtool::DbPool;
 use crate::entity::{Dao, Entity, EntityData};
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopPlayerHttpHandler};
 use crate::net::tcp_server;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use std::borrow::{Borrow, BorrowMut};
-use std::collections::HashMap;
-use std::fs::File;
 use tools::thread_pool::{MyThreadPool, ThreadPoolHandler, ThreadPoolType};
 
-use std::convert::TryFrom;
-use std::ops::Index;
-use std::rc::Rc;
-use std::sync::{atomic::AtomicUsize, Arc, Mutex, RwLock};
+use std::sync::{atomic::AtomicUsize, Arc, RwLock};
 use std::thread::Thread;
-use std::time::{Duration, SystemTime};
 use threadpool::ThreadPool;
 
-use async_std::task;
 use chrono::{DateTime, Datelike, Local, NaiveDateTime, Timelike, Utc};
 use futures::executor::block_on;
 use serde::{Deserialize, Serialize};
@@ -35,7 +26,6 @@ use std::time;
 
 use crate::entity::user_info::User;
 use crate::mgr::timer_mgr;
-use crate::template::templates::Templates;
 use futures::AsyncWriteExt;
 use mysql::prelude::ToValue;
 use std::cell::RefCell;
@@ -45,6 +35,7 @@ use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
+use tools::templates::template::{TemplateMgrTrait, TemplatesMgr};
 use tools::util::bytebuf::ByteBuf;
 
 #[macro_use]
@@ -71,18 +62,18 @@ lazy_static! {
     ///配置文件
     static ref CONF_MAP: Conf = {
         let path = env::current_dir().unwrap();
-        let mut str = path.as_os_str().to_str().unwrap();
+        let str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/config/config.conf";
         let conf = Conf::init(res.as_str());
         conf
     };
 
     ///静态配置文件
-    static ref TEMPLATES: Templates = {
+    static ref TEMPLATES: TemplatesMgr = {
         let path = env::current_dir().unwrap();
-        let mut str = path.as_os_str().to_str().unwrap();
+        let str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/template";
-        let conf = Templates::new(res.as_str());
+        let conf = tools::templates::template::init_temps(res.as_str());
         conf
     };
 
@@ -121,12 +112,12 @@ fn init_http_server(gm: Arc<RwLock<GameMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
     http_vec.push(Box::new(StopPlayerHttpHandler::new(gm.clone())));
-    let httpPort: &str = CONF_MAP.get_str("http_port");
-    async_std::task::spawn(tools::http::http_server(httpPort, http_vec));
+    let http_port: &str = CONF_MAP.get_str("http_port");
+    async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }
 
 ///init tcp server
 fn init_tcp_server(gm: Arc<RwLock<GameMgr>>) {
-    let tcpPort: &str = CONF_MAP.get_str("tcp_port");
-    tcp_server::new(tcpPort, gm);
+    let tcp_port: &str = CONF_MAP.get_str("tcp_port");
+    tcp_server::new(tcp_port, gm);
 }

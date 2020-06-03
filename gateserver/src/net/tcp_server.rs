@@ -1,14 +1,5 @@
 use super::*;
-use crate::ID;
-use log::kv::ToValue;
-use protobuf::ProtobufEnum;
-use redis::{Commands, FromRedisValue};
-use serde::Deserializer;
-use serde_json::{json, Map, Value};
-use std::str::FromStr;
-use std::sync::atomic::Ordering;
-use std::sync::RwLockWriteGuard;
-use tools::cmd_code::GameCode::LineOff;
+use serde_json::Value;
 use tools::cmd_code::RoomCode;
 use tools::tcp::TcpSender;
 
@@ -58,10 +49,13 @@ impl tools::tcp::Handler for TcpServerHandler {
             return;
         }
         info!("GateServer got message '{:?}'. ", mess);
-        let mut packet = Packet::from_only_client(mess);
+        let packet = Packet::from_only_client(mess);
         match packet {
             Ok(p) => {
-                self.handle_binary(p);
+                let res = self.handle_binary(p);
+                if res.is_err() {
+                    error!("{:?}", res.err().unwrap().to_string());
+                }
             }
             Err(e) => {
                 error!("{:?}", e);
@@ -76,7 +70,10 @@ impl TcpServerHandler {
         let res = self.tcp.as_mut();
         match res {
             Some(ts) => {
-                ts.write(bytes);
+                let res = ts.write(bytes);
+                if res.is_err() {
+                    error!("write error!mess:{:?}", res.err().unwrap().to_string());
+                }
             }
             None => {
                 warn!("TcpServerHandler's tcp is None!");
@@ -85,31 +82,27 @@ impl TcpServerHandler {
     }
 
     ///处理二进制数据
-    fn handle_binary(&mut self, mut packet: Packet) {
+    fn handle_binary(&mut self, mut packet: Packet) -> tools::result::errors::Result<()> {
         let token = self.tcp.as_ref().unwrap().token;
         let mut write = self.cm.write().unwrap();
         let user_id = write.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
         if user_id.is_none() && packet.get_cmd() != GameCode::Login as u32 {
-            error!(
+            let str = format!(
                 "this player is not login!cmd:{},token:{}",
                 packet.get_cmd(),
                 token
             );
-            return;
+            return error_chain::bail!(str);
         }
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
             let mut c_login = C_USER_LOGIN::new();
-            let result = c_login.merge_from_bytes(packet.get_data());
-            if result.is_err() {
-                error!("protobuf转换错误：{:?}", result.err().unwrap());
-                return;
-            }
+            c_login.merge_from_bytes(packet.get_data())?;
 
             //校验用户中心账号是否已经登陆了
-            let mut res = check_uc_online(&c_login.get_user_id(), &mut write);
+            let mut res = check_uc_online(&c_login.get_user_id());
             if res {
                 //校验内存
                 res = check_mem_online(&c_login.get_user_id(), &mut write);
@@ -121,11 +114,12 @@ impl TcpServerHandler {
                     res.set_err_mess("this account already login!".to_owned());
                     std::mem::drop(write);
                     self.write_to_client(res.write_to_bytes().unwrap());
-                    error!(
+                    let str = format!(
                         "this account already login!user_id:{}",
                         &c_login.get_user_id()
                     );
-                    return;
+
+                    return error_chain::bail!(str);
                 }
             }
 
@@ -147,6 +141,7 @@ impl TcpServerHandler {
         std::mem::drop(write);
         //转发函数
         self.arrange_packet(packet);
+        Ok(())
     }
 
     ///数据包转发
@@ -172,5 +167,9 @@ pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
         cm: cm,
         add: Some(address.to_string()),
     };
-    tools::tcp::tcp_server::new(address, sh);
+    let res = tools::tcp::tcp_server::new(address, sh);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+        std::process::abort();
+    }
 }

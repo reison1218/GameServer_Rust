@@ -1,11 +1,10 @@
-use super::*;
-use serde_json::{Map, Value};
 use tools::protos::base::{CellPt, TileMapPt};
+use tools::templates::tile_map_temp::TileMapTemp;
 
 ///地图
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {
-    pub id: u64,
+    pub id: u32,
     pub cell_array: Vec<Cell>,
 }
 
@@ -17,50 +16,14 @@ pub struct Cell {
 }
 
 impl TileMap {
-    pub fn new(json: &Value) -> Result<Self, String> {
-        let res = json.as_object();
-        if res.is_none() {
-            let s = format!("could not convert JsonValue to Map<String,JsonValue>");
-            error!("{}", s.as_str());
-            return Err(s);
-        }
-        let res = res.unwrap();
-
-        let id = res.get("ID");
-        if id.is_none() {
-            let s = format!("ID is None in TileMap!");
-            error!("{}", s.as_str());
-            return Err(s);
-        }
-        let id = id.unwrap().as_u64().unwrap();
-
-        let map = json.get("Map");
-        if map.is_none() {
-            let s = format!("Map is None in TileMap,ID:{}", id);
-            error!("{}", s.as_str());
-            return Err(s);
-        }
-        let map = map.unwrap();
-        let map = map.as_array();
-        if map.is_none() {
-            let s = format!("Map is not an array in TileMap!ID:{}", id);
-            error!("{}", s.as_str());
-            return Err(s);
-        }
-        let map = map.unwrap();
-
+    pub fn new(temp: &TileMapTemp) -> Result<Self, String> {
+        let id = temp.id;
+        let map = temp.map.clone();
         let mut cell_array = Vec::new();
         for v in map {
-            let cell_id = v.as_u64();
-            if cell_id.is_none() {
-                let s = format!("Map'value is not number in TileMap!ID:{}", id);
-                error!("{}", s.as_str());
-                return Err(s);
-            }
-            let cell = Cell {
-                value: cell_id.unwrap() as u32,
-                value_type: 0,
-            };
+            let mut cell = Cell::default();
+            cell.value = v;
+            cell.value_type = 0;
             cell_array.push(cell);
         }
         Ok(TileMap { id, cell_array })

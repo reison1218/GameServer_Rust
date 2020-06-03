@@ -1,4 +1,4 @@
-use tools::protos::protocol::{S_USER_LOGIN, C_USER_LOGIN};
+use tools::protos::protocol::{S_USER_LOGIN, C_USER_LOGIN, C_SYNC_DATA, S_SYNC_DATA};
 use std::time::Duration;
 use tools::util::packet::Packet;
 use std::io::Write;
@@ -13,6 +13,7 @@ use futures::AsyncWriteExt;
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
 use tools::protos::room::S_ROOM;
+use tools::protos::base::PlayerPt;
 
 pub fn test_tcp_client(pid:&str){
         let uid = block_on(crate::test_http_client(pid));
@@ -68,14 +69,20 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
-        // std::thread::sleep(Duration::from_secs(2));
-        // let mut c_r = tools::protos::room::C_CREATE_ROOM::new();
-        // c_r.set_map_id(1002);
-        // packet.set_cmd(RoomCode::CreateRoom as u32);
-        // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
-        // packet.set_len(16+packet.get_data().len() as u32);
-        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
+        std::thread::sleep(Duration::from_secs(2));
+        let mut c_r = C_SYNC_DATA::new();
+        let mut pp = PlayerPt::new();
+        let mut v = Vec::new();
+        v.push(1);
+        v.push(2);
+        pp.dlc = v;
+        pp.nick_name="test111".to_string();
+        c_r.set_player_pt(pp);
+        packet.set_cmd(GameCode::SyncData as u32);
+        packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
     }
 
     fn on_close(&mut self) {
@@ -95,7 +102,12 @@ impl ClientHandler for TcpClientHandler {
             let mut s = S_ROOM::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-room:{:?}----{:?}",packet,s);
+        }else if packet.get_cmd() == ClientCode::SyncData as u32{
+            let mut s = S_SYNC_DATA::new();
+            s.merge_from_bytes(packet.get_data());
+            println!("from server-sync:{:?}----{:?}",packet,s);
         }
+
     }
 
     fn get_address(&self) -> &str {

@@ -1,10 +1,10 @@
-use threadpool::{ThreadPool};
+use threadpool::ThreadPool;
 
 //线程池类型枚举
 pub enum ThreadPoolType {
-    game = 1,
-    user = 2,
-    sys = 3,
+    Game = 1,
+    User = 2,
+    Sys = 3,
 }
 
 //线程池结构体封装
@@ -18,47 +18,47 @@ unsafe impl Sync for MyThreadPool {}
 
 pub trait ThreadPoolHandler {
     fn submit_game<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static;
+    where
+        F: FnOnce() + Send + 'static;
 
     fn submit_user<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static;
+    where
+        F: FnOnce() + Send + 'static;
 
     fn submit_sys<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static;
+    where
+        F: FnOnce() + Send + 'static;
 
     fn submit<F>(&self, pool_type: ThreadPoolType, job: F)
-        where
-            F: FnOnce() + Send + 'static,
+    where
+        F: FnOnce() + Send + 'static,
     {
         match pool_type {
-            ThreadPoolType::game => self.submit_game(job),
-            ThreadPoolType::user => self.submit_user(job),
-            ThreadPoolType::sys => self.submit_sys(job),
+            ThreadPoolType::Game => self.submit_game(job),
+            ThreadPoolType::User => self.submit_user(job),
+            ThreadPoolType::Sys => self.submit_sys(job),
         }
     }
 }
 
 impl ThreadPoolHandler for MyThreadPool {
     fn submit_game<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static,
+    where
+        F: FnOnce() + Send + 'static,
     {
         self.game_pool.execute(job);
     }
 
     fn submit_user<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static,
+    where
+        F: FnOnce() + Send + 'static,
     {
         self.user_pool.execute(job);
     }
 
     fn submit_sys<F>(&self, job: F)
-        where
-            F: FnOnce() + Send + 'static,
+    where
+        F: FnOnce() + Send + 'static,
     {
         self.sys_pool.execute(job);
     }
@@ -77,7 +77,7 @@ impl MyThreadPool {
         let gtp = ThreadPool::with_name(game_name, game_size);
         let utp = ThreadPool::with_name(user_name, user_size);
         let stp = ThreadPool::with_name(sys_name, sys_size);
-        let mut mtp = MyThreadPool {
+        let mtp = MyThreadPool {
             game_pool: gtp,
             user_pool: utp,
             sys_pool: stp,

@@ -7,9 +7,6 @@ use async_std::task;
 use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
 use serde::export::Result::Err;
 use serde_json::{Error, Value};
-use std::cell::{Cell, RefCell};
-use std::ops::Index;
-use std::sync::{Arc, RwLock};
 
 pub trait HttpServerHandler: Send + Sync {
     fn get_path(&self) -> &str;
@@ -29,7 +26,7 @@ pub async fn http_server(
     let addr = format!("http://{}", listener.local_addr()?);
     info!("HTTP-SERVER listening on {}", addr);
 
-    let mut handler_vec_arc = AsyncArc::new(AsyncRwLock::new(handler_vec));
+    let handler_vec_arc = AsyncArc::new(AsyncRwLock::new(handler_vec));
     // For each incoming TCP connection, spawn a task and call `accept`.
     let mut incoming = listener.incoming();
     while let Some(stream) = incoming.next().await {
@@ -74,7 +71,7 @@ async fn accept(
                 if len > 0 {
                     let mut string = String::new();
                     body.read_to_string(&mut string).await.unwrap();
-                    let mut json: Result<serde_json::Value, Error> =
+                    let json: Result<serde_json::Value, Error> =
                         serde_json::from_str(string.as_str());
                     if json.is_err() {
                         error!("http server error!{:?}", json.as_ref().err().unwrap());
@@ -142,13 +139,14 @@ async fn accept(
 }
 
 ///发送http请求
+#[warn(unused_assignments)]
 pub async fn send_http_request(
     ip_port: &str,
     path: &str,
     method: &str,
     params: Option<Value>,
 ) -> Result<Value, HttpTypesError> {
-    let mut http_method: Option<Method> = None;
+    let http_method: Option<Method>;
     match method {
         "post" => http_method = Some(Method::Post),
         "get" => http_method = Some(Method::Get),
@@ -157,10 +155,9 @@ pub async fn send_http_request(
     let stream = TcpStream::connect(ip_port).await?;
     let peer_addr = stream.peer_addr()?;
     info!("connecting to {}", ip_port);
-    let url = Url::parse(&format!("http://{}/{}", peer_addr, path)).unwrap();
+    let url = Url::parse(&format!("http://{}/{}", peer_addr, path))?;
     let mut req = Request::new(http_method.unwrap(), url);
-    req.insert_header("Content-Type", "application/json")
-        .unwrap();
+    req.insert_header("Content-Type", "application/json")?;
     match params {
         Some(p) => {
             req.set_body(Body::from(p.to_string()));
@@ -171,17 +168,14 @@ pub async fn send_http_request(
     let mut res = client::connect(stream.clone(), req).await?;
     if !res.status().is_success() {
         let status = res.status();
-        let error_str = status.to_string();
-        error!("http request fail!error:{:?}", error_str);
+        let error_str = format!("http request fail!,error:{:?}", status.to_string());
         return Err(HttpTypesError::from_str(status, error_str));
     }
-    info!("http-response:{:?}", res);
     let mut body = res.take_body();
-    let mut result: Option<Value> = None;
+    let  result: Option<Value>;
     match body.len() {
         Some(len) => {
             if len <= 0 {
-                error!("http request fail!error:{:?}", res.status().to_string());
                 return Err(HttpTypesError::from_str(
                     StatusCode::NoContent,
                     "body is empty!",
@@ -189,18 +183,10 @@ pub async fn send_http_request(
             }
             let mut string = String::new();
             body.read_to_string(&mut string).await.unwrap();
-            let mut json: Result<serde_json::Value, Error> = serde_json::from_str(string.as_str());
-            if json.is_err() {
-                error!("http server error!{:?}", json.as_ref().err().unwrap());
-                return Err(HttpTypesError::from_str(
-                    StatusCode::NoContent,
-                    json.err().unwrap().to_string(),
-                ));
-            }
-            result = Some(json.unwrap())
+            let json: serde_json::Value = serde_json::from_str(string.as_str())?;
+            result = Some(json)
         }
         None => {
-            error!("response body is none");
             return Err(HttpTypesError::from_str(
                 StatusCode::NoContent,
                 "body is empty!",

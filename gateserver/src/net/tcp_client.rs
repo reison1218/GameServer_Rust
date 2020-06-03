@@ -1,6 +1,5 @@
 use super::*;
-use tools::cmd_code::{ClientCode, RoomCode};
-use tools::tcp::TcpSender;
+use tools::cmd_code::RoomCode;
 
 pub enum TcpClientType {
     GameServer,
@@ -15,7 +14,7 @@ pub struct TcpClientHandler {
 
 impl TcpClientHandler {
     pub fn new(cp: Arc<RwLock<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
-        let mut tch = TcpClientHandler {
+        let tch = TcpClientHandler {
             ts: None,
             cp,
             client_type,
@@ -44,17 +43,23 @@ impl ClientHandler for TcpClientHandler {
     fn on_open(&mut self, ts: TcpStream) {
         match self.client_type {
             TcpClientType::GameServer => {
-                self.cp.write().unwrap().game_client_channel = Some(ts.try_clone().unwrap());
+                self.cp
+                    .write()
+                    .unwrap()
+                    .set_game_client_channel(ts.try_clone().unwrap());
             }
             TcpClientType::RoomServer => {
-                self.cp.write().unwrap().room_client_channel = Some(ts.try_clone().unwrap());
+                self.cp
+                    .write()
+                    .unwrap()
+                    .set_room_client_channel(ts.try_clone().unwrap());
             }
         }
         self.ts = Some(ts);
     }
 
     fn on_close(&mut self) {
-        let mut address: Option<&str> = None;
+        let mut address: Option<&str>;
         match self.client_type {
             TcpClientType::GameServer => {
                 address = Some(CONF_MAP.get_str("game_port"));
@@ -67,7 +72,7 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let mut packet = Packet::from_only_server(mess);
+        let packet = Packet::from_only_server(mess);
         if packet.is_err() {
             error!("{:?}", packet.err().unwrap());
             return;
@@ -77,13 +82,24 @@ impl ClientHandler for TcpClientHandler {
         if packet.is_client() && packet.get_cmd() > 0 {
             info!("属于需要发给客户端的消息！");
             let mut write = self.cp.write().unwrap();
-            let mut gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
+            let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
 
             match gate_user {
                 Some(user) => {
                     let mut s = S_USER_LOGIN::new();
-                    s.merge_from_bytes(&packet.get_data());
-                    user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                    let res = s.merge_from_bytes(&packet.get_data());
+                    if res.is_err() {
+                        error!(
+                            "S_USER_LOGIN parse error!mess:{:?}",
+                            res.err().unwrap().to_string()
+                        );
+                        return;
+                    }
+                    let res = user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                    if res.is_err() {
+                        error!("write error!mess:{:?}", res.err().unwrap().to_string());
+                        return;
+                    }
                     info!("回客户端消息");
                 }
                 None => {

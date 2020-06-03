@@ -1,4 +1,3 @@
-use super::*;
 pub const CELL_TEMPLATE: &str = "Cell";
 
 pub const CHARACTER_TEMPLATE: &str = "Character";

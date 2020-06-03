@@ -4,7 +4,8 @@ package protos;
 //玩家信息
 message PlayerPt{
 	string nick_name = 1;//昵称
-	repeated uint32 dlc = 2;//dlc
+  uint32 last_character = 2;//最近一次使用到角色id
+	repeated uint32 dlc = 3;//dlc
 }
 
 // 资源封装
@@ -35,7 +36,7 @@ message TeamPt{
 
 //地图数据
 message TileMapPt{
-    uint64 id = 1;//map的ID
+    uint32 id = 1;//map的ID
     repeated CellPt cell_array = 2;//格子数组
 }
 
@@ -47,8 +48,24 @@ message CellPt{
 
 //房间数据
 message RoomPt{
-    uint64 room_id = 1;//房间id
+    uint32 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
     TileMapPt tile_map = 3;//地图数据
     repeated TeamPt teams = 4;//房间里的队伍
+}
+
+//历史消息
+message HistoryMessPt{
+
+}
+
+//推送消息
+message NoticeMessPt{
+
+}
+
+//玩家角色数据
+message CharacterPt{
+    uint32 temp_id = 1;//角色的配置id
+    repeated uint32 skills = 2;//玩家次角色所有已解锁的技能id
 }

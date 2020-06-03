@@ -52,9 +52,12 @@ use tools::util::bytebuf::ByteBuf;
 use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
+use chrono::Local;
+
 
 #[macro_use]
 extern crate lazy_static;
+
 lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
         let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1011000000)));
@@ -99,152 +102,23 @@ fn foo(words: &[&str]) {
     }
 }
 
-// async fn new_tokio_client(mut stream:TokioTcpStream){
-//     let (mut read,mut write) = stream.split();
-//     let read_s = async move{
-//         println!("start write");
-//         let mut bytes:[u8;1024] = [0;1024];
-//         loop{
-//             let size = read.read(&mut bytes[..]).await.unwrap();
-//             println!("{:?}",&bytes[..]);
-//         }
-//     };
-//     let write_s = async move{
-//         println!("start write");
-//         let mut bytes_w:[u8;1024] = [0;1024];
-//         write.write(&mut bytes_w);
-//         write.flush();
-//     };
-//     tokio::task::spawn(read_s);
-//     tokio::task::spawn(write_s);
-//     println!("new client!");
-// }
+fn test()->tools::result::errors::Result<()>{
+    error_chain::bail!("test".to_owned());
+}
 
-// fn test_tokio(){
-//     let mut runtime = TokioRuntime::new().unwrap();
-//     let tcp_server = async{
-//         let mut listener = TokioTcpListener::bind("127.0.0.1:8080").await.unwrap();
-//         while let Some(stream) = listener.next().await {
-//             match stream {
-//                 Ok(mut stream) => {
-//                     stream.set_recv_buffer_size(1024*32 as usize);
-//                     stream.set_send_buffer_size(1024*32 as usize);
-//                     stream.set_linger(Some(Duration::from_secs(5)));
-//                     stream.set_keepalive(Some(Duration::from_secs(3600)));
-//                     stream.set_nodelay(true);
-//                     new_tokio_client(stream);
-//                     println!("new client!");
-//                 },
-//                 Err(e) => { /* connection failed */ }
-//             }
-//         }
-//     };
-//     runtime.block_on(tcp_server);
-// }
 
-async fn test_async_std(){
-    let mut listener = async_std::net::TcpListener::bind("127.0.0.1:8080").await.unwrap();
-    let mut incoming = listener.incoming();
-    while let Some(stream) = incoming.next().await {
-        println!("new client!");
-        let mut read_stream = stream.unwrap();
-        let mut write_stream = read_stream.clone();
-        let read =  async move{
-            println!("start read");
-            let mut bytes:[u8;1024] = [0;1024];
-            loop{
-                let size = read_stream.read(&mut bytes).await.unwrap();
-                println!("{}",size);
-            }
-        };
-
-        let write = async move{
-            println!("start write");
-            let mut bytes:[u8;1024] = [0;1024];
-            write_stream.write_all(&bytes[..]);
-        };
-        async_std::task::spawn(read);
-        async_std::task::spawn(write);
+fn main() -> tools::result::errors::Result<()> {
+    let rs = test();
+    if rs.is_err(){
+        println!("{:?}",rs.err().unwrap());
     }
-}
-
-#[derive(Debug)]
-struct TestBox {
-    i:u32
-}
-
-
-pub fn max_level_sum(num: RefCell<Option<i32>>) {
-    let num = num;
-
-    if let None = *num.borrow() {
-        println!("none");
-    };
-}
-
-fn test(b:&mut TestBox){
-    println!("{:p}",b);
-    println!("{:?}",b);
-}
-
-fn test_channel(){
-
-    let (sender,rec) = std::sync::mpsc::sync_channel(1024000);
-
-    let time = std::time::SystemTime::now();
-    for i in 0..1000
-    {
-        let sender_cp = sender.clone();
-        let m = move ||{
-            for i in 0..1000{
-                sender_cp.send(1);
-            }
-        };
-        std::thread::spawn(m);
-    }
-    let mut i = 1;
-    loop{
-        let res = rec.recv();
-        i += res.unwrap();
-        if i >= 1000000{
-            break;
-        }
-    }
-    println!("channel:{}ms,{}",time.elapsed().unwrap().as_millis(),i);
-    let time = std::time::SystemTime::now();
-    let test=Arc::new(RwLock::new(Test{i:0}));
-    for i in 0..1000{
-        let t_cp = test.clone();
-        let m = move ||{
-            for j in 0..1000{
-                let i = t_cp.write().unwrap().i;
-                t_cp.write().unwrap().i+=1;
-            }
-        };
-        let j = std::thread::spawn(m);
-        j.join();
-    }
-    let test_cp = test.clone();
-    // loop{
-    //     let t = test_cp.read().unwrap();
-    //     if t.i>=100000{
-    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.read().unwrap().i);
-    //         break;
-    //     }
-    // }
-}
-
-pub struct  Test{
-    pub i:u32
-}
-
-fn main() -> anyhow::Result<()> {
     //tcp_client::test_tcp_client("platform_id");
     //block_on(web::test_http_client("1"));
-    let mut path = env::current_dir()?;
-    //path.push("/config");
-    let mut str = path.as_os_str().to_str().unwrap();
-    let res = str.to_string()+"/config";
-    println!("{:?}",res);
+    // let mut path = env::current_dir()?;
+    // path.push("/config");
+    // let mut str = path.as_os_str().to_str().unwrap();
+    //let res = str.to_string()+"/config";
+    //println!("{:?}",res);
+    println!("finish");
     Ok(())
 }

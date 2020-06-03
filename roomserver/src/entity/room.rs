@@ -1,15 +1,12 @@
-use super::*;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, Target};
 use crate::entity::team::Team;
-use crate::template::templates::Template;
-use chrono::{DateTime, Local, Utc};
-use std::alloc::handle_alloc_error;
+use chrono::{DateTime, Utc};
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::atomic::Ordering;
 use tools::protos::base::RoomPt;
+use tools::templates::tile_map_temp::TileMapTemp;
 
 pub enum RoomState {
     Await = 0,   //等待
@@ -31,7 +28,7 @@ pub struct ActionUnit {
 ///房间结构体，封装房间必要信息
 #[derive(Clone, Debug)]
 pub struct Room {
-    id: u64,                       //房间id
+    id: u32,                       //房间id
     owner_id: u32,                 //房主id
     tile_map: TileMap,             //地图数据
     player_team: HashMap<u32, u8>, //玩家对应的队伍
@@ -43,10 +40,10 @@ pub struct Room {
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(map_temp: &Template, owner_id: &u32) -> Result<Room, String> {
+    pub fn new(map_temp: &TileMapTemp, owner_id: &u32) -> Result<Room, String> {
         //转换成tilemap数据
-        let tile_map = TileMap::new(&map_temp.value)?;
-        let id: u64 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
+        let tile_map = TileMap::new(map_temp)?;
+        let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
         let time = Utc::now();
         let teams: HashMap<u8, Team> = HashMap::new();
         let orders: Vec<ActionUnit> = Vec::new();
@@ -87,7 +84,7 @@ impl Room {
     }
 
     ///获取房号
-    pub fn get_room_id(&self) -> u64 {
+    pub fn get_room_id(&self) -> u32 {
         self.id
     }
 

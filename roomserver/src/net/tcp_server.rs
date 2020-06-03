@@ -1,5 +1,3 @@
-use super::*;
-use crate::entity::room::Room;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{debug, error, info, warn, LevelFilter, Log, Record};
 use protobuf::{Message, ProtobufEnum};
@@ -40,12 +38,12 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let mut packet = Packet::from_only_server(mess);
+        let packet = Packet::from_only_server(mess);
         if packet.is_err() {
             error!("{:?}", packet.err().unwrap());
             return;
         }
-        let mut packet = packet.unwrap();
+        let packet = packet.unwrap();
 
         //判断是否是房间服的命令，如果不是，则直接无视掉
         if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {

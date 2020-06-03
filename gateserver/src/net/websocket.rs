@@ -1,13 +1,5 @@
 use super::*;
-use crate::entity::gateuser::GateUser;
-use crate::ID;
-use protobuf::ProtobufEnum;
-use std::borrow::BorrowMut;
-use std::error::Error;
-use std::io::Write;
-use std::net::TcpStream;
-use std::process::id;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::RoomCode;
 
 pub struct ClientSender {
     pub user_id: Option<u32>,
@@ -92,7 +84,7 @@ impl Handler for WebSocketHandler {
 
 impl WebSocketHandler {
     fn handle_binary(&mut self, bytes: Vec<u8>) {
-        let mut packet = Packet::from_only_client(bytes);
+        let packet = Packet::from_only_client(bytes);
         if packet.is_err() {
             error!("{:?}", packet.err().unwrap());
             return;
@@ -122,7 +114,7 @@ impl WebSocketHandler {
             }
 
             //校验用户中心账号是否已经登陆了
-            let mut res = check_uc_online(&c_login.get_user_id(), &mut write);
+            let mut res = check_uc_online(&c_login.get_user_id());
             if res {
                 //校验内存
                 res = check_mem_online(&c_login.get_user_id(), &mut write);

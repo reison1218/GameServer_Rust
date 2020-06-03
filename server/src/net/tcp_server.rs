@@ -3,11 +3,13 @@ use chrono::{Duration, Local, NaiveDateTime, NaiveTime};
 use std::io::Write;
 use tools::thread_pool::ThreadPoolHandler;
 
-use tools::protos::base::ResourcesPt;
+use tools::protos::base::{CharacterPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::db::table_contants;
-use crate::entity::user::UserData;
+use crate::entity::character::{Character, Characters};
+use crate::entity::user::{insert_characters, insert_user, UserData};
+use crate::entity::user_contants::*;
 use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::net::http::notice_user_center;
@@ -76,74 +78,58 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
     if packet.get_cmd() == GameCode::Login as u32 {
         let mut c_login = C_USER_LOGIN_PROTO::new();
         let result = c_login.merge_from_bytes(packet.get_data());
+
         if result.is_err() {
-            error!("{:?}", result.err().unwrap());
+            error!("{:?}", result.err().unwrap().to_string());
             return;
         }
         //执行登录
-        login(gm, packet);
+        let result = login(gm, packet);
+        if result.is_err() {
+            error!("{:?}", result.err().unwrap().to_string());
+            return;
+        }
     } else {
         //不登录就执行其他命令
-        gm.write().unwrap().invok(packet);
+        let res = gm.write().unwrap().invok(packet);
+        match res {
+            Ok(_) => {}
+            Err(e) => {
+                error!("{:?}", e.to_string());
+            }
+        }
     }
 }
 
 //登录函数，执行登录
-fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) {
+fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> tools::result::errors::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
-    let mut user_data = false;
-    {
-        user_data = gm.read().unwrap().users.contains_key(&user_id);
-    }
+    let mut user_data = gm.read().unwrap().users.contains_key(&user_id);
     //走登录流程
     let mut gm_lock = gm.write().unwrap();
     //如果内存没有数据，则从数据库里面找
     if !user_data {
-        //判断redis里面有没有,用户中心没有则直接代表不合法，不与执行
-        let value = get_user_from_redis(user_id);
-        if value.is_none() {
-            warn!("redis has no data for user_id:{}", user_id);
-            return;
-        }
-
-        let mut user = User::query(USER, user_id, None);
-        //数据库没有则创建新号
-        if user.is_none() {
-            let json_value = value.unwrap();
-            let nick_name = json_value.get("nick_name");
-            let avatar = json_value.get("avatar");
-            if nick_name.is_none() || avatar.is_none() {
-                error!("nick_name or avatar is none for user_id:{}", user_id);
-                return;
-            }
-            user = Some(User::new(
-                user_id,
-                avatar.unwrap().as_str().unwrap(),
-                nick_name.unwrap().as_str().unwrap(),
-            ));
-            //以下入库采用异步执行，以免造成io堵塞
-            let mut user_mut = user.as_mut().unwrap().clone();
-            async_std::task::spawn(insert_user(user_mut));
-        }
-        //封装到内存中
-        gm_lock.users.insert(user_id, UserData::new(user.unwrap()));
+        //初始化玩家数据
+        let user_data = init_user_data(user_id)?;
+        gm_lock.users.insert(user_id, user_data);
     }
     //封装会话
-    let user = gm_lock.users.get_mut(&user_id);
-    if user.is_none() {
-        error!("there is no data for userid:{}", &user_id);
-        return;
+    let user_data = gm_lock.users.get_mut(&user_id);
+    if user_data.is_none() {
+        let str = format!("there is no data for userid:{}", &user_id);
+        return error_chain::bail!(str);
     }
+    let user_data = user_data.unwrap();
 
-    let user = user.unwrap().get_user_info_mut_ref();
+    let user = user_data.get_user_info_mut_ref();
     user.update_login_time();
 
     //通知用户中心
     async_std::task::spawn(notice_user_center(user_id, "login"));
 
     //返回客户端
-    let mut lr = user2proto(user);
+    let mut lr = user2proto(user_data);
     let bytes = lr.write_to_bytes().unwrap();
     packet.set_user_id(user_id);
     packet.set_is_client(true);
@@ -154,20 +140,50 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) {
         .sender
         .as_mut()
         .unwrap()
-        .write(packet.build_server_bytes());
+        .write(packet.build_server_bytes())?;
     info!("用户完成登录！user_id:{}", &user_id);
+    Ok(result)
 }
 
-async fn insert_user(mut user: User) {
-    info!("玩家数据不存在,现在创建新玩家:{}", user.user_id);
-    let result = User::insert(&mut user);
-    if result.is_err() {
-        error!("{:?}", result.err().unwrap());
+///初始化玩家数据
+fn init_user_data(user_id: u32) -> tools::result::errors::Result<UserData> {
+    //判断redis里面有没有,用户中心没有则直接代表不合法，不与执行
+    let value = get_user_from_redis(user_id);
+    if value.is_none() {
+        let str = format!("redis has no data for user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        return error_chain::bail!(str);
     }
+
+    let mut ud = UserData::init_from_db(user_id);
+
+    //数据库没有则创建新号
+    if ud.is_none() {
+        let json_value = value.unwrap();
+        let nick_name = json_value.get("nick_name");
+        if nick_name.is_none() {
+            let str = format!("nick_name is none for user_id:{}", user_id);
+            error!("{:?}", str.as_str());
+            return error_chain::bail!(str);
+        }
+        let mut user = User::new(user_id, nick_name.unwrap().as_str().unwrap());
+        //以下入库采用异步执行，以免造成io堵塞
+        //玩家角色数据
+        let mut c = Characters::new(user.user_id);
+        user.set_last_character(c.get_frist());
+
+        //封装到userdata里
+        ud = Some(UserData::new(user.clone(), c.clone()));
+
+        //异步持久化到db
+        async_std::task::spawn(insert_user(user));
+        async_std::task::spawn(insert_characters(c));
+    }
+    Ok(ud.unwrap())
 }
 
 ///user结构体转proto
-fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
+fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     let mut lr = S_USER_LOGIN_PROTO::new();
     lr.set_is_succ(true);
     // let result = user.get_json_value("signInTime");
@@ -177,18 +193,33 @@ fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
     // }
 
-    let mut result = user.get_time(SYNC_TIME);
+    let mut result = user.get_user_info_mut_ref().get_time(SYNC_TIME);
     let mut time = 0 as u32;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }
     lr.sync_time = time;
     let mut ppt = PlayerPt::new();
-    let mut nick_name = user.get_json_value(NICK_NAME).unwrap().as_str().unwrap();
+    let mut nick_name = user
+        .get_user_info_mut_ref()
+        .get_json_value(NICK_NAME)
+        .unwrap()
+        .as_str()
+        .unwrap();
     ppt.set_nick_name(nick_name.to_string());
+    let last_character = user.get_user_info_ref().get_usize(LAST_CHARACTER);
+    if last_character.is_none() {
+        ppt.set_last_character(0);
+    } else {
+        ppt.set_last_character(last_character.unwrap() as u32);
+    }
+
     ppt.dlc.push(1);
+
+    let last_cter_id = user.get_user_info_ref().get_usize(LAST_CHARACTER);
+
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
-    result = user.get_time(LAST_LOGIN_TIME);
+    result = user.get_user_info_mut_ref().get_time(LAST_LOGIN_TIME);
     time = 0;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
@@ -197,7 +228,7 @@ fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     lr.last_login_time = time;
 
     time = 0;
-    result = user.get_time(OFF_TIME);
+    result = user.get_user_info_mut_ref().get_time(OFF_TIME);
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }
@@ -205,16 +236,41 @@ fn user2proto(user: &mut User) -> S_USER_LOGIN_PROTO {
     lr.last_logoff_time = time;
 
     let mut v = Vec::new();
-    for i in 0..1000 {
-        let mut res = ResourcesPt::new();
-        res.id = 1;
-        res.field_type = 1;
-        res.num = 100 as u32;
-        v.push(res);
-    }
+    let mut res = ResourcesPt::new();
+    res.id = 1;
+    res.field_type = 1;
+    res.num = 100 as u32;
+    v.push(res);
 
     let resp = protobuf::RepeatedField::from(v);
     lr.resp = resp;
+
+    let mut c_v = Vec::new();
+    for cter in user.get_characters_ref().cter_map.iter() {
+        let mut c_pt = CharacterPt::new();
+
+        c_pt.set_temp_id(*cter.0);
+        let skills_json = cter.1.data.get("skills");
+        if skills_json.is_none() {
+            error!(
+                "Character has no Skills,user_id:{},ID:{}",
+                user.get_user_id(),
+                cter.0
+            );
+            continue;
+        }
+        let skills = skills_json.unwrap().as_array();
+        let skills = skills.unwrap();
+        let mut v = Vec::new();
+        for value in skills {
+            let id = value.as_u64().unwrap() as u32;
+            v.push(id);
+        }
+        c_pt.set_skills(v);
+        c_v.push(c_pt);
+    }
+    let res = protobuf::RepeatedField::from(c_v);
+    lr.set_cters(res);
     lr
 }
 

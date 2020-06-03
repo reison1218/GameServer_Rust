@@ -1,5 +1,5 @@
 use super::*;
-use tools::tcp::{Data, TcpSender};
+use tools::tcp::TcpSender;
 
 ///玩家会话封装结构体
 pub struct GateUser {

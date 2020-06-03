@@ -1,17 +1,15 @@
-
-
 ///bytebuf封装，用户读写字节数组
-pub mod bytebuf{
-    pub enum ReadError{
+pub mod bytebuf {
+    pub enum ReadError {
         None,
         NotEnough,
-        Zero
+        Zero,
     }
-    
-    #[derive(Clone,Debug,Default)]
+
+    #[derive(Clone, Debug, Default)]
     pub struct ByteBuf {
-        bytes: Vec<u8>,//bytes数据
-        index: usize,//读写指针
+        bytes: Vec<u8>, //bytes数据
+        index: usize,   //读写指针
     }
 
     impl ByteBuf {
@@ -24,7 +22,7 @@ pub mod bytebuf{
         }
 
         ///通过bytes数组创建bytebuf结构体
-        pub fn from(bytes:&[u8])->ByteBuf{
+        pub fn from(bytes: &[u8]) -> ByteBuf {
             let mut bb = ByteBuf {
                 bytes: Vec::new(),
                 index: 0,
@@ -33,7 +31,7 @@ pub mod bytebuf{
             bb
         }
 
-        pub fn form_vec(bytes:Vec<u8>)->ByteBuf{
+        pub fn form_vec(bytes: Vec<u8>) -> ByteBuf {
             let bb = ByteBuf {
                 bytes: bytes,
                 index: 0,
@@ -41,9 +39,9 @@ pub mod bytebuf{
             bb
         }
 
-        pub fn to_string(&self)->String{
+        pub fn to_string(&self) -> String {
             let v = self.bytes.clone();
-            let  s = String::from_utf8(v);
+            let s = String::from_utf8(v);
             s.unwrap()
         }
 
@@ -59,8 +57,6 @@ pub mod bytebuf{
         pub fn bytes(&self) -> &[u8] {
             &self.bytes[..]
         }
-
-
 
         pub fn push(&mut self, byte: u8) {
             self.bytes.push(byte);
@@ -79,21 +75,21 @@ pub mod bytebuf{
         }
 
         pub fn push_u32(&mut self, i: u32) {
-            let value:[u8; 4] = i.to_ne_bytes();
+            let value: [u8; 4] = i.to_ne_bytes();
             for i in &value {
                 self.bytes.push(*i);
             }
         }
 
         pub fn push_u16(&mut self, i: u16) {
-            let value:[u8; 2] = i.to_ne_bytes();
+            let value: [u8; 2] = i.to_ne_bytes();
             for i in &value {
                 self.bytes.push(*i);
             }
         }
 
         pub fn push_u64(&mut self, i: u64) {
-            let value:[u8; 8] = i.to_ne_bytes();
+            let value: [u8; 8] = i.to_ne_bytes();
             for i in &value {
                 self.bytes.push(*i);
             }
@@ -106,15 +102,14 @@ pub mod bytebuf{
 
         ///push字符串进去
         pub fn push_string(&mut self, s: String) {
-            for i in s.as_bytes(){
+            for i in s.as_bytes() {
                 self.bytes.push(*i);
             }
-
         }
 
         ///读取4个字节并拼成一个u32
-        pub fn read_u32(&mut self) -> Result<u32,&str> {
-            if self.bytes.len()-self.index<4{
+        pub fn read_u32(&mut self) -> Result<u32, &str> {
+            if self.bytes.len() - self.index < 4 {
                 return Err("could not read u32,the readable u8 array is notEnough!");
             }
             let buf_bytes = &self.bytes[self.index..=self.index + 3];
@@ -124,8 +119,8 @@ pub mod bytebuf{
             Ok(u32::from_ne_bytes(bytes))
         }
 
-        pub fn read_u16(&mut self) -> Result<u16,&str> {
-            if self.bytes.len()-self.index<2{
+        pub fn read_u16(&mut self) -> Result<u16, &str> {
+            if self.bytes.len() - self.index < 2 {
                 return Err("could not read u16,the readable u8 array is notEnough!");
             }
             let buf_bytes = &self.bytes[self.index..=self.index + 1];
@@ -135,8 +130,8 @@ pub mod bytebuf{
             Ok(u16::from_ne_bytes(bytes))
         }
 
-        pub fn read_u64(&mut self) -> Result<u64,&str> {
-            if self.bytes.len()-self.index<8{
+        pub fn read_u64(&mut self) -> Result<u64, &str> {
+            if self.bytes.len() - self.index < 8 {
                 return Err("could not read u64,the readable u8 array is notEnough!");
             }
             let buf_bytes = &self.bytes[self.index..=self.index + 7];
@@ -146,18 +141,18 @@ pub mod bytebuf{
             Ok(u64::from_ne_bytes(bytes))
         }
 
-        pub fn read_u8(&mut self) -> Result<u8,&str> {
-            if self.bytes.len()-self.index<1{
+        pub fn read_u8(&mut self) -> Result<u8, &str> {
+            if self.bytes.len() - self.index < 1 {
                 return Err("could not read u8,the readable u8 array is notEnough!");
             }
             let b = self.bytes.get(self.index).unwrap();
-            self.index+=1;
+            self.index += 1;
             Ok(*b)
         }
 
-        pub fn read_bytes(&mut self) -> Result<&[u8],&str> {
-            let  v = &self.bytes[self.index..];
-            self.index = self.bytes.len()-1;
+        pub fn read_bytes(&mut self) -> Result<&[u8], &str> {
+            let v = &self.bytes[self.index..];
+            self.index = self.bytes.len() - 1;
             Ok(v)
         }
 
@@ -168,47 +163,42 @@ pub mod bytebuf{
 }
 
 ///数据包封装，用户封装传输的数据包
-pub mod packet{
+pub mod packet {
     use crate::util::bytebuf::ByteBuf;
-    #[derive(Debug,Default,Clone)]
+    #[derive(Debug, Default, Clone)]
     pub struct PacketDes {
         cmd: u32,
         len: u32,
-        user_id:u32,
-        is_broad:bool,//是否需要广播
-        is_client:bool//是否需要广播
+        user_id: u32,
+        is_broad: bool,  //是否需要广播
+        is_client: bool, //是否需要广播
     }
 
-    #[derive(Debug,Default,Clone)]
+    #[derive(Debug, Default, Clone)]
     pub struct Packet {
         packet_des: PacketDes,
         bytes: Vec<u8>,
     }
 
     impl PacketDes {
-        pub fn new(cmd: u32,len:u32,user_id:u32) -> PacketDes {
+        pub fn new(cmd: u32, len: u32, user_id: u32) -> PacketDes {
             PacketDes {
                 cmd: cmd,
                 len: len,
                 user_id: user_id,
-                is_broad:false,
-                is_client:true
+                is_broad: false,
+                is_client: true,
             }
         }
     }
 
+    unsafe impl Send for Packet {}
 
-    unsafe  impl Send for Packet{
-
-    }
-
-    unsafe  impl Sync for Packet{
-
-    }
+    unsafe impl Sync for Packet {}
 
     impl Packet {
-        pub fn new(cmd: u32,len:u32,user_id:u32) -> Packet {
-            let mut des = PacketDes::new(cmd,len,user_id);
+        pub fn new(cmd: u32, len: u32, user_id: u32) -> Packet {
+            let des = PacketDes::new(cmd, len, user_id);
             let v: Vec<u8> = Vec::new();
             Packet {
                 packet_des: des,
@@ -216,30 +206,30 @@ pub mod packet{
             }
         }
 
-        pub fn get_user_id(&self)->u32{
+        pub fn get_user_id(&self) -> u32 {
             self.packet_des.user_id
         }
 
-        pub fn set_user_id(&mut self,user_id:u32){
+        pub fn set_user_id(&mut self, user_id: u32) {
             self.packet_des.user_id = user_id;
         }
 
-        pub fn set_is_broad(&mut self,is_broad:bool){
+        pub fn set_is_broad(&mut self, is_broad: bool) {
             self.packet_des.is_broad = is_broad;
         }
 
-        pub fn set_is_client(&mut self,is_client:bool){
+        pub fn set_is_client(&mut self, is_client: bool) {
             self.packet_des.is_client = is_client;
         }
 
         ///bytebuf转换成packet,只能用于服务端进程内部通信！
-        pub fn from_only_server(mut bytes: Vec<u8>) -> Result<Packet,String> {
+        pub fn from_only_server(bytes: Vec<u8>) -> Result<Packet, String> {
             let mut bb = ByteBuf::form_vec(bytes);
             let cmd = bb.read_u32()?;
             let user_id = bb.read_u32()?;
             let is_client = bb.read_u8()? != 0;
             let is_broad = bb.read_u8()? != 0;
-            let mut packet = Packet::new(cmd,0,user_id);
+            let mut packet = Packet::new(cmd, 0, user_id);
             packet.set_is_client(is_client);
             packet.set_is_broad(is_broad);
             packet.set_data(bb.read_bytes()?);
@@ -247,20 +237,20 @@ pub mod packet{
         }
 
         ///bytebuf转换成packet,只能用于服务端进程内部通信！
-        pub fn from_only_client(mut bytes: Vec<u8>) -> Result<Packet,String> {
+        pub fn from_only_client(bytes: Vec<u8>) -> Result<Packet, String> {
             let mut bb = ByteBuf::form_vec(bytes);
             let cmd = bb.read_u32()?;
             let len = bb.read_u32()?;
             bb.read_u32()?;
             bb.read_u32()?;
-            let mut packet = Packet::new(cmd,len,0);
+            let mut packet = Packet::new(cmd, len, 0);
             packet.set_is_client(true);
             packet.set_is_broad(false);
             packet.set_data(bb.read_bytes()?);
             Ok(packet)
         }
 
-        pub fn all_to_client_vec(&self)->Vec<u8>{
+        pub fn all_to_client_vec(&self) -> Vec<u8> {
             let mut bb = ByteBuf::new();
             bb.push_u32(self.get_cmd());
             bb.push_u32(self.get_len());
@@ -276,7 +266,7 @@ pub mod packet{
         }
 
         //设置命令
-        pub fn set_cmd(&mut self,cmd:u32){
+        pub fn set_cmd(&mut self, cmd: u32) {
             self.packet_des.cmd = cmd;
         }
 
@@ -301,25 +291,25 @@ pub mod packet{
         }
 
         ///获得body,慎重使用，此函数直接转让bytes所有权！
-        pub fn get_data_vec(self)->Vec<u8>{
-           self.bytes
+        pub fn get_data_vec(self) -> Vec<u8> {
+            self.bytes
         }
 
-        pub fn set_len(&mut self,len:u32){
-            self.packet_des.len=len;
+        pub fn set_len(&mut self, len: u32) {
+            self.packet_des.len = len;
         }
         ///获得userid
         pub fn get_len(&self) -> u32 {
             self.packet_des.len
         }
 
-        pub fn cal_len(&mut self){
-            let len = 16+self.get_data().len();
+        pub fn cal_len(&mut self) {
+            let len = 16 + self.get_data().len();
             self.set_len(len as u32);
         }
 
         ///转换成bytebuf
-        pub fn to_client_bytebuf(&mut self)->ByteBuf{
+        pub fn to_client_bytebuf(&mut self) -> ByteBuf {
             self.cal_len();
             let mut bb = ByteBuf::new();
             bb.push_u32(self.get_cmd());
@@ -330,16 +320,16 @@ pub mod packet{
             bb
         }
 
-        pub fn is_client(&self)->bool{
+        pub fn is_client(&self) -> bool {
             self.packet_des.is_client
         }
 
-        pub fn is_broad(&self)->bool{
+        pub fn is_broad(&self) -> bool {
             self.packet_des.is_broad
         }
 
         ///转换成bytebuf
-        pub fn to_server_bytebuf(&self)->ByteBuf{
+        pub fn to_server_bytebuf(&self) -> ByteBuf {
             let mut bb = ByteBuf::new();
             bb.push_u32(self.get_cmd());
             bb.push_u32(self.get_user_id());
@@ -350,14 +340,14 @@ pub mod packet{
         }
 
         ///转换成byte数组
-        pub fn build_client_bytes(&mut self)->Vec<u8>{
-            let mut byte_buf = self.to_client_bytebuf();
+        pub fn build_client_bytes(&mut self) -> Vec<u8> {
+            let byte_buf = self.to_client_bytebuf();
             byte_buf.into_bytes()
         }
 
         ///转换成byte数组
-        pub fn build_server_bytes(&self)->Vec<u8>{
-            let mut byte_buf = self.to_server_bytebuf();
+        pub fn build_server_bytes(&self) -> Vec<u8> {
+            let byte_buf = self.to_server_bytebuf();
             byte_buf.into_bytes()
         }
     }

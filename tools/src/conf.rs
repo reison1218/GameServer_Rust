@@ -11,9 +11,11 @@ pub struct Conf {
 
 impl Conf {
     ///初始化配置文件
-    pub fn init(path:&str) -> Conf {
+    pub fn init(path: &str) -> Conf {
         let conf = read_conf_from_file(path);
-        let mut conf = Conf { conf:conf.unwrap() };
+        let conf = Conf {
+            conf: conf.unwrap(),
+        };
         conf
     }
 
@@ -37,7 +39,7 @@ impl Conf {
 }
 
 ///读取配置文件
-fn read_conf_from_file<P: AsRef<Path>>(path: P) -> Result<HashMap<String, Value>, Box<Error>> {
+fn read_conf_from_file<P: AsRef<Path>>(path: P) -> Result<HashMap<String, Value>, Box<dyn Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
