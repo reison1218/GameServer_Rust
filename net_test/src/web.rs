@@ -31,7 +31,6 @@ pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
     map.insert("register_platform".to_owned(), JsonValue::from("test"));
     map.insert("game_id".to_owned(), JsonValue::from(101));
     map.insert("nick_name".to_owned(), JsonValue::from("test"));
-    map.insert("avatar".to_owned(), JsonValue::from("test123"));
     map.insert("phone_no".to_owned(), JsonValue::from("1231312414"));
     map.insert("platform_id".to_owned(), JsonValue::from(pid.to_owned()));
     let value = JsonValue::from(map);
@@ -43,9 +42,7 @@ pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
 
     let mut str = String::new();
     res.take_body().read_to_string(&mut str).await.unwrap();
-    println!("{:?}",&str);
-    let mut res_json = Value::from_str(str.as_str());
-    let mut res_json = res_json.unwrap();
+    let mut res_json = Value::from_str(str.as_str()).unwrap();
     let map = res_json.as_object_mut().unwrap();
     println!("{:?}", map);
     let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;

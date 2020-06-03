@@ -103,22 +103,21 @@ fn foo(words: &[&str]) {
 }
 
 fn test()->tools::result::errors::Result<()>{
-    error_chain::bail!("test".to_owned());
+    error_chain::bail!("test".to_owned())
 }
 
 
 fn main() -> tools::result::errors::Result<()> {
-    let rs = test();
-    if rs.is_err(){
-        println!("{:?}",rs.err().unwrap());
-    }
-    //tcp_client::test_tcp_client("platform_id");
+    test()?;
+
+    println!("test");
+
+    tcp_client::test_tcp_client("platform_id");
     //block_on(web::test_http_client("1"));
     // let mut path = env::current_dir()?;
     // path.push("/config");
     // let mut str = path.as_os_str().to_str().unwrap();
     //let res = str.to_string()+"/config";
     //println!("{:?}",res);
-    println!("finish");
     Ok(())
 }

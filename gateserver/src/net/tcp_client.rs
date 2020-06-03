@@ -1,5 +1,5 @@
 use super::*;
-use tools::cmd_code::RoomCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 
 pub enum TcpClientType {
     GameServer,
@@ -86,21 +86,12 @@ impl ClientHandler for TcpClientHandler {
 
             match gate_user {
                 Some(user) => {
-                    let mut s = S_USER_LOGIN::new();
-                    let res = s.merge_from_bytes(&packet.get_data());
-                    if res.is_err() {
-                        error!(
-                            "S_USER_LOGIN parse error!mess:{:?}",
-                            res.err().unwrap().to_string()
-                        );
-                        return;
-                    }
                     let res = user.get_tcp_mut_ref().write(packet.build_client_bytes());
                     if res.is_err() {
                         error!("write error!mess:{:?}", res.err().unwrap().to_string());
                         return;
                     }
-                    info!("回客户端消息");
+                    info!("回客户端消息,cmd:{}", packet.get_cmd());
                 }
                 None => {
                     error!("user data is null,id:{}", &packet.get_user_id());

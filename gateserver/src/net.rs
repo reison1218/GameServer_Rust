@@ -26,17 +26,17 @@ use serde_json::Value;
 use std::str::FromStr;
 
 ///校验用户中心是否在线
-fn check_uc_online(user_id: &u32) -> bool {
+fn check_uc_online(user_id: &u32) -> tools::result::errors::Result<bool> {
     //校验用户中心是否登陆过，如果有，则不往下执行
     let mut redis_write = REDIS_POOL.write().unwrap();
     let pid: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
     if pid.is_none() {
-        return false;
+        return error_chain::bail!("this user_id is invalid!user_id:{}", user_id);
     }
     let pid = pid.unwrap();
     let res: Option<String> = redis_write.hget(0, "users", pid.as_str());
     if res.is_none() {
-        return false;
+        return error_chain::bail!("this user_id is invalid!user_id:{}", user_id);
     }
     let res = res.unwrap();
     let json = Value::from_str(res.as_str());
@@ -44,15 +44,16 @@ fn check_uc_online(user_id: &u32) -> bool {
         Ok(json_value) => {
             let bool_res = json_value["on_line"].as_bool();
             if bool_res.is_some() && bool_res.unwrap() {
-                return true;
+                return Ok(true);
+            } else {
+                return Ok(false);
             }
         }
         Err(e) => {
-            error!("{:?}", e);
-            return false;
+            return error_chain::bail!("{:?}", e.to_string());
         }
     }
-    false
+    Ok(false)
 }
 
 ///校验内存是否在线，并做处理

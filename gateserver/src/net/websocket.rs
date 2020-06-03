@@ -45,7 +45,17 @@ impl Handler for WebSocketHandler {
         info!("GateServer got message '{}'. ", msg);
         //如果是二进制数据
         if msg.is_binary() {
-            self.handle_binary(msg.into_data());
+            let res = self.handle_binary(p);
+            if res.is_err() {
+                let str = res.err().unwrap().to_string();
+                error!("{:?}", str.as_str());
+                if cmd == GameCode::Login as u32 {
+                    let mut res = S_USER_LOGIN::new();
+                    res.set_is_succ(false);
+                    res.set_err_mess(str);
+                    self.write_to_client(res.write_to_bytes().unwrap());
+                }
+            }
         } else if msg.is_text() {
             //如果是文本数据
             self.ws.send("hello client!");
@@ -83,41 +93,36 @@ impl Handler for WebSocketHandler {
 }
 
 impl WebSocketHandler {
-    fn handle_binary(&mut self, bytes: Vec<u8>) {
-        let packet = Packet::from_only_client(bytes);
-        if packet.is_err() {
-            error!("{:?}", packet.err().unwrap());
-            return;
-        }
-        let mut packet = packet.unwrap();
-
+    fn handle_binary(&mut self, bytes: Vec<u8>) -> tools::result::errors::Result<()> {
+        let mut packet = Packet::from_only_client(bytes)?;
         let token = self.ws.token().0;
-        let mut write = self.cm.write().unwrap();
+        let mut write = self.cm.write();
+        if write.is_err() {
+            return error_chain::bail!("{:?}", write.err().unwrap().to_string());
+        }
+        let mut write = write.unwrap();
         let user_id = write.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
         if user_id.is_none() && packet.get_cmd() != GameCode::Login as u32 {
-            error!(
+            let str = format!(
                 "this player is not login!cmd:{},token:{}",
                 packet.get_cmd(),
                 token
             );
-            return;
+
+            return error_chain::bail!(str);
         }
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
             let mut c_login = C_USER_LOGIN::new();
-            let result = c_login.merge_from_bytes(packet.get_data());
-            if result.is_err() {
-                error!("protobuf转换错误：{:?}", result.err().unwrap());
-                return;
-            }
+            let result = c_login.merge_from_bytes(packet.get_data())?;
 
             //校验用户中心账号是否已经登陆了
-            let mut res = check_uc_online(&c_login.get_user_id());
+            let mut res = check_uc_online(&c_login.get_user_id())?;
             if res {
                 //校验内存
-                res = check_mem_online(&c_login.get_user_id(), &mut write);
+                let res = check_mem_online(&c_login.get_user_id(), &mut write);
                 if !res {
                     modify_redis_user(c_login.get_user_id(), false);
                 } else {
@@ -126,11 +131,12 @@ impl WebSocketHandler {
                     res.set_err_mess("this account already login!".to_owned());
                     std::mem::drop(write);
                     self.ws.send(res.write_to_bytes().unwrap());
-                    error!(
+                    let str = format!(
                         "this account already login!user_id:{}",
                         &c_login.get_user_id()
                     );
-                    return;
+
+                    return error_chain::bail!("{:?}", str);
                 }
             }
 
@@ -146,6 +152,7 @@ impl WebSocketHandler {
         std::mem::drop(write);
         //转发函数
         self.arrange_packet(packet);
+        Ok(())
     }
 
     ///数据包转发

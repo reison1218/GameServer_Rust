@@ -139,7 +139,6 @@ pub mod tcp_server {
                         let (mut connection, address) = result.unwrap();
                         connection.set_nodelay(true);
                         let token = next(&mut unique_token);
-                        info!("Accepted connection from: {}", address);
                         //clone a handler for tcpstream
                         let mut hd = handler.try_clone();
                         //trigger the open event
@@ -346,10 +345,6 @@ pub trait ClientHandler: Send + Sync {
             }
             //如果读取到的字节数大于0则交给handler
             if size > 0 as usize {
-                info!(
-                    "TCP-CLIENT:data of message from server {:?} ,data size:{}",
-                    address, size
-                );
                 //读取到字节交给handler处理来处理
                 let mut v = read_bytes.to_vec();
                 v.resize(size, 0);

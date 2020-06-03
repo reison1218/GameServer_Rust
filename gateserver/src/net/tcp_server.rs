@@ -1,6 +1,6 @@
 use super::*;
 use serde_json::Value;
-use tools::cmd_code::RoomCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::tcp::TcpSender;
 
 struct TcpServerHandler {
@@ -48,13 +48,22 @@ impl tools::tcp::Handler for TcpServerHandler {
             error!("client packet len is wrong!");
             return;
         }
-        info!("GateServer got message '{:?}'. ", mess);
         let packet = Packet::from_only_client(mess);
         match packet {
             Ok(p) => {
-                let res = self.handle_binary(p);
+                let cmd = p.get_cmd();
+                info!("GateServer receive data of client!cmd:{}", cmd);
+                let res = self.handle_binary(p.clone());
                 if res.is_err() {
-                    error!("{:?}", res.err().unwrap().to_string());
+                    let str = res.err().unwrap().to_string();
+                    error!("{:?}", str.as_str());
+                    if cmd == GameCode::Login as u32 {
+                        let mut res = S_USER_LOGIN::new();
+                        res.set_is_succ(false);
+                        res.set_err_mess(str);
+                        p.set_data_from_vec(res.write_to_bytes().unwrap());
+                        self.write_to_client(p.build_client_bytes());
+                    }
                 }
             }
             Err(e) => {
@@ -94,51 +103,17 @@ impl TcpServerHandler {
                 packet.get_cmd(),
                 token
             );
-            return error_chain::bail!(str);
+            return error_chain::bail!("{:?}", str);
         }
+        let user_id = *user_id.unwrap();
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
-            let mut c_login = C_USER_LOGIN::new();
-            c_login.merge_from_bytes(packet.get_data())?;
-
-            //校验用户中心账号是否已经登陆了
-            let mut res = check_uc_online(&c_login.get_user_id());
-            if res {
-                //校验内存
-                res = check_mem_online(&c_login.get_user_id(), &mut write);
-                if !res {
-                    modify_redis_user(c_login.get_user_id(), false);
-                } else {
-                    let mut res = S_USER_LOGIN::new();
-                    res.set_is_succ(false);
-                    res.set_err_mess("this account already login!".to_owned());
-                    std::mem::drop(write);
-                    self.write_to_client(res.write_to_bytes().unwrap());
-                    let str = format!(
-                        "this account already login!user_id:{}",
-                        &c_login.get_user_id()
-                    );
-
-                    return error_chain::bail!(str);
-                }
-            }
-
-            //校验内存是否已经登陆了(单一校验内存是否在线先保留在这)
-            //check_mem_online(&c_login.get_userId(), &mut write);
-
-            //添加到内存
-            write.add_gate_user(
-                c_login.get_user_id(),
-                None,
-                Some(self.tcp.as_ref().unwrap().clone()),
-            );
+            handle_login(packet.get_data(), &mut write);
+            write.add_gate_user(user_id, None, self.tcp.clone());
         }
-
-        //封装packet转发到其他服
-        let user_id = write.get_channels_user_id(&token);
-        packet.set_user_id(*user_id.unwrap());
-        //释放write指针，绕过编译器检查
         std::mem::drop(write);
+        //封装packet转发到其他服
+        packet.set_user_id(user_id);
         //转发函数
         self.arrange_packet(packet);
         Ok(())
@@ -172,4 +147,27 @@ pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
         error!("{:?}", res.err().unwrap().to_string());
         std::process::abort();
     }
+}
+
+///处理登陆逻辑
+fn handle_login(
+    bytes: &[u8],
+    write: &mut RwLockWriteGuard<ChannelMgr>,
+) -> tools::result::errors::Result<()> {
+    let mut c_login = C_USER_LOGIN::new();
+    c_login.merge_from_bytes(bytes)?;
+    //校验用户中心账号是否已经登陆了
+    let uc_res = check_uc_online(&c_login.get_user_id())?;
+    //校验内存
+    let mem_res = check_mem_online(&c_login.get_user_id(), write);
+    //如果用户中心登陆了或者本地内存登陆了，直接错误返回
+    if uc_res || mem_res {
+        // modify_redis_user(c_login.get_user_id(), false);
+        let str = format!(
+            "this account already login!user_id:{}",
+            &c_login.get_user_id()
+        );
+        return error_chain::bail!("{:?}", str);
+    }
+    Ok(())
 }

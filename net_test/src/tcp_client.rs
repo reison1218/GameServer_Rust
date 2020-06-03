@@ -17,8 +17,12 @@ use tools::protos::base::PlayerPt;
 
 pub fn test_tcp_client(pid:&str){
         let uid = block_on(crate::test_http_client(pid));
-        let uid = uid.unwrap();
+        if uid.is_err(){
+            println!("{:?}",uid.err().unwrap().to_string());
+            return;
+        }
         let mut tcp_client = TcpClientHandler::new();
+        tcp_client.user_id = uid.unwrap();
         //tcp_client.on_read("192.168.1.100:16801".to_string());
         tcp_client.on_read("localhost:16801".to_string());
 }
@@ -44,11 +48,12 @@ pub fn test_tcp_clients(){
 }
 pub struct TcpClientHandler {
     ts: Option<TcpStream>,
+    pub user_id:u32
 }
 
 impl TcpClientHandler {
     pub fn new() -> TcpClientHandler {
-        let mut tch = TcpClientHandler { ts: None};
+        let mut tch = TcpClientHandler { ts: None,user_id:0 as u32};
         tch
     }
 }
@@ -60,10 +65,10 @@ impl ClientHandler for TcpClientHandler {
         packet.set_cmd(GameCode::Login as u32);
 
         let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
-        let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
-        write.fetch_add(1, Ordering::Relaxed);
-        let id = write.load(Ordering::Relaxed);
-        s_l.set_user_id(id);
+        // let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
+        // write.fetch_add(1, Ordering::Relaxed);
+        // let id = write.load(Ordering::Relaxed);
+        s_l.set_user_id(self.user_id);
         packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
         packet.set_len(16+packet.get_data().len() as u32);
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();

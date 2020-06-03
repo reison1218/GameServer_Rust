@@ -109,7 +109,7 @@ fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let game = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("game_port");
-        info!("开始链接游戏服:{:?}", address);
+        info!("开始链接游戏服:{:?}...", address);
         tch.on_read(address.to_string());
     };
     async_std::task::spawn(game);
@@ -120,7 +120,7 @@ fn init_room_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let room = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
         let address = CONF_MAP.get_str("room_port");
-        info!("开始链接房间服:{:?}", address);
+        info!("开始链接房间服:{:?}...", address);
         tch.on_read(address.to_string());
     };
     async_std::task::spawn(room);
