@@ -33,7 +33,7 @@ impl HttpServerHandler for SavePlayerHttpHandler {
         params: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         save_player_http(self.gm.clone());
-        let mut value = json!({ "status":"OK" });
+        let value = json!({ "status":"OK" });
         Ok(value)
     }
 }
@@ -90,6 +90,6 @@ pub async fn notice_user_center(user_id: u32, _type: &str) {
         Err(e) => {
             error!("{:?}", e.to_string());
         }
-        Ok(o) => {}
+        Ok(_) => {}
     }
 }

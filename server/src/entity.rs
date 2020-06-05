@@ -101,7 +101,7 @@ pub trait Entity: Send + Sync {
 
     ///设置时间
     fn set_time(&mut self, key: String, value: NaiveDateTime) {
-        let mut jv = self.get_mut_json_value();
+        let jv = self.get_mut_json_value();
         if jv.is_none() {
             return;
         }
@@ -143,7 +143,7 @@ pub trait Dao: Entity {
 
     ///更新函数（trait默认函数，不必重写）
     fn update(&mut self) -> Result<u32, String> {
-        let mut v: Vec<Value> = self.to_update_vec_value();
+        let v: Vec<Value> = self.to_update_vec_value();
         let mut sql = String::new();
         sql.push_str("update ");
         sql.push_str(self.get_table_name());
@@ -152,7 +152,7 @@ pub trait Dao: Entity {
         if tem_id.is_some() {
             sql.push_str("and tem_id=:tem_id");
         }
-        let mut qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if qr.is_err() {
             let err = qr.err().unwrap();
             error!("{:?}", err);
@@ -164,7 +164,7 @@ pub trait Dao: Entity {
 
     ///insert函数（trait默认函数，不必重写）
     fn insert(&mut self) -> Result<u32, String> {
-        let mut v: Vec<Value> = self.to_insert_vec_value();
+        let v: Vec<Value> = self.to_insert_vec_value();
         let mut sql = String::new();
         sql.push_str("insert into ");
         sql.push_str(self.get_table_name());
@@ -179,10 +179,10 @@ pub trait Dao: Entity {
             }
         }
 
-        let mut qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
 
         if qr.is_err() {
-            let mut str = String::from_utf8(qr.unwrap().info());
+            let str = String::from_utf8(qr.unwrap().info());
             let s = str.unwrap();
             println!("{:?}", s);
             return Err(s);

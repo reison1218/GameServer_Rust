@@ -68,10 +68,10 @@ impl UserData {
         if self.user_info.version > 0 {
             let res = self.user_info.update();
             match res {
-                Ok(i) => {
+                Ok(_) => {
                     self.clear_version();
                 }
-                Err(e) => {}
+                Err(_) => {}
             }
         }
     }

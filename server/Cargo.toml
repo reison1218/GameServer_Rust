@@ -12,7 +12,6 @@ lto = "fat"
 codegen-units = 1
 
 [dependencies]
-ws="0.9.1"
 #postgres ="0.15.2"
 num_cpus="1.10.1"
 threadpool="1.7.1"

@@ -59,13 +59,13 @@ impl Characters {
         sql.push_str(table_name);
         sql.push_str(" where user_id=:user_id");
 
-        let mut q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if q.is_err() {
             error!("{:?}", q.err().unwrap());
             return None;
         }
         let mut map = HashMap::new();
-        let mut q = q.unwrap();
+        let q = q.unwrap();
         for _qr in q {
             let (uid, tid, js) = mysql::from_row(_qr.unwrap());
             let c = Character::init(uid, Some(tid), js);
@@ -108,17 +108,17 @@ impl Character {
             sql.push_str(" and tem_id:tem_id");
         }
 
-        let mut q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if q.is_err() {
             error!("{:?}", q.err().unwrap());
             return None;
         }
-        let mut q = q.unwrap();
+        let q = q.unwrap();
 
         let mut data = None;
         for _qr in q {
             let (id, js) = mysql::from_row(_qr.unwrap());
-            let mut c = Character::init(id, tem_id, js);
+            let c = Character::init(id, tem_id, js);
             data = Some(c);
         }
         data

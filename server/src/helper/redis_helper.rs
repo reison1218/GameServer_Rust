@@ -16,12 +16,12 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
     if res.is_none() {
         return;
     }
-    let mut res = res.unwrap();
+    let res = res.unwrap();
     let json = Value::from_str(res.as_str());
 
     match json {
         Ok(mut json_value) => {
-            let mut json_res = json_value.as_object_mut();
+            let json_res = json_value.as_object_mut();
             if json_res.is_some() {
                 json_res.unwrap().insert(key.to_owned(), value);
 
@@ -52,12 +52,12 @@ pub fn get_user_from_redis(user_id: u32) -> Option<Value> {
     if res.is_none() {
         return None;
     }
-    let mut res = res.unwrap();
+    let res = res.unwrap();
 
     let json = Value::from_str(res.as_str());
 
     match json {
-        Ok(mut json_value) => Some(json_value),
+        Ok(json_value) => Some(json_value),
         Err(e) => {
             error!("{:?}", e);
             None

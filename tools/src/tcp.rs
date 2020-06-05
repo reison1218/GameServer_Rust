@@ -86,7 +86,6 @@ pub mod tcp_server {
     use mio::net::{TcpListener as MioTcpListener, TcpStream as MioTcpStream};
     use mio::{Events, Interest, Poll, Registry, Token};
     use std::collections::hash_map::HashMap;
-    use std::error::Error;
     use std::io::{self, Read, Write};
     use std::net::SocketAddr;
     use std::str::FromStr;
@@ -136,7 +135,7 @@ pub mod tcp_server {
                             error!("{:?}", result.err().unwrap());
                             continue;
                         }
-                        let (mut connection, address) = result.unwrap();
+                        let (mut connection, _) = result.unwrap();
                         connection.set_nodelay(true);
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream

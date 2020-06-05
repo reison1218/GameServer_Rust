@@ -74,7 +74,7 @@ fn save_timer(gm: Arc<RwLock<GameMgr>>) {
             Err(str) => {
                 error!("玩家数据保存出错,message:{:?}", str);
             }
-            Ok(mut vec) => {
+            Ok(vec) => {
                 let time = std::time::SystemTime::now();
                 for mut v in vec {
                     let rs = v.update();

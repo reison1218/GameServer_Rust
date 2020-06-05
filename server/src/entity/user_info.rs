@@ -34,8 +34,8 @@ impl Entity for User {
     }
 
     fn update_login_time(&mut self) {
-        let mut map = self.get_mut_json_value();
-        let mut time = Local::now();
+        let map = self.get_mut_json_value();
+        let time = Local::now();
         let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
         map.unwrap().insert("last_login_time".to_owned(), jv);
         self.add_version();
@@ -131,7 +131,7 @@ impl User {
         let mut js_data = serde_json::map::Map::new();
         js_data.insert(USER_OL.to_string(), JsonValue::from(1));
         js_data.insert(NICK_NAME.to_string(), JsonValue::from(nick_name));
-        let mut user = User::init(user_id, None, serde_json::Value::from(js_data));
+        let user = User::init(user_id, None, serde_json::Value::from(js_data));
         user
     }
 
@@ -147,17 +147,17 @@ impl User {
             sql.push_str(" and tem_id:tem_id");
         }
 
-        let mut q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if q.is_err() {
             error!("{:?}", q.err().unwrap());
             return None;
         }
-        let mut q = q.unwrap();
+        let q = q.unwrap();
 
         let mut data = None;
         for _qr in q {
             let (id, js) = mysql::from_row(_qr.unwrap());
-            let mut u = User::init(id, tem_id, js);
+            let u = User::init(id, tem_id, js);
             data = Some(u);
         }
         data
@@ -188,7 +188,7 @@ pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<
         );
         s_s_d.err_mess = "request data is error!".to_owned();
     }
-    let mut user = user.unwrap();
+    let user = user.unwrap();
 
     if cmn.nick_name.as_str() == user.get_user_info_mut_ref().get_nick_name() {
         is_success = false;

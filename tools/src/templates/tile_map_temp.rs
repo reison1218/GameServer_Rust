@@ -33,6 +33,7 @@ pub struct TileMapTempMgr {
 }
 
 impl TileMapTempMgr {
+    #[warn(unreachable_code)]
     pub fn get_temp(&self, map_id: u32) -> Result<&TileMapTemp> {
         let res = self.temps.get(&map_id);
         if res.is_none(){

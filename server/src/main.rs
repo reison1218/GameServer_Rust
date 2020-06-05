@@ -89,7 +89,7 @@ lazy_static! {
 
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
 fn main() {
-    let mut game_mgr: Arc<RwLock<GameMgr>> = Arc::new(RwLock::new(GameMgr::new()));
+    let game_mgr: Arc<RwLock<GameMgr>> = Arc::new(RwLock::new(GameMgr::new()));
 
     let info_log = CONF_MAP.get_str("info_log_path");
     let error_log = CONF_MAP.get_str("error_log_path");

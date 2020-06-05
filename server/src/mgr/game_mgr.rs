@@ -22,7 +22,7 @@ pub struct GameMgr {
 impl GameMgr {
     ///创建gamemgr结构体
     pub fn new() -> GameMgr {
-        let mut users: HashMap<u32, UserData> = HashMap::new();
+        let users: HashMap<u32, UserData> = HashMap::new();
         let mut gm = GameMgr {
             users,
             sender: None,
@@ -36,7 +36,7 @@ impl GameMgr {
     pub fn save_user_http(&mut self) {
         let time = std::time::SystemTime::now();
         let mut count: u32 = 0;
-        for (k, mut v) in self.users.iter_mut() {
+        for (k, v) in self.users.iter_mut() {
             if v.get_version() <= 0 {
                 continue;
             }

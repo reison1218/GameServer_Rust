@@ -16,8 +16,6 @@ use crate::net::http::notice_user_center;
 use crate::DB_POOL;
 use futures::executor::block_on;
 use protobuf::Message;
-use std::str::FromStr;
-use std::sync::mpsc::{Sender, SyncSender};
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::protocol::C_USER_LOGIN;
 
@@ -55,7 +53,7 @@ impl tools::tcp::Handler for TcpServerHandler {
         let packet = Packet::from_only_server(mess);
         match packet {
             Ok(p) => {
-                let mut gm = self.gm.clone();
+                let gm = self.gm.clone();
                 async_std::task::spawn(handler_mess_s(gm, p));
             }
             Err(e) => {
@@ -105,7 +103,7 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
 fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
-    let mut user_data = gm.read().unwrap().users.contains_key(&user_id);
+    let user_data = gm.read().unwrap().users.contains_key(&user_id);
     //走登录流程
     let mut gm_lock = gm.write().unwrap();
     //如果内存没有数据，则从数据库里面找
@@ -129,7 +127,7 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> anyhow::Result<()> {
     async_std::task::spawn(notice_user_center(user_id, "login"));
 
     //返回客户端
-    let mut lr = user2proto(user_data);
+    let lr = user2proto(user_data);
     let bytes = lr.write_to_bytes().unwrap();
     packet.set_user_id(user_id);
     packet.set_is_client(true);
@@ -169,7 +167,7 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         let mut user = User::new(user_id, nick_name.unwrap().as_str().unwrap());
         //以下入库采用异步执行，以免造成io堵塞
         //玩家角色数据
-        let mut c = Characters::new(user.user_id);
+        let c = Characters::new(user.user_id);
         user.set_last_character(c.get_frist());
 
         //封装到userdata里
@@ -213,11 +211,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     } else {
         ppt.set_last_character(last_character.unwrap() as u32);
     }
-
     ppt.dlc.push(1);
-
-    let last_cter_id = user.get_user_info_ref().get_usize(LAST_CHARACTER);
-
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
     result = user.get_user_info_mut_ref().get_time(LAST_LOGIN_TIME);
     time = 0;
