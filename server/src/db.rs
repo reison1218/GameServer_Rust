@@ -1,14 +1,5 @@
 pub mod dbtool;
 pub mod table_contants;
+use log::info;
 use mysql::{Error, Params, Pool, QueryResult, Value};
-//use postgres::{Connection, TlsMode};
-use crate::db::dbtool::DbPool;
-use crate::entity::user_info::User;
-use crate::entity::{Dao, Entity, EntityData};
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use std::option::Option::{None, Some};
 use std::result::Result;
-use std::sync::mpsc::Sender;
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
-use tools::thread_pool::{MyThreadPool, ThreadPoolHandler, ThreadPoolType};

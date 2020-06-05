@@ -1,5 +1,4 @@
 use super::*;
-use futures::AsyncWriteExt;
 use serde_json::Value;
 use std::str::FromStr;
 
@@ -25,7 +24,7 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
             if json_res.is_some() {
                 json_res.unwrap().insert(key.to_owned(), value);
 
-                let res: Option<u32> = redis_write.hset(
+                let _: Option<u32> = redis_write.hset(
                     0,
                     "users",
                     pid.to_string().as_str(),

@@ -1,7 +1,5 @@
 use super::*;
-use crate::entity::Entity;
 use crate::CONF_MAP;
-use mysql::prelude::ToValue;
 
 pub struct DbPool {
     pub pool: Pool,

@@ -3,7 +3,6 @@ use crate::entity::user_contants::*;
 use crate::helper::redis_helper::modify_redis_user;
 use chrono::Local;
 use protobuf::Message;
-use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::util::packet::Packet;
@@ -28,7 +27,7 @@ impl Entity for User {
     }
 
     ///设置玩家id
-    fn set_ids(&mut self, user_id: u32, tem_id: u32) {
+    fn set_ids(&mut self, user_id: u32, _: u32) {
         self.user_id = user_id;
         self.add_version();
     }
@@ -68,7 +67,7 @@ impl Entity for User {
         &mut self.data
     }
 
-    fn init(user_id: u32, tem_id: Option<u32>, js: JsonValue) -> Self
+    fn init(user_id: u32, _: Option<u32>, js: JsonValue) -> Self
     where
         Self: Sized,
     {
@@ -165,13 +164,14 @@ impl User {
 }
 
 ///请求修改昵称
+#[warn(unreachable_code)]
 pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         let str = format!("user data is null for id:{}", user_id);
         error!("{:?}", str.as_str());
-        return anyhow::bail!(str);
+        anyhow::bail!(str)
     }
     let mut s_s_d = S_MODIFY_NICK_NAME::new();
     let mut cmn = C_MODIFY_NICK_NAME::new();

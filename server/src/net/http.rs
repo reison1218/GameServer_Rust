@@ -1,15 +1,11 @@
 use super::*;
 use crate::entity::save_player_http;
-use crate::entity::Entity;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::CONF_MAP;
-use crate::REDIS_POOL;
-use async_h1::client;
-use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
+use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
-use std::str::FromStr;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 
@@ -30,7 +26,7 @@ impl HttpServerHandler for SavePlayerHttpHandler {
 
     fn execute(
         &mut self,
-        params: Option<Value>,
+        _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
@@ -55,10 +51,10 @@ impl HttpServerHandler for StopPlayerHttpHandler {
 
     fn execute(
         &mut self,
-        params: Option<Value>,
+        _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         save_player_http(self.gm.clone());
-        let mut value = json!({ "status":"OK" });
+        let value = json!({ "status":"OK" });
         let exit = async {
             async_std::task::sleep(Duration::from_secs(3)).await;
             info!("游戏服务器退出进程!");

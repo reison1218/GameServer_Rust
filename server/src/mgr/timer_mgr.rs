@@ -1,9 +1,7 @@
 use super::*;
 use crate::mgr::game_mgr::GameMgr;
-use chrono::format::Numeric::Month;
-use chrono::{Datelike, Local, Timelike, Utc};
+use chrono::{Local, Timelike};
 use std::sync::RwLock;
-use std::thread;
 use std::time::Duration;
 use std::time::SystemTime;
 
@@ -79,10 +77,10 @@ fn save_timer(gm: Arc<RwLock<GameMgr>>) {
                 for mut v in vec {
                     let rs = v.update();
                     match rs {
-                        Ok(r) => {
+                        Ok(_) => {
                             count += 1;
                         }
-                        Err(e) => {}
+                        Err(_) => {}
                     }
                 }
                 info!(

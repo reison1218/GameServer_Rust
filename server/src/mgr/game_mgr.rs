@@ -3,14 +3,12 @@ use crate::entity::user::UserData;
 use crate::entity::user_info::modify_nick_name;
 use crate::entity::EntityData;
 use crate::net::http::notice_user_center;
-use crate::DB_POOL;
-use chrono::{Local, Timelike};
+use chrono::Local;
 use protobuf::Message;
 use std::sync::mpsc::Sender;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::tcp::TcpSender;
-use tools::util::packet::PacketDes;
 
 ///gameMgr结构体
 pub struct GameMgr {
@@ -36,7 +34,7 @@ impl GameMgr {
     pub fn save_user_http(&mut self) {
         let time = std::time::SystemTime::now();
         let mut count: u32 = 0;
-        for (k, v) in self.users.iter_mut() {
+        for (_, v) in self.users.iter_mut() {
             if v.get_version() <= 0 {
                 continue;
             }
@@ -90,7 +88,7 @@ impl GameMgr {
         let cmd = packet.get_cmd();
         let f = self.cmd_map.get_mut(&cmd);
         if f.is_none() {
-            return anyhow::bail!("there is no cmd:{}", cmd);
+            anyhow::bail!("there is no cmd:{}", cmd)
         }
         f.unwrap()(self, packet)
     }

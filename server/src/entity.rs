@@ -3,19 +3,15 @@ pub mod character_contants;
 pub mod user;
 pub mod user_contants;
 pub mod user_info;
-use crate::db::dbtool::DbPool;
 use crate::entity::user_info::User;
 use crate::mgr::game_mgr::GameMgr;
 use crate::DB_POOL;
-use chrono::{Local, NaiveDateTime};
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
+use chrono::NaiveDateTime;
+use log::{error, info, warn};
 use mysql::prelude::ToValue;
 use mysql::{Error, QueryResult, Value};
 use serde_json::{Map, Value as JsonValue};
-use std::any::{Any, TypeId};
-use std::cell::Cell;
-use std::ops::Add;
-use std::str::FromStr;
+use std::any::Any;
 use std::sync::{Arc, RwLock};
 
 ///关于结构体转换的trait
@@ -171,7 +167,7 @@ pub trait Dao: Entity {
         let tem_id = self.get_tem_id();
 
         match tem_id {
-            Some(tem_id) => {
+            Some(_) => {
                 sql.push_str(" values(:user_id,:tem_id,:content)");
             }
             None => {
@@ -194,7 +190,7 @@ pub trait Dao: Entity {
 ///作为trait object
 pub trait EntityData: Dao + Any {
     ///深拷贝函数
-    fn try_clone(&self) -> Box<EntityData>;
+    fn try_clone(&self) -> Box<dyn EntityData>;
 }
 
 ///提供给http保存玩家数据的函数

@@ -136,7 +136,7 @@ pub mod tcp_server {
                             continue;
                         }
                         let (mut connection, _) = result.unwrap();
-                        connection.set_nodelay(true);
+                        connection.set_nodelay(true).unwrap();
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream
                         let mut hd = handler.try_clone();
@@ -203,8 +203,15 @@ pub mod tcp_server {
                         match res {
                             Some(ts) => {
                                 //send mess to client
-                                ts.write(bytes.as_slice());
-                                ts.flush();
+                                let res = ts.write(bytes.as_slice());
+                                if res.is_err(){
+                                    error!("{:?}",res.err().unwrap().to_string());
+                                    continue;
+                                }
+                                let res = ts.flush();
+                                if res.is_err(){
+                                    error!("{:?}",res.err().unwrap().to_string());
+                                }
                             }
                             None => {
                                 warn!("connections has no value for token:{}", token);
@@ -275,7 +282,10 @@ pub mod tcp_server {
                             }
                             Err(e) => error!("{:?}", e),
                         }
-                        connection.shutdown(Shutdown::Both);
+                        let res = connection.shutdown(Shutdown::Both);
+                        if res.is_err(){
+                            error!("{:?}",res.err().unwrap().to_string());
+                        }
                         return Ok(true);
                     }
                     Ok(n) => {

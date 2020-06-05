@@ -38,7 +38,7 @@ impl TileMapTempMgr {
         let res = self.temps.get(&map_id);
         if res.is_none(){
             let str = format!("TileMapTemp is none for map_id:{}",map_id);
-            return anyhow::bail!(str);
+           anyhow::bail!(str)
         };
         Ok(res.unwrap())
     }

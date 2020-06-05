@@ -1,9 +1,8 @@
 use super::*;
-use redis::{Client, Commands, Connection, FromRedisValue, Pipeline};
+use redis::{ Commands, Connection, FromRedisValue, Pipeline};
 
 ///redis客户端封装结构体
 pub struct RedisPoolTool {
-    client: Client,
     conn: Connection,
 }
 
@@ -14,7 +13,6 @@ impl RedisPoolTool {
         let client = redis::Client::open(add).unwrap();
         info!("初始化redis客户端完成!");
         let mut redis_pool = RedisPoolTool {
-            client: client.clone(),
             conn: client.get_connection().unwrap(),
         };
         redis::pipe()

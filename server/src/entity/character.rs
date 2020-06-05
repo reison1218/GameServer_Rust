@@ -3,7 +3,7 @@ use crate::entity::character_contants::SKILLS;
 use crate::TEMPLATES;
 use std::collections::HashMap;
 use tools::templates::character_temp::CharacterTempMgr;
-use tools::templates::template::{Template, TemplateMgrTrait};
+use tools::templates::template::TemplateMgrTrait;
 
 #[derive(Debug, Clone, Default)]
 pub struct Characters {
@@ -41,7 +41,7 @@ impl Characters {
 
     pub fn get_need_update_array(&mut self) -> Vec<Box<dyn EntityData>> {
         let mut v: Vec<Box<dyn EntityData>> = Vec::new();
-        for (id, cter) in self.cter_map.iter_mut() {
+        for (_, cter) in self.cter_map.iter_mut() {
             if cter.version > 0 {
                 cter.version = 0;
                 v.push(cter.try_clone());
@@ -96,6 +96,7 @@ impl Character {
         cter
     }
 
+    #[warn(dead_code)]
     pub fn query(table_name: &str, user_id: u32, tem_id: Option<u32>) -> Option<Self> {
         let mut v: Vec<Value> = Vec::new();
         v.push(Value::UInt(user_id as u64));

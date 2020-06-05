@@ -1,23 +1,16 @@
 use super::*;
-use chrono::{Duration, Local, NaiveDateTime, NaiveTime};
-use std::io::Write;
-use tools::thread_pool::ThreadPoolHandler;
 
 use tools::protos::base::{CharacterPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
-use crate::db::table_contants;
-use crate::entity::character::{Character, Characters};
+use crate::entity::character::Characters;
 use crate::entity::user::{insert_characters, insert_user, UserData};
 use crate::entity::user_contants::*;
 use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::net::http::notice_user_center;
-use crate::DB_POOL;
-use futures::executor::block_on;
 use protobuf::Message;
 use tools::cmd_code::{ClientCode, GameCode};
-use tools::protos::protocol::C_USER_LOGIN;
 
 #[derive(Clone)]
 struct TcpServerHandler {
@@ -116,7 +109,7 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> anyhow::Result<()> {
     let user_data = gm_lock.users.get_mut(&user_id);
     if user_data.is_none() {
         let str = format!("there is no data for userid:{}", &user_id);
-        return anyhow::bail!(str);
+        anyhow::bail!(str)
     }
     let user_data = user_data.unwrap();
 
@@ -150,7 +143,7 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
     if value.is_none() {
         let str = format!("redis has no data for user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        return anyhow::bail!(str);
+        anyhow::bail!(str)
     }
 
     let mut ud = UserData::init_from_db(user_id);
@@ -162,7 +155,7 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         if nick_name.is_none() {
             let str = format!("nick_name is none for user_id:{}", user_id);
             error!("{:?}", str.as_str());
-            return anyhow::bail!(str);
+            anyhow::bail!(str)
         }
         let mut user = User::new(user_id, nick_name.unwrap().as_str().unwrap());
         //以下入库采用异步执行，以免造成io堵塞
@@ -198,7 +191,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     }
     lr.sync_time = time;
     let mut ppt = PlayerPt::new();
-    let mut nick_name = user
+    let nick_name = user
         .get_user_info_mut_ref()
         .get_json_value(NICK_NAME)
         .unwrap()
