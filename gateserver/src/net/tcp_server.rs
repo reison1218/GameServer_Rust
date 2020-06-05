@@ -50,20 +50,13 @@ impl tools::tcp::Handler for TcpServerHandler {
         }
         let packet = Packet::from_only_client(mess);
         match packet {
-            Ok(p) => {
+            Ok(mut p) => {
                 let cmd = p.get_cmd();
                 info!("GateServer receive data of client!cmd:{}", cmd);
                 let res = self.handle_binary(p.clone());
                 if res.is_err() {
                     let str = res.err().unwrap().to_string();
                     error!("{:?}", str.as_str());
-                    if cmd == GameCode::Login as u32 {
-                        let mut res = S_USER_LOGIN::new();
-                        res.set_is_succ(false);
-                        res.set_err_mess(str);
-                        p.set_data_from_vec(res.write_to_bytes().unwrap());
-                        self.write_to_client(p.build_client_bytes());
-                    }
                 }
             }
             Err(e) => {
@@ -91,7 +84,7 @@ impl TcpServerHandler {
     }
 
     ///处理二进制数据
-    fn handle_binary(&mut self, mut packet: Packet) -> tools::result::errors::Result<()> {
+    fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.tcp.as_ref().unwrap().token;
         let mut write = self.cm.write().unwrap();
         let user_id = write.get_channels_user_id(&token);
@@ -103,17 +96,33 @@ impl TcpServerHandler {
                 packet.get_cmd(),
                 token
             );
-            return error_chain::bail!("{:?}", str);
+            return anyhow::bail!("{:?}", str);
         }
-        let user_id = *user_id.unwrap();
+
+        let mut u_id = 0;
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
-            handle_login(packet.get_data(), &mut write);
-            write.add_gate_user(user_id, None, self.tcp.clone());
+            let mut c_u_l = C_USER_LOGIN::new();
+            c_u_l.merge_from_bytes(packet.get_data());
+            u_id = c_u_l.get_user_id();
+            let res = handle_login(packet.get_data(), &mut write);
+            if res.is_err() {
+                let str = res.err().unwrap().to_string();
+                let mut res = S_USER_LOGIN::new();
+                res.set_is_succ(false);
+                res.set_err_mess(str.clone());
+                packet.set_cmd(ClientCode::Login as u32);
+                packet.set_data_from_vec(res.write_to_bytes().unwrap());
+                std::mem::drop(write);
+                self.write_to_client(packet.build_client_bytes());
+                return anyhow::bail!(str);
+            }
+            write.add_gate_user(u_id, None, self.tcp.clone());
+        } else {
+            u_id = *user_id.unwrap();
         }
+        packet.set_user_id(u_id);
         std::mem::drop(write);
-        //封装packet转发到其他服
-        packet.set_user_id(user_id);
         //转发函数
         self.arrange_packet(packet);
         Ok(())
@@ -150,10 +159,7 @@ pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
 }
 
 ///处理登陆逻辑
-fn handle_login(
-    bytes: &[u8],
-    write: &mut RwLockWriteGuard<ChannelMgr>,
-) -> tools::result::errors::Result<()> {
+fn handle_login(bytes: &[u8], write: &mut RwLockWriteGuard<ChannelMgr>) -> anyhow::Result<()> {
     let mut c_login = C_USER_LOGIN::new();
     c_login.merge_from_bytes(bytes)?;
     //校验用户中心账号是否已经登陆了
@@ -167,7 +173,7 @@ fn handle_login(
             "this account already login!user_id:{}",
             &c_login.get_user_id()
         );
-        return error_chain::bail!("{:?}", str);
+        return anyhow::bail!("{:?}", str);
     }
     Ok(())
 }

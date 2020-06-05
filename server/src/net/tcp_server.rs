@@ -102,7 +102,7 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
 }
 
 //登录函数，执行登录
-fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> tools::result::errors::Result<()> {
+fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
     let mut user_data = gm.read().unwrap().users.contains_key(&user_id);
@@ -118,7 +118,7 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> tools::result::errors:
     let user_data = gm_lock.users.get_mut(&user_id);
     if user_data.is_none() {
         let str = format!("there is no data for userid:{}", &user_id);
-        return error_chain::bail!(str);
+        return anyhow::bail!(str);
     }
     let user_data = user_data.unwrap();
 
@@ -146,13 +146,13 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> tools::result::errors:
 }
 
 ///初始化玩家数据
-fn init_user_data(user_id: u32) -> tools::result::errors::Result<UserData> {
+fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
     //判断redis里面有没有,用户中心没有则直接代表不合法，不与执行
     let value = get_user_from_redis(user_id);
     if value.is_none() {
         let str = format!("redis has no data for user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        return error_chain::bail!(str);
+        return anyhow::bail!(str);
     }
 
     let mut ud = UserData::init_from_db(user_id);
@@ -164,7 +164,7 @@ fn init_user_data(user_id: u32) -> tools::result::errors::Result<UserData> {
         if nick_name.is_none() {
             let str = format!("nick_name is none for user_id:{}", user_id);
             error!("{:?}", str.as_str());
-            return error_chain::bail!(str);
+            return anyhow::bail!(str);
         }
         let mut user = User::new(user_id, nick_name.unwrap().as_str().unwrap());
         //以下入库采用异步执行，以免造成io堵塞

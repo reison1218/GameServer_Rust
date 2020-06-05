@@ -102,16 +102,11 @@ fn foo(words: &[&str]) {
     }
 }
 
-fn test()->tools::result::errors::Result<()>{
-    error_chain::bail!("test".to_owned())
-}
 
 
-fn main() -> tools::result::errors::Result<()> {
-    test()?;
+fn main() -> anyhow::Result<()> {
 
-    println!("test");
-
+    //anyhow::bail!("test");
     tcp_client::test_tcp_client("platform_id");
     //block_on(web::test_http_client("1"));
     // let mut path = env::current_dir()?;

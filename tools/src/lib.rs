@@ -17,7 +17,4 @@ pub mod tcp;
 pub mod templates;
 pub mod thread_pool;
 pub mod util;
-pub mod result;
 use log::{error, info, warn};
-#[macro_use]
-extern crate error_chain;

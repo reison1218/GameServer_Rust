@@ -16,17 +16,13 @@ pub struct RoomMgr {
     pub friend_room: FriendRoom,         //好友房
     pub pub_rooms: HashMap<u8, PubRoom>, //公共房
     pub sender: Option<TcpSender>,
-    pub cmd_map:
-        HashMap<u32, fn(&mut RoomMgr, Packet) -> tools::result::errors::Result<()>, RandomState>, //命令管理
+    pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
 
 impl RoomMgr {
     pub fn new() -> RoomMgr {
-        let cmd_map: HashMap<
-            u32,
-            fn(&mut RoomMgr, Packet) -> tools::result::errors::Result<()>,
-            RandomState,
-        > = HashMap::new();
+        let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState> =
+            HashMap::new();
         let friend_room = FriendRoom::default();
         let pub_rooms: HashMap<u8, PubRoom> = HashMap::new();
         let mut rm = RoomMgr {
@@ -63,13 +59,13 @@ impl RoomMgr {
 }
 
 ///创建房间
-fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> tools::result::errors::Result<()> {
+fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     //校验这个用户在不在房间内
     let in_room = rm.friend_room.check_is_in_room(&user_id);
     if in_room {
         let s = format!("user data is null for id:{}", user_id);
-        return error_chain::bail!(s);
+        return anyhow::bail!(s);
     }
     //解析protobuf
     let mut cr = tools::protos::room::C_CREATE_ROOM::new();
@@ -98,25 +94,25 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> tools::result::errors::R
 }
 
 ///离开房间
-fn leave_room(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let res = rm.friend_room.leave_room(&user_id)?;
     Ok(res)
 }
 
 ///改变目标
-fn change_target(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn change_target(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
 ///寻找房间并加入房间
-fn search_room(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_model = 1 as u8;
     let user_id = packet.get_user_id();
     let result = rm.pub_rooms.get_mut(&room_model);
     if result.is_none() {
         let s = format!("this model is not exist!model_type:{}", room_model);
-        return error_chain::bail!(s);
+        return anyhow::bail!(s);
     }
     let mut pub_room = result.unwrap();
     let res = pub_room.quickly_start(&user_id)?;
@@ -124,7 +120,7 @@ fn search_room(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Resul
 }
 
 ///准备
-fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验玩家是否在房间
     // let res = rm.player_room.contains_key(&packet.get_user_id());
     // if !res {
@@ -134,7 +130,7 @@ fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Re
 }
 
 ///开始
-fn start(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {
@@ -151,7 +147,7 @@ fn start(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> 
 }
 
 ///换队伍
-fn change_team(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {
@@ -163,7 +159,7 @@ fn change_team(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Resul
 }
 
 ///T人
-fn kick_member(rm: &mut RoomMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     // let user_id = &packet.get_user_id();
     // let room = check_player_in_room(user_id, rm);
     // if room.is_none() {

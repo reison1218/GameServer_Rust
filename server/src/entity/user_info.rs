@@ -165,13 +165,13 @@ impl User {
 }
 
 ///请求修改昵称
-pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> tools::result::errors::Result<()> {
+pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         let str = format!("user data is null for id:{}", user_id);
         error!("{:?}", str.as_str());
-        return error_chain::bail!(str);
+        return anyhow::bail!(str);
     }
     let mut s_s_d = S_MODIFY_NICK_NAME::new();
     let mut cmn = C_MODIFY_NICK_NAME::new();

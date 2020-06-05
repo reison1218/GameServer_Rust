@@ -16,8 +16,7 @@ use tools::util::packet::PacketDes;
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
     pub sender: Option<TcpSender>,     //tcpchannel
-    pub cmd_map:
-        HashMap<u32, fn(&mut GameMgr, Packet) -> tools::result::errors::Result<()>, RandomState>, //命令管理
+    pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
 
 impl GameMgr {
@@ -87,11 +86,11 @@ impl GameMgr {
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
-    pub fn invok(&mut self, packet: Packet) -> tools::result::errors::Result<()> {
+    pub fn invok(&mut self, packet: Packet) -> anyhow::Result<()> {
         let cmd = packet.get_cmd();
         let f = self.cmd_map.get_mut(&cmd);
         if f.is_none() {
-            return error_chain::bail!("there is no cmd:{}", cmd);
+            return anyhow::bail!("there is no cmd:{}", cmd);
         }
         f.unwrap()(self, packet)
     }
@@ -105,13 +104,13 @@ impl GameMgr {
 }
 
 ///同步数据
-fn sync(gm: &mut GameMgr, mut packet: Packet) -> tools::result::errors::Result<()> {
+fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         let str = format!("user data is null for id:{}", user_id);
         error!("{:?}", str.as_str());
-        error_chain::bail!(str);
+        anyhow::bail!(str);
     }
     let user = user.unwrap();
 
@@ -123,7 +122,7 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> tools::result::errors::Result<(
             packet.get_cmd()
         );
         error!("{:?}", str.as_str());
-        error_chain::bail!(str);
+        anyhow::bail!(str);
     }
 
     if csd.player_pt.is_some() {
@@ -151,7 +150,7 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> tools::result::errors::Result<(
 }
 
 ///玩家离线
-fn off_line(gm: &mut GameMgr, packet: Packet) -> tools::result::errors::Result<()> {
+fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.remove(&user_id);
     if user.is_some() {

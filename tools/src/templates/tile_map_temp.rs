@@ -1,7 +1,6 @@
 use crate::templates::template::{Template, TemplateMgrTrait};
 use std::collections::HashMap;
-use crate::result::errors::Error;
-use crate::result::errors::Result;
+use anyhow::Result;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct TileMapTemp {
@@ -38,7 +37,7 @@ impl TileMapTempMgr {
         let res = self.temps.get(&map_id);
         if res.is_none(){
             let str = format!("TileMapTemp is none for map_id:{}",map_id);
-            return error_chain::bail!(str);
+            return anyhow::bail!(str);
         };
         Ok(res.unwrap())
     }

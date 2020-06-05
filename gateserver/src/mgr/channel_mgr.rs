@@ -1,5 +1,6 @@
 use super::*;
 
+use crate::net::http::notice_user_center;
 use std::io::Write;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
@@ -8,13 +9,13 @@ use tools::tcp::TcpSender;
 ///channel管理结构体
 pub struct ChannelMgr {
     //游戏服tcpstream
-    game_client_channel: Option<TcpStream>,
+    pub game_client_channel: Option<TcpStream>,
     //房间服stream
-    room_client_channel: Option<TcpStream>,
+    pub room_client_channel: Option<TcpStream>,
     //玩家channels
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
-    channels: HashMap<usize, u32>,
+    pub channels: HashMap<usize, u32>,
 }
 
 impl ChannelMgr {
@@ -172,5 +173,14 @@ impl ChannelMgr {
         gate_user.unwrap().close();
         self.user_channel.remove(user_id);
         info!("channel_mgr:玩家断开连接，关闭句柄释放资源：{}", user_id);
+    }
+
+    ///T掉所有玩家
+    pub fn kick_all(&mut self) {
+        let res = self.channels.clone();
+        for (token, user_id) in res.iter() {
+            notice_user_center(*user_id, "off_line");
+            self.close_remove(token);
+        }
     }
 }

@@ -34,5 +34,4 @@ scroll = "0.10.1"
 anyhow = "1.0.31"
 dirs = "2.0.2"
 chrono = "0.4.11"
-error-chain = "0.12.2"
 tools = { path = "../tools" }

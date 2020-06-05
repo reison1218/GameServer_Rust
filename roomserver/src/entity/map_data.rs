@@ -16,7 +16,7 @@ pub struct Cell {
 }
 
 impl TileMap {
-    pub fn new(temp: &TileMapTemp) -> Result<Self, String> {
+    pub fn new(temp: &TileMapTemp) -> anyhow::Result<Self> {
         let id = temp.id;
         let map = temp.map.clone();
         let mut cell_array = Vec::new();

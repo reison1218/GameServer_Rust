@@ -27,26 +27,26 @@ pub struct RoomCache {
 }
 
 pub trait RoomModel {
-    fn change_target(&mut self, user_id: &u32, target_id: &u32) -> Result<()> {
+    fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
         let room = self.get_mut_room_by_user_id(user_id)?;
         room.change_target(user_id, target_id)?;
         Ok(())
     }
     fn check_is_in_room(&self, user_id: &u32) -> bool;
-    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> Result<Room>;
-    fn leave_room(&mut self, user_id: &u32) -> Result<()>;
+    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> anyhow::Result<Room>;
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()>;
 
-    fn rm_room(&mut self, room_id: &u32) -> Result<()>;
+    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
 
     fn get_player_room_mut(&mut self) -> &mut HashMap<u32, u32>;
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room>;
     ///根据玩家id获得房间的可变指针
-    fn get_mut_room_by_user_id(&mut self, user_id: &u32) -> Result<&mut Room> {
+    fn get_mut_room_by_user_id(&mut self, user_id: &u32) -> anyhow::Result<&mut Room> {
         let room_id = self.get_player_room_mut().get(user_id);
         if room_id.is_none() {
             let s = format!("this player is not in room,user_id:{}", user_id);
-            return bail!(s);
+            return anyhow::bail!(s);
         }
         let room_id = *room_id.unwrap();
         let res = self.get_mut_room_by_room_id(&room_id)?;
@@ -54,11 +54,11 @@ pub trait RoomModel {
     }
 
     ///根据房间id获得房间的可变指针
-    fn get_mut_room_by_room_id(&mut self, room_id: &u32) -> Result<&mut Room> {
+    fn get_mut_room_by_room_id(&mut self, room_id: &u32) -> anyhow::Result<&mut Room> {
         let res = self.get_rooms_mut().get_mut(room_id);
         if res.is_none() {
             let s = format!("this room is not exit,room_id:{}", room_id);
-            return bail!(s);
+            return anyhow::bail!(s);
         }
         Ok(res.unwrap())
     }
@@ -78,7 +78,7 @@ impl RoomModel for FriendRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> Result<Room> {
+    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> anyhow::Result<Room> {
         let room = Room::new(temp, user_id)?;
         self.player_room.insert(*user_id, room.get_room_id());
         self.rooms.insert(room.get_room_id(), room.clone());
@@ -86,7 +86,7 @@ impl RoomModel for FriendRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> tools::result::errors::Result<()> {
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
         let mut room = self.get_mut_room_by_user_id(user_id)?;
         room.remove_member(user_id);
         let room_id = room.get_room_id();
@@ -97,7 +97,7 @@ impl RoomModel for FriendRoom {
         Ok(())
     }
 
-    fn rm_room(&mut self, room_id: &u32) -> Result<()> {
+    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()> {
         self.rooms.remove(room_id);
         Ok(())
     }
@@ -113,11 +113,11 @@ impl RoomModel for FriendRoom {
 
 impl FriendRoom {
     ///T人
-    pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> Result<()> {
+    pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
         let mut room = self.get_mut_room_by_user_id(user_id)?;
         if !room.is_exist_member(target_id) {
             let s = format!("this player is not in the room,target_id:{}", target_id);
-            return bail!(s);
+            return anyhow::bail!(s);
         }
         if room.get_owner_id() != *user_id {
             let s = format!(
@@ -125,7 +125,7 @@ impl FriendRoom {
                 user_id,
                 room.get_room_id()
             );
-            return bail!(s);
+            return anyhow::bail!(s);
         }
         room.remove_member(target_id);
         self.player_room.remove(target_id);
@@ -133,7 +133,7 @@ impl FriendRoom {
     }
 
     ///换队伍
-    pub fn change_team(&mut self, user_id: &u32, team_id: &u8) -> Result<()> {
+    pub fn change_team(&mut self, user_id: &u32, team_id: &u8) -> anyhow::Result<()> {
         let mut room = self.get_mut_room_by_user_id(user_id)?;
         room.change_team(user_id, team_id);
         Ok(())
@@ -163,7 +163,7 @@ impl RoomModel for PubRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> Result<Room> {
+    fn create_room(&mut self, user_id: &u32, temp: &TileMapTemp) -> anyhow::Result<Room> {
         let room = Room::new(temp, user_id)?;
         self.player_room.insert(*user_id, room.get_room_id());
         self.rooms.insert(room.get_room_id(), room.clone());
@@ -175,7 +175,7 @@ impl RoomModel for PubRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> Result<()> {
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
         let mut room = self.get_mut_room_by_user_id(user_id)?;
         room.remove_member(user_id);
         if room.is_empty() {
@@ -186,7 +186,7 @@ impl RoomModel for PubRoom {
     }
 
     ///删除房间
-    fn rm_room(&mut self, room_id: &u32) -> Result<()> {
+    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()> {
         self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
         Ok(())
@@ -224,11 +224,11 @@ impl PubRoom {
     }
 
     ///快速加入
-    pub fn quickly_start(&mut self, user_id: &u32) -> Result<()> {
+    pub fn quickly_start(&mut self, user_id: &u32) -> anyhow::Result<()> {
         let res = self.check_is_in_room(user_id);
         if res {
             let s = format!("this player already in the room!user_id:{}", user_id);
-            return bail!(s);
+            return anyhow::bail!(s);
         }
         let map_id = 1002 as u32;
         //如果房间缓存里没有，则创建新房间
@@ -237,7 +237,7 @@ impl PubRoom {
             let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
             if room_tmp_ref.is_empty() {
                 let s = format!("this map config is None,map_id:{}", map_id);
-                return bail!(s);
+                return anyhow::bail!(s);
             }
             //创建房间
             let res = room_tmp_ref.get_temp(map_id)?;

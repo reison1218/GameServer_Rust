@@ -14,9 +14,11 @@ use ws::{
 
 use std::sync::mpsc::{channel, Receiver, Sender};
 
+use crate::net::http::KickPlayerHttpHandler;
 use crate::net::tcp_client::TcpClientType;
 use crate::net::tcp_server;
 use std::env;
+use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
 use tools::tcp::ClientHandler;
@@ -82,6 +84,14 @@ fn main() {
 
     //初始化与客户端通信的模块
     init_net_server(cm);
+}
+
+///初始化http服务端
+fn init_http_server(gm: Arc<RwLock<ChannelMgr>>) {
+    let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
+    http_vec.push(Box::new(KickPlayerHttpHandler::new(gm.clone())));
+    let http_port: &str = CONF_MAP.get_str("http_port");
+    async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }
 
 ///初始化网络服务这块

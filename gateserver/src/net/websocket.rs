@@ -45,17 +45,19 @@ impl Handler for WebSocketHandler {
         info!("GateServer got message '{}'. ", msg);
         //如果是二进制数据
         if msg.is_binary() {
-            let res = self.handle_binary(p);
-            if res.is_err() {
-                let str = res.err().unwrap().to_string();
-                error!("{:?}", str.as_str());
-                if cmd == GameCode::Login as u32 {
-                    let mut res = S_USER_LOGIN::new();
-                    res.set_is_succ(false);
-                    res.set_err_mess(str);
-                    self.write_to_client(res.write_to_bytes().unwrap());
-                }
-            }
+            // let mut packet = Packet::from_only_client(msg.into_data()).unwrap();
+            // let cmd = packet.get_cmd();
+            // let res = self.handle_binary(packet);
+            // if res.is_err() {
+            //     let str = res.err().unwrap().to_string();
+            //     error!("{:?}", str.as_str());
+            //     if cmd == GameCode::Login as u32 {
+            //         let mut res = S_USER_LOGIN::new();
+            //         res.set_is_succ(false);
+            //         res.set_err_mess(str);
+            //         self.write_to_client(res.write_to_bytes().unwrap());
+            //     }
+            // }
         } else if msg.is_text() {
             //如果是文本数据
             self.ws.send("hello client!");
@@ -93,12 +95,11 @@ impl Handler for WebSocketHandler {
 }
 
 impl WebSocketHandler {
-    fn handle_binary(&mut self, bytes: Vec<u8>) -> tools::result::errors::Result<()> {
-        let mut packet = Packet::from_only_client(bytes)?;
+    fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.ws.token().0;
         let mut write = self.cm.write();
         if write.is_err() {
-            return error_chain::bail!("{:?}", write.err().unwrap().to_string());
+            return anyhow::bail!("{:?}", write.err().unwrap().to_string());
         }
         let mut write = write.unwrap();
         let user_id = write.get_channels_user_id(&token);
@@ -111,7 +112,7 @@ impl WebSocketHandler {
                 token
             );
 
-            return error_chain::bail!(str);
+            return anyhow::bail!(str);
         }
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
@@ -136,7 +137,7 @@ impl WebSocketHandler {
                         &c_login.get_user_id()
                     );
 
-                    return error_chain::bail!("{:?}", str);
+                    return anyhow::bail!("{:?}", str);
                 }
             }
 

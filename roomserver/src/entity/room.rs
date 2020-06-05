@@ -40,7 +40,7 @@ pub struct Room {
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(map_temp: &TileMapTemp, owner_id: &u32) -> Result<Room, String> {
+    pub fn new(map_temp: &TileMapTemp, owner_id: &u32) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let tile_map = TileMap::new(map_temp)?;
         let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
@@ -209,7 +209,7 @@ impl Room {
     }
 
     ///更换目标
-    pub fn change_target(&mut self, user_id: &u32, target_id: &u32) -> Result<(), String> {
+    pub fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
         let mut team_id = self.player_team.get(user_id);
         if team_id.is_none() {
             let s = format!(
@@ -217,7 +217,7 @@ impl Room {
                 user_id,
                 self.get_room_id()
             );
-            return Err(s);
+            return anyhow::bail!(s);
         }
         let team_id = *team_id.unwrap();
         let team_id = &team_id;
@@ -228,7 +228,7 @@ impl Room {
                 target_id,
                 self.get_room_id()
             );
-            return Err(s);
+            return anyhow::bail!(s);
         }
         let target_team_id = *target_team_id.unwrap();
         let target_team_id = &target_team_id;
