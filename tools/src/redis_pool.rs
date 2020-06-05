@@ -50,7 +50,7 @@ impl RedisPoolTool {
         let res = self.conn.hget(hkey, key);
         get_pip().cmd("select").arg(0).execute(&mut self.conn);
         if res.is_err() {
-            error!(
+            warn!(
                 "hget has error:{:?},index:{},key:{:?}",
                 res.err().unwrap(),
                 index,

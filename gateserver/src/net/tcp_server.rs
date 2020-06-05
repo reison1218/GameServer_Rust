@@ -53,11 +53,7 @@ impl tools::tcp::Handler for TcpServerHandler {
             Ok(mut p) => {
                 let cmd = p.get_cmd();
                 info!("GateServer receive data of client!cmd:{}", cmd);
-                let res = self.handle_binary(p.clone());
-                if res.is_err() {
-                    let str = res.err().unwrap().to_string();
-                    error!("{:?}", str.as_str());
-                }
+                self.handle_binary(p.clone());
             }
             Err(e) => {
                 error!("{:?}", e);
@@ -84,7 +80,7 @@ impl TcpServerHandler {
     }
 
     ///处理二进制数据
-    fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
+    fn handle_binary(&mut self, mut packet: Packet) {
         let token = self.tcp.as_ref().unwrap().token;
         let mut write = self.cm.write().unwrap();
         let user_id = write.get_channels_user_id(&token);
@@ -96,7 +92,7 @@ impl TcpServerHandler {
                 packet.get_cmd(),
                 token
             );
-            return anyhow::bail!("{:?}", str);
+            warn!("{:?}", str.as_str());
         }
 
         let mut u_id = 0;
@@ -115,9 +111,13 @@ impl TcpServerHandler {
                 packet.set_data_from_vec(res.write_to_bytes().unwrap());
                 std::mem::drop(write);
                 self.write_to_client(packet.build_client_bytes());
-                return anyhow::bail!(str);
+                return;
             }
             write.add_gate_user(u_id, None, self.tcp.clone());
+        } else if user_id.is_none() {
+            let str = format!("this user_id is invalid!user_id:{}", packet.get_user_id());
+            warn!("{:?}", str.as_str());
+            return;
         } else {
             u_id = *user_id.unwrap();
         }
@@ -125,7 +125,6 @@ impl TcpServerHandler {
         std::mem::drop(write);
         //转发函数
         self.arrange_packet(packet);
-        Ok(())
     }
 
     ///数据包转发
