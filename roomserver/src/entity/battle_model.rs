@@ -1,12 +1,9 @@
-use super::*;
 use crate::entity::member::{Member, MemberState, Target, UserType};
 use crate::entity::room::Room;
 use crate::TEMPLATES;
-use serde::export::Result::Err;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::error::Error;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
@@ -46,7 +43,7 @@ pub trait RoomModel {
         let room_id = self.get_player_room_mut().get(user_id);
         if room_id.is_none() {
             let s = format!("this player is not in room,user_id:{}", user_id);
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         let room_id = *room_id.unwrap();
         let res = self.get_mut_room_by_room_id(&room_id)?;
@@ -58,7 +55,7 @@ pub trait RoomModel {
         let res = self.get_rooms_mut().get_mut(room_id);
         if res.is_none() {
             let s = format!("this room is not exit,room_id:{}", room_id);
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         Ok(res.unwrap())
     }
@@ -87,7 +84,7 @@ impl RoomModel for FriendRoom {
 
     ///离开房间
     fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
-        let mut room = self.get_mut_room_by_user_id(user_id)?;
+        let room = self.get_mut_room_by_user_id(user_id)?;
         room.remove_member(user_id);
         let room_id = room.get_room_id();
         //如果房间空了，则直接移除房间
@@ -114,10 +111,10 @@ impl RoomModel for FriendRoom {
 impl FriendRoom {
     ///T人
     pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let mut room = self.get_mut_room_by_user_id(user_id)?;
+        let room = self.get_mut_room_by_user_id(user_id)?;
         if !room.is_exist_member(target_id) {
             let s = format!("this player is not in the room,target_id:{}", target_id);
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         if room.get_owner_id() != *user_id {
             let s = format!(
@@ -125,7 +122,7 @@ impl FriendRoom {
                 user_id,
                 room.get_room_id()
             );
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         room.remove_member(target_id);
         self.player_room.remove(target_id);
@@ -134,7 +131,7 @@ impl FriendRoom {
 
     ///换队伍
     pub fn change_team(&mut self, user_id: &u32, team_id: &u8) -> anyhow::Result<()> {
-        let mut room = self.get_mut_room_by_user_id(user_id)?;
+        let room = self.get_mut_room_by_user_id(user_id)?;
         room.change_team(user_id, team_id);
         Ok(())
     }
@@ -176,11 +173,11 @@ impl RoomModel for PubRoom {
 
     ///离开房间
     fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
-        let mut room = self.get_mut_room_by_user_id(user_id)?;
+        let room = self.get_mut_room_by_user_id(user_id)?;
         room.remove_member(user_id);
         if room.is_empty() {
             let room_id = room.get_room_id();
-            self.rm_room(&room_id);
+            self.rm_room(&room_id)?;
         }
         Ok(())
     }
@@ -228,7 +225,7 @@ impl PubRoom {
         let res = self.check_is_in_room(user_id);
         if res {
             let s = format!("this player already in the room!user_id:{}", user_id);
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         let map_id = 1002 as u32;
         //如果房间缓存里没有，则创建新房间
@@ -237,17 +234,17 @@ impl PubRoom {
             let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
             if room_tmp_ref.is_empty() {
                 let s = format!("this map config is None,map_id:{}", map_id);
-                return anyhow::bail!(s);
+                anyhow::bail!(s)
             }
             //创建房间
             let res = room_tmp_ref.get_temp(map_id)?;
-            self.create_room(user_id, res);
+            self.create_room(user_id, res)?;
         } else {
             //如果有，则往房间里塞
-            let mut room_cacahe = self.room_cache.last_mut().unwrap();
+            let room_cacahe = self.room_cache.last_mut().unwrap();
             let room_id = room_cacahe.room_id;
-            let mut room = self.get_mut_room_by_room_id(&room_id)?;
-            let mut member = Member {
+            let room = self.get_mut_room_by_room_id(&room_id)?;
+            let member = Member {
                 user_id: *user_id,
                 nick_name: "test".to_string(),
                 user_type: UserType::Real as u8,

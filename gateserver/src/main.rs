@@ -7,12 +7,7 @@ use log::info;
 use net::websocket::WebSocketHandler;
 use std::sync::{Arc, RwLock};
 use tools::conf::Conf;
-use ws::{
-    connect, Builder, CloseCode, Error, Factory, Handler, Handshake, Message as WMessage, Request,
-    Response, Result, Sender as WsSender, Settings, WebSocket,
-};
-
-use std::sync::mpsc::{channel, Receiver, Sender};
+use ws::{Builder, Sender as WsSender, Settings};
 
 use crate::net::http::KickPlayerHttpHandler;
 use crate::net::tcp_client::TcpClientType;

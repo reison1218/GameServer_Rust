@@ -18,7 +18,11 @@ pub struct WebSocketHandler {
 impl Handler for WebSocketHandler {
     //关闭的时候调用
     fn on_shutdown(&mut self) {
-        self.ws.close(CloseCode::Invalid);
+        let res = self.ws.close(CloseCode::Invalid);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+            return;
+        }
         let token = self.ws.token().0;
         let mut write = self.cm.write().unwrap();
         write.close_remove(&token);
@@ -60,13 +64,20 @@ impl Handler for WebSocketHandler {
             // }
         } else if msg.is_text() {
             //如果是文本数据
-            self.ws.send("hello client!");
+            let res = self.ws.send("hello client!");
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+            }
         }
         Ok(())
     }
     ///关闭的时候调用
     fn on_close(&mut self, cc: CloseCode, _str: &str) {
-        self.ws.close(CloseCode::Normal);
+        let res = self.ws.close(CloseCode::Normal);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+            return;
+        }
         info!(
             "客户端断开连接,通知游戏服卸载玩家数据{}",
             self.add.as_ref().unwrap()
@@ -90,16 +101,19 @@ impl Handler for WebSocketHandler {
 
     ///发送错误的时候调用
     fn on_error(&mut self, err: WsError) {
-        self.ws.close(CloseCode::Error);
+        let res = self.ws.close(CloseCode::Error);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+        }
     }
 }
 
 impl WebSocketHandler {
     fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.ws.token().0;
-        let mut write = self.cm.write();
+        let write = self.cm.write();
         if write.is_err() {
-            return anyhow::bail!("{:?}", write.err().unwrap().to_string());
+            anyhow::bail!("{:?}", write.err().unwrap().to_string())
         }
         let mut write = write.unwrap();
         let user_id = write.get_channels_user_id(&token);
@@ -112,15 +126,15 @@ impl WebSocketHandler {
                 token
             );
 
-            return anyhow::bail!(str);
+            anyhow::bail!(str)
         }
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
             let mut c_login = C_USER_LOGIN::new();
-            let result = c_login.merge_from_bytes(packet.get_data())?;
+            c_login.merge_from_bytes(packet.get_data())?;
 
             //校验用户中心账号是否已经登陆了
-            let mut res = check_uc_online(&c_login.get_user_id())?;
+            let res = check_uc_online(&c_login.get_user_id())?;
             if res {
                 //校验内存
                 let res = check_mem_online(&c_login.get_user_id(), &mut write);
@@ -131,13 +145,16 @@ impl WebSocketHandler {
                     res.set_is_succ(false);
                     res.set_err_mess("this account already login!".to_owned());
                     std::mem::drop(write);
-                    self.ws.send(res.write_to_bytes().unwrap());
+                    let res = self.ws.send(res.write_to_bytes().unwrap());
+                    if res.is_err() {
+                        error!("{:?}", res.err().unwrap().to_string());
+                    }
                     let str = format!(
                         "this account already login!user_id:{}",
                         &c_login.get_user_id()
                     );
 
-                    return anyhow::bail!("{:?}", str);
+                    anyhow::bail!("{:?}", str)
                 }
             }
 

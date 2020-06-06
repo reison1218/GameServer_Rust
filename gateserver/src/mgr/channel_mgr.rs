@@ -21,8 +21,8 @@ pub struct ChannelMgr {
 impl ChannelMgr {
     ///创建channelmgr结构体
     pub fn new() -> Self {
-        let mut players: HashMap<u32, GateUser> = HashMap::new();
-        let mut cm = ChannelMgr {
+        let players: HashMap<u32, GateUser> = HashMap::new();
+        let cm = ChannelMgr {
             game_client_channel: None,
             room_client_channel: None,
             user_channel: players,
@@ -107,7 +107,10 @@ impl ChannelMgr {
         match size {
             Ok(s) => {
                 info!("write to server size:{}", s);
-                rc.flush();
+                let res = rc.flush();
+                if res.is_err() {
+                    error!("{:?}", res.err().unwrap().to_string());
+                }
             }
             Err(e) => {
                 error!("{:?}", e.to_string());
@@ -179,7 +182,7 @@ impl ChannelMgr {
     pub fn kick_all(&mut self) {
         let res = self.channels.clone();
         for (token, user_id) in res.iter() {
-            notice_user_center(*user_id, "off_line");
+            async_std::task::spawn(notice_user_center(*user_id, "off_line"));
             self.close_remove(token);
         }
     }

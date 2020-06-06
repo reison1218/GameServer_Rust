@@ -95,11 +95,11 @@ impl Room {
 
     ///获得玩家的可变指针
     pub fn get_member_mut(&mut self, team_id: &u8, user_id: &u32) -> Option<&mut Member> {
-        let mut result = self.teams.contains_key(team_id);
+        let result = self.teams.contains_key(team_id);
         if !result {
             return None;
         }
-        let mut team = self.teams.get_mut(team_id).unwrap();
+        let team = self.teams.get_mut(team_id).unwrap();
         team.get_member_mut(user_id)
     }
 
@@ -195,7 +195,7 @@ impl Room {
     ///转换成protobuf
     pub fn convert_to_pt(&self) -> RoomPt {
         let mut v = Vec::new();
-        for (team_id, team) in self.teams.iter() {
+        for (_, team) in self.teams.iter() {
             let team_pt = team.convert_to_pt();
             v.push(team_pt);
         }
@@ -210,14 +210,14 @@ impl Room {
 
     ///更换目标
     pub fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let mut team_id = self.player_team.get(user_id);
+        let team_id = self.player_team.get(user_id);
         if team_id.is_none() {
             let s = format!(
                 "this player is not in this room!,user_id:{},room_id:{}",
                 user_id,
                 self.get_room_id()
             );
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         let team_id = *team_id.unwrap();
         let team_id = &team_id;
@@ -228,7 +228,7 @@ impl Room {
                 target_id,
                 self.get_room_id()
             );
-            return anyhow::bail!(s);
+            anyhow::bail!(s)
         }
         let target_team_id = *target_team_id.unwrap();
         let target_team_id = &target_team_id;

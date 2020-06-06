@@ -1,11 +1,9 @@
 use crate::mgr::room_mgr::RoomMgr;
-use log::{debug, error, info, warn, LevelFilter, Log, Record};
-use protobuf::{Message, ProtobufEnum};
-use std::path::Component::RootDir;
+use log::{error, info};
 use std::sync::{Arc, RwLock};
 use tools::cmd_code::RoomCode;
 use tools::tcp::tcp_server;
-use tools::tcp::{Data, TcpSender};
+use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
 pub struct TcpServerHandler {
@@ -59,7 +57,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, mut packet: Packet) {
+async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
     let mut write = rm.write().unwrap();
     write.invok(packet);
 }

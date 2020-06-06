@@ -1,5 +1,5 @@
 use super::*;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::RoomCode;
 
 pub enum TcpClientType {
     GameServer,
@@ -59,7 +59,7 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_close(&mut self) {
-        let mut address: Option<&str>;
+        let address: Option<&str>;
         match self.client_type {
             TcpClientType::GameServer => {
                 address = Some(CONF_MAP.get_str("game_port"));

@@ -11,8 +11,8 @@ use std::net::TcpStream;
 use std::sync::{Arc, RwLockWriteGuard};
 use tools::tcp::ClientHandler;
 use ws::{
-    Builder, CloseCode, Error as WsError, Factory, Handler, Handshake, Message as WMessage,
-    Request, Response, Result, Sender as WsSender, Settings, WebSocket,
+    CloseCode, Error as WsError, Handler, Handshake, Message as WMessage, Result,
+    Sender as WsSender,
 };
 
 use crate::mgr::channel_mgr::ChannelMgr;
@@ -32,12 +32,12 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
     let mut redis_write = REDIS_POOL.write().unwrap();
     let pid: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
     if pid.is_none() {
-        return anyhow::bail!("this user_id is invalid!user_id:{}", user_id);
+        anyhow::bail!("this user_id is invalid!user_id:{}", user_id)
     }
     let pid = pid.unwrap();
     let res: Option<String> = redis_write.hget(0, "users", pid.as_str());
     if res.is_none() {
-        return anyhow::bail!("this user_id is invalid!user_id:{}", user_id);
+        anyhow::bail!("this user_id is invalid!user_id:{}", user_id)
     }
     let res = res.unwrap();
     let json = Value::from_str(res.as_str());
@@ -50,17 +50,14 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
                 return Ok(false);
             }
         }
-        Err(e) => {
-            return anyhow::bail!("{:?}", e.to_string());
-        }
+        Err(e) => anyhow::bail!("{:?}", e.to_string()),
     }
-    Ok(false)
 }
 
 ///校验内存是否在线，并做处理
 fn check_mem_online(user_id: &u32, write: &mut RwLockWriteGuard<ChannelMgr>) -> bool {
     //校验内存是否已经登陆
-    let mut gate_user = write.get_mut_user_channel_channel(user_id);
+    let gate_user = write.get_mut_user_channel_channel(user_id);
     let mut res: bool = false;
     //如果有，则执行T下线
     if gate_user.is_some() {

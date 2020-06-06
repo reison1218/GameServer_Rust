@@ -51,7 +51,7 @@ impl Team {
         let mut pt = TeamPt::new();
         pt.team_id = self.id as u32;
         let mut v = Vec::new();
-        for (user_id, member) in self.members.iter() {
+        for (_, member) in self.members.iter() {
             let mut mp = MemberPt::new();
             mp.set_user_id(member.user_id);
             mp.set_nick_name(member.nick_name.clone());

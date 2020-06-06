@@ -1,6 +1,6 @@
 use super::*;
 
-use http_types::{Error as HttpTypesError, Request, Response, StatusCode, Url};
+use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
@@ -23,7 +23,7 @@ impl HttpServerHandler for KickPlayerHttpHandler {
 
     fn execute(
         &mut self,
-        params: Option<Value>,
+        _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         let mut write = self.gm.write().unwrap();
         write.kick_all();
@@ -53,6 +53,6 @@ pub async fn notice_user_center(user_id: u32, _type: &str) {
         Err(e) => {
             error!("{:?}", e.to_string());
         }
-        Ok(o) => {}
+        Ok(_) => {}
     }
 }

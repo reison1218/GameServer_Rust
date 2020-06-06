@@ -1,14 +1,9 @@
 use super::*;
-use crate::entity::battle_model::{FriendRoom, PVPModel, PubRoom, RoomModel};
-use crate::entity::member::{Member, MemberState, Target, UserType};
+use crate::entity::battle_model::{FriendRoom, PubRoom, RoomModel};
 use crate::TEMPLATES;
-use futures::future::err;
 use protobuf::Message;
-use serde_json::{Map, Value};
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{RoomPt, TeamPt};
 use tools::protos::room::S_ROOM;
-use tools::templates::template::{Template, TemplateMgrTrait};
 use tools::templates::tile_map_temp::TileMapTempMgr;
 use tools::util::packet::Packet;
 
@@ -65,7 +60,7 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let in_room = rm.friend_room.check_is_in_room(&user_id);
     if in_room {
         let s = format!("user data is null for id:{}", user_id);
-        return anyhow::bail!(s);
+        anyhow::bail!(s)
     }
     //解析protobuf
     let mut cr = tools::protos::room::C_CREATE_ROOM::new();
@@ -112,7 +107,7 @@ fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let result = rm.pub_rooms.get_mut(&room_model);
     if result.is_none() {
         let s = format!("this model is not exist!model_type:{}", room_model);
-        return anyhow::bail!(s);
+        anyhow::bail!(s)
     }
     let mut pub_room = result.unwrap();
     let res = pub_room.quickly_start(&user_id)?;

@@ -1,5 +1,4 @@
 use super::*;
-use serde_json::Value;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::tcp::TcpSender;
 
@@ -50,7 +49,7 @@ impl tools::tcp::Handler for TcpServerHandler {
         }
         let packet = Packet::from_only_client(mess);
         match packet {
-            Ok(mut p) => {
+            Ok(p) => {
                 let cmd = p.get_cmd();
                 info!("GateServer receive data of client!cmd:{}", cmd);
                 self.handle_binary(p.clone());
@@ -99,7 +98,11 @@ impl TcpServerHandler {
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
             let mut c_u_l = C_USER_LOGIN::new();
-            c_u_l.merge_from_bytes(packet.get_data());
+            let res = c_u_l.merge_from_bytes(packet.get_data());
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+                return;
+            }
             u_id = c_u_l.get_user_id();
             let res = handle_login(packet.get_data(), &mut write);
             if res.is_err() {
@@ -172,7 +175,7 @@ fn handle_login(bytes: &[u8], write: &mut RwLockWriteGuard<ChannelMgr>) -> anyho
             "this account already login!user_id:{}",
             &c_login.get_user_id()
         );
-        return anyhow::bail!("{:?}", str);
+        anyhow::bail!("{:?}", str)
     }
     Ok(())
 }
