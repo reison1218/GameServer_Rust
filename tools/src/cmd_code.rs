@@ -56,6 +56,8 @@ pub enum RoomCode{
     PrepareCancel = 20007,
     //开始游戏
     StartGame = 20008,
+    //加入房间
+    JoinRoom = 20009,
     //返回最大值
     Max = 30000,
 }

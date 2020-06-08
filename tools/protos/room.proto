@@ -43,6 +43,11 @@ message C_SEARCH_ROOM{
 
 }
 
+//加入放假
+message C_JOIN_ROOM{
+    uint32 room_id = 1;//房间id
+}
+
 //房间推送消息
 message S_ROOM_NOTICE{
 

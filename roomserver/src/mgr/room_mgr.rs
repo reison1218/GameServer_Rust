@@ -57,6 +57,7 @@ impl RoomMgr {
         self.cmd_map
             .insert(RoomCode::PrepareCancel as u32, prepare_cancel);
         self.cmd_map.insert(RoomCode::LineOff as u32, leave_room);
+        self.cmd_map.insert(RoomCode::JoinRoom as u32, leave_room);
     }
 }
 
@@ -174,5 +175,13 @@ fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //     res.unwrap_err();
     //     return;
     // }
+    Ok(())
+}
+
+fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    packet.get_data();
+    //校验玩家是否在房间里
+
     Ok(())
 }
