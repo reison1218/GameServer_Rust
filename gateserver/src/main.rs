@@ -77,6 +77,9 @@ fn main() {
     //连接房间服务器
     init_room_tcp_connect(cm.clone());
 
+    //初始化http服务
+    init_http_server(cm.clone());
+
     //初始化与客户端通信的模块
     init_net_server(cm);
 }

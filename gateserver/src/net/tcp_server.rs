@@ -1,4 +1,5 @@
 use super::*;
+use crate::net::http::notice_user_center;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::tcp::TcpSender;
 
@@ -94,7 +95,7 @@ impl TcpServerHandler {
             warn!("{:?}", str.as_str());
         }
 
-        let mut u_id = 0;
+        let u_id;
         //执行登录
         if packet.get_cmd() == GameCode::Login as u32 {
             let mut c_u_l = C_USER_LOGIN::new();
@@ -117,6 +118,8 @@ impl TcpServerHandler {
                 return;
             }
             write.add_gate_user(u_id, None, self.tcp.clone());
+            //通知用户中心
+            async_std::task::spawn(notice_user_center(u_id, "login"));
         } else if user_id.is_none() {
             let str = format!("this user_id is invalid!user_id:{}", packet.get_user_id());
             warn!("{:?}", str.as_str());

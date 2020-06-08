@@ -116,9 +116,6 @@ fn login(gm: Arc<RwLock<GameMgr>>, mut packet: Packet) -> anyhow::Result<()> {
     let user = user_data.get_user_info_mut_ref();
     user.update_login_time();
 
-    //通知用户中心
-    async_std::task::spawn(notice_user_center(user_id, "login"));
-
     //返回客户端
     let lr = user2proto(user_data);
     let bytes = lr.write_to_bytes().unwrap();

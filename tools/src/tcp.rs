@@ -284,7 +284,7 @@ pub mod tcp_server {
                         }
                         let res = connection.shutdown(Shutdown::Both);
                         if res.is_err(){
-                            error!("{:?}",res.err().unwrap().to_string());
+                            error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
                         }
                         return Ok(true);
                     }

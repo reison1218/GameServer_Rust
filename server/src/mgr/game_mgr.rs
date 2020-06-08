@@ -156,7 +156,5 @@ fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         user.update();
         info!("游戏服已处理玩家离线 for id:{}", user.get_user_id());
     }
-    //通知用户中心
-    async_std::task::spawn(notice_user_center(user_id, "off_line"));
     Ok(())
 }
