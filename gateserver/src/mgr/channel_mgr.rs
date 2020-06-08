@@ -1,6 +1,5 @@
 use super::*;
 
-use crate::net::http::notice_user_center;
 use std::io::Write;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
@@ -182,8 +181,7 @@ impl ChannelMgr {
     pub fn kick_all(&mut self) {
         let res = self.channels.clone();
         for (token, user_id) in res.iter() {
-            async_std::task::spawn(notice_user_center(*user_id, "off_line"));
-            self.close_remove(token);
+            self.notice_off_line(*user_id, token);
         }
     }
 }

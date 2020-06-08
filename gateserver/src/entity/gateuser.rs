@@ -32,6 +32,16 @@ impl GateUser {
         self.user_id
     }
 
+    pub fn get_token(&self) -> usize {
+        let mut token = 0 as usize;
+        if self.tcp.is_some() {
+            token = self.tcp.as_ref().unwrap().token
+        } else if self.ws.is_some() {
+            token = self.ws.as_ref().unwrap().token().0
+        }
+        token
+    }
+
     pub fn get_ws_ref(&self) -> &Arc<WsSender> {
         self.ws.as_ref().unwrap()
     }

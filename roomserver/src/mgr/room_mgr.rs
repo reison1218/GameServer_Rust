@@ -50,6 +50,13 @@ impl RoomMgr {
         self.cmd_map
             .insert(RoomCode::CreateRoom as u32, create_room);
         self.cmd_map.insert(RoomCode::LeaveRoom as u32, leave_room);
+        self.cmd_map
+            .insert(RoomCode::ChangeTeam as u32, change_team);
+        self.cmd_map.insert(RoomCode::Kick as u32, kick_member);
+        self.cmd_map.insert(RoomCode::StartGame as u32, start);
+        self.cmd_map
+            .insert(RoomCode::PrepareCancel as u32, prepare_cancel);
+        self.cmd_map.insert(RoomCode::LineOff as u32, leave_room);
     }
 }
 
