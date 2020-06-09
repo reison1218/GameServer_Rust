@@ -41,6 +41,7 @@ impl RoomMgr {
         let cmd = packet.get_cmd();
         let f = self.cmd_map.get_mut(&cmd);
         if f.is_none() {
+            warn!("there is no handler of cmd:{:?}!", cmd);
             return;
         }
         f.unwrap()(self, packet);
@@ -84,8 +85,15 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     //校验地图配置
     let map_temp: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
     //创建房间
-    let temp = map_temp.get_temp(map_id)?;
-    let room = rm.friend_room.create_room(&user_id, temp)?;
+    let temp = map_temp.get_temp(map_id);
+    if temp.is_err() {
+        Ok(())
+    }
+    let temp = temp.unwrap();
+    let room = rm.friend_room.create_room(&user_id, temp);
+    if room.is_err() {
+        Ok(())
+    }
     println!("room size:{}", std::mem::size_of_val(&room));
     //组装protobuf
     let mut s_r = S_ROOM::new();
@@ -100,7 +108,10 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     packet.set_cmd(ClientCode::Room as u32);
     packet.set_data_from_vec(s_r.write_to_bytes().unwrap());
     let v = packet.build_server_bytes();
-    let res = rm.sender.as_mut().unwrap().write(v)?;
+    let res = rm.sender.as_mut().unwrap().write(v);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+    }
     Ok(res)
 }
 

@@ -218,7 +218,7 @@ pub mod tcp_server {
                                 warn!("connections has no value for token:{}", token);
                             }
                         }
-                    }
+                    },
                     Err(e) => {
                         error!("{:?}", e.to_string());
                     }

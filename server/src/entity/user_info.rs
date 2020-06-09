@@ -224,12 +224,16 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        packet.set_data_from_vec(s_r.write_to_bytes()?);
-        gm.sender
+        packet.set_data_from_vec(s_r.write_to_bytes().unwrap());
+        let res = gm
+            .sender
             .as_mut()
             .unwrap()
-            .write(packet.build_client_bytes())?;
-        anyhow::bail!(str)
+            .write(packet.build_client_bytes());
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+        }
+        Ok(())
     }
 
     let user_data = user_data.unwrap();
@@ -245,10 +249,14 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     packet.set_cmd(RoomCode::CreateRoom as u32);
     packet.set_is_client(false);
 
-    gm.sender
+    let res = gm
+        .sender
         .as_mut()
         .unwrap()
-        .write(packet.build_server_bytes())?;
+        .write(packet.build_server_bytes());
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+    }
     Ok(())
 }
 
