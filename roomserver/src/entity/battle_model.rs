@@ -24,6 +24,8 @@ pub struct RoomCache {
 }
 
 pub trait RoomModel {
+    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32>;
+
     fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
         let room = self.get_mut_room_by_user_id(user_id)?;
         room.change_target(user_id, target_id)?;
@@ -72,6 +74,14 @@ impl RoomModel for FriendRoom {
     ///校验是否在房间内
     fn check_is_in_room(&self, user_id: &u32) -> bool {
         self.player_room.contains_key(user_id)
+    }
+
+    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        Some(res.unwrap())
     }
 
     ///创建房间
@@ -154,6 +164,14 @@ pub struct PubRoom {
 }
 
 impl RoomModel for PubRoom {
+    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        Some(res.unwrap())
+    }
+
     ///校验是否在房间内
     fn check_is_in_room(&self, user_id: &u32) -> bool {
         self.player_room.contains_key(user_id)

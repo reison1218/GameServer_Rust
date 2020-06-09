@@ -80,7 +80,6 @@ impl ClientHandler for TcpClientHandler {
         let mut packet = packet.unwrap();
         //判断是否是发给客户端消息
         if packet.is_client() && packet.get_cmd() > 0 {
-            info!("属于需要发给客户端的消息！");
             let mut write = self.cp.write().unwrap();
             let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
 

@@ -81,7 +81,7 @@ impl ChannelMgr {
         let size = gc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(s) => {
-                info!("write to server size:{}", s);
+                info!("write to GameServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = gc.flush();
                 if res.is_err() {
                     error!("flush has error!mess:{:?}", res.err().unwrap().to_string());
@@ -105,7 +105,7 @@ impl ChannelMgr {
         let size = rc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(s) => {
-                info!("write to server size:{}", s);
+                info!("write to RoomServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = rc.flush();
                 if res.is_err() {
                     error!("{:?}", res.err().unwrap().to_string());

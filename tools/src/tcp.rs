@@ -135,7 +135,7 @@ pub mod tcp_server {
                             error!("{:?}", result.err().unwrap());
                             continue;
                         }
-                        let (mut connection, _) = result.unwrap();
+                        let (mut connection, client_address) = result.unwrap();
                         connection.set_nodelay(true).unwrap();
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream
@@ -156,6 +156,7 @@ pub mod tcp_server {
                             Interest::READABLE.add(Interest::WRITABLE),
                         )?;
                         conn_map.write().unwrap().insert(token.0, connection);
+                        info!("Accepted connection from: {}", client_address);
                     }
                     token => {
                         // (maybe) received an event for a TCP connection.
@@ -284,7 +285,7 @@ pub mod tcp_server {
                         }
                         let res = connection.shutdown(Shutdown::Both);
                         if res.is_err(){
-                            error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
+                            //error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
                         }
                         return Ok(true);
                     }

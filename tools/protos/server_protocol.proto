@@ -1,0 +1,10 @@
+syntax = "proto3";
+package protos;
+import "base.proto";
+
+//玩家战斗数据封装proto
+message PlayerBattlePt{
+    uint32 user_id = 1;//玩家id
+    string nick_name = 2;//玩家昵称
+    repeated CharacterPt cters = 3;//玩家解锁的角色数组
+}

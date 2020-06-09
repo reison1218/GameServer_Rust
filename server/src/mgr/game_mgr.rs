@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::user::UserData;
-use crate::entity::user_info::modify_nick_name;
+use crate::entity::user_info::{create_room, join_room, modify_nick_name};
 use crate::entity::EntityData;
 use crate::net::http::notice_user_center;
 use chrono::Local;
@@ -98,6 +98,8 @@ impl GameMgr {
         self.cmd_map.insert(SyncData as u32, sync);
         self.cmd_map.insert(LineOff as u32, off_line);
         self.cmd_map.insert(ModifyNickName as u32, modify_nick_name);
+        self.cmd_map.insert(CreateRoom as u32, create_room);
+        self.cmd_map.insert(JoinRoom as u32, join_room);
     }
 }
 

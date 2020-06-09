@@ -3,8 +3,11 @@ use crate::entity::user_contants::*;
 use crate::helper::redis_helper::modify_redis_user;
 use chrono::Local;
 use protobuf::Message;
-use tools::cmd_code::ClientCode;
+use tools::cmd_code::{ClientCode, RoomCode};
+use tools::protos::base::CharacterPt;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
+use tools::protos::room::S_ROOM;
+use tools::protos::server_protocol::PlayerBattlePt;
 use tools::util::packet::Packet;
 
 ///玩家基本数据结构体，用于封装例如玩家ID，昵称，创建时间等等
@@ -206,5 +209,86 @@ pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<
         .unwrap()
         .write(packet.build_server_bytes())?;
     info!("执行修改昵称函数!");
+    Ok(())
+}
+
+///创建房间
+pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut pbp = PlayerBattlePt::new();
+    let user_data = gm.users.get(&user_id);
+
+    let mut s_r = S_ROOM::new();
+    if user_data.is_none() {
+        let str = format!("this player is not login!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        s_r.is_succ = false;
+        s_r.err_mess = str.clone();
+        packet.set_data_from_vec(s_r.write_to_bytes()?);
+        gm.sender
+            .as_mut()
+            .unwrap()
+            .write(packet.build_client_bytes())?;
+        anyhow::bail!(str)
+    }
+
+    let user_data = user_data.unwrap();
+    pbp.set_user_id(user_id);
+    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
+        let mut cter_pt = CharacterPt::new();
+        cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_skills(cter.get_skills()?);
+        pbp.cters.push(cter_pt);
+    }
+    //发给房间
+    packet.set_cmd(RoomCode::CreateRoom as u32);
+    packet.set_is_client(false);
+
+    gm.sender
+        .as_mut()
+        .unwrap()
+        .write(packet.build_server_bytes())?;
+    Ok(())
+}
+
+///创建房间
+pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut pbp = PlayerBattlePt::new();
+    let user_data = gm.users.get(&user_id);
+
+    let mut s_r = S_ROOM::new();
+    if user_data.is_none() {
+        let str = format!("this player is not login!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        s_r.is_succ = false;
+        s_r.err_mess = str.clone();
+        packet.set_cmd(ClientCode::Room as u32);
+        packet.set_data_from_vec(s_r.write_to_bytes()?);
+        gm.sender
+            .as_mut()
+            .unwrap()
+            .write(packet.build_client_bytes())?;
+        anyhow::bail!(str)
+    }
+
+    let user_data = user_data.unwrap();
+    pbp.set_user_id(user_id);
+    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
+        let mut cter_pt = CharacterPt::new();
+        cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_skills(cter.get_skills()?);
+        pbp.cters.push(cter_pt);
+    }
+    //发给房间
+    packet.set_cmd(RoomCode::JoinRoom as u32);
+    packet.set_is_client(false);
+
+    gm.sender
+        .as_mut()
+        .unwrap()
+        .write(packet.build_server_bytes())?;
     Ok(())
 }

@@ -1,6 +1,7 @@
 use super::*;
 use crate::entity::battle_model::{FriendRoom, PubRoom, RoomModel};
 use crate::TEMPLATES;
+use log::{error, info};
 use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::room::S_ROOM;
@@ -65,9 +66,14 @@ impl RoomMgr {
 fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     //校验这个用户在不在房间内
-    let in_room = rm.friend_room.check_is_in_room(&user_id);
-    if in_room {
-        let s = format!("user data is null for id:{}", user_id);
+    let room_id = rm.friend_room.get_room_id_by_user_id(&user_id);
+    if room_id.is_some() {
+        let s = format!(
+            "this user already in the room,can not create room! user_id:{},room_id:{}",
+            user_id,
+            room_id.unwrap()
+        );
+        error!("{:?}", s.as_str());
         anyhow::bail!(s)
     }
     //解析protobuf
@@ -80,10 +86,12 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     //创建房间
     let temp = map_temp.get_temp(map_id)?;
     let room = rm.friend_room.create_room(&user_id, temp)?;
+    println!("room size:{}", std::mem::size_of_val(&room));
     //组装protobuf
     let mut s_r = S_ROOM::new();
     s_r.is_succ = true;
     let rp = room.convert_to_pt();
+    println!("roomPt size:{}", std::mem::size_of_val(&rp));
     s_r.set_room(rp);
 
     //封装客户端端消息包，并返回客户端
@@ -99,7 +107,16 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
 ///离开房间
 fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
+    //处理好友房
     let res = rm.friend_room.leave_room(&user_id)?;
+    //处理随机房
+    for pub_room in rm.pub_rooms.iter_mut() {
+        let res = pub_room.1.player_room.get(&user_id);
+        if res.is_none() {
+            continue;
+        }
+        pub_room.1.leave_room(&user_id)?;
+    }
     Ok(res)
 }
 

@@ -96,6 +96,17 @@ impl Character {
         cter
     }
 
+    pub fn get_skills(&self) -> anyhow::Result<Vec<u32>> {
+        let mut v: Vec<u32> = Vec::new();
+        let res = self.get_json_value(SKILLS);
+        if res.is_none() {
+            return Ok(v);
+        }
+        let json = res.unwrap();
+        v = serde_json::from_value(json.clone())?;
+        Ok(v)
+    }
+
     #[warn(dead_code)]
     pub fn query(table_name: &str, user_id: u32, tem_id: Option<u32>) -> Option<Self> {
         let mut v: Vec<Value> = Vec::new();
