@@ -53,7 +53,6 @@ use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
 use chrono::Local;
-use log::error;
 
 
 #[macro_use]
@@ -115,4 +114,13 @@ fn main() -> anyhow::Result<()> {
     //let res = str.to_string()+"/config";
     //println!("{:?}",res);
     Ok(())
+}
+
+fn test()->anyhow::Result<()>{
+    let res = test2()?;
+    Ok(())
+}
+
+fn test2()->anyhow::Result<bool>{
+    anyhow::bail!("test")
 }

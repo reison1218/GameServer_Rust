@@ -126,14 +126,29 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
 fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     //处理好友房
-    rm.friend_room.leave_room(&user_id)?;
+    let res = rm.friend_room.leave_room(&user_id);
+    match res {
+        Ok(_) => info!(
+            "卸载玩家好友房数据！user_id:{},room_id:{}",
+            user_id,
+            res.unwrap()
+        ),
+        Err(_) => {}
+    }
     //处理随机房
+    let mut room_id = 0;
     for pub_room in rm.pub_rooms.iter_mut() {
         let res = pub_room.1.player_room.get(&user_id);
         if res.is_none() {
             continue;
         }
-        pub_room.1.leave_room(&user_id)?;
+        room_id = pub_room.1.leave_room(&user_id)?;
+    }
+    if room_id > 0 {
+        info!(
+            "卸载玩家公共pvp房数据！user_id:{},room_id:{}",
+            user_id, room_id
+        );
     }
     Ok(())
 }
@@ -180,6 +195,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
             packet.get_user_id(),
             sr.write_to_bytes()?,
             true,
+            true,
         );
         rm.sender.as_mut().unwrap().write(bytes)?;
     }
@@ -197,6 +213,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
             packet.get_user_id(),
             sr.write_to_bytes()?,
             true,
+            true,
         );
         rm.sender.as_mut().unwrap().write(bytes)?;
         return Ok(());
@@ -208,6 +225,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
         ClientCode::Room as u32,
         packet.get_user_id(),
         sr.write_to_bytes()?,
+        true,
         true,
     );
     let res = rm.sender.as_mut().unwrap().write(bytes);

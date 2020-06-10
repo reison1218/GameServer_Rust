@@ -2,11 +2,22 @@ use crate::entity::member::{Member, MemberState, Target, UserType};
 use crate::entity::room::Room;
 use crate::TEMPLATES;
 use log::{error, warn};
+use std::any::Any;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
+
+///房间类型
+#[derive(Debug, Copy, Clone)]
+pub enum RoomType {
+    Friend = 1,       //好友房
+    Public = 2,       //公开PVP房
+    SeasonPve = 3,    //赛季PVE房间
+    WorldBossPve = 4, //赛季PVE房间
+}
+
 ///战斗模式类型
 #[derive(Debug, Copy, Clone)]
 pub enum PVPModel {
@@ -24,6 +35,7 @@ pub struct RoomCache {
 }
 
 pub trait RoomModel {
+    fn get_room_type(&self) -> RoomType;
     fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32>;
 
     fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
@@ -33,7 +45,7 @@ pub trait RoomModel {
     }
     fn check_is_in_room(&self, user_id: &u32) -> bool;
     fn create_room(&mut self, owner: Member, temp: &TileMapTemp) -> anyhow::Result<Room>;
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()>;
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
 
@@ -44,7 +56,16 @@ pub trait RoomModel {
     fn get_mut_room_by_user_id(&mut self, user_id: &u32) -> anyhow::Result<&mut Room> {
         let room_id = self.get_player_room_mut().get(user_id);
         if room_id.is_none() {
-            let s = format!("this player is not in room,user_id:{}", user_id);
+            let res = self.get_room_type();
+            let str;
+            match res {
+                RoomType::Public => str = "pub pvp",
+                RoomType::Friend => str = "friend",
+                RoomType::SeasonPve => str = "season pve",
+                RoomType::WorldBossPve => str = "world boss pve",
+                _ => str = "",
+            }
+            let s = format!("this player is not in {:?} room,user_id:{}", str, user_id);
             warn!("{:?}", s.as_str());
             anyhow::bail!(s)
         }
@@ -82,6 +103,9 @@ pub struct FriendRoom {
 }
 
 impl RoomModel for FriendRoom {
+    fn get_room_type(&self) -> RoomType {
+        RoomType::Friend
+    }
     ///校验是否在房间内
     fn check_is_in_room(&self, user_id: &u32) -> bool {
         self.player_room.contains_key(user_id)
@@ -105,8 +129,9 @@ impl RoomModel for FriendRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_user_id(user_id)?;
+        let room_id = room.get_room_id();
         room.remove_member(user_id);
         let room_id = room.get_room_id();
         //如果房间空了，则直接移除房间
@@ -114,7 +139,7 @@ impl RoomModel for FriendRoom {
             self.rooms.remove(&room_id);
         }
         self.player_room.remove(user_id);
-        Ok(())
+        Ok(room_id)
     }
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()> {
@@ -177,6 +202,9 @@ pub struct PubRoom {
 }
 
 impl RoomModel for PubRoom {
+    fn get_room_type(&self) -> RoomType {
+        RoomType::Public
+    }
     fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
         let res = self.player_room.get(user_id);
         if res.is_none() {
@@ -204,14 +232,14 @@ impl RoomModel for PubRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<()> {
+    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_user_id(user_id)?;
+        let room_id = room.get_room_id();
         room.remove_member(user_id);
         if room.is_empty() {
-            let room_id = room.get_room_id();
             self.rm_room(&room_id)?;
         }
-        Ok(())
+        Ok(room_id)
     }
 
     ///删除房间

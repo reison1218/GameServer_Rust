@@ -14,7 +14,6 @@ use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
 use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM};
 use tools::protos::base::PlayerPt;
-use log::{error, info};
 
 pub fn test_tcp_client(pid:&str){
         let uid = block_on(crate::test_http_client(pid));
@@ -79,12 +78,12 @@ impl ClientHandler for TcpClientHandler {
 
         let mut  csr = C_SEARCH_ROOM::new();
         csr.set_model_type(1 as u32);
-        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false);
+        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
         // let mut c_r = C_CREATE_ROOM::new();
-        // c_r.map_id = 1002;
+        // c_r.map_id = 1001;
         // packet.set_cmd(GameCode::CreateRoom as u32);
         // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
         // packet.set_len(16+packet.get_data().len() as u32);
