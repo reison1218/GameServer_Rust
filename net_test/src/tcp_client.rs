@@ -12,8 +12,9 @@ use crate::ID;
 use futures::AsyncWriteExt;
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
-use tools::protos::room::S_ROOM;
+use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM};
 use tools::protos::base::PlayerPt;
+use log::{error, info};
 
 pub fn test_tcp_client(pid:&str){
         let uid = block_on(crate::test_http_client(pid));
@@ -75,19 +76,34 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().flush().unwrap();
 
         std::thread::sleep(Duration::from_secs(2));
-        let mut c_r = C_SYNC_DATA::new();
-        let mut pp = PlayerPt::new();
-        let mut v = Vec::new();
-        v.push(1);
-        v.push(2);
-        pp.dlc = v;
-        pp.nick_name="test111".to_string();
-        c_r.set_player_pt(pp);
-        packet.set_cmd(GameCode::SyncData as u32);
-        packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
-        packet.set_len(16+packet.get_data().len() as u32);
-        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+
+        let mut  csr = C_SEARCH_ROOM::new();
+        csr.set_model_type(1 as u32);
+        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false);
+        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
+
+        // let mut c_r = C_CREATE_ROOM::new();
+        // c_r.map_id = 1002;
+        // packet.set_cmd(GameCode::CreateRoom as u32);
+        // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
+
+        // let mut c_r = C_SYNC_DATA::new();
+        // let mut pp = PlayerPt::new();
+        // let mut v = Vec::new();
+        // v.push(1);
+        // v.push(2);
+        // pp.dlc = v;
+        // pp.nick_name="test111".to_string();
+        // c_r.set_player_pt(pp);
+        // packet.set_cmd(GameCode::SyncData as u32);
+        // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
     }
 
     fn on_close(&mut self) {

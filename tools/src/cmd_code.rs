@@ -16,6 +16,8 @@ pub enum GameCode{
     CreateRoom = 1006,
     //加入房间
     JoinRoom = 1007,
+    //匹配房间
+    SearchRoom = 1008,
     //范围最大值
     Max = 10000,
 }
@@ -58,6 +60,8 @@ pub enum RoomCode{
     StartGame = 20008,
     //加入房间
     JoinRoom = 20009,
+    //匹配房间
+    SearchRoom = 20010,
     //返回最大值
     Max = 30000,
 }

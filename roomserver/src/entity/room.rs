@@ -1,5 +1,5 @@
 use crate::entity::map_data::TileMap;
-use crate::entity::member::{Member, Target};
+use crate::entity::member::{Member, MemberState, Target};
 use crate::entity::team::Team;
 use chrono::{DateTime, Utc};
 use std::collections::hash_map::Iter;
@@ -40,7 +40,7 @@ pub struct Room {
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(map_temp: &TileMapTemp, owner_id: &u32) -> anyhow::Result<Room> {
+    pub fn new(map_temp: &TileMapTemp, owner: Member) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let tile_map = TileMap::new(map_temp)?;
         let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
@@ -48,9 +48,9 @@ impl Room {
         let teams: HashMap<u8, Team> = HashMap::new();
         let orders: Vec<ActionUnit> = Vec::new();
         let player_team: HashMap<u32, u8> = HashMap::new();
-        let room = Room {
+        let mut room = Room {
             id,
-            owner_id: *owner_id,
+            owner_id: owner.user_id,
             tile_map,
             player_team,
             teams,
@@ -58,6 +58,7 @@ impl Room {
             state: RoomState::Await as u8,
             time,
         };
+        room.add_member(owner);
         Ok(room)
     }
 
@@ -120,23 +121,23 @@ impl Room {
         let user_id = member.user_id;
         team.add_member(member);
         team.id = size;
-        self.teams.insert(size + 1, team);
+        self.teams.insert(size, team);
         self.player_team.insert(user_id, size);
     }
 
     ///移除玩家
     pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
-        let source_team_id = self.player_team.get_mut(user_id);
-        if source_team_id.is_none() {
+        let team_id = self.player_team.get_mut(user_id);
+        if team_id.is_none() {
             return None;
         }
-        let source_team = self.teams.get_mut(source_team_id.unwrap());
-        if source_team.is_none() {
+        let team = self.teams.get_mut(team_id.unwrap());
+        if team.is_none() {
             return None;
         }
-        let source_team = source_team.unwrap();
-        self.player_team.remove(user_id);
-        source_team.remove_member(user_id)
+        let team = team.unwrap();
+        let res = self.player_team.remove(user_id);
+        team.remove_member(user_id)
     }
 
     ///换队伍

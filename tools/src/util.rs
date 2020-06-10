@@ -350,5 +350,18 @@ pub mod packet {
             let byte_buf = self.to_server_bytebuf();
             byte_buf.into_bytes()
         }
+
+        ///构建一个用于通信返回的bytes数组
+        pub fn build_packet_bytes(cmd:u32,user_id:u32,data:Vec<u8>,is_server:bool)->Vec<u8>{
+            let mut packet = Packet::new(cmd,(16+data.len()) as u32,user_id);
+            packet.set_data_from_vec(data);
+            if is_server {
+                packet.packet_des.is_client = false;
+                packet.build_server_bytes()
+            }else {
+                packet.packet_des.is_client = true;
+                packet.build_client_bytes()
+            }
+        }
     }
 }

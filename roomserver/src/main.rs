@@ -42,9 +42,10 @@ fn main() {
     let error_log = CONF_MAP.get_str("error_log_path");
     //初始化日志模块
     init_log(info_log, error_log);
-
+    //初始化room_mgr多线程饮用计数器指针
     let room_mgr: Arc<RwLock<RoomMgr>> = Arc::new(RwLock::new(RoomMgr::new()));
-    init_tcp_server(room_mgr);
+    //初始化tcp服务
+    init_tcp_server(room_mgr.clone());
 }
 
 ///初始化tcp服务端

@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::user::UserData;
-use crate::entity::user_info::{create_room, join_room, modify_nick_name};
+use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room};
 use crate::entity::EntityData;
 use crate::net::http::notice_user_center;
 use chrono::Local;
@@ -90,7 +90,11 @@ impl GameMgr {
         if f.is_none() {
             anyhow::bail!("there is no cmd:{}", cmd)
         }
-        f.unwrap()(self, packet)
+        let res: anyhow::Result<()> = f.unwrap()(self, packet);
+        if res.is_err() {
+            return Err(res.err().unwrap());
+        }
+        Ok(())
     }
 
     ///命令初始化
@@ -100,6 +104,7 @@ impl GameMgr {
         self.cmd_map.insert(ModifyNickName as u32, modify_nick_name);
         self.cmd_map.insert(CreateRoom as u32, create_room);
         self.cmd_map.insert(JoinRoom as u32, join_room);
+        self.cmd_map.insert(SearchRoom as u32, search_room);
     }
 }
 

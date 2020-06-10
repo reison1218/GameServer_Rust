@@ -53,6 +53,7 @@ use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
 use chrono::Local;
+use log::error;
 
 
 #[macro_use]
@@ -102,12 +103,11 @@ fn foo(words: &[&str]) {
     }
 }
 
-
-
 fn main() -> anyhow::Result<()> {
 
-    //anyhow::bail!("test");
     tcp_client::test_tcp_client("platform_id");
+    // block_on(http);
+    // print!("http执行完毕");
     //block_on(web::test_http_client("1"));
     // let mut path = env::current_dir()?;
     // path.push("/config");

@@ -1,3 +1,5 @@
+use tools::protos::server_protocol::PlayerBattlePt;
+
 #[derive(Clone, Debug)]
 pub enum UserType {
     Robot = 0,
@@ -30,4 +32,16 @@ impl Member {
 pub struct Target {
     pub team_id: u8,
     pub user_id: u32,
+}
+
+impl From<PlayerBattlePt> for Member {
+    fn from(pbp: PlayerBattlePt) -> Self {
+        let mut member = Member::default();
+        member.nick_name = pbp.nick_name;
+        member.user_id = pbp.user_id;
+        member.state = MemberState::NotReady as u8;
+        member.user_type = UserType::Real as u8;
+        member.target = Target::default();
+        member
+    }
 }

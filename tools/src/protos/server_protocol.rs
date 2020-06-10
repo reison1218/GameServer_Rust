@@ -27,6 +27,645 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 // const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_2_14_0;
 
 #[derive(PartialEq,Clone,Default)]
+pub struct G_R_CREATE_ROOM {
+    // message fields
+    pub map_id: u32,
+    pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a G_R_CREATE_ROOM {
+    fn default() -> &'a G_R_CREATE_ROOM {
+        <G_R_CREATE_ROOM as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl G_R_CREATE_ROOM {
+    pub fn new() -> G_R_CREATE_ROOM {
+        ::std::default::Default::default()
+    }
+
+    // uint32 map_id = 1;
+
+
+    pub fn get_map_id(&self) -> u32 {
+        self.map_id
+    }
+    pub fn clear_map_id(&mut self) {
+        self.map_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_map_id(&mut self, v: u32) {
+        self.map_id = v;
+    }
+
+    // .protos.PlayerBattlePt pbp = 2;
+
+
+    pub fn get_pbp(&self) -> &PlayerBattlePt {
+        self.pbp.as_ref().unwrap_or_else(|| PlayerBattlePt::default_instance())
+    }
+    pub fn clear_pbp(&mut self) {
+        self.pbp.clear();
+    }
+
+    pub fn has_pbp(&self) -> bool {
+        self.pbp.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pbp(&mut self, v: PlayerBattlePt) {
+        self.pbp = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pbp(&mut self) -> &mut PlayerBattlePt {
+        if self.pbp.is_none() {
+            self.pbp.set_default();
+        }
+        self.pbp.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_pbp(&mut self) -> PlayerBattlePt {
+        self.pbp.take().unwrap_or_else(|| PlayerBattlePt::new())
+    }
+}
+
+impl ::protobuf::Message for G_R_CREATE_ROOM {
+    fn is_initialized(&self) -> bool {
+        for v in &self.pbp {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.map_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.map_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.map_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.map_id != 0 {
+            os.write_uint32(1, self.map_id)?;
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> G_R_CREATE_ROOM {
+        G_R_CREATE_ROOM::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "map_id",
+                    |m: &G_R_CREATE_ROOM| { &m.map_id },
+                    |m: &mut G_R_CREATE_ROOM| { &mut m.map_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PlayerBattlePt>>(
+                    "pbp",
+                    |m: &G_R_CREATE_ROOM| { &m.pbp },
+                    |m: &mut G_R_CREATE_ROOM| { &mut m.pbp },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<G_R_CREATE_ROOM>(
+                    "G_R_CREATE_ROOM",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static G_R_CREATE_ROOM {
+        static mut instance: ::protobuf::lazy::Lazy<G_R_CREATE_ROOM> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(G_R_CREATE_ROOM::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for G_R_CREATE_ROOM {
+    fn clear(&mut self) {
+        self.map_id = 0;
+        self.pbp.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for G_R_CREATE_ROOM {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for G_R_CREATE_ROOM {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct G_R_JOIN_ROOM {
+    // message fields
+    pub room_id: u32,
+    pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a G_R_JOIN_ROOM {
+    fn default() -> &'a G_R_JOIN_ROOM {
+        <G_R_JOIN_ROOM as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl G_R_JOIN_ROOM {
+    pub fn new() -> G_R_JOIN_ROOM {
+        ::std::default::Default::default()
+    }
+
+    // uint32 room_id = 1;
+
+
+    pub fn get_room_id(&self) -> u32 {
+        self.room_id
+    }
+    pub fn clear_room_id(&mut self) {
+        self.room_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_id(&mut self, v: u32) {
+        self.room_id = v;
+    }
+
+    // .protos.PlayerBattlePt pbp = 2;
+
+
+    pub fn get_pbp(&self) -> &PlayerBattlePt {
+        self.pbp.as_ref().unwrap_or_else(|| PlayerBattlePt::default_instance())
+    }
+    pub fn clear_pbp(&mut self) {
+        self.pbp.clear();
+    }
+
+    pub fn has_pbp(&self) -> bool {
+        self.pbp.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pbp(&mut self, v: PlayerBattlePt) {
+        self.pbp = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pbp(&mut self) -> &mut PlayerBattlePt {
+        if self.pbp.is_none() {
+            self.pbp.set_default();
+        }
+        self.pbp.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_pbp(&mut self) -> PlayerBattlePt {
+        self.pbp.take().unwrap_or_else(|| PlayerBattlePt::new())
+    }
+}
+
+impl ::protobuf::Message for G_R_JOIN_ROOM {
+    fn is_initialized(&self) -> bool {
+        for v in &self.pbp {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.room_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.room_id != 0 {
+            os.write_uint32(1, self.room_id)?;
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> G_R_JOIN_ROOM {
+        G_R_JOIN_ROOM::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "room_id",
+                    |m: &G_R_JOIN_ROOM| { &m.room_id },
+                    |m: &mut G_R_JOIN_ROOM| { &mut m.room_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PlayerBattlePt>>(
+                    "pbp",
+                    |m: &G_R_JOIN_ROOM| { &m.pbp },
+                    |m: &mut G_R_JOIN_ROOM| { &mut m.pbp },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<G_R_JOIN_ROOM>(
+                    "G_R_JOIN_ROOM",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static G_R_JOIN_ROOM {
+        static mut instance: ::protobuf::lazy::Lazy<G_R_JOIN_ROOM> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(G_R_JOIN_ROOM::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for G_R_JOIN_ROOM {
+    fn clear(&mut self) {
+        self.room_id = 0;
+        self.pbp.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for G_R_JOIN_ROOM {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for G_R_JOIN_ROOM {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct G_R_SEARCH_ROOM {
+    // message fields
+    pub model_type: u32,
+    pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a G_R_SEARCH_ROOM {
+    fn default() -> &'a G_R_SEARCH_ROOM {
+        <G_R_SEARCH_ROOM as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl G_R_SEARCH_ROOM {
+    pub fn new() -> G_R_SEARCH_ROOM {
+        ::std::default::Default::default()
+    }
+
+    // uint32 model_type = 1;
+
+
+    pub fn get_model_type(&self) -> u32 {
+        self.model_type
+    }
+    pub fn clear_model_type(&mut self) {
+        self.model_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_model_type(&mut self, v: u32) {
+        self.model_type = v;
+    }
+
+    // .protos.PlayerBattlePt pbp = 2;
+
+
+    pub fn get_pbp(&self) -> &PlayerBattlePt {
+        self.pbp.as_ref().unwrap_or_else(|| PlayerBattlePt::default_instance())
+    }
+    pub fn clear_pbp(&mut self) {
+        self.pbp.clear();
+    }
+
+    pub fn has_pbp(&self) -> bool {
+        self.pbp.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pbp(&mut self, v: PlayerBattlePt) {
+        self.pbp = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pbp(&mut self) -> &mut PlayerBattlePt {
+        if self.pbp.is_none() {
+            self.pbp.set_default();
+        }
+        self.pbp.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_pbp(&mut self) -> PlayerBattlePt {
+        self.pbp.take().unwrap_or_else(|| PlayerBattlePt::new())
+    }
+}
+
+impl ::protobuf::Message for G_R_SEARCH_ROOM {
+    fn is_initialized(&self) -> bool {
+        for v in &self.pbp {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.model_type = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.model_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.model_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.model_type != 0 {
+            os.write_uint32(1, self.model_type)?;
+        }
+        if let Some(ref v) = self.pbp.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> G_R_SEARCH_ROOM {
+        G_R_SEARCH_ROOM::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "model_type",
+                    |m: &G_R_SEARCH_ROOM| { &m.model_type },
+                    |m: &mut G_R_SEARCH_ROOM| { &mut m.model_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PlayerBattlePt>>(
+                    "pbp",
+                    |m: &G_R_SEARCH_ROOM| { &m.pbp },
+                    |m: &mut G_R_SEARCH_ROOM| { &mut m.pbp },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<G_R_SEARCH_ROOM>(
+                    "G_R_SEARCH_ROOM",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static G_R_SEARCH_ROOM {
+        static mut instance: ::protobuf::lazy::Lazy<G_R_SEARCH_ROOM> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(G_R_SEARCH_ROOM::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for G_R_SEARCH_ROOM {
+    fn clear(&mut self) {
+        self.model_type = 0;
+        self.pbp.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for G_R_SEARCH_ROOM {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for G_R_SEARCH_ROOM {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct PlayerBattlePt {
     // message fields
     pub user_id: u32,
@@ -274,10 +913,16 @@ impl ::protobuf::reflect::ProtobufValue for PlayerBattlePt {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"q\n\x0ePlayer\
-    BattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tn\
-    ick_name\x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03\
-    (\x0b2\x13.protos.CharacterPtR\x05ctersb\x06proto3\
+    \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"R\n\x0fG_R_CR\
+    EATE_ROOM\x12\x15\n\x06map_id\x18\x01\x20\x01(\rR\x05mapId\x12(\n\x03pbp\
+    \x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"R\n\rG_R_JOIN_\
+    ROOM\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\x12(\n\x03pbp\
+    \x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"Z\n\x0fG_R_SEA\
+    RCH_ROOM\x12\x1d\n\nmodel_type\x18\x01\x20\x01(\rR\tmodelType\x12(\n\x03\
+    pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"q\n\x0ePlay\
+    erBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\
+    \tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\
+    \x03(\x0b2\x13.protos.CharacterPtR\x05ctersb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

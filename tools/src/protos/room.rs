@@ -1090,6 +1090,8 @@ impl ::protobuf::reflect::ProtobufValue for S_START {
 
 #[derive(PartialEq,Clone,Default)]
 pub struct C_SEARCH_ROOM {
+    // message fields
+    pub model_type: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1105,6 +1107,21 @@ impl C_SEARCH_ROOM {
     pub fn new() -> C_SEARCH_ROOM {
         ::std::default::Default::default()
     }
+
+    // uint32 model_type = 1;
+
+
+    pub fn get_model_type(&self) -> u32 {
+        self.model_type
+    }
+    pub fn clear_model_type(&mut self) {
+        self.model_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_model_type(&mut self, v: u32) {
+        self.model_type = v;
+    }
 }
 
 impl ::protobuf::Message for C_SEARCH_ROOM {
@@ -1116,6 +1133,13 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.model_type = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -1128,12 +1152,18 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.model_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.model_type, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.model_type != 0 {
+            os.write_uint32(1, self.model_type)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -1172,7 +1202,12 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
         static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
             descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "model_type",
+                    |m: &C_SEARCH_ROOM| { &m.model_type },
+                    |m: &mut C_SEARCH_ROOM| { &mut m.model_type },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SEARCH_ROOM>(
                     "C_SEARCH_ROOM",
                     fields,
@@ -1192,6 +1227,7 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
 
 impl ::protobuf::Clear for C_SEARCH_ROOM {
     fn clear(&mut self) {
+        self.model_type = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1747,11 +1783,12 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     amId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\
     \x07prepare\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\
     \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
-    \x07errMess\"\x0f\n\rC_SEARCH_ROOM\"&\n\x0bC_JOIN_ROOM\x12\x17\n\x07room\
-    _id\x18\x01\x20\x01(\rR\x06roomId\"\x0f\n\rS_ROOM_NOTICE\"`\n\x06S_ROOM\
-    \x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_m\
-    ess\x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
-    \x0e.protos.RoomPtR\x04roomb\x06proto3\
+    \x07errMess\".\n\rC_SEARCH_ROOM\x12\x1d\n\nmodel_type\x18\x01\x20\x01(\r\
+    R\tmodelType\"&\n\x0bC_JOIN_ROOM\x12\x17\n\x07room_id\x18\x01\x20\x01(\r\
+    R\x06roomId\"\x0f\n\rS_ROOM_NOTICE\"`\n\x06S_ROOM\x12\x17\n\x07is_succ\
+    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
+    \tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\x0e.protos.RoomPtR\
+    \x04roomb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

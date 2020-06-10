@@ -6,8 +6,10 @@ use protobuf::Message;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::base::CharacterPt;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
-use tools::protos::room::S_ROOM;
-use tools::protos::server_protocol::PlayerBattlePt;
+use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
+use tools::protos::server_protocol::{
+    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
+};
 use tools::util::packet::Packet;
 
 ///玩家基本数据结构体，用于封装例如玩家ID，昵称，创建时间等等
@@ -215,7 +217,7 @@ pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<
 ///创建房间
 pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
-    let mut pbp = PlayerBattlePt::new();
+
     let user_data = gm.users.get(&user_id);
 
     let mut s_r = S_ROOM::new();
@@ -233,9 +235,16 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
         }
-        Ok(())
+        return Ok(());
     }
 
+    //解析客户端发过来的参数
+    let mut cr = C_CREATE_ROOM::new();
+    cr.merge_from_bytes(packet.get_data())?;
+
+    let mut gr = G_R_CREATE_ROOM::new();
+    gr.set_map_id(cr.map_id);
+    let mut pbp = PlayerBattlePt::new();
     let user_data = user_data.unwrap();
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
@@ -245,9 +254,11 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         cter_pt.set_skills(cter.get_skills()?);
         pbp.cters.push(cter_pt);
     }
+    gr.set_pbp(pbp);
     //发给房间
     packet.set_cmd(RoomCode::CreateRoom as u32);
     packet.set_is_client(false);
+    packet.set_data_from_vec(gr.write_to_bytes()?);
 
     let res = gm
         .sender
@@ -263,7 +274,7 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
 ///创建房间
 pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
-    let mut pbp = PlayerBattlePt::new();
+
     let user_data = gm.users.get(&user_id);
 
     let mut s_r = S_ROOM::new();
@@ -281,7 +292,11 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         anyhow::bail!(str)
     }
 
+    let mut cjr = C_JOIN_ROOM::new();
+    cjr.merge_from_bytes(packet.get_data());
+
     let user_data = user_data.unwrap();
+    let mut pbp = PlayerBattlePt::new();
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
     for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
@@ -290,13 +305,66 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         cter_pt.set_skills(cter.get_skills()?);
         pbp.cters.push(cter_pt);
     }
+    let mut grj = G_R_JOIN_ROOM::new();
+    grj.set_room_id(cjr.room_id);
+    grj.set_pbp(pbp);
     //发给房间
-    packet.set_cmd(RoomCode::JoinRoom as u32);
-    packet.set_is_client(false);
+    let bytes = Packet::build_packet_bytes(
+        RoomCode::JoinRoom as u32,
+        packet.get_user_id(),
+        grj.write_to_bytes()?,
+        true,
+    );
 
-    gm.sender
-        .as_mut()
-        .unwrap()
-        .write(packet.build_server_bytes())?;
+    gm.sender.as_mut().unwrap().write(bytes)?;
+    Ok(())
+}
+
+///匹配房间
+pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+
+    let user_data = gm.users.get(&user_id);
+
+    let mut s_r = S_ROOM::new();
+    if user_data.is_none() {
+        let str = format!("this player is not login!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        s_r.is_succ = false;
+        s_r.err_mess = str.clone();
+        packet.set_cmd(ClientCode::Room as u32);
+        packet.set_data_from_vec(s_r.write_to_bytes()?);
+        gm.sender
+            .as_mut()
+            .unwrap()
+            .write(packet.build_client_bytes())?;
+        anyhow::bail!(str)
+    }
+
+    let mut csr = C_SEARCH_ROOM::new();
+    csr.merge_from_bytes(packet.get_data());
+
+    let user_data = user_data.unwrap();
+    let mut pbp = PlayerBattlePt::new();
+    pbp.set_user_id(user_id);
+    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
+        let mut cter_pt = CharacterPt::new();
+        cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_skills(cter.get_skills()?);
+        pbp.cters.push(cter_pt);
+    }
+    let mut grs = G_R_SEARCH_ROOM::new();
+    grs.set_model_type(csr.get_model_type());
+    grs.set_pbp(pbp);
+    //发给房间
+    let bytes = Packet::build_packet_bytes(
+        RoomCode::SearchRoom as u32,
+        packet.get_user_id(),
+        grs.write_to_bytes()?,
+        true,
+    );
+
+    gm.sender.as_mut().unwrap().write(bytes)?;
     Ok(())
 }

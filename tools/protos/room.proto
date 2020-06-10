@@ -40,7 +40,7 @@ message S_START{
 
 //快速开始
 message C_SEARCH_ROOM{
-
+    uint32 model_type = 1;//模式
 }
 
 //加入放假
