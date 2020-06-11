@@ -314,6 +314,7 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         packet.get_user_id(),
         grj.write_to_bytes()?,
         true,
+        false,
     );
 
     gm.sender.as_mut().unwrap().write(bytes)?;
@@ -363,6 +364,7 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         packet.get_user_id(),
         grs.write_to_bytes()?,
         true,
+        false,
     );
 
     gm.sender.as_mut().unwrap().write(bytes)?;

@@ -6,6 +6,7 @@ use std::any::Any;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::io::empty;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
@@ -66,7 +67,6 @@ pub trait RoomModel {
                 _ => str = "",
             }
             let s = format!("this player is not in {:?} room,user_id:{}", str, user_id);
-            warn!("{:?}", s.as_str());
             anyhow::bail!(s)
         }
         let room_id = *room_id.unwrap();
@@ -159,7 +159,13 @@ impl RoomModel for FriendRoom {
 impl FriendRoom {
     ///T人
     pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_user_id(user_id)?;
+        let room = self.get_mut_room_by_user_id(user_id);
+        if room.is_err() {
+            let str = room.err().unwrap().to_string();
+            error!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
+        }
+        let room = room.unwrap();
         if !room.is_exist_member(target_id) {
             let s = format!("this player is not in the room,target_id:{}", target_id);
             anyhow::bail!(s)
@@ -239,6 +245,7 @@ impl RoomModel for PubRoom {
         if room.is_empty() {
             self.rm_room(&room_id)?;
         }
+        self.player_room.remove(user_id);
         Ok(room_id)
     }
 

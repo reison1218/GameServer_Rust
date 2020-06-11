@@ -90,6 +90,8 @@ pub mod tcp_server {
     use std::net::SocketAddr;
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
+    use std::error::Error;
+    use std::env::consts::OS;
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);
@@ -275,18 +277,7 @@ pub mod tcp_server {
                     Ok(0) => {
                         // Reading 0 bytes means the other side has closed the
                         // connection or is done writing, then so are we.
-                        handler.on_close();
-                        let addr = connection.peer_addr();
-                        match addr {
-                            Ok(add) => {
-                                info!("The client is disconnect!{:?}", add);
-                            }
-                            Err(e) => error!("{:?}", e),
-                        }
-                        let res = connection.shutdown(Shutdown::Both);
-                        if res.is_err(){
-                            //error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
-                        }
+                        close_connect(connection,handler,None);
                         return Ok(true);
                     }
                     Ok(n) => {
@@ -297,19 +288,58 @@ pub mod tcp_server {
                     // Would block "errors" are the OS's way of saying that the
                     // connection is not actually ready to perform this I/O operation.
                     Err(ref err) if would_block(err) => {
-                        //println!("{:?}",err.description());
-                        break;
+                        error!("{:?}",err.to_string());
+                        let status = err.raw_os_error();
+                        let mut res = 0;
+                        if status.is_some(){
+                            res = status.unwrap();
+                        }
+
+                        if res == 35 || res == 11{
+                            warn!("{:?}",err.to_string());
+                            break;
+                        }
+                        close_connect(connection,handler,Some(err));
+                        return Ok(true);
+                        //break;
                     }
                     Err(ref err) if interrupted(err) => {
-                        //println!("{:?}",err.description());
+                        error!("{:?}",err.to_string());
                         continue;
                     }
                     // Other errors we'll consider fatal.
-                    Err(err) => return Err(err),
+                    Err(err) => {
+                        error!("{:?}",err.to_string());
+                        close_connect(connection,handler,Some(&err));
+                        //return Err(err)
+                        return Ok(true);
+                    },
                 }
             }
         }
         Ok(false)
+    }
+
+    fn close_connect<T:Handler>(connect:&mut MioTcpStream,handler: &mut T,err:Option<&Error>){
+        let addr = connect.peer_addr();
+        let err_str;
+        match err {
+            Some(e)=>{err_str = e.to_string()},
+            _=>{err_str = "".to_owned()}
+        }
+        match addr {
+            Ok(add) => {
+                info!("{:?} client disconnect!so remove client peer:{:?}",err_str, add);
+            }
+            Err(_) => {
+                info!("{:?},then remove client", err_str);
+            },
+        }
+        let res = connect.shutdown(Shutdown::Both);
+        if res.is_err(){
+            //error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
+        }
+        handler.on_close();
     }
 
     fn would_block(err: &io::Error) -> bool {
@@ -318,6 +348,9 @@ pub mod tcp_server {
 
     fn interrupted(err: &io::Error) -> bool {
         err.kind() == io::ErrorKind::Interrupted
+    }
+    fn time_out(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::TimedOut
     }
 }
 

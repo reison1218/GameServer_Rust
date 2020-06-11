@@ -23,8 +23,8 @@ pub fn test_tcp_client(pid:&str){
         }
         let mut tcp_client = TcpClientHandler::new();
         tcp_client.user_id = uid.unwrap();
-        //tcp_client.on_read("192.168.1.100:16801".to_string());
-        tcp_client.on_read("localhost:16801".to_string());
+        tcp_client.on_read("192.168.1.100:16801".to_string());
+        //tcp_client.on_read("localhost:16801".to_string());
 }
 
 pub fn test_tcp_clients(){
@@ -73,14 +73,14 @@ impl ClientHandler for TcpClientHandler {
         packet.set_len(16+packet.get_data().len() as u32);
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
-
-        std::thread::sleep(Duration::from_secs(2));
-
-        let mut  csr = C_SEARCH_ROOM::new();
-        csr.set_model_type(1 as u32);
-        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
-        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
+        //panic!("");
+        // std::thread::sleep(Duration::from_secs(2));
+        //
+        // let mut  csr = C_SEARCH_ROOM::new();
+        // csr.set_model_type(1 as u32);
+        // let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
+        // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
 
         // let mut c_r = C_CREATE_ROOM::new();
         // c_r.map_id = 1001;
