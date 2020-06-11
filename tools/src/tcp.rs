@@ -288,15 +288,15 @@ pub mod tcp_server {
                     // Would block "errors" are the OS's way of saying that the
                     // connection is not actually ready to perform this I/O operation.
                     Err(ref err) if would_block(err) => {
-                        error!("{:?}",err.to_string());
                         let status = err.raw_os_error();
                         let mut res = 0;
                         if status.is_some(){
                             res = status.unwrap();
                         }
-
+                        //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
+                        //直接跳出token读取事件，待下次actually再进行读取
                         if res == 35 || res == 11{
-                            warn!("{:?}",err.to_string());
+                            //warn!("{:?}",err.to_string());
                             break;
                         }
                         close_connect(connection,handler,Some(err));
@@ -309,7 +309,6 @@ pub mod tcp_server {
                     }
                     // Other errors we'll consider fatal.
                     Err(err) => {
-                        error!("{:?}",err.to_string());
                         close_connect(connection,handler,Some(&err));
                         //return Err(err)
                         return Ok(true);
