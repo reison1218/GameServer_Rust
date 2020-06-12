@@ -12,7 +12,7 @@ use crate::ID;
 use futures::AsyncWriteExt;
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
-use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM};
+use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM};
 use tools::protos::base::PlayerPt;
 
 pub fn test_tcp_client(pid:&str){
@@ -23,8 +23,8 @@ pub fn test_tcp_client(pid:&str){
         }
         let mut tcp_client = TcpClientHandler::new();
         tcp_client.user_id = uid.unwrap();
-        tcp_client.on_read("192.168.1.100:16801".to_string());
-        //tcp_client.on_read("localhost:16801".to_string());
+        //tcp_client.on_read("192.168.1.100:16801".to_string());
+        tcp_client.on_read("localhost:16801".to_string());
 }
 
 pub fn test_tcp_clients(){
@@ -73,8 +73,16 @@ impl ClientHandler for TcpClientHandler {
         packet.set_len(16+packet.get_data().len() as u32);
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
+
         //panic!("");
-        // std::thread::sleep(Duration::from_secs(2));
+        std::thread::sleep(Duration::from_secs(2));
+
+        let mut cjr = C_JOIN_ROOM::new();
+        cjr.room_id = 101;
+        let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);
+        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
+
         //
         // let mut  csr = C_SEARCH_ROOM::new();
         // csr.set_model_type(1 as u32);
@@ -83,7 +91,7 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().flush().unwrap();
 
         // let mut c_r = C_CREATE_ROOM::new();
-        // c_r.map_id = 1001;
+        // c_r.map_id = 1002;
         // packet.set_cmd(GameCode::CreateRoom as u32);
         // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
         // packet.set_len(16+packet.get_data().len() as u32);

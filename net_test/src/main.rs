@@ -53,6 +53,7 @@ use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
 use chrono::Local;
+use std::fmt::Display;
 
 
 #[macro_use]
@@ -113,14 +114,11 @@ fn main() -> anyhow::Result<()> {
     // let mut str = path.as_os_str().to_str().unwrap();
     //let res = str.to_string()+"/config";
     //println!("{:?}",res);
+    let res = test();
     Ok(())
 }
 
-fn test()->anyhow::Result<()>{
-    let res = test2()?;
-    Ok(())
-}
-
-fn test2()->anyhow::Result<bool>{
-    anyhow::bail!("test")
+fn test()->impl Display{
+    let res = "test".to_string();
+    res
 }

@@ -1,23 +1,30 @@
 use super::*;
-use crate::entity::battle_model::{FriendRoom, PVPModel, PubRoom, RoomModel};
+use crate::entity::battle_model::RoomType;
+use crate::entity::battle_model::{
+    FriendRoom, MatchRoom, MatchRooms, PVPModel, PubRoom, RoomModel,
+};
 use crate::entity::member::{Member, MemberState, UserType};
+use crate::entity::room::Room;
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
+use std::hash::Hash;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomPt;
-use tools::protos::room::{C_JOIN_ROOM, S_ROOM};
+use tools::protos::room::{C_CHANGE_TEAM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_ROOM};
 use tools::protos::server_protocol::{
     PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
 };
 use tools::templates::tile_map_temp::TileMapTempMgr;
 use tools::util::packet::Packet;
 
+//房间服管理器
 pub struct RoomMgr {
-    pub friend_room: FriendRoom,         //好友房
-    pub pub_rooms: HashMap<u8, PubRoom>, //公共房
-    pub sender: Option<TcpSender>,
-    pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
+    pub friend_room: FriendRoom,        //好友房
+    pub match_rooms: MatchRooms,        //公共房
+    pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,告32位是房间id
+    pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
+    pub sender: Option<TcpSender>, //tcp channel的发送方
 }
 
 impl RoomMgr {
@@ -25,10 +32,12 @@ impl RoomMgr {
         let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState> =
             HashMap::new();
         let friend_room = FriendRoom::default();
-        let pub_rooms: HashMap<u8, PubRoom> = HashMap::new();
+        let match_rooms = MatchRooms::default();
+        let player_room: HashMap<u32, u64> = HashMap::new();
         let mut rm = RoomMgr {
             friend_room,
-            pub_rooms,
+            match_rooms,
+            player_room,
             sender: None,
             cmd_map,
         };
@@ -38,17 +47,7 @@ impl RoomMgr {
 
     ///检查玩家是否已经在房间里
     pub fn check_player(&self, user_id: &u32) -> bool {
-        let res = self.friend_room.check_is_in_room(user_id);
-        if res {
-            return true;
-        }
-        for room in self.pub_rooms.iter() {
-            let res = room.1.check_is_in_room(user_id);
-            if res {
-                return true;
-            }
-        }
-        false
+        self.player_room.contains_key(user_id)
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
@@ -66,6 +65,29 @@ impl RoomMgr {
         }
     }
 
+    pub fn send(&mut self, bytes: Vec<u8>) {
+        if self.sender.is_none() {
+            error!("room_mgr'sender is None!");
+            return;
+        }
+        self.sender.as_mut().unwrap().write(bytes);
+    }
+
+    pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let res = res.unwrap();
+        let (model, room_id) = tools::binary::separate_long_2_int(*res);
+        match model {
+            (RoomType::Friend) => self.friend_room.get_room_mut(&room_id),
+            (RoomType::Match) => self.match_rooms.get_room_mut(&room_id),
+            (RoomType::SeasonPve) => None,
+        }
+        None
+    }
+
     ///命令初始化
     fn cmd_init(&mut self) {
         self.cmd_map
@@ -81,14 +103,6 @@ impl RoomMgr {
         self.cmd_map.insert(RoomCode::JoinRoom as u32, join_room);
         self.cmd_map
             .insert(RoomCode::SearchRoom as u32, search_room);
-    }
-
-    pub fn send(&mut self, bytes: Vec<u8>) {
-        if self.sender.is_none() {
-            error!("room_mgr'sender is None!");
-            return;
-        }
-        self.sender.as_mut().unwrap().write(bytes);
     }
 }
 
@@ -118,6 +132,8 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let owner = Member::from(gr.take_pbp());
 
     let room = rm.friend_room.create_room(owner, temp)?;
+    let res = tools::binary::combine_int_2_long(RoomType::Friend as u32, room.get_room_id());
+    rm.player_room.insert(packet.get_user_id(), res);
     println!("room size:{}", std::mem::size_of_val(&room));
     //组装protobuf
     let mut s_r = S_ROOM::new();
@@ -148,11 +164,14 @@ fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //处理好友房
     let res = rm.friend_room.leave_room(&user_id);
     match res {
-        Ok(_) => info!(
-            "卸载玩家好友房数据！user_id:{},room_id:{}",
-            user_id,
-            res.unwrap()
-        ),
+        Ok(_) => {
+            info!(
+                "卸载玩家好友房数据！user_id:{},room_id:{}",
+                user_id,
+                res.unwrap()
+            );
+            rm.player_room.remove(&user_id);
+        }
         Err(_) => {}
     }
     //处理随机房
@@ -163,6 +182,7 @@ fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             continue;
         }
         room_id = pub_room.1.leave_room(&user_id)?;
+        rm.match_rooms.remove(&user_id);
     }
     if room_id > 0 {
         info!(
@@ -260,11 +280,13 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
 
 ///准备
 fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    //校验玩家是否在房间
-    // let res = rm.player_room.contains_key(&packet.get_user_id());
-    // if !res {
-    //     return;
-    // }
+    let user_id = packet.get_user_id();
+
+    let mut cpc = C_PREPARE_CANCEL::new();
+
+    cpc.merge_from_bytes(packet.get_data());
+    let room = rm.friend_room.get_room_mut(&packet.get_user_id());
+
     Ok(())
 }
 
@@ -287,13 +309,45 @@ fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
 ///换队伍
 fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    // let user_id = &packet.get_user_id();
-    // let room = check_player_in_room(user_id, rm);
-    // if room.is_none() {
-    //     return;
-    // }
-    // let room = room.unwrap();
-    // room.change_team(&packet.get_user_id(), &(0 as u8));
+    let user_id = &packet.get_user_id();
+
+    let res = rm.friend_room.player_room.get(&packet.get_user_id());
+    if res.is_none() {
+        warn!("this player is not in the room,user_id:{}", user_id);
+        return Ok(());
+    }
+    let room_id = res.unwrap();
+    let room = rm.friend_room.rooms.get_mut(room_id);
+    if room.is_none() {
+        error!("there is no friend room for room_id:{}", room_id);
+        return Ok(());
+    }
+
+    let mut cct = C_CHANGE_TEAM::new();
+    cct.merge_from_bytes(packet.get_data());
+    let team_id = cct.get_target_team_id();
+
+    let room = room.unwrap();
+    room.change_team(user_id, &(team_id as u8));
+
+    let room_pt = room.convert_to_pt();
+
+    let mut sr = S_ROOM::new();
+    sr.is_succ = true;
+    sr.set_room(room_pt);
+    let bytes = Packet::build_packet_bytes(
+        ClientCode::Room as u32,
+        packet.get_user_id(),
+        sr.write_to_bytes()?,
+        true,
+        true,
+    );
+    let res = rm.sender.as_mut().unwrap().write(bytes);
+    if res.is_err() {
+        let str = format!("{:?}", res.err().unwrap().to_string());
+        error!("{:?}", str.as_str());
+        anyhow::bail!("{:?}", str)
+    }
     Ok(())
 }
 
@@ -357,10 +411,46 @@ fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //走正常逻辑
     let room = room.unwrap();
-    let mut grjr = G_R_JOIN_ROOM::new();
-    grjr.merge_from_bytes(packet.get_data());
 
-    //校验玩家是否在房间里
-
+    // 校验玩家是否在房间里
+    let res = room.is_exist_member(&packet.get_user_id());
+    if res {
+        let str = format!(
+            "this player already in the room!user_id:{},room_id:{}",
+            packet.get_user_id(),
+            room_id
+        );
+        warn!("{:?}", str.as_str());
+        sr.is_succ = false;
+        sr.err_mess = str;
+        let res = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            user_id,
+            sr.write_to_bytes()?,
+            true,
+            true,
+        );
+        rm.send(res);
+        return Ok(());
+    }
+    let member = Member::from(grj.take_pbp());
+    //将玩家加入到房间
+    room.add_member(member);
+    //返回客户端消息
+    sr.is_succ = true;
+    sr.set_room(room.convert_to_pt());
+    let bytes = Packet::build_packet_bytes(
+        ClientCode::Room as u32,
+        packet.get_user_id(),
+        sr.write_to_bytes()?,
+        true,
+        true,
+    );
+    let res = rm.sender.as_mut().unwrap().write(bytes);
+    if res.is_err() {
+        let str = format!("{:?}", res.err().unwrap().to_string());
+        error!("{:?}", str.as_str());
+        anyhow::bail!("{:?}", str)
+    }
     Ok(())
 }

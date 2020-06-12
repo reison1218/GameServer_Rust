@@ -10,11 +10,19 @@ use std::io::empty;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
+///房间设置
+#[derive(Debug, Copy, Clone, Default)]
+pub struct RoomSetting {
+    round_time: u32,
+    is_world_tile: bool,
+    victory_condition: u32,
+}
+
 ///房间类型
 #[derive(Debug, Copy, Clone)]
 pub enum RoomType {
     Friend = 1,       //好友房
-    Public = 2,       //公开PVP房
+    Match = 2,        //匹配房间
     SeasonPve = 3,    //赛季PVE房间
     WorldBossPve = 4, //赛季PVE房间
 }
@@ -44,7 +52,11 @@ pub trait RoomModel {
         room.change_target(user_id, target_id)?;
         Ok(())
     }
+
     fn check_is_in_room(&self, user_id: &u32) -> bool;
+
+    fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room>;
+
     fn create_room(&mut self, owner: Member, temp: &TileMapTemp) -> anyhow::Result<Room>;
     fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32>;
 
@@ -78,7 +90,7 @@ pub trait RoomModel {
     fn get_mut_room_by_room_id(&mut self, room_id: &u32) -> anyhow::Result<&mut Room> {
         let res = self.get_rooms_mut().get_mut(room_id);
         if res.is_none() {
-            let s = format!("this room is not exit,room_id:{}", room_id);
+            let s = format!("this room is not exit！room_id:{}", room_id);
             anyhow::bail!(s)
         }
         Ok(res.unwrap())
@@ -98,17 +110,12 @@ pub trait RoomModel {
 ///好友房结构体
 #[derive(Debug, Clone, Default)]
 pub struct FriendRoom {
-    pub player_room: HashMap<u32, u32>, //对应玩家id->房间id
-    pub rooms: HashMap<u32, Room>,      //封装房间房间id->房间结构体实例
+    pub rooms: HashMap<u32, Room>, //封装房间房间id->房间结构体实例
 }
 
 impl RoomModel for FriendRoom {
     fn get_room_type(&self) -> RoomType {
         RoomType::Friend
-    }
-    ///校验是否在房间内
-    fn check_is_in_room(&self, user_id: &u32) -> bool {
-        self.player_room.contains_key(user_id)
     }
 
     fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
@@ -117,6 +124,16 @@ impl RoomModel for FriendRoom {
             return None;
         }
         Some(res.unwrap())
+    }
+
+    ///校验是否在房间内
+    fn check_is_in_room(&self, user_id: &u32) -> bool {
+        self.player_room.contains_key(user_id)
+    }
+
+    fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
+        let res = self.rooms.get_mut(room_id);
+        res
     }
 
     ///创建房间
@@ -198,16 +215,33 @@ pub struct MatchPlayer {
     pub model: u8,
 }
 
-///公共房结构体
+///匹配房数组结构封装体
 #[derive(Debug, Default, Clone)]
-pub struct PubRoom {
-    pub model_type: u8,                 //战斗模式类型
-    pub player_room: HashMap<u32, u32>, //key:玩家id    value:房间id
-    pub rooms: HashMap<u32, Room>,      //key:房间id    value:房间结构体
-    pub room_cache: Vec<RoomCache>,     //key:房间id    value:房间人数
+pub struct MatchRooms {
+    match_rooms: HashMap<u8, MatchRoom>,
 }
 
-impl RoomModel for PubRoom {
+impl MatchRooms {
+    pub fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
+        for i in self.match_rooms.iter_mut() {
+            let res = i.1.rooms.get_mut(&room_id);
+            if res.is_some() {
+                return Some(res.unwrap());
+            }
+        }
+        None
+    }
+}
+
+///匹配房结构体
+#[derive(Debug, Default, Clone)]
+pub struct MatchRoom {
+    pub model_type: u8,             //战斗模式类型
+    pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
+    pub room_cache: Vec<RoomCache>, //key:房间id    value:房间人数
+}
+
+impl RoomModel for MatchRoom {
     fn get_room_type(&self) -> RoomType {
         RoomType::Public
     }
@@ -222,6 +256,16 @@ impl RoomModel for PubRoom {
     ///校验是否在房间内
     fn check_is_in_room(&self, user_id: &u32) -> bool {
         self.player_room.contains_key(user_id)
+    }
+
+    fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let room_id = res.unwrap();
+        let res = self.rooms.get_mut(room_id);
+        res
     }
 
     ///创建房间
@@ -265,7 +309,7 @@ impl RoomModel for PubRoom {
     }
 }
 
-impl PubRoom {
+impl MatchRoom {
     pub fn get_room_cache_mut(&mut self, room_id: &u32) -> Option<&mut RoomCache> {
         let res = self.room_cache.iter_mut().find(|x| x.room_id == *room_id);
         res

@@ -1,3 +1,4 @@
+use crate::entity::battle_model::RoomSetting;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState, Target};
 use crate::entity::team::Team;
@@ -35,6 +36,7 @@ pub struct Room {
     teams: HashMap<u8, Team>,      //队伍数据
     orders: Vec<ActionUnit>,       //action队列
     state: u8,                     //房间状态
+    setting: RoomSetting,          //房间设置
     time: DateTime<Utc>,           //房间创建时间
 }
 
@@ -48,6 +50,7 @@ impl Room {
         let teams: HashMap<u8, Team> = HashMap::new();
         let orders: Vec<ActionUnit> = Vec::new();
         let player_team: HashMap<u32, u8> = HashMap::new();
+        let setting = RoomSetting::default();
         let mut room = Room {
             id,
             owner_id: owner.user_id,
@@ -56,6 +59,7 @@ impl Room {
             teams,
             orders,
             state: RoomState::Await as u8,
+            setting,
             time,
         };
         room.add_member(owner);
