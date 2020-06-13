@@ -10,30 +10,98 @@ use std::io::empty;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
+///房间类型
+#[derive(Debug, Copy, Clone)]
+pub enum RoomType {
+    Custom = 1,       //自定义房间
+    Match = 2,        //匹配房间
+    SeasonPve = 3,    //赛季PVE房间
+    WorldBossPve = 4, //世界boss房间
+}
+
+impl Into<u32> for RoomType {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
+impl Into<u8> for RoomType {
+    fn into(self) -> u8 {
+        self as u8
+    }
+}
+
+impl RoomType {
+    pub fn into_u32(value: RoomType) -> u32 {
+        value.into()
+    }
+
+    pub fn into_u8(value: RoomType) -> u8 {
+        value.into()
+    }
+
+    pub fn get_custom() -> u8 {
+        let res = RoomType::Custom as u8;
+        res
+    }
+
+    pub fn get_match() -> u8 {
+        let res = RoomType::Match as u8;
+        res
+    }
+
+    pub fn get_season_pve() -> u8 {
+        let res = RoomType::SeasonPve as u8;
+        res
+    }
+
+    pub fn get_world_boss_pve() -> u8 {
+        let res = RoomType::WorldBossPve as u8;
+        res
+    }
+}
+
+///战斗模式类型
+#[derive(Debug, Copy, Clone)]
+pub enum BattleType {
+    OneVOneVOneVOne = 1, //1v1v1v1
+    TwoVTwo = 2,         //2v2
+    OneVOne = 3,         //1v1
+}
+
+impl Into<u32> for BattleType {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
+impl Into<u8> for BattleType {
+    fn into(self) -> u8 {
+        self as u8
+    }
+}
+
+impl BattleType {
+    pub fn get_one_v_one_v_one_v_one() -> u8 {
+        let res = BattleType::OneVOneVOneVOne as u8;
+        res
+    }
+    pub fn get_two_v_two() -> u8 {
+        let res = BattleType::TwoVTwo as u8;
+        res
+    }
+    pub fn get_one_v_one() -> u8 {
+        let res = BattleType::OneVOne as u8;
+        res
+    }
+}
+
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
     round_time: u32,
     is_world_tile: bool,
     victory_condition: u32,
-}
-
-///房间类型
-#[derive(Debug, Copy, Clone)]
-pub enum RoomType {
-    Friend = 1,       //好友房
-    Match = 2,        //匹配房间
-    SeasonPve = 3,    //赛季PVE房间
-    WorldBossPve = 4, //赛季PVE房间
-}
-
-///战斗模式类型
-#[derive(Debug, Copy, Clone)]
-pub enum PVPModel {
-    None = 0,            //初始值
-    OneVOneVOneVOne = 1, //1v1v1v1
-    TwoVTwo = 2,         //2v2
-    OneVOne = 3,         //1v1
 }
 
 ///房间缓存
@@ -45,46 +113,26 @@ pub struct RoomCache {
 
 pub trait RoomModel {
     fn get_room_type(&self) -> RoomType;
-    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32>;
 
-    fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_user_id(user_id)?;
+    fn change_target(
+        &mut self,
+        room_id: &u32,
+        user_id: &u32,
+        target_id: &u32,
+    ) -> anyhow::Result<()> {
+        let room = self.get_mut_room_by_room_id(room_id)?;
         room.change_target(user_id, target_id)?;
         Ok(())
     }
 
-    fn check_is_in_room(&self, user_id: &u32) -> bool;
+    fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room>;
 
-    fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room>;
-
-    fn create_room(&mut self, owner: Member, temp: &TileMapTemp) -> anyhow::Result<Room>;
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32>;
+    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32>;
+    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
 
-    fn get_player_room_mut(&mut self) -> &mut HashMap<u32, u32>;
-
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room>;
-    ///根据玩家id获得房间的可变指针
-    fn get_mut_room_by_user_id(&mut self, user_id: &u32) -> anyhow::Result<&mut Room> {
-        let room_id = self.get_player_room_mut().get(user_id);
-        if room_id.is_none() {
-            let res = self.get_room_type();
-            let str;
-            match res {
-                RoomType::Public => str = "pub pvp",
-                RoomType::Friend => str = "friend",
-                RoomType::SeasonPve => str = "season pve",
-                RoomType::WorldBossPve => str = "world boss pve",
-                _ => str = "",
-            }
-            let s = format!("this player is not in {:?} room,user_id:{}", str, user_id);
-            anyhow::bail!(s)
-        }
-        let room_id = *room_id.unwrap();
-        let res = self.get_mut_room_by_room_id(&room_id)?;
-        Ok(res)
-    }
 
     ///根据房间id获得房间的可变指针
     fn get_mut_room_by_room_id(&mut self, room_id: &u32) -> anyhow::Result<&mut Room> {
@@ -109,26 +157,13 @@ pub trait RoomModel {
 
 ///好友房结构体
 #[derive(Debug, Clone, Default)]
-pub struct FriendRoom {
+pub struct CustomRoom {
     pub rooms: HashMap<u32, Room>, //封装房间房间id->房间结构体实例
 }
 
-impl RoomModel for FriendRoom {
+impl RoomModel for CustomRoom {
     fn get_room_type(&self) -> RoomType {
-        RoomType::Friend
-    }
-
-    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
-        let res = self.player_room.get(user_id);
-        if res.is_none() {
-            return None;
-        }
-        Some(res.unwrap())
-    }
-
-    ///校验是否在房间内
-    fn check_is_in_room(&self, user_id: &u32) -> bool {
-        self.player_room.contains_key(user_id)
+        RoomType::Custom
     }
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
@@ -137,17 +172,16 @@ impl RoomModel for FriendRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member, temp: &TileMapTemp) -> anyhow::Result<Room> {
+    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(temp, owner)?;
-        self.player_room.insert(user_id, room.get_room_id());
+        let room = Room::new(owner)?;
         self.rooms.insert(room.get_room_id(), room.clone());
-        Ok(room)
+        Ok(room.get_room_id())
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32> {
-        let room = self.get_mut_room_by_user_id(user_id)?;
+    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+        let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
         room.remove_member(user_id);
         let room_id = room.get_room_id();
@@ -155,7 +189,6 @@ impl RoomModel for FriendRoom {
         if room.is_empty() {
             self.rooms.remove(&room_id);
         }
-        self.player_room.remove(user_id);
         Ok(room_id)
     }
 
@@ -164,19 +197,20 @@ impl RoomModel for FriendRoom {
         Ok(())
     }
 
-    fn get_player_room_mut(&mut self) -> &mut HashMap<u32, u32, RandomState> {
-        self.player_room.borrow_mut()
-    }
-
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
         self.rooms.borrow_mut()
     }
 }
 
-impl FriendRoom {
+impl CustomRoom {
     ///T人
-    pub fn kick_member(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_user_id(user_id);
+    pub fn kick_member(
+        &mut self,
+        room_id: &u32,
+        user_id: &u32,
+        target_id: &u32,
+    ) -> anyhow::Result<()> {
+        let room = self.get_mut_room_by_room_id(room_id);
         if room.is_err() {
             let str = room.err().unwrap().to_string();
             error!("{:?}", str.as_str());
@@ -196,13 +230,17 @@ impl FriendRoom {
             anyhow::bail!(s)
         }
         room.remove_member(target_id);
-        self.player_room.remove(target_id);
         Ok(())
     }
 
     ///换队伍
-    pub fn change_team(&mut self, user_id: &u32, team_id: &u8) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_user_id(user_id)?;
+    pub fn change_team(
+        &mut self,
+        room_id: &u32,
+        user_id: &u32,
+        team_id: &u8,
+    ) -> anyhow::Result<()> {
+        let room = self.get_mut_room_by_room_id(room_id)?;
         room.change_team(user_id, team_id);
         Ok(())
     }
@@ -218,7 +256,7 @@ pub struct MatchPlayer {
 ///匹配房数组结构封装体
 #[derive(Debug, Default, Clone)]
 pub struct MatchRooms {
-    match_rooms: HashMap<u8, MatchRoom>,
+    pub match_rooms: HashMap<u8, MatchRoom>,
 }
 
 impl MatchRooms {
@@ -230,6 +268,28 @@ impl MatchRooms {
             }
         }
         None
+    }
+
+    ///离开房间，离线也好，主动离开也好
+    pub fn leave(&mut self, room_id: u32, user_id: &u32) -> Option<u32> {
+        for (_, room) in self.match_rooms.iter_mut() {
+            let res = room.leave_room(&room_id, user_id);
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+                return None;
+            }
+            return Some(res.unwrap());
+        }
+        None
+    }
+
+    pub fn get_match_room_mut(&mut self, battle_type: &u8) -> &mut MatchRoom {
+        let res = self.match_rooms.get_mut(battle_type);
+        if res.is_none() {
+            self.match_rooms.insert(*battle_type, MatchRoom::default());
+        }
+        let res = self.match_rooms.get_mut(battle_type);
+        res.unwrap()
     }
 }
 
@@ -243,53 +303,39 @@ pub struct MatchRoom {
 
 impl RoomModel for MatchRoom {
     fn get_room_type(&self) -> RoomType {
-        RoomType::Public
-    }
-    fn get_room_id_by_user_id(&self, user_id: &u32) -> Option<&u32> {
-        let res = self.player_room.get(user_id);
-        if res.is_none() {
-            return None;
-        }
-        Some(res.unwrap())
+        RoomType::Match
     }
 
-    ///校验是否在房间内
-    fn check_is_in_room(&self, user_id: &u32) -> bool {
-        self.player_room.contains_key(user_id)
-    }
-
-    fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {
-        let res = self.player_room.get(user_id);
-        if res.is_none() {
-            return None;
-        }
-        let room_id = res.unwrap();
+    fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
         let res = self.rooms.get_mut(room_id);
-        res
+        if res.is_none() {
+            return None;
+        }
+        let room = res.unwrap();
+        Some(room)
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member, temp: &TileMapTemp) -> anyhow::Result<Room> {
+    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(temp, owner)?;
-        self.player_room.insert(user_id, room.get_room_id());
-        self.rooms.insert(room.get_room_id(), room.clone());
+        let mut room = Room::new(owner)?;
+        let room_id = room.get_room_id();
+        self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
-        rc.room_id = room.get_room_id();
+        rc.room_id = room_id;
         rc.count = 4;
         self.room_cache.push(rc);
-        Ok(room)
+        Ok(room_id)
     }
 
     ///离开房间
-    fn leave_room(&mut self, user_id: &u32) -> anyhow::Result<u32> {
-        let room = self.get_mut_room_by_user_id(user_id)?;
+    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+        let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
         room.remove_member(user_id);
         if room.is_empty() {
             self.rm_room(&room_id)?;
         }
-        self.player_room.remove(user_id);
         Ok(room_id)
     }
 
@@ -298,10 +344,6 @@ impl RoomModel for MatchRoom {
         self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
         Ok(())
-    }
-
-    fn get_player_room_mut(&mut self) -> &mut HashMap<u32, u32, RandomState> {
-        self.player_room.borrow_mut()
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
@@ -332,15 +374,10 @@ impl MatchRoom {
     }
 
     ///快速加入
-    pub fn quickly_start(&mut self, member: Member) -> anyhow::Result<Room> {
-        let res = self.check_is_in_room(&member.user_id);
-        if res {
-            let s = format!("this player already in the room!user_id:{}", member.user_id);
-            anyhow::bail!(s)
-        }
+    pub fn quickly_start(&mut self, member: Member) -> anyhow::Result<u32> {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;
-        let room: Room;
+        let mut room_id: u32 = 0;
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
@@ -350,12 +387,10 @@ impl MatchRoom {
                 anyhow::bail!(s)
             }
             //创建房间
-            let res = room_tmp_ref.get_temp(map_id)?;
-            let mut res = self.create_room(member, res)?;
-            room = res;
+            room_id = self.create_room(member)?;
         } else {
             //如果有，则往房间里塞
-            let room_id = self.get_room_cache_last_room_id()?;
+            room_id = self.get_room_cache_last_room_id()?;
             //将成员加进房间
             let room_mut = self.get_mut_room_by_room_id(&room_id)?;
             room_mut.add_member(member);
@@ -364,18 +399,14 @@ impl MatchRoom {
             let room_cache = room_cache_array.last_mut().unwrap();
             //cache人数加1
             room_cache.count += 1;
-
             //如果人满里，则从缓存房间列表中弹出
             if room_cache.count >= 4 {
                 room_cache_array.pop();
             }
             //重新排序
             room_cache_array.sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
-            let res = self.get_mut_room_by_room_id(&room_id)?;
-            let res: &Room = res;
-            room = res.clone();
         }
-        Ok(room)
+        Ok(room_id)
     }
 
     fn get_room_cache_last_room_id(&self) -> anyhow::Result<u32> {

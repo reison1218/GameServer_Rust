@@ -1,6 +1,28 @@
 syntax = "proto3";
 package protos;
 
+enum RoomTypePt{
+    None = 0;         //无效占位数值，protobuf枚举必须包含0
+    Custom = 1;       //自定义房间
+    Match = 2;        //匹配房间
+    SeasonPve = 3;    //赛季PVE房间
+    WorldBossPve = 4; //世界boss房间
+}
+
+enum BattleTypePt {
+    None = 0;            //初始值
+    OneVOneVOneVOne = 1; //1v1v1v1
+    TwoVTwo = 2;         //2v2
+    OneVOne = 3;         //1v1
+}
+
+message RoomSettingPt{
+    BattleTypePt battle_type = 1;//战斗模式
+    RoundTimePt round_time = 2;//回合时间
+    bool is_open_world_tile = 3;//是否开启中立特殊块
+    uint32 victory_condition = 4;//胜利条件
+}
+
 //玩家信息
 message PlayerPt{
 	string nick_name = 1;//昵称
@@ -51,6 +73,7 @@ message RoomPt{
     uint32 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
     TileMapPt tile_map = 3;//地图数据
+
     repeated TeamPt teams = 4;//房间里的队伍
 }
 
@@ -68,4 +91,10 @@ message NoticeMessPt{
 message CharacterPt{
     uint32 temp_id = 1;//角色的配置id
     repeated uint32 skills = 2;//玩家次角色所有已解锁的技能id
+}
+
+//回合时间封装体
+message RoundTimePt{
+    uint32 consume_time = 1; //消耗时间
+    uint32 fixed_time = 2;//固定时间
 }

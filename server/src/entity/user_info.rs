@@ -241,9 +241,8 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     //解析客户端发过来的参数
     let mut cr = C_CREATE_ROOM::new();
     cr.merge_from_bytes(packet.get_data())?;
-
     let mut gr = G_R_CREATE_ROOM::new();
-    gr.set_map_id(cr.map_id);
+    gr.set_room_type(cr.room_type);
     let mut pbp = PlayerBattlePt::new();
     let user_data = user_data.unwrap();
     pbp.set_user_id(user_id);

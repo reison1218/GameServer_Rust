@@ -4,7 +4,12 @@ import "base.proto";
 
 //创建房间请求
 message C_CREATE_ROOM{
-    uint32 map_id = 1;   //地图id
+    RoomTypePt room_type = 1;//房间类型
+}
+
+//房间设置
+message C_ROOM_SETTING{
+    RoomSettingPt setting = 1;//房间设置
 }
 
 //离开房间
@@ -14,12 +19,12 @@ message C_LEAVE_ROOM{
 
 //T人
 message C_KICK_MEMBER{
-    uint32 target_id = 1;
+    uint32 target_id = 1;//要T掉的玩家目标id
 }
 
 //换队伍
 message C_CHANGE_TEAM{
-    uint32 target_team_id = 1;
+    uint32 target_team_id = 1;//想要换的队伍目标id
 }
 
 //准备与取消准备
@@ -40,12 +45,13 @@ message S_START{
 
 //快速开始
 message C_SEARCH_ROOM{
-    uint32 model_type = 1;//模式
+    BattleTypePt battle_type = 1;//要搜索的战斗模式
 }
 
-//加入放假
+//加入房间
 message C_JOIN_ROOM{
-    uint32 room_id = 1;//房间id
+    RoomTypePt room_type = 1;//房间类型
+    uint32 room_id = 2;//房间id
 }
 
 //房间推送消息

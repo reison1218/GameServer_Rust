@@ -42,9 +42,9 @@ pub struct Room {
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(map_temp: &TileMapTemp, owner: Member) -> anyhow::Result<Room> {
+    pub fn new(owner: Member) -> anyhow::Result<Room> {
         //转换成tilemap数据
-        let tile_map = TileMap::new(map_temp)?;
+        let tile_map = TileMap::default();
         let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
         let time = Utc::now();
         let teams: HashMap<u8, Team> = HashMap::new();
