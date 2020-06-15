@@ -36,6 +36,18 @@ pub enum ClientCode{
     NickNameModify = 10005,
     //房间命令号
     Room = 10006,
+    //房间命令号
+    LeaveRoom = 10007,
+    //开始游戏
+    Start = 10008,
+    //换队伍
+    ChangeTeam = 10009,
+    //准备与取消准备
+    PrepareCancel=10010,
+    //房间设置
+    RoomSetting=10011,
+    //房间成员变动推送消息
+    RoomMemberNotice=10012,
     //最大命令号
     Max = 20000,
 }

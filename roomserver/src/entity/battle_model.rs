@@ -1,4 +1,4 @@
-use crate::entity::member::{Member, MemberState, Target, UserType};
+use crate::entity::member::{Member, MemberState, UserType};
 use crate::entity::room::{Room, RoomState};
 use crate::TEMPLATES;
 use log::{error, warn};
@@ -8,6 +8,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::io::empty;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
+use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
@@ -156,7 +157,7 @@ pub trait RoomModel {
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room>;
 
-    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32>;
+    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32>;
     fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
@@ -201,9 +202,9 @@ impl RoomModel for CustomRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
+    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(owner, RoomType::get_custom())?;
+        let room = Room::new(owner, RoomType::get_custom(), sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room.get_room_id(), room);
         Ok(room_id)
@@ -348,9 +349,9 @@ impl RoomModel for MatchRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
+    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(owner, RoomType::get_match())?;
+        let mut room = Room::new(owner, RoomType::get_match(), sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
@@ -406,7 +407,7 @@ impl MatchRoom {
     }
 
     ///快速加入
-    pub fn quickly_start(&mut self, member: Member) -> anyhow::Result<u32> {
+    pub fn quickly_start(&mut self, member: Member, sender: TcpSender) -> anyhow::Result<u32> {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;
         let mut room_id: u32 = 0;
@@ -419,12 +420,16 @@ impl MatchRoom {
                 anyhow::bail!(s)
             }
             //创建房间
-            room_id = self.create_room(member)?;
+            room_id = self.create_room(member, sender)?;
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;
             //将成员加进房间
             let room_mut = self.get_mut_room_by_room_id(&room_id)?;
+            if room_mut.members.len() >= 4 {
+                let s = format!("this map config is None,map_id:{}", map_id);
+                anyhow::bail!(s)
+            }
             room_mut.add_member(member);
 
             let room_cache_array: &mut Vec<RoomCache> = self.room_cache.as_mut();

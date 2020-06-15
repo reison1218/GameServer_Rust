@@ -1161,7 +1161,9 @@ pub struct MemberPt {
     // message fields
     pub user_id: u32,
     pub nick_name: ::std::string::String,
+    pub cter: ::protobuf::SingularPtrField<CharacterPt>,
     pub state: u32,
+    pub team_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1219,7 +1221,40 @@ impl MemberPt {
         ::std::mem::replace(&mut self.nick_name, ::std::string::String::new())
     }
 
-    // uint32 state = 3;
+    // .protos.CharacterPt cter = 3;
+
+
+    pub fn get_cter(&self) -> &CharacterPt {
+        self.cter.as_ref().unwrap_or_else(|| CharacterPt::default_instance())
+    }
+    pub fn clear_cter(&mut self) {
+        self.cter.clear();
+    }
+
+    pub fn has_cter(&self) -> bool {
+        self.cter.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cter(&mut self, v: CharacterPt) {
+        self.cter = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_cter(&mut self) -> &mut CharacterPt {
+        if self.cter.is_none() {
+            self.cter.set_default();
+        }
+        self.cter.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_cter(&mut self) -> CharacterPt {
+        self.cter.take().unwrap_or_else(|| CharacterPt::new())
+    }
+
+    // uint32 state = 4;
 
 
     pub fn get_state(&self) -> u32 {
@@ -1233,10 +1268,30 @@ impl MemberPt {
     pub fn set_state(&mut self, v: u32) {
         self.state = v;
     }
+
+    // uint32 team_id = 5;
+
+
+    pub fn get_team_id(&self) -> u32 {
+        self.team_id
+    }
+    pub fn clear_team_id(&mut self) {
+        self.team_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_team_id(&mut self, v: u32) {
+        self.team_id = v;
+    }
 }
 
 impl ::protobuf::Message for MemberPt {
     fn is_initialized(&self) -> bool {
+        for v in &self.cter {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -1255,11 +1310,21 @@ impl ::protobuf::Message for MemberPt {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.nick_name)?;
                 },
                 3 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.cter)?;
+                },
+                4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
                     self.state = tmp;
+                },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.team_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1279,8 +1344,15 @@ impl ::protobuf::Message for MemberPt {
         if !self.nick_name.is_empty() {
             my_size += ::protobuf::rt::string_size(2, &self.nick_name);
         }
+        if let Some(ref v) = self.cter.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         if self.state != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.state, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.state, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.team_id != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.team_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1294,8 +1366,16 @@ impl ::protobuf::Message for MemberPt {
         if !self.nick_name.is_empty() {
             os.write_string(2, &self.nick_name)?;
         }
+        if let Some(ref v) = self.cter.as_ref() {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
         if self.state != 0 {
-            os.write_uint32(3, self.state)?;
+            os.write_uint32(4, self.state)?;
+        }
+        if self.team_id != 0 {
+            os.write_uint32(5, self.team_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1346,10 +1426,20 @@ impl ::protobuf::Message for MemberPt {
                     |m: &MemberPt| { &m.nick_name },
                     |m: &mut MemberPt| { &mut m.nick_name },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<CharacterPt>>(
+                    "cter",
+                    |m: &MemberPt| { &m.cter },
+                    |m: &mut MemberPt| { &mut m.cter },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "state",
                     |m: &MemberPt| { &m.state },
                     |m: &mut MemberPt| { &mut m.state },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "team_id",
+                    |m: &MemberPt| { &m.team_id },
+                    |m: &mut MemberPt| { &mut m.team_id },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<MemberPt>(
                     "MemberPt",
@@ -1372,7 +1462,9 @@ impl ::protobuf::Clear for MemberPt {
     fn clear(&mut self) {
         self.user_id = 0;
         self.nick_name.clear();
+        self.cter.clear();
         self.state = 0;
+        self.team_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1384,211 +1476,6 @@ impl ::std::fmt::Debug for MemberPt {
 }
 
 impl ::protobuf::reflect::ProtobufValue for MemberPt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct TeamPt {
-    // message fields
-    pub team_id: u32,
-    pub members: ::protobuf::RepeatedField<MemberPt>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a TeamPt {
-    fn default() -> &'a TeamPt {
-        <TeamPt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl TeamPt {
-    pub fn new() -> TeamPt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 team_id = 1;
-
-
-    pub fn get_team_id(&self) -> u32 {
-        self.team_id
-    }
-    pub fn clear_team_id(&mut self) {
-        self.team_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_team_id(&mut self, v: u32) {
-        self.team_id = v;
-    }
-
-    // repeated .protos.MemberPt members = 2;
-
-
-    pub fn get_members(&self) -> &[MemberPt] {
-        &self.members
-    }
-    pub fn clear_members(&mut self) {
-        self.members.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_members(&mut self, v: ::protobuf::RepeatedField<MemberPt>) {
-        self.members = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_members(&mut self) -> &mut ::protobuf::RepeatedField<MemberPt> {
-        &mut self.members
-    }
-
-    // Take field
-    pub fn take_members(&mut self) -> ::protobuf::RepeatedField<MemberPt> {
-        ::std::mem::replace(&mut self.members, ::protobuf::RepeatedField::new())
-    }
-}
-
-impl ::protobuf::Message for TeamPt {
-    fn is_initialized(&self) -> bool {
-        for v in &self.members {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.team_id = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.members)?;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.team_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.team_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.members {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.team_id != 0 {
-            os.write_uint32(1, self.team_id)?;
-        }
-        for v in &self.members {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> TeamPt {
-        TeamPt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "team_id",
-                    |m: &TeamPt| { &m.team_id },
-                    |m: &mut TeamPt| { &mut m.team_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<MemberPt>>(
-                    "members",
-                    |m: &TeamPt| { &m.members },
-                    |m: &mut TeamPt| { &mut m.members },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<TeamPt>(
-                    "TeamPt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static TeamPt {
-        static mut instance: ::protobuf::lazy::Lazy<TeamPt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(TeamPt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for TeamPt {
-    fn clear(&mut self) {
-        self.team_id = 0;
-        self.members.clear();
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for TeamPt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for TeamPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1996,7 +1883,7 @@ pub struct RoomPt {
     pub room_id: u32,
     pub owner_id: u32,
     pub tile_map: ::protobuf::SingularPtrField<TileMapPt>,
-    pub teams: ::protobuf::RepeatedField<TeamPt>,
+    pub members: ::protobuf::RepeatedField<MemberPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2076,29 +1963,29 @@ impl RoomPt {
         self.tile_map.take().unwrap_or_else(|| TileMapPt::new())
     }
 
-    // repeated .protos.TeamPt teams = 4;
+    // repeated .protos.MemberPt members = 4;
 
 
-    pub fn get_teams(&self) -> &[TeamPt] {
-        &self.teams
+    pub fn get_members(&self) -> &[MemberPt] {
+        &self.members
     }
-    pub fn clear_teams(&mut self) {
-        self.teams.clear();
+    pub fn clear_members(&mut self) {
+        self.members.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_teams(&mut self, v: ::protobuf::RepeatedField<TeamPt>) {
-        self.teams = v;
+    pub fn set_members(&mut self, v: ::protobuf::RepeatedField<MemberPt>) {
+        self.members = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_teams(&mut self) -> &mut ::protobuf::RepeatedField<TeamPt> {
-        &mut self.teams
+    pub fn mut_members(&mut self) -> &mut ::protobuf::RepeatedField<MemberPt> {
+        &mut self.members
     }
 
     // Take field
-    pub fn take_teams(&mut self) -> ::protobuf::RepeatedField<TeamPt> {
-        ::std::mem::replace(&mut self.teams, ::protobuf::RepeatedField::new())
+    pub fn take_members(&mut self) -> ::protobuf::RepeatedField<MemberPt> {
+        ::std::mem::replace(&mut self.members, ::protobuf::RepeatedField::new())
     }
 }
 
@@ -2109,7 +1996,7 @@ impl ::protobuf::Message for RoomPt {
                 return false;
             }
         };
-        for v in &self.teams {
+        for v in &self.members {
             if !v.is_initialized() {
                 return false;
             }
@@ -2139,7 +2026,7 @@ impl ::protobuf::Message for RoomPt {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.tile_map)?;
                 },
                 4 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.teams)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.members)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -2163,7 +2050,7 @@ impl ::protobuf::Message for RoomPt {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
-        for value in &self.teams {
+        for value in &self.members {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -2184,7 +2071,7 @@ impl ::protobuf::Message for RoomPt {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
-        for v in &self.teams {
+        for v in &self.members {
             os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -2243,10 +2130,10 @@ impl ::protobuf::Message for RoomPt {
                     |m: &RoomPt| { &m.tile_map },
                     |m: &mut RoomPt| { &mut m.tile_map },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TeamPt>>(
-                    "teams",
-                    |m: &RoomPt| { &m.teams },
-                    |m: &mut RoomPt| { &mut m.teams },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<MemberPt>>(
+                    "members",
+                    |m: &RoomPt| { &m.members },
+                    |m: &mut RoomPt| { &mut m.members },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<RoomPt>(
                     "RoomPt",
@@ -2270,7 +2157,7 @@ impl ::protobuf::Clear for RoomPt {
         self.room_id = 0;
         self.owner_id = 0;
         self.tile_map.clear();
-        self.teams.clear();
+        self.members.clear();
         self.unknown_fields.clear();
     }
 }
@@ -2737,19 +2624,19 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0bResourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\
     \x02id\x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\
     \x03num\"<\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
-    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"V\n\x08MemberPt\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
-    \x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05state\x18\x03\x20\x01(\rR\
-    \x05state\"M\n\x06TeamPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
-    mId\x12*\n\x07members\x18\x02\x20\x03(\x0b2\x10.protos.MemberPtR\x07memb\
-    ers\"J\n\tTileMapPt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\nce\
-    ll_array\x18\x02\x20\x03(\x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06Cel\
-    lPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\
-    \x02\x20\x01(\rR\x05value\"\x90\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\
-    \x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07\
-    ownerId\x12,\n\x08tile_map\x18\x03\x20\x01(\x0b2\x11.protos.TileMapPtR\
-    \x07tileMap\x12$\n\x05teams\x18\x04\x20\x03(\x0b2\x0e.protos.TeamPtR\x05\
-    teams\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\">\n\x0bCharacterPt\
+    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x98\x01\n\x08Me\
+    mberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnic\
+    k_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
+    \x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01\
+    (\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\"J\n\tT\
+    ileMapPt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\
+    \x18\x02\x20\x03(\x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\
+    \x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\
+    \x20\x01(\rR\x05value\"\x96\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\
+    \x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07owne\
+    rId\x12,\n\x08tile_map\x18\x03\x20\x01(\x0b2\x11.protos.TileMapPtR\x07ti\
+    leMap\x12*\n\x07members\x18\x04\x20\x03(\x0b2\x10.protos.MemberPtR\x07me\
+    mbers\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\">\n\x0bCharacterPt\
     \x12\x17\n\x07temp_id\x18\x01\x20\x01(\rR\x06tempId\x12\x16\n\x06skills\
     \x18\x02\x20\x03(\rR\x06skillsb\x06proto3\
 ";

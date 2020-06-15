@@ -3,7 +3,7 @@ use crate::entity::battle_model::{
     BattleType, CustomRoom, MatchRoom, MatchRooms, RoomModel, RoomType,
 };
 use crate::entity::member::{BattleCharcter, Member, MemberState, UserType};
-use crate::entity::room::{Room, RoomState};
+use crate::entity::room::{member_2_memberpt, Room, RoomState};
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
@@ -13,7 +13,7 @@ use tools::cmd_code::RoomCode::RoomSetting;
 use tools::protos::base::RoomPt;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOICE_CHARACTER, C_JOIN_ROOM, C_KICK_MEMBER, C_PREPARE_CANCEL,
-    C_ROOM_SETTING, S_ROOM,
+    C_ROOM_SETTING, S_ROOM, S_ROOM_MEMBER_NOTICE,
 };
 use tools::protos::server_protocol::{
     PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
@@ -184,9 +184,10 @@ fn create_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let owner = Member::from(grc.take_pbp());
     let mut room: Option<&mut Room> = None;
     //创建房间
-
     if room_type == RoomType::get_custom() {
-        let room_id = rm.custom_room.create_room(owner)?;
+        let room_id = rm
+            .custom_room
+            .create_room(owner, rm.sender.as_ref().unwrap().clone())?;
 
         room = Some(rm.custom_room.rooms.get_mut(&room_id).unwrap());
     } else if room_type == RoomType::get_season_pve() {
@@ -301,7 +302,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let match_room = rm.match_rooms.get_match_room_mut(&battle_type);
     let member = Member::from(grs.take_pbp());
 
-    let res = match_room.quickly_start(member);
+    let res = match_room.quickly_start(member, rm.sender.as_ref().unwrap().clone());
     //返回客户端
     if res.is_err() {
         let str = res.err().unwrap().to_string();
@@ -332,6 +333,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
         true,
     );
 
+    //返回客户端
     let res = rm.sender.as_mut().unwrap().write(bytes);
     if res.is_err() {
         let str = format!("{:?}", res.err().unwrap().to_string());
@@ -519,6 +521,23 @@ fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //走正常逻辑
     let room = room.unwrap();
 
+    //校验房间人数
+    if room.members.len() >= 4 {
+        let str = format!("this room already have max player num!,room_id:{}", room_id);
+        warn!("{:?}", str.as_str());
+        sr.is_succ = false;
+        sr.err_mess = str;
+        let res = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            user_id,
+            sr.write_to_bytes()?,
+            true,
+            true,
+        );
+        rm.send(res);
+        return Ok(());
+    }
+
     // 校验玩家是否在房间里
     let res = room.is_exist_member(&packet.get_user_id());
     if res {
@@ -602,9 +621,9 @@ fn chioce_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验角色技能
-    member.battle_cters = BattleCharcter::default();
-    member.battle_cters.skills = cter_c.skills;
-    member.battle_cters.temp_id = cter_c.temp_id;
+    member.battle_cter = BattleCharcter::default();
+    member.battle_cter.skills = cter_c.skills;
+    member.battle_cter.temp_id = cter_c.temp_id;
 
     //同志客户端
     Ok(())

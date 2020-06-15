@@ -36,7 +36,7 @@ pub struct BattleCharcter {
     pub hp: u32,
     pub defence: u32,
     pub skills: Vec<u32>, //玩家次角色所有已解锁的技能id
-    pub target: Target,   //玩家目标
+    pub target_id: u32,   //玩家目标
 }
 
 #[derive(Clone, Debug, Default)]
@@ -45,8 +45,9 @@ pub struct Member {
     pub nick_name: String,             //玩家昵称
     pub user_type: u8,                 //玩家类型，分为真实玩家和机器人
     pub state: u8,                     //玩家状态
+    pub team_id: u8,                   //玩家所属队伍id
     pub cters: HashMap<u32, Charcter>, //玩家拥有的角色数组
-    pub battle_cters: BattleCharcter,  //进入战斗后的角色数据
+    pub battle_cter: BattleCharcter,   //进入战斗后的角色数据
 }
 
 impl Member {
@@ -54,12 +55,6 @@ impl Member {
     pub fn get_user_id(&self) -> u32 {
         self.user_id
     }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Target {
-    pub team_id: u8,
-    pub user_id: u32,
 }
 
 impl From<PlayerBattlePt> for Member {
@@ -79,7 +74,7 @@ impl From<PlayerBattlePt> for Member {
             cters.insert(cter.temp_id, cter);
         }
         member.cters = cters;
-        member.battle_cters = BattleCharcter::default();
+        member.battle_cter = BattleCharcter::default();
         member
     }
 }

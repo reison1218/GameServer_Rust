@@ -3,50 +3,92 @@ package protos;
 import "base.proto";
 
 //创建房间请求
+//cmd:20003
 message C_CREATE_ROOM{
     uint32 room_type = 1;//房间类型
 }
 
-//房间设置
+//快速开始
+//cmd:20010
+message C_SEARCH_ROOM{
+    uint32 battle_type = 1;//要搜索的战斗模式
+}
+
+//加入房间
+//cmd:20009
+message C_JOIN_ROOM{
+    uint32 room_type = 1;//房间类型
+    uint32 room_id = 2;//房间id
+}
+
+
+//房间协议返回，对应返回的有：20003，20009，20010
+//cmd:10006
+message S_ROOM{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+    RoomPt room = 3;//房间数据
+}
+
+//房间设置请求
+//cmd:20011
 message C_ROOM_SETTING{
     RoomSettingPt setting = 1;//房间设置
 }
 
+//房间设置返回
+//cmd:10011
+message S_ROOM_SETTING{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
 //离开房间
+//cmd:20004
 message C_LEAVE_ROOM{
 
 }
 
-//离开房间返回
+//离开房间返回，当房间有人推出时，也会向其他人推送这个协议
+//cmd:10007
 message S_LEAVE_ROOM{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
-    uint32 user_id =3;//离开的玩家id
+}
+
+//选择角色和技能
+//cmd:20012
+message C_CHOICE_CHARACTER{
+    CharacterPt cter = 1;//选择的角色
 }
 
 //T人
+//cmd:20005
 message C_KICK_MEMBER{
     uint32 target_id = 1;//要T掉的玩家目标id
 }
 
 //换队伍
+//cmd:20006
 message C_CHANGE_TEAM{
     uint32 target_team_id = 1;//想要换的队伍目标id
 }
 
 //换队伍返回
+//cmd:10009
 message S_CHANGE_TEAM{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
-    repeated TeamPt teams = 3;//队伍数据
 }
 
 //准备与取消准备
+//cmd:20007
 message C_PREPARE_CANCEL{
     bool prepare = 1;//true代表准备，false代表取消准备
 }
 
 //准备与取消返回
+//cmd:10010
 message S_PREPARE_CANCEL{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
@@ -55,45 +97,22 @@ message S_PREPARE_CANCEL{
 }
 
 //开始游戏
+//cmd:20008
 message C_START{
 
 }
 
 //开始游戏返回
+//cmd:10008
 message S_START{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
 }
 
-//快速开始
-message C_SEARCH_ROOM{
-    uint32 battle_type = 1;//要搜索的战斗模式
-}
-
-//加入房间
-message C_JOIN_ROOM{
-    uint32 room_type = 1;//房间类型
-    uint32 room_id = 2;//房间id
-}
-
-//选择角色和技能
-message C_CHOICE_CHARACTER{
-    CharacterPt cter = 1;//选择的角色
-}
-
-
-
-
-
-
 //房间推送消息
-message S_ROOM_NOTICE{
-
-}
-
-message S_ROOM{
-    bool is_succ = 1;//是否成功;
-    string err_mess = 2;//错误信息;
-    RoomPt room = 3;//房间数据
+//cmd:10012
+message S_ROOM_MEMBER_NOTICE{
+    uint32 notice_type = 1;//类型 1:有新加成员 2:成员数据变动 3:成员离开房间
+    MemberPt member = 2;//队伍数据
 }
 

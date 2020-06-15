@@ -23,7 +23,7 @@ pub trait Handler: Send + Sync {
 }
 
 ///tcp server sender
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct TcpSender {
     pub sender: SyncSender<Data>,
     pub token: usize,
