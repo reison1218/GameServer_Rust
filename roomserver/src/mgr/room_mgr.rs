@@ -2,18 +2,23 @@ use super::*;
 use crate::entity::battle_model::{
     BattleType, CustomRoom, MatchRoom, MatchRooms, RoomModel, RoomType,
 };
-use crate::entity::member::{Member, MemberState, UserType};
-use crate::entity::room::Room;
+use crate::entity::member::{BattleCharcter, Member, MemberState, UserType};
+use crate::entity::room::{Room, RoomState};
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
 use std::hash::Hash;
 use tools::cmd_code::ClientCode;
+use tools::cmd_code::RoomCode::RoomSetting;
 use tools::protos::base::RoomPt;
-use tools::protos::room::{C_CHANGE_TEAM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_ROOM};
+use tools::protos::room::{
+    C_CHANGE_TEAM, C_CHOICE_CHARACTER, C_JOIN_ROOM, C_KICK_MEMBER, C_PREPARE_CANCEL,
+    C_ROOM_SETTING, S_ROOM,
+};
 use tools::protos::server_protocol::{
     PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
 };
+use tools::templates::character_temp::CharacterTemp;
 use tools::templates::tile_map_temp::TileMapTempMgr;
 use tools::util::packet::Packet;
 
@@ -115,6 +120,10 @@ impl RoomMgr {
         self.cmd_map.insert(RoomCode::JoinRoom as u32, join_room);
         self.cmd_map
             .insert(RoomCode::SearchRoom as u32, search_room);
+        self.cmd_map
+            .insert(RoomCode::RoomSetting as u32, room_setting);
+        self.cmd_map
+            .insert(RoomCode::ChoiceCharacter as u32, chioce_character);
     }
 }
 
@@ -245,7 +254,7 @@ fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let res = rm.match_rooms.leave(room_id, &user_id);
     if let Some(_) = res {
         info!(
-            "卸载玩家公共pvp房数据！user_id:{},room_id:{}",
+            "卸载玩家公共match房数据！user_id:{},room_id:{}",
             user_id, room_id
         );
         rm.player_room.remove(&user_id);
@@ -263,11 +272,11 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
     let mut grs = G_R_SEARCH_ROOM::new();
     grs.merge_from_bytes(packet.get_data());
 
-    let room_model = grs.get_model_type() as u8;
+    let battle_type = grs.battle_type as u8;
     let user_id = packet.get_user_id();
     ///校验模式
-    if room_model < BattleType::OneVOneVOneVOne as u8 || room_model > BattleType::OneVOne as u8 {
-        let s = format!("this model is not exist!model_type:{}", room_model);
+    if battle_type < BattleType::OneVOneVOneVOne as u8 || battle_type > BattleType::OneVOne as u8 {
+        let s = format!("this model is not exist!model_type:{}", battle_type);
         anyhow::bail!(s)
     }
 
@@ -289,7 +298,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     //执行正常流程
-    let match_room = rm.match_rooms.get_match_room_mut(&room_model);
+    let match_room = rm.match_rooms.get_match_room_mut(&battle_type);
     let member = Member::from(grs.take_pbp());
 
     let res = match_room.quickly_start(member);
@@ -309,7 +318,7 @@ fn search_room(rm: &mut RoomMgr, mut packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     };
     let room_id = res.unwrap();
-    let value = tools::binary::combine_int_2_long(room_model as u32, room_id);
+    let value = tools::binary::combine_int_2_long(RoomType::Match as u32, room_id);
     rm.player_room.insert(packet.get_user_id(), value);
     //返回客户端
     let room = rm.get_room_mut(&user_id).unwrap();
@@ -405,18 +414,64 @@ fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
 ///T人
 fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    // let user_id = &packet.get_user_id();
-    // let room = check_player_in_room(user_id, rm);
-    // if room.is_none() {
-    //     return;
-    // }
-    // let room = room.unwrap();
-    // let taret_user: u32 = 0;
-    // let res = room.kick_member(&packet.get_user_id(), &taret_user);
-    // if res.is_err() {
-    //     res.unwrap_err();
-    //     return;
-    // }
+    let user_id = packet.get_user_id();
+
+    let mut ckm = C_KICK_MEMBER::new();
+    ckm.merge_from_bytes(packet.get_data());
+    let target_id = ckm.target_id;
+
+    //校验房间
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        return Ok(());
+    }
+
+    //校验操作人是不是房主
+    let room = room.unwrap();
+    if room.get_owner_id() != user_id {
+        return Ok(());
+    }
+
+    //校验房间是否存在target_id这个成员
+    if !room.is_exist_member(&target_id) {
+        return Ok(());
+    }
+
+    let res = room.kick_member(&user_id, &target_id);
+    if res.is_err() {
+        warn!("{:?}", res.err().unwrap().to_string());
+        return Ok(());
+    }
+    //回给客户端
+
+    Ok(())
+}
+
+///房间设置
+fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        return Ok(());
+    }
+    let room = room.unwrap();
+
+    //校验房间是否存在这个玩家
+    if !room.is_exist_member(&user_id) {
+        return Ok(());
+    }
+
+    //校验玩家是否是房主
+    if room.get_owner_id() != user_id {
+        return Ok(());
+    }
+
+    let mut rs = C_ROOM_SETTING::new();
+    rs.merge_from_bytes(packet.get_data());
+    let rs_pt = rs.take_setting();
+    let rs = crate::entity::battle_model::RoomSetting::from(rs_pt);
+    room.set_room_setting(rs);
+    //回给客户端
     Ok(())
 }
 
@@ -504,5 +559,53 @@ fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", str.as_str());
         anyhow::bail!("{:?}", str)
     }
+    Ok(())
+}
+
+///选择角色
+fn chioce_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let res = rm.get_room_mut(&user_id);
+    //校验玩家在不在房间
+    if res.is_none() {
+        return Ok(());
+    }
+
+    let room = res.unwrap();
+
+    //校验房间状态
+    if room.get_status() == RoomState::Started as u8 {
+        return Ok(());
+    }
+
+    //走正常流程
+    let mut ccc = C_CHOICE_CHARACTER::new();
+    ccc.merge_from_bytes(packet.get_data());
+
+    let cter_c = ccc.take_cter();
+
+    //校验角色
+    let member = room.get_member_mut_by_user_id(&user_id);
+    if member.is_none() {
+        return Ok(());
+    }
+    let member = member.unwrap();
+    let cter = member.cters.get(&cter_c.get_temp_id());
+    if cter.is_none() {
+        return Ok(());
+    }
+    let cter = cter.unwrap();
+    for skill in cter_c.skills.iter() {
+        if !cter.skills.contains(skill) {
+            return Ok(());
+        }
+    }
+
+    //校验角色技能
+    member.battle_cters = BattleCharcter::default();
+    member.battle_cters.skills = cter_c.skills;
+    member.battle_cters.temp_id = cter_c.temp_id;
+
+    //同志客户端
     Ok(())
 }

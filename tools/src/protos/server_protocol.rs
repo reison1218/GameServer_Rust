@@ -29,7 +29,7 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(PartialEq,Clone,Default)]
 pub struct G_R_CREATE_ROOM {
     // message fields
-    pub room_type: super::base::RoomTypePt,
+    pub room_type: u32,
     pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -47,18 +47,18 @@ impl G_R_CREATE_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.RoomTypePt room_type = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_room_type(&self) -> super::base::RoomTypePt {
+    pub fn get_room_type(&self) -> u32 {
         self.room_type
     }
     pub fn clear_room_type(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_room_type(&mut self, v: super::base::RoomTypePt) {
+    pub fn set_room_type(&mut self, v: u32) {
         self.room_type = v;
     }
 
@@ -111,7 +111,11 @@ impl ::protobuf::Message for G_R_CREATE_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.room_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
                 },
                 2 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
@@ -128,8 +132,8 @@ impl ::protobuf::Message for G_R_CREATE_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.room_type != super::base::RoomTypePt::Custom {
-            my_size += ::protobuf::rt::enum_size(1, self.room_type);
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.pbp.as_ref() {
             let len = v.compute_size();
@@ -141,8 +145,8 @@ impl ::protobuf::Message for G_R_CREATE_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.room_type != super::base::RoomTypePt::Custom {
-            os.write_enum(1, self.room_type.value())?;
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
         }
         if let Some(ref v) = self.pbp.as_ref() {
             os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -188,7 +192,7 @@ impl ::protobuf::Message for G_R_CREATE_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::RoomTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "room_type",
                     |m: &G_R_CREATE_ROOM| { &m.room_type },
                     |m: &mut G_R_CREATE_ROOM| { &mut m.room_type },
@@ -217,7 +221,7 @@ impl ::protobuf::Message for G_R_CREATE_ROOM {
 
 impl ::protobuf::Clear for G_R_CREATE_ROOM {
     fn clear(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
         self.pbp.clear();
         self.unknown_fields.clear();
     }
@@ -238,7 +242,7 @@ impl ::protobuf::reflect::ProtobufValue for G_R_CREATE_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct G_R_JOIN_ROOM {
     // message fields
-    pub room_type: super::base::RoomTypePt,
+    pub room_type: u32,
     pub room_id: u32,
     pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
     // special fields
@@ -257,18 +261,18 @@ impl G_R_JOIN_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.RoomTypePt room_type = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_room_type(&self) -> super::base::RoomTypePt {
+    pub fn get_room_type(&self) -> u32 {
         self.room_type
     }
     pub fn clear_room_type(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_room_type(&mut self, v: super::base::RoomTypePt) {
+    pub fn set_room_type(&mut self, v: u32) {
         self.room_type = v;
     }
 
@@ -336,7 +340,11 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.room_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -360,8 +368,8 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.room_type != super::base::RoomTypePt::Custom {
-            my_size += ::protobuf::rt::enum_size(1, self.room_type);
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.room_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.room_id, ::protobuf::wire_format::WireTypeVarint);
@@ -376,8 +384,8 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.room_type != super::base::RoomTypePt::Custom {
-            os.write_enum(1, self.room_type.value())?;
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
         }
         if self.room_id != 0 {
             os.write_uint32(2, self.room_id)?;
@@ -426,7 +434,7 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::RoomTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "room_type",
                     |m: &G_R_JOIN_ROOM| { &m.room_type },
                     |m: &mut G_R_JOIN_ROOM| { &mut m.room_type },
@@ -460,7 +468,7 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
 
 impl ::protobuf::Clear for G_R_JOIN_ROOM {
     fn clear(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
         self.room_id = 0;
         self.pbp.clear();
         self.unknown_fields.clear();
@@ -482,7 +490,7 @@ impl ::protobuf::reflect::ProtobufValue for G_R_JOIN_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct G_R_SEARCH_ROOM {
     // message fields
-    pub model_type: super::base::BattleTypePt,
+    pub battle_type: u32,
     pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -500,19 +508,19 @@ impl G_R_SEARCH_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.BattleTypePt model_type = 1;
+    // uint32 battle_type = 1;
 
 
-    pub fn get_model_type(&self) -> super::base::BattleTypePt {
-        self.model_type
+    pub fn get_battle_type(&self) -> u32 {
+        self.battle_type
     }
-    pub fn clear_model_type(&mut self) {
-        self.model_type = super::base::BattleTypePt::None;
+    pub fn clear_battle_type(&mut self) {
+        self.battle_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_model_type(&mut self, v: super::base::BattleTypePt) {
-        self.model_type = v;
+    pub fn set_battle_type(&mut self, v: u32) {
+        self.battle_type = v;
     }
 
     // .protos.PlayerBattlePt pbp = 2;
@@ -564,7 +572,11 @@ impl ::protobuf::Message for G_R_SEARCH_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.model_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.battle_type = tmp;
                 },
                 2 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
@@ -581,8 +593,8 @@ impl ::protobuf::Message for G_R_SEARCH_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.model_type != super::base::BattleTypePt::None {
-            my_size += ::protobuf::rt::enum_size(1, self.model_type);
+        if self.battle_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.battle_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.pbp.as_ref() {
             let len = v.compute_size();
@@ -594,8 +606,8 @@ impl ::protobuf::Message for G_R_SEARCH_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.model_type != super::base::BattleTypePt::None {
-            os.write_enum(1, self.model_type.value())?;
+        if self.battle_type != 0 {
+            os.write_uint32(1, self.battle_type)?;
         }
         if let Some(ref v) = self.pbp.as_ref() {
             os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -641,10 +653,10 @@ impl ::protobuf::Message for G_R_SEARCH_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::BattleTypePt>>(
-                    "model_type",
-                    |m: &G_R_SEARCH_ROOM| { &m.model_type },
-                    |m: &mut G_R_SEARCH_ROOM| { &mut m.model_type },
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "battle_type",
+                    |m: &G_R_SEARCH_ROOM| { &m.battle_type },
+                    |m: &mut G_R_SEARCH_ROOM| { &mut m.battle_type },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PlayerBattlePt>>(
                     "pbp",
@@ -670,7 +682,7 @@ impl ::protobuf::Message for G_R_SEARCH_ROOM {
 
 impl ::protobuf::Clear for G_R_SEARCH_ROOM {
     fn clear(&mut self) {
-        self.model_type = super::base::BattleTypePt::None;
+        self.battle_type = 0;
         self.pbp.clear();
         self.unknown_fields.clear();
     }
@@ -936,18 +948,17 @@ impl ::protobuf::reflect::ProtobufValue for PlayerBattlePt {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"l\n\x0fG_R_CR\
-    EATE_ROOM\x12/\n\troom_type\x18\x01\x20\x01(\x0e2\x12.protos.RoomTypePtR\
-    \x08roomType\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattle\
-    PtR\x03pbp\"\x83\x01\n\rG_R_JOIN_ROOM\x12/\n\troom_type\x18\x01\x20\x01(\
-    \x0e2\x12.protos.RoomTypePtR\x08roomType\x12\x17\n\x07room_id\x18\x02\
-    \x20\x01(\rR\x06roomId\x12(\n\x03pbp\x18\x03\x20\x01(\x0b2\x16.protos.Pl\
-    ayerBattlePtR\x03pbp\"p\n\x0fG_R_SEARCH_ROOM\x123\n\nmodel_type\x18\x01\
-    \x20\x01(\x0e2\x14.protos.BattleTypePtR\tmodelType\x12(\n\x03pbp\x18\x02\
-    \x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"q\n\x0ePlayerBattlePt\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
-    \x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03(\x0b2\
-    \x13.protos.CharacterPtR\x05ctersb\x06proto3\
+    \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"X\n\x0fG_R_CR\
+    EATE_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12(\n\
+    \x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"o\n\rG_\
+    R_JOIN_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12\x17\
+    \n\x07room_id\x18\x02\x20\x01(\rR\x06roomId\x12(\n\x03pbp\x18\x03\x20\
+    \x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\\\n\x0fG_R_SEARCH_ROOM\
+    \x12\x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattleType\x12(\n\x03pbp\
+    \x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"q\n\x0ePlayerB\
+    attlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tni\
+    ck_name\x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03(\
+    \x0b2\x13.protos.CharacterPtR\x05ctersb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

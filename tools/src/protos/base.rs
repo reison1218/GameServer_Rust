@@ -27,9 +27,200 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 // const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_2_14_0;
 
 #[derive(PartialEq,Clone,Default)]
+pub struct RoundTimePt {
+    // message fields
+    pub consume_time: u32,
+    pub fixed_time: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a RoundTimePt {
+    fn default() -> &'a RoundTimePt {
+        <RoundTimePt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl RoundTimePt {
+    pub fn new() -> RoundTimePt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 consume_time = 1;
+
+
+    pub fn get_consume_time(&self) -> u32 {
+        self.consume_time
+    }
+    pub fn clear_consume_time(&mut self) {
+        self.consume_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_consume_time(&mut self, v: u32) {
+        self.consume_time = v;
+    }
+
+    // uint32 fixed_time = 2;
+
+
+    pub fn get_fixed_time(&self) -> u32 {
+        self.fixed_time
+    }
+    pub fn clear_fixed_time(&mut self) {
+        self.fixed_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_fixed_time(&mut self, v: u32) {
+        self.fixed_time = v;
+    }
+}
+
+impl ::protobuf::Message for RoundTimePt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.consume_time = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.fixed_time = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.consume_time != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.consume_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.fixed_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.fixed_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.consume_time != 0 {
+            os.write_uint32(1, self.consume_time)?;
+        }
+        if self.fixed_time != 0 {
+            os.write_uint32(2, self.fixed_time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> RoundTimePt {
+        RoundTimePt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "consume_time",
+                    |m: &RoundTimePt| { &m.consume_time },
+                    |m: &mut RoundTimePt| { &mut m.consume_time },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "fixed_time",
+                    |m: &RoundTimePt| { &m.fixed_time },
+                    |m: &mut RoundTimePt| { &mut m.fixed_time },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<RoundTimePt>(
+                    "RoundTimePt",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static RoundTimePt {
+        static mut instance: ::protobuf::lazy::Lazy<RoundTimePt> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(RoundTimePt::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for RoundTimePt {
+    fn clear(&mut self) {
+        self.consume_time = 0;
+        self.fixed_time = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for RoundTimePt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for RoundTimePt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct RoomSettingPt {
     // message fields
-    pub battle_type: BattleTypePt,
+    pub battle_type: u32,
     pub round_time: ::protobuf::SingularPtrField<RoundTimePt>,
     pub is_open_world_tile: bool,
     pub victory_condition: u32,
@@ -49,18 +240,18 @@ impl RoomSettingPt {
         ::std::default::Default::default()
     }
 
-    // .protos.BattleTypePt battle_type = 1;
+    // uint32 battle_type = 1;
 
 
-    pub fn get_battle_type(&self) -> BattleTypePt {
+    pub fn get_battle_type(&self) -> u32 {
         self.battle_type
     }
     pub fn clear_battle_type(&mut self) {
-        self.battle_type = BattleTypePt::None;
+        self.battle_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_type(&mut self, v: BattleTypePt) {
+    pub fn set_battle_type(&mut self, v: u32) {
         self.battle_type = v;
     }
 
@@ -143,7 +334,11 @@ impl ::protobuf::Message for RoomSettingPt {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.battle_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.battle_type = tmp;
                 },
                 2 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.round_time)?;
@@ -174,8 +369,8 @@ impl ::protobuf::Message for RoomSettingPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.battle_type != BattleTypePt::None {
-            my_size += ::protobuf::rt::enum_size(1, self.battle_type);
+        if self.battle_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.battle_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.round_time.as_ref() {
             let len = v.compute_size();
@@ -193,8 +388,8 @@ impl ::protobuf::Message for RoomSettingPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.battle_type != BattleTypePt::None {
-            os.write_enum(1, self.battle_type.value())?;
+        if self.battle_type != 0 {
+            os.write_uint32(1, self.battle_type)?;
         }
         if let Some(ref v) = self.round_time.as_ref() {
             os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -246,7 +441,7 @@ impl ::protobuf::Message for RoomSettingPt {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<BattleTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "battle_type",
                     |m: &RoomSettingPt| { &m.battle_type },
                     |m: &mut RoomSettingPt| { &mut m.battle_type },
@@ -285,7 +480,7 @@ impl ::protobuf::Message for RoomSettingPt {
 
 impl ::protobuf::Clear for RoomSettingPt {
     fn clear(&mut self) {
-        self.battle_type = BattleTypePt::None;
+        self.battle_type = 0;
         self.round_time.clear();
         self.is_open_world_tile = false;
         self.victory_condition = 0;
@@ -2529,345 +2724,34 @@ impl ::protobuf::reflect::ProtobufValue for CharacterPt {
     }
 }
 
-#[derive(PartialEq,Clone,Default)]
-pub struct RoundTimePt {
-    // message fields
-    pub consume_time: u32,
-    pub fixed_time: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a RoundTimePt {
-    fn default() -> &'a RoundTimePt {
-        <RoundTimePt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl RoundTimePt {
-    pub fn new() -> RoundTimePt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 consume_time = 1;
-
-
-    pub fn get_consume_time(&self) -> u32 {
-        self.consume_time
-    }
-    pub fn clear_consume_time(&mut self) {
-        self.consume_time = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_consume_time(&mut self, v: u32) {
-        self.consume_time = v;
-    }
-
-    // uint32 fixed_time = 2;
-
-
-    pub fn get_fixed_time(&self) -> u32 {
-        self.fixed_time
-    }
-    pub fn clear_fixed_time(&mut self) {
-        self.fixed_time = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_fixed_time(&mut self, v: u32) {
-        self.fixed_time = v;
-    }
-}
-
-impl ::protobuf::Message for RoundTimePt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.consume_time = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.fixed_time = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.consume_time != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.consume_time, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.fixed_time != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.fixed_time, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.consume_time != 0 {
-            os.write_uint32(1, self.consume_time)?;
-        }
-        if self.fixed_time != 0 {
-            os.write_uint32(2, self.fixed_time)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> RoundTimePt {
-        RoundTimePt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "consume_time",
-                    |m: &RoundTimePt| { &m.consume_time },
-                    |m: &mut RoundTimePt| { &mut m.consume_time },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "fixed_time",
-                    |m: &RoundTimePt| { &m.fixed_time },
-                    |m: &mut RoundTimePt| { &mut m.fixed_time },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<RoundTimePt>(
-                    "RoundTimePt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static RoundTimePt {
-        static mut instance: ::protobuf::lazy::Lazy<RoundTimePt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(RoundTimePt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for RoundTimePt {
-    fn clear(&mut self) {
-        self.consume_time = 0;
-        self.fixed_time = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for RoundTimePt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RoundTimePt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(Clone,PartialEq,Eq,Debug,Hash)]
-pub enum RoomTypePt {
-    Custom = 0,
-    Match = 1,
-    SeasonPve = 2,
-    WorldBossPve = 3,
-}
-
-impl ::protobuf::ProtobufEnum for RoomTypePt {
-    fn value(&self) -> i32 {
-        *self as i32
-    }
-
-    fn from_i32(value: i32) -> ::std::option::Option<RoomTypePt> {
-        match value {
-            0 => ::std::option::Option::Some(RoomTypePt::Custom),
-            1 => ::std::option::Option::Some(RoomTypePt::Match),
-            2 => ::std::option::Option::Some(RoomTypePt::SeasonPve),
-            3 => ::std::option::Option::Some(RoomTypePt::WorldBossPve),
-            _ => ::std::option::Option::None
-        }
-    }
-
-    fn values() -> &'static [Self] {
-        static values: &'static [RoomTypePt] = &[
-            RoomTypePt::Custom,
-            RoomTypePt::Match,
-            RoomTypePt::SeasonPve,
-            RoomTypePt::WorldBossPve,
-        ];
-        values
-    }
-
-    fn enum_descriptor_static() -> &'static ::protobuf::reflect::EnumDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                ::protobuf::reflect::EnumDescriptor::new_pb_name::<RoomTypePt>("RoomTypePt", file_descriptor_proto())
-            })
-        }
-    }
-}
-
-impl ::std::marker::Copy for RoomTypePt {
-}
-
-impl ::std::default::Default for RoomTypePt {
-    fn default() -> Self {
-        RoomTypePt::Custom
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RoomTypePt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Enum(self.descriptor())
-    }
-}
-
-#[derive(Clone,PartialEq,Eq,Debug,Hash)]
-pub enum BattleTypePt {
-    None = 0,
-    OneVOneVOneVOne = 1,
-    TwoVTwo = 2,
-    OneVOne = 3,
-}
-
-impl ::protobuf::ProtobufEnum for BattleTypePt {
-    fn value(&self) -> i32 {
-        *self as i32
-    }
-
-    fn from_i32(value: i32) -> ::std::option::Option<BattleTypePt> {
-        match value {
-            0 => ::std::option::Option::Some(BattleTypePt::None),
-            1 => ::std::option::Option::Some(BattleTypePt::OneVOneVOneVOne),
-            2 => ::std::option::Option::Some(BattleTypePt::TwoVTwo),
-            3 => ::std::option::Option::Some(BattleTypePt::OneVOne),
-            _ => ::std::option::Option::None
-        }
-    }
-
-    fn values() -> &'static [Self] {
-        static values: &'static [BattleTypePt] = &[
-            BattleTypePt::None,
-            BattleTypePt::OneVOneVOneVOne,
-            BattleTypePt::TwoVTwo,
-            BattleTypePt::OneVOne,
-        ];
-        values
-    }
-
-    fn enum_descriptor_static() -> &'static ::protobuf::reflect::EnumDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                ::protobuf::reflect::EnumDescriptor::new_pb_name::<BattleTypePt>("BattleTypePt", file_descriptor_proto())
-            })
-        }
-    }
-}
-
-impl ::std::marker::Copy for BattleTypePt {
-}
-
-impl ::std::default::Default for BattleTypePt {
-    fn default() -> Self {
-        BattleTypePt::None
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for BattleTypePt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Enum(self.descriptor())
-    }
-}
-
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\nbase.proto\x12\x06protos\"\xd4\x01\n\rRoomSettingPt\x125\n\x0bbattle\
-    _type\x18\x01\x20\x01(\x0e2\x14.protos.BattleTypePtR\nbattleType\x122\n\
-    \nround_time\x18\x02\x20\x01(\x0b2\x13.protos.RoundTimePtR\troundTime\
-    \x12+\n\x12is_open_world_tile\x18\x03\x20\x01(\x08R\x0fisOpenWorldTile\
-    \x12+\n\x11victory_condition\x18\x04\x20\x01(\rR\x10victoryCondition\"`\
-    \n\x08PlayerPt\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickName\x12%\
-    \n\x0elast_character\x18\x02\x20\x01(\rR\rlastCharacter\x12\x10\n\x03dlc\
-    \x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bResourcesPt\x12\x12\n\x04type\x18\
-    \x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\x02\x20\x01(\rR\x02id\x12\
-    \x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"<\n\x08TargetPt\x12\x17\n\x07t\
-    eam_id\x18\x01\x20\x01(\rR\x06teamId\x12\x17\n\x07user_id\x18\x02\x20\
-    \x01(\rR\x06userId\"V\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01\
-    (\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\
-    \x14\n\x05state\x18\x03\x20\x01(\rR\x05state\"M\n\x06TeamPt\x12\x17\n\
-    \x07team_id\x18\x01\x20\x01(\rR\x06teamId\x12*\n\x07members\x18\x02\x20\
-    \x03(\x0b2\x10.protos.MemberPtR\x07members\"J\n\tTileMapPt\x12\x0e\n\x02\
-    id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\x18\x02\x20\x03(\x0b2\
-    \x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\x12\n\x04type\x18\x01\
-    \x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\"\
-    \x90\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\
-    \x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12,\n\x08tile_map\
-    \x18\x03\x20\x01(\x0b2\x11.protos.TileMapPtR\x07tileMap\x12$\n\x05teams\
-    \x18\x04\x20\x03(\x0b2\x0e.protos.TeamPtR\x05teams\"\x0f\n\rHistoryMessP\
-    t\"\x0e\n\x0cNoticeMessPt\">\n\x0bCharacterPt\x12\x17\n\x07temp_id\x18\
-    \x01\x20\x01(\rR\x06tempId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06sk\
-    ills\"O\n\x0bRoundTimePt\x12!\n\x0cconsume_time\x18\x01\x20\x01(\rR\x0bc\
-    onsumeTime\x12\x1d\n\nfixed_time\x18\x02\x20\x01(\rR\tfixedTime*D\n\nRoo\
-    mTypePt\x12\n\n\x06Custom\x10\0\x12\t\n\x05Match\x10\x01\x12\r\n\tSeason\
-    Pve\x10\x02\x12\x10\n\x0cWorldBossPve\x10\x03*G\n\x0cBattleTypePt\x12\
-    \x08\n\x04None\x10\0\x12\x13\n\x0fOneVOneVOneVOne\x10\x01\x12\x0b\n\x07T\
-    woVTwo\x10\x02\x12\x0b\n\x07OneVOne\x10\x03b\x06proto3\
+    \n\nbase.proto\x12\x06protos\"O\n\x0bRoundTimePt\x12!\n\x0cconsume_time\
+    \x18\x01\x20\x01(\rR\x0bconsumeTime\x12\x1d\n\nfixed_time\x18\x02\x20\
+    \x01(\rR\tfixedTime\"\xbe\x01\n\rRoomSettingPt\x12\x1f\n\x0bbattle_type\
+    \x18\x01\x20\x01(\rR\nbattleType\x122\n\nround_time\x18\x02\x20\x01(\x0b\
+    2\x13.protos.RoundTimePtR\troundTime\x12+\n\x12is_open_world_tile\x18\
+    \x03\x20\x01(\x08R\x0fisOpenWorldTile\x12+\n\x11victory_condition\x18\
+    \x04\x20\x01(\rR\x10victoryCondition\"`\n\x08PlayerPt\x12\x1b\n\tnick_na\
+    me\x18\x01\x20\x01(\tR\x08nickName\x12%\n\x0elast_character\x18\x02\x20\
+    \x01(\rR\rlastCharacter\x12\x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\
+    \x0bResourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\
+    \x02id\x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\
+    \x03num\"<\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
+    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"V\n\x08MemberPt\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
+    \x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05state\x18\x03\x20\x01(\rR\
+    \x05state\"M\n\x06TeamPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
+    mId\x12*\n\x07members\x18\x02\x20\x03(\x0b2\x10.protos.MemberPtR\x07memb\
+    ers\"J\n\tTileMapPt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\nce\
+    ll_array\x18\x02\x20\x03(\x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06Cel\
+    lPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\
+    \x02\x20\x01(\rR\x05value\"\x90\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\
+    \x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07\
+    ownerId\x12,\n\x08tile_map\x18\x03\x20\x01(\x0b2\x11.protos.TileMapPtR\
+    \x07tileMap\x12$\n\x05teams\x18\x04\x20\x03(\x0b2\x0e.protos.TeamPtR\x05\
+    teams\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\">\n\x0bCharacterPt\
+    \x12\x17\n\x07temp_id\x18\x01\x20\x01(\rR\x06tempId\x12\x16\n\x06skills\
+    \x18\x02\x20\x03(\rR\x06skillsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

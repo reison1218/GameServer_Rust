@@ -4,7 +4,7 @@ import "base.proto";
 
 //创建房间请求
 message C_CREATE_ROOM{
-    RoomTypePt room_type = 1;//房间类型
+    uint32 room_type = 1;//房间类型
 }
 
 //房间设置
@@ -17,6 +17,13 @@ message C_LEAVE_ROOM{
 
 }
 
+//离开房间返回
+message S_LEAVE_ROOM{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+    uint32 user_id =3;//离开的玩家id
+}
+
 //T人
 message C_KICK_MEMBER{
     uint32 target_id = 1;//要T掉的玩家目标id
@@ -27,9 +34,24 @@ message C_CHANGE_TEAM{
     uint32 target_team_id = 1;//想要换的队伍目标id
 }
 
+//换队伍返回
+message S_CHANGE_TEAM{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+    repeated TeamPt teams = 3;//队伍数据
+}
+
 //准备与取消准备
 message C_PREPARE_CANCEL{
     bool prepare = 1;//true代表准备，false代表取消准备
+}
+
+//准备与取消返回
+message S_PREPARE_CANCEL{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+    uint32 user_id = 3;//操作的玩家
+    bool prepare = 4;//取消与准备
 }
 
 //开始游戏
@@ -45,14 +67,24 @@ message S_START{
 
 //快速开始
 message C_SEARCH_ROOM{
-    BattleTypePt battle_type = 1;//要搜索的战斗模式
+    uint32 battle_type = 1;//要搜索的战斗模式
 }
 
 //加入房间
 message C_JOIN_ROOM{
-    RoomTypePt room_type = 1;//房间类型
+    uint32 room_type = 1;//房间类型
     uint32 room_id = 2;//房间id
 }
+
+//选择角色和技能
+message C_CHOICE_CHARACTER{
+    CharacterPt cter = 1;//选择的角色
+}
+
+
+
+
+
 
 //房间推送消息
 message S_ROOM_NOTICE{

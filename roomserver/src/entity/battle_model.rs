@@ -1,5 +1,5 @@
 use crate::entity::member::{Member, MemberState, Target, UserType};
-use crate::entity::room::Room;
+use crate::entity::room::{Room, RoomState};
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::any::Any;
@@ -7,6 +7,7 @@ use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::io::empty;
+use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 
@@ -96,12 +97,40 @@ impl BattleType {
     }
 }
 
+//回合时间
+#[derive(Debug, Copy, Clone, Default)]
+pub struct RoundTime {
+    consume_time: u32, //消耗时间
+    fixed_time: u32,   //固定时间
+}
+
+impl From<RoundTimePt> for RoundTime {
+    fn from(rtpt: RoundTimePt) -> Self {
+        let mut rt = RoundTime::default();
+        rt.consume_time = rtpt.consume_time;
+        rt.fixed_time = rtpt.fixed_time;
+        rt
+    }
+}
+
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
-    round_time: u32,
-    is_world_tile: bool,
-    victory_condition: u32,
+    battle_type: u8,        //战斗类型
+    round_time: RoundTime,  //回合时间
+    is_world_tile: bool,    //是否开启中立块
+    victory_condition: u32, //胜利条件
+}
+
+impl From<RoomSettingPt> for RoomSetting {
+    fn from(mut rs_pt: RoomSettingPt) -> Self {
+        let mut rs = RoomSetting::default();
+        rs.battle_type = rs_pt.battle_type as u8;
+        rs.is_world_tile = rs_pt.is_open_world_tile;
+        rs.victory_condition = rs_pt.victory_condition;
+        rs.round_time = RoundTime::from(rs_pt.take_round_time());
+        rs
+    }
 }
 
 ///房间缓存
@@ -174,9 +203,10 @@ impl RoomModel for CustomRoom {
     ///创建房间
     fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(owner)?;
-        self.rooms.insert(room.get_room_id(), room.clone());
-        Ok(room.get_room_id())
+        let room = Room::new(owner, RoomType::get_custom())?;
+        let room_id = room.get_room_id();
+        self.rooms.insert(room.get_room_id(), room);
+        Ok(room_id)
     }
 
     ///离开房间
@@ -286,7 +316,9 @@ impl MatchRooms {
     pub fn get_match_room_mut(&mut self, battle_type: &u8) -> &mut MatchRoom {
         let res = self.match_rooms.get_mut(battle_type);
         if res.is_none() {
-            self.match_rooms.insert(*battle_type, MatchRoom::default());
+            let mut mr = MatchRoom::default();
+            mr.battle_type = BattleType::get_one_v_one_v_one_v_one();
+            self.match_rooms.insert(*battle_type, mr);
         }
         let res = self.match_rooms.get_mut(battle_type);
         res.unwrap()
@@ -296,7 +328,7 @@ impl MatchRooms {
 ///匹配房结构体
 #[derive(Debug, Default, Clone)]
 pub struct MatchRoom {
-    pub model_type: u8,             //战斗模式类型
+    pub battle_type: u8,            //战斗模式类型
     pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
     pub room_cache: Vec<RoomCache>, //key:房间id    value:房间人数
 }
@@ -318,7 +350,7 @@ impl RoomModel for MatchRoom {
     ///创建房间
     fn create_room(&mut self, owner: Member) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(owner)?;
+        let mut room = Room::new(owner, RoomType::get_match())?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();

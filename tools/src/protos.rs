@@ -1,3 +1,5 @@
+use protoc_rust::Customize;
+
 pub mod base;
 pub mod protocol;
 pub mod room;
@@ -10,4 +12,5 @@ pub fn proto() {
              .include("protos")
              .run()
              .expect("Running protoc failed!");
+    println!("protobuf generate success!")
 }

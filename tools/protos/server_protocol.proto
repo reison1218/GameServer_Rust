@@ -4,20 +4,20 @@ import "base.proto";
 
 ///游戏服务器发给房间服务器，创建房间
 message G_R_CREATE_ROOM{
-    RoomTypePt room_type = 1;//房间类型
+    uint32 room_type = 1;//房间类型
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 
 ///游戏服务器发给房间服务器，加入房间
 message G_R_JOIN_ROOM{
-    RoomTypePt room_type = 1;//房间类型
+    uint32 room_type = 1;//房间类型
     uint32 room_id = 2;//房间id
     PlayerBattlePt pbp = 3;//玩家房间需要的数据
 }
 
 ///游戏服务器发给房间服务器，快速开始
 message G_R_SEARCH_ROOM{
-    BattleTypePt model_type = 1;//模式
+    uint32 battle_type = 1;//模式
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 

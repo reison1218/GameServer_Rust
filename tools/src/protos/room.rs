@@ -29,7 +29,7 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(PartialEq,Clone,Default)]
 pub struct C_CREATE_ROOM {
     // message fields
-    pub room_type: super::base::RoomTypePt,
+    pub room_type: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -46,18 +46,18 @@ impl C_CREATE_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.RoomTypePt room_type = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_room_type(&self) -> super::base::RoomTypePt {
+    pub fn get_room_type(&self) -> u32 {
         self.room_type
     }
     pub fn clear_room_type(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_room_type(&mut self, v: super::base::RoomTypePt) {
+    pub fn set_room_type(&mut self, v: u32) {
         self.room_type = v;
     }
 }
@@ -72,7 +72,11 @@ impl ::protobuf::Message for C_CREATE_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.room_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -86,8 +90,8 @@ impl ::protobuf::Message for C_CREATE_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.room_type != super::base::RoomTypePt::Custom {
-            my_size += ::protobuf::rt::enum_size(1, self.room_type);
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -95,8 +99,8 @@ impl ::protobuf::Message for C_CREATE_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.room_type != super::base::RoomTypePt::Custom {
-            os.write_enum(1, self.room_type.value())?;
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -137,7 +141,7 @@ impl ::protobuf::Message for C_CREATE_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::RoomTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "room_type",
                     |m: &C_CREATE_ROOM| { &m.room_type },
                     |m: &mut C_CREATE_ROOM| { &mut m.room_type },
@@ -161,7 +165,7 @@ impl ::protobuf::Message for C_CREATE_ROOM {
 
 impl ::protobuf::Clear for C_CREATE_ROOM {
     fn clear(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1265,7 +1269,7 @@ impl ::protobuf::reflect::ProtobufValue for S_START {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_SEARCH_ROOM {
     // message fields
-    pub battle_type: super::base::BattleTypePt,
+    pub battle_type: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1282,18 +1286,18 @@ impl C_SEARCH_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.BattleTypePt battle_type = 1;
+    // uint32 battle_type = 1;
 
 
-    pub fn get_battle_type(&self) -> super::base::BattleTypePt {
+    pub fn get_battle_type(&self) -> u32 {
         self.battle_type
     }
     pub fn clear_battle_type(&mut self) {
-        self.battle_type = super::base::BattleTypePt::None;
+        self.battle_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_type(&mut self, v: super::base::BattleTypePt) {
+    pub fn set_battle_type(&mut self, v: u32) {
         self.battle_type = v;
     }
 }
@@ -1308,7 +1312,11 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.battle_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.battle_type = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1322,8 +1330,8 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.battle_type != super::base::BattleTypePt::None {
-            my_size += ::protobuf::rt::enum_size(1, self.battle_type);
+        if self.battle_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.battle_type, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1331,8 +1339,8 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.battle_type != super::base::BattleTypePt::None {
-            os.write_enum(1, self.battle_type.value())?;
+        if self.battle_type != 0 {
+            os.write_uint32(1, self.battle_type)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1373,7 +1381,7 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::BattleTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "battle_type",
                     |m: &C_SEARCH_ROOM| { &m.battle_type },
                     |m: &mut C_SEARCH_ROOM| { &mut m.battle_type },
@@ -1397,7 +1405,7 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
 
 impl ::protobuf::Clear for C_SEARCH_ROOM {
     fn clear(&mut self) {
-        self.battle_type = super::base::BattleTypePt::None;
+        self.battle_type = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1417,7 +1425,7 @@ impl ::protobuf::reflect::ProtobufValue for C_SEARCH_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_JOIN_ROOM {
     // message fields
-    pub room_type: super::base::RoomTypePt,
+    pub room_type: u32,
     pub room_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1435,18 +1443,18 @@ impl C_JOIN_ROOM {
         ::std::default::Default::default()
     }
 
-    // .protos.RoomTypePt room_type = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_room_type(&self) -> super::base::RoomTypePt {
+    pub fn get_room_type(&self) -> u32 {
         self.room_type
     }
     pub fn clear_room_type(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_room_type(&mut self, v: super::base::RoomTypePt) {
+    pub fn set_room_type(&mut self, v: u32) {
         self.room_type = v;
     }
 
@@ -1476,7 +1484,11 @@ impl ::protobuf::Message for C_JOIN_ROOM {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.room_type, 1, &mut self.unknown_fields)?
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -1497,8 +1509,8 @@ impl ::protobuf::Message for C_JOIN_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.room_type != super::base::RoomTypePt::Custom {
-            my_size += ::protobuf::rt::enum_size(1, self.room_type);
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.room_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.room_id, ::protobuf::wire_format::WireTypeVarint);
@@ -1509,8 +1521,8 @@ impl ::protobuf::Message for C_JOIN_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.room_type != super::base::RoomTypePt::Custom {
-            os.write_enum(1, self.room_type.value())?;
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
         }
         if self.room_id != 0 {
             os.write_uint32(2, self.room_id)?;
@@ -1554,7 +1566,7 @@ impl ::protobuf::Message for C_JOIN_ROOM {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<super::base::RoomTypePt>>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "room_type",
                     |m: &C_JOIN_ROOM| { &m.room_type },
                     |m: &mut C_JOIN_ROOM| { &mut m.room_type },
@@ -1583,7 +1595,7 @@ impl ::protobuf::Message for C_JOIN_ROOM {
 
 impl ::protobuf::Clear for C_JOIN_ROOM {
     fn clear(&mut self) {
-        self.room_type = super::base::RoomTypePt::Custom;
+        self.room_type = 0;
         self.room_id = 0;
         self.unknown_fields.clear();
     }
@@ -1596,6 +1608,184 @@ impl ::std::fmt::Debug for C_JOIN_ROOM {
 }
 
 impl ::protobuf::reflect::ProtobufValue for C_JOIN_ROOM {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct C_CHOICE_CHARACTER {
+    // message fields
+    pub cter: ::protobuf::SingularPtrField<super::base::CharacterPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_CHOICE_CHARACTER {
+    fn default() -> &'a C_CHOICE_CHARACTER {
+        <C_CHOICE_CHARACTER as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_CHOICE_CHARACTER {
+    pub fn new() -> C_CHOICE_CHARACTER {
+        ::std::default::Default::default()
+    }
+
+    // .protos.CharacterPt cter = 1;
+
+
+    pub fn get_cter(&self) -> &super::base::CharacterPt {
+        self.cter.as_ref().unwrap_or_else(|| super::base::CharacterPt::default_instance())
+    }
+    pub fn clear_cter(&mut self) {
+        self.cter.clear();
+    }
+
+    pub fn has_cter(&self) -> bool {
+        self.cter.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cter(&mut self, v: super::base::CharacterPt) {
+        self.cter = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_cter(&mut self) -> &mut super::base::CharacterPt {
+        if self.cter.is_none() {
+            self.cter.set_default();
+        }
+        self.cter.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_cter(&mut self) -> super::base::CharacterPt {
+        self.cter.take().unwrap_or_else(|| super::base::CharacterPt::new())
+    }
+}
+
+impl ::protobuf::Message for C_CHOICE_CHARACTER {
+    fn is_initialized(&self) -> bool {
+        for v in &self.cter {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.cter)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.cter.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.cter.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_CHOICE_CHARACTER {
+        C_CHOICE_CHARACTER::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::CharacterPt>>(
+                    "cter",
+                    |m: &C_CHOICE_CHARACTER| { &m.cter },
+                    |m: &mut C_CHOICE_CHARACTER| { &mut m.cter },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOICE_CHARACTER>(
+                    "C_CHOICE_CHARACTER",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static C_CHOICE_CHARACTER {
+        static mut instance: ::protobuf::lazy::Lazy<C_CHOICE_CHARACTER> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(C_CHOICE_CHARACTER::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for C_CHOICE_CHARACTER {
+    fn clear(&mut self) {
+        self.cter.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_CHOICE_CHARACTER {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_CHOICE_CHARACTER {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1977,22 +2167,22 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\"@\n\rC_CREATE_ROOM\x12/\n\
-    \troom_type\x18\x01\x20\x01(\x0e2\x12.protos.RoomTypePtR\x08roomType\"A\
-    \n\x0eC_ROOM_SETTING\x12/\n\x07setting\x18\x01\x20\x01(\x0b2\x15.protos.\
-    RoomSettingPtR\x07setting\"\x0e\n\x0cC_LEAVE_ROOM\",\n\rC_KICK_MEMBER\
-    \x12\x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\"5\n\rC_CHANGE_TEA\
-    M\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctargetTeamId\",\n\x10C\
-    _PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepare\"\
-    \t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\
-    \x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"F\
-    \n\rC_SEARCH_ROOM\x125\n\x0bbattle_type\x18\x01\x20\x01(\x0e2\x14.protos\
-    .BattleTypePtR\nbattleType\"W\n\x0bC_JOIN_ROOM\x12/\n\troom_type\x18\x01\
-    \x20\x01(\x0e2\x12.protos.RoomTypePtR\x08roomType\x12\x17\n\x07room_id\
-    \x18\x02\x20\x01(\rR\x06roomId\"\x0f\n\rS_ROOM_NOTICE\"`\n\x06S_ROOM\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
-    \x0e.protos.RoomPtR\x04roomb\x06proto3\
+    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
+    \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"A\n\x0eC_ROOM_SETTING\x12\
+    /\n\x07setting\x18\x01\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07settin\
+    g\"\x0e\n\x0cC_LEAVE_ROOM\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\
+    \x01\x20\x01(\rR\x08targetId\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_i\
+    d\x18\x01\x20\x01(\rR\x0ctargetTeamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\
+    \x07prepare\x18\x01\x20\x01(\x08R\x07prepare\"\t\n\x07C_START\"=\n\x07S_\
+    START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08\
+    err_mess\x18\x02\x20\x01(\tR\x07errMess\"0\n\rC_SEARCH_ROOM\x12\x1f\n\
+    \x0bbattle_type\x18\x01\x20\x01(\rR\nbattleType\"C\n\x0bC_JOIN_ROOM\x12\
+    \x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12\x17\n\x07room_id\
+    \x18\x02\x20\x01(\rR\x06roomId\"=\n\x12C_CHOICE_CHARACTER\x12'\n\x04cter\
+    \x18\x01\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\"\x0f\n\rS_ROOM_N\
+    OTICE\"`\n\x06S_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSuc\
+    c\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\
+    \x18\x03\x20\x01(\x0b2\x0e.protos.RoomPtR\x04roomb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

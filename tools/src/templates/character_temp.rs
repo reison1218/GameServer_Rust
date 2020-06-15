@@ -43,6 +43,9 @@ impl CharacterTempMgr {
             self.temps.insert(ct.id, ct);
         }
     }
+    pub fn get_temp_ref(&self,id:&u32)->Option<&CharacterTemp>{
+        self.temps.get(id)
+    }
 }
 
 impl TemplateMgrTrait for CharacterTempMgr {

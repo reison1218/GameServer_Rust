@@ -77,6 +77,14 @@ impl ClientHandler for TcpClientHandler {
         //panic!("");
         std::thread::sleep(Duration::from_secs(2));
 
+        let mut  csr = C_SEARCH_ROOM::new();
+        csr.set_battle_type(1 as u32);
+        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
+        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
+
+        std::thread::sleep(Duration::from_secs(2));
+
         let mut cjr = C_JOIN_ROOM::new();
         cjr.room_id = 101;
         let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);

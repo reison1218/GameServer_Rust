@@ -37,12 +37,13 @@ pub struct Room {
     orders: Vec<ActionUnit>,       //action队列
     state: u8,                     //房间状态
     setting: RoomSetting,          //房间设置
+    room_type: u8,                 //房间类型
     time: DateTime<Utc>,           //房间创建时间
 }
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(owner: Member) -> anyhow::Result<Room> {
+    pub fn new(owner: Member, room_type: u8) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let tile_map = TileMap::default();
         let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
@@ -60,10 +61,24 @@ impl Room {
             orders,
             state: RoomState::Await as u8,
             setting,
+            room_type,
             time,
         };
         room.add_member(owner);
         Ok(room)
+    }
+
+    pub fn get_status(&self) -> u8 {
+        self.state
+    }
+
+    pub fn set_status(&mut self, status: u8) -> u8 {
+        self.state = status;
+        self.state
+    }
+
+    pub fn set_room_setting(&mut self, setting: RoomSetting) {
+        self.setting = setting;
     }
 
     ///检查准备状态
@@ -88,6 +103,11 @@ impl Room {
         self.owner_id
     }
 
+    ///获得房间类型
+    pub fn get_room_type(&self) -> u8 {
+        self.room_type
+    }
+
     ///获取房号
     pub fn get_room_id(&self) -> u32 {
         self.id
@@ -106,6 +126,21 @@ impl Room {
         }
         let team = self.teams.get_mut(team_id).unwrap();
         team.get_member_mut(user_id)
+    }
+
+    ///获得玩家的可变指针
+    pub fn get_member_mut_by_user_id(&mut self, user_id: &u32) -> Option<&mut Member> {
+        let result = self.player_team.get(user_id);
+        if result.is_none() {
+            return None;
+        }
+        let team_id = result.unwrap();
+        let team = self.teams.get_mut(team_id);
+        if team.is_none() {
+            return None;
+        }
+        let team = team.unwrap();
+        team.members.get_mut(user_id)
     }
 
     ///获得玩家数量
@@ -242,7 +277,7 @@ impl Room {
         let mut target = Target::default();
         target.team_id = *target_team_id;
         target.user_id = *target_id;
-        member.target = target;
+        member.battle_cters.target = target;
         Ok(())
     }
 }

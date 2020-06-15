@@ -355,7 +355,7 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         pbp.cters.push(cter_pt);
     }
     let mut grs = G_R_SEARCH_ROOM::new();
-    grs.set_model_type(csr.get_model_type());
+    grs.set_battle_type(csr.get_battle_type());
     grs.set_pbp(pbp);
     //发给房间
     let bytes = Packet::build_packet_bytes(

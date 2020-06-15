@@ -62,6 +62,10 @@ pub enum RoomCode{
     JoinRoom = 20009,
     //匹配房间
     SearchRoom = 20010,
+    //房间设置
+    RoomSetting = 20011,
+    //选择角色和技能
+    ChoiceCharacter = 20012,
     //返回最大值
     Max = 30000,
 }
