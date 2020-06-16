@@ -91,7 +91,6 @@ pub mod tcp_server {
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
     use std::error::Error;
-    use std::env::consts::OS;
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);

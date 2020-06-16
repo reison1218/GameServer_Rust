@@ -2,18 +2,19 @@ use crate::entity::battle_model::RoomSetting;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
 use chrono::{DateTime, Utc};
+use log::error;
 use protobuf::Message;
-use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{CharacterPt, MemberPt, RoomPt, TileMapPt};
-use tools::protos::room::S_ROOM_MEMBER_NOTICE;
+use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
+use tools::protos::room::{
+    S_CHANGE_TEAM, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
+};
 use tools::tcp::TcpSender;
-use tools::templates::tile_map_temp::TileMapTemp;
 use tools::util::packet::Packet;
 
-enum RoomMemberNoticeType {
+pub enum RoomMemberNoticeType {
     AddMember = 1,
     UpdateMember = 2,
     LeaveMmeber = 3,
@@ -56,7 +57,7 @@ impl Room {
     pub fn new(owner: Member, room_type: u8, sender: TcpSender) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let tile_map = TileMap::default();
-        let id: u32 = crate::ROOM_ID.fetch_add(10, Ordering::Relaxed);
+        let id: u32 = crate::ROOM_ID.fetch_add(1, Ordering::Relaxed);
         let time = Utc::now();
         let orders: Vec<ActionUnit> = Vec::new();
         let members: HashMap<u32, Member> = HashMap::new();
@@ -73,28 +74,120 @@ impl Room {
             sender,
             time,
         };
+        //返回客户端
+        let mut sr = S_ROOM::new();
+        sr.is_succ = true;
+        sr.set_room(room.convert_to_pt());
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            owner.user_id,
+            sr.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = room.sender.write(bytes);
+        if res.is_err() {
+            let str = format!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
+        }
         room.add_member(owner);
         Ok(room)
     }
 
+    pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
+        let member = self.members.get_mut(user_id);
+        let mut spc = S_PREPARE_CANCEL::new();
+        if member.is_none() {
+            spc.is_succ = false;
+            spc.err_mess = "this player not in the room!".to_owned();
+        } else {
+            let member = member.unwrap();
+            if pregare_cancel {
+                member.state = MemberState::Ready as u8;
+            } else {
+                member.state = MemberState::NotReady as u8;
+            }
+            //通知其他玩家
+            self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
+        }
+
+        //返回客户端
+        spc.is_succ = true;
+        spc.prepare = pregare_cancel;
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::PrepareCancel as u32,
+            *user_id,
+            spc.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = self.sender.write(bytes);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+        }
+    }
+
+    pub fn room_notice(&mut self, user_id: &u32) {
+        let mut srn = S_ROOM_NOTICE::new();
+        srn.owner_id = self.owner_id;
+        let mut rs = RoomSettingPt::new();
+        rs.battle_type = self.setting.battle_type as u32;
+        rs.victory_condition = self.setting.victory_condition;
+        rs.is_open_world_tile = self.setting.is_world_tile;
+        let mut rt = RoundTimePt::new();
+        rt.fixed_time = self.setting.round_time.fixed_time;
+        rt.consume_time = self.setting.round_time.consume_time;
+        rs.set_round_time(rt);
+        srn.set_setting(rs);
+        let mut packet = Packet::new(ClientCode::RoomNotice as u32, 0, 0);
+        packet.set_data_from_vec(srn.write_to_bytes().unwrap());
+        packet.set_is_client(true);
+        packet.set_is_broad(false);
+        for id in self.members.keys() {
+            if *id == *user_id {
+                continue;
+            }
+            packet.set_user_id(*id);
+            let res = self.sender.write(packet.build_server_bytes());
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+            }
+        }
+    }
+
     ///推送消息
-    pub fn room_member_notice(&mut self, notice_type: u8, member: &Member) {
+    pub fn room_member_notice(&mut self, notice_type: u8, user_id: &u32) {
         let mut srmn = S_ROOM_MEMBER_NOTICE::new();
         srmn.set_notice_type(notice_type as u32);
 
-        let mp = member_2_memberpt(member);
-        srmn.set_member(mp);
+        let member = self.members.get(user_id);
+        if notice_type == RoomMemberNoticeType::LeaveMmeber as u8 {
+            let mut mp = MemberPt::new();
+            mp.user_id = *user_id;
+            srmn.set_member(mp);
+        } else {
+            if member.is_none() {
+                return;
+            }
+            let member = member.unwrap();
+            let mp = member_2_memberpt(member);
+            srmn.set_member(mp);
+        }
 
         let mut packet = Packet::new(ClientCode::RoomMemberNotice as u32, 0, 0);
         packet.set_data_from_vec(srmn.write_to_bytes().unwrap());
+        packet.set_is_broad(false);
+        packet.set_is_client(true);
         for (_, m) in self.members.iter() {
-            if m.get_user_id() == member.user_id {
+            if m.get_user_id() == *user_id {
                 continue;
             }
             packet.set_user_id(m.get_user_id());
-            packet.set_is_broad(false);
-            packet.set_is_client(true);
-            self.sender.write(packet.build_server_bytes());
+            let res = self.sender.write(packet.build_server_bytes());
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+            }
         }
     }
 
@@ -154,6 +247,11 @@ impl Room {
     }
 
     ///获得玩家的可变指针
+    pub fn get_member_ref(&self, user_id: &u32) -> Option<&Member> {
+        self.members.get(user_id)
+    }
+
+    ///获得玩家的可变指针
     pub fn get_member_mut_by_user_id(&mut self, user_id: &u32) -> Option<&mut Member> {
         let result = self.members.get_mut(user_id);
         result
@@ -171,22 +269,67 @@ impl Room {
         member.team_id = size;
         let user_id = member.user_id;
         self.members.insert(user_id, member);
+
+        //返回客户端消息
+        let mut sr = S_ROOM::new();
+        sr.is_succ = true;
+        sr.set_room(self.convert_to_pt());
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            user_id,
+            sr.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = self.sender.write(bytes);
+        if res.is_err() {
+            let str = format!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", str.as_str());
+        }
+        //通知房间里其他人
+        self.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
     }
 
     ///移除玩家
     pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
         let res = self.members.remove(user_id);
+        if res.is_some() {
+            if self.get_owner_id() == *user_id && self.members.len() > 0 {
+                for i in self.members.keys() {
+                    self.owner_id = *i;
+                    break;
+                }
+                self.room_notice(user_id);
+            }
+            self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, user_id);
+        }
         res
     }
 
     ///换队伍
     pub fn change_team(&mut self, user_id: &u32, team_id: &u8) {
-        let member = self.get_member_mut(user_id);
-        if member.is_none() {
+        let res = self.members.contains_key(user_id);
+        if !res {
             return;
         }
-        let mut member = member.unwrap();
+        let mut sct = S_CHANGE_TEAM::new();
+        sct.is_succ = true;
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            *user_id,
+            sct.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = self.sender.write(bytes);
+        if res.is_err() {
+            let str = format!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", str.as_str());
+        }
+        let mut member = self.get_member_mut(user_id).unwrap();
         member.team_id = *team_id;
+        //推送其他玩家
+        self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
     }
 
     ///T人
@@ -198,6 +341,21 @@ impl Room {
             return Err("该玩家不在房间内");
         }
         self.members.remove(target_id);
+        let mut skm = S_KICK_MEMBER::new();
+        skm.is_succ = true;
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::KickMember as u32,
+            *user_id,
+            skm.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = self.sender.write(bytes);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+        }
+        //通知其他成员
+        self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, target_id);
         Ok(())
     }
 
@@ -215,8 +373,6 @@ impl Room {
             let mp = member_2_memberpt(member);
             rp.members.push(mp);
         }
-        let mut tmp = TileMapPt::new();
-        rp.set_tile_map(self.tile_map.convert_pt());
         rp
     }
 
@@ -253,8 +409,9 @@ pub fn member_2_memberpt(member: &Member) -> MemberPt {
     mp.state = member.state as u32;
     mp.nick_name = member.nick_name.clone();
     let mut cp = CharacterPt::new();
-    cp.temp_id = member.battle_cter.temp_id;
-    cp.set_skills(member.battle_cter.skills.clone());
+    cp.temp_id = member.choiced_cter.temp_id;
+    cp.set_skills(member.choiced_cter.skills.clone());
+    cp.set_grade(member.choiced_cter.grade);
     mp.set_cter(cp);
     mp
 }

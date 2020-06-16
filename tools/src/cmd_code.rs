@@ -36,7 +36,7 @@ pub enum ClientCode{
     NickNameModify = 10005,
     //房间命令号
     Room = 10006,
-    //房间命令号
+    //离开房间命令号
     LeaveRoom = 10007,
     //开始游戏
     Start = 10008,
@@ -48,6 +48,12 @@ pub enum ClientCode{
     RoomSetting=10011,
     //房间成员变动推送消息
     RoomMemberNotice=10012,
+    //T人返回
+    KickMember=10013,
+    //选择角色
+    ChoiceCharacter=10014,
+    //房间推送
+    RoomNotice=10015,
     //最大命令号
     Max = 20000,
 }

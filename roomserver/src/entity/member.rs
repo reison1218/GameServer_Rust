@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use tools::cmd_code::RoomCode::ChangeTeam;
 use tools::protos::base::CharacterPt;
 use tools::protos::server_protocol::PlayerBattlePt;
 
@@ -17,7 +16,8 @@ pub enum MemberState {
 
 #[derive(Clone, Debug, Default)]
 pub struct Charcter {
-    pub temp_id: u32,     //角色的配置id
+    pub temp_id: u32, //角色的配置id
+    pub grade: u32,
     pub skills: Vec<u32>, //玩家次角色所有已解锁的技能id
 }
 
@@ -47,6 +47,7 @@ pub struct Member {
     pub state: u8,                     //玩家状态
     pub team_id: u8,                   //玩家所属队伍id
     pub cters: HashMap<u32, Charcter>, //玩家拥有的角色数组
+    pub choiced_cter: Charcter,        //玩家已经选择的角色
     pub battle_cter: BattleCharcter,   //进入战斗后的角色数据
 }
 
@@ -74,7 +75,6 @@ impl From<PlayerBattlePt> for Member {
             cters.insert(cter.temp_id, cter);
         }
         member.cters = cters;
-        member.battle_cter = BattleCharcter::default();
         member
     }
 }

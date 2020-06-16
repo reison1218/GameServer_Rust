@@ -74,7 +74,7 @@ message CellPt{
 message RoomPt{
     uint32 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
-    TileMapPt tile_map = 3;//地图数据
+    RoomSettingPt setting = 3;//房间设置
     repeated MemberPt members = 4;//成员数据
 }
 
@@ -91,5 +91,7 @@ message NoticeMessPt{
 //玩家角色数据
 message CharacterPt{
     uint32 temp_id = 1;//角色的配置id
-    repeated uint32 skills = 2;//玩家次角色所有已解锁的技能id
+    uint32 grade = 2;//角色等级
+    repeated uint32 last_use_skills = 3;
+    repeated uint32 skills = 4;//玩家次角色所有已解锁的技能id
 }

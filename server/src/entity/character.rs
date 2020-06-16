@@ -1,5 +1,5 @@
 use super::*;
-use crate::entity::character_contants::SKILLS;
+use crate::entity::character_contants::{GRADE, LAST_USE_SKILLS, SKILLS};
 use crate::TEMPLATES;
 use std::collections::HashMap;
 use tools::templates::character_temp::CharacterTempMgr;
@@ -105,6 +105,27 @@ impl Character {
         let json = res.unwrap();
         v = serde_json::from_value(json.clone())?;
         Ok(v)
+    }
+
+    pub fn get_last_use_skills(&self) -> anyhow::Result<Vec<u32>> {
+        let mut v: Vec<u32> = Vec::new();
+        let res = self.get_json_value(LAST_USE_SKILLS);
+        if res.is_none() {
+            return Ok(v);
+        }
+        let json = res.unwrap();
+        v = serde_json::from_value(json.clone())?;
+        Ok(v)
+    }
+
+    pub fn get_grade(&self) -> anyhow::Result<u32> {
+        let res = self.get_json_value(GRADE);
+        if res.is_none() {
+            return Ok(0);
+        }
+        let res = res.unwrap().as_u64();
+        let res = res.unwrap() as u32;
+        Ok(res)
     }
 
     #[warn(dead_code)]

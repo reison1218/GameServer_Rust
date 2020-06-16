@@ -56,16 +56,30 @@ message S_LEAVE_ROOM{
     string err_mess = 2;//错误信息;
 }
 
-//选择角色和技能
+//选择角色请求
 //cmd:20012
 message C_CHOICE_CHARACTER{
     CharacterPt cter = 1;//选择的角色
 }
 
-//T人
+//选择角色返回
+//cmd:10014
+message S_CHOICE_CHARACTER{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//T人请求
 //cmd:20005
 message C_KICK_MEMBER{
     uint32 target_id = 1;//要T掉的玩家目标id
+}
+
+//T人返回
+//cmd:10013
+message S_KICK_MEMBER{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
 }
 
 //换队伍
@@ -109,10 +123,16 @@ message S_START{
     string err_mess = 2;//错误信息;
 }
 
-//房间推送消息
+//房间成员推送消息
 //cmd:10012
 message S_ROOM_MEMBER_NOTICE{
     uint32 notice_type = 1;//类型 1:有新加成员 2:成员数据变动 3:成员离开房间
-    MemberPt member = 2;//队伍数据
+    MemberPt member = 2;//成员数据
 }
 
+//房间变动推送
+//cmd:10015
+message S_ROOM_NOTICE{
+    uint32 owner_id = 1;//房主ID
+    RoomSettingPt setting = 2;//房间设置
+}

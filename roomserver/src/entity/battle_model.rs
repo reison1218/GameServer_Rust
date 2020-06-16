@@ -1,16 +1,25 @@
-use crate::entity::member::{Member, MemberState, UserType};
-use crate::entity::room::{Room, RoomState};
+use crate::entity::member::Member;
+use crate::entity::room::Room;
+use crate::entity::room::RoomMemberNoticeType;
 use crate::TEMPLATES;
-use log::{error, warn};
-use std::any::Any;
+use log::error;
+use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::io::empty;
+use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
+use tools::protos::room::S_ROOM;
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
-use tools::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
+use tools::templates::tile_map_temp::TileMapTempMgr;
+use tools::util::packet::Packet;
+
+///teamID枚举
+pub enum TeamId {
+    Min = 1, //最小teamid
+    Max = 4, //最大teamid
+}
 
 ///房间类型
 #[derive(Debug, Copy, Clone)]
@@ -101,8 +110,8 @@ impl BattleType {
 //回合时间
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoundTime {
-    consume_time: u32, //消耗时间
-    fixed_time: u32,   //固定时间
+    pub consume_time: u32, //消耗时间
+    pub fixed_time: u32,   //固定时间
 }
 
 impl From<RoundTimePt> for RoundTime {
@@ -117,10 +126,10 @@ impl From<RoundTimePt> for RoundTime {
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
-    battle_type: u8,        //战斗类型
-    round_time: RoundTime,  //回合时间
-    is_world_tile: bool,    //是否开启中立块
-    victory_condition: u32, //胜利条件
+    pub battle_type: u8,        //战斗类型
+    pub round_time: RoundTime,  //回合时间
+    pub is_world_tile: bool,    //是否开启中立块
+    pub victory_condition: u32, //胜利条件
 }
 
 impl From<RoomSettingPt> for RoomSetting {
@@ -204,16 +213,36 @@ impl RoomModel for CustomRoom {
     ///创建房间
     fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(owner, RoomType::get_custom(), sender)?;
+        let room = Room::new(owner.clone(), RoomType::get_custom(), sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room.get_room_id(), room);
+
+        let room = self.rooms.get_mut(&room_id).unwrap();
+        //组装protobuf
+        let mut s_r = S_ROOM::new();
+        s_r.is_succ = true;
+        let rp = room.convert_to_pt();
+        s_r.set_room(rp);
+        let res = s_r.write_to_bytes().unwrap();
+        //封装客户端端消息包，并返回客户端
+        let mut packet = Packet::new(ClientCode::Room as u32, 0, user_id);
+        packet.set_is_client(true);
+        packet.set_data_from_vec(res);
+        let v = packet.build_server_bytes();
+        let res = room.sender.write(v);
+        if res.is_err() {
+            let str = format!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
+        }
+        //同志房间其他成员
+        room.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
         Ok(room_id)
     }
 
     ///离开房间
     fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
-        let room_id = room.get_room_id();
         room.remove_member(user_id);
         let room_id = room.get_room_id();
         //如果房间空了，则直接移除房间
@@ -261,18 +290,6 @@ impl CustomRoom {
             anyhow::bail!(s)
         }
         room.remove_member(target_id);
-        Ok(())
-    }
-
-    ///换队伍
-    pub fn change_team(
-        &mut self,
-        room_id: &u32,
-        user_id: &u32,
-        team_id: &u8,
-    ) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_room_id(room_id)?;
-        room.change_team(user_id, team_id);
         Ok(())
     }
 }
@@ -350,8 +367,7 @@ impl RoomModel for MatchRoom {
 
     ///创建房间
     fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
-        let user_id = owner.user_id;
-        let mut room = Room::new(owner, RoomType::get_match(), sender)?;
+        let room = Room::new(owner, RoomType::get_match(), sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();

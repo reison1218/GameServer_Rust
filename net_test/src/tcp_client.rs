@@ -61,10 +61,9 @@ impl TcpClientHandler {
 impl ClientHandler for TcpClientHandler {
     fn on_open(&mut self, ts: TcpStream) {
         self.ts = Some(ts);
+        let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
         let mut packet = Packet::default();
         packet.set_cmd(GameCode::Login as u32);
-
-        let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
         // let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
         // write.fetch_add(1, Ordering::Relaxed);
         // let id = write.load(Ordering::Relaxed);
@@ -83,13 +82,13 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
-        std::thread::sleep(Duration::from_secs(2));
-
-        let mut cjr = C_JOIN_ROOM::new();
-        cjr.room_id = 101;
-        let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);
-        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
+        // std::thread::sleep(Duration::from_secs(2));
+        //
+        // let mut cjr = C_JOIN_ROOM::new();
+        // cjr.room_id = 101;
+        // let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);
+        // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
 
         //
         // let mut  csr = C_SEARCH_ROOM::new();

@@ -1,5 +1,3 @@
-use protoc_rust::Customize;
-
 pub mod base;
 pub mod protocol;
 pub mod room;

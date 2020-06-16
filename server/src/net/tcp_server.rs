@@ -230,16 +230,18 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     lr.resp = resp;
 
     let mut c_v = Vec::new();
-    for cter in user.get_characters_ref().cter_map.iter() {
+    for (cter_id, cter) in user.get_characters_ref().cter_map.iter() {
         let mut c_pt = CharacterPt::new();
 
-        c_pt.set_temp_id(*cter.0);
-        let skills_json = cter.1.data.get("skills");
+        c_pt.set_temp_id(*cter_id);
+        let grade = cter.get_grade().unwrap();
+        let last_use_skills = cter.get_last_use_skills().unwrap();
+        let skills_json = cter.data.get("skills");
         if skills_json.is_none() {
             error!(
                 "Character has no Skills,user_id:{},ID:{}",
                 user.get_user_id(),
-                cter.0
+                cter_id
             );
             continue;
         }
@@ -251,6 +253,9 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
             v.push(id);
         }
         c_pt.set_skills(v);
+
+        c_pt.set_grade(grade);
+        c_pt.set_last_use_skills(last_use_skills);
         c_v.push(c_pt);
     }
     let res = protobuf::RepeatedField::from(c_v);
