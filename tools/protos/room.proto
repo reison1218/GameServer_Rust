@@ -3,26 +3,25 @@ package protos;
 import "base.proto";
 
 //创建房间请求
-//cmd:20003
+//cmd:1006
 message C_CREATE_ROOM{
     uint32 room_type = 1;//房间类型
 }
 
-//快速开始
-//cmd:20010
-message C_SEARCH_ROOM{
-    uint32 battle_type = 1;//要搜索的战斗模式
-}
-
 //加入房间
-//cmd:20009
+//cmd:1007
 message C_JOIN_ROOM{
     uint32 room_type = 1;//房间类型
     uint32 room_id = 2;//房间id
 }
 
+//快速开始
+//cmd:1008
+message C_SEARCH_ROOM{
+    uint32 battle_type = 1;//要搜索的战斗模式
+}
 
-//房间协议返回，对应返回的有：20003，20009，20010
+//房间协议返回，对应返回的有：1006，1007，1008
 //cmd:10006
 message S_ROOM{
     bool is_succ = 1;//是否成功;
@@ -136,3 +135,17 @@ message S_ROOM_NOTICE{
     uint32 owner_id = 1;//房主ID
     RoomSettingPt setting = 2;//房间设置
 }
+
+//表情推送
+//cmd:20013
+message C_EMOJI{
+    uint32 emoji_id = 1;//表情符号id
+}
+
+//表情请求
+//cmd:10016
+message S_EMOJI{
+    uint32 user_id = 1;//玩家id
+    uint32 emoji_id = 2;//表情符号id
+}
+

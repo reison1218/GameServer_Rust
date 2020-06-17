@@ -8,10 +8,11 @@ use log::{error, info, warn};
 use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOICE_CHARACTER, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING,
+    C_CHANGE_TEAM, C_CHOICE_CHARACTER, C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING,
     S_CHANGE_TEAM, S_CHOICE_CHARACTER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING,
 };
 use tools::protos::server_protocol::{G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM};
+use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
 
 //房间服管理器
@@ -119,6 +120,7 @@ impl RoomMgr {
         self.cmd_map
             .insert(RoomCode::ChoiceCharacter as u32, choice_character);
         self.cmd_map.insert(RoomCode::StartGame as u32, start);
+        self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
     }
 }
 
@@ -652,7 +654,7 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let cter_c = ccc.take_cter();
 
     //校验玩家
-    let member = room.get_member_mut_by_user_id(&user_id);
+    let member = room.get_member_mut(&user_id);
     if member.is_none() {
         scc.is_succ = false;
         let str = format!("this player is not in room!user_id:{}", user_id);
@@ -727,5 +729,45 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //通知其他成员
     room.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, &user_id);
+    Ok(())
+}
+
+///开始
+fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let res = rm.get_room_mut(&user_id);
+    if res.is_none() {
+        error!("this player is not in the room!user_id:{}", user_id);
+        return Ok(());
+    }
+    let room = res.unwrap();
+    let member = room.get_member_mut(&user_id);
+    if member.is_none() {
+        error!("this player is not in the room!user_id:{}", user_id);
+        return Ok(());
+    }
+    let member = member.unwrap();
+    if member.state != MemberState::Ready as u8 {
+        error!(
+            "this player is not ready,can not send emoji!user_id:{}",
+            user_id
+        );
+        return Ok(());
+    }
+
+    let mut ce = C_EMOJI::new();
+    let res = ce.merge_from_bytes(packet.get_data());
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+        return Ok(());
+    }
+    let emoji_id = ce.emoji_id;
+    let res: Option<&EmojiTemp> = crate::TEMPLATES.get_emoji_ref().temps.get(&emoji_id);
+    if res.is_none() {
+        error!("there is no temp for emoji_id:{}", emoji_id);
+        return Ok(());
+    }
+    //房间推送表情包
+    room.emoji(user_id, emoji_id);
     Ok(())
 }

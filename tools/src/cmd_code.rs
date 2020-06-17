@@ -22,6 +22,38 @@ pub enum GameCode{
     Max = 10000,
 }
 
+///房间服专属命令号段枚举
+pub enum RoomCode{
+    //范围最小值
+    Min = 20001,
+    //离线
+    LineOff = 20002,
+    //创建房间
+    CreateRoom = 20003,
+    //离开房间
+    LeaveRoom = 20004,
+    //T人
+    Kick = 20005,
+    //换队伍
+    ChangeTeam = 20006,
+    //准备与取消
+    PrepareCancel = 20007,
+    //开始游戏
+    StartGame = 20008,
+    //加入房间
+    JoinRoom = 20009,
+    //匹配房间
+    SearchRoom = 20010,
+    //房间设置
+    RoomSetting = 20011,
+    //选择角色和技能
+    ChoiceCharacter = 20012,
+    //表情符号
+    Emoji = 20013,
+    //返回最大值
+    Max = 30000,
+}
+
 ///客户端专属命令号段枚举
 pub enum ClientCode{
     //最小命令号
@@ -54,36 +86,8 @@ pub enum ClientCode{
     ChoiceCharacter=10014,
     //房间推送
     RoomNotice=10015,
+    //表情符号
+    Emoji=10016,
     //最大命令号
     Max = 20000,
-}
-
-///房间服专属命令号段枚举
-pub enum RoomCode{
-    //范围最小值
-    Min = 20001,
-    //离线
-    LineOff = 20002,
-    //创建房间
-    CreateRoom = 20003,
-    //离开房间
-    LeaveRoom = 20004,
-    //T人
-    Kick = 20005,
-    //换队伍
-    ChangeTeam = 20006,
-    //准备与取消
-    PrepareCancel = 20007,
-    //开始游戏
-    StartGame = 20008,
-    //加入房间
-    JoinRoom = 20009,
-    //匹配房间
-    SearchRoom = 20010,
-    //房间设置
-    RoomSetting = 20011,
-    //选择角色和技能
-    ChoiceCharacter = 20012,
-    //返回最大值
-    Max = 30000,
 }

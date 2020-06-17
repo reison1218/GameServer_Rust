@@ -72,7 +72,7 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let packet = Packet::from_only_server(mess);
+        let packet = Packet::from_only_server(mess.clone());
         if packet.is_err() {
             error!("{:?}", packet.err().unwrap());
             return;

@@ -5,7 +5,8 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_contants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE};
+use crate::templates::template_contants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE};
+use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
 
 pub trait Template {}
 
@@ -17,6 +18,7 @@ pub trait TemplateMgrTrait: Send + Sync {
 pub struct TemplatesMgr {
     character_temp_mgr: CharacterTempMgr,
     tile_map_temp_mgr: TileMapTempMgr,
+    emoji_temp_mgr:EmojiTempMgr
 }
 
 impl TemplatesMgr {
@@ -26,6 +28,10 @@ impl TemplatesMgr {
 
     pub fn get_tile_map_ref(&self) -> &TileMapTempMgr {
         self.tile_map_temp_mgr.borrow()
+    }
+
+    pub fn get_emoji_ref(&self) -> &EmojiTempMgr {
+        self.emoji_temp_mgr.borrow()
     }
 }
 
@@ -62,6 +68,10 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<CharacterTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.character_temp_mgr = CharacterTempMgr::default();
             temps_mgr.character_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(EMOJI_TEMPLATE) {
+            let v: Vec<EmojiTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.emoji_temp_mgr = EmojiTempMgr::default();
+            temps_mgr.emoji_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

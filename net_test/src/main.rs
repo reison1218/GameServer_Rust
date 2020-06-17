@@ -105,7 +105,7 @@ fn foo(words: &[&str]) {
 
 fn main() -> anyhow::Result<()> {
 
-    tcp_client::test_tcp_client("platform_id");
+    tcp_client::test_tcp_client("test_platform_id");
     // block_on(http);
     // print!("http执行完毕");
     //block_on(web::test_http_client("1"));

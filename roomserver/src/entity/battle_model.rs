@@ -215,26 +215,8 @@ impl RoomModel for CustomRoom {
         let user_id = owner.user_id;
         let room = Room::new(owner.clone(), RoomType::get_custom(), sender)?;
         let room_id = room.get_room_id();
-        self.rooms.insert(room.get_room_id(), room);
-
+        self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
-        //组装protobuf
-        let mut s_r = S_ROOM::new();
-        s_r.is_succ = true;
-        let rp = room.convert_to_pt();
-        s_r.set_room(rp);
-        let res = s_r.write_to_bytes().unwrap();
-        //封装客户端端消息包，并返回客户端
-        let mut packet = Packet::new(ClientCode::Room as u32, 0, user_id);
-        packet.set_is_client(true);
-        packet.set_data_from_vec(res);
-        let v = packet.build_server_bytes();
-        let res = room.sender.write(v);
-        if res.is_err() {
-            let str = format!("{:?}", res.err().unwrap().to_string());
-            error!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
         //同志房间其他成员
         room.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
         Ok(room_id)

@@ -6,10 +6,12 @@ use log::error;
 use protobuf::Message;
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
+use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
 use tools::protos::room::{
-    S_CHANGE_TEAM, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
+    S_CHANGE_TEAM, S_EMOJI, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_NOTICE,
+    S_ROOM_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -54,7 +56,7 @@ pub struct Room {
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(owner: Member, room_type: u8, sender: TcpSender) -> anyhow::Result<Room> {
+    pub fn new(mut owner: Member, room_type: u8, sender: TcpSender) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let tile_map = TileMap::default();
         let id: u32 = crate::ROOM_ID.fetch_add(1, Ordering::Relaxed);
@@ -74,6 +76,12 @@ impl Room {
             sender,
             time,
         };
+
+        // let mut size = room.members.len() as u8;
+        // size += 1;
+        // owner.team_id = size;
+        // room.members.insert(owner.user_id, owner);
+
         //返回客户端
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
@@ -91,7 +99,27 @@ impl Room {
             error!("{:?}", str.as_str());
             anyhow::bail!("{:?}", str)
         }
-        room.add_member(owner);
+
+        std::thread::sleep(Duration::from_micros(500));
+
+        // 返回客户端
+        let mut sr = S_ROOM::new();
+        sr.is_succ = true;
+        sr.set_room(room.convert_to_pt());
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::Room as u32,
+            owner.user_id,
+            sr.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = room.sender.write(bytes);
+        if res.is_err() {
+            let str = format!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
+        }
+        // room.add_member(owner);
         Ok(room)
     }
 
@@ -153,6 +181,19 @@ impl Room {
             if res.is_err() {
                 error!("{:?}", res.err().unwrap().to_string());
             }
+        }
+    }
+
+    pub fn emoji(&mut self, user_id: u32, emoji_id: u32) {
+        let mut packet = Packet::new(ClientCode::Emoji as u32, 0, 0);
+        packet.set_is_client(true);
+        let mut sej = S_EMOJI::new();
+        sej.emoji_id = emoji_id;
+        sej.user_id = user_id;
+        packet.set_data_from_vec(sej.write_to_bytes().unwrap());
+        for user_id in self.members.keys() {
+            packet.set_user_id(*user_id);
+            self.sender.write(packet.build_server_bytes());
         }
     }
 
@@ -249,12 +290,6 @@ impl Room {
     ///获得玩家的可变指针
     pub fn get_member_ref(&self, user_id: &u32) -> Option<&Member> {
         self.members.get(user_id)
-    }
-
-    ///获得玩家的可变指针
-    pub fn get_member_mut_by_user_id(&mut self, user_id: &u32) -> Option<&mut Member> {
-        let result = self.members.get_mut(user_id);
-        result
     }
 
     ///获得玩家数量

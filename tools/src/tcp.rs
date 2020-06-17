@@ -303,6 +303,7 @@ pub mod tcp_server {
                         //break;
                     }
                     Err(ref err) if interrupted(err) => {
+                        println!("{:?}",err.to_string());
                         error!("{:?}",err.to_string());
                         continue;
                     }

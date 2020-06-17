@@ -76,11 +76,11 @@ impl ClientHandler for TcpClientHandler {
         //panic!("");
         std::thread::sleep(Duration::from_secs(2));
 
-        let mut  csr = C_SEARCH_ROOM::new();
-        csr.set_battle_type(1 as u32);
-        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
-        self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
+        // let mut  csr = C_SEARCH_ROOM::new();
+        // csr.set_battle_type(1 as u32);
+        // let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
+        // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
 
         // std::thread::sleep(Duration::from_secs(2));
         //
@@ -97,13 +97,13 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         // self.ts.as_mut().unwrap().flush().unwrap();
 
-        // let mut c_r = C_CREATE_ROOM::new();
-        // c_r.map_id = 1002;
-        // packet.set_cmd(GameCode::CreateRoom as u32);
-        // packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
-        // packet.set_len(16+packet.get_data().len() as u32);
-        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
+        let mut c_r = C_CREATE_ROOM::new();
+        c_r.room_type = 1 as u32;
+        packet.set_cmd(GameCode::CreateRoom as u32);
+        packet.set_data(&c_r.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
 
         // let mut c_r = C_SYNC_DATA::new();
         // let mut pp = PlayerPt::new();
@@ -128,7 +128,7 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let packet = Packet::from_only_client(mess).unwrap();
+        let packet = Packet::from_only_client(mess.clone()).unwrap();
         if packet.get_cmd() == ClientCode::Login as u32{
             let mut s = S_USER_LOGIN::new();
             s.merge_from_bytes(packet.get_data());
@@ -136,13 +136,13 @@ impl ClientHandler for TcpClientHandler {
         }else if packet.get_cmd() == ClientCode::Room as u32{
             let mut s = S_ROOM::new();
             s.merge_from_bytes(packet.get_data());
+            println!("{:?}",mess);
             println!("from server-room:{:?}----{:?}",packet,s);
         }else if packet.get_cmd() == ClientCode::SyncData as u32{
             let mut s = S_SYNC_DATA::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-sync:{:?}----{:?}",packet,s);
         }
-
     }
 
     fn get_address(&self) -> &str {
