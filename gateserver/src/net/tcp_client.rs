@@ -72,34 +72,38 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let packet = Packet::from_only_server(mess.clone());
-        if packet.is_err() {
-            error!("{:?}", packet.err().unwrap());
+        let packet_array = Packet::build_array_from_server(mess);
+
+        if packet_array.is_err() {
+            error!("{:?}", packet_array.err().unwrap().to_string());
             return;
         }
-        let mut packet = packet.unwrap();
-        //判断是否是发给客户端消息
-        if packet.is_client() && packet.get_cmd() > 0 {
-            let mut write = self.cp.write().unwrap();
-            let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
+        let packet_array = packet_array.unwrap();
 
-            match gate_user {
-                Some(user) => {
-                    let res = user.get_tcp_mut_ref().write(packet.build_client_bytes());
-                    if res.is_err() {
-                        error!("write error!mess:{:?}", res.err().unwrap().to_string());
+        for mut packet in packet_array {
+            //判断是否是发给客户端消息
+            if packet.is_client() && packet.get_cmd() > 0 {
+                let mut write = self.cp.write().unwrap();
+                let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
+
+                match gate_user {
+                    Some(user) => {
+                        let res = user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                        if res.is_err() {
+                            error!("write error!mess:{:?}", res.err().unwrap().to_string());
+                            return;
+                        }
+                        info!("回客户端消息,cmd:{}", packet.get_cmd());
+                    }
+                    None => {
+                        error!("user data is null,id:{}", &packet.get_user_id());
                         return;
                     }
-                    info!("回客户端消息,cmd:{}", packet.get_cmd());
                 }
-                None => {
-                    error!("user data is null,id:{}", &packet.get_user_id());
-                    return;
-                }
+            } else {
+                //判断是否要转发到其他服务器进程消息
+                self.arrange_packet(packet);
             }
-        } else {
-            //判断是否要转发到其他服务器进程消息
-            self.arrange_packet(packet);
         }
     }
 

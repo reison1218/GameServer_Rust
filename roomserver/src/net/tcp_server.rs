@@ -36,24 +36,27 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let packet = Packet::from_only_server(mess);
-        if packet.is_err() {
-            error!("{:?}", packet.err().unwrap());
-            return;
-        }
-        let packet = packet.unwrap();
+        let packet_array = Packet::build_array_from_server(mess);
 
-        //判断是否是房间服的命令，如果不是，则直接无视掉
-        if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {
-            error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
+        if packet_array.is_err() {
+            error!("{:?}", packet_array.err().unwrap().to_string());
             return;
         }
-        if packet.get_data().is_empty() && packet.get_cmd() != RoomCode::LineOff as u32 {
-            error!("the cmd:{}'s mess's data is null!", packet.get_cmd());
-            return;
+        let packet_array = packet_array.unwrap();
+
+        for packet in packet_array {
+            //判断是否是房间服的命令，如果不是，则直接无视掉
+            if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {
+                error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
+                return;
+            }
+            if packet.get_data().is_empty() && packet.get_cmd() != RoomCode::LineOff as u32 {
+                error!("the cmd:{}'s mess's data is null!", packet.get_cmd());
+                return;
+            }
+            //异步处理业务逻辑
+            async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
-        //异步处理业务逻辑
-        async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));
     }
 }
 

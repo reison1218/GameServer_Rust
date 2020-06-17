@@ -77,10 +77,10 @@ impl Room {
             time,
         };
 
-        // let mut size = room.members.len() as u8;
-        // size += 1;
-        // owner.team_id = size;
-        // room.members.insert(owner.user_id, owner);
+        let mut size = room.members.len() as u8;
+        size += 1;
+        owner.team_id = size;
+        room.members.insert(owner.user_id, owner);
 
         //返回客户端
         let mut sr = S_ROOM::new();
@@ -99,27 +99,6 @@ impl Room {
             error!("{:?}", str.as_str());
             anyhow::bail!("{:?}", str)
         }
-
-        std::thread::sleep(Duration::from_micros(500));
-
-        // 返回客户端
-        let mut sr = S_ROOM::new();
-        sr.is_succ = true;
-        sr.set_room(room.convert_to_pt());
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::Room as u32,
-            owner.user_id,
-            sr.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        let res = room.sender.write(bytes);
-        if res.is_err() {
-            let str = format!("{:?}", res.err().unwrap().to_string());
-            error!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
-        // room.add_member(owner);
         Ok(room)
     }
 

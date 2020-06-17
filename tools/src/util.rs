@@ -21,6 +21,10 @@ pub mod bytebuf {
             }
         }
 
+        pub fn get_len(&self)->usize{
+            self.bytes.len()
+        }
+
         ///通过bytes数组创建bytebuf结构体
         pub fn from(bytes: &[u8]) -> ByteBuf {
             let mut bb = ByteBuf {
@@ -105,6 +109,17 @@ pub mod bytebuf {
             for i in s.as_bytes() {
                 self.bytes.push(*i);
             }
+        }
+
+        ///读取指定长度的字节数
+        pub fn read_bytes_size(&mut self,size:usize) -> Result<&[u8],&str> {
+            if self.bytes.len() - self.index < size {
+                return Err("could not read u32,the readable u8 array is notEnough!");
+            }
+            let end= self.index+size;
+            let res = &self.bytes[self.index..end];
+            self.index+=size;
+            Ok(res)
         }
 
         ///读取4个字节并拼成一个u32
@@ -206,6 +221,8 @@ pub mod packet {
             }
         }
 
+
+
         pub fn get_user_id(&self) -> u32 {
             self.packet_des.user_id
         }
@@ -222,17 +239,69 @@ pub mod packet {
             self.packet_des.is_client = is_client;
         }
 
+        pub fn build_array_from_server(bytes:Vec<u8>)->Result<Vec<Packet>, String>{
+            let mut bb = ByteBuf::form_vec(bytes);
+            let mut v = Vec::new();
+            loop{
+                if bb.index() == bb.get_len(){
+                    return Ok(v);
+                }
+                let cmd = bb.read_u32()?;
+                let len = bb.read_u32()?;
+                let user_id = bb.read_u32()?;
+                let is_client = bb.read_u8()? != 0;
+                let is_broad = bb.read_u8()? != 0;
+                let body_size = len - 14;
+                let mut packet = Packet::new(cmd, len, user_id);
+                packet.set_user_id(user_id);
+                packet.set_cmd(cmd);
+                packet.set_is_client(is_client);
+                packet.set_is_broad(is_broad);
+                if body_size ==0{
+                    v.push(packet);
+                    return Ok(v);
+                }
+                packet.set_data(bb.read_bytes_size(body_size as usize)?);
+                v.push(packet);
+            }
+            Ok(v)
+        }
+
+        pub fn build_array_from_client(bytes:Vec<u8>)->Result<Vec<Packet>, String>{
+            let mut bb = ByteBuf::form_vec(bytes);
+            let mut v = Vec::new();
+            loop{
+                if bb.index() == bb.get_len(){
+                    return Ok(v);
+                }
+                let cmd = bb.read_u32()?;
+                let len = bb.read_u32()?;
+                bb.read_u32()?;
+                bb.read_u32()?;
+                let body_size = len - 16;
+                let mut packet = Packet::new(cmd, len, 0);
+                packet.set_is_client(true);
+                packet.set_is_broad(false);
+                if body_size>0{
+                    packet.set_data(bb.read_bytes_size(body_size as usize)?);
+                }
+                v.push(packet);
+            }
+            Ok(v)
+        }
+
         ///bytebuf转换成packet,只能用于服务端进程内部通信！
         pub fn from_only_server(bytes: Vec<u8>) -> Result<Packet, String> {
             let mut bb = ByteBuf::form_vec(bytes);
             let cmd = bb.read_u32()?;
+            let len  = bb.read_u32()?;
             let user_id = bb.read_u32()?;
             let is_client = bb.read_u8()? != 0;
             let is_broad = bb.read_u8()? != 0;
             let mut packet = Packet::new(cmd, 0, user_id);
             packet.set_is_client(is_client);
             packet.set_is_broad(is_broad);
-            packet.set_data(bb.read_bytes()?);
+            packet.set_data(bb.read_bytes_size(len as usize)?);
             Ok(packet)
         }
 
@@ -332,6 +401,7 @@ pub mod packet {
         pub fn to_server_bytebuf(&self) -> ByteBuf {
             let mut bb = ByteBuf::new();
             bb.push_u32(self.get_cmd());
+            bb.push_u32(14+self.get_data().len() as u32);
             bb.push_u32(self.get_user_id());
             bb.push(self.is_client() as u8);
             bb.push(self.is_broad() as u8);

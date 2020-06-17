@@ -11,6 +11,7 @@ use crate::helper::redis_helper::get_user_from_redis;
 use crate::net::http::notice_user_center;
 use protobuf::Message;
 use tools::cmd_code::{ClientCode, GameCode};
+use tools::util::bytebuf::ByteBuf;
 
 #[derive(Clone)]
 struct TcpServerHandler {
@@ -43,15 +44,17 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let packet = Packet::from_only_server(mess);
-        match packet {
-            Ok(p) => {
-                let gm = self.gm.clone();
-                async_std::task::spawn(handler_mess_s(gm, p));
-            }
-            Err(e) => {
-                error!("{:?}", e);
-            }
+        let packet_array = Packet::build_array_from_server(mess);
+
+        if packet_array.is_err() {
+            error!("{:?}", packet_array.err().unwrap().to_string());
+            return;
+        }
+        let packet_array = packet_array.unwrap();
+
+        for packet in packet_array {
+            let gm = self.gm.clone();
+            async_std::task::spawn(handler_mess_s(gm, packet));
         }
     }
 }

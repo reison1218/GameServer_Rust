@@ -48,16 +48,18 @@ impl tools::tcp::Handler for TcpServerHandler {
             error!("client packet len is wrong!");
             return;
         }
-        let packet = Packet::from_only_client(mess);
-        match packet {
-            Ok(p) => {
-                let cmd = p.get_cmd();
-                info!("GateServer receive data of client!cmd:{}", cmd);
-                self.handle_binary(p.clone());
-            }
-            Err(e) => {
-                error!("{:?}", e);
-            }
+        let packet_array = Packet::build_array_from_client(mess);
+
+        if packet_array.is_err() {
+            error!("{:?}", packet_array.err().unwrap().to_string());
+            return;
+        }
+        let packet_array = packet_array.unwrap();
+
+        for packet in packet_array {
+            let cmd = packet.get_cmd();
+            info!("GateServer receive data of client!cmd:{}", cmd);
+            self.handle_binary(packet);
         }
     }
 }
