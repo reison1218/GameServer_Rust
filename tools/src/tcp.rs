@@ -319,7 +319,7 @@ pub mod tcp_server {
         Ok(false)
     }
 
-    fn close_connect<T:Handler>(connect:&mut MioTcpStream,handler: &mut T,err:Option<&Error>){
+    fn close_connect<T:Handler>(connect:&mut MioTcpStream,handler: &mut T,err:Option<&dyn Error>){
         let addr = connect.peer_addr();
         let err_str;
         match err {

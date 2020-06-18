@@ -6,7 +6,6 @@ use log::error;
 use protobuf::Message;
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
-use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
 use tools::protos::room::{
@@ -80,6 +79,7 @@ impl Room {
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;
+        let user_id = owner.user_id;
         room.members.insert(owner.user_id, owner);
 
         //返回客户端
@@ -88,7 +88,7 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         let bytes = Packet::build_packet_bytes(
             ClientCode::Room as u32,
-            owner.user_id,
+            user_id,
             sr.write_to_bytes().unwrap(),
             true,
             true,
@@ -422,6 +422,7 @@ pub fn member_2_memberpt(member: &Member) -> MemberPt {
     mp.user_id = member.get_user_id();
     mp.state = member.state as u32;
     mp.nick_name = member.nick_name.clone();
+    mp.team_id = member.team_id as u32;
     let mut cp = CharacterPt::new();
     cp.temp_id = member.choiced_cter.temp_id;
     cp.set_skills(member.choiced_cter.skills.clone());

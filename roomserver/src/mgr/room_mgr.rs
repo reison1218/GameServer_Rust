@@ -2,7 +2,7 @@ use super::*;
 use crate::entity::battle_model::{
     BattleType, CustomRoom, MatchRooms, RoomModel, RoomType, TeamId,
 };
-use crate::entity::member::{BattleCharcter, Charcter, Member, MemberState};
+use crate::entity::member::{Charcter, Member, MemberState};
 use crate::entity::room::{Room, RoomMemberNoticeType, RoomState};
 use log::{error, info, warn};
 use protobuf::Message;
