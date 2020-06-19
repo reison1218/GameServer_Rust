@@ -14,7 +14,7 @@ pub struct Characters {
 
 impl Characters {
     pub fn get_frist(&self) -> u32 {
-        let mut cter_id = 1001 as u32;
+        let mut cter_id = 1001_u32;
         for i in self.cter_map.iter() {
             cter_id = *i.0;
             break;

@@ -185,7 +185,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     // }
 
     let mut result = user.get_user_info_mut_ref().get_time(SYNC_TIME);
-    let mut time = 0 as u32;
+    let mut time = 0_u32;
     if result.is_some() {
         time = result.unwrap().timestamp_subsec_micros();
     }

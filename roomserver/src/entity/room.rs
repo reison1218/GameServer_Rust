@@ -1,11 +1,12 @@
 use crate::entity::battle_model::RoomSetting;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Local, Utc};
 use log::error;
 use protobuf::Message;
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
+use std::time::SystemTime;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
 use tools::protos::room::{
@@ -79,6 +80,7 @@ impl Room {
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;
+        owner.join_time = Local::now().timestamp_millis() as u64;
         let user_id = owner.user_id;
         room.members.insert(owner.user_id, owner);
 
@@ -105,11 +107,18 @@ impl Room {
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
         let member = self.members.get_mut(user_id);
         let mut spc = S_PREPARE_CANCEL::new();
+        spc.is_succ = true;
         if member.is_none() {
             spc.is_succ = false;
             spc.err_mess = "this player not in the room!".to_owned();
-        } else {
-            let member = member.unwrap();
+        }
+        let member = member.unwrap();
+        if member.chose_cter.temp_id == 0 {
+            spc.is_succ = false;
+            let str = format!("this player not choose character yet!user_id:{}", user_id);
+            spc.err_mess = str.to_owned();
+        }
+        if spc.is_succ {
             if pregare_cancel {
                 member.state = MemberState::Ready as u8;
             } else {
@@ -120,7 +129,6 @@ impl Room {
         }
 
         //返回客户端
-        spc.is_succ = true;
         spc.prepare = pregare_cancel;
         let bytes = Packet::build_packet_bytes(
             ClientCode::PrepareCancel as u32,
@@ -131,7 +139,8 @@ impl Room {
         );
         let res = self.sender.write(bytes);
         if res.is_err() {
-            error!("{:?}", res.err().unwrap().to_string());
+            println!("{:?}", res.err().unwrap().to_string());
+            //error!("{:?}", res.err().unwrap().to_string());
         }
     }
 
@@ -172,7 +181,11 @@ impl Room {
         packet.set_data_from_vec(sej.write_to_bytes().unwrap());
         for user_id in self.members.keys() {
             packet.set_user_id(*user_id);
-            self.sender.write(packet.build_server_bytes());
+            let res = self.sender.write(packet.build_server_bytes());
+            match res {
+                Err(e) => error!("{:?}", e.to_string()),
+                Ok(_) => {}
+            }
         }
     }
 
@@ -277,10 +290,11 @@ impl Room {
     }
 
     ///添加成员
-    pub fn add_member(&mut self, mut member: Member) {
+    pub fn add_member(&mut self, mut member: Member) -> anyhow::Result<u32> {
         let mut size = self.members.len() as u8;
         size += 1;
         member.team_id = size;
+        member.join_time = Local::now().timestamp_millis() as u64;
         let user_id = member.user_id;
         self.members.insert(user_id, member);
 
@@ -302,6 +316,7 @@ impl Room {
         }
         //通知房间里其他人
         self.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
+        Ok(self.id)
     }
 
     ///移除玩家
@@ -423,10 +438,11 @@ pub fn member_2_memberpt(member: &Member) -> MemberPt {
     mp.state = member.state as u32;
     mp.nick_name = member.nick_name.clone();
     mp.team_id = member.team_id as u32;
+    mp.join_time = member.join_time;
     let mut cp = CharacterPt::new();
-    cp.temp_id = member.choiced_cter.temp_id;
-    cp.set_skills(member.choiced_cter.skills.clone());
-    cp.set_grade(member.choiced_cter.grade);
+    cp.temp_id = member.chose_cter.temp_id;
+    cp.set_skills(member.chose_cter.skills.clone());
+    cp.set_grade(member.chose_cter.grade);
     mp.set_cter(cp);
     mp
 }

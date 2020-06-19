@@ -50,10 +50,6 @@ impl tools::tcp::Handler for TcpServerHandler {
                 error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
                 return;
             }
-            if packet.get_data().is_empty() && packet.get_cmd() != RoomCode::LineOff as u32 {
-                error!("the cmd:{}'s mess's data is null!", packet.get_cmd());
-                return;
-            }
             //异步处理业务逻辑
             async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
@@ -68,5 +64,9 @@ async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
 ///创建新的tcp服务器
 pub fn new(address: &str, rm: Arc<RwLock<RoomMgr>>) {
     let sh = TcpServerHandler { sender: None, rm };
-    tcp_server::new(address, sh).unwrap();
+    let res = tcp_server::new(address, sh);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+        std::process::abort();
+    }
 }

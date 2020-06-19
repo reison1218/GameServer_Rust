@@ -47,8 +47,9 @@ pub struct Member {
     pub state: u8,                     //玩家状态
     pub team_id: u8,                   //玩家所属队伍id
     pub cters: HashMap<u32, Charcter>, //玩家拥有的角色数组
-    pub choiced_cter: Charcter,        //玩家已经选择的角色
+    pub chose_cter: Charcter,          //玩家已经选择的角色
     pub battle_cter: BattleCharcter,   //进入战斗后的角色数据
+    pub join_time: u64,                //玩家进入房间的时间
 }
 
 impl Member {

@@ -58,7 +58,7 @@ impl ChannelMgr {
         //初始化包
         let mut packet = Packet::default();
         packet.set_user_id(user_id);
-        packet.set_len(14 as u32);
+        packet.set_len(14_u32);
         packet.set_is_client(false);
         packet.set_is_broad(false);
         //发给游戏服

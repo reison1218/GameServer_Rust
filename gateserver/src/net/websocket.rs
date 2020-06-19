@@ -28,7 +28,7 @@ impl Handler for WebSocketHandler {
         write.close_remove(&token);
         let user_id = write.get_channels_user_id(&token);
         let mut mess = Packet::default();
-        mess.set_cmd(tools::cmd_code::GameCode::LineOff as u32 as u32);
+        mess.set_cmd(tools::cmd_code::GameCode::LineOff as u32);
         mess.set_user_id(*user_id.unwrap());
         write.write_to_game(mess);
     }

@@ -1479,7 +1479,7 @@ impl ::protobuf::reflect::ProtobufValue for S_LEAVE_ROOM {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct C_CHOICE_CHARACTER {
+pub struct C_CHOOSE_CHARACTER {
     // message fields
     pub cter: ::protobuf::SingularPtrField<super::base::CharacterPt>,
     // special fields
@@ -1487,14 +1487,14 @@ pub struct C_CHOICE_CHARACTER {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a C_CHOICE_CHARACTER {
-    fn default() -> &'a C_CHOICE_CHARACTER {
-        <C_CHOICE_CHARACTER as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a C_CHOOSE_CHARACTER {
+    fn default() -> &'a C_CHOOSE_CHARACTER {
+        <C_CHOOSE_CHARACTER as ::protobuf::Message>::default_instance()
     }
 }
 
-impl C_CHOICE_CHARACTER {
-    pub fn new() -> C_CHOICE_CHARACTER {
+impl C_CHOOSE_CHARACTER {
+    pub fn new() -> C_CHOOSE_CHARACTER {
         ::std::default::Default::default()
     }
 
@@ -1532,7 +1532,7 @@ impl C_CHOICE_CHARACTER {
     }
 }
 
-impl ::protobuf::Message for C_CHOICE_CHARACTER {
+impl ::protobuf::Message for C_CHOOSE_CHARACTER {
     fn is_initialized(&self) -> bool {
         for v in &self.cter {
             if !v.is_initialized() {
@@ -1606,8 +1606,8 @@ impl ::protobuf::Message for C_CHOICE_CHARACTER {
         Self::descriptor_static()
     }
 
-    fn new() -> C_CHOICE_CHARACTER {
-        C_CHOICE_CHARACTER::new()
+    fn new() -> C_CHOOSE_CHARACTER {
+        C_CHOOSE_CHARACTER::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1617,11 +1617,11 @@ impl ::protobuf::Message for C_CHOICE_CHARACTER {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::CharacterPt>>(
                     "cter",
-                    |m: &C_CHOICE_CHARACTER| { &m.cter },
-                    |m: &mut C_CHOICE_CHARACTER| { &mut m.cter },
+                    |m: &C_CHOOSE_CHARACTER| { &m.cter },
+                    |m: &mut C_CHOOSE_CHARACTER| { &mut m.cter },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOICE_CHARACTER>(
-                    "C_CHOICE_CHARACTER",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOOSE_CHARACTER>(
+                    "C_CHOOSE_CHARACTER",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1629,35 +1629,35 @@ impl ::protobuf::Message for C_CHOICE_CHARACTER {
         }
     }
 
-    fn default_instance() -> &'static C_CHOICE_CHARACTER {
-        static mut instance: ::protobuf::lazy::Lazy<C_CHOICE_CHARACTER> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static C_CHOOSE_CHARACTER {
+        static mut instance: ::protobuf::lazy::Lazy<C_CHOOSE_CHARACTER> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(C_CHOICE_CHARACTER::new)
+            instance.get(C_CHOOSE_CHARACTER::new)
         }
     }
 }
 
-impl ::protobuf::Clear for C_CHOICE_CHARACTER {
+impl ::protobuf::Clear for C_CHOOSE_CHARACTER {
     fn clear(&mut self) {
         self.cter.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for C_CHOICE_CHARACTER {
+impl ::std::fmt::Debug for C_CHOOSE_CHARACTER {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for C_CHOICE_CHARACTER {
+impl ::protobuf::reflect::ProtobufValue for C_CHOOSE_CHARACTER {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_CHOICE_CHARACTER {
+pub struct S_CHOOSE_CHARACTER {
     // message fields
     pub is_succ: bool,
     pub err_mess: ::std::string::String,
@@ -1666,14 +1666,14 @@ pub struct S_CHOICE_CHARACTER {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_CHOICE_CHARACTER {
-    fn default() -> &'a S_CHOICE_CHARACTER {
-        <S_CHOICE_CHARACTER as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_CHOOSE_CHARACTER {
+    fn default() -> &'a S_CHOOSE_CHARACTER {
+        <S_CHOOSE_CHARACTER as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_CHOICE_CHARACTER {
-    pub fn new() -> S_CHOICE_CHARACTER {
+impl S_CHOOSE_CHARACTER {
+    pub fn new() -> S_CHOOSE_CHARACTER {
         ::std::default::Default::default()
     }
 
@@ -1719,7 +1719,7 @@ impl S_CHOICE_CHARACTER {
     }
 }
 
-impl ::protobuf::Message for S_CHOICE_CHARACTER {
+impl ::protobuf::Message for S_CHOOSE_CHARACTER {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -1798,8 +1798,8 @@ impl ::protobuf::Message for S_CHOICE_CHARACTER {
         Self::descriptor_static()
     }
 
-    fn new() -> S_CHOICE_CHARACTER {
-        S_CHOICE_CHARACTER::new()
+    fn new() -> S_CHOOSE_CHARACTER {
+        S_CHOOSE_CHARACTER::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1809,16 +1809,16 @@ impl ::protobuf::Message for S_CHOICE_CHARACTER {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
                     "is_succ",
-                    |m: &S_CHOICE_CHARACTER| { &m.is_succ },
-                    |m: &mut S_CHOICE_CHARACTER| { &mut m.is_succ },
+                    |m: &S_CHOOSE_CHARACTER| { &m.is_succ },
+                    |m: &mut S_CHOOSE_CHARACTER| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
                     "err_mess",
-                    |m: &S_CHOICE_CHARACTER| { &m.err_mess },
-                    |m: &mut S_CHOICE_CHARACTER| { &mut m.err_mess },
+                    |m: &S_CHOOSE_CHARACTER| { &m.err_mess },
+                    |m: &mut S_CHOOSE_CHARACTER| { &mut m.err_mess },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOICE_CHARACTER>(
-                    "S_CHOICE_CHARACTER",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_CHARACTER>(
+                    "S_CHOOSE_CHARACTER",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1826,15 +1826,15 @@ impl ::protobuf::Message for S_CHOICE_CHARACTER {
         }
     }
 
-    fn default_instance() -> &'static S_CHOICE_CHARACTER {
-        static mut instance: ::protobuf::lazy::Lazy<S_CHOICE_CHARACTER> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_CHOOSE_CHARACTER {
+        static mut instance: ::protobuf::lazy::Lazy<S_CHOOSE_CHARACTER> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_CHOICE_CHARACTER::new)
+            instance.get(S_CHOOSE_CHARACTER::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_CHOICE_CHARACTER {
+impl ::protobuf::Clear for S_CHOOSE_CHARACTER {
     fn clear(&mut self) {
         self.is_succ = false;
         self.err_mess.clear();
@@ -1842,13 +1842,13 @@ impl ::protobuf::Clear for S_CHOICE_CHARACTER {
     }
 }
 
-impl ::std::fmt::Debug for S_CHOICE_CHARACTER {
+impl ::std::fmt::Debug for S_CHOOSE_CHARACTER {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_CHOICE_CHARACTER {
+impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_CHARACTER {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -4090,9 +4090,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
     \x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\
     \x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_m\
-    ess\x18\x02\x20\x01(\tR\x07errMess\"=\n\x12C_CHOICE_CHARACTER\x12'\n\x04\
+    ess\x18\x02\x20\x01(\tR\x07errMess\"=\n\x12C_CHOOSE_CHARACTER\x12'\n\x04\
     cter\x18\x01\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\"H\n\x12S_CHO\
-    ICE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
+    OSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
     \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\",\n\rC_KICK_MEMBER\
     \x12\x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBE\
     R\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_\

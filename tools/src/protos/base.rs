@@ -1164,6 +1164,7 @@ pub struct MemberPt {
     pub cter: ::protobuf::SingularPtrField<CharacterPt>,
     pub state: u32,
     pub team_id: u32,
+    pub join_time: u64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1283,6 +1284,21 @@ impl MemberPt {
     pub fn set_team_id(&mut self, v: u32) {
         self.team_id = v;
     }
+
+    // uint64 join_time = 6;
+
+
+    pub fn get_join_time(&self) -> u64 {
+        self.join_time
+    }
+    pub fn clear_join_time(&mut self) {
+        self.join_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_join_time(&mut self, v: u64) {
+        self.join_time = v;
+    }
 }
 
 impl ::protobuf::Message for MemberPt {
@@ -1326,6 +1342,13 @@ impl ::protobuf::Message for MemberPt {
                     let tmp = is.read_uint32()?;
                     self.team_id = tmp;
                 },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.join_time = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -1354,6 +1377,9 @@ impl ::protobuf::Message for MemberPt {
         if self.team_id != 0 {
             my_size += ::protobuf::rt::value_size(5, self.team_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.join_time != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.join_time, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -1376,6 +1402,9 @@ impl ::protobuf::Message for MemberPt {
         }
         if self.team_id != 0 {
             os.write_uint32(5, self.team_id)?;
+        }
+        if self.join_time != 0 {
+            os.write_uint64(6, self.join_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1441,6 +1470,11 @@ impl ::protobuf::Message for MemberPt {
                     |m: &MemberPt| { &m.team_id },
                     |m: &mut MemberPt| { &mut m.team_id },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                    "join_time",
+                    |m: &MemberPt| { &m.join_time },
+                    |m: &mut MemberPt| { &mut m.join_time },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<MemberPt>(
                     "MemberPt",
                     fields,
@@ -1465,6 +1499,7 @@ impl ::protobuf::Clear for MemberPt {
         self.cter.clear();
         self.state = 0;
         self.team_id = 0;
+        self.join_time = 0;
         self.unknown_fields.clear();
     }
 }
@@ -2700,23 +2735,23 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0bResourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\
     \x02id\x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\
     \x03num\"<\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
-    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x98\x01\n\x08Me\
+    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xb5\x01\n\x08Me\
     mberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnic\
     k_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
     \x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01\
-    (\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\"J\n\tT\
-    ileMapPt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\
-    \x18\x02\x20\x03(\x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\
-    \x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\
-    \x20\x01(\rR\x05value\"\x99\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\
-    \x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07owne\
-    rId\x12/\n\x07setting\x18\x03\x20\x01(\x0b2\x15.protos.RoomSettingPtR\
-    \x07setting\x12*\n\x07members\x18\x04\x20\x03(\x0b2\x10.protos.MemberPtR\
-    \x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bChara\
-    cterPt\x12\x17\n\x07temp_id\x18\x01\x20\x01(\rR\x06tempId\x12\x14\n\x05g\
-    rade\x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\
-    \x03(\rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skill\
-    sb\x06proto3\
+    (\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\
+    \n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"J\n\tTileMapPt\x12\x0e\
+    \n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\x18\x02\x20\x03(\
+    \x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\x12\n\x04type\x18\
+    \x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\
+    \"\x99\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomI\
+    d\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12/\n\x07setting\
+    \x18\x03\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07me\
+    mbers\x18\x04\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHis\
+    toryMessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07temp\
+    _id\x18\x01\x20\x01(\rR\x06tempId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
+    \x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\
+    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skillsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

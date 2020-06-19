@@ -117,30 +117,30 @@ fn main() -> anyhow::Result<()> {
     //println!("{:?}",res);
     let res = test();
 
-    let int = 123u32;
-    //(1)最原始直接基础的位操作方法。
-    let mut byte: u8 = 0b0000_0000;
-    println!("{:0b}", int);
-    byte |= 0b0000_1000; // Set a bit
-    println!("0b{:08b}", byte);
-    byte &= 0b1111_0111; // Unset a bit
-    println!("0b{:08b}", byte);
-    byte ^= 0b0000_1000; // Toggle a bit
-    println!("0b{:08b}", byte);
-    byte = !byte; // Flip all bits
-    println!("0b{:08b}", byte);
-    byte <<= 1; // shift left one bit
-    println!("0b{:08b}", byte);
-    byte >>= 1; // shift right one bit
-    println!("0b{:08b}", byte);
-    //特别提醒：rust为每一个数字类型都实现了大量方法，其中包括位操作方法！！！具体请参看下方链接！！！
-    //https://doc.rust-lang.org/std/primitive.u8.html
-    let mut rbyte: u8 = 0b1000_0000;
-    rbyte = rbyte.rotate_left(1); // rotate left one bit
-    println!("0b{:08b}", byte);
-    //https://doc.rust-lang.org/std/#primitives
-    rbyte = rbyte.rotate_right(1); // rotate right one bit
-    println!("0b{:08b}", rbyte);
+    // let int = 123u32;
+    // //(1)最原始直接基础的位操作方法。
+    // let mut byte: u8 = 0b0000_0000;
+    // println!("{:0b}", int);
+    // byte |= 0b0000_1000; // Set a bit
+    // println!("0b{:08b}", byte);
+    // byte &= 0b1111_0111; // Unset a bit
+    // println!("0b{:08b}", byte);
+    // byte ^= 0b0000_1000; // Toggle a bit
+    // println!("0b{:08b}", byte);
+    // byte = !byte; // Flip all bits
+    // println!("0b{:08b}", byte);
+    // byte <<= 1; // shift left one bit
+    // println!("0b{:08b}", byte);
+    // byte >>= 1; // shift right one bit
+    // println!("0b{:08b}", byte);
+    // //特别提醒：rust为每一个数字类型都实现了大量方法，其中包括位操作方法！！！具体请参看下方链接！！！
+    // //https://doc.rust-lang.org/std/primitive.u8.html
+    // let mut rbyte: u8 = 0b1000_0000;
+    // rbyte = rbyte.rotate_left(1); // rotate left one bit
+    // println!("0b{:08b}", byte);
+    // //https://doc.rust-lang.org/std/#primitives
+    // rbyte = rbyte.rotate_right(1); // rotate right one bit
+    // println!("0b{:08b}", rbyte);
     // bit_twiddling(0, 3);
     // bit_twiddling(8, 3);
     //test bitwise operation macros
@@ -148,6 +148,7 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
+    println!("{:?}",i);
     Ok(())
 }
 

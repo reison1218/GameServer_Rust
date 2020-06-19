@@ -8,8 +8,8 @@ use log::{error, info, warn};
 use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOICE_CHARACTER, C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING,
-    S_CHANGE_TEAM, S_CHOICE_CHARACTER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING,
+    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING,
+    S_CHANGE_TEAM, S_CHOOSE_CHARACTER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING,
 };
 use tools::protos::server_protocol::{G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM};
 use tools::templates::emoji_temp::EmojiTemp;
@@ -118,7 +118,7 @@ impl RoomMgr {
         self.cmd_map
             .insert(RoomCode::RoomSetting as u32, room_setting);
         self.cmd_map
-            .insert(RoomCode::ChoiceCharacter as u32, choice_character);
+            .insert(RoomCode::ChoiceCharacter as u32, choose_character);
         self.cmd_map.insert(RoomCode::StartGame as u32, start);
         self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
     }
@@ -311,7 +311,7 @@ fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", res.err().unwrap().to_string());
         return Ok(());
     }
-    let room = rm.custom_room.get_room_mut(&packet.get_user_id());
+    let room = rm.get_room_mut(&packet.get_user_id());
 
     if room.is_none() {
         let mut spc = S_PREPARE_CANCEL::new();
@@ -328,6 +328,7 @@ fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
         }
+        return Ok(());
     }
 
     let room = room.unwrap();
@@ -535,6 +536,14 @@ fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", res.err().unwrap().to_string());
         return Ok(());
     }
+    if grj.room_type == 0
+        || grj.room_type > RoomType::get_world_boss_pve() as u32
+        || grj.room_type == RoomType::get_match() as u32
+    {
+        warn!("room_type is error!");
+        return Ok(());
+    }
+
     let room_id = grj.room_id;
     //校验玩家是否在房间内
     let res = rm.check_player(&user_id);
@@ -615,16 +624,21 @@ fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let member = Member::from(grj.take_pbp());
     //将玩家加入到房间
-    room.add_member(member);
-
+    let res = room.add_member(member);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap().to_string());
+        return Ok(());
+    }
+    let value = tools::binary::combine_int_2_long(grj.room_type, res.unwrap());
+    rm.player_room.insert(user_id, value);
     Ok(())
 }
 
 ///选择角色
-fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
-    let mut scc = S_CHOICE_CHARACTER::new();
+    let mut scc = S_CHOOSE_CHARACTER::new();
     scc.is_succ = true;
     //校验玩家在不在房间
     if res.is_none() {
@@ -632,10 +646,20 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let str = format!("this player is not in room!user_id:{}", user_id);
         scc.err_mess = str.clone();
         warn!("{:?}", str.as_str());
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::ChooseCharacter as u32,
+            user_id,
+            scc.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = rm.sender.as_mut().unwrap().write(bytes);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap().to_string());
+        }
+        return Ok(());
     }
-
     let room = res.unwrap();
-
     //校验房间状态
     if room.get_status() == RoomState::Started as u8 {
         scc.is_succ = false;
@@ -645,7 +669,7 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //走正常流程
-    let mut ccc = C_CHOICE_CHARACTER::new();
+    let mut ccc = C_CHOOSE_CHARACTER::new();
     let res = ccc.merge_from_bytes(packet.get_data());
     if res.is_err() {
         error!("{:?}", res.err().unwrap().to_string());
@@ -694,7 +718,7 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             );
             scc.err_mess = str.clone();
             let bytes = Packet::build_packet_bytes(
-                ClientCode::ChoiceCharacter as u32,
+                ClientCode::ChooseCharacter as u32,
                 user_id,
                 scc.write_to_bytes().unwrap(),
                 true,
@@ -712,11 +736,11 @@ fn choice_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //校验角色技能
         let mut choice_cter = Charcter::default();
         choice_cter.clone_from(cter);
-        member.choiced_cter = choice_cter;
+        member.chose_cter = choice_cter;
     }
     //返回客户端
     let bytes = Packet::build_packet_bytes(
-        ClientCode::ChoiceCharacter as u32,
+        ClientCode::ChooseCharacter as u32,
         user_id,
         scc.write_to_bytes().unwrap(),
         true,

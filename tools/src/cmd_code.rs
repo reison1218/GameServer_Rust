@@ -83,7 +83,7 @@ pub enum ClientCode{
     //T人返回
     KickMember=10013,
     //选择角色
-    ChoiceCharacter=10014,
+    ChooseCharacter=10014,
     //房间推送
     RoomNotice=10015,
     //表情符号

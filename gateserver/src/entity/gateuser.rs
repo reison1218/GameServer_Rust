@@ -33,7 +33,7 @@ impl GateUser {
     }
 
     pub fn get_token(&self) -> usize {
-        let mut token = 0 as usize;
+        let mut token = 0_usize;
         if self.tcp.is_some() {
             token = self.tcp.as_ref().unwrap().token
         } else if self.ws.is_some() {

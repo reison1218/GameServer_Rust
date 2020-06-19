@@ -57,13 +57,13 @@ message S_LEAVE_ROOM{
 
 //选择角色请求
 //cmd:20012
-message C_CHOICE_CHARACTER{
+message C_CHOOSE_CHARACTER{
     CharacterPt cter = 1;//选择的角色
 }
 
 //选择角色返回
 //cmd:10014
-message S_CHOICE_CHARACTER{
+message S_CHOOSE_CHARACTER{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
 }

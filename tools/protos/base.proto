@@ -54,8 +54,9 @@ message MemberPt{
     uint32 user_id = 1;//玩家id
     string nick_name = 2;//玩家昵称
     CharacterPt cter = 3;//玩家已经选择的角色数据
-    uint32 state = 4;//玩家状态，是否已经准备
+    uint32 state = 4;//玩家状态，是否已经准备 0:未准备，1：准备
     uint32 team_id = 5;//玩家所属队伍id
+    uint64 join_time = 6;//玩家进入房间的时间
 }
 
 //地图数据
