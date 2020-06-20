@@ -12,7 +12,7 @@ use crate::ID;
 use futures::AsyncWriteExt;
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
-use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM};
+use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL};
 use tools::protos::base::PlayerPt;
 
 pub fn test_tcp_client(pid:&str){
@@ -105,6 +105,15 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
+        std::thread::sleep(Duration::from_millis(2000));
+        let mut cpc = C_PREPARE_CANCEL::new();
+        cpc.prepare = true;
+        packet.set_cmd(RoomCode::PrepareCancel as u32);
+        packet.set_data(&cpc.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
+
         // let mut c_r = C_SYNC_DATA::new();
         // let mut pp = PlayerPt::new();
         // let mut v = Vec::new();
@@ -142,6 +151,10 @@ impl ClientHandler for TcpClientHandler {
             let mut s = S_SYNC_DATA::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-sync:{:?}----{:?}",packet,s);
+        }else if packet.get_cmd() == ClientCode::PrepareCancel as u32{
+            let mut s = S_PREPARE_CANCEL::new();
+            s.merge_from_bytes(packet.get_data());
+            println!("from server-prepare:{:?}----{:?}",packet,s);
         }
     }
 

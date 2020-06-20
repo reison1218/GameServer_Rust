@@ -124,7 +124,14 @@ pub mod tcp_server {
         poll.registry()
             .register(&mut server, SERVER, Interest::READABLE)?;
         loop {
-            poll.poll(&mut events, None)?;
+            let res = poll.poll(&mut events, None);
+            match res {
+                Ok(_)=>{},
+                Err(e)=>{
+                    warn!("{:?}",e);
+                    continue;
+                }
+            }
             for event in events.iter() {
                 match event.token() {
                     SERVER => {
@@ -151,11 +158,15 @@ pub mod tcp_server {
                         handler_map.insert(token.0, hd);
 
                         //register event for every tcpstream
-                        poll.registry().register(
+                        let res = poll.registry().register(
                             &mut connection,
                             token,
                             Interest::READABLE.add(Interest::WRITABLE),
-                        )?;
+                        );
+                        if res.is_err(){
+                            error!("{:?}",res.err().unwrap());
+                            continue;
+                        }
                         conn_map.write().unwrap().insert(token.0, connection);
                         info!("Accepted connection from: {}", client_address);
                     }
@@ -167,7 +178,12 @@ pub mod tcp_server {
                             let hd = handler_map.get_mut(&token.0);
                             match hd {
                                 Some(hd) => {
-                                    handle_connection_event(poll.registry(), connection, event, hd)?
+                                    let res = handle_connection_event(poll.registry(), connection, event, hd);
+                                    if res.is_err(){
+                                        error!("{:?}",res.err().unwrap());
+                                        continue;
+                                    }
+                                    res.unwrap()
                                 }
                                 None => {
                                     error!("handler_map has no handler for token:{}", token.0);
@@ -204,6 +220,7 @@ pub mod tcp_server {
                         let res: Option<&mut MioTcpStream> = write.get_mut(&token);
                         match res {
                             Some(ts) => {
+
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 if res.is_err(){
@@ -303,16 +320,23 @@ pub mod tcp_server {
                         //break;
                     }
                     Err(ref err) if interrupted(err) => {
-                        println!("{:?}",err.to_string());
-                        error!("{:?}",err.to_string());
+                        println!("{:?}",err);
+                        error!("{:?}",err);
                         continue;
-                    }
+                    },
+                    Err(ref err) if other(err) => {
+                        println!("{:?}",err);
+                        error!("{:?}",err);
+                        continue;
+                    },
                     // Other errors we'll consider fatal.
                     Err(err) => {
+                        println!("err:{:?}",err);
                         close_connect(connection,handler,Some(&err));
                         //return Err(err)
                         return Ok(true);
                     },
+
                 }
             }
         }
@@ -348,8 +372,13 @@ pub mod tcp_server {
     fn interrupted(err: &io::Error) -> bool {
         err.kind() == io::ErrorKind::Interrupted
     }
+
     fn time_out(err: &io::Error) -> bool {
         err.kind() == io::ErrorKind::TimedOut
+    }
+
+    fn other(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::Other
     }
 }
 

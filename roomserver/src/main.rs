@@ -34,9 +34,6 @@ lazy_static! {
     };
 }
 
-///全局静态变量，用来初始化房间id
-pub static ROOM_ID: AtomicU32 = AtomicU32::new(101);
-
 fn main() {
     let info_log = CONF_MAP.get_str("info_log_path");
     let error_log = CONF_MAP.get_str("error_log_path");

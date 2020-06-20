@@ -902,6 +902,7 @@ dependencies = [
  "protobuf",
  "protobuf-codegen",
  "protoc-rust",
+ "rand",
  "serde",
  "serde_json",
  "tools",

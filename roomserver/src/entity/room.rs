@@ -4,7 +4,9 @@ use crate::entity::member::{Member, MemberState};
 use chrono::{DateTime, Duration, Local, Utc};
 use log::error;
 use protobuf::Message;
+use rand::{random, thread_rng, Rng};
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use std::time::SystemTime;
 use tools::cmd_code::ClientCode;
@@ -58,8 +60,11 @@ impl Room {
     ///构建一个房间的结构体
     pub fn new(mut owner: Member, room_type: u8, sender: TcpSender) -> anyhow::Result<Room> {
         //转换成tilemap数据
+        let user_id = owner.user_id;
         let tile_map = TileMap::default();
-        let id: u32 = crate::ROOM_ID.fetch_add(1, Ordering::Relaxed);
+        let mut str = Local::now().timestamp_subsec_micros().to_string();
+        str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
+        let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
         let orders: Vec<ActionUnit> = Vec::new();
         let members: HashMap<u32, Member> = HashMap::new();

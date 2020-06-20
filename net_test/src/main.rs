@@ -107,6 +107,7 @@ fn foo(words: &[&str]) {
 fn main() -> anyhow::Result<()> {
 
     //tcp_client::test_tcp_client("test_platform_id");
+
     // block_on(http);
     // print!("http执行完毕");
     //block_on(web::test_http_client("1"));
@@ -148,9 +149,14 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
-    println!("{:?}",i);
+    let array=[1,2,3,4,5];
+    for i in &array[..]{
+        println!("{}",i);
+    }
     Ok(())
 }
+
+
 
 fn test()->impl Display{
     let res = "test".to_string();

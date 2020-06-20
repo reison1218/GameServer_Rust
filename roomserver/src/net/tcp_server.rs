@@ -61,12 +61,12 @@ async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
     write.invok(packet);
 }
 
-///创建新的tcp服务器
+///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: &str, rm: Arc<RwLock<RoomMgr>>) {
     let sh = TcpServerHandler { sender: None, rm };
     let res = tcp_server::new(address, sh);
     if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+        error!("{:?}", res.err().unwrap());
         std::process::abort();
     }
 }
