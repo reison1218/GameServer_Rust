@@ -2,6 +2,7 @@ use super::*;
 use crate::entity::character_contants::{GRADE, LAST_USE_SKILLS, SKILLS};
 use crate::TEMPLATES;
 use std::collections::HashMap;
+use tools::protos::base::CharacterPt;
 use tools::templates::character_temp::CharacterTempMgr;
 use tools::templates::template::TemplateMgrTrait;
 
@@ -90,6 +91,33 @@ pub struct Character {
     pub version: u32,      //数据版本号
 }
 
+impl Into<CharacterPt> for Character {
+    fn into(self) -> CharacterPt {
+        let mut cter_pt = CharacterPt::default();
+        let res = self.get_skills();
+        match res {
+            Ok(skills) => {
+                cter_pt.set_skills(skills);
+            }
+            Err(e) => {}
+        }
+
+        cter_pt.set_temp_id(self.character_id);
+        let res = self.get_grade();
+        match res {
+            Ok(grade) => {
+                cter_pt.set_grade(grade);
+            }
+            Err(e) => {
+                cter_pt.set_grade(1);
+            }
+        }
+        let last_use_skills = self.get_last_use_skills().unwrap();
+        cter_pt.set_last_use_skills(last_use_skills);
+        cter_pt
+    }
+}
+
 impl Character {
     pub fn new(user_id: u32, character_id: u32, js: JsonValue) -> Self {
         let mut cter = Character::init(user_id, Some(character_id), js);
@@ -106,6 +134,14 @@ impl Character {
         let json = res.unwrap();
         v = serde_json::from_value(json.clone())?;
         Ok(v)
+    }
+    pub fn set_skills(&mut self, skills: Vec<u32>) {
+        let map: Option<&mut Map<String, JsonValue>> = self.get_mut_json_value();
+        if map.is_none() {
+            return;
+        }
+        let v = JsonValue::from(skills);
+        map.unwrap().insert(SKILLS.to_owned(), v);
     }
 
     pub fn get_last_use_skills(&self) -> anyhow::Result<Vec<u32>> {

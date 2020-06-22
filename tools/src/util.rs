@@ -264,7 +264,6 @@ pub mod packet {
                 packet.set_data(bb.read_bytes_size(body_size as usize)?);
                 v.push(packet);
             }
-            Ok(v)
         }
 
         pub fn build_array_from_client(bytes:Vec<u8>)->Result<Vec<Packet>, String>{
@@ -287,7 +286,6 @@ pub mod packet {
                 }
                 v.push(packet);
             }
-            Ok(v)
         }
 
         ///bytebuf转换成packet,只能用于服务端进程内部通信！

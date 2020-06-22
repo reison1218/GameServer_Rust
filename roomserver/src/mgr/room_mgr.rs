@@ -1,7 +1,7 @@
 use super::*;
 
-use crate::entity::battle_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::entity::room::Room;
+use crate::entity::room_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::handlers::room_handler::{
     change_team, choose_character, create_room, emoji, join_room, kick_member, leave_room,
     prepare_cancel, room_setting, search_room, start,
@@ -34,6 +34,10 @@ impl RoomMgr {
         };
         rm.cmd_init();
         rm
+    }
+
+    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
+        self.sender.as_mut().unwrap()
     }
 
     ///检查玩家是否已经在房间里

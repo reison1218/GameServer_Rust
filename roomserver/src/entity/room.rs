@@ -1,6 +1,6 @@
-use crate::entity::battle_model::RoomSetting;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
+use crate::entity::room_model::RoomSetting;
 use chrono::{DateTime, Local, Utc};
 use log::error;
 use protobuf::Message;
@@ -8,7 +8,7 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
+use tools::protos::base::{MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
 use tools::protos::room::{
     S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
     S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
@@ -28,11 +28,6 @@ pub enum RoomMemberNoticeType {
 pub enum RoomState {
     Await = 0,   //等待
     Started = 1, //已经开始
-}
-
-pub enum Permission {
-    Private = 0, //私有房间
-    Public = 1,  //公开房间
 }
 
 ///行动单位
@@ -90,8 +85,7 @@ impl Room {
         size += 1;
         owner.team_id = size;
         owner.join_time = Local::now().timestamp_millis() as u64;
-        let user_id = owner.user_id;
-        room.members.insert(owner.user_id, owner);
+        room.members.insert(user_id, owner);
         room.member_index[0] = user_id;
         //返回客户端
         let mut sr = S_ROOM::new();
@@ -114,28 +108,15 @@ impl Room {
     }
 
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
-        let member = self.members.get_mut(user_id);
+        let member = self.members.get_mut(user_id).unwrap();
+        match pregare_cancel {
+            true => member.state = MemberState::Ready as u8,
+            false => member.state = MemberState::NotReady as u8,
+        }
+        //通知其他玩家
         let mut spc = S_PREPARE_CANCEL::new();
         spc.is_succ = true;
-        if member.is_none() {
-            spc.is_succ = false;
-            spc.err_mess = "this player not in the room!".to_owned();
-        }
-        let member = member.unwrap();
-        if member.chose_cter.temp_id == 0 {
-            spc.is_succ = false;
-            let str = format!("this player not choose character yet!user_id:{}", user_id);
-            spc.err_mess = str.to_owned();
-        }
-        if spc.is_succ {
-            if pregare_cancel {
-                member.state = MemberState::Ready as u8;
-            } else {
-                member.state = MemberState::NotReady as u8;
-            }
-            //通知其他玩家
-            self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
-        }
+        self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
         let bytes = Packet::build_packet_bytes(
             ClientCode::PrepareCancel as u32,
             *user_id,
@@ -145,8 +126,7 @@ impl Room {
         );
         let res = self.sender.write(bytes);
         if res.is_err() {
-            println!("{:?}", res.err().unwrap().to_string());
-            //error!("{:?}", res.err().unwrap().to_string());
+            error!("{:?}", res.err().unwrap().to_string());
         }
     }
 
@@ -201,7 +181,7 @@ impl Room {
             }
 
             let bytes = Packet::build_packet_bytes(
-                ClientCode::Emoji_Notice as u32,
+                ClientCode::EmojiNotice as u32,
                 *user_id,
                 sen.write_to_bytes().unwrap(),
                 true,
@@ -229,8 +209,7 @@ impl Room {
             if member.is_none() {
                 return;
             }
-            let member = member.unwrap();
-            let mp = member_2_memberpt(member);
+            let mp = member.unwrap().clone().into();
             srmn.set_member(mp);
         }
 
@@ -319,10 +298,10 @@ impl Room {
     ///添加成员
     pub fn add_member(&mut self, mut member: Member) -> anyhow::Result<u32> {
         let mut size = self.members.len() as u8;
+        let user_id = member.user_id;
         size += 1;
         member.team_id = size;
         member.join_time = Local::now().timestamp_millis() as u64;
-        let user_id = member.user_id;
         self.members.insert(user_id, member);
         for i in 0..self.member_index.len() - 1 {
             if self.member_index[i] != 0 {
@@ -365,7 +344,7 @@ impl Room {
                 break;
             }
 
-            if self.get_owner_id() == *user_id && self.members.len() > 0 {
+            if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
                 for i in self.members.keys() {
                     self.owner_id = *i;
                     break;
@@ -444,11 +423,12 @@ impl Room {
         for user_id in self.member_index.iter() {
             let member = self.members.get(user_id);
             if member.is_some() {
-                let mp = member_2_memberpt(member.unwrap());
+                let member = member.unwrap();
+                let mp = member.clone().into();
                 rp.members.push(mp);
             } else {
                 let member = Member::default();
-                let mp = member_2_memberpt(&member);
+                let mp = member.into();
                 rp.members.push(mp);
             }
         }
@@ -479,20 +459,4 @@ impl Room {
         member.battle_cter.target_id = *target_id;
         Ok(())
     }
-}
-
-///Member转MemberPt
-pub fn member_2_memberpt(member: &Member) -> MemberPt {
-    let mut mp = MemberPt::new();
-    mp.user_id = member.get_user_id();
-    mp.state = member.state as u32;
-    mp.nick_name = member.nick_name.clone();
-    mp.team_id = member.team_id as u32;
-    mp.join_time = member.join_time;
-    let mut cp = CharacterPt::new();
-    cp.temp_id = member.chose_cter.temp_id;
-    cp.set_skills(member.chose_cter.skills.clone());
-    cp.set_grade(member.chose_cter.grade);
-    mp.set_cter(cp);
-    mp
 }

@@ -89,7 +89,60 @@ pub enum ClientCode{
     //表情符号
     Emoji=10016,
     //表情推送
-    Emoji_Notice = 10017,
+    EmojiNotice = 10017,
     //最大命令号
     Max = 20000,
+}
+
+impl From<u32> for ClientCode{
+    fn from(v: u32) -> Self {
+        if v == ClientCode::Login as u32{
+            return ClientCode::Login;
+        }
+        //返回同步命令号
+        if v == ClientCode::SyncData as u32{
+            return ClientCode::SyncData
+        }
+        //请求修改昵称返回
+        if v == ClientCode::NickNameModify as u32{
+            return ClientCode::NickNameModify
+        }
+        if v == ClientCode::Room as u32{
+            return ClientCode::Room
+        }
+        if v == ClientCode::LeaveRoom as u32{
+            return ClientCode::LeaveRoom
+        }
+        if v == ClientCode::Start as u32{
+            return ClientCode::Start
+        }
+        if v == ClientCode::ChangeTeam as u32{
+            return ClientCode::ChangeTeam
+        }
+        if v == ClientCode::PrepareCancel as u32{
+            return ClientCode::PrepareCancel
+        }
+        if v == ClientCode::RoomSetting as u32{
+            return ClientCode::RoomSetting
+        }
+        if v == ClientCode::RoomMemberNotice as u32{
+            return ClientCode::RoomMemberNotice
+        }
+        if v == ClientCode::KickMember as u32{
+            return ClientCode::KickMember
+        }
+        if v == ClientCode::ChooseCharacter as u32{
+            return ClientCode::ChooseCharacter
+        }
+        if v == ClientCode::RoomNotice as u32{
+            return ClientCode::RoomNotice
+        }
+        if v == ClientCode::Emoji as u32{
+            return ClientCode::Emoji
+        }
+        if v == ClientCode::EmojiNotice as u32{
+            return ClientCode::EmojiNotice
+        }
+        ClientCode::Login
+    }
 }

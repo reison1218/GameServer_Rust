@@ -4,7 +4,6 @@ use crate::helper::redis_helper::modify_redis_user;
 use chrono::Local;
 use protobuf::Message;
 use tools::cmd_code::{ClientCode, RoomCode};
-use tools::protos::base::CharacterPt;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
@@ -247,11 +246,8 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     let user_data = user_data.unwrap();
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
-    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
-        let mut cter_pt = CharacterPt::new();
-        cter_pt.set_temp_id(*cter_id);
-        cter_pt.set_grade(cter.get_grade()?);
-        cter_pt.set_skills(cter.get_skills()?);
+    for cter in user_data.get_characters_ref().cter_map.values() {
+        let mut cter_pt = cter.clone().into();
         pbp.cters.push(cter_pt);
     }
     gr.set_pbp(pbp);
@@ -293,18 +289,18 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     }
 
     let mut cjr = C_JOIN_ROOM::new();
-    cjr.merge_from_bytes(packet.get_data());
+    let res = cjr.merge_from_bytes(packet.get_data());
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap());
+        return Ok(());
+    }
 
     let user_data = user_data.unwrap();
     let mut pbp = PlayerBattlePt::new();
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
-    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
-        let mut cter_pt = CharacterPt::new();
-        cter_pt.set_temp_id(*cter_id);
-        cter_pt.set_grade(cter.get_grade()?);
-        cter_pt.set_skills(cter.get_skills()?);
-        pbp.cters.push(cter_pt);
+    for cter in user_data.get_characters_ref().cter_map.values() {
+        pbp.cters.push(cter.clone().into());
     }
     let mut grj = G_R_JOIN_ROOM::new();
     grj.set_room_id(cjr.room_id);
@@ -345,18 +341,18 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     }
 
     let mut csr = C_SEARCH_ROOM::new();
-    csr.merge_from_bytes(packet.get_data());
+    let res = csr.merge_from_bytes(packet.get_data());
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap());
+        return Ok(());
+    }
 
     let user_data = user_data.unwrap();
     let mut pbp = PlayerBattlePt::new();
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
-    for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
-        let mut cter_pt = CharacterPt::new();
-        cter_pt.set_temp_id(*cter_id);
-        cter_pt.set_grade(cter.get_grade()?);
-        cter_pt.set_skills(cter.get_skills()?);
-        pbp.cters.push(cter_pt);
+    for cter in user_data.get_characters_ref().cter_map.values() {
+        pbp.cters.push(cter.clone().into());
     }
     let mut grs = G_R_SEARCH_ROOM::new();
     grs.set_battle_type(csr.get_battle_type());

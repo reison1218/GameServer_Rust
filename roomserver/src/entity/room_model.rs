@@ -1,8 +1,8 @@
 use crate::entity::member::Member;
-use crate::entity::room::Room;
 use crate::entity::room::RoomMemberNoticeType;
+use crate::entity::room::{Room, MEMBER_MAX};
 use crate::TEMPLATES;
-use log::{error, info, warn};
+use log::{error, warn};
 use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
@@ -272,38 +272,6 @@ impl RoomModel for CustomRoom {
     }
 }
 
-impl CustomRoom {
-    ///T人
-    pub fn kick_member(
-        &mut self,
-        room_id: &u32,
-        user_id: &u32,
-        target_id: &u32,
-    ) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_room_id(room_id);
-        if room.is_err() {
-            let str = room.err().unwrap().to_string();
-            error!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
-        let room = room.unwrap();
-        if !room.is_exist_member(target_id) {
-            let s = format!("this player is not in the room,target_id:{}", target_id);
-            anyhow::bail!(s)
-        }
-        if room.get_owner_id() != *user_id {
-            let s = format!(
-                "this player is not owner of room,user_id:{},room_id:{}",
-                user_id,
-                room.get_room_id()
-            );
-            anyhow::bail!(s)
-        }
-        room.remove_member(target_id);
-        Ok(())
-    }
-}
-
 ///等待匹配的玩家结构体
 #[derive(Debug, Default, Clone)]
 pub struct MatchPlayer {
@@ -444,7 +412,7 @@ impl MatchRoom {
     pub fn quickly_start(&mut self, member: Member, sender: TcpSender) -> anyhow::Result<u32> {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;
-        let mut room_id: u32 = 0;
+        let room_id: u32;
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
@@ -460,7 +428,7 @@ impl MatchRoom {
             room_id = self.get_room_cache_last_room_id()?;
             //将成员加进房间
             let room_mut = self.get_mut_room_by_room_id(&room_id)?;
-            if room_mut.members.len() >= 4 {
+            if room_mut.get_member_count() >= MEMBER_MAX as usize {
                 let s = format!("this map config is None,map_id:{}", map_id);
                 anyhow::bail!(s)
             }

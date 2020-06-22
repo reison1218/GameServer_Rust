@@ -2,7 +2,6 @@ use super::*;
 use crate::entity::user::UserData;
 use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room};
 use crate::entity::EntityData;
-use crate::net::http::notice_user_center;
 use chrono::Local;
 use protobuf::Message;
 use std::sync::mpsc::Sender;
