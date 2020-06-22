@@ -88,6 +88,8 @@ pub enum ClientCode{
     RoomNotice=10015,
     //表情符号
     Emoji=10016,
+    //表情推送
+    Emoji_Notice = 10017,
     //最大命令号
     Max = 20000,
 }

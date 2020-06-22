@@ -1,22 +1,23 @@
 use crate::entity::battle_model::RoomSetting;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
-use chrono::{DateTime, Duration, Local, Utc};
+use chrono::{DateTime, Local, Utc};
 use log::error;
 use protobuf::Message;
-use rand::{random, thread_rng, Rng};
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::sync::atomic::Ordering;
-use std::time::SystemTime;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{CharacterPt, MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
 use tools::protos::room::{
-    S_CHANGE_TEAM, S_EMOJI, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_NOTICE,
-    S_ROOM_NOTICE,
+    S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
+    S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+
+//最大成员数量
+pub const MEMBER_MAX: u8 = 4;
 
 pub enum RoomMemberNoticeType {
     AddMember = 1,
@@ -48,9 +49,10 @@ pub struct Room {
     owner_id: u32,                     //房主id
     tile_map: TileMap,                 //地图数据
     pub members: HashMap<u32, Member>, //玩家对应的队伍
+    pub member_index: [u32; 4],        //玩家对应的位置
     orders: Vec<ActionUnit>,           //action队列
     state: u8,                         //房间状态
-    setting: RoomSetting,              //房间设置
+    pub setting: RoomSetting,          //房间设置
     room_type: u8,                     //房间类型
     pub sender: TcpSender,             //sender
     time: DateTime<Utc>,               //房间创建时间
@@ -69,11 +71,13 @@ impl Room {
         let orders: Vec<ActionUnit> = Vec::new();
         let members: HashMap<u32, Member> = HashMap::new();
         let setting = RoomSetting::default();
+        let member_index = [0; MEMBER_MAX as usize];
         let mut room = Room {
             id,
             owner_id: owner.user_id,
             tile_map,
             members,
+            member_index,
             orders,
             state: RoomState::Await as u8,
             setting,
@@ -88,7 +92,7 @@ impl Room {
         owner.join_time = Local::now().timestamp_millis() as u64;
         let user_id = owner.user_id;
         room.members.insert(owner.user_id, owner);
-
+        room.member_index[0] = user_id;
         //返回客户端
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
@@ -132,9 +136,6 @@ impl Room {
             //通知其他玩家
             self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
         }
-
-        //返回客户端
-        spc.prepare = pregare_cancel;
         let bytes = Packet::build_packet_bytes(
             ClientCode::PrepareCancel as u32,
             *user_id,
@@ -180,13 +181,33 @@ impl Room {
     pub fn emoji(&mut self, user_id: u32, emoji_id: u32) {
         let mut packet = Packet::new(ClientCode::Emoji as u32, 0, 0);
         packet.set_is_client(true);
+        packet.set_user_id(user_id);
+        //回给发送人
         let mut sej = S_EMOJI::new();
-        sej.emoji_id = emoji_id;
-        sej.user_id = user_id;
+        sej.is_succ = true;
         packet.set_data_from_vec(sej.write_to_bytes().unwrap());
+        let res = self.sender.write(packet.build_server_bytes());
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap());
+        }
+        //推送给房间其他人
+
+        let mut sen = S_EMOJI_NOTICE::new();
+        sen.user_id = user_id;
+        sen.emoji_id = emoji_id;
         for user_id in self.members.keys() {
-            packet.set_user_id(*user_id);
-            let res = self.sender.write(packet.build_server_bytes());
+            if *user_id == packet.get_user_id() {
+                continue;
+            }
+
+            let bytes = Packet::build_packet_bytes(
+                ClientCode::Emoji_Notice as u32,
+                *user_id,
+                sen.write_to_bytes().unwrap(),
+                true,
+                true,
+            );
+            let res = self.sender.write(bytes);
             match res {
                 Err(e) => error!("{:?}", e.to_string()),
                 Ok(_) => {}
@@ -218,7 +239,8 @@ impl Room {
         packet.set_is_broad(false);
         packet.set_is_client(true);
         for (_, m) in self.members.iter() {
-            if m.get_user_id() == *user_id {
+            if m.get_user_id() == *user_id && RoomMemberNoticeType::LeaveMmeber as u8 != notice_type
+            {
                 continue;
             }
             packet.set_user_id(m.get_user_id());
@@ -302,6 +324,13 @@ impl Room {
         member.join_time = Local::now().timestamp_millis() as u64;
         let user_id = member.user_id;
         self.members.insert(user_id, member);
+        for i in 0..self.member_index.len() - 1 {
+            if self.member_index[i] != 0 {
+                continue;
+            }
+            self.member_index[i] = user_id;
+            break;
+        }
 
         //返回客户端消息
         let mut sr = S_ROOM::new();
@@ -328,6 +357,14 @@ impl Room {
     pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
         let res = self.members.remove(user_id);
         if res.is_some() {
+            for i in 0..self.member_index.len() - 1 {
+                if self.member_index[i] != *user_id {
+                    continue;
+                }
+                self.member_index[i] = 0;
+                break;
+            }
+
             if self.get_owner_id() == *user_id && self.members.len() > 0 {
                 for i in self.members.keys() {
                     self.owner_id = *i;
@@ -374,6 +411,8 @@ impl Room {
         if !self.members.contains_key(target_id) {
             return Err("该玩家不在房间内");
         }
+        //通知其他成员
+        self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, target_id);
         self.members.remove(target_id);
         let mut skm = S_KICK_MEMBER::new();
         skm.is_succ = true;
@@ -388,8 +427,7 @@ impl Room {
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
         }
-        //通知其他成员
-        self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, target_id);
+
         Ok(())
     }
 
@@ -403,9 +441,16 @@ impl Room {
         let mut rp = RoomPt::new();
         rp.owner_id = self.owner_id;
         rp.room_id = self.get_room_id();
-        for (_, member) in self.members.iter() {
-            let mp = member_2_memberpt(member);
-            rp.members.push(mp);
+        for user_id in self.member_index.iter() {
+            let member = self.members.get(user_id);
+            if member.is_some() {
+                let mp = member_2_memberpt(member.unwrap());
+                rp.members.push(mp);
+            } else {
+                let member = Member::default();
+                let mp = member_2_memberpt(&member);
+                rp.members.push(mp);
+            }
         }
         rp
     }

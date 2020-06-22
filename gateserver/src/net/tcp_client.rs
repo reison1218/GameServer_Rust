@@ -96,7 +96,11 @@ impl ClientHandler for TcpClientHandler {
                         info!("回客户端消息,cmd:{}", packet.get_cmd());
                     }
                     None => {
-                        error!("user data is null,id:{}", &packet.get_user_id());
+                        warn!(
+                            "user data is null,id:{},cmd:{}",
+                            &packet.get_user_id(),
+                            packet.get_cmd()
+                        );
                         return;
                     }
                 }

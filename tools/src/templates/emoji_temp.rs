@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub struct EmojiTemp {
     pub id: u32,
     pub condition: u32,
+    pub cter_id:u32,
 }
 
 impl Template for EmojiTemp{}

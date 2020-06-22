@@ -2723,8 +2723,6 @@ pub struct S_PREPARE_CANCEL {
     // message fields
     pub is_succ: bool,
     pub err_mess: ::std::string::String,
-    pub user_id: u32,
-    pub prepare: bool,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2781,36 +2779,6 @@ impl S_PREPARE_CANCEL {
     pub fn take_err_mess(&mut self) -> ::std::string::String {
         ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
-
-    // uint32 user_id = 3;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // bool prepare = 4;
-
-
-    pub fn get_prepare(&self) -> bool {
-        self.prepare
-    }
-    pub fn clear_prepare(&mut self) {
-        self.prepare = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_prepare(&mut self, v: bool) {
-        self.prepare = v;
-    }
 }
 
 impl ::protobuf::Message for S_PREPARE_CANCEL {
@@ -2832,20 +2800,6 @@ impl ::protobuf::Message for S_PREPARE_CANCEL {
                 2 => {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_bool()?;
-                    self.prepare = tmp;
-                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -2864,12 +2818,6 @@ impl ::protobuf::Message for S_PREPARE_CANCEL {
         if !self.err_mess.is_empty() {
             my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.prepare != false {
-            my_size += 2;
-        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -2881,12 +2829,6 @@ impl ::protobuf::Message for S_PREPARE_CANCEL {
         }
         if !self.err_mess.is_empty() {
             os.write_string(2, &self.err_mess)?;
-        }
-        if self.user_id != 0 {
-            os.write_uint32(3, self.user_id)?;
-        }
-        if self.prepare != false {
-            os.write_bool(4, self.prepare)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2937,16 +2879,6 @@ impl ::protobuf::Message for S_PREPARE_CANCEL {
                     |m: &S_PREPARE_CANCEL| { &m.err_mess },
                     |m: &mut S_PREPARE_CANCEL| { &mut m.err_mess },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &S_PREPARE_CANCEL| { &m.user_id },
-                    |m: &mut S_PREPARE_CANCEL| { &mut m.user_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "prepare",
-                    |m: &S_PREPARE_CANCEL| { &m.prepare },
-                    |m: &mut S_PREPARE_CANCEL| { &mut m.prepare },
-                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_PREPARE_CANCEL>(
                     "S_PREPARE_CANCEL",
                     fields,
@@ -2968,8 +2900,6 @@ impl ::protobuf::Clear for S_PREPARE_CANCEL {
     fn clear(&mut self) {
         self.is_succ = false;
         self.err_mess.clear();
-        self.user_id = 0;
-        self.prepare = false;
         self.unknown_fields.clear();
     }
 }
@@ -3889,8 +3819,8 @@ impl ::protobuf::reflect::ProtobufValue for C_EMOJI {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_EMOJI {
     // message fields
-    pub user_id: u32,
-    pub emoji_id: u32,
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -3904,6 +3834,204 @@ impl<'a> ::std::default::Default for &'a S_EMOJI {
 
 impl S_EMOJI {
     pub fn new() -> S_EMOJI {
+        ::std::default::Default::default()
+    }
+
+    // bool is_succ = 1;
+
+
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
+    }
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
+    }
+
+    // Take field
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for S_EMOJI {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.is_succ = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.is_succ != false {
+            my_size += 2;
+        }
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
+        }
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_EMOJI {
+        S_EMOJI::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "is_succ",
+                    |m: &S_EMOJI| { &m.is_succ },
+                    |m: &mut S_EMOJI| { &mut m.is_succ },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                    "err_mess",
+                    |m: &S_EMOJI| { &m.err_mess },
+                    |m: &mut S_EMOJI| { &mut m.err_mess },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_EMOJI>(
+                    "S_EMOJI",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static S_EMOJI {
+        static mut instance: ::protobuf::lazy::Lazy<S_EMOJI> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(S_EMOJI::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for S_EMOJI {
+    fn clear(&mut self) {
+        self.is_succ = false;
+        self.err_mess.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_EMOJI {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_EMOJI {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_EMOJI_NOTICE {
+    // message fields
+    pub user_id: u32,
+    pub emoji_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_EMOJI_NOTICE {
+    fn default() -> &'a S_EMOJI_NOTICE {
+        <S_EMOJI_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_EMOJI_NOTICE {
+    pub fn new() -> S_EMOJI_NOTICE {
         ::std::default::Default::default()
     }
 
@@ -3938,7 +4066,7 @@ impl S_EMOJI {
     }
 }
 
-impl ::protobuf::Message for S_EMOJI {
+impl ::protobuf::Message for S_EMOJI_NOTICE {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -4021,8 +4149,8 @@ impl ::protobuf::Message for S_EMOJI {
         Self::descriptor_static()
     }
 
-    fn new() -> S_EMOJI {
-        S_EMOJI::new()
+    fn new() -> S_EMOJI_NOTICE {
+        S_EMOJI_NOTICE::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -4032,16 +4160,16 @@ impl ::protobuf::Message for S_EMOJI {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "user_id",
-                    |m: &S_EMOJI| { &m.user_id },
-                    |m: &mut S_EMOJI| { &mut m.user_id },
+                    |m: &S_EMOJI_NOTICE| { &m.user_id },
+                    |m: &mut S_EMOJI_NOTICE| { &mut m.user_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "emoji_id",
-                    |m: &S_EMOJI| { &m.emoji_id },
-                    |m: &mut S_EMOJI| { &mut m.emoji_id },
+                    |m: &S_EMOJI_NOTICE| { &m.emoji_id },
+                    |m: &mut S_EMOJI_NOTICE| { &mut m.emoji_id },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_EMOJI>(
-                    "S_EMOJI",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_EMOJI_NOTICE>(
+                    "S_EMOJI_NOTICE",
                     fields,
                     file_descriptor_proto()
                 )
@@ -4049,15 +4177,15 @@ impl ::protobuf::Message for S_EMOJI {
         }
     }
 
-    fn default_instance() -> &'static S_EMOJI {
-        static mut instance: ::protobuf::lazy::Lazy<S_EMOJI> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_EMOJI_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_EMOJI_NOTICE> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_EMOJI::new)
+            instance.get(S_EMOJI_NOTICE::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_EMOJI {
+impl ::protobuf::Clear for S_EMOJI_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
         self.emoji_id = 0;
@@ -4065,13 +4193,13 @@ impl ::protobuf::Clear for S_EMOJI {
     }
 }
 
-impl ::std::fmt::Debug for S_EMOJI {
+impl ::std::fmt::Debug for S_EMOJI_NOTICE {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_EMOJI {
+impl ::protobuf::reflect::ProtobufValue for S_EMOJI_NOTICE {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -4100,19 +4228,20 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     _team_id\x18\x01\x20\x01(\rR\x0ctargetTeamId\"C\n\rS_CHANGE_TEAM\x12\x17\
     \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
     \x02\x20\x01(\tR\x07errMess\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepar\
-    e\x18\x01\x20\x01(\x08R\x07prepare\"y\n\x10S_PREPARE_CANCEL\x12\x17\n\
+    e\x18\x01\x20\x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\
     \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\x12\x17\n\x07user_id\x18\x03\x20\x01(\rR\x06\
-    userId\x12\x18\n\x07prepare\x18\x04\x20\x01(\x08R\x07prepare\"\t\n\x07C_\
-    START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSu\
-    cc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"a\n\x14S_ROOM_M\
-    EMBER_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\
-    \x12(\n\x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\x06member\"\
-    [\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\
-    \x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07se\
-    tting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emoji\
-    Id\"=\n\x07S_EMOJI\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiIdb\x06proto3\
+    \x02\x20\x01(\tR\x07errMess\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\
+    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\"a\n\x14S_ROOM_MEMBER_NOTICE\x12\x1f\n\x0bno\
+    tice_type\x18\x01\x20\x01(\rR\nnoticeType\x12(\n\x06member\x18\x02\x20\
+    \x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\
+    \x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\x07setting\x18\x02\
+    \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"$\n\x07C_EMOJI\x12\
+    \x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\x07S_EMOJI\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user\
+    _id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\
+    \rR\x07emojiIdb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

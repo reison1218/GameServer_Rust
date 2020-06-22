@@ -105,8 +105,6 @@ message C_PREPARE_CANCEL{
 message S_PREPARE_CANCEL{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
-    uint32 user_id = 3;//操作的玩家
-    bool prepare = 4;//取消与准备
 }
 
 //开始游戏
@@ -136,16 +134,23 @@ message S_ROOM_NOTICE{
     RoomSettingPt setting = 2;//房间设置
 }
 
-//表情推送
+//表情请求
 //cmd:20013
 message C_EMOJI{
     uint32 emoji_id = 1;//表情符号id
 }
 
-//表情请求
+//表情返回
 //cmd:10016
 message S_EMOJI{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//表情推送
+//cmd:10017
+message S_EMOJI_NOTICE{
     uint32 user_id = 1;//玩家id
-    uint32 emoji_id = 2;//表情符号id
+    uint32 emoji_id = 2;//表情id
 }
 

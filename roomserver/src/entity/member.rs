@@ -25,6 +25,7 @@ impl From<CharacterPt> for Charcter {
     fn from(cter_pt: CharacterPt) -> Self {
         let mut c = Charcter::default();
         c.temp_id = cter_pt.temp_id;
+        c.grade = cter_pt.grade;
         c.skills = cter_pt.skills;
         c
     }

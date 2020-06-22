@@ -92,7 +92,8 @@ pub struct Character {
 
 impl Character {
     pub fn new(user_id: u32, character_id: u32, js: JsonValue) -> Self {
-        let cter = Character::init(user_id, Some(character_id), js);
+        let mut cter = Character::init(user_id, Some(character_id), js);
+        cter.set_usize(GRADE.to_string(), 1_usize);
         cter
     }
 

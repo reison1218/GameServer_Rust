@@ -2,14 +2,18 @@ use crate::entity::member::Member;
 use crate::entity::room::Room;
 use crate::entity::room::RoomMemberNoticeType;
 use crate::TEMPLATES;
-use log::error;
+use log::{error, info, warn};
+use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
+use tools::protos::room::S_LEAVE_ROOM;
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
+use tools::util::packet::Packet;
 
 ///teamID枚举
 pub enum TeamId {
@@ -35,6 +39,21 @@ impl Into<u32> for RoomType {
 impl Into<u8> for RoomType {
     fn into(self) -> u8 {
         self as u8
+    }
+}
+
+impl From<u8> for RoomType {
+    fn from(v: u8) -> Self {
+        if v == RoomType::get_match() {
+            return RoomType::Match;
+        } else if v == RoomType::get_custom() {
+            return RoomType::Custom;
+        } else if v == RoomType::get_season_pve() {
+            return RoomType::SeasonPve;
+        } else if v == RoomType::get_world_boss_pve() {
+            return RoomType::WorldBossPve;
+        }
+        RoomType::Custom
     }
 }
 
@@ -222,6 +241,19 @@ impl RoomModel for CustomRoom {
     fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         room.remove_member(user_id);
+        let mut slr = S_LEAVE_ROOM::new();
+        slr.set_is_succ(true);
+        let bytes = Packet::build_packet_bytes(
+            ClientCode::LeaveRoom as u32,
+            *user_id,
+            slr.write_to_bytes().unwrap(),
+            true,
+            true,
+        );
+        let res = room.sender.write(bytes);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap());
+        }
         let room_id = room.get_room_id();
         //如果房间空了，则直接移除房间
         if room.is_empty() {
@@ -297,16 +329,16 @@ impl MatchRooms {
     }
 
     ///离开房间，离线也好，主动离开也好
-    pub fn leave(&mut self, room_id: u32, user_id: &u32) -> Option<u32> {
-        for (_, room) in self.match_rooms.iter_mut() {
-            let res = room.leave_room(&room_id, user_id);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap().to_string());
-                return None;
-            }
-            return Some(res.unwrap());
+    pub fn leave(&mut self, battle_type: &u8, room_id: u32, user_id: &u32) -> anyhow::Result<u32> {
+        let match_room = self.match_rooms.get_mut(battle_type);
+        if match_room.is_none() {
+            let str = format!("there is no battle_type:{}!", battle_type);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
         }
-        None
+        let match_room = match_room.unwrap();
+        let res = match_room.leave_room(&room_id, user_id);
+        res
     }
 
     pub fn get_match_room_mut(&mut self, battle_type: &u8) -> &mut MatchRoom {
@@ -350,7 +382,7 @@ impl RoomModel for MatchRoom {
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
         rc.room_id = room_id;
-        rc.count = 4;
+        rc.count = 1;
         self.room_cache.push(rc);
         Ok(room_id)
     }
@@ -362,6 +394,14 @@ impl RoomModel for MatchRoom {
         room.remove_member(user_id);
         if room.is_empty() {
             self.rm_room(&room_id)?;
+        }
+        let room_cache = self.get_room_cache_mut(&room_id);
+        if room_cache.is_some() {
+            let rc = room_cache.unwrap();
+            rc.count -= 1;
+            //重新排序
+            self.room_cache
+                .sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
         }
         Ok(room_id)
     }
@@ -386,7 +426,7 @@ impl MatchRoom {
 
     ///删除缓存房间
     pub fn remove_room_cache(&mut self, room_id: &u32) {
-        let mut index: isize = -1;
+        let mut index = -1_isize;
         for i in self.room_cache.iter() {
             index += 1;
             if i.room_id != *room_id {
@@ -424,7 +464,7 @@ impl MatchRoom {
                 let s = format!("this map config is None,map_id:{}", map_id);
                 anyhow::bail!(s)
             }
-            room_mut.add_member(member);
+            room_mut.add_member(member)?;
 
             let room_cache_array: &mut Vec<RoomCache> = self.room_cache.as_mut();
             let room_cache = room_cache_array.last_mut().unwrap();

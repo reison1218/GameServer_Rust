@@ -250,6 +250,7 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
         let mut cter_pt = CharacterPt::new();
         cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_grade(cter.get_grade()?);
         cter_pt.set_skills(cter.get_skills()?);
         pbp.cters.push(cter_pt);
     }
@@ -301,6 +302,7 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
         let mut cter_pt = CharacterPt::new();
         cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_grade(cter.get_grade()?);
         cter_pt.set_skills(cter.get_skills()?);
         pbp.cters.push(cter_pt);
     }
@@ -352,6 +354,7 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     for (cter_id, cter) in user_data.get_characters_ref().cter_map.iter() {
         let mut cter_pt = CharacterPt::new();
         cter_pt.set_temp_id(*cter_id);
+        cter_pt.set_grade(cter.get_grade()?);
         cter_pt.set_skills(cter.get_skills()?);
         pbp.cters.push(cter_pt);
     }

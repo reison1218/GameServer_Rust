@@ -149,9 +149,12 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
-    let array=[1,2,3,4,5];
-    for i in &array[..]{
-        println!("{}",i);
+    let i = 1;
+    match i {
+        _=>{println!("_")},
+        1_u32=>{println!("{}",1)},
+        2_u32=>{println!("{}",2)}
+
     }
     Ok(())
 }
