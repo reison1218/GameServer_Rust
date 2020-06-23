@@ -1,15 +1,19 @@
-use crate::entity::member::Member;
+use crate::entity::member::{Member, MemberState};
 use crate::entity::room::RoomMemberNoticeType;
 use crate::entity::room::{Room, MEMBER_MAX};
+use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
+use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::sync::mpsc::{Sender, SyncSender};
+use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
-use tools::protos::room::S_LEAVE_ROOM;
+use tools::protos::room::{S_LEAVE_ROOM, S_START};
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
@@ -272,13 +276,6 @@ impl RoomModel for CustomRoom {
     }
 }
 
-///等待匹配的玩家结构体
-#[derive(Debug, Default, Clone)]
-pub struct MatchPlayer {
-    pub user_id: u32,
-    pub model: u8,
-}
-
 ///匹配房数组结构封装体
 #[derive(Debug, Default, Clone)]
 pub struct MatchRooms {
@@ -409,7 +406,12 @@ impl MatchRoom {
     }
 
     ///快速加入
-    pub fn quickly_start(&mut self, member: Member, sender: TcpSender) -> anyhow::Result<u32> {
+    pub fn quickly_start(
+        &mut self,
+        member: Member,
+        sender: TcpSender,
+        task_sender: SyncSender<Task>,
+    ) -> anyhow::Result<u32> {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;
         let room_id: u32;
@@ -439,11 +441,23 @@ impl MatchRoom {
             //cache人数加1
             room_cache.count += 1;
             //如果人满里，则从缓存房间列表中弹出
-            if room_cache.count >= 4 {
+            if room_cache.count >= MEMBER_MAX as u32 {
                 room_cache_array.pop();
+                //创建延迟任务，并发送给定时器接收方执行
+                let mut task = Task::default();
+                task.delay = 60_u64;
+                task.cmd = TaskCmd::MatchRoomStart as u16;
+                let mut map = Map::new();
+                map.insert("battle_type".to_owned(), Value::from(self.battle_type));
+                map.insert("room_id".to_owned(), Value::from(room_id));
+                task.data = Value::from(map);
+                let res = task_sender.send(task);
+                if res.is_err() {
+                    error!("{:?}", res.err().unwrap());
+                }
             }
             //重新排序
-            room_cache_array.sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
+            room_cache_array.sort_by(|a, b| b.count.partial_cmp(&a.count).unwrap());
         }
         Ok(room_id)
     }

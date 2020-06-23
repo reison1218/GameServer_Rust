@@ -3,6 +3,7 @@ use crate::entity::character::Character;
 use crate::entity::room::MEMBER_MAX;
 use crate::error_return::err_back;
 use std::borrow::BorrowMut;
+use tools::protos::room::S_START;
 
 ///创建房间
 pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
@@ -181,7 +182,11 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let match_room = rm.match_rooms.get_match_room_mut(&battle_type);
     let member = Member::from(grs.take_pbp());
 
-    let res = match_room.quickly_start(member, rm.sender.as_ref().unwrap().clone());
+    let res = match_room.quickly_start(
+        member,
+        rm.sender.clone().unwrap(),
+        rm.task_sender.clone().unwrap(),
+    );
     //返回错误信息
     if res.is_err() {
         let str = res.err().unwrap().to_string();
@@ -235,20 +240,39 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///开始
+///开始游戏
 pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    // let user_id = &packet.get_user_id();
-    // let room = check_player_in_room(user_id, rm);
-    // if room.is_none() {
-    //     return;
-    // }
-    // let room = room.unwrap();
-    // let res = room.check_ready();
-    // if !res {
-    //     return;
-    // }
-    // let room_id = room.get_room_id();
-    // rm.remove_room_cache(&room_id);
+    let user_id = packet.get_user_id();
+
+    //校验房间
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        let str = format!("this player is not in the room!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+    let room = room.unwrap();
+    //校验准备状态
+    if !room.check_ready() {
+        let str = format!("there is player not ready,can not start game!");
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+    let mut ss = S_START::new();
+    ss.is_succ = true;
+    let bytes = Packet::build_packet_bytes(
+        ClientCode::Start as u32,
+        user_id,
+        ss.write_to_bytes().unwrap(),
+        true,
+        true,
+    );
+    let res = room.sender.write(bytes);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap());
+    }
     Ok(())
 }
 
@@ -536,32 +560,33 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
             str,
             room.sender.borrow_mut(),
         );
+        return Ok(());
     }
 
-    //走正常流程
+    //解析protobuf
     let mut ccc = C_CHOOSE_CHARACTER::new();
     let res = ccc.merge_from_bytes(packet.get_data());
     if res.is_err() {
         error!("{:?}", res.err().unwrap().to_string());
+        return Ok(());
     }
-
-    let cter_c = ccc.take_cter();
-
-    //校验玩家
-    let member = room.get_member_mut(&user_id);
-    if member.is_none() {
-        let str = format!("this player is not in room!user_id:{}", user_id);
+    let cter_pt = ccc.take_cter();
+    let cter_id = cter_pt.temp_id;
+    //校验角色
+    let res = room.check_character(cter_id);
+    if res.is_err() {
+        let str = res.err().unwrap().to_string();
         warn!("{:?}", str.as_str());
         err_back(
             ClientCode::ChooseCharacter,
             user_id,
             str,
-            rm.get_sender_mut(),
+            room.sender.borrow_mut(),
         );
         return Ok(());
     }
-    let member = member.unwrap();
 
+    let member = room.get_member_mut(&user_id).unwrap();
     //校验玩家状态
     if member.state == MemberState::Ready as u8 {
         let str = format!("this player is already prepare!user_id:{}", user_id);
@@ -575,12 +600,11 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         return Ok(());
     }
 
-    let cter = member.cters.get(&cter_c.get_temp_id());
-    if cter_c.get_temp_id() > 0 && cter.is_none() {
+    let cter = member.cters.get(&cter_id);
+    if cter_id > 0 && cter.is_none() {
         let str = format!(
             "this player do not have this character!user_id:{},cter_id:{}",
-            user_id,
-            cter_c.get_temp_id()
+            user_id, cter_id
         );
         warn!("{:?}", str.as_str());
         err_back(
@@ -591,31 +615,36 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         );
         return Ok(());
     }
-    let cter = cter.unwrap();
-    for skill in cter_c.skills.iter() {
-        if !cter.skills.contains(skill) {
-            let str = format!(
-                "this do not have this skill!user_id:{},cter_id:{},skill_id:{}",
-                user_id,
-                cter_c.get_temp_id(),
-                *skill
-            );
-            warn!("{:?}", str.as_str());
-            err_back(
-                ClientCode::ChooseCharacter,
-                user_id,
-                str,
-                rm.get_sender_mut(),
-            );
-            return Ok(());
+    if cter.is_some() {
+        let cter = cter.unwrap();
+        for skill in cter_pt.skills.iter() {
+            if !cter.skills.contains(skill) {
+                let str = format!(
+                    "this do not have this skill!user_id:{},cter_id:{},skill_id:{}",
+                    user_id, cter_id, *skill
+                );
+                warn!("{:?}", str.as_str());
+                err_back(
+                    ClientCode::ChooseCharacter,
+                    user_id,
+                    str,
+                    rm.get_sender_mut(),
+                );
+                return Ok(());
+            }
         }
+        let mut choice_cter = Character::default();
+        choice_cter.clone_from(cter);
+        member.chose_cter = choice_cter;
+    } else if cter_id == 0 {
+        let mut choice_cter = Character::default();
+        member.chose_cter = choice_cter;
     }
+
     //走正常逻辑
     let mut scc = S_CHOOSE_CHARACTER::new();
     scc.is_succ = true;
-    let mut choice_cter = Character::default();
-    choice_cter.clone_from(cter);
-    member.chose_cter = choice_cter;
+
     //返回客户端
     let bytes = Packet::build_packet_bytes(
         ClientCode::ChooseCharacter as u32,

@@ -302,13 +302,14 @@ pub mod tcp_server {
                         handler.on_message(received_data);
                     }
                     // Would block "errors" are the OS's way of saying that the
-                    // connection is not actually ready to perform this I/O operation.
+                    // connection is  unavailable ready to perform this I/O operation.
                     Err(ref err) if would_block(err) => {
                         let status = err.raw_os_error();
                         let mut res = 0;
                         if status.is_some(){
                             res = status.unwrap();
                         }
+                        warn!("{:?}",err.to_string());
                         //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
                         //直接跳出token读取事件，待下次actually再进行读取
                         if res == 35 || res == 11{

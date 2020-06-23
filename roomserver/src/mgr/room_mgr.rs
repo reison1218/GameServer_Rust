@@ -6,7 +6,9 @@ use crate::handlers::room_handler::{
     change_team, choose_character, create_room, emoji, join_room, kick_member, leave_room,
     prepare_cancel, room_setting, search_room, start,
 };
+use crate::task_timer::Task;
 use log::{error, warn};
+use std::sync::mpsc::{Sender, SyncSender};
 use tools::util::packet::Packet;
 
 //房间服管理器
@@ -16,6 +18,7 @@ pub struct RoomMgr {
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,告32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
     pub sender: Option<TcpSender>, //tcp channel的发送方
+    pub task_sender: Option<SyncSender<Task>>,
 }
 
 impl RoomMgr {
@@ -30,6 +33,7 @@ impl RoomMgr {
             match_rooms,
             player_room,
             sender: None,
+            task_sender: None,
             cmd_map,
         };
         rm.cmd_init();

@@ -2,9 +2,9 @@ use super::*;
 
 //线程池类型枚举
 pub enum ThreadPoolType {
-    game = 1,
-    user = 2,
-    sys = 3,
+    Game = 1,
+    User = 2,
+    Sys = 3,
 }
 
 //线程池结构体封装

@@ -107,6 +107,16 @@ impl Room {
         Ok(room)
     }
 
+    pub fn check_character(&self, cter_id: u32) -> anyhow::Result<()> {
+        for cter in self.members.values() {
+            if cter_id > 0 && cter.chose_cter.temp_id == cter_id {
+                let str = format!("this character was choiced!cter_id:{}", cter_id);
+                anyhow::bail!(str)
+            }
+        }
+        Ok(())
+    }
+
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
         let member = self.members.get_mut(user_id).unwrap();
         match pregare_cancel {
@@ -245,7 +255,7 @@ impl Room {
 
     ///检查准备状态
     pub fn check_ready(&self) -> bool {
-        for (_, member) in self.members.iter() {
+        for member in self.members.values() {
             let res = member.state == MemberState::Ready as u8;
             if !res {
                 return res;
@@ -427,8 +437,7 @@ impl Room {
                 let mp = member.clone().into();
                 rp.members.push(mp);
             } else {
-                let member = Member::default();
-                let mp = member.into();
+                let mp = MemberPt::new();
                 rp.members.push(mp);
             }
         }
@@ -449,7 +458,7 @@ impl Room {
         let member = self.members.get_mut(user_id);
         if member.is_none() {
             let s = format!(
-                "this plauyer is not in this room!user_id:{},room_id:{}",
+                "this player is not in this room!user_id:{},room_id:{}",
                 user_id,
                 self.get_room_id()
             );

@@ -3,12 +3,15 @@ mod error_return;
 mod handlers;
 mod mgr;
 mod net;
+mod task_timer;
 #[macro_use]
 extern crate lazy_static;
 
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
+use crate::task_timer::init_timer;
 use std::env;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::RwLock;
 use tools::conf::Conf;
@@ -42,6 +45,8 @@ fn main() {
     init_log(info_log, error_log);
     //初始化room_mgr多线程饮用计数器指针
     let room_mgr: Arc<RwLock<RoomMgr>> = Arc::new(RwLock::new(RoomMgr::new()));
+    //初始化定时器任务
+    init_timer(room_mgr.clone());
     //初始化tcp服务
     init_tcp_server(room_mgr.clone());
 }
