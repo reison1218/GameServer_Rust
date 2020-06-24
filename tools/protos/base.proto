@@ -75,8 +75,9 @@ message CellPt{
 message RoomPt{
     uint32 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
-    RoomSettingPt setting = 3;//房间设置
-    repeated MemberPt members = 4;//成员数据
+    uint32 room_type = 3;//房间类型
+    RoomSettingPt setting = 4;//房间设置
+    repeated MemberPt members = 5;//成员数据
 }
 
 //历史消息

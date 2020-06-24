@@ -430,6 +430,7 @@ impl Room {
         let mut rp = RoomPt::new();
         rp.owner_id = self.owner_id;
         rp.room_id = self.get_room_id();
+        rp.set_room_type(self.get_room_type() as u32);
         for user_id in self.member_index.iter() {
             let member = self.members.get(user_id);
             if member.is_some() {

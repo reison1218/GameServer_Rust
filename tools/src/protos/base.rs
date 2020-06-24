@@ -1917,6 +1917,7 @@ pub struct RoomPt {
     // message fields
     pub room_id: u32,
     pub owner_id: u32,
+    pub room_type: u32,
     pub setting: ::protobuf::SingularPtrField<RoomSettingPt>,
     pub members: ::protobuf::RepeatedField<MemberPt>,
     // special fields
@@ -1965,7 +1966,22 @@ impl RoomPt {
         self.owner_id = v;
     }
 
-    // .protos.RoomSettingPt setting = 3;
+    // uint32 room_type = 3;
+
+
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
+    }
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
+    }
+
+    // .protos.RoomSettingPt setting = 4;
 
 
     pub fn get_setting(&self) -> &RoomSettingPt {
@@ -1998,7 +2014,7 @@ impl RoomPt {
         self.setting.take().unwrap_or_else(|| RoomSettingPt::new())
     }
 
-    // repeated .protos.MemberPt members = 4;
+    // repeated .protos.MemberPt members = 5;
 
 
     pub fn get_members(&self) -> &[MemberPt] {
@@ -2058,9 +2074,16 @@ impl ::protobuf::Message for RoomPt {
                     self.owner_id = tmp;
                 },
                 3 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.setting)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
                 },
                 4 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.setting)?;
+                },
+                5 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.members)?;
                 },
                 _ => {
@@ -2080,6 +2103,9 @@ impl ::protobuf::Message for RoomPt {
         }
         if self.owner_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.owner_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.setting.as_ref() {
             let len = v.compute_size();
@@ -2101,13 +2127,16 @@ impl ::protobuf::Message for RoomPt {
         if self.owner_id != 0 {
             os.write_uint32(2, self.owner_id)?;
         }
+        if self.room_type != 0 {
+            os.write_uint32(3, self.room_type)?;
+        }
         if let Some(ref v) = self.setting.as_ref() {
-            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
         for v in &self.members {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -2160,6 +2189,11 @@ impl ::protobuf::Message for RoomPt {
                     |m: &RoomPt| { &m.owner_id },
                     |m: &mut RoomPt| { &mut m.owner_id },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "room_type",
+                    |m: &RoomPt| { &m.room_type },
+                    |m: &mut RoomPt| { &mut m.room_type },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<RoomSettingPt>>(
                     "setting",
                     |m: &RoomPt| { &m.setting },
@@ -2191,6 +2225,7 @@ impl ::protobuf::Clear for RoomPt {
     fn clear(&mut self) {
         self.room_id = 0;
         self.owner_id = 0;
+        self.room_type = 0;
         self.setting.clear();
         self.members.clear();
         self.unknown_fields.clear();
@@ -2744,14 +2779,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\x18\x02\x20\x03(\
     \x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\x12\n\x04type\x18\
     \x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\
-    \"\x99\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomI\
-    d\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12/\n\x07setting\
-    \x18\x03\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07me\
-    mbers\x18\x04\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHis\
-    toryMessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07temp\
-    _id\x18\x01\x20\x01(\rR\x06tempId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
-    \x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\
-    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skillsb\x06proto3\
+    \"\xb6\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomI\
+    d\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_t\
+    ype\x18\x03\x20\x01(\rR\x08roomType\x12/\n\x07setting\x18\x04\x20\x01(\
+    \x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07members\x18\x05\x20\
+    \x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\
+    \n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07temp_id\x18\x01\x20\
+    \x01(\rR\x06tempId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\x05grade\x12&\
+    \n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\x12\x16\n\x06sk\
+    ills\x18\x04\x20\x03(\rR\x06skillsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

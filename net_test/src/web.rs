@@ -5,12 +5,11 @@ use http_types::{Error as HttpTypesError,Body, Url, Method, Request,Response, St
 use std::ops::Index;
 use async_h1::client;
 use serde_json::{Error, Map, Value};
-use futures::TryFutureExt;
 use serde_json::value::Value as JsonValue;
 use std::str::FromStr;
 
 pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
-    let stream = TcpStream::connect("localhost:8888").await?;
+    let stream = TcpStream::connect("localhost:8080").await?;
     //let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
@@ -72,7 +71,7 @@ pub async fn test_http_server() -> http_types::Result<()> {
 // Take a TCP stream, and convert it into sequential HTTP request / response pairs.
 async fn accept(addr: String, stream: TcpStream) -> http_types::Result<()> {
     println!("starting new connection from {}", stream.peer_addr().unwrap());
-    async_h1::accept(&addr, stream.clone(), |mut _req| async move {
+    async_h1::accept(addr.as_str(),stream.clone(), |mut _req| async move {
         _req.insert_header("Content-Type", "application/json").unwrap();
        let url = _req.url();
 

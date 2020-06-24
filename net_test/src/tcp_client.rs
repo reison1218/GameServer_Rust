@@ -6,17 +6,16 @@ use protobuf::Message;
 use std::net::TcpStream;
 use tools::tcp::ClientHandler;
 use tools::cmd_code::{GameCode, RoomCode, ClientCode};
-use futures::executor::block_on;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use crate::ID;
-use futures::AsyncWriteExt;
+
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
 use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER};
 use tools::protos::base::{PlayerPt, CharacterPt};
 
 pub fn test_tcp_client(pid:&str){
-        let uid = block_on(crate::test_http_client(pid));
+        let uid = async_std::task::block_on(crate::test_http_client(pid));
         if uid.is_err(){
             println!("{:?}",uid.err().unwrap().to_string());
             return;
@@ -30,7 +29,7 @@ pub fn test_tcp_client(pid:&str){
 pub fn test_tcp_clients(){
     for i in 1..=2000{
         let sr = i.to_string();
-        let uid = block_on(crate::test_http_client(sr.as_str()));
+        let uid = async_std::task::block_on(crate::test_http_client(sr.as_str()));
         let uid = uid.unwrap();
 
         let m = move || {

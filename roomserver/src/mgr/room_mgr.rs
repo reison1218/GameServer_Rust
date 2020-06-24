@@ -17,8 +17,8 @@ pub struct RoomMgr {
     pub match_rooms: MatchRooms,        //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,告32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
-    pub sender: Option<TcpSender>, //tcp channel的发送方
-    pub task_sender: Option<SyncSender<Task>>,
+    pub sender: Option<TcpSender>,             //tcp channel的发送方
+    pub task_sender: Option<SyncSender<Task>>, //task channel的发送方
 }
 
 impl RoomMgr {

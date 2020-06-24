@@ -9,7 +9,7 @@ use protobuf::Message;
 // use tcp::tcp::ClientHandler;
 // use tcp::util::bytebuf::ByteBuf;
 // use tcp::util::packet::Packet;
-use futures::executor::block_on;
+
 use std::collections::{HashMap, BinaryHeap, LinkedList};
 use std::sync::mpsc::Receiver;
 
@@ -55,6 +55,7 @@ use std::env;
 use chrono::Local;
 use std::fmt::Display;
 use std::mem::Discriminant;
+use futures::executor::block_on;
 
 
 #[macro_use]
@@ -106,17 +107,18 @@ fn foo(words: &[&str]) {
 
 fn main() -> anyhow::Result<()> {
 
-    tcp_client::test_tcp_client("tangjian");
+    //tcp_client::test_tcp_client("tangjian");
 
     // block_on(http);
     // print!("http执行完毕");
     //block_on(web::test_http_client("1"));
+    //block_on(web::test_http_server());
     // let mut path = env::current_dir()?;
     // path.push("/config");
     // let mut str = path.as_os_str().to_str().unwrap();
     //let res = str.to_string()+"/config";
     //println!("{:?}",res);
-    let res = test();
+
 
     // let int = 123u32;
     // //(1)最原始直接基础的位操作方法。
@@ -149,19 +151,19 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
-    let i = 1;
-    match i {
-        _=>{println!("_")},
-        1_u32=>{println!("{}",1)},
-        2_u32=>{println!("{}",2)}
-
-    }
+    block_on(async_test());
+    std::thread::sleep(Duration::from_secs(1));
+    let res = test();
     Ok(())
 }
 
+async fn async_test(){
+    println!("test");
+}
 
 
 fn test()->impl Display{
     let res = "test".to_string();
+
     res
 }

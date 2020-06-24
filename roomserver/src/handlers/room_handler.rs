@@ -51,9 +51,11 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //创建房间
     match room_type {
         RoomType::Custom => {
-            room_id = rm
-                .custom_room
-                .create_room(owner, rm.sender.as_ref().unwrap().clone())?;
+            room_id = rm.custom_room.create_room(
+                BattleType::None as u8,
+                owner,
+                rm.sender.as_ref().unwrap().clone(),
+            )?;
         }
         _ => {}
     }
@@ -66,18 +68,14 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 ///离开房间
 pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
-    let room_id = rm.get_room_id(&user_id);
-    if room_id.is_none() {
-        return Ok(());
-    }
 
     //校验房间是否存在
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
+    let room_id = room.get_room_id();
     if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
         let member = room.get_member_mut(&user_id);
         let member = member.unwrap();
@@ -96,8 +94,6 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             return Ok(());
         }
     }
-
-    let room_id = room.get_room_id();
     let room_type = RoomType::from(room.get_room_type());
     let battle_type = room.setting.battle_type;
     match room_type {
@@ -114,7 +110,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             rm.player_room.remove(&user_id);
         }
         RoomType::Match => {
-            if room.is_empty() {
+            if !room.is_empty() {
                 let res = rm.match_rooms.leave(&battle_type, room_id, &user_id);
                 if res.is_err() {
                     error!("{:?}", res.err().unwrap());
@@ -195,7 +191,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     };
     let room_id = res.unwrap();
     let value = tools::binary::combine_int_2_long(RoomType::Match as u32, room_id);
-    rm.player_room.insert(packet.get_user_id(), value);
+    rm.player_room.insert(user_id, value);
     Ok(())
 }
 
@@ -368,6 +364,16 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验操作人是不是房主
     let room = room.unwrap();
+
+    if room.get_room_type() != RoomType::get_custom() {
+        let str = format!(
+            "kick_member:this room is not custom room,can not kick member!room_id:{}",
+            room.get_room_id()
+        );
+        err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+
     if room.get_owner_id() != user_id {
         let str = format!("kick_member:this player is not host!user_id:{}", user_id);
         err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
@@ -637,7 +643,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         choice_cter.clone_from(cter);
         member.chose_cter = choice_cter;
     } else if cter_id == 0 {
-        let mut choice_cter = Character::default();
+        let choice_cter = Character::default();
         member.chose_cter = choice_cter;
     }
 
@@ -704,7 +710,10 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         err_back(ClientCode::Emoji, user_id, str, rm.get_sender_mut());
         return Ok(());
-    } else if emoji.condition == 0 && emoji.cter_id != member.chose_cter.temp_id {
+    } else if emoji.condition == 0
+        && emoji.cter_id > 0
+        && emoji.cter_id != member.chose_cter.temp_id
+    {
         let str = format!(
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
             member.chose_cter.temp_id, emoji_id

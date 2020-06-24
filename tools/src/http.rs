@@ -52,7 +52,7 @@ async fn accept(
         "there is new connection from {}",
         stream.peer_addr().unwrap()
     );
-    async_h1::accept(&addr, stream.clone(), |mut _req| async {
+    async_h1::accept(addr.as_str(),stream.clone(), |mut _req| async {
         let mut _req = _req;
         let mut _req_mut = &mut _req;
         _req_mut
@@ -158,7 +158,7 @@ pub async fn send_http_request(
     info!("connecting to {:?}", str.as_str());
     let url = Url::parse(str.as_str())?;
     let mut req = Request::new(http_method.unwrap(), url);
-    req.insert_header("Content-Type", "application/json")?;
+    req.insert_header("Content-Type", "application/json");
     match params {
         Some(p) => {
             req.set_body(Body::from(p.to_string()));

@@ -94,6 +94,7 @@ impl RoomType {
 ///战斗模式类型
 #[derive(Debug, Copy, Clone)]
 pub enum BattleType {
+    None = 0,            //无效初始值
     OneVOneVOneVOne = 1, //1v1v1v1
     TwoVTwo = 2,         //2v2
     OneVOne = 3,         //1v1
@@ -185,7 +186,12 @@ pub trait RoomModel {
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room>;
 
-    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32>;
+    fn create_room(
+        &mut self,
+        battle_type: u8,
+        owner: Member,
+        sender: TcpSender,
+    ) -> anyhow::Result<u32>;
     fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
@@ -230,9 +236,15 @@ impl RoomModel for CustomRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
+    fn create_room(
+        &mut self,
+        battle_type: u8,
+        owner: Member,
+        sender: TcpSender,
+    ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(owner.clone(), RoomType::get_custom(), sender)?;
+        let mut room = Room::new(owner.clone(), RoomType::get_custom(), sender)?;
+        room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
@@ -341,8 +353,14 @@ impl RoomModel for MatchRoom {
     }
 
     ///创建房间
-    fn create_room(&mut self, owner: Member, sender: TcpSender) -> anyhow::Result<u32> {
-        let room = Room::new(owner, RoomType::get_match(), sender)?;
+    fn create_room(
+        &mut self,
+        battle_type: u8,
+        owner: Member,
+        sender: TcpSender,
+    ) -> anyhow::Result<u32> {
+        let mut room = Room::new(owner, RoomType::get_match(), sender)?;
+        room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
@@ -424,7 +442,7 @@ impl MatchRoom {
                 anyhow::bail!(s)
             }
             //创建房间
-            room_id = self.create_room(member, sender)?;
+            room_id = self.create_room(BattleType::get_one_v_one_v_one_v_one(), member, sender)?;
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;
