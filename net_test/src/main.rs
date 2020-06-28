@@ -56,6 +56,8 @@ use chrono::Local;
 use std::fmt::Display;
 use std::mem::Discriminant;
 use futures::executor::block_on;
+use std::thread::Thread;
+use rayon::prelude::ParallelSliceMut;
 
 
 #[macro_use]
@@ -151,9 +153,26 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
-    block_on(async_test());
-    std::thread::sleep(Duration::from_secs(1));
-    let res = test();
+
+    // for i in 1..999999{
+    //     let m = move ||{
+    //       loop{
+    //           std::thread::sleep(Duration::from_millis(60000));
+    //       }
+    //     };
+    //     let thread = std::thread::spawn(m);
+    //
+    //     println!("{}",i);
+    // }
+    let mut thread_builder = std::thread::Builder::new();
+    let mut thread_builder = thread_builder.name("TIMER_THREAD".to_owned()).stack_size(32 * 1024);
+    //设置线程堆栈大小，32kb
+
+    let m = ||{
+        println!("{:?}",std::thread::current().name().unwrap());
+    };
+    thread_builder.spawn(m);
+    std::thread::sleep(Duration::from_secs(2));
     Ok(())
 }
 
@@ -161,9 +180,37 @@ async fn async_test(){
     println!("test");
 }
 
+fn test_sort(){
+    let mut v = Vec::new();
+    let mut rng = thread_rng();
+    for i in 1..=99999{
+        let n: u32 = rng.gen_range(1, 99999);
+        v.push(n);
+    }
+
+    let time = SystemTime::now();
+    for i in 1..9999{
+        v.par_sort_by(|a,b|b.cmp(a));
+    }
+    println!("{:?}",v);
+    println!("rayon:{}",time.elapsed().unwrap().as_millis());
+
+    let mut v = Vec::new();
+    let mut rng = thread_rng();
+    for i in 1..=99999{
+        let n: u32 = rng.gen_range(1, 99999);
+        v.push(n);
+    }
+    let time = SystemTime::now();
+    for i in 1..9999{
+        v.sort_by(|a,b|b.cmp(a));
+    }
+    println!("{:?}",v);
+    println!("comment:{}",time.elapsed().unwrap().as_millis());
+}
+
 
 fn test()->impl Display{
     let res = "test".to_string();
-
     res
 }

@@ -1,16 +1,11 @@
 use crate::entity::member::MemberState;
-use crate::entity::room_model::{RoomCache, RoomModel};
-use crate::handlers::room_handler::emoji;
+use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
-use log::{error, info, warn};
-use protobuf::Message;
+use log::{error, info};
 use serde_json::Value as JsonValue;
-use std::sync::mpsc::{channel, sync_channel, Receiver};
+use std::sync::mpsc::sync_channel;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use tools::cmd_code::ClientCode;
-use tools::protos::room::S_START;
-use tools::util::packet::Packet;
 
 pub enum TaskCmd {
     MatchRoomStart = 101, //匹配房间开始任务
@@ -39,6 +34,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
         let mut write = rm.write().unwrap();
         write.task_sender = Some(sender);
         std::mem::drop(write);
+
         loop {
             let res = rec.recv();
             if res.is_err() {
@@ -50,17 +46,29 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
             let rm_clone = rm.clone();
             match task_cmd {
                 TaskCmd::MatchRoomStart => {
-                    let m = move || {
+                    let m = || {
                         std::thread::sleep(Duration::from_secs(task.delay));
                         match_room_start(rm_clone, task);
                     };
-                    std::thread::spawn(m);
+                    //设置线程名字和堆栈大小
+                    let thread_builder = std::thread::Builder::new()
+                        .name("TIMER_THREAD_TASK".to_owned())
+                        .stack_size(32 * 1024);
+                    let res = thread_builder.spawn(m);
+                    if res.is_err() {
+                        error!("{:?}", res.err().unwrap());
+                    }
                 }
                 _ => {}
             }
         }
     };
-    std::thread::spawn(m);
+    let timer_thread = std::thread::Builder::new().name("TIMER_THREAD".to_owned());
+    let res = timer_thread.spawn(m);
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap());
+        std::process::abort();
+    }
     info!("初始化定时器任务执行器成功!");
 }
 

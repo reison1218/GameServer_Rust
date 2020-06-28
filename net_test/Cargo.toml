@@ -35,4 +35,5 @@ anyhow = "1.0.31"
 dirs = "2.0.2"
 chrono = "0.4.11"
 log="0.4.8"
+rayon = "1.3.1"
 tools = { path = "../tools" }

@@ -8,7 +8,7 @@ use crate::handlers::room_handler::{
 };
 use crate::task_timer::Task;
 use log::{error, warn};
-use std::sync::mpsc::{Sender, SyncSender};
+use std::sync::mpsc::SyncSender;
 use tools::util::packet::Packet;
 
 //房间服管理器
