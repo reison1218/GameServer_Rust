@@ -1,19 +1,19 @@
-use crate::entity::member::{Member, MemberState};
+use crate::entity::member::Member;
 use crate::entity::room::RoomMemberNoticeType;
 use crate::entity::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
+use rayon::slice::ParallelSliceMut;
 use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::sync::mpsc::{Sender, SyncSender};
-use std::time::Duration;
+use std::sync::mpsc::SyncSender;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
-use tools::protos::room::{S_LEAVE_ROOM, S_START};
+use tools::protos::room::S_LEAVE_ROOM;
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
@@ -143,6 +143,15 @@ impl From<RoundTimePt> for RoundTime {
     }
 }
 
+impl From<RoundTime> for RoundTimePt {
+    fn from(rt: RoundTime) -> Self {
+        let mut rtp = RoundTimePt::new();
+        rtp.set_consume_time(rt.consume_time);
+        rtp.set_fixed_time(rt.fixed_time);
+        rtp
+    }
+}
+
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
@@ -160,6 +169,17 @@ impl From<RoomSettingPt> for RoomSetting {
         rs.victory_condition = rs_pt.victory_condition;
         rs.round_time = RoundTime::from(rs_pt.take_round_time());
         rs
+    }
+}
+
+impl From<RoomSetting> for RoomSettingPt {
+    fn from(r: RoomSetting) -> Self {
+        let mut rsp = RoomSettingPt::new();
+        rsp.set_victory_condition(r.victory_condition);
+        rsp.set_battle_type(r.battle_type as u32);
+        rsp.set_is_open_world_tile(r.is_world_tile);
+        rsp.set_round_time(r.round_time.into());
+        rsp
     }
 }
 
@@ -475,7 +495,7 @@ impl MatchRoom {
                 }
             }
             //重新排序
-            room_cache_array.sort_by(|a, b| b.count.partial_cmp(&a.count).unwrap());
+            room_cache_array.par_sort_by(|a, b| b.count.cmp(&a.count));
         }
         Ok(room_id)
     }

@@ -3,3 +3,10 @@
 *.xml
 */*.DS_Store
 *.DS_Store
+.DS_Store
+server/.DS_Store
+tools/.DS_Store
+tools/protos/.DS_Store
+server/.idea/workspace.xml
+net_test/.idea/workspace.xml
+gateserver/.idea/workspace.xml

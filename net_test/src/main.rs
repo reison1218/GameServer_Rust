@@ -164,17 +164,37 @@ fn main() -> anyhow::Result<()> {
     //
     //     println!("{}",i);
     // }
-    let mut thread_builder = std::thread::Builder::new();
-    let mut thread_builder = thread_builder.name("TIMER_THREAD".to_owned()).stack_size(32 * 1024);
-    //设置线程堆栈大小，32kb
+    //test_sort();
 
-    let m = ||{
-        println!("{:?}",std::thread::current().name().unwrap());
-    };
-    thread_builder.spawn(m);
-    std::thread::sleep(Duration::from_secs(2));
+    let test = Test{st:SubTest{k:2},i:1};
+    let mut a:Kest = test.st.clone().into();
+    println!("{:?}",test);
+
+
     Ok(())
 }
+
+#[derive(Debug)]
+struct Test{
+    st:SubTest,
+    i:u32
+}
+
+#[derive(Debug, Clone)]
+struct SubTest{
+    k:u32,
+}
+
+struct Kest{
+    j:u32
+}
+
+impl From<SubTest> for Kest{
+    fn from(st: SubTest) -> Self {
+        Kest{j:st.k}
+    }
+}
+
 
 async fn async_test(){
     println!("test");
@@ -189,10 +209,10 @@ fn test_sort(){
     }
 
     let time = SystemTime::now();
-    for i in 1..9999{
+    for i in 1..10{
         v.par_sort_by(|a,b|b.cmp(a));
     }
-    println!("{:?}",v);
+    //println!("{:?}",v);
     println!("rayon:{}",time.elapsed().unwrap().as_millis());
 
     let mut v = Vec::new();
@@ -202,10 +222,10 @@ fn test_sort(){
         v.push(n);
     }
     let time = SystemTime::now();
-    for i in 1..9999{
+    for i in 1..10{
         v.sort_by(|a,b|b.cmp(a));
     }
-    println!("{:?}",v);
+    //println!("{:?}",v);
     println!("comment:{}",time.elapsed().unwrap().as_millis());
 }
 

@@ -143,15 +143,7 @@ impl Room {
     pub fn room_notice(&mut self, user_id: &u32) {
         let mut srn = S_ROOM_NOTICE::new();
         srn.owner_id = self.owner_id;
-        let mut rs = RoomSettingPt::new();
-        rs.battle_type = self.setting.battle_type as u32;
-        rs.victory_condition = self.setting.victory_condition;
-        rs.is_open_world_tile = self.setting.is_world_tile;
-        let mut rt = RoundTimePt::new();
-        rt.fixed_time = self.setting.round_time.fixed_time;
-        rt.consume_time = self.setting.round_time.consume_time;
-        rs.set_round_time(rt);
-        srn.set_setting(rs);
+        srn.set_setting(self.setting.clone().into());
         let mut packet = Packet::new(ClientCode::RoomNotice as u32, 0, 0);
         packet.set_data_from_vec(srn.write_to_bytes().unwrap());
         packet.set_is_client(true);
