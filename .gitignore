@@ -1,3 +1,5 @@
 */target/*
 */*.xml
 *.xml
+*/*.DS_Store
+*.DS_Store
