@@ -1,0 +1,1 @@
+[{"id":"battle_round_consume_time","value":"30000","desc":"战斗回合消耗时间"},{"id":"battle_round_fixed_time","value":"0","desc":"战斗回合固定时间"},{"id":"battle_character_skills","value":"2","desc":"战斗角色可选择的技能数量"},{"id":"character_init_grade","value":"1","desc":"角色初始化grade等级"}]

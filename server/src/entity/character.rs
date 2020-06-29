@@ -2,6 +2,7 @@ use super::*;
 use crate::entity::character_contants::{GRADE, LAST_USE_SKILLS, SKILLS};
 use crate::TEMPLATES;
 use std::collections::HashMap;
+use std::str::FromStr;
 use tools::protos::base::CharacterPt;
 use tools::templates::character_temp::CharacterTempMgr;
 use tools::templates::template::TemplateMgrTrait;
@@ -121,6 +122,28 @@ impl Into<CharacterPt> for Character {
 impl Character {
     pub fn new(user_id: u32, character_id: u32, js: JsonValue) -> Self {
         let mut cter = Character::init(user_id, Some(character_id), js);
+        let res = TEMPLATES
+            .get_constant_ref()
+            .temps
+            .get("character_init_grade");
+        let grade;
+        match res {
+            Some(temp) => {
+                let s = usize::from_str(temp.value.as_str());
+                match s {
+                    Ok(g) => {
+                        grade = g;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                        grade = 1_usize;
+                    }
+                }
+            }
+            None => {
+                grade = 1_usize;
+            }
+        }
         cter.set_usize(GRADE.to_string(), 1_usize);
         cter
     }

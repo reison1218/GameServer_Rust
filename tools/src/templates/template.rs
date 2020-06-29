@@ -5,8 +5,9 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_contants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE};
+use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE};
 use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
+use crate::templates::constant_temp::{ConstantTempMgr,ConstantTemp};
 
 pub trait Template {}
 
@@ -14,11 +15,13 @@ pub trait TemplateMgrTrait: Send + Sync {
     fn is_empty(&self) -> bool;
 }
 
+//配置表mgr
 #[derive(Debug, Default)]
 pub struct TemplatesMgr {
-    character_temp_mgr: CharacterTempMgr,
-    tile_map_temp_mgr: TileMapTempMgr,
-    emoji_temp_mgr:EmojiTempMgr
+    character_temp_mgr: CharacterTempMgr,//角色配置mgr
+    tile_map_temp_mgr: TileMapTempMgr,//地图配置mgr
+    emoji_temp_mgr:EmojiTempMgr,//表情配置mgr
+    constant_temp_mgr:ConstantTempMgr,//常量配置mgr
 }
 
 impl TemplatesMgr {
@@ -32,6 +35,10 @@ impl TemplatesMgr {
 
     pub fn get_emoji_ref(&self) -> &EmojiTempMgr {
         self.emoji_temp_mgr.borrow()
+    }
+
+    pub fn get_constant_ref(&self) -> &ConstantTempMgr {
+        self.constant_temp_mgr.borrow()
     }
 }
 
@@ -72,6 +79,10 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<EmojiTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.emoji_temp_mgr = EmojiTempMgr::default();
             temps_mgr.emoji_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(CONSTANT_TEMPLATE) {
+            let v: Vec<ConstantTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.constant_temp_mgr = ConstantTempMgr::default();
+            temps_mgr.constant_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

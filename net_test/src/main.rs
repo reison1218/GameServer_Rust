@@ -45,7 +45,7 @@ use std::cell::{Cell, RefCell};
 use serde_json::Value;
 use serde::private::de::IdentifierDeserializer;
 use std::str::FromStr;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Mutex};
 use std::sync::atomic::AtomicU32;
 use tools::redis_pool::RedisPoolTool;
 use tools::util::bytebuf::ByteBuf;
@@ -109,7 +109,27 @@ fn foo(words: &[&str]) {
 
 fn main() -> anyhow::Result<()> {
 
-    //tcp_client::test_tcp_client("tangjian");
+    unsafe {
+        let mut str = "test".to_owned();
+        let s_p = &str as *const String;
+        let s_p_m = &mut str as *mut String;
+        assert_eq!(s_p, s_p_m);
+        println!("s_p:{}", *s_p);
+        println!("s_p_m:{}", *s_p_m);
+        std::mem::drop(str);
+        let s_p_m = &mut *s_p_m;
+        s_p_m.push_str("sss");
+        println!("str:{:?}", s_p_m);
+
+        let address = 0x7ffee3b103af_usize;
+        let s = address as *mut String;
+        println!("{:?}",s);
+        let s = &mut *s;
+        s.push_str("ss");
+        println!("{:?}",s);
+    }
+
+    //tcp_client::test_tcp_client("test");
 
     // block_on(http);
     // print!("http执行完毕");
@@ -165,34 +185,12 @@ fn main() -> anyhow::Result<()> {
     //     println!("{}",i);
     // }
     //test_sort();
-
-    let test = Test{st:SubTest{k:2},i:1};
-    let mut a:Kest = test.st.clone().into();
-    println!("{:?}",test);
-
-
     Ok(())
 }
 
 #[derive(Debug)]
 struct Test{
-    st:SubTest,
-    i:u32
-}
-
-#[derive(Debug, Clone)]
-struct SubTest{
-    k:u32,
-}
-
-struct Kest{
-    j:u32
-}
-
-impl From<SubTest> for Kest{
-    fn from(st: SubTest) -> Self {
-        Kest{j:st.k}
-    }
+    str:String
 }
 
 

@@ -107,6 +107,7 @@ impl Room {
         Ok(room)
     }
 
+    ///检查角色
     pub fn check_character(&self, cter_id: u32) -> anyhow::Result<()> {
         for cter in self.members.values() {
             if cter_id > 0 && cter.chose_cter.temp_id == cter_id {
@@ -117,6 +118,7 @@ impl Room {
         Ok(())
     }
 
+    ///准备
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
         let member = self.members.get_mut(user_id).unwrap();
         match pregare_cancel {
@@ -140,6 +142,7 @@ impl Room {
         }
     }
 
+    ///房间变更通知
     pub fn room_notice(&mut self, user_id: &u32) {
         let mut srn = S_ROOM_NOTICE::new();
         srn.owner_id = self.owner_id;
@@ -160,6 +163,7 @@ impl Room {
         }
     }
 
+    ///发送表情包
     pub fn emoji(&mut self, user_id: u32, emoji_id: u32) {
         let mut packet = Packet::new(ClientCode::Emoji as u32, 0, 0);
         packet.set_is_client(true);
