@@ -238,7 +238,7 @@ pub mod tcp_server {
                         }
                     },
                     Err(e) => {
-                        error!("{:?}", e.to_string());
+                        error!("{:?}", e);
                     }
                 }
             }
