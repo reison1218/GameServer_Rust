@@ -152,9 +152,6 @@ impl Room {
         packet.set_is_client(true);
         packet.set_is_broad(false);
         for id in self.members.keys() {
-            if *id == *user_id {
-                continue;
-            }
             packet.set_user_id(*id);
             let res = self.sender.write(packet.build_server_bytes());
             if res.is_err() {
