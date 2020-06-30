@@ -8,7 +8,7 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{MemberPt, RoomPt, RoomSettingPt, RoundTimePt};
+use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
     S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
     S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
@@ -223,15 +223,13 @@ impl Room {
         packet.set_data_from_vec(srmn.write_to_bytes().unwrap());
         packet.set_is_broad(false);
         packet.set_is_client(true);
-        for (_, m) in self.members.iter() {
-            if m.get_user_id() == *user_id && RoomMemberNoticeType::LeaveMmeber as u8 != notice_type
-            {
-                continue;
-            }
-            packet.set_user_id(m.get_user_id());
-            let res = self.sender.write(packet.build_server_bytes());
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap().to_string());
+        if self.get_member_count() > 0 {
+            for id in self.members.keys() {
+                packet.set_user_id(*id);
+                let res = self.sender.write(packet.build_server_bytes());
+                if res.is_err() {
+                    error!("{:?}", res.err().unwrap().to_string());
+                }
             }
         }
     }
@@ -309,7 +307,7 @@ impl Room {
         member.team_id = size;
         member.join_time = Local::now().timestamp_millis() as u64;
         self.members.insert(user_id, member);
-        for i in 0..self.member_index.len() - 1 {
+        for i in 0..=self.member_index.len() - 1 {
             if self.member_index[i] != 0 {
                 continue;
             }
@@ -339,17 +337,18 @@ impl Room {
     }
 
     ///移除玩家
-    pub fn remove_member(&mut self, user_id: &u32) -> Option<Member> {
-        let res = self.members.remove(user_id);
+    pub fn remove_member(&mut self, user_id: &u32) {
+        let res = self.members.get(user_id);
         if res.is_some() {
-            for i in 0..self.member_index.len() - 1 {
+            self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, user_id);
+            self.members.remove(user_id);
+            for i in 0..=self.member_index.len() - 1 {
                 if self.member_index[i] != *user_id {
                     continue;
                 }
                 self.member_index[i] = 0;
                 break;
             }
-
             if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
                 for i in self.members.keys() {
                     self.owner_id = *i;
@@ -357,9 +356,7 @@ impl Room {
                 }
                 self.room_notice(user_id);
             }
-            self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, user_id);
         }
-        res
     }
 
     ///换队伍

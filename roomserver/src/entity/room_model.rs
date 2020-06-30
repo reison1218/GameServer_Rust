@@ -11,7 +11,7 @@ use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::sync::mpsc::SyncSender;
-use tools::cmd_code::ClientCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::protos::room::S_LEAVE_ROOM;
 use tools::tcp::TcpSender;
@@ -395,16 +395,25 @@ impl RoomModel for MatchRoom {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
         room.remove_member(user_id);
+        let member_count = room.get_member_count() as u32;
+        let mut need_add_cache = true;
         if room.is_empty() {
             self.rm_room(&room_id)?;
+            need_add_cache = false;
         }
         let room_cache = self.get_room_cache_mut(&room_id);
         if room_cache.is_some() {
             let rc = room_cache.unwrap();
             rc.count -= 1;
             //重新排序
-            self.room_cache
-                .sort_by(|a, b| a.count.partial_cmp(&b.count).unwrap());
+            self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
+        } else if room_cache.is_none() && need_add_cache {
+            let mut rc = RoomCache::default();
+            rc.room_id = room_id;
+            rc.count = member_count;
+            self.room_cache.push(rc);
+            //重新排序
+            self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
         }
         Ok(room_id)
     }
@@ -483,7 +492,7 @@ impl MatchRoom {
                 room_cache_array.pop();
                 //创建延迟任务，并发送给定时器接收方执行
                 let mut task = Task::default();
-                task.delay = 60_u64;
+                task.delay = 5000_u64;
                 task.cmd = TaskCmd::MatchRoomStart as u16;
                 let mut map = Map::new();
                 map.insert("battle_type".to_owned(), Value::from(self.battle_type));

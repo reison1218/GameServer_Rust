@@ -108,28 +108,16 @@ fn foo(words: &[&str]) {
 }
 
 fn main() -> anyhow::Result<()> {
-
-    unsafe {
-        let mut str = "test".to_owned();
-        let s_p = &str as *const String;
-        let s_p_m = &mut str as *mut String;
-        assert_eq!(s_p, s_p_m);
-        println!("s_p:{}", *s_p);
-        println!("s_p_m:{}", *s_p_m);
-        std::mem::drop(str);
-        let s_p_m = &mut *s_p_m;
-        s_p_m.push_str("sss");
-        println!("str:{:?}", s_p_m);
-
-        let address = 0x7ffee3b103af_usize;
-        let s = address as *mut String;
-        println!("{:?}",s);
-        let s = &mut *s;
-        s.push_str("ss");
-        println!("{:?}",s);
+    for i in 0..=2{
+        let m = move ||{
+            let mut str = "test".to_owned();
+            str.push_str(i.to_string().as_str());
+            tcp_client::test_tcp_client(str.as_str());
+        };
+        std::thread::spawn(m);
+        std::thread::sleep(Duration::from_millis(2000));
     }
-
-    //tcp_client::test_tcp_client("test");
+    tcp_client::test_tcp_client("test");
 
     // block_on(http);
     // print!("http执行完毕");
@@ -198,6 +186,27 @@ async fn async_test(){
     println!("test");
 }
 
+fn test_unsafe(){
+    unsafe {
+        let mut str = "test".to_owned();
+        let s_p = &str as *const String;
+        let s_p_m = &mut str as *mut String;
+        assert_eq!(s_p, s_p_m);
+        println!("s_p:{}", *s_p);
+        println!("s_p_m:{}", *s_p_m);
+        std::mem::drop(str);
+        let s_p_m = &mut *s_p_m;
+        s_p_m.push_str("sss");
+        println!("str:{:?}", s_p_m);
+
+        let address = 0x7ffee3b103af_usize;
+        let s = address as *mut String;
+        println!("{:?}",s);
+        let s = &mut *s;
+        s.push_str("ss");
+        println!("{:?}",s);
+    }
+}
 fn test_sort(){
     let mut v = Vec::new();
     let mut rng = thread_rng();

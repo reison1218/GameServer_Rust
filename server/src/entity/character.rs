@@ -144,7 +144,7 @@ impl Character {
                 grade = 1_usize;
             }
         }
-        cter.set_usize(GRADE.to_string(), 1_usize);
+        cter.set_usize(GRADE.to_string(), grade);
         cter
     }
 

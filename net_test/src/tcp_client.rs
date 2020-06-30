@@ -11,7 +11,7 @@ use crate::ID;
 
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
-use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER};
+use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER, S_ROOM_MEMBER_NOTICE};
 use tools::protos::base::{PlayerPt, CharacterPt};
 
 pub fn test_tcp_client(pid:&str){
@@ -73,27 +73,20 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().flush().unwrap();
 
         //panic!("");
-        std::thread::sleep(Duration::from_secs(2));
+        std::thread::sleep(Duration::from_secs(1));
 
-        // let mut  csr = C_SEARCH_ROOM::new();
-        // csr.set_battle_type(1 as u32);
-        // let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
-        // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
-
-        // std::thread::sleep(Duration::from_secs(2));
-        //
-        let mut cjr = C_JOIN_ROOM::new();
-        cjr.room_id = 458301785;
-        cjr.room_type = 1_u32;
-        let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);
+        let mut  csr = C_SEARCH_ROOM::new();
+        csr.set_battle_type(1 as u32);
+        let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
+        // std::thread::sleep(Duration::from_secs(2));
         //
-        // let mut  csr = C_SEARCH_ROOM::new();
-        // csr.set_model_type(1 as u32);
-        // let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
+        // let mut cjr = C_JOIN_ROOM::new();
+        // cjr.room_id = 458301785;
+        // cjr.room_type = 1_u32;
+        // let bytes = Packet::build_packet_bytes(GameCode::JoinRoom as u32,self.user_id,cjr.write_to_bytes().unwrap(),false,true);
         // self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         // self.ts.as_mut().unwrap().flush().unwrap();
 
@@ -105,7 +98,6 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         // self.ts.as_mut().unwrap().flush().unwrap();
 
-        std::thread::sleep(Duration::from_millis(1000));
         // let mut cpc = C_PREPARE_CANCEL::new();
         // cpc.prepare = true;
         // packet.set_cmd(RoomCode::PrepareCancel as u32);
@@ -114,19 +106,19 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         // self.ts.as_mut().unwrap().flush().unwrap();
 
-        let mut ccc = C_CHOOSE_CHARACTER::new();
-        let mut cp = CharacterPt::new();
-        cp.temp_id = 1001;
-        let mut v = Vec::new();
-        v.push(1001_u32);
-        v.push(1002_u32);
-        cp.set_skills(v);
-        ccc.set_cter(cp);
-        packet.set_cmd(RoomCode::ChoiceCharacter as u32);
-        packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
-        packet.set_len(16+packet.get_data().len() as u32);
-        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
+        // let mut ccc = C_CHOOSE_CHARACTER::new();
+        // let mut cp = CharacterPt::new();
+        // cp.temp_id = 1001;
+        // let mut v = Vec::new();
+        // v.push(1001_u32);
+        // v.push(1002_u32);
+        // cp.set_skills(v);
+        // ccc.set_cter(cp);
+        // packet.set_cmd(RoomCode::ChoiceCharacter as u32);
+        // packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
         // let mut c_r = C_SYNC_DATA::new();
         // let mut pp = PlayerPt::new();
         // let mut v = Vec::new();
@@ -154,23 +146,27 @@ impl ClientHandler for TcpClientHandler {
         if packet.get_cmd() == ClientCode::Login as u32{
             let mut s = S_USER_LOGIN::new();
             s.merge_from_bytes(packet.get_data());
-            println!("from server-login:{:?}----{:?}",packet,s);
+            println!("from server-login:{:?}",s);
         }else if packet.get_cmd() == ClientCode::Room as u32{
             let mut s = S_ROOM::new();
             s.merge_from_bytes(packet.get_data());
-            println!("from server-room:{:?}----{:?}",packet,s);
+            println!("from server-room:{:?}",s);
         }else if packet.get_cmd() == ClientCode::SyncData as u32{
             let mut s = S_SYNC_DATA::new();
             s.merge_from_bytes(packet.get_data());
-            println!("from server-sync:{:?}----{:?}",packet,s);
+            println!("from server-sync:{:?}",s);
         }else if packet.get_cmd() == ClientCode::PrepareCancel as u32{
             let mut s = S_PREPARE_CANCEL::new();
             s.merge_from_bytes(packet.get_data());
-            println!("from server-prepare:{:?}----{:?}",packet,s);
+            println!("from server-prepare:{:?}",s);
         }else if packet.get_cmd() == ClientCode::ChooseCharacter as u32{
             let mut s = S_CHOOSE_CHARACTER::new();
             s.merge_from_bytes(packet.get_data());
-            println!("from server-choosecter:{:?}----{:?}",packet,s);
+            println!("from server-choosecter:{:?}",s);
+        }else if packet.get_cmd() == ClientCode::RoomMemberNotice as u32{
+            let mut s = S_ROOM_MEMBER_NOTICE::new();
+            s.merge_from_bytes(packet.get_data());
+            println!("client:{},from server-mem-notice:{:?}",self.user_id,s);
         }
     }
 

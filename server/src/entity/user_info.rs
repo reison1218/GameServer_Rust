@@ -247,7 +247,7 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
     for cter in user_data.get_characters_ref().cter_map.values() {
-        let mut cter_pt = cter.clone().into();
+        let cter_pt = cter.clone().into();
         pbp.cters.push(cter_pt);
     }
     gr.set_pbp(pbp);

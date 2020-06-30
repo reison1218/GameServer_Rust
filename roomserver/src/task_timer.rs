@@ -3,6 +3,8 @@ use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info};
 use serde_json::Value as JsonValue;
+use std::cell::{Ref, RefCell};
+use std::rc::Rc;
 use std::sync::mpsc::sync_channel;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
@@ -47,7 +49,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
             match task_cmd {
                 TaskCmd::MatchRoomStart => {
                     let m = || {
-                        std::thread::sleep(Duration::from_secs(task.delay));
+                        std::thread::sleep(Duration::from_millis(task.delay));
                         match_room_start(rm_clone, task);
                     };
                     //设置线程名字和堆栈大小
@@ -102,6 +104,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room_id = room_id.unwrap() as u32;
 
     let mut write = rm.write().unwrap();
+
     let match_room = write.match_rooms.get_match_room_mut(&battle_type);
 
     let room = match_room.get_room_mut(&room_id);
@@ -117,11 +120,25 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         }
     }
     if v.len() > 0 {
+        let mut rm_v = Vec::new();
         for member_id in &v[..] {
             let res = match_room.leave_room(&room_id, member_id);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
+            if res.is_err() {}
+            match res {
+                Ok(_) => {
+                    rm_v.push(*member_id);
+                    info!(
+                        "由于匹配房人满，60s倒计时未准备，将玩家T出房间！room_id:{},user_id:{}",
+                        room_id, member_id
+                    );
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
             }
+        }
+        for member_id in rm_v {
+            write.player_room.remove(&member_id);
         }
         return;
     }
