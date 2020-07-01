@@ -1,4 +1,5 @@
 use super::*;
+use chrono::Local;
 use tools::cmd_code::RoomCode;
 
 pub enum TcpClientType {
@@ -93,7 +94,9 @@ impl ClientHandler for TcpClientHandler {
                             error!("write error!mess:{:?}", res.err().unwrap().to_string());
                             return;
                         }
-                        info!("回客户端消息,cmd:{}", packet.get_cmd());
+                        let res = Local::now().timestamp_millis();
+
+                        info!("回客户端消息,cmd:{},time:{}", packet.get_cmd(), res);
                     }
                     None => {
                         warn!(

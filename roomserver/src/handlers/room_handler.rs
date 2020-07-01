@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::character::Character;
-use crate::entity::room::MEMBER_MAX;
+use crate::entity::room::{MemberLeaveNoticeType, MEMBER_MAX};
 use crate::error_return::err_back;
 use std::borrow::BorrowMut;
 use tools::protos::room::S_START;
@@ -98,7 +98,9 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let battle_type = room.setting.battle_type;
     match room_type {
         RoomType::Custom => {
-            let res = rm.custom_room.leave_room(&room_id, &user_id);
+            let res =
+                rm.custom_room
+                    .leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, &user_id);
             if res.is_err() {
                 error!("{:?}", res.err().unwrap());
                 return Ok(());

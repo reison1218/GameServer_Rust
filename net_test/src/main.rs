@@ -2,6 +2,7 @@ mod web;
 mod tcp_client;
 mod web_socket;
 mod mio_test;
+mod map;
 use serde_json::json;
 use std::time::{Duration, SystemTime};
 use protobuf::Message;
@@ -107,8 +108,8 @@ fn foo(words: &[&str]) {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    for i in 0..=2{
+fn test_tcp_client(){
+    for i in 0..=1{
         let m = move ||{
             let mut str = "test".to_owned();
             str.push_str(i.to_string().as_str());
@@ -118,18 +119,9 @@ fn main() -> anyhow::Result<()> {
         std::thread::sleep(Duration::from_millis(2000));
     }
     tcp_client::test_tcp_client("test");
+}
 
-    // block_on(http);
-    // print!("http执行完毕");
-    //block_on(web::test_http_client("1"));
-    //block_on(web::test_http_server());
-    // let mut path = env::current_dir()?;
-    // path.push("/config");
-    // let mut str = path.as_os_str().to_str().unwrap();
-    //let res = str.to_string()+"/config";
-    //println!("{:?}",res);
-
-
+fn test_binary(){
     // let int = 123u32;
     // //(1)最原始直接基础的位操作方法。
     // let mut byte: u8 = 0b0000_0000;
@@ -161,20 +153,17 @@ fn main() -> anyhow::Result<()> {
     // assert_eq!(eq0!(0b0000_1111, 4), true);
     // assert_eq!(set!(0b0000_1111, 0), 0x0f);
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
+}
 
-    // for i in 1..999999{
-    //     let m = move ||{
-    //       loop{
-    //           std::thread::sleep(Duration::from_millis(60000));
-    //       }
-    //     };
-    //     let thread = std::thread::spawn(m);
-    //
-    //     println!("{}",i);
-    // }
-    //test_sort();
+fn main() -> anyhow::Result<()> {
+    //test_tcp_client();
+    //map::test_map();
+    let res = Local::now().timestamp_millis();
+    println!("{}",res);
     Ok(())
 }
+
+
 
 #[derive(Debug)]
 struct Test{

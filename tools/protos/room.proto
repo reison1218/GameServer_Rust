@@ -123,8 +123,9 @@ message S_START{
 //房间成员推送消息
 //cmd:10012
 message S_ROOM_MEMBER_NOTICE{
-    uint32 notice_type = 1;//类型 1:有新加成员 2:成员数据变动 3:成员离开房间
-    MemberPt member = 2;//成员数据
+    uint32 notice_type = 1;//类型 1:有新加成员 2:成员数据变动
+    uint32 index = 2;//成员位置
+    MemberPt member = 3;//成员数据
 }
 
 //房间变动推送
@@ -154,3 +155,9 @@ message S_EMOJI_NOTICE{
     uint32 emoji_id = 2;//表情id
 }
 
+//房间成员推送消息
+//cmd:10018
+message S_ROOM_MEMBER_LEAVE_NOTICE{
+    uint32 notice_type = 1;//类型 1:自己离开 2:被T出去
+    uint32 user_id = 2;//离开的玩家id
+}

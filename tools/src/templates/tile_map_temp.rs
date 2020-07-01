@@ -6,25 +6,18 @@ use anyhow::Result;
 pub struct TileMapTemp {
     pub id: u32,
     pub map: Vec<u32>,
-    pub cell_type: Vec<CellType>,
-    pub world_cell: Vec<WorldCell>,
+    pub cell_rare: Vec<CellRare>,
+    pub world_cell: Vec<u32>,
     pub map_type: u8,
+    pub member_count:u32,
 }
 
 impl Template for TileMapTemp {}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
-pub struct CellType {
-    pub cell_id: u32,
+pub struct CellRare {
+    pub rare: u32,
     pub count: u32,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
-pub struct WorldCell {
-    pub name: String,
-    pub x_index: u32,
-    pub y_index: u32,
-    pub buff_id: Vec<u32>,
 }
 
 #[derive(Debug, Default, Clone)]

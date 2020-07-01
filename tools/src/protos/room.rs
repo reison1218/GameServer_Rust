@@ -3238,6 +3238,7 @@ impl ::protobuf::reflect::ProtobufValue for S_START {
 pub struct S_ROOM_MEMBER_NOTICE {
     // message fields
     pub notice_type: u32,
+    pub index: u32,
     pub member: ::protobuf::SingularPtrField<super::base::MemberPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -3270,7 +3271,22 @@ impl S_ROOM_MEMBER_NOTICE {
         self.notice_type = v;
     }
 
-    // .protos.MemberPt member = 2;
+    // uint32 index = 2;
+
+
+    pub fn get_index(&self) -> u32 {
+        self.index
+    }
+    pub fn clear_index(&mut self) {
+        self.index = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
+    }
+
+    // .protos.MemberPt member = 3;
 
 
     pub fn get_member(&self) -> &super::base::MemberPt {
@@ -3326,6 +3342,13 @@ impl ::protobuf::Message for S_ROOM_MEMBER_NOTICE {
                     self.notice_type = tmp;
                 },
                 2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.index = tmp;
+                },
+                3 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.member)?;
                 },
                 _ => {
@@ -3343,6 +3366,9 @@ impl ::protobuf::Message for S_ROOM_MEMBER_NOTICE {
         if self.notice_type != 0 {
             my_size += ::protobuf::rt::value_size(1, self.notice_type, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.index, ::protobuf::wire_format::WireTypeVarint);
+        }
         if let Some(ref v) = self.member.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -3356,8 +3382,11 @@ impl ::protobuf::Message for S_ROOM_MEMBER_NOTICE {
         if self.notice_type != 0 {
             os.write_uint32(1, self.notice_type)?;
         }
+        if self.index != 0 {
+            os.write_uint32(2, self.index)?;
+        }
         if let Some(ref v) = self.member.as_ref() {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
@@ -3405,6 +3434,11 @@ impl ::protobuf::Message for S_ROOM_MEMBER_NOTICE {
                     |m: &S_ROOM_MEMBER_NOTICE| { &m.notice_type },
                     |m: &mut S_ROOM_MEMBER_NOTICE| { &mut m.notice_type },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "index",
+                    |m: &S_ROOM_MEMBER_NOTICE| { &m.index },
+                    |m: &mut S_ROOM_MEMBER_NOTICE| { &mut m.index },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::MemberPt>>(
                     "member",
                     |m: &S_ROOM_MEMBER_NOTICE| { &m.member },
@@ -3430,6 +3464,7 @@ impl ::protobuf::Message for S_ROOM_MEMBER_NOTICE {
 impl ::protobuf::Clear for S_ROOM_MEMBER_NOTICE {
     fn clear(&mut self) {
         self.notice_type = 0;
+        self.index = 0;
         self.member.clear();
         self.unknown_fields.clear();
     }
@@ -4205,6 +4240,197 @@ impl ::protobuf::reflect::ProtobufValue for S_EMOJI_NOTICE {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct S_ROOM_MEMBER_LEAVE_NOTICE {
+    // message fields
+    pub notice_type: u32,
+    pub user_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_ROOM_MEMBER_LEAVE_NOTICE {
+    fn default() -> &'a S_ROOM_MEMBER_LEAVE_NOTICE {
+        <S_ROOM_MEMBER_LEAVE_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_ROOM_MEMBER_LEAVE_NOTICE {
+    pub fn new() -> S_ROOM_MEMBER_LEAVE_NOTICE {
+        ::std::default::Default::default()
+    }
+
+    // uint32 notice_type = 1;
+
+
+    pub fn get_notice_type(&self) -> u32 {
+        self.notice_type
+    }
+    pub fn clear_notice_type(&mut self) {
+        self.notice_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_notice_type(&mut self, v: u32) {
+        self.notice_type = v;
+    }
+
+    // uint32 user_id = 2;
+
+
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
+    }
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
+    }
+}
+
+impl ::protobuf::Message for S_ROOM_MEMBER_LEAVE_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.notice_type = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.notice_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.notice_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.notice_type != 0 {
+            os.write_uint32(1, self.notice_type)?;
+        }
+        if self.user_id != 0 {
+            os.write_uint32(2, self.user_id)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_ROOM_MEMBER_LEAVE_NOTICE {
+        S_ROOM_MEMBER_LEAVE_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "notice_type",
+                    |m: &S_ROOM_MEMBER_LEAVE_NOTICE| { &m.notice_type },
+                    |m: &mut S_ROOM_MEMBER_LEAVE_NOTICE| { &mut m.notice_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "user_id",
+                    |m: &S_ROOM_MEMBER_LEAVE_NOTICE| { &m.user_id },
+                    |m: &mut S_ROOM_MEMBER_LEAVE_NOTICE| { &mut m.user_id },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_ROOM_MEMBER_LEAVE_NOTICE>(
+                    "S_ROOM_MEMBER_LEAVE_NOTICE",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static S_ROOM_MEMBER_LEAVE_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_ROOM_MEMBER_LEAVE_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(S_ROOM_MEMBER_LEAVE_NOTICE::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for S_ROOM_MEMBER_LEAVE_NOTICE {
+    fn clear(&mut self) {
+        self.notice_type = 0;
+        self.user_id = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_ROOM_MEMBER_LEAVE_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_ROOM_MEMBER_LEAVE_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"C\n\x0bC_JOIN_ROOM\x12\
@@ -4232,16 +4458,18 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
     \x02\x20\x01(\tR\x07errMess\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\
     \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\"a\n\x14S_ROOM_MEMBER_NOTICE\x12\x1f\n\x0bno\
-    tice_type\x18\x01\x20\x01(\rR\nnoticeType\x12(\n\x06member\x18\x02\x20\
-    \x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\
-    \x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\x07setting\x18\x02\
-    \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"$\n\x07C_EMOJI\x12\
-    \x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\x07S_EMOJI\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user\
-    _id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\
-    \rR\x07emojiIdb\x06proto3\
+    \x02\x20\x01(\tR\x07errMess\"w\n\x14S_ROOM_MEMBER_NOTICE\x12\x1f\n\x0bno\
+    tice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x14\n\x05index\x18\x02\x20\
+    \x01(\rR\x05index\x12(\n\x06member\x18\x03\x20\x01(\x0b2\x10.protos.Memb\
+    erPtR\x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\
+    \x01(\rR\x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.R\
+    oomSettingPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\
+    \x20\x01(\rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\
+    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
+    s\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
+    rId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_\
+    MEMBER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnotice\
+    Type\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userIdb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

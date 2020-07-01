@@ -1,4 +1,5 @@
 use crate::entity::member::MemberState;
+use crate::entity::room::MemberLeaveNoticeType;
 use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info};
@@ -122,7 +123,8 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if v.len() > 0 {
         let mut rm_v = Vec::new();
         for member_id in &v[..] {
-            let res = match_room.leave_room(&room_id, member_id);
+            let res =
+                match_room.leave_room(MemberLeaveNoticeType::Kicked as u8, &room_id, member_id);
             if res.is_err() {}
             match res {
                 Ok(_) => {

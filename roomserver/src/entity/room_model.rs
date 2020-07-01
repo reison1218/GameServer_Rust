@@ -1,5 +1,5 @@
 use crate::entity::member::Member;
-use crate::entity::room::RoomMemberNoticeType;
+use crate::entity::room::{MemberLeaveNoticeType, RoomMemberNoticeType};
 use crate::entity::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
@@ -11,6 +11,7 @@ use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::sync::mpsc::SyncSender;
+use tools::cmd_code::ClientCode::MemberLeaveNotice;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::protos::room::S_LEAVE_ROOM;
@@ -212,7 +213,7 @@ pub trait RoomModel {
         owner: Member,
         sender: TcpSender,
     ) -> anyhow::Result<u32>;
-    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
+    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
 
@@ -274,9 +275,9 @@ impl RoomModel for CustomRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
-        room.remove_member(user_id);
+        room.remove_member(notice_type, user_id);
         let mut slr = S_LEAVE_ROOM::new();
         slr.set_is_succ(true);
         let bytes = Packet::build_packet_bytes(
@@ -334,7 +335,7 @@ impl MatchRooms {
             anyhow::bail!("{:?}", str)
         }
         let match_room = match_room.unwrap();
-        let res = match_room.leave_room(&room_id, user_id);
+        let res = match_room.leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, user_id);
         res
     }
 
@@ -391,10 +392,10 @@ impl RoomModel for MatchRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
-        room.remove_member(user_id);
+        room.remove_member(notice_type, user_id);
         let member_count = room.get_member_count() as u32;
         let mut need_add_cache = true;
         if room.is_empty() {

@@ -5,9 +5,11 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE};
+use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE};
 use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
 use crate::templates::constant_temp::{ConstantTempMgr,ConstantTemp};
+use crate::templates::world_cell_temp::{WorldCellTempMgr, WorldCellTemp};
+use crate::templates::cell_temp::{CellTempMgr, CellTemp};
 
 pub trait Template {}
 
@@ -22,6 +24,8 @@ pub struct TemplatesMgr {
     tile_map_temp_mgr: TileMapTempMgr,//地图配置mgr
     emoji_temp_mgr:EmojiTempMgr,//表情配置mgr
     constant_temp_mgr:ConstantTempMgr,//常量配置mgr
+    world_cell_temp_mgr:WorldCellTempMgr,//worldcell配置mgr
+    cell_temp_mgr:CellTempMgr,//cell配置mgr
 }
 
 impl TemplatesMgr {
@@ -39,6 +43,14 @@ impl TemplatesMgr {
 
     pub fn get_constant_ref(&self) -> &ConstantTempMgr {
         self.constant_temp_mgr.borrow()
+    }
+
+    pub fn get_world_cell_ref(&self) -> &WorldCellTempMgr {
+        self.world_cell_temp_mgr.borrow()
+    }
+
+    pub fn get_cell_ref(&self) -> &CellTempMgr {
+        self.cell_temp_mgr.borrow()
     }
 }
 
@@ -83,6 +95,14 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<ConstantTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.constant_temp_mgr = ConstantTempMgr::default();
             temps_mgr.constant_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(WORLD_CELL_TEMPLATE) {
+            let v: Vec<WorldCellTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.world_cell_temp_mgr = WorldCellTempMgr::default();
+            temps_mgr.world_cell_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(CELL_TEMPLATE) {
+            let v: Vec<CellTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.cell_temp_mgr = CellTempMgr::default();
+            temps_mgr.cell_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

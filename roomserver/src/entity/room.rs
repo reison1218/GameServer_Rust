@@ -11,7 +11,7 @@ use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
     S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
-    S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
+    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -22,7 +22,11 @@ pub const MEMBER_MAX: u8 = 4;
 pub enum RoomMemberNoticeType {
     AddMember = 1,
     UpdateMember = 2,
-    LeaveMmeber = 3,
+}
+
+pub enum MemberLeaveNoticeType {
+    Leave = 1,  //自己离开
+    Kicked = 2, //被T
 }
 
 pub enum RoomState {
@@ -174,15 +178,10 @@ impl Room {
             error!("{:?}", res.err().unwrap());
         }
         //推送给房间其他人
-
         let mut sen = S_EMOJI_NOTICE::new();
         sen.user_id = user_id;
         sen.emoji_id = emoji_id;
         for user_id in self.members.keys() {
-            if *user_id == packet.get_user_id() {
-                continue;
-            }
-
             let bytes = Packet::build_packet_bytes(
                 ClientCode::EmojiNotice as u32,
                 *user_id,
@@ -198,23 +197,44 @@ impl Room {
         }
     }
 
+    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32) {
+        let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
+        srmln.set_notice_type(notice_type as u32);
+        srmln.set_user_id(*user_id);
+        let mut packet = Packet::new(ClientCode::MemberLeaveNotice as u32, 0, 0);
+        packet.set_data_from_vec(srmln.write_to_bytes().unwrap());
+        packet.set_is_broad(false);
+        packet.set_is_client(true);
+        for member_id in self.members.keys() {
+            packet.set_user_id(*member_id);
+            let res = self.sender.write(packet.build_server_bytes());
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap().to_string());
+            }
+        }
+    }
+
+    pub fn get_member_index(&self, user_id: u32) -> i32 {
+        for i in 0..self.member_index.len() {
+            if self.member_index[i] != user_id {
+                continue;
+            }
+            return i as i32;
+        }
+        -1_i32
+    }
+
     ///推送消息
     pub fn room_member_notice(&mut self, notice_type: u8, user_id: &u32) {
         let mut srmn = S_ROOM_MEMBER_NOTICE::new();
         srmn.set_notice_type(notice_type as u32);
-
+        srmn.set_index(self.get_member_index(*user_id) as u32);
         let member = self.members.get(user_id);
-        if notice_type == RoomMemberNoticeType::LeaveMmeber as u8 {
-            let mut mp = MemberPt::new();
-            mp.user_id = *user_id;
-            srmn.set_member(mp);
-        } else {
-            if member.is_none() {
-                return;
-            }
-            let mp = member.unwrap().clone().into();
-            srmn.set_member(mp);
+        if member.is_none() {
+            return;
         }
+        let mp = member.unwrap().clone().into();
+        srmn.set_member(mp);
 
         let mut packet = Packet::new(ClientCode::RoomMemberNotice as u32, 0, 0);
         packet.set_data_from_vec(srmn.write_to_bytes().unwrap());
@@ -334,10 +354,10 @@ impl Room {
     }
 
     ///移除玩家
-    pub fn remove_member(&mut self, user_id: &u32) {
+    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32) {
         let res = self.members.get(user_id);
         if res.is_some() {
-            self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, user_id);
+            self.member_leave_notice(notice_type, user_id);
             self.members.remove(user_id);
             for i in 0..=self.member_index.len() - 1 {
                 if self.member_index[i] != *user_id {
@@ -390,9 +410,7 @@ impl Room {
         if !self.members.contains_key(target_id) {
             return Err("该玩家不在房间内");
         }
-        //通知其他成员
-        self.room_member_notice(RoomMemberNoticeType::LeaveMmeber as u8, target_id);
-        self.members.remove(target_id);
+
         let mut skm = S_KICK_MEMBER::new();
         skm.is_succ = true;
         let bytes = Packet::build_packet_bytes(
@@ -406,6 +424,8 @@ impl Room {
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
         }
+        //移除玩家
+        self.remove_member(MemberLeaveNoticeType::Kicked as u8, target_id);
 
         Ok(())
     }

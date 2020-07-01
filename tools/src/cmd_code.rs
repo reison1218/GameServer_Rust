@@ -90,6 +90,8 @@ pub enum ClientCode{
     Emoji=10016,
     //表情推送
     EmojiNotice = 10017,
+    //离开房间推送
+    MemberLeaveNotice = 10018,
     //最大命令号
     Max = 20000,
 }

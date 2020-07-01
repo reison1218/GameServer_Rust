@@ -3,6 +3,11 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct CterCell{
+    cell_id:u32,
+    count:u32,
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CharacterTemp {
     pub id: u32,
     pub hp_max: u16,
@@ -13,6 +18,7 @@ pub struct CharacterTemp {
     pub lock_skills: Vec<u32>,
     pub is_dlc: u8,
     pub is_init: u8,
+    pub cter_cell:CterCell
 }
 
 impl Template for CharacterTemp {}
