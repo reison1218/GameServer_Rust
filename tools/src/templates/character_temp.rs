@@ -4,8 +4,8 @@ use std::collections::HashMap;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CterCell{
-    cell_id:u32,
-    count:u32,
+    pub cell_id:u32,
+    pub count:u32,
 }
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CharacterTemp {

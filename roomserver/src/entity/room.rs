@@ -5,6 +5,7 @@ use chrono::{DateTime, Local, Utc};
 use log::error;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
@@ -53,7 +54,7 @@ pub struct Room {
     state: u8,                         //房间状态
     pub setting: RoomSetting,          //房间设置
     room_type: u8,                     //房间类型
-    pub sender: TcpSender,             //sender
+    sender: TcpSender,                 //sender
     time: DateTime<Utc>,               //房间创建时间
 }
 
@@ -102,13 +103,21 @@ impl Room {
             true,
             true,
         );
-        let res = room.sender.write(bytes);
-        if res.is_err() {
-            let str = format!("{:?}", res.err().unwrap().to_string());
-            error!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
+        room.sender.write(bytes);
         Ok(room)
+    }
+
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
+        self.get_sender_mut().write(bytes);
+    }
+
+    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
+        self.sender.borrow_mut()
+    }
+
+    pub fn set_sender(&mut self, sender: TcpSender) {
+        self.sender = sender;
     }
 
     ///检查角色
@@ -140,10 +149,7 @@ impl Room {
             true,
             true,
         );
-        let res = self.sender.write(bytes);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap().to_string());
-        }
+        self.sender.write(bytes);
     }
 
     ///房间变更通知
@@ -157,10 +163,7 @@ impl Room {
         packet.set_is_broad(false);
         for id in self.members.keys() {
             packet.set_user_id(*id);
-            let res = self.sender.write(packet.build_server_bytes());
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap().to_string());
-            }
+            self.sender.write(packet.build_server_bytes());
         }
     }
 
@@ -173,10 +176,8 @@ impl Room {
         let mut sej = S_EMOJI::new();
         sej.is_succ = true;
         packet.set_data_from_vec(sej.write_to_bytes().unwrap());
-        let res = self.sender.write(packet.build_server_bytes());
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap());
-        }
+        self.sender.write(packet.build_server_bytes());
+
         //推送给房间其他人
         let mut sen = S_EMOJI_NOTICE::new();
         sen.user_id = user_id;
@@ -189,11 +190,7 @@ impl Room {
                 true,
                 true,
             );
-            let res = self.sender.write(bytes);
-            match res {
-                Err(e) => error!("{:?}", e.to_string()),
-                Ok(_) => {}
-            }
+            self.sender.write(bytes);
         }
     }
 
@@ -207,10 +204,7 @@ impl Room {
         packet.set_is_client(true);
         for member_id in self.members.keys() {
             packet.set_user_id(*member_id);
-            let res = self.sender.write(packet.build_server_bytes());
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap().to_string());
-            }
+            self.sender.write(packet.build_server_bytes());
         }
     }
 
@@ -243,10 +237,7 @@ impl Room {
         if self.get_member_count() > 0 {
             for id in self.members.keys() {
                 packet.set_user_id(*id);
-                let res = self.sender.write(packet.build_server_bytes());
-                if res.is_err() {
-                    error!("{:?}", res.err().unwrap().to_string());
-                }
+                self.sender.write(packet.build_server_bytes());
             }
         }
     }
@@ -343,11 +334,8 @@ impl Room {
             true,
             true,
         );
-        let res = self.sender.write(bytes);
-        if res.is_err() {
-            let str = format!("{:?}", res.err().unwrap().to_string());
-            error!("{:?}", str.as_str());
-        }
+        self.sender.write(bytes);
+
         //通知房间里其他人
         self.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
         Ok(self.id)
@@ -391,11 +379,8 @@ impl Room {
             true,
             true,
         );
-        let res = self.sender.write(bytes);
-        if res.is_err() {
-            let str = format!("{:?}", res.err().unwrap().to_string());
-            error!("{:?}", str.as_str());
-        }
+        self.sender.write(bytes);
+
         let mut member = self.get_member_mut(user_id).unwrap();
         member.team_id = *team_id;
         //推送其他玩家
@@ -420,10 +405,7 @@ impl Room {
             true,
             true,
         );
-        let res = self.sender.write(bytes);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap().to_string());
-        }
+        self.sender.write(bytes);
         //移除玩家
         self.remove_member(MemberLeaveNoticeType::Kicked as u8, target_id);
 

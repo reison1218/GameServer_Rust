@@ -1,4 +1,3 @@
-use log::error;
 use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{S_MODIFY_NICK_NAME, S_SYNC_DATA, S_USER_LOGIN};
@@ -22,10 +21,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::SyncData => {
             let mut sul = S_SYNC_DATA::new();
@@ -38,10 +34,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::NickNameModify => {
             let mut sul = S_MODIFY_NICK_NAME::new();
@@ -54,10 +47,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::Room => {
             let mut sul = S_ROOM::new();
@@ -70,10 +60,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::LeaveRoom => {
             let mut sul = S_LEAVE_ROOM::new();
@@ -86,10 +73,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::Start => {
             let mut sul = S_START::new();
@@ -102,10 +86,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::ChangeTeam => {
             let mut sul = S_CHANGE_TEAM::new();
@@ -118,10 +99,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::PrepareCancel => {
             let mut sul = S_PREPARE_CANCEL::new();
@@ -134,10 +112,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::RoomSetting => {
             let mut sul = S_ROOM_SETTING::new();
@@ -150,10 +125,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::RoomMemberNotice => {}
         ClientCode::KickMember => {
@@ -167,10 +139,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::ChooseCharacter => {
             let mut sul = S_CHOOSE_CHARACTER::new();
@@ -183,10 +152,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::RoomNotice => {}
         ClientCode::Emoji => {
@@ -200,10 +166,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
                 true,
                 true,
             );
-            let res = sender.write(bytes);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            sender.write(bytes);
         }
         ClientCode::EmojiNotice => {}
         _ => {}

@@ -2,7 +2,6 @@ use super::*;
 use crate::entity::character::Character;
 use crate::entity::room::{MemberLeaveNoticeType, MEMBER_MAX};
 use crate::error_return::err_back;
-use std::borrow::BorrowMut;
 use tools::protos::room::S_START;
 
 ///创建房间
@@ -51,11 +50,9 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //创建房间
     match room_type {
         RoomType::Custom => {
-            room_id = rm.custom_room.create_room(
-                BattleType::None as u8,
-                owner,
-                rm.sender.as_ref().unwrap().clone(),
-            )?;
+            room_id =
+                rm.custom_room
+                    .create_room(BattleType::None as u8, owner, rm.get_sender_clone())?;
         }
         _ => {}
     }
@@ -85,12 +82,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 user_id
             );
             warn!("{:?}", str.as_str());
-            err_back(
-                ClientCode::LeaveRoom,
-                user_id,
-                str,
-                room.sender.borrow_mut(),
-            );
+            err_back(ClientCode::LeaveRoom, user_id, str, room.get_sender_mut());
             return Ok(());
         }
     }
@@ -177,14 +169,11 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     //执行正常流程
+    let sender = rm.get_sender_clone();
     let match_room = rm.match_rooms.get_match_room_mut(&battle_type);
     let member = Member::from(grs.take_pbp());
 
-    let res = match_room.quickly_start(
-        member,
-        rm.sender.clone().unwrap(),
-        rm.task_sender.clone().unwrap(),
-    );
+    let res = match_room.quickly_start(member, sender, rm.task_sender.clone().unwrap());
     //返回错误信息
     if res.is_err() {
         let str = res.err().unwrap().to_string();
@@ -230,7 +219,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             ClientCode::ChooseCharacter,
             user_id,
             str,
-            room.sender.borrow_mut(),
+            room.get_sender_mut(),
         );
         return Ok(());
     }
@@ -260,17 +249,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let mut ss = S_START::new();
     ss.is_succ = true;
-    let bytes = Packet::build_packet_bytes(
-        ClientCode::Start as u32,
-        user_id,
-        ss.write_to_bytes().unwrap(),
-        true,
-        true,
-    );
-    let res = room.sender.write(bytes);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap());
-    }
+    room.send_2_client(ClientCode::Start, user_id, ss.write_to_bytes().unwrap());
     Ok(())
 }
 
@@ -455,17 +434,11 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //回给客户端
-    let bytes = Packet::build_packet_bytes(
-        ClientCode::RoomSetting as u32,
+    room.send_2_client(
+        ClientCode::RoomSetting,
         user_id,
         srs.write_to_bytes().unwrap(),
-        true,
-        true,
     );
-    let res = room.sender.write(bytes);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
-    }
     room.room_notice(&user_id);
     Ok(())
 }
@@ -566,7 +539,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
             ClientCode::ChooseCharacter,
             user_id,
             str,
-            room.sender.borrow_mut(),
+            room.get_sender_mut(),
         );
         return Ok(());
     }
@@ -589,7 +562,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
             ClientCode::ChooseCharacter,
             user_id,
             str,
-            room.sender.borrow_mut(),
+            room.get_sender_mut(),
         );
         return Ok(());
     }
@@ -654,17 +627,11 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     scc.is_succ = true;
 
     //返回客户端
-    let bytes = Packet::build_packet_bytes(
-        ClientCode::ChooseCharacter as u32,
+    room.send_2_client(
+        ClientCode::ChooseCharacter,
         user_id,
         scc.write_to_bytes().unwrap(),
-        true,
-        true,
     );
-    let res = room.sender.write(bytes);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
-    }
     //通知其他成员
     room.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, &user_id);
     Ok(())

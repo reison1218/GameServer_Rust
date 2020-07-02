@@ -89,14 +89,8 @@ impl ClientHandler for TcpClientHandler {
 
                 match gate_user {
                     Some(user) => {
-                        let res = user.get_tcp_mut_ref().write(packet.build_client_bytes());
-                        if res.is_err() {
-                            error!("write error!mess:{:?}", res.err().unwrap().to_string());
-                            return;
-                        }
-                        let res = Local::now().timestamp_millis();
-
-                        info!("回客户端消息,cmd:{},time:{}", packet.get_cmd(), res);
+                        user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                        info!("回客户端消息,cmd:{}", packet.get_cmd());
                     }
                     None => {
                         warn!(

@@ -70,10 +70,7 @@ impl TcpServerHandler {
         let res = self.tcp.as_mut();
         match res {
             Some(ts) => {
-                let res = ts.write(bytes);
-                if res.is_err() {
-                    error!("write error!mess:{:?}", res.err().unwrap().to_string());
-                }
+                ts.write(bytes);
             }
             None => {
                 warn!("TcpServerHandler's tcp is None!");

@@ -109,7 +109,7 @@ impl Into<CharacterPt> for Character {
             Ok(grade) => {
                 cter_pt.set_grade(grade);
             }
-            Err(e) => {
+            Err(_) => {
                 cter_pt.set_grade(1);
             }
         }

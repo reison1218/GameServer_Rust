@@ -28,7 +28,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_open(&mut self, sender: TcpSender) {
-        self.rm.write().unwrap().sender = Some(sender);
+        self.rm.write().unwrap().set_sender(sender);
     }
 
     fn on_close(&mut self) {

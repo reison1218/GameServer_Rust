@@ -158,7 +158,7 @@ pub async fn send_http_request(
     info!("connecting to {:?}", str.as_str());
     let url = Url::parse(str.as_str())?;
     let mut req = Request::new(http_method.unwrap(), url);
-    req.insert_header("Content-Type", "application/json");
+    req.insert_header("Content-Type", "application/json")?;
     match params {
         Some(p) => {
             req.set_body(Body::from(p.to_string()));

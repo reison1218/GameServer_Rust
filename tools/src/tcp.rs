@@ -4,8 +4,6 @@ use std::io::Read;
 use std::marker::{Send, Sync};
 use std::net::Shutdown;
 use std::net::TcpStream;
-use std::sync::mpsc::SendError;
-use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
 
 ///The TCP server side handler is used to handle TCP general events, such as connections,
@@ -25,16 +23,22 @@ pub trait Handler: Send + Sync {
 ///tcp server sender
 #[derive(Clone,Debug)]
 pub struct TcpSender {
-    pub sender: SyncSender<Data>,
+    pub sender: crossbeam::channel::Sender<Data>,
     pub token: usize,
 }
 
 impl TcpSender {
-    pub fn write(&mut self, bytes: Vec<u8>) -> Result<(), SendError<Data>> {
-        self.sender.send(Data {
+    pub fn write(&mut self, bytes: Vec<u8>){
+        let res = self.sender.send(Data {
             bytes,
             token: self.token,
-        })
+        });
+        match res {
+            Ok(_)=>{}
+            Err(e)=>{
+                error!("{:?}",e);
+            }
+        }
     }
 
     fn get_token(&self) -> usize {
@@ -113,7 +117,7 @@ pub mod tcp_server {
         // Unique token for each incoming connection.
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
-        let (sender, rec) = std::sync::mpsc::sync_channel(102400);
+        let (sender, rec) = crossbeam::crossbeam_channel::bounded(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
 
@@ -206,7 +210,7 @@ pub mod tcp_server {
 
     ///Read the data from the sender of the handler
     fn read_sender_mess(
-        rec: Receiver<Data>,
+        rec: crossbeam::channel::Receiver<Data>,
         connections: Arc<RwLock<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
@@ -224,12 +228,12 @@ pub mod tcp_server {
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 if res.is_err(){
-                                    error!("{:?}",res.err().unwrap().to_string());
+                                    error!("{:?}",res.err().unwrap());
                                     continue;
                                 }
                                 let res = ts.flush();
                                 if res.is_err(){
-                                    error!("{:?}",res.err().unwrap().to_string());
+                                    error!("{:?}",res.err().unwrap());
                                 }
                             }
                             None => {
@@ -255,7 +259,7 @@ pub mod tcp_server {
 
     /// Returns `true` if the connection is done.
     fn handle_connection_event<T: Handler>(
-        registry: &Registry,
+        _: &Registry,
         connection: &mut MioTcpStream,
         event: &Event,
         handler: &mut T,

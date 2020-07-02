@@ -9,6 +9,7 @@ use crate::handlers::room_handler::{
 use crate::task_timer::Task;
 use log::{error, warn};
 use std::sync::mpsc::SyncSender;
+use tools::cmd_code::ClientCode;
 use tools::util::packet::Packet;
 
 //房间服管理器
@@ -17,7 +18,7 @@ pub struct RoomMgr {
     pub match_rooms: MatchRooms,        //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,告32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
-    pub sender: Option<TcpSender>,             //tcp channel的发送方
+    sender: Option<TcpSender>,                 //tcp channel的发送方
     pub task_sender: Option<SyncSender<Task>>, //task channel的发送方
 }
 
@@ -38,6 +39,19 @@ impl RoomMgr {
         };
         rm.cmd_init();
         rm
+    }
+
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
+        self.get_sender_mut().write(bytes);
+    }
+
+    pub fn set_sender(&mut self, sender: TcpSender) {
+        self.sender = Some(sender);
+    }
+
+    pub fn get_sender_clone(&self) -> TcpSender {
+        self.sender.clone().unwrap()
     }
 
     pub fn get_sender_mut(&mut self) -> &mut TcpSender {
@@ -79,10 +93,7 @@ impl RoomMgr {
             error!("room_mgr'sender is None!");
             return;
         }
-        let res = self.sender.as_mut().unwrap().write(bytes);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap().to_string());
-        }
+        self.sender.as_mut().unwrap().write(bytes);
     }
 
     pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {

@@ -5,14 +5,14 @@ use crate::entity::EntityData;
 use chrono::Local;
 use protobuf::Message;
 use std::sync::mpsc::Sender;
-use tools::cmd_code::ClientCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::tcp::TcpSender;
 
 ///gameMgr结构体
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
-    pub sender: Option<TcpSender>,     //tcpchannel
+    sender: Option<TcpSender>,         //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
 
@@ -28,6 +28,24 @@ impl GameMgr {
         //初始化命令
         gm.cmd_init();
         gm
+    }
+
+    pub fn set_sender(&mut self, sender: TcpSender) {
+        self.sender = Some(sender);
+    }
+
+    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
+        self.sender.as_mut().unwrap()
+    }
+
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
+        self.get_sender_mut().write(bytes);
+    }
+
+    pub fn send_2_room(&mut self, cmd: RoomCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, false);
+        self.get_sender_mut().write(bytes);
     }
 
     pub fn save_user_http(&mut self) {
@@ -148,7 +166,7 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     gm.sender
         .as_mut()
         .unwrap()
-        .write(packet.build_server_bytes())?;
+        .write(packet.build_server_bytes());
     info!("执行同步函数");
     Ok(())
 }

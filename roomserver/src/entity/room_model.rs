@@ -11,14 +11,12 @@ use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::sync::mpsc::SyncSender;
-use tools::cmd_code::ClientCode::MemberLeaveNotice;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::protos::room::S_LEAVE_ROOM;
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
-use tools::util::packet::Packet;
 
 ///teamID枚举
 pub enum TeamId {
@@ -280,17 +278,11 @@ impl RoomModel for CustomRoom {
         room.remove_member(notice_type, user_id);
         let mut slr = S_LEAVE_ROOM::new();
         slr.set_is_succ(true);
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::LeaveRoom as u32,
+        room.send_2_client(
+            ClientCode::LeaveRoom,
             *user_id,
             slr.write_to_bytes().unwrap(),
-            true,
-            true,
         );
-        let res = room.sender.write(bytes);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap());
-        }
         let room_id = room.get_room_id();
         //如果房间空了，则直接移除房间
         if room.is_empty() {

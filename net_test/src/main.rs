@@ -11,8 +11,8 @@ use protobuf::Message;
 // use tcp::util::bytebuf::ByteBuf;
 // use tcp::util::packet::Packet;
 
-use std::collections::{HashMap, BinaryHeap, LinkedList};
-use std::sync::mpsc::Receiver;
+use std::collections::{HashMap, BinaryHeap, LinkedList, HashSet};
+use std::sync::mpsc::{Receiver, channel};
 
 //use tokio::net::{TcpListener as TokioTcpListener,TcpStream as TokioTcpStream};
 //use tokio::prelude::*;
@@ -59,6 +59,7 @@ use std::mem::Discriminant;
 use futures::executor::block_on;
 use std::thread::Thread;
 use rayon::prelude::ParallelSliceMut;
+use futures::SinkExt;
 
 
 #[macro_use]
@@ -158,14 +159,64 @@ fn test_binary(){
 fn main() -> anyhow::Result<()> {
     //test_tcp_client();
     //map::test_map();
-    let res = Local::now().timestamp_millis();
-    println!("{}",res);
+    // let res = Local::now().timestamp_millis();
+    // println!("{}",res);
+    //test_channel();
+
+    let mut hs = HashSet::new();
+    hs.insert(1);
     Ok(())
+}
+
+fn test_channel(){
+    let (std_sender,std_rec) = std::sync::mpsc::sync_channel(102400);
+    let m = move||{
+        let mut size = 0;
+        let rec_time = std::time::SystemTime::now();
+      loop{
+          let res = std_rec.recv().unwrap();
+          size+=1;
+          if size == 99999999{
+              println!("std_rec time:{:?}",rec_time.elapsed().unwrap());
+          }
+      }
+    };
+    std::thread::spawn(m);
+    let send_time = std::time::SystemTime::now();
+    for i in 0..99999999{
+        std_sender.send(Test::default());
+    }
+    println!("std_send time:{:?}",send_time.elapsed().unwrap());
+
+    let (cb_sender,cb_rec) = crossbeam::crossbeam_channel::bounded(102400);
+
+    let m = move||{
+        let mut size = 0;
+        let rec_time = std::time::SystemTime::now();
+        loop{
+            let res = cb_rec.recv().unwrap();
+            size+=1;
+            if size == 99999999{
+                println!("cb_rec time:{:?}",rec_time.elapsed().unwrap());
+            }
+        }
+    };
+    std::thread::spawn(m);
+    let send_time = std::time::SystemTime::now();
+    for i in 0..99999999{
+        cb_sender.send(Test::default());
+    }
+    println!("cb_send time:{:?}",send_time.elapsed().unwrap());
+
+
+
+    std::thread::sleep(Duration::from_millis(5000));
+
 }
 
 
 
-#[derive(Debug)]
+#[derive(Debug,Default)]
 struct Test{
     str:String
 }

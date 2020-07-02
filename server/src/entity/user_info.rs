@@ -169,7 +169,7 @@ impl User {
 
 ///请求修改昵称
 #[warn(unreachable_code)]
-pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+pub fn modify_nick_name(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
@@ -182,8 +182,6 @@ pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<
     let res = cmn.merge_from_bytes(packet.get_data());
 
     let mut is_success = true;
-    packet.set_cmd(ClientCode::NickNameModify as u32);
-    packet.set_is_client(true);
     if res.is_err() {
         is_success = false;
         error!(
@@ -204,17 +202,18 @@ pub fn modify_nick_name(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<
             .set_nick_name(cmn.nick_name.as_str());
     }
     s_s_d.is_succ = is_success;
-    packet.set_data_from_vec(s_s_d.write_to_bytes()?);
-    gm.sender
-        .as_mut()
-        .unwrap()
-        .write(packet.build_server_bytes())?;
+
+    gm.send_2_client(
+        ClientCode::NickNameModify,
+        user_id,
+        s_s_d.write_to_bytes().unwrap(),
+    );
     info!("执行修改昵称函数!");
     Ok(())
 }
 
 ///创建房间
-pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -225,15 +224,7 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        packet.set_data_from_vec(s_r.write_to_bytes().unwrap());
-        let res = gm
-            .sender
-            .as_mut()
-            .unwrap()
-            .write(packet.build_client_bytes());
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap().to_string());
-        }
+        gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes().unwrap());
         return Ok(());
     }
 
@@ -252,23 +243,12 @@ pub fn create_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     }
     gr.set_pbp(pbp);
     //发给房间
-    packet.set_cmd(RoomCode::CreateRoom as u32);
-    packet.set_is_client(false);
-    packet.set_data_from_vec(gr.write_to_bytes()?);
-
-    let res = gm
-        .sender
-        .as_mut()
-        .unwrap()
-        .write(packet.build_server_bytes());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
-    }
+    gm.send_2_room(RoomCode::CreateRoom, user_id, gr.write_to_bytes().unwrap());
     Ok(())
 }
 
 ///创建房间
-pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -279,12 +259,7 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        packet.set_cmd(ClientCode::Room as u32);
-        packet.set_data_from_vec(s_r.write_to_bytes()?);
-        gm.sender
-            .as_mut()
-            .unwrap()
-            .write(packet.build_client_bytes())?;
+        gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes()?);
         anyhow::bail!(str)
     }
 
@@ -307,20 +282,12 @@ pub fn join_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     grj.set_room_type(cjr.room_type);
     grj.set_pbp(pbp);
     //发给房间
-    let bytes = Packet::build_packet_bytes(
-        RoomCode::JoinRoom as u32,
-        packet.get_user_id(),
-        grj.write_to_bytes()?,
-        true,
-        false,
-    );
-
-    gm.sender.as_mut().unwrap().write(bytes)?;
+    gm.send_2_room(RoomCode::JoinRoom, user_id, grj.write_to_bytes()?);
     Ok(())
 }
 
 ///匹配房间
-pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -331,12 +298,7 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        packet.set_cmd(ClientCode::Room as u32);
-        packet.set_data_from_vec(s_r.write_to_bytes()?);
-        gm.sender
-            .as_mut()
-            .unwrap()
-            .write(packet.build_client_bytes())?;
+        gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes()?);
         anyhow::bail!(str)
     }
 
@@ -358,14 +320,6 @@ pub fn search_room(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
     grs.set_battle_type(csr.get_battle_type());
     grs.set_pbp(pbp);
     //发给房间
-    let bytes = Packet::build_packet_bytes(
-        RoomCode::SearchRoom as u32,
-        packet.get_user_id(),
-        grs.write_to_bytes()?,
-        true,
-        false,
-    );
-
-    gm.sender.as_mut().unwrap().write(bytes)?;
+    gm.send_2_room(RoomCode::SearchRoom, user_id, grs.write_to_bytes()?);
     Ok(())
 }
