@@ -127,7 +127,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
                 Ok(_) => {
                     rm_v.push(*member_id);
                     info!(
-                        "由于匹配房人满，60s倒计时未准备，将玩家T出房间！room_id:{},user_id:{}",
+                        "由于匹配房人满，倒计时有玩家未准备，将未准备的玩家T出房间！room_id:{},user_id:{}",
                         room_id, member_id
                     );
                 }
