@@ -1,5 +1,5 @@
 use std::env;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use tools::templates::tile_map_temp::TileMapTempMgr;
 use rand::{random, Rng};
 use std::borrow::Borrow;
@@ -50,9 +50,10 @@ impl TileMapData{
             }
             let index = rand.gen_range(0,empty_v.len());
             let index_value = empty_v.get(index).unwrap();
-            map[*index_value] = *cell_id;
+            let index_value = *index_value;
+            map[index_value] = *cell_id;
             empty_v.remove(index);
-            tmd.world_cell_map.insert(index as u32,*cell_id);
+            tmd.world_cell_map.insert(index_value as u32,*cell_id);
         }
 
         //然后决定角色的cell
@@ -71,7 +72,6 @@ impl TileMapData{
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter(){
             let type_vec = temp_mgr.get_cell_ref().rare_map.get(&cell_rare.rare).unwrap();
-            println!("rare:{},type_vec:{:?}",cell_rare.rare,type_vec);
             let mut size = 0;
             for cell_type in type_vec.iter(){
                 if size >= cell_rare.count{
@@ -79,7 +79,7 @@ impl TileMapData{
                 }
 
                 //先随出celltype列表中的一个
-                let cell_v = temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap();
+                let cell_v = hs_2_v(&temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap());
                 let index = rand.gen_range(0,cell_v.len());
                 let ss = cell_v.get(index).unwrap();
 
@@ -87,7 +87,7 @@ impl TileMapData{
                     //然后再随机放入地图里
                     let index = rand.gen_range(0,empty_v.len());
                     let index_value = empty_v.get(index).unwrap();
-                    map[*index_value] = ss.id;
+                    map[*index_value] = *ss;
                     empty_v.remove(index);
                     size+=1;
                 }
@@ -98,4 +98,12 @@ impl TileMapData{
         }
         tmd
     }
+}
+
+fn hs_2_v(hs:&HashSet<u32>)->Vec<u32>{
+    let mut v = Vec::new();
+    for i in hs.iter(){
+        v.push(*i);
+    }
+    v
 }

@@ -16,6 +16,7 @@ pub struct Cell {
 }
 
 impl TileMap {
+    #[warn(dead_code)]
     pub fn new(temp: &TileMapTemp) -> anyhow::Result<Self> {
         let id = temp.id;
         let map = temp.map.clone();

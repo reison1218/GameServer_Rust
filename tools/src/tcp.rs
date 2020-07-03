@@ -313,35 +313,32 @@ pub mod tcp_server {
                         if status.is_some(){
                             res = status.unwrap();
                         }
-                        warn!("{:?}",err.to_string());
                         //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
                         //直接跳出token读取事件，待下次actually再进行读取
                         if res == 35 || res == 11{
-                            //warn!("{:?}",err.to_string());
                             break;
+                        }else{
+                            warn!("{:?}",err.to_string());
                         }
                         close_connect(connection,handler,Some(err));
                         return Ok(true);
                         //break;
                     }
                     Err(ref err) if interrupted(err) => {
-                        println!("{:?}",err);
                         error!("{:?}",err);
                         continue;
                     },
                     Err(ref err) if other(err) => {
-                        println!("{:?}",err);
-                        error!("{:?}",err);
+                        warn!("{:?}",err);
                         continue;
                     },
                     // Other errors we'll consider fatal.
                     Err(err) => {
-                        println!("err:{:?}",err);
+                        warn!("err:{:?}",err);
                         close_connect(connection,handler,Some(&err));
                         //return Err(err)
                         return Ok(true);
                     },
-
                 }
             }
         }
@@ -453,7 +450,6 @@ pub fn new_tcp_client(address: &str) -> TcpStream {
         break;
     }
 
-    //设置非阻塞
     let result = result.unwrap();
     //设置参数
     set_tream_param(&result);

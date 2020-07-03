@@ -162,11 +162,47 @@ fn main() -> anyhow::Result<()> {
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);
     //test_channel();
-
-    let mut hs = HashSet::new();
-    hs.insert(1);
+    test_loop();
     Ok(())
 }
+
+fn test_loop(){
+    let mut index = 1_i32;
+    'out:loop{
+        println!("start");
+        loop{
+            std::thread::sleep(Duration::from_millis(1000));
+            println!("{}",index);
+            index+=1;
+            if index == 3{
+                index = 1_i32;
+                continue 'out;
+            }
+        }
+    }
+}
+
+fn test_drop(){
+    {
+        let _a = Count(3);
+        let _ = Count(2);
+        let _c = Count(1);
+    }
+    {
+        let _a = Count(3);
+        let _b = Count(2);
+        let _c = Count(1);
+    }
+}
+
+struct Count(i32);
+
+impl Drop for Count {
+    fn drop(&mut self) {
+        println!("dropping count {}", self.0);
+    }
+}
+
 
 fn test_channel(){
     let (std_sender,std_rec) = std::sync::mpsc::sync_channel(102400);

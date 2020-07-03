@@ -169,6 +169,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
             sender.write(bytes);
         }
         ClientCode::EmojiNotice => {}
+        ClientCode::MemberLeaveNotice => {}
         _ => {}
     }
 }

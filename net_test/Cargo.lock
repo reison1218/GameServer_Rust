@@ -1417,6 +1417,7 @@ dependencies = [
  "protobuf",
  "protobuf-codegen",
  "protoc-rust",
+ "rayon",
  "redis",
  "serde",
  "serde_json",

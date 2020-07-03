@@ -10,7 +10,6 @@ use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::sync::mpsc::SyncSender;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::protos::room::S_LEAVE_ROOM;
@@ -450,7 +449,7 @@ impl MatchRoom {
         &mut self,
         member: Member,
         sender: TcpSender,
-        task_sender: SyncSender<Task>,
+        task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;

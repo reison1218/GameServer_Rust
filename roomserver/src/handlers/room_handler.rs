@@ -2,7 +2,7 @@ use super::*;
 use crate::entity::character::Character;
 use crate::entity::room::{MemberLeaveNoticeType, MEMBER_MAX};
 use crate::error_return::err_back;
-use tools::protos::room::S_START;
+use tools::protos::room::{S_CHOOSE_CHARACTER, S_START};
 
 ///创建房间
 pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
@@ -112,14 +112,11 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 }
                 let mut slr = S_LEAVE_ROOM::new();
                 slr.set_is_succ(true);
-                let bytes = Packet::build_packet_bytes(
-                    ClientCode::LeaveRoom as u32,
+                rm.send_2_client(
+                    ClientCode::LeaveRoom,
                     user_id,
                     slr.write_to_bytes().unwrap(),
-                    true,
-                    true,
                 );
-                rm.send(bytes);
                 info!(
                     "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
                     user_id, room_id
@@ -133,7 +130,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///改变目标
-pub fn change_target(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn change_target(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
@@ -267,34 +264,14 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if team_id < TeamId::Min as u32 || team_id > TeamId::Max as u32 {
         let str = format!("target_team_id:{} is invaild!", team_id);
         warn!("{:?}", str.as_str());
-        let mut sct = S_CHANGE_TEAM::new();
-        sct.is_succ = false;
-        sct.err_mess = str;
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::ChangeTeam as u32,
-            *user_id,
-            sct.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        rm.send(bytes);
+        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room_id = rm.get_room_id(user_id);
     if room_id.is_none() {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        let mut sct = S_CHANGE_TEAM::new();
-        sct.is_succ = false;
-        sct.err_mess = str;
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::ChangeTeam as u32,
-            *user_id,
-            sct.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        rm.send(bytes);
+        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room_id = room_id.unwrap();
@@ -302,17 +279,7 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if room.is_none() {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        let mut sct = S_CHANGE_TEAM::new();
-        sct.is_succ = false;
-        sct.err_mess = str;
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::ChangeTeam as u32,
-            *user_id,
-            sct.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        rm.send(bytes);
+        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -439,7 +406,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         user_id,
         srs.write_to_bytes().unwrap(),
     );
-    room.room_notice(&user_id);
+    room.room_notice();
     Ok(())
 }
 

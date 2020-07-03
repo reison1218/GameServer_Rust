@@ -160,5 +160,5 @@ fn init_web_socket(cp: Arc<RwLock<ChannelMgr>>) {
         })
         .unwrap();
     let str = CONF_MAP.get_str("web_socket_port");
-    let web_socket = server.listen(str).unwrap();
+    let _web_socket = server.listen(str).unwrap();
 }

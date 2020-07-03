@@ -72,7 +72,7 @@ impl Handler for WebSocketHandler {
         Ok(())
     }
     ///关闭的时候调用
-    fn on_close(&mut self, cc: CloseCode, _str: &str) {
+    fn on_close(&mut self, _cc: CloseCode, _str: &str) {
         let res = self.ws.close(CloseCode::Normal);
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
@@ -100,7 +100,7 @@ impl Handler for WebSocketHandler {
     }
 
     ///发送错误的时候调用
-    fn on_error(&mut self, err: WsError) {
+    fn on_error(&mut self, _err: WsError) {
         let res = self.ws.close(CloseCode::Error);
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());

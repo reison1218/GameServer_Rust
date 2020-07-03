@@ -90,7 +90,7 @@ fn modify_redis_user(user_id: u32, is_login: bool) {
                     .unwrap()
                     .insert("on_line".to_owned(), Value::from(is_login));
 
-                let res: Option<u32> = redis_write.hset(
+                let _: Option<u32> = redis_write.hset(
                     0,
                     "users",
                     pid.to_string().as_str(),

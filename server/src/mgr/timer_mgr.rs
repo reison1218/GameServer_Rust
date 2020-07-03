@@ -56,7 +56,7 @@ fn zero_day(gm: Arc<RwLock<GameMgr>>) {
 
 ///保存玩家数据的定时器任务函数
 fn save_timer(gm: Arc<RwLock<GameMgr>>) {
-    let (sender, rec) = std::sync::mpsc::channel();
+    let (sender, rec) = crossbeam::crossbeam_channel::bounded(1024);
 
     let m = move || loop {
         let gm = gm.clone();

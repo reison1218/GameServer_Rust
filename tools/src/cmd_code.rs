@@ -145,6 +145,9 @@ impl From<u32> for ClientCode{
         if v == ClientCode::EmojiNotice as u32{
             return ClientCode::EmojiNotice
         }
+        if v == ClientCode::MemberLeaveNotice as u32{
+            return ClientCode::MemberLeaveNotice
+        }
         ClientCode::Login
     }
 }

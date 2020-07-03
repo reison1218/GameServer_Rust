@@ -2,7 +2,6 @@ use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
 use crate::entity::room_model::RoomSetting;
 use chrono::{DateTime, Local, Utc};
-use log::error;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
@@ -142,18 +141,15 @@ impl Room {
         let mut spc = S_PREPARE_CANCEL::new();
         spc.is_succ = true;
         self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::PrepareCancel as u32,
+        self.send_2_client(
+            ClientCode::PrepareCancel,
             *user_id,
             spc.write_to_bytes().unwrap(),
-            true,
-            true,
         );
-        self.sender.write(bytes);
     }
 
     ///房间变更通知
-    pub fn room_notice(&mut self, user_id: &u32) {
+    pub fn room_notice(&mut self) {
         let mut srn = S_ROOM_NOTICE::new();
         srn.owner_id = self.owner_id;
         srn.set_setting(self.setting.clone().into());
@@ -169,14 +165,10 @@ impl Room {
 
     ///发送表情包
     pub fn emoji(&mut self, user_id: u32, emoji_id: u32) {
-        let mut packet = Packet::new(ClientCode::Emoji as u32, 0, 0);
-        packet.set_is_client(true);
-        packet.set_user_id(user_id);
         //回给发送人
         let mut sej = S_EMOJI::new();
         sej.is_succ = true;
-        packet.set_data_from_vec(sej.write_to_bytes().unwrap());
-        self.sender.write(packet.build_server_bytes());
+        self.send_2_client(ClientCode::Emoji, user_id, sej.write_to_bytes().unwrap());
 
         //推送给房间其他人
         let mut sen = S_EMOJI_NOTICE::new();
@@ -327,14 +319,7 @@ impl Room {
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
         sr.set_room(self.convert_to_pt());
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::Room as u32,
-            user_id,
-            sr.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        self.sender.write(bytes);
+        self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
 
         //通知房间里其他人
         self.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
@@ -359,7 +344,7 @@ impl Room {
                     self.owner_id = *i;
                     break;
                 }
-                self.room_notice(user_id);
+                self.room_notice();
             }
         }
     }
@@ -372,14 +357,11 @@ impl Room {
         }
         let mut sct = S_CHANGE_TEAM::new();
         sct.is_succ = true;
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::Room as u32,
+        self.send_2_client(
+            ClientCode::ChangeTeam,
             *user_id,
             sct.write_to_bytes().unwrap(),
-            true,
-            true,
         );
-        self.sender.write(bytes);
 
         let mut member = self.get_member_mut(user_id).unwrap();
         member.team_id = *team_id;
@@ -398,14 +380,11 @@ impl Room {
 
         let mut skm = S_KICK_MEMBER::new();
         skm.is_succ = true;
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::KickMember as u32,
+        self.send_2_client(
+            ClientCode::KickMember,
             *user_id,
             skm.write_to_bytes().unwrap(),
-            true,
-            true,
         );
-        self.sender.write(bytes);
         //移除玩家
         self.remove_member(MemberLeaveNoticeType::Kicked as u8, target_id);
 

@@ -100,7 +100,7 @@ impl Into<CharacterPt> for Character {
             Ok(skills) => {
                 cter_pt.set_skills(skills);
             }
-            Err(e) => {}
+            Err(_) => {}
         }
 
         cter_pt.set_temp_id(self.character_id);

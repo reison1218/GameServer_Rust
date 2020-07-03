@@ -7,8 +7,7 @@ use crate::handlers::room_handler::{
     prepare_cancel, room_setting, search_room, start,
 };
 use crate::task_timer::Task;
-use log::{error, warn};
-use std::sync::mpsc::SyncSender;
+use log::warn;
 use tools::cmd_code::ClientCode;
 use tools::util::packet::Packet;
 
@@ -18,8 +17,8 @@ pub struct RoomMgr {
     pub match_rooms: MatchRooms,        //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,告32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
-    sender: Option<TcpSender>,                 //tcp channel的发送方
-    pub task_sender: Option<SyncSender<Task>>, //task channel的发送方
+    sender: Option<TcpSender>,                        //tcp channel的发送方
+    pub task_sender: Option<crossbeam::Sender<Task>>, //task channel的发送方
 }
 
 impl RoomMgr {
@@ -86,14 +85,6 @@ impl RoomMgr {
             Ok(_) => {}
             Err(_) => {}
         }
-    }
-
-    pub fn send(&mut self, bytes: Vec<u8>) {
-        if self.sender.is_none() {
-            error!("room_mgr'sender is None!");
-            return;
-        }
-        self.sender.as_mut().unwrap().write(bytes);
     }
 
     pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {

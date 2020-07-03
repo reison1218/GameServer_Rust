@@ -4,7 +4,6 @@ use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info};
 use serde_json::Value as JsonValue;
-use std::sync::mpsc::sync_channel;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -31,7 +30,7 @@ pub struct Task {
 ///初始化定时执行任务
 pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
     let m = move || {
-        let (sender, rec) = sync_channel(512);
+        let (sender, rec) = crossbeam::crossbeam_channel::bounded(1024);
         let mut write = rm.write().unwrap();
         write.task_sender = Some(sender);
         std::mem::drop(write);
