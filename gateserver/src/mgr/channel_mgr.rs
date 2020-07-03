@@ -83,8 +83,8 @@ impl ChannelMgr {
             Ok(s) => {
                 info!("write to GameServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = gc.flush();
-                if res.is_err() {
-                    error!("flush has error!mess:{:?}", res.err().unwrap().to_string());
+                if let Err(e) = res {
+                    error!("flush has error!mess:{:?}", e);
                 }
             }
             Err(e) => {
@@ -107,8 +107,8 @@ impl ChannelMgr {
             Ok(s) => {
                 info!("write to RoomServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = rc.flush();
-                if res.is_err() {
-                    error!("{:?}", res.err().unwrap().to_string());
+                if let Err(e) = res {
+                    error!("{:?}", e);
                 }
             }
             Err(e) => {

@@ -44,8 +44,8 @@ impl tools::tcp::Handler for TcpServerHandler {
     fn on_message(&mut self, mess: Vec<u8>) {
         let packet_array = Packet::build_array_from_server(mess);
 
-        if packet_array.is_err() {
-            error!("{:?}", packet_array.err().unwrap().to_string());
+        if let Err(e) = packet_array {
+            error!("{:?}", e);
             return;
         }
         let packet_array = packet_array.unwrap();
@@ -71,14 +71,14 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
         let mut c_login = C_USER_LOGIN_PROTO::new();
         let result = c_login.merge_from_bytes(packet.get_data());
 
-        if result.is_err() {
-            error!("{:?}", result.err().unwrap().to_string());
+        if let Err(e) = result {
+            error!("{:?}", e);
             return;
         }
         //执行登录
         let result = login(gm, packet);
-        if result.is_err() {
-            error!("{:?}", result.err().unwrap().to_string());
+        if let Err(e) = result {
+            error!("{:?}", e);
             return;
         }
     } else {

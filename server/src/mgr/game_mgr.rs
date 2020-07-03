@@ -4,7 +4,6 @@ use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_
 use crate::entity::EntityData;
 use chrono::Local;
 use protobuf::Message;
-use std::sync::mpsc::Sender;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::tcp::TcpSender;
@@ -107,11 +106,7 @@ impl GameMgr {
         if f.is_none() {
             anyhow::bail!("there is no cmd:{}", cmd)
         }
-        let res: anyhow::Result<()> = f.unwrap()(self, packet);
-        if res.is_err() {
-            return Err(res.err().unwrap());
-        }
-        Ok(())
+        f.unwrap()(self, packet)
     }
 
     ///命令初始化
@@ -126,7 +121,7 @@ impl GameMgr {
 }
 
 ///同步数据
-fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
+fn sync(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
@@ -138,10 +133,11 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
 
     let mut csd = C_SYNC_DATA::new();
     let res = csd.merge_from_bytes(packet.get_data());
-    if res.is_err() {
+    if let Err(e) = res {
         let str = format!(
-            "protobuf:C_SYNC_DATA parse has error!cmd:{}",
-            packet.get_cmd()
+            "protobuf:C_SYNC_DATA parse has error!cmd:{},err_mess:{:?}",
+            packet.get_cmd(),
+            e.to_string()
         );
         error!("{:?}", str.as_str());
         anyhow::bail!(str);
@@ -157,16 +153,14 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
         user.get_user_info_mut_ref().set_dlc(pp.dlc);
     }
 
-    packet.set_is_client(true);
-    packet.set_cmd(ClientCode::SyncData as u32);
     let mut s_s_d = S_SYNC_DATA::new();
     s_s_d.is_succ = true;
     s_s_d.sync_time = Local::now().timestamp() as u32;
-    packet.set_data_from_vec(s_s_d.write_to_bytes().unwrap());
-    gm.sender
-        .as_mut()
-        .unwrap()
-        .write(packet.build_server_bytes());
+    gm.send_2_client(
+        ClientCode::SyncData,
+        user_id,
+        s_s_d.write_to_bytes().unwrap(),
+    );
     info!("执行同步函数");
     Ok(())
 }
@@ -175,10 +169,9 @@ fn sync(gm: &mut GameMgr, mut packet: Packet) -> anyhow::Result<()> {
 fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.remove(&user_id);
-    if user.is_some() {
-        let mut user = user.unwrap();
-        user.update();
-        info!("游戏服已处理玩家离线 for id:{}", user.get_user_id());
+    if let Some(mut user_data) = user {
+        user_data.update();
+        info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
     }
     Ok(())
 }
