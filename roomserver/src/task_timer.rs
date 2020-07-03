@@ -1,5 +1,5 @@
 use crate::entity::member::MemberState;
-use crate::entity::room::MemberLeaveNoticeType;
+use crate::entity::room::{MemberLeaveNoticeType, RoomState};
 use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info};
@@ -141,5 +141,6 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         }
         return;
     }
+    room.set_status(RoomState::Started as u8);
     room.start_notice();
 }
