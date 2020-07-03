@@ -17,11 +17,10 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if room_type == RoomType::get_custom() {
         //校验这个用户在不在房间内
         let res = rm.get_room_id(&packet.get_user_id());
-        if res.is_some() {
+        if let Some(room_id) = res {
             let str = format!(
                 "this user already in the custom room,can not create room! user_id:{},room_id:{}",
-                user_id,
-                res.unwrap()
+                user_id, room_id
             );
             warn!("{:?}", str.as_str());
             err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
@@ -93,8 +92,8 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             let res =
                 rm.custom_room
                     .leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, &user_id);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
+            if let Err(e) = res {
+                error!("{:?}", e);
                 return Ok(());
             }
             info!(
@@ -106,8 +105,8 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         RoomType::Match => {
             if !room.is_empty() {
                 let res = rm.match_rooms.leave(&battle_type, room_id, &user_id);
-                if res.is_err() {
-                    error!("{:?}", res.err().unwrap());
+                if let Err(e) = res {
+                    error!("{:?}", e);
                     return Ok(());
                 }
                 let mut slr = S_LEAVE_ROOM::new();
@@ -138,8 +137,8 @@ pub fn change_target(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
 pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut grs = G_R_SEARCH_ROOM::new();
     let res = grs.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
 
@@ -172,8 +171,8 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let res = match_room.quickly_start(member, sender, rm.task_sender.clone().unwrap());
     //返回错误信息
-    if res.is_err() {
-        let str = res.err().unwrap().to_string();
+    if let Err(e) = res {
+        let str = e.to_string();
         err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
         return Ok(());
     };
@@ -188,14 +187,14 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let mut cpc = C_PREPARE_CANCEL::new();
     let res = cpc.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let prepare = cpc.prepare;
     let room = rm.get_room_mut(&packet.get_user_id());
     //校验玩家房间
-    if room.is_none() {
+    if let None = room {
         let str = format!(
             "prepare_cancel:this player not in the room!user_id:{}",
             user_id
@@ -230,7 +229,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间
     let room = rm.get_room_mut(&user_id);
-    if room.is_none() {
+    if let None = room {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
@@ -256,8 +255,8 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let mut cct = C_CHANGE_TEAM::new();
     let res = cct.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let team_id = cct.get_target_team_id();
@@ -268,7 +267,7 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room_id = rm.get_room_id(user_id);
-    if room_id.is_none() {
+    if let None = room_id {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
@@ -276,7 +275,7 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room_id = room_id.unwrap();
     let room = rm.custom_room.rooms.get_mut(&room_id);
-    if room.is_none() {
+    if let None = room {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
@@ -294,8 +293,8 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let mut ckm = C_KICK_MEMBER::new();
     let res = ckm.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let target_id = ckm.target_id;
@@ -339,11 +338,14 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let res = room.kick_member(&user_id, &target_id);
-    if res.is_err() {
-        warn!("{:?}", res.err().unwrap().to_string());
-        return Ok(());
-    } else {
-        rm.player_room.remove(&target_id);
+    match res {
+        Ok(_) => {
+            rm.player_room.remove(&target_id);
+        }
+        Err(e) => {
+            warn!("{:?}", e);
+            return Ok(());
+        }
     }
     Ok(())
 }
@@ -415,8 +417,8 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let mut grj = G_R_JOIN_ROOM::new();
     let res = grj.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     if grj.room_type == 0
@@ -438,8 +440,8 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验改房间是否存在
     let room = rm.custom_room.get_mut_room_by_room_id(&room_id);
-    if room.is_err() {
-        let str = room.err().unwrap().to_string();
+    if let Err(e) = room {
+        let str = e.to_string();
         warn!("{:?}", str.as_str());
         err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
         return Ok(());
@@ -471,8 +473,8 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let member = Member::from(grj.take_pbp());
     //将玩家加入到房间
     let res = room.add_member(member);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let value = tools::binary::combine_int_2_long(grj.room_type, res.unwrap());
@@ -514,16 +516,16 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     //解析protobuf
     let mut ccc = C_CHOOSE_CHARACTER::new();
     let res = ccc.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let cter_pt = ccc.take_cter();
     let cter_id = cter_pt.temp_id;
     //校验角色
     let res = room.check_character(cter_id);
-    if res.is_err() {
-        let str = res.err().unwrap().to_string();
+    if let Err(e) = res {
+        let str = e.to_string();
         warn!("{:?}", str.as_str());
         err_back(
             ClientCode::ChooseCharacter,
@@ -629,8 +631,8 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let mut ce = C_EMOJI::new();
     let res = ce.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     let emoji_id = ce.emoji_id;

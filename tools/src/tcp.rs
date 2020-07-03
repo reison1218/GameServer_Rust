@@ -227,13 +227,13 @@ pub mod tcp_server {
 
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
-                                if res.is_err(){
-                                    error!("{:?}",res.err().unwrap());
+                                if let Err(e) = res{
+                                    error!("{:?}",e);
                                     continue;
                                 }
                                 let res = ts.flush();
-                                if res.is_err(){
-                                    error!("{:?}",res.err().unwrap());
+                                if let Err(e) = res{
+                                    error!("{:?}",e);
                                 }
                             }
                             None => {

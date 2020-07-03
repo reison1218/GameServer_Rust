@@ -95,14 +95,7 @@ impl Room {
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
         sr.set_room(room.convert_to_pt());
-        let bytes = Packet::build_packet_bytes(
-            ClientCode::Room as u32,
-            user_id,
-            sr.write_to_bytes().unwrap(),
-            true,
-            true,
-        );
-        room.sender.write(bytes);
+        room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
     }
 
