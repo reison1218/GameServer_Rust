@@ -92,6 +92,8 @@ pub enum ClientCode{
     EmojiNotice = 10017,
     //离开房间推送
     MemberLeaveNotice = 10018,
+    //游戏开始推送
+    StartNotice = 10019,
     //最大命令号
     Max = 20000,
 }
@@ -147,6 +149,9 @@ impl From<u32> for ClientCode{
         }
         if v == ClientCode::MemberLeaveNotice as u32{
             return ClientCode::MemberLeaveNotice
+        }
+        if v == ClientCode::StartNotice as u32{
+            return ClientCode::StartNotice
         }
         ClientCode::Login
     }

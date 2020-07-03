@@ -141,17 +141,5 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         }
         return;
     }
-
-    // let mut ss = S_START::new();
-    // ss.is_succ = true;
-    // for member_id in room.members.keys() {
-    //     let bytes = Packet::build_packet_bytes(
-    //         ClientCode::Start as u32,
-    //         *member_id,
-    //         ss.write_to_bytes().unwrap(),
-    //         true,
-    //         true,
-    //     );
-    //     room.sender.write(bytes);
-    // }
+    room.start_notice();
 }

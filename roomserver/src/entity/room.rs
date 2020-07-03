@@ -11,7 +11,7 @@ use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
     S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
-    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE,
+    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -160,6 +160,22 @@ impl Room {
         for id in self.members.keys() {
             packet.set_user_id(*id);
             self.sender.write(packet.build_server_bytes());
+        }
+    }
+
+    pub fn start_notice(&mut self) {
+        let ssn = S_START_NOTICE::new();
+        let keys = self.members.iter();
+        let bytes = ssn.write_to_bytes().unwrap();
+        for (id, _) in keys {
+            let bytes = Packet::build_packet_bytes(
+                ClientCode::StartNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(bytes);
         }
     }
 

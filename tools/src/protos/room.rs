@@ -4431,6 +4431,126 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM_MEMBER_LEAVE_NOTICE {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct S_START_NOTICE {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_START_NOTICE {
+    fn default() -> &'a S_START_NOTICE {
+        <S_START_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_START_NOTICE {
+    pub fn new() -> S_START_NOTICE {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for S_START_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_START_NOTICE {
+        S_START_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let fields = ::std::vec::Vec::new();
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_NOTICE>(
+                    "S_START_NOTICE",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static S_START_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_START_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(S_START_NOTICE::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for S_START_NOTICE {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_START_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_START_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"C\n\x0bC_JOIN_ROOM\x12\
@@ -4469,7 +4589,8 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     s\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
     rId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_\
     MEMBER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnotice\
-    Type\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userIdb\x06proto3\
+    Type\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x10\n\x0eS_STA\
+    RT_NOTICEb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;
