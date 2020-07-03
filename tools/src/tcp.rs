@@ -104,7 +104,7 @@ pub mod tcp_server {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
-        let mut events = Events::with_capacity(1024);
+        let mut events = Events::with_capacity(5120);
         // tcp listenner address
         let address = SocketAddr::from_str(addr).unwrap();
         // Setup the TCP server socket.
