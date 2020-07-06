@@ -7,13 +7,16 @@ pub struct CterCell{
     pub cell_id:u32,
     pub count:u32,
 }
+
+///角色配置结构体
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CharacterTemp {
     pub id: u32,
-    pub hp_max: u16,
-    pub attack: u16,
-    pub skill_consume: u8,
-    pub skill_value: u16,
+    pub hp: u32,
+    pub attack: u32,
+    pub defence:u32,
+    pub skill_consume: u32,
+    pub skill_value: u32,
     pub skills: Vec<u32>,
     pub lock_skills: Vec<u32>,
     pub is_dlc: u8,
@@ -29,6 +32,7 @@ impl CharacterTemp {
     }
 }
 
+///角色配置管理器
 #[derive(Debug, Default, Clone)]
 pub struct CharacterTempMgr {
     pub name: String,

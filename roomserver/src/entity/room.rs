@@ -1,6 +1,8 @@
+use crate::entity::character::BattleCharacter;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
 use crate::entity::room_model::RoomSetting;
+use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
 use protobuf::Message;
 use rand::{thread_rng, Rng};
@@ -115,7 +117,7 @@ impl Room {
     ///检查角色
     pub fn check_character(&self, cter_id: u32) -> anyhow::Result<()> {
         for cter in self.members.values() {
-            if cter_id > 0 && cter.chose_cter.temp_id == cter_id {
+            if cter_id > 0 && cter.chose_cter.cter_id == cter_id {
                 let str = format!("this character was choiced!cter_id:{}", cter_id);
                 anyhow::bail!(str)
             }
@@ -156,11 +158,18 @@ impl Room {
         }
     }
 
+    //战斗通知
     pub fn start_notice(&mut self) {
-        let ssn = S_START_NOTICE::new();
-        let keys = self.members.iter();
+        let mut ssn = S_START_NOTICE::new();
+        ssn.set_room_status(self.state as u32);
+        let map = self.tile_map.convert_pt();
+        ssn.set_tile_map(map);
+        for member in self.members.values() {
+            let battle_cter_pt = member.convert_to_battle_cter();
+            ssn.battle_cters.push(battle_cter_pt);
+        }
         let bytes = ssn.write_to_bytes().unwrap();
-        for (id, _) in keys {
+        for id in self.members.keys() {
             let bytes = Packet::build_packet_bytes(
                 ClientCode::StartNotice as u32,
                 *id,
@@ -411,6 +420,7 @@ impl Room {
         rp.owner_id = self.owner_id;
         rp.room_id = self.get_room_id();
         rp.set_room_type(self.get_room_type() as u32);
+        rp.set_room_status(self.state as u32);
         for user_id in self.member_index.iter() {
             let member = self.members.get(user_id);
             if member.is_some() {
@@ -448,5 +458,50 @@ impl Room {
         let member = member.unwrap();
         member.battle_cter.target_id = *target_id;
         Ok(())
+    }
+
+    pub fn cter_2_battle_cter(&mut self) {
+        for member in self.members.values_mut() {
+            let battle_cter = BattleCharacter::init(&member.chose_cter);
+            match battle_cter {
+                Ok(b_cter) => {
+                    member.battle_cter = b_cter;
+                }
+                Err(_) => {
+                    return;
+                }
+            }
+        }
+    }
+
+    //是否已经开始了
+    pub fn is_started(&self) -> bool {
+        self.state == RoomState::Started as u8
+    }
+
+    pub fn start(&mut self) {
+        //生成地图
+        self.tile_map = self.generate_map();
+        //选择的角色转换成战斗角色
+        self.cter_2_battle_cter();
+        //改变房间状态
+        self.state = RoomState::Started as u8;
+        //下发通知
+        self.start_notice();
+    }
+
+    pub fn get_choose_cters(&self) -> Vec<u32> {
+        let mut cter_v = Vec::new();
+        for member in self.members.values() {
+            cter_v.push(member.chose_cter.cter_id);
+        }
+        cter_v
+    }
+
+    pub fn generate_map(&self) -> TileMap {
+        let cter_v = self.get_choose_cters();
+        let tmd = TileMap::init(&TEMPLATES, cter_v);
+        println!("生成地图{:?}", tmd.clone());
+        tmd
     }
 }

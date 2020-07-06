@@ -1,6 +1,7 @@
+pub mod battle_handler;
 pub mod room_handler;
 use crate::entity::member::{Member, MemberState};
-use crate::entity::room::{RoomMemberNoticeType, RoomState};
+use crate::entity::room::RoomMemberNoticeType;
 use crate::entity::room_model::{BattleType, RoomModel, RoomType, TeamId};
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info, warn};

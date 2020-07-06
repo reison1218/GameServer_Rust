@@ -157,12 +157,12 @@ fn test_binary(){
 }
 
 fn main() -> anyhow::Result<()> {
-    //test_tcp_client();
-    //map::test_map();
+    test_tcp_client();
+    //map::generate_map();
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);
     //test_channel();
-    test_loop();
+    //test_loop();
     Ok(())
 }
 

@@ -279,7 +279,6 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let mut grj = G_R_JOIN_ROOM::new();
     grj.set_room_id(cjr.room_id);
-    grj.set_room_type(cjr.room_type);
     grj.set_pbp(pbp);
     //发给房间
     gm.send_2_room(RoomCode::JoinRoom, user_id, grj.write_to_bytes()?);

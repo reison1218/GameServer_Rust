@@ -71,6 +71,15 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = room.unwrap();
+
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
     let room_id = room.get_room_id();
     if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
         let member = room.get_member_mut(&user_id);
@@ -204,9 +213,17 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let room = room.unwrap();
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
     //校验玩家是否选了角色
     let member = room.members.get(&user_id).unwrap();
-    if member.chose_cter.temp_id == 0 {
+    if member.chose_cter.cter_id == 0 {
         let str = format!(
             "prepare_cancel: this player has not choose character yet!user_id:{}",
             user_id
@@ -236,6 +253,16 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = room.unwrap();
+
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
+
     //校验准备状态
     if !room.check_ready() {
         let str = format!("there is player not ready,can not start game!");
@@ -243,6 +270,10 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
+
+    //执行开始逻辑
+    room.start();
+
     let mut ss = S_START::new();
     ss.is_succ = true;
     room.send_2_client(ClientCode::Start, user_id, ss.write_to_bytes().unwrap());
@@ -283,6 +314,15 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let room = room.unwrap();
+
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
     room.change_team(user_id, &(team_id as u8));
     Ok(())
 }
@@ -311,6 +351,15 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验操作人是不是房主
     let room = room.unwrap();
+
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
 
     if room.get_room_type() != RoomType::get_custom() {
         let str = format!(
@@ -367,6 +416,15 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
 
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
+
     //校验房间是否存在这个玩家
     if !room.is_exist_member(&user_id) {
         let str = format!(
@@ -421,13 +479,6 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", e);
         return Ok(());
     }
-    if grj.room_type == 0
-        || grj.room_type > RoomType::get_world_boss_pve() as u32
-        || grj.room_type == RoomType::get_match() as u32
-    {
-        warn!("room_type is error!");
-        return Ok(());
-    }
 
     let room_id = grj.room_id;
     //校验玩家是否在房间内
@@ -447,8 +498,27 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    //走正常逻辑
     let room = room.unwrap();
+
+    //校验房间是否已经开始游戏
+    if room.is_started() {
+        let str = format!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        anyhow::bail!(str)
+    }
+
+    let room_type = room.get_room_type();
+    //校验房间类型
+    if room_type > RoomType::get_world_boss_pve() || room_type == RoomType::get_match() {
+        warn!(
+            "this room can not join in!room_id:{},room_type:{}!",
+            room.get_room_id(),
+            room_type,
+        );
+        return Ok(());
+    }
 
     //校验房间人数
     if room.members.len() >= MEMBER_MAX as usize {
@@ -477,7 +547,8 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", e);
         return Ok(());
     }
-    let value = tools::binary::combine_int_2_long(grj.room_type, res.unwrap());
+    let room_id = res.unwrap();
+    let value = tools::binary::combine_int_2_long(room.get_room_type() as u32, room_id);
     rm.player_room.insert(user_id, value);
     Ok(())
 }
@@ -501,7 +572,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     }
     let room = res.unwrap();
     //校验房间状态
-    if room.get_status() == RoomState::Started as u8 {
+    if room.is_started() {
         let str = format!("this room already started!room_id:{}", room.get_room_id());
         warn!("{:?}", str.as_str());
         err_back(
@@ -521,7 +592,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         return Ok(());
     }
     let cter_pt = ccc.take_cter();
-    let cter_id = cter_pt.temp_id;
+    let cter_id = cter_pt.cter_id;
     //校验角色
     let res = room.check_character(cter_id);
     if let Err(e) = res {
@@ -650,11 +721,11 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     } else if emoji.condition == 0
         && emoji.cter_id > 0
-        && emoji.cter_id != member.chose_cter.temp_id
+        && emoji.cter_id != member.chose_cter.cter_id
     {
         let str = format!(
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
-            member.chose_cter.temp_id, emoji_id
+            member.chose_cter.cter_id, emoji_id
         );
         warn!("{:?}", str.as_str());
         err_back(ClientCode::Emoji, user_id, str, rm.get_sender_mut());

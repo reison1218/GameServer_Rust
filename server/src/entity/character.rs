@@ -103,7 +103,7 @@ impl Into<CharacterPt> for Character {
             Err(_) => {}
         }
 
-        cter_pt.set_temp_id(self.character_id);
+        cter_pt.set_cter_id(self.character_id);
         let res = self.get_grade();
         match res {
             Ok(grade) => {

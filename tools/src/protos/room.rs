@@ -185,7 +185,6 @@ impl ::protobuf::reflect::ProtobufValue for C_CREATE_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_JOIN_ROOM {
     // message fields
-    pub room_type: u32,
     pub room_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -203,22 +202,7 @@ impl C_JOIN_ROOM {
         ::std::default::Default::default()
     }
 
-    // uint32 room_type = 1;
-
-
-    pub fn get_room_type(&self) -> u32 {
-        self.room_type
-    }
-    pub fn clear_room_type(&mut self) {
-        self.room_type = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_room_type(&mut self, v: u32) {
-        self.room_type = v;
-    }
-
-    // uint32 room_id = 2;
+    // uint32 room_id = 1;
 
 
     pub fn get_room_id(&self) -> u32 {
@@ -248,13 +232,6 @@ impl ::protobuf::Message for C_JOIN_ROOM {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.room_type = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
                     self.room_id = tmp;
                 },
                 _ => {
@@ -269,11 +246,8 @@ impl ::protobuf::Message for C_JOIN_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.room_type != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
-        }
         if self.room_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.room_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -281,11 +255,8 @@ impl ::protobuf::Message for C_JOIN_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.room_type != 0 {
-            os.write_uint32(1, self.room_type)?;
-        }
         if self.room_id != 0 {
-            os.write_uint32(2, self.room_id)?;
+            os.write_uint32(1, self.room_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -327,11 +298,6 @@ impl ::protobuf::Message for C_JOIN_ROOM {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "room_type",
-                    |m: &C_JOIN_ROOM| { &m.room_type },
-                    |m: &mut C_JOIN_ROOM| { &mut m.room_type },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "room_id",
                     |m: &C_JOIN_ROOM| { &m.room_id },
                     |m: &mut C_JOIN_ROOM| { &mut m.room_id },
@@ -355,7 +321,6 @@ impl ::protobuf::Message for C_JOIN_ROOM {
 
 impl ::protobuf::Clear for C_JOIN_ROOM {
     fn clear(&mut self) {
-        self.room_type = 0;
         self.room_id = 0;
         self.unknown_fields.clear();
     }
@@ -4433,6 +4398,10 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM_MEMBER_LEAVE_NOTICE {
 
 #[derive(PartialEq,Clone,Default)]
 pub struct S_START_NOTICE {
+    // message fields
+    pub room_status: u32,
+    pub tile_map: ::protobuf::SingularPtrField<super::base::TileMapPt>,
+    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -4448,10 +4417,93 @@ impl S_START_NOTICE {
     pub fn new() -> S_START_NOTICE {
         ::std::default::Default::default()
     }
+
+    // uint32 room_status = 1;
+
+
+    pub fn get_room_status(&self) -> u32 {
+        self.room_status
+    }
+    pub fn clear_room_status(&mut self) {
+        self.room_status = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_status(&mut self, v: u32) {
+        self.room_status = v;
+    }
+
+    // .protos.TileMapPt tile_map = 2;
+
+
+    pub fn get_tile_map(&self) -> &super::base::TileMapPt {
+        self.tile_map.as_ref().unwrap_or_else(|| super::base::TileMapPt::default_instance())
+    }
+    pub fn clear_tile_map(&mut self) {
+        self.tile_map.clear();
+    }
+
+    pub fn has_tile_map(&self) -> bool {
+        self.tile_map.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_tile_map(&mut self, v: super::base::TileMapPt) {
+        self.tile_map = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_tile_map(&mut self) -> &mut super::base::TileMapPt {
+        if self.tile_map.is_none() {
+            self.tile_map.set_default();
+        }
+        self.tile_map.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_tile_map(&mut self) -> super::base::TileMapPt {
+        self.tile_map.take().unwrap_or_else(|| super::base::TileMapPt::new())
+    }
+
+    // repeated .protos.BattleCharacterPt battle_cters = 3;
+
+
+    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
+        &self.battle_cters
+    }
+    pub fn clear_battle_cters(&mut self) {
+        self.battle_cters.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
+        self.battle_cters = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        &mut self.battle_cters
+    }
+
+    // Take field
+    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
+    }
 }
 
 impl ::protobuf::Message for S_START_NOTICE {
     fn is_initialized(&self) -> bool {
+        for v in &self.tile_map {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.battle_cters {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -4459,6 +4511,19 @@ impl ::protobuf::Message for S_START_NOTICE {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_status = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.tile_map)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -4471,12 +4536,36 @@ impl ::protobuf::Message for S_START_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.room_status != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_status, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.tile_map.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        for value in &self.battle_cters {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.room_status != 0 {
+            os.write_uint32(1, self.room_status)?;
+        }
+        if let Some(ref v) = self.tile_map.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        for v in &self.battle_cters {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -4515,7 +4604,22 @@ impl ::protobuf::Message for S_START_NOTICE {
         static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
             descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "room_status",
+                    |m: &S_START_NOTICE| { &m.room_status },
+                    |m: &mut S_START_NOTICE| { &mut m.room_status },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::TileMapPt>>(
+                    "tile_map",
+                    |m: &S_START_NOTICE| { &m.tile_map },
+                    |m: &mut S_START_NOTICE| { &mut m.tile_map },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
+                    "battle_cters",
+                    |m: &S_START_NOTICE| { &m.battle_cters },
+                    |m: &mut S_START_NOTICE| { &mut m.battle_cters },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_NOTICE>(
                     "S_START_NOTICE",
                     fields,
@@ -4535,6 +4639,9 @@ impl ::protobuf::Message for S_START_NOTICE {
 
 impl ::protobuf::Clear for S_START_NOTICE {
     fn clear(&mut self) {
+        self.room_status = 0;
+        self.tile_map.clear();
+        self.battle_cters.clear();
         self.unknown_fields.clear();
     }
 }
@@ -4553,44 +4660,46 @@ impl ::protobuf::reflect::ProtobufValue for S_START_NOTICE {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
-    \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"C\n\x0bC_JOIN_ROOM\x12\
-    \x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12\x17\n\x07room_id\
-    \x18\x02\x20\x01(\rR\x06roomId\"0\n\rC_SEARCH_ROOM\x12\x1f\n\x0bbattle_t\
-    ype\x18\x01\x20\x01(\rR\nbattleType\"`\n\x06S_ROOM\x12\x17\n\x07is_succ\
+    \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
+    \x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\"0\n\rC_SEARCH_ROOM\x12\
+    \x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattleType\"`\n\x06S_ROOM\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
+    \x0e.protos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12/\n\x07setting\x18\
+    \x01\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"D\n\x0eS_ROOM_S\
+    ETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
+    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROOM\"B\n\
+    \x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"=\n\x12C_CHOOSE_C\
+    HARACTER\x12'\n\x04cter\x18\x01\x20\x01(\x0b2\x13.protos.CharacterPtR\
+    \x04cter\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01\
+    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\",\
+    \n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\"\
+    C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"5\n\rC_CHANGE_TEA\
+    M\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctargetTeamId\"C\n\rS_C\
+    HANGE_TEAM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
+    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\",\n\x10C_PREPARE_CANCEL\
+    \x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepare\"F\n\x10S_PREPARE\
+    _CANCEL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
+    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\t\n\x07C_START\"=\n\x07S_S\
+    TART\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08e\
+    rr_mess\x18\x02\x20\x01(\tR\x07errMess\"w\n\x14S_ROOM_MEMBER_NOTICE\x12\
+    \x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x14\n\x05index\
+    \x18\x02\x20\x01(\rR\x05index\x12(\n\x06member\x18\x03\x20\x01(\x0b2\x10\
+    .protos.MemberPtR\x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\
+    \x18\x01\x20\x01(\rR\x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\
+    \x15.protos.RoomSettingPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji\
+    _id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\
     \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\x0e.protos.RoomPtR\
-    \x04room\"A\n\x0eC_ROOM_SETTING\x12/\n\x07setting\x18\x01\x20\x01(\x0b2\
-    \x15.protos.RoomSettingPtR\x07setting\"D\n\x0eS_ROOM_SETTING\x12\x17\n\
-    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\
-    \x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_m\
-    ess\x18\x02\x20\x01(\tR\x07errMess\"=\n\x12C_CHOOSE_CHARACTER\x12'\n\x04\
-    cter\x18\x01\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\"H\n\x12S_CHO\
-    OSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
-    \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\",\n\rC_KICK_MEMBER\
-    \x12\x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBE\
-    R\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_\
-    mess\x18\x02\x20\x01(\tR\x07errMess\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget\
-    _team_id\x18\x01\x20\x01(\rR\x0ctargetTeamId\"C\n\rS_CHANGE_TEAM\x12\x17\
-    \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepar\
-    e\x18\x01\x20\x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\
-    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\
-    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\"w\n\x14S_ROOM_MEMBER_NOTICE\x12\x1f\n\x0bno\
-    tice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x14\n\x05index\x18\x02\x20\
-    \x01(\rR\x05index\x12(\n\x06member\x18\x03\x20\x01(\x0b2\x10.protos.Memb\
-    erPtR\x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\
-    \x01(\rR\x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.R\
-    oomSettingPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\
-    \x20\x01(\rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
-    rId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_\
-    MEMBER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnotice\
-    Type\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x10\n\x0eS_STA\
-    RT_NOTICEb\x06proto3\
+    \tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\
+    \x01(\rR\x06userId\x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\
+    \"V\n\x1aS_ROOM_MEMBER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\
+    \x01(\rR\nnoticeType\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\
+    \"\x9d\x01\n\x0eS_START_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\
+    \rR\nroomStatus\x12,\n\x08tile_map\x18\x02\x20\x01(\x0b2\x11.protos.Tile\
+    MapPtR\x07tileMap\x12<\n\x0cbattle_cters\x18\x03\x20\x03(\x0b2\x19.proto\
+    s.BattleCharacterPtR\x0bbattleCtersb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

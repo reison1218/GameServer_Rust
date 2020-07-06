@@ -1520,7 +1520,8 @@ impl ::protobuf::reflect::ProtobufValue for MemberPt {
 pub struct TileMapPt {
     // message fields
     pub id: u32,
-    pub cell_array: ::protobuf::RepeatedField<CellPt>,
+    pub map: ::std::vec::Vec<u32>,
+    pub world_cell: ::protobuf::RepeatedField<WorldCellPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1552,35 +1553,60 @@ impl TileMapPt {
         self.id = v;
     }
 
-    // repeated .protos.CellPt cell_array = 2;
+    // repeated uint32 map = 2;
 
 
-    pub fn get_cell_array(&self) -> &[CellPt] {
-        &self.cell_array
+    pub fn get_map(&self) -> &[u32] {
+        &self.map
     }
-    pub fn clear_cell_array(&mut self) {
-        self.cell_array.clear();
+    pub fn clear_map(&mut self) {
+        self.map.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_cell_array(&mut self, v: ::protobuf::RepeatedField<CellPt>) {
-        self.cell_array = v;
+    pub fn set_map(&mut self, v: ::std::vec::Vec<u32>) {
+        self.map = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_cell_array(&mut self) -> &mut ::protobuf::RepeatedField<CellPt> {
-        &mut self.cell_array
+    pub fn mut_map(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.map
     }
 
     // Take field
-    pub fn take_cell_array(&mut self) -> ::protobuf::RepeatedField<CellPt> {
-        ::std::mem::replace(&mut self.cell_array, ::protobuf::RepeatedField::new())
+    pub fn take_map(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.map, ::std::vec::Vec::new())
+    }
+
+    // repeated .protos.WorldCellPt world_cell = 3;
+
+
+    pub fn get_world_cell(&self) -> &[WorldCellPt] {
+        &self.world_cell
+    }
+    pub fn clear_world_cell(&mut self) {
+        self.world_cell.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_world_cell(&mut self, v: ::protobuf::RepeatedField<WorldCellPt>) {
+        self.world_cell = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_world_cell(&mut self) -> &mut ::protobuf::RepeatedField<WorldCellPt> {
+        &mut self.world_cell
+    }
+
+    // Take field
+    pub fn take_world_cell(&mut self) -> ::protobuf::RepeatedField<WorldCellPt> {
+        ::std::mem::replace(&mut self.world_cell, ::protobuf::RepeatedField::new())
     }
 }
 
 impl ::protobuf::Message for TileMapPt {
     fn is_initialized(&self) -> bool {
-        for v in &self.cell_array {
+        for v in &self.world_cell {
             if !v.is_initialized() {
                 return false;
             }
@@ -1600,7 +1626,10 @@ impl ::protobuf::Message for TileMapPt {
                     self.id = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cell_array)?;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.map)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.world_cell)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1617,7 +1646,10 @@ impl ::protobuf::Message for TileMapPt {
         if self.id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.id, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.cell_array {
+        for value in &self.map {
+            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
+        for value in &self.world_cell {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -1630,8 +1662,11 @@ impl ::protobuf::Message for TileMapPt {
         if self.id != 0 {
             os.write_uint32(1, self.id)?;
         }
-        for v in &self.cell_array {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+        for v in &self.map {
+            os.write_uint32(2, *v)?;
+        };
+        for v in &self.world_cell {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -1679,10 +1714,15 @@ impl ::protobuf::Message for TileMapPt {
                     |m: &TileMapPt| { &m.id },
                     |m: &mut TileMapPt| { &mut m.id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<CellPt>>(
-                    "cell_array",
-                    |m: &TileMapPt| { &m.cell_array },
-                    |m: &mut TileMapPt| { &mut m.cell_array },
+                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "map",
+                    |m: &TileMapPt| { &m.map },
+                    |m: &mut TileMapPt| { &mut m.map },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<WorldCellPt>>(
+                    "world_cell",
+                    |m: &TileMapPt| { &m.world_cell },
+                    |m: &mut TileMapPt| { &mut m.world_cell },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<TileMapPt>(
                     "TileMapPt",
@@ -1704,7 +1744,8 @@ impl ::protobuf::Message for TileMapPt {
 impl ::protobuf::Clear for TileMapPt {
     fn clear(&mut self) {
         self.id = 0;
-        self.cell_array.clear();
+        self.map.clear();
+        self.world_cell.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1722,58 +1763,58 @@ impl ::protobuf::reflect::ProtobufValue for TileMapPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct CellPt {
+pub struct WorldCellPt {
     // message fields
-    pub field_type: u32,
-    pub value: u32,
+    pub index: u32,
+    pub world_cell_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a CellPt {
-    fn default() -> &'a CellPt {
-        <CellPt as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a WorldCellPt {
+    fn default() -> &'a WorldCellPt {
+        <WorldCellPt as ::protobuf::Message>::default_instance()
     }
 }
 
-impl CellPt {
-    pub fn new() -> CellPt {
+impl WorldCellPt {
+    pub fn new() -> WorldCellPt {
         ::std::default::Default::default()
     }
 
-    // uint32 type = 1;
+    // uint32 index = 1;
 
 
-    pub fn get_field_type(&self) -> u32 {
-        self.field_type
+    pub fn get_index(&self) -> u32 {
+        self.index
     }
-    pub fn clear_field_type(&mut self) {
-        self.field_type = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_field_type(&mut self, v: u32) {
-        self.field_type = v;
-    }
-
-    // uint32 value = 2;
-
-
-    pub fn get_value(&self) -> u32 {
-        self.value
-    }
-    pub fn clear_value(&mut self) {
-        self.value = 0;
+    pub fn clear_index(&mut self) {
+        self.index = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_value(&mut self, v: u32) {
-        self.value = v;
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
+    }
+
+    // uint32 world_cell_id = 2;
+
+
+    pub fn get_world_cell_id(&self) -> u32 {
+        self.world_cell_id
+    }
+    pub fn clear_world_cell_id(&mut self) {
+        self.world_cell_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_world_cell_id(&mut self, v: u32) {
+        self.world_cell_id = v;
     }
 }
 
-impl ::protobuf::Message for CellPt {
+impl ::protobuf::Message for WorldCellPt {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -1787,14 +1828,14 @@ impl ::protobuf::Message for CellPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.field_type = tmp;
+                    self.index = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.value = tmp;
+                    self.world_cell_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1808,11 +1849,11 @@ impl ::protobuf::Message for CellPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.field_type != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.index, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.value != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.value, ::protobuf::wire_format::WireTypeVarint);
+        if self.world_cell_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.world_cell_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1820,11 +1861,11 @@ impl ::protobuf::Message for CellPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.field_type != 0 {
-            os.write_uint32(1, self.field_type)?;
+        if self.index != 0 {
+            os.write_uint32(1, self.index)?;
         }
-        if self.value != 0 {
-            os.write_uint32(2, self.value)?;
+        if self.world_cell_id != 0 {
+            os.write_uint32(2, self.world_cell_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1856,8 +1897,8 @@ impl ::protobuf::Message for CellPt {
         Self::descriptor_static()
     }
 
-    fn new() -> CellPt {
-        CellPt::new()
+    fn new() -> WorldCellPt {
+        WorldCellPt::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1866,17 +1907,17 @@ impl ::protobuf::Message for CellPt {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "type",
-                    |m: &CellPt| { &m.field_type },
-                    |m: &mut CellPt| { &mut m.field_type },
+                    "index",
+                    |m: &WorldCellPt| { &m.index },
+                    |m: &mut WorldCellPt| { &mut m.index },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "value",
-                    |m: &CellPt| { &m.value },
-                    |m: &mut CellPt| { &mut m.value },
+                    "world_cell_id",
+                    |m: &WorldCellPt| { &m.world_cell_id },
+                    |m: &mut WorldCellPt| { &mut m.world_cell_id },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<CellPt>(
-                    "CellPt",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<WorldCellPt>(
+                    "WorldCellPt",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1884,29 +1925,29 @@ impl ::protobuf::Message for CellPt {
         }
     }
 
-    fn default_instance() -> &'static CellPt {
-        static mut instance: ::protobuf::lazy::Lazy<CellPt> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static WorldCellPt {
+        static mut instance: ::protobuf::lazy::Lazy<WorldCellPt> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(CellPt::new)
+            instance.get(WorldCellPt::new)
         }
     }
 }
 
-impl ::protobuf::Clear for CellPt {
+impl ::protobuf::Clear for WorldCellPt {
     fn clear(&mut self) {
-        self.field_type = 0;
-        self.value = 0;
+        self.index = 0;
+        self.world_cell_id = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for CellPt {
+impl ::std::fmt::Debug for WorldCellPt {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for CellPt {
+impl ::protobuf::reflect::ProtobufValue for WorldCellPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1918,6 +1959,7 @@ pub struct RoomPt {
     pub room_id: u32,
     pub owner_id: u32,
     pub room_type: u32,
+    pub room_status: u32,
     pub setting: ::protobuf::SingularPtrField<RoomSettingPt>,
     pub members: ::protobuf::RepeatedField<MemberPt>,
     // special fields
@@ -1981,7 +2023,22 @@ impl RoomPt {
         self.room_type = v;
     }
 
-    // .protos.RoomSettingPt setting = 4;
+    // uint32 room_status = 4;
+
+
+    pub fn get_room_status(&self) -> u32 {
+        self.room_status
+    }
+    pub fn clear_room_status(&mut self) {
+        self.room_status = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_status(&mut self, v: u32) {
+        self.room_status = v;
+    }
+
+    // .protos.RoomSettingPt setting = 5;
 
 
     pub fn get_setting(&self) -> &RoomSettingPt {
@@ -2014,7 +2071,7 @@ impl RoomPt {
         self.setting.take().unwrap_or_else(|| RoomSettingPt::new())
     }
 
-    // repeated .protos.MemberPt members = 5;
+    // repeated .protos.MemberPt members = 6;
 
 
     pub fn get_members(&self) -> &[MemberPt] {
@@ -2081,9 +2138,16 @@ impl ::protobuf::Message for RoomPt {
                     self.room_type = tmp;
                 },
                 4 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.setting)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_status = tmp;
                 },
                 5 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.setting)?;
+                },
+                6 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.members)?;
                 },
                 _ => {
@@ -2106,6 +2170,9 @@ impl ::protobuf::Message for RoomPt {
         }
         if self.room_type != 0 {
             my_size += ::protobuf::rt::value_size(3, self.room_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.room_status != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.room_status, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.setting.as_ref() {
             let len = v.compute_size();
@@ -2130,13 +2197,16 @@ impl ::protobuf::Message for RoomPt {
         if self.room_type != 0 {
             os.write_uint32(3, self.room_type)?;
         }
+        if self.room_status != 0 {
+            os.write_uint32(4, self.room_status)?;
+        }
         if let Some(ref v) = self.setting.as_ref() {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
         for v in &self.members {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -2194,6 +2264,11 @@ impl ::protobuf::Message for RoomPt {
                     |m: &RoomPt| { &m.room_type },
                     |m: &mut RoomPt| { &mut m.room_type },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "room_status",
+                    |m: &RoomPt| { &m.room_status },
+                    |m: &mut RoomPt| { &mut m.room_status },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<RoomSettingPt>>(
                     "setting",
                     |m: &RoomPt| { &m.setting },
@@ -2226,6 +2301,7 @@ impl ::protobuf::Clear for RoomPt {
         self.room_id = 0;
         self.owner_id = 0;
         self.room_type = 0;
+        self.room_status = 0;
         self.setting.clear();
         self.members.clear();
         self.unknown_fields.clear();
@@ -2487,7 +2563,7 @@ impl ::protobuf::reflect::ProtobufValue for NoticeMessPt {
 #[derive(PartialEq,Clone,Default)]
 pub struct CharacterPt {
     // message fields
-    pub temp_id: u32,
+    pub cter_id: u32,
     pub grade: u32,
     pub last_use_skills: ::std::vec::Vec<u32>,
     pub skills: ::std::vec::Vec<u32>,
@@ -2507,19 +2583,19 @@ impl CharacterPt {
         ::std::default::Default::default()
     }
 
-    // uint32 temp_id = 1;
+    // uint32 cter_id = 1;
 
 
-    pub fn get_temp_id(&self) -> u32 {
-        self.temp_id
+    pub fn get_cter_id(&self) -> u32 {
+        self.cter_id
     }
-    pub fn clear_temp_id(&mut self) {
-        self.temp_id = 0;
+    pub fn clear_cter_id(&mut self) {
+        self.cter_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_temp_id(&mut self, v: u32) {
-        self.temp_id = v;
+    pub fn set_cter_id(&mut self, v: u32) {
+        self.cter_id = v;
     }
 
     // uint32 grade = 2;
@@ -2602,7 +2678,7 @@ impl ::protobuf::Message for CharacterPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.temp_id = tmp;
+                    self.cter_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -2629,8 +2705,8 @@ impl ::protobuf::Message for CharacterPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.temp_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.temp_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.cter_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.grade != 0 {
             my_size += ::protobuf::rt::value_size(2, self.grade, ::protobuf::wire_format::WireTypeVarint);
@@ -2647,8 +2723,8 @@ impl ::protobuf::Message for CharacterPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.temp_id != 0 {
-            os.write_uint32(1, self.temp_id)?;
+        if self.cter_id != 0 {
+            os.write_uint32(1, self.cter_id)?;
         }
         if self.grade != 0 {
             os.write_uint32(2, self.grade)?;
@@ -2699,9 +2775,9 @@ impl ::protobuf::Message for CharacterPt {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "temp_id",
-                    |m: &CharacterPt| { &m.temp_id },
-                    |m: &mut CharacterPt| { &mut m.temp_id },
+                    "cter_id",
+                    |m: &CharacterPt| { &m.cter_id },
+                    |m: &mut CharacterPt| { &mut m.cter_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "grade",
@@ -2737,7 +2813,7 @@ impl ::protobuf::Message for CharacterPt {
 
 impl ::protobuf::Clear for CharacterPt {
     fn clear(&mut self) {
-        self.temp_id = 0;
+        self.cter_id = 0;
         self.grade = 0;
         self.last_use_skills.clear();
         self.skills.clear();
@@ -2752,6 +2828,751 @@ impl ::std::fmt::Debug for CharacterPt {
 }
 
 impl ::protobuf::reflect::ProtobufValue for CharacterPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct BattleCharacterPt {
+    // message fields
+    pub user_id: u32,
+    pub nick_name: ::std::string::String,
+    pub grade: u32,
+    pub cter_id: u32,
+    pub birth_index: u32,
+    pub action_order: u32,
+    pub atk: u32,
+    pub hp: u32,
+    pub defence: u32,
+    pub skills: ::std::vec::Vec<u32>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a BattleCharacterPt {
+    fn default() -> &'a BattleCharacterPt {
+        <BattleCharacterPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl BattleCharacterPt {
+    pub fn new() -> BattleCharacterPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 user_id = 1;
+
+
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
+    }
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
+    }
+
+    // string nick_name = 2;
+
+
+    pub fn get_nick_name(&self) -> &str {
+        &self.nick_name
+    }
+    pub fn clear_nick_name(&mut self) {
+        self.nick_name.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_nick_name(&mut self, v: ::std::string::String) {
+        self.nick_name = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_nick_name(&mut self) -> &mut ::std::string::String {
+        &mut self.nick_name
+    }
+
+    // Take field
+    pub fn take_nick_name(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.nick_name, ::std::string::String::new())
+    }
+
+    // uint32 grade = 3;
+
+
+    pub fn get_grade(&self) -> u32 {
+        self.grade
+    }
+    pub fn clear_grade(&mut self) {
+        self.grade = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade(&mut self, v: u32) {
+        self.grade = v;
+    }
+
+    // uint32 cter_id = 4;
+
+
+    pub fn get_cter_id(&self) -> u32 {
+        self.cter_id
+    }
+    pub fn clear_cter_id(&mut self) {
+        self.cter_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cter_id(&mut self, v: u32) {
+        self.cter_id = v;
+    }
+
+    // uint32 birth_index = 5;
+
+
+    pub fn get_birth_index(&self) -> u32 {
+        self.birth_index
+    }
+    pub fn clear_birth_index(&mut self) {
+        self.birth_index = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_birth_index(&mut self, v: u32) {
+        self.birth_index = v;
+    }
+
+    // uint32 action_order = 6;
+
+
+    pub fn get_action_order(&self) -> u32 {
+        self.action_order
+    }
+    pub fn clear_action_order(&mut self) {
+        self.action_order = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_action_order(&mut self, v: u32) {
+        self.action_order = v;
+    }
+
+    // uint32 atk = 7;
+
+
+    pub fn get_atk(&self) -> u32 {
+        self.atk
+    }
+    pub fn clear_atk(&mut self) {
+        self.atk = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_atk(&mut self, v: u32) {
+        self.atk = v;
+    }
+
+    // uint32 hp = 8;
+
+
+    pub fn get_hp(&self) -> u32 {
+        self.hp
+    }
+    pub fn clear_hp(&mut self) {
+        self.hp = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_hp(&mut self, v: u32) {
+        self.hp = v;
+    }
+
+    // uint32 defence = 9;
+
+
+    pub fn get_defence(&self) -> u32 {
+        self.defence
+    }
+    pub fn clear_defence(&mut self) {
+        self.defence = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_defence(&mut self, v: u32) {
+        self.defence = v;
+    }
+
+    // repeated uint32 skills = 10;
+
+
+    pub fn get_skills(&self) -> &[u32] {
+        &self.skills
+    }
+    pub fn clear_skills(&mut self) {
+        self.skills.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_skills(&mut self, v: ::std::vec::Vec<u32>) {
+        self.skills = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_skills(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.skills
+    }
+
+    // Take field
+    pub fn take_skills(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.skills, ::std::vec::Vec::new())
+    }
+}
+
+impl ::protobuf::Message for BattleCharacterPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.nick_name)?;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.grade = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.cter_id = tmp;
+                },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.birth_index = tmp;
+                },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.action_order = tmp;
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.atk = tmp;
+                },
+                8 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.hp = tmp;
+                },
+                9 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.defence = tmp;
+                },
+                10 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.skills)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if !self.nick_name.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.nick_name);
+        }
+        if self.grade != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.cter_id != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.birth_index != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.birth_index, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.action_order != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.action_order, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.atk != 0 {
+            my_size += ::protobuf::rt::value_size(7, self.atk, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.hp != 0 {
+            my_size += ::protobuf::rt::value_size(8, self.hp, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.defence != 0 {
+            my_size += ::protobuf::rt::value_size(9, self.defence, ::protobuf::wire_format::WireTypeVarint);
+        }
+        for value in &self.skills {
+            my_size += ::protobuf::rt::value_size(10, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.user_id != 0 {
+            os.write_uint32(1, self.user_id)?;
+        }
+        if !self.nick_name.is_empty() {
+            os.write_string(2, &self.nick_name)?;
+        }
+        if self.grade != 0 {
+            os.write_uint32(3, self.grade)?;
+        }
+        if self.cter_id != 0 {
+            os.write_uint32(4, self.cter_id)?;
+        }
+        if self.birth_index != 0 {
+            os.write_uint32(5, self.birth_index)?;
+        }
+        if self.action_order != 0 {
+            os.write_uint32(6, self.action_order)?;
+        }
+        if self.atk != 0 {
+            os.write_uint32(7, self.atk)?;
+        }
+        if self.hp != 0 {
+            os.write_uint32(8, self.hp)?;
+        }
+        if self.defence != 0 {
+            os.write_uint32(9, self.defence)?;
+        }
+        for v in &self.skills {
+            os.write_uint32(10, *v)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> BattleCharacterPt {
+        BattleCharacterPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "user_id",
+                    |m: &BattleCharacterPt| { &m.user_id },
+                    |m: &mut BattleCharacterPt| { &mut m.user_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                    "nick_name",
+                    |m: &BattleCharacterPt| { &m.nick_name },
+                    |m: &mut BattleCharacterPt| { &mut m.nick_name },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "grade",
+                    |m: &BattleCharacterPt| { &m.grade },
+                    |m: &mut BattleCharacterPt| { &mut m.grade },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "cter_id",
+                    |m: &BattleCharacterPt| { &m.cter_id },
+                    |m: &mut BattleCharacterPt| { &mut m.cter_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "birth_index",
+                    |m: &BattleCharacterPt| { &m.birth_index },
+                    |m: &mut BattleCharacterPt| { &mut m.birth_index },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "action_order",
+                    |m: &BattleCharacterPt| { &m.action_order },
+                    |m: &mut BattleCharacterPt| { &mut m.action_order },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "atk",
+                    |m: &BattleCharacterPt| { &m.atk },
+                    |m: &mut BattleCharacterPt| { &mut m.atk },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "hp",
+                    |m: &BattleCharacterPt| { &m.hp },
+                    |m: &mut BattleCharacterPt| { &mut m.hp },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "defence",
+                    |m: &BattleCharacterPt| { &m.defence },
+                    |m: &mut BattleCharacterPt| { &mut m.defence },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "skills",
+                    |m: &BattleCharacterPt| { &m.skills },
+                    |m: &mut BattleCharacterPt| { &mut m.skills },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<BattleCharacterPt>(
+                    "BattleCharacterPt",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static BattleCharacterPt {
+        static mut instance: ::protobuf::lazy::Lazy<BattleCharacterPt> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(BattleCharacterPt::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for BattleCharacterPt {
+    fn clear(&mut self) {
+        self.user_id = 0;
+        self.nick_name.clear();
+        self.grade = 0;
+        self.cter_id = 0;
+        self.birth_index = 0;
+        self.action_order = 0;
+        self.atk = 0;
+        self.hp = 0;
+        self.defence = 0;
+        self.skills.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for BattleCharacterPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for BattleCharacterPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct BattleActionPt {
+    // message fields
+    pub user_id: u32,
+    pub choose_index: u32,
+    pub skip: bool,
+    pub next_action_user: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a BattleActionPt {
+    fn default() -> &'a BattleActionPt {
+        <BattleActionPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl BattleActionPt {
+    pub fn new() -> BattleActionPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 user_id = 1;
+
+
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
+    }
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
+    }
+
+    // uint32 choose_index = 2;
+
+
+    pub fn get_choose_index(&self) -> u32 {
+        self.choose_index
+    }
+    pub fn clear_choose_index(&mut self) {
+        self.choose_index = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_choose_index(&mut self, v: u32) {
+        self.choose_index = v;
+    }
+
+    // bool skip = 3;
+
+
+    pub fn get_skip(&self) -> bool {
+        self.skip
+    }
+    pub fn clear_skip(&mut self) {
+        self.skip = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_skip(&mut self, v: bool) {
+        self.skip = v;
+    }
+
+    // uint32 next_action_user = 4;
+
+
+    pub fn get_next_action_user(&self) -> u32 {
+        self.next_action_user
+    }
+    pub fn clear_next_action_user(&mut self) {
+        self.next_action_user = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_next_action_user(&mut self, v: u32) {
+        self.next_action_user = v;
+    }
+}
+
+impl ::protobuf::Message for BattleActionPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.choose_index = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.skip = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.next_action_user = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.choose_index != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.choose_index, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.skip != false {
+            my_size += 2;
+        }
+        if self.next_action_user != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.next_action_user, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.user_id != 0 {
+            os.write_uint32(1, self.user_id)?;
+        }
+        if self.choose_index != 0 {
+            os.write_uint32(2, self.choose_index)?;
+        }
+        if self.skip != false {
+            os.write_bool(3, self.skip)?;
+        }
+        if self.next_action_user != 0 {
+            os.write_uint32(4, self.next_action_user)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> BattleActionPt {
+        BattleActionPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "user_id",
+                    |m: &BattleActionPt| { &m.user_id },
+                    |m: &mut BattleActionPt| { &mut m.user_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "choose_index",
+                    |m: &BattleActionPt| { &m.choose_index },
+                    |m: &mut BattleActionPt| { &mut m.choose_index },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "skip",
+                    |m: &BattleActionPt| { &m.skip },
+                    |m: &mut BattleActionPt| { &mut m.skip },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "next_action_user",
+                    |m: &BattleActionPt| { &m.next_action_user },
+                    |m: &mut BattleActionPt| { &mut m.next_action_user },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<BattleActionPt>(
+                    "BattleActionPt",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static BattleActionPt {
+        static mut instance: ::protobuf::lazy::Lazy<BattleActionPt> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(BattleActionPt::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for BattleActionPt {
+    fn clear(&mut self) {
+        self.user_id = 0;
+        self.choose_index = 0;
+        self.skip = false;
+        self.next_action_user = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for BattleActionPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for BattleActionPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -2775,19 +3596,32 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     k_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
     \x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01\
     (\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\
-    \n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"J\n\tTileMapPt\x12\x0e\
-    \n\x02id\x18\x01\x20\x01(\rR\x02id\x12-\n\ncell_array\x18\x02\x20\x03(\
-    \x0b2\x0e.protos.CellPtR\tcellArray\"2\n\x06CellPt\x12\x12\n\x04type\x18\
-    \x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\
-    \"\xb6\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomI\
-    d\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_t\
-    ype\x18\x03\x20\x01(\rR\x08roomType\x12/\n\x07setting\x18\x04\x20\x01(\
-    \x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07members\x18\x05\x20\
-    \x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\
-    \n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07temp_id\x18\x01\x20\
-    \x01(\rR\x06tempId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\x05grade\x12&\
-    \n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\x12\x16\n\x06sk\
-    ills\x18\x04\x20\x03(\rR\x06skillsb\x06proto3\
+    \n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"a\n\tTileMapPt\x12\x0e\
+    \n\x02id\x18\x01\x20\x01(\rR\x02id\x12\x10\n\x03map\x18\x02\x20\x03(\rR\
+    \x03map\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\
+    \tworldCell\"G\n\x0bWorldCellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\
+    \x05index\x12\"\n\rworld_cell_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\
+    \xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\
+    \x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_ty\
+    pe\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\n\x0broom_status\x18\x04\x20\
+    \x01(\rR\nroomStatus\x12/\n\x07setting\x18\x05\x20\x01(\x0b2\x15.protos.\
+    RoomSettingPtR\x07setting\x12*\n\x07members\x18\x06\x20\x03(\x0b2\x10.pr\
+    otos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\
+    \"|\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\
+    \x12\x14\n\x05grade\x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skil\
+    ls\x18\x03\x20\x03(\rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\
+    \x03(\rR\x06skills\"\x90\x02\n\x11BattleCharacterPt\x12\x17\n\x07user_id\
+    \x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\
+    \x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x17\n\
+    \x07cter_id\x18\x04\x20\x01(\rR\x06cterId\x12\x1f\n\x0bbirth_index\x18\
+    \x05\x20\x01(\rR\nbirthIndex\x12!\n\x0caction_order\x18\x06\x20\x01(\rR\
+    \x0bactionOrder\x12\x10\n\x03atk\x18\x07\x20\x01(\rR\x03atk\x12\x0e\n\
+    \x02hp\x18\x08\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\t\x20\x01(\rR\
+    \x07defence\x12\x16\n\x06skills\x18\n\x20\x03(\rR\x06skills\"\x8a\x01\n\
+    \x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bchooseIndex\x12\x12\n\x04\
+    skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_action_user\x18\x04\
+    \x20\x01(\rR\x0enextActionUserb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

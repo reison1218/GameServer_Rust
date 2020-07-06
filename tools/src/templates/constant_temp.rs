@@ -10,6 +10,7 @@ pub struct ConstantTemp {
 impl Template for ConstantTemp{}
 
 
+///常量结构体管理器
 #[derive(Debug, Default, Clone)]
 pub struct ConstantTempMgr{
     pub temps: HashMap<String, ConstantTemp>,

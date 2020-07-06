@@ -11,8 +11,7 @@ message C_CREATE_ROOM{
 //加入房间
 //cmd:1007
 message C_JOIN_ROOM{
-    uint32 room_type = 1;//房间类型
-    uint32 room_id = 2;//房间id
+    uint32 room_id = 1;//房间id
 }
 
 //快速开始
@@ -165,5 +164,7 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
 //游戏开始推送
 //cmd:10019
 message S_START_NOTICE{
-
+    uint32 room_status = 1;//房间状态
+    TileMapPt tile_map = 2;//生成的地图数据
+    repeated BattleCharacterPt battle_cters= 3;//战斗角色数据
 }

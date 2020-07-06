@@ -5,7 +5,7 @@ use rand::{random, Rng};
 use std::borrow::Borrow;
 use tools::templates::template::TemplatesMgr;
 
-pub fn test_map(){
+pub fn generate_map(){
     let path = env::current_dir().unwrap();
     let str = path.as_os_str().to_str().unwrap();
     let res = str.to_string()+"/template";
@@ -16,9 +16,9 @@ pub fn test_map(){
 
 #[derive(Default,Debug)]
 struct TileMapData{
-    id:u32,
-    map:Vec<u32>,
-    world_cell_map:HashMap<u32,u32>,
+    id:u32,//地图id
+    map:Vec<u32>,//地图格子vec
+    world_cell_map:HashMap<u32,u32>,//世界块map，index，cellid
 }
 
 impl TileMapData{

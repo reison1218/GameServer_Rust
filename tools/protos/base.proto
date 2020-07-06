@@ -62,13 +62,13 @@ message MemberPt{
 //地图数据
 message TileMapPt{
     uint32 id = 1;//map的ID
-    repeated CellPt cell_array = 2;//格子数组
+    repeated uint32 map = 2;//地图具体数据
+    repeated WorldCellPt world_cell= 3;//世界块
 }
 
-//格子数据
-message CellPt{
-    uint32 type = 1;//值类型（0:正常地图值 1:角色id 2:其他）
-    uint32 value = 2;//值
+message WorldCellPt{
+    uint32 index = 1;       //下标
+    uint32 world_cell_id = 2;//世界块id
 }
 
 //房间数据
@@ -76,8 +76,9 @@ message RoomPt{
     uint32 room_id = 1;//房间id
     uint32 owner_id = 2;//房主ID
     uint32 room_type = 3;//房间类型
-    RoomSettingPt setting = 4;//房间设置
-    repeated MemberPt members = 5;//成员数据
+    uint32 room_status = 4;//房间状态 0:未开始，1：已开始游戏
+    RoomSettingPt setting = 5;//房间设置
+    repeated MemberPt members = 6;//成员数据
 }
 
 //历史消息
@@ -92,8 +93,29 @@ message NoticeMessPt{
 
 //玩家角色数据
 message CharacterPt{
-    uint32 temp_id = 1;//角色的配置id
+    uint32 cter_id = 1;//角色的配置id
     uint32 grade = 2;//角色等级
     repeated uint32 last_use_skills = 3;
     repeated uint32 skills = 4;//玩家次角色所有已解锁的技能id
+}
+
+//玩家战斗角色数据
+message BattleCharacterPt{
+    uint32 user_id = 1;                 //玩家id
+    string nick_name = 2;               //玩家昵称
+    uint32 grade = 3;                   //角色等级
+    uint32 cter_id = 4;                 //角色id
+    uint32 birth_index = 5;             //角色初始位置
+    uint32 action_order = 6;            //行动顺序
+    uint32 atk = 7;                     //攻击力
+    uint32 hp = 8;                      //角色血量
+    uint32 defence = 9;                 //角色防御
+    repeated uint32 skills = 10;        //角色技能
+}
+
+message BattleActionPt{
+    uint32 user_id = 1;                 //玩家id
+    uint32 choose_index = 2;            //玩家选择的位置
+    bool skip = 3;                      //是否跳过
+    uint32 next_action_user = 4;        //下一个行动玩家
 }
