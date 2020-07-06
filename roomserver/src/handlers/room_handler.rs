@@ -137,11 +137,6 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///改变目标
-pub fn change_target(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
-    Ok(())
-}
-
 ///寻找房间并加入房间
 pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut grs = G_R_SEARCH_ROOM::new();

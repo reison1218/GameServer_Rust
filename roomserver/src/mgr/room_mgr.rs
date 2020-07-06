@@ -107,23 +107,35 @@ impl RoomMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
+        //创建房间
         self.cmd_map
             .insert(RoomCode::CreateRoom as u32, create_room);
+        //离开房间
         self.cmd_map.insert(RoomCode::LeaveRoom as u32, leave_room);
+        //换队伍
         self.cmd_map
             .insert(RoomCode::ChangeTeam as u32, change_team);
+        //T人
         self.cmd_map.insert(RoomCode::Kick as u32, kick_member);
+        //准备与取消
         self.cmd_map
             .insert(RoomCode::PrepareCancel as u32, prepare_cancel);
+        //离线
         self.cmd_map.insert(RoomCode::LineOff as u32, leave_room);
+        //添加房间
         self.cmd_map.insert(RoomCode::JoinRoom as u32, join_room);
+        //匹配房间
         self.cmd_map
             .insert(RoomCode::SearchRoom as u32, search_room);
+        //房间设置
         self.cmd_map
             .insert(RoomCode::RoomSetting as u32, room_setting);
+        //选择角色和技能
         self.cmd_map
             .insert(RoomCode::ChoiceCharacter as u32, choose_character);
-        self.cmd_map.insert(RoomCode::StartGame as u32, start);
+        //发送表情
         self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
+        //开始游戏
+        self.cmd_map.insert(RoomCode::StartGame as u32, start);
     }
 }
