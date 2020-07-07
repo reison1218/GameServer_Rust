@@ -5,11 +5,11 @@ use tools::tcp::TcpSender;
 use std::sync::{RwLock, Arc};
 use crate::mgr::register_mgr::RegisterMgr;
 use crate::entity::NetClient::{NetClient, ClientType};
-use tools::protos::base::MessPacketPt;
 use crate::GATE_ID;
 use crate::ROOM_ID;
 use crate::entity::NetClient::ClientType::*;
 use crate::mgr::id_contants::*;
+use tools::util::packet::Packet;
 
 struct TcpServerHandler {
     pub tcp: Option<TcpSender>, //相当于channel
@@ -47,8 +47,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        let mut mp = MessPacketPt::new();
-        mp.merge_from_bytes(&mess[..]);
+        let mut mp = Packet::from_only_server(mess).unwrap();
         self.handle_binary(mp);
 
     }
@@ -56,9 +55,9 @@ impl tools::tcp::Handler for TcpServerHandler {
 
 impl TcpServerHandler {
     ///处理二进制数据
-    fn handle_binary(&mut self, mut mess: MessPacketPt) {
+    fn handle_binary(&mut self, mut mess: Packet) {
         //如果是客户端消息，直接返回
-        if mess.is_client{
+        if mess.is_client(){
             return;
         }
         let regist = true;
@@ -67,7 +66,7 @@ impl TcpServerHandler {
             //封装gate和room客户端
             let mut id:Option<u32> = None;
             let mut client_type:Option<ClientType> = None;
-            if mess.is_broad{
+            if mess.is_broad(){
                 let mut gate_id = GATE_ID.write().unwrap();
                 gate_id.store(1, Ordering::Relaxed);
                 id = Some(gate_id.load(Ordering::Relaxed));
@@ -109,7 +108,7 @@ impl TcpServerHandler {
     }
 
     ///数据包转发
-    fn arrange_packet(&mut self, mess: MessPacketPt) {
+    fn arrange_packet(&mut self, mess: Packet) {
     }
 }
 

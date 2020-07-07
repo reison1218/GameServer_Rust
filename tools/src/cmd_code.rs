@@ -111,45 +111,59 @@ impl From<u32> for ClientCode{
         if v == ClientCode::NickNameModify as u32{
             return ClientCode::NickNameModify
         }
+        //房间命令返回
         if v == ClientCode::Room as u32{
             return ClientCode::Room
         }
+        //离开房间
         if v == ClientCode::LeaveRoom as u32{
             return ClientCode::LeaveRoom
         }
+        //开始游戏
         if v == ClientCode::Start as u32{
             return ClientCode::Start
         }
+        //改变队伍
         if v == ClientCode::ChangeTeam as u32{
             return ClientCode::ChangeTeam
         }
+        //准备与取消
         if v == ClientCode::PrepareCancel as u32{
             return ClientCode::PrepareCancel
         }
+        //房间设置
         if v == ClientCode::RoomSetting as u32{
             return ClientCode::RoomSetting
         }
+        //成员变动推送
         if v == ClientCode::RoomMemberNotice as u32{
             return ClientCode::RoomMemberNotice
         }
+        //T玩家
         if v == ClientCode::KickMember as u32{
             return ClientCode::KickMember
         }
+        //选择角色和技能
         if v == ClientCode::ChooseCharacter as u32{
             return ClientCode::ChooseCharacter
         }
+        //房间推送
         if v == ClientCode::RoomNotice as u32{
             return ClientCode::RoomNotice
         }
+        //表情
         if v == ClientCode::Emoji as u32{
             return ClientCode::Emoji
         }
+        //表情推送
         if v == ClientCode::EmojiNotice as u32{
             return ClientCode::EmojiNotice
         }
+        //成员离开房间推送
         if v == ClientCode::MemberLeaveNotice as u32{
             return ClientCode::MemberLeaveNotice
         }
+        //开始游戏推送
         if v == ClientCode::StartNotice as u32{
             return ClientCode::StartNotice
         }

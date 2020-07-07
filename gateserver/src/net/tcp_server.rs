@@ -105,13 +105,13 @@ impl TcpServerHandler {
             }
             u_id = c_u_l.get_user_id();
             let res = handle_login(packet.get_data(), &mut write);
-            if res.is_err() {
-                let str = res.err().unwrap().to_string();
-                let mut res = S_USER_LOGIN::new();
-                res.set_is_succ(false);
-                res.set_err_mess(str.clone());
+            if let Err(e) = res {
+                let str = e.to_string();
+                let mut sul = S_USER_LOGIN::new();
+                sul.set_is_succ(false);
+                sul.set_err_mess(str.clone());
                 packet.set_cmd(ClientCode::Login as u32);
-                packet.set_data_from_vec(res.write_to_bytes().unwrap());
+                packet.set_data_from_vec(sul.write_to_bytes().unwrap());
                 std::mem::drop(write);
                 self.write_to_client(packet.build_client_bytes());
                 return;

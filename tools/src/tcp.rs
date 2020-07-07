@@ -136,7 +136,7 @@ pub mod tcp_server {
                     continue;
                 }
             }
-            for event in events.iter() {
+            for event in events.iter(){
                 match event.token() {
                     SERVER => {
                         // Received an event for the TCP server socket.
@@ -325,7 +325,7 @@ pub mod tcp_server {
                         //break;
                     }
                     Err(ref err) if interrupted(err) => {
-                        error!("{:?}",err);
+                        warn!("{:?}",err);
                         continue;
                     },
                     Err(ref err) if other(err) => {
@@ -435,18 +435,14 @@ pub fn new_tcp_client(address: &str) -> TcpStream {
     let dur = Duration::from_secs(5);
     loop {
         ts = Some(connect(address));
-        let re = ts.unwrap();
-        if re.is_err() {
-            error!(
-                "连接服务器失败！{:?},{}",
-                address,
-                re.err().unwrap().to_string()
-            );
+        let res = ts.unwrap();
+        if let Err(e) = res{
+            error!("连接服务器失败！{:?},{}", address,e.to_string());
             //睡5s
             std::thread::sleep(dur);
             continue;
         }
-        result = Some(re.unwrap());
+        result = Some(res.unwrap());
         break;
     }
 

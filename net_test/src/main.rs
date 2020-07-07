@@ -156,8 +156,10 @@ fn test_binary(){
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
 }
 
+
 fn main() -> anyhow::Result<()> {
-    test_tcp_client();
+    test_sort();
+    //test_tcp_client();
     //map::generate_map();
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);
@@ -292,11 +294,11 @@ fn test_sort(){
     }
 
     let time = SystemTime::now();
-    for i in 1..10{
+    for i in 1..=9999{
         v.par_sort_by(|a,b|b.cmp(a));
     }
     //println!("{:?}",v);
-    println!("rayon:{}",time.elapsed().unwrap().as_millis());
+    println!("rayon:{:?}",time.elapsed().unwrap());
 
     let mut v = Vec::new();
     let mut rng = thread_rng();
@@ -305,11 +307,11 @@ fn test_sort(){
         v.push(n);
     }
     let time = SystemTime::now();
-    for i in 1..10{
+    for i in 1..=9999{
         v.sort_by(|a,b|b.cmp(a));
     }
     //println!("{:?}",v);
-    println!("comment:{}",time.elapsed().unwrap().as_millis());
+    println!("comment:{:?}",time.elapsed().unwrap());
 }
 
 

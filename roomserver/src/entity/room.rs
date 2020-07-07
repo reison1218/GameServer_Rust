@@ -51,9 +51,11 @@ pub struct Room {
     tile_map: TileMap,                 //地图数据
     pub members: HashMap<u32, Member>, //玩家对应的队伍
     pub member_index: [u32; 4],        //玩家对应的位置
-    orders: Vec<ActionUnit>,           //action队列
+    orders: Vec<u32>,                  //回合行动队列
     state: u8,                         //房间状态
     pub setting: RoomSetting,          //房间设置
+    pub next_location_member: u32,     //选择占位玩家id
+    pub next_round_index: u32,         //当前回合玩家
     room_type: u8,                     //房间类型
     sender: TcpSender,                 //sender
     time: DateTime<Utc>,               //房间创建时间
@@ -69,7 +71,7 @@ impl Room {
         str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
-        let orders: Vec<ActionUnit> = Vec::new();
+        let orders: Vec<u32> = Vec::new();
         let members: HashMap<u32, Member> = HashMap::new();
         let setting = RoomSetting::default();
         let member_index = [0; MEMBER_MAX as usize];
@@ -82,6 +84,8 @@ impl Room {
             orders,
             state: RoomState::Await as u8,
             setting,
+            next_location_member: 0,
+            next_round_member: 0,
             room_type,
             sender,
             time,
@@ -277,8 +281,8 @@ impl Room {
     }
 
     ///获取下一个行动单位
-    pub fn get_last_action_mut(&mut self) -> Option<&mut ActionUnit> {
-        let result = self.orders.last_mut();
+    pub fn get_last_action_mut(&mut self) -> Option<&u32> {
+        let result = self.orders.last();
         result
     }
 
