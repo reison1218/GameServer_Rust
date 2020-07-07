@@ -85,7 +85,7 @@ impl Room {
             state: RoomState::Await as u8,
             setting,
             next_location_member: 0,
-            next_round_member: 0,
+            next_round_index: 0,
             room_type,
             sender,
             time,
