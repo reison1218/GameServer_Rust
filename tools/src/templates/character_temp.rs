@@ -21,7 +21,9 @@ pub struct CharacterTemp {
     pub lock_skills: Vec<u32>,
     pub is_dlc: u8,
     pub is_init: u8,
-    pub cter_cell:CterCell
+    pub cter_cell:CterCell,
+    pub usable_skill_count:u8,
+    pub usable_item_count:u8,
 }
 
 impl Template for CharacterTemp {}

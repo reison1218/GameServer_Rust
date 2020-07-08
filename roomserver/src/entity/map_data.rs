@@ -1,15 +1,14 @@
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
-use tools::protos::base::{TileMapPt, WorldCellPt};
 use tools::templates::template::TemplatesMgr;
 use tools::templates::tile_map_temp::TileMapTemp;
 
 ///地图
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {
-    id: u32,                           //地图id
-    map: Vec<u32>,                     //地图格子vec
-    world_cell_map: HashMap<u32, u32>, //世界块map，index，cellid
+    pub id: u32,                           //地图id
+    pub map: Vec<u32>,                     //地图格子vec
+    pub world_cell_map: HashMap<u32, u32>, //世界块map，index，cellid
 }
 
 impl TileMap {
@@ -28,20 +27,19 @@ impl TileMap {
         })
     }
 
-    pub fn convert_pt(&self) -> TileMapPt {
-        let mut tp = TileMapPt::new();
-        tp.id = self.id;
-        tp.set_map(self.map.clone());
+    pub fn get_able_cells(&self) -> Vec<u32> {
         let mut v = Vec::new();
-        for i in self.world_cell_map.iter() {
-            let mut wcp = WorldCellPt::new();
-            wcp.index = *i.0;
-            wcp.world_cell_id = *i.1;
-            v.push(wcp);
+        let tile_map_mgr = crate::TEMPLATES.get_tile_map_ref();
+        let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
+        //填充空的格子占位下标
+        for index in 0..tile_map_temp.map.len() {
+            let res = tile_map_temp.map.get(index).unwrap();
+            if *res != 2 {
+                continue;
+            }
+            v.push(index as u32);
         }
-        let res = protobuf::RepeatedField::from(v);
-        tp.set_world_cell(res);
-        tp
+        v
     }
 
     pub fn init(temp_mgr: &TemplatesMgr, cters: Vec<u32>) -> Self {

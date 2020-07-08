@@ -8,7 +8,9 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 pub enum TaskCmd {
-    MatchRoomStart = 101, //匹配房间开始任务
+    MatchRoomStart = 101,   //匹配房间开始任务
+    ChoiceLocation = 102,   //选择占位
+    ChoiceRoundOrder = 103, //选择回合顺序
 }
 
 impl From<u16> for TaskCmd {
@@ -49,6 +51,34 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     let m = || {
                         std::thread::sleep(Duration::from_millis(task.delay));
                         match_room_start(rm_clone, task);
+                    };
+                    //设置线程名字和堆栈大小
+                    let thread_builder = std::thread::Builder::new()
+                        .name("TIMER_THREAD_TASK".to_owned())
+                        .stack_size(32 * 1024);
+                    let res = thread_builder.spawn(m);
+                    if res.is_err() {
+                        error!("{:?}", res.err().unwrap());
+                    }
+                }
+                TaskCmd::ChoiceLocation => {
+                    let m = || {
+                        std::thread::sleep(Duration::from_millis(task.delay));
+                        choice_location(rm_clone, task);
+                    };
+                    //设置线程名字和堆栈大小
+                    let thread_builder = std::thread::Builder::new()
+                        .name("TIMER_THREAD_TASK".to_owned())
+                        .stack_size(32 * 1024);
+                    let res = thread_builder.spawn(m);
+                    if res.is_err() {
+                        error!("{:?}", res.err().unwrap());
+                    }
+                }
+                TaskCmd::ChoiceRoundOrder => {
+                    let m = || {
+                        std::thread::sleep(Duration::from_millis(task.delay));
+                        choice_round(rm_clone, task);
                     };
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
@@ -143,4 +173,60 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     //执行开始逻辑
     room.start();
+}
+
+///选择占位
+fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id");
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap().as_u64();
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap() as u32;
+
+    let mut write = rm.write().unwrap();
+
+    let room = write.get_room_mut(&user_id);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    room.choice_location(user_id, None);
+}
+
+///选择占位
+fn choice_round(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id");
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap().as_u64();
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap() as u32;
+
+    let mut write = rm.write().unwrap();
+
+    let room = write.get_room_mut(&user_id);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    room.choice_round(user_id, None);
 }

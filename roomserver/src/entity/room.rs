@@ -2,18 +2,21 @@ use crate::entity::character::BattleCharacter;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
 use crate::entity::room_model::RoomSetting;
+use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
+use log::{error, info, warn};
 use protobuf::Message;
 use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{MemberPt, RoomPt};
+use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::room::{
-    S_CHANGE_TEAM, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM,
-    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
+    S_BATTLE_START_NOTICE, S_CHANGE_TEAM, S_CHOOSE_LOCATION_NOTICE, S_CHOOSE_ROUND_ORDER_NOTICE,
+    S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_LEAVE_NOTICE,
+    S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -46,48 +49,55 @@ pub struct ActionUnit {
 ///房间结构体，封装房间必要信息
 #[derive(Clone, Debug)]
 pub struct Room {
-    id: u32,                           //房间id
-    owner_id: u32,                     //房主id
-    tile_map: TileMap,                 //地图数据
-    pub members: HashMap<u32, Member>, //玩家对应的队伍
-    pub member_index: [u32; 4],        //玩家对应的位置
-    orders: Vec<u32>,                  //回合行动队列
-    state: u8,                         //房间状态
-    pub setting: RoomSetting,          //房间设置
-    pub next_location_member: u32,     //选择占位玩家id
-    pub next_round_index: u32,         //当前回合玩家
-    room_type: u8,                     //房间类型
-    sender: TcpSender,                 //sender
-    time: DateTime<Utc>,               //房间创建时间
+    id: u32,                              //房间id
+    owner_id: u32,                        //房主id
+    tile_map: TileMap,                    //地图数据
+    pub members: HashMap<u32, Member>,    //玩家对应的队伍
+    pub member_index: [u32; 4],           //玩家对应的位置
+    pub round_orders: [u32; 4],           //回合行动队列
+    pub location_orders: [u32; 4],        //位置选择顺序
+    state: u8,                            //房间状态
+    pub setting: RoomSetting,             //房间设置
+    pub next_choice_location_user: u32,   //下一个选择占位玩家id
+    pub next_choice_round_user: u32,      //下一个选择回合顺序玩家id
+    pub next_round_index: u32,            //下个回合玩家
+    room_type: u8,                        //房间类型
+    sender: TcpSender,                    //sender
+    task_sender: crossbeam::Sender<Task>, //任务sender
+    time: DateTime<Utc>,                  //房间创建时间
 }
 
 impl Room {
     ///构建一个房间的结构体
-    pub fn new(mut owner: Member, room_type: u8, sender: TcpSender) -> anyhow::Result<Room> {
+    pub fn new(
+        mut owner: Member,
+        room_type: u8,
+        sender: TcpSender,
+        task_sender: crossbeam::Sender<Task>,
+    ) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let user_id = owner.user_id;
-        let tile_map = TileMap::default();
         let mut str = Local::now().timestamp_subsec_micros().to_string();
         str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
-        let orders: Vec<u32> = Vec::new();
-        let members: HashMap<u32, Member> = HashMap::new();
-        let setting = RoomSetting::default();
         let member_index = [0; MEMBER_MAX as usize];
         let mut room = Room {
-            id,
-            owner_id: owner.user_id,
-            tile_map,
-            members,
-            member_index,
-            orders,
+            id: id,
+            owner_id: user_id,
+            tile_map: TileMap::default(),
+            members: HashMap::new(),
+            member_index: member_index,
+            round_orders: [0; 4],
+            location_orders: [0; 4],
             state: RoomState::Await as u8,
-            setting,
-            next_location_member: 0,
+            setting: RoomSetting::default(),
+            next_choice_location_user: 0,
+            next_choice_round_user: 0,
             next_round_index: 0,
             room_type,
             sender,
+            task_sender,
             time,
         };
 
@@ -103,6 +113,190 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    fn check_location_user(&mut self) -> bool {
+        let mut user_id = 0;
+        let mut res = true;
+        for member_id in self.location_orders.iter() {
+            if *member_id == 0 {
+                continue;
+            }
+            let member = self.members.get(member_id).unwrap();
+            if member.chose_cter.location == 0 {
+                user_id = member.user_id;
+                res = false;
+                break;
+            }
+        }
+        if res && self.next_choice_round_user == 0 {
+            self.next_choice_round_user = self.location_orders[0];
+        } else {
+            self.next_choice_location_user = user_id;
+        }
+        res
+    }
+
+    ///选择占位
+    pub fn choice_location(&mut self, user_id: u32, index: Option<u32>) {
+        let location;
+        //代表系统随机
+        if let Some(index) = index {
+            let member = self.members.get_mut(&user_id).unwrap();
+            member.chose_cter.location = index;
+            location = index;
+        } else {
+            let mut random = rand::thread_rng();
+            let v = self.tile_map.get_able_cells();
+            let index = random.gen_range(0, v.len());
+            let index = v.get(index).unwrap();
+            let member = self.members.get_mut(&user_id).unwrap();
+            member.chose_cter.location = *index;
+            location = *index;
+        }
+
+        let mut scln = S_CHOOSE_LOCATION_NOTICE::new();
+        scln.set_user_id(user_id);
+        scln.location = location;
+        let bytes = scln.write_to_bytes().unwrap();
+        //通知给房间成员
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::ChoiceLoactionNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+
+        //此处有两种情况
+        //第一种，成员还没选择完占位，则继续定时器选择占位，否则进入选择回合顺序定时器
+
+        let res = self.check_location_user();
+        //都选择完了占位，进入选择回合顺序
+        if res {
+            self.build_choice_round_task();
+        } else {
+            //没选择完，继续选
+            self.build_choice_location_task();
+        }
+    }
+
+    ///选择回合
+    pub fn choice_round(&mut self, user_id: u32, order: Option<u32>) {
+        let round_order;
+        //如果玩家选择都
+        if let Some(order) = order {
+            self.location_orders[order as usize] = user_id;
+            round_order = order;
+        } else {
+            //系统帮忙选
+            let mut v = Vec::new();
+            let mut index = 0;
+            for i in self.location_orders.iter() {
+                if *i == 0 {
+                    v.push(index);
+                }
+                index += 1;
+            }
+            let mut rand = rand::thread_rng();
+            let res = rand.gen_range(0, v.len());
+            let index = v.get(res).unwrap();
+            round_order = *index;
+            self.location_orders[round_order as usize] = user_id;
+        }
+
+        //通知其他玩家
+        let mut scron = S_CHOOSE_ROUND_ORDER_NOTICE::new();
+        scron.user_id = user_id;
+        scron.order = round_order;
+        let bytes = scron.write_to_bytes().unwrap();
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::ChoiceRoundOrderNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+
+        let res = self.check_choice_round();
+        //如果都选完了，进入战斗
+        if res {
+            let mut sbs = S_BATTLE_START_NOTICE::new();
+            self.cter_2_battle_cter();
+            for member in self.members.values() {
+                sbs.battle_cters.push(member.convert_to_battle_cter());
+            }
+
+            let bytes = sbs.write_to_bytes().unwrap();
+            for id in self.members.keys() {
+                let res = Packet::build_packet_bytes(
+                    ClientCode::BattleStartNotice as u32,
+                    *id,
+                    bytes.clone(),
+                    true,
+                    true,
+                );
+                self.sender.write(res);
+            }
+
+        //此处应该加上第一回合限制时间定时器
+        } else {
+            //如果没选完，继续选
+
+            let user_id = self.next_choice_round_user;
+            //没选择完，继续选
+            let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
+            let mut task = Task::default();
+            if let Some(time) = time_limit {
+                let time = u64::from_str(time.value.as_str());
+                match time {
+                    Ok(time) => {
+                        task.delay = time;
+                    }
+                    Err(e) => {
+                        task.delay = 5000_u64;
+                        error!("{:?}", e);
+                    }
+                }
+            } else {
+                task.delay = 5000_u64;
+                warn!("the choice_location_time of Constant config is None!pls check!");
+            }
+            task.cmd = TaskCmd::ChoiceRoundOrder as u16;
+
+            let mut map = serde_json::Map::new();
+            map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
+            task.data = serde_json::Value::from(map);
+            let res = self.task_sender.send(task);
+            if res.is_err() {
+                error!("{:?}", res.err().unwrap());
+            }
+        }
+    }
+
+    pub fn check_choice_round(&mut self) -> bool {
+        let mut user_id = 0;
+        let res;
+        for i in self.location_orders.iter() {
+            if *i == 0 {
+                continue;
+            }
+            if !self.round_orders.contains(i) {
+                res = false;
+                user_id = *i;
+                break;
+            }
+        }
+        if user_id > 0 {
+            self.next_choice_round_user = user_id;
+        }
+        true
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
@@ -166,12 +360,31 @@ impl Room {
     pub fn start_notice(&mut self) {
         let mut ssn = S_START_NOTICE::new();
         ssn.set_room_status(self.state as u32);
-        let map = self.tile_map.convert_pt();
-        ssn.set_tile_map(map);
-        for member in self.members.values() {
-            let battle_cter_pt = member.convert_to_battle_cter();
-            ssn.battle_cters.push(battle_cter_pt);
+        ssn.set_tile_map_id(self.tile_map.id);
+        //封装世界块
+        for (index, id) in self.tile_map.world_cell_map.iter() {
+            let mut wcp = WorldCellPt::default();
+            wcp.set_index(*index);
+            wcp.set_index(*id);
+            ssn.world_cell.push(wcp);
         }
+        //随机出选择占位的顺序
+        let mut random = rand::thread_rng();
+        let mut member_v = self.member_index.to_vec();
+        let mut index = 0_u32;
+        loop {
+            if index >= (self.member_index.len() - 1) as u32 {
+                break;
+            }
+            let rm_index = random.gen_range(0, member_v.len());
+            let res = member_v.remove(rm_index);
+            self.location_orders[index as usize] = res;
+            index += 1;
+        }
+        //此一次，所以直接取0下标的值
+        self.next_choice_location_user = self.location_orders[0];
+        ssn.location_order = self.location_orders.to_vec();
+
         let bytes = ssn.write_to_bytes().unwrap();
         for id in self.members.keys() {
             let bytes = Packet::build_packet_bytes(
@@ -183,6 +396,7 @@ impl Room {
             );
             self.sender.write(bytes);
         }
+        self.build_choice_location_task();
     }
 
     ///发送表情包
@@ -280,12 +494,6 @@ impl Room {
         true
     }
 
-    ///获取下一个行动单位
-    pub fn get_last_action_mut(&mut self) -> Option<&u32> {
-        let result = self.orders.last();
-        result
-    }
-
     ///获得房主ID
     pub fn get_owner_id(&self) -> u32 {
         self.owner_id
@@ -351,23 +559,80 @@ impl Room {
     ///移除玩家
     pub fn remove_member(&mut self, notice_type: u8, user_id: &u32) {
         let res = self.members.get(user_id);
-        if res.is_some() {
-            self.member_leave_notice(notice_type, user_id);
-            self.members.remove(user_id);
-            for i in 0..=self.member_index.len() - 1 {
-                if self.member_index[i] != *user_id {
-                    continue;
-                }
-                self.member_index[i] = 0;
+        if res.is_none() {
+            return;
+        }
+
+        self.member_leave_notice(notice_type, user_id);
+        self.members.remove(user_id);
+        for i in 0..=self.member_index.len() - 1 {
+            if self.member_index[i] != *user_id {
+                continue;
+            }
+            self.member_index[i] = 0;
+            break;
+        }
+        if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
+            for i in self.members.keys() {
+                self.owner_id = *i;
                 break;
             }
-            if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
-                for i in self.members.keys() {
-                    self.owner_id = *i;
-                    break;
+            self.room_notice();
+        }
+
+        //处理战斗相关的数据
+        self.handler_leave(*user_id);
+    }
+
+    fn handler_leave(&mut self, user_id: u32) {
+        let size = self.location_orders.len();
+        //如果下一次选择位置的玩家是离开的玩家就选出下一个
+        if self.next_choice_location_user == user_id {
+            self.next_choice_location_user = 0;
+            for i in 0..size {
+                if self.location_orders[i] == user_id {
+                    let index = i + 1;
+                    if index <= size - 1 {
+                        self.next_choice_location_user = self.location_orders[index];
+                        //选择占位定时器任务
+                        if self.next_choice_location_user > 0 {
+                            self.build_choice_location_task();
+                        }
+                    }
                 }
-                self.room_notice();
             }
+        }
+
+        //如果下一个选择回合的玩家是离开的玩家，则选出下一个
+        if self.next_choice_round_user == user_id {
+            self.next_choice_round_user = 0;
+            for i in 0..size {
+                if self.location_orders[i] == user_id {
+                    let index = i + 1;
+                    if index <= size - 1 {
+                        self.next_choice_round_user = self.location_orders[index];
+                        //选择回合定时器任务
+                        if self.next_choice_round_user > 0 {
+                            self.build_choice_round_task();
+                        }
+                    }
+                }
+            }
+        }
+
+        //处理战斗相关的数据
+        for i in 0..size {
+            if self.location_orders[i] == user_id {
+                self.location_orders[i] = 0;
+            }
+            if self.round_orders[i] == user_id {
+                self.round_orders[i] = 0;
+            }
+        }
+
+        //如果战斗已经开始了，下一个回合行动玩家是这个离线玩家，则轮到下一个玩家
+        if self.round_orders[self.next_round_index as usize] == user_id {
+            self.next_round_index += 1;
         }
     }
 
@@ -478,6 +743,8 @@ impl Room {
         }
     }
 
+    pub fn random_location_order(&mut self) {}
+
     //是否已经开始了
     pub fn is_started(&self) -> bool {
         self.state == RoomState::Started as u8
@@ -486,8 +753,6 @@ impl Room {
     pub fn start(&mut self) {
         //生成地图
         self.tile_map = self.generate_map();
-        //选择的角色转换成战斗角色
-        self.cter_2_battle_cter();
         //改变房间状态
         self.state = RoomState::Started as u8;
         //下发通知
@@ -507,5 +772,71 @@ impl Room {
         let tmd = TileMap::init(&TEMPLATES, cter_v);
         println!("生成地图{:?}", tmd.clone());
         tmd
+    }
+
+    pub fn build_choice_round_task(&self) {
+        let user_id = self.next_choice_round_user;
+        //没选择完，继续选
+        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
+        let mut task = Task::default();
+        if let Some(time) = time_limit {
+            let time = u64::from_str(time.value.as_str());
+            match time {
+                Ok(time) => {
+                    task.delay = time;
+                }
+                Err(e) => {
+                    task.delay = 5000_u64;
+                    error!("{:?}", e);
+                }
+            }
+        } else {
+            task.delay = 5000_u64;
+            warn!("the choice_location_time of Constant config is None!pls check!");
+        }
+        task.cmd = TaskCmd::ChoiceRoundOrder as u16;
+
+        let mut map = serde_json::Map::new();
+        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
+        task.data = serde_json::Value::from(map);
+        let res = self.task_sender.send(task);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap());
+        }
+    }
+
+    pub fn build_choice_location_task(&self) {
+        let time_limit = TEMPLATES
+            .get_constant_ref()
+            .temps
+            .get("choice_location_time");
+        let mut task = Task::default();
+        if let Some(time) = time_limit {
+            let time = u64::from_str(time.value.as_str());
+            match time {
+                Ok(time) => {
+                    task.delay = time;
+                }
+                Err(e) => {
+                    task.delay = 5000_u64;
+                    error!("{:?}", e);
+                }
+            }
+        } else {
+            task.delay = 5000_u64;
+            warn!("the choice_location_time of Constant config is None!pls check!");
+        }
+        task.cmd = TaskCmd::ChoiceLocation as u16;
+
+        let mut map = serde_json::Map::new();
+        map.insert(
+            "user_id".to_owned(),
+            serde_json::Value::from(self.next_choice_location_user),
+        );
+        task.data = serde_json::Value::from(map);
+        let res = self.task_sender.send(task);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap());
+        }
     }
 }

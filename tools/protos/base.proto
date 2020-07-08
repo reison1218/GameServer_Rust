@@ -59,13 +59,6 @@ message MemberPt{
     uint64 join_time = 6;//玩家进入房间的时间
 }
 
-//地图数据
-message TileMapPt{
-    uint32 id = 1;//map的ID
-    repeated uint32 map = 2;//地图具体数据
-    repeated WorldCellPt world_cell= 3;//世界块
-}
-
 message WorldCellPt{
     uint32 index = 1;       //下标
     uint32 world_cell_id = 2;//世界块id

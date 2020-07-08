@@ -3,8 +3,8 @@ use super::*;
 use crate::entity::room::Room;
 use crate::entity::room_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::handlers::room_handler::{
-    change_team, choose_character, create_room, emoji, join_room, kick_member, leave_room,
-    prepare_cancel, room_setting, search_room, start,
+    change_team, choice_location, choice_round, choose_character, create_room, emoji, join_room,
+    kick_member, leave_room, prepare_cancel, room_setting, search_room, start,
 };
 use crate::task_timer::Task;
 use log::warn;
@@ -38,6 +38,10 @@ impl RoomMgr {
         };
         rm.cmd_init();
         rm
+    }
+
+    pub fn get_task_sender_clone(&self) -> crossbeam::Sender<Task> {
+        self.task_sender.as_ref().unwrap().clone()
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
@@ -137,5 +141,13 @@ impl RoomMgr {
         self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
         //开始游戏
         self.cmd_map.insert(RoomCode::StartGame as u32, start);
+
+        //选择占位
+        self.cmd_map
+            .insert(RoomCode::ChoiceLoaction as u32, choice_location);
+
+        //选择回合顺序
+        self.cmd_map
+            .insert(RoomCode::ChoiceRoundOrder as u32, choice_round);
     }
 }

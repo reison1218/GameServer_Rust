@@ -2,7 +2,7 @@ use super::*;
 use crate::entity::character::Character;
 use crate::entity::room::{MemberLeaveNoticeType, MEMBER_MAX};
 use crate::error_return::err_back;
-use tools::protos::room::{S_CHOOSE_CHARACTER, S_START};
+use tools::protos::room::{C_CHOOSE_LOCATION, C_CHOOSE_ROUND_ORDER, S_CHOOSE_CHARACTER, S_START};
 
 ///创建房间
 pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
@@ -49,9 +49,12 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //创建房间
     match room_type {
         RoomType::Custom => {
-            room_id =
-                rm.custom_room
-                    .create_room(BattleType::None as u8, owner, rm.get_sender_clone())?;
+            room_id = rm.custom_room.create_room(
+                BattleType::None as u8,
+                owner,
+                rm.get_sender_clone(),
+                rm.get_task_sender_clone(),
+            )?;
         }
         _ => {}
     }
@@ -633,6 +636,23 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     }
     if cter.is_some() {
         let cter = cter.unwrap();
+
+        let cter_temp = crate::TEMPLATES
+            .get_character_ref()
+            .get_temp_ref(&cter_id)
+            .unwrap();
+        //校验技能数量
+        if cter.skills.len() > cter_temp.usable_skill_count as usize {
+            let str = format!("this cter's skill count is error! cter_id:{}", cter_id);
+            warn!("{:?}", str.as_str());
+            err_back(
+                ClientCode::ChooseCharacter,
+                user_id,
+                str,
+                rm.get_sender_mut(),
+            );
+            return Ok(());
+        }
         for skill in cter_pt.skills.iter() {
             if !cter.skills.contains(skill) {
                 let str = format!(
@@ -728,5 +748,128 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     //走正常逻辑
     room.emoji(user_id, emoji_id);
+    Ok(())
+}
+
+///选择初始占位
+pub fn choice_location(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut ccl = C_CHOOSE_LOCATION::new();
+    ccl.merge_from_bytes(packet.get_data())?;
+    let index = ccl.index;
+
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        let str = format!("this player is not in the room!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceLoaction,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+    let room = room.unwrap();
+    //校验是否轮到他了
+    if room.next_choice_location_user != user_id {
+        let str = format!(
+            "this player is not the next choice location player!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceLoaction,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+
+    //校验他选过没有\
+    let member = room.members.get(&user_id).unwrap();
+    if member.chose_cter.location != 0 {
+        let str = format!("this player is already choice location!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceLoaction,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+    room.choice_location(user_id, Some(index));
+    Ok(())
+}
+
+///选择初始占位
+pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut ccl = C_CHOOSE_ROUND_ORDER::new();
+    ccl.merge_from_bytes(packet.get_data())?;
+    let order = ccl.order;
+
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        let str = format!("this player is not in the room!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceRoundOrder,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+    let room = room.unwrap();
+
+    //校验他选过占位没有
+    let member = room.members.get(&user_id).unwrap();
+    if member.chose_cter.location == 0 {
+        let str = format!("this player is not choice location yet!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceRoundOrder,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+
+    //校验是否轮到他了
+    if room.next_choice_round_user != user_id {
+        let str = format!(
+            "this player is not the next choice location player!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceRoundOrder,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+
+    //校验他选过没有
+    if room.round_orders.contains(&user_id) {
+        let str = format!(
+            "this player is already choice round order!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        err_back(
+            ClientCode::ChoiceRoundOrder,
+            user_id,
+            str,
+            rm.get_sender_mut(),
+        );
+        return Ok(());
+    }
+    room.choice_round(user_id, Some(order));
     Ok(())
 }

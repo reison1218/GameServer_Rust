@@ -9,6 +9,7 @@ pub struct Character {
     pub grade: u32,
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
     pub last_use_skills: Vec<u32>, //上次使用的技能
+    pub location: u32,             //初始占位
 }
 
 impl From<CharacterPt> for Character {
@@ -53,7 +54,7 @@ impl BattleCharacter {
         battle_cter.target_id = 0;
         battle_cter.grade = cter.grade;
         battle_cter.skills = cter.skills.clone();
-        battle_cter.birth_index = 0;
+        battle_cter.birth_index = cter.location;
         let cter_temp: Option<&CharacterTemp> =
             TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
         if cter_temp.is_none() {
@@ -62,7 +63,7 @@ impl BattleCharacter {
             anyhow::bail!(str)
         }
         let cter_temp = cter_temp.unwrap();
-        //初始化战斗属性
+        //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
         battle_cter.hp = cter_temp.hp;
         battle_cter.atk = cter_temp.attack;
         battle_cter.defence = cter_temp.defence;

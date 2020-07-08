@@ -10,6 +10,7 @@ use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{RoomSettingPt, RoundTimePt};
 use tools::protos::room::S_LEAVE_ROOM;
@@ -209,6 +210,7 @@ pub trait RoomModel {
         battle_type: u8,
         owner: Member,
         sender: TcpSender,
+        task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32>;
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
@@ -259,9 +261,10 @@ impl RoomModel for CustomRoom {
         battle_type: u8,
         owner: Member,
         sender: TcpSender,
+        task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(owner.clone(), RoomType::get_custom(), sender)?;
+        let mut room = Room::new(owner.clone(), RoomType::get_custom(), sender, task_sender)?;
         room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
@@ -370,8 +373,9 @@ impl RoomModel for MatchRoom {
         battle_type: u8,
         owner: Member,
         sender: TcpSender,
+        task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
-        let mut room = Room::new(owner, RoomType::get_match(), sender)?;
+        let mut room = Room::new(owner, RoomType::get_match(), sender, task_sender)?;
         room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
@@ -463,7 +467,12 @@ impl MatchRoom {
                 anyhow::bail!(s)
             }
             //创建房间
-            room_id = self.create_room(BattleType::get_one_v_one_v_one_v_one(), member, sender)?;
+            room_id = self.create_room(
+                BattleType::get_one_v_one_v_one_v_one(),
+                member,
+                sender,
+                task_sender,
+            )?;
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;
@@ -484,7 +493,18 @@ impl MatchRoom {
                 room_cache_array.pop();
                 //创建延迟任务，并发送给定时器接收方执行
                 let mut task = Task::default();
-                task.delay = 5000_u64;
+                let time_limit = TEMPLATES
+                    .get_constant_ref()
+                    .temps
+                    .get("kick_not_prepare_time");
+                if let Some(time) = time_limit {
+                    let time = u64::from_str(time.value.as_str())?;
+                    task.delay = time;
+                } else {
+                    task.delay = 60000_u64;
+                    warn!("the Constant kick_not_prepare_time is None!pls check!");
+                }
+
                 task.cmd = TaskCmd::MatchRoomStart as u16;
                 let mut map = Map::new();
                 map.insert("battle_type".to_owned(), Value::from(self.battle_type));

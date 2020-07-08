@@ -50,6 +50,10 @@ pub enum RoomCode{
     ChoiceCharacter = 20012,
     //表情符号
     Emoji = 20013,
+    //选择位置
+    ChoiceLoaction = 20014,
+    //选择回合顺序
+    ChoiceRoundOrder = 20015,
     //返回最大值
     Max = 30000,
 }
@@ -94,6 +98,16 @@ pub enum ClientCode{
     MemberLeaveNotice = 10018,
     //游戏开始推送
     StartNotice = 10019,
+    //选择位置返回
+    ChoiceLoaction = 10020,
+    //选择回合顺序返回
+    ChoiceRoundOrder = 10021,
+    //选择位置通知
+    ChoiceLoactionNotice = 10022,
+    //选择回合顺序通知
+    ChoiceRoundOrderNotice = 10023,
+    //战斗开始
+    BattleStartNotice = 10024,
     //最大命令号
     Max = 20000,
 }
@@ -166,6 +180,22 @@ impl From<u32> for ClientCode{
         //开始游戏推送
         if v == ClientCode::StartNotice as u32{
             return ClientCode::StartNotice
+        }
+        //选择位置返回
+        if v == ClientCode::ChoiceLoaction as u32{
+            return ClientCode::ChoiceLoaction
+        }
+        //选择回合顺序返回
+        if v == ClientCode::ChoiceRoundOrder as u32{
+            return ClientCode::ChoiceRoundOrder
+        }
+        //选择位置通知
+        if v == ClientCode::ChoiceLoactionNotice as u32{
+            return ClientCode::ChoiceLoactionNotice
+        }
+        //选择回合顺序通知
+        if v == ClientCode::ChoiceRoundOrderNotice as u32{
+            return ClientCode::ChoiceRoundOrderNotice
         }
         ClientCode::Login
     }

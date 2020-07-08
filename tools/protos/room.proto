@@ -165,6 +165,53 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
 //cmd:10019
 message S_START_NOTICE{
     uint32 room_status = 1;//房间状态
-    TileMapPt tile_map = 2;//生成的地图数据
-    repeated BattleCharacterPt battle_cters= 3;//战斗角色数据
+    uint32 tile_map_id = 2;//地图配置id
+    repeated WorldCellPt world_cell = 3;//世界块
+    repeated uint32 location_order = 4;//选择占位顺序
+}
+
+//选择位置请求
+//cmd:20014
+message C_CHOOSE_LOCATION{
+    uint32 index = 1;//位置下标
+}
+
+//选择位置返回
+//cmd:10020
+message S_CHOOSE_LOCATION{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//选择回合顺序
+//cmd:20015
+message C_CHOOSE_ROUND_ORDER{
+    uint32 order = 1;//排第几个
+}
+
+//选择回合顺序返回
+//cmd:10021
+message S_CHOOSE_ROUND_ORDER{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//选择位置通知
+//cmd:10022
+message S_CHOOSE_LOCATION_NOTICE{
+    uint32 user_id = 1;//玩家id
+    uint32 location = 2;//玩家所选择的位置
+}
+
+//选择回合顺序通知
+//cmd:10023
+message S_CHOOSE_ROUND_ORDER_NOTICE{
+    uint32 user_id = 1;//玩家id
+    uint32 order = 2;//玩家所选择的顺位
+}
+
+//战斗开始推送
+//cmd:10024
+message S_BATTLE_START_NOTICE{
+    repeated BattleCharacterPt battle_cters= 1;//战斗角色数据
 }
