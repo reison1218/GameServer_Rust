@@ -44,7 +44,7 @@ impl Member {
         battle_cter_pt.hp = self.battle_cter.hp;
         battle_cter_pt.defence = self.battle_cter.defence;
         battle_cter_pt.atk = self.battle_cter.atk;
-        battle_cter_pt.set_birth_index(self.battle_cter.birth_index);
+        battle_cter_pt.set_birth_index(self.battle_cter.cell_index);
         battle_cter_pt.set_action_order(0);
         battle_cter_pt
     }

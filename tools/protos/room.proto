@@ -57,7 +57,8 @@ message S_LEAVE_ROOM{
 //选择角色请求
 //cmd:20012
 message C_CHOOSE_CHARACTER{
-    CharacterPt cter = 1;//选择的角色
+    uint32 cter_id = 1;//选择的角色id
+    repeated uint32 skills= 2;//选择的角色的技能
 }
 
 //选择角色返回
@@ -166,8 +167,9 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
 message S_START_NOTICE{
     uint32 room_status = 1;//房间状态
     uint32 tile_map_id = 2;//地图配置id
-    repeated WorldCellPt world_cell = 3;//世界块
-    repeated uint32 location_order = 4;//选择占位顺序
+    repeated uint32 cells = 3;//包含的块
+    repeated WorldCellPt world_cell = 4;//世界块
+    repeated uint32 choice_order = 5;//选择顺序
 }
 
 //选择位置请求
@@ -185,13 +187,13 @@ message S_CHOOSE_LOCATION{
 
 //选择回合顺序
 //cmd:20015
-message C_CHOOSE_ROUND_ORDER{
+message C_CHOOSE_TURN_ORDER{
     uint32 order = 1;//排第几个
 }
 
 //选择回合顺序返回
 //cmd:10021
-message S_CHOOSE_ROUND_ORDER{
+message S_CHOOSE_TURN_ORDER{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
 }
@@ -205,13 +207,13 @@ message S_CHOOSE_LOCATION_NOTICE{
 
 //选择回合顺序通知
 //cmd:10023
-message S_CHOOSE_ROUND_ORDER_NOTICE{
+message S_CHOOSE_TURN_ORDER_NOTICE{
     uint32 user_id = 1;//玩家id
     uint32 order = 2;//玩家所选择的顺位
 }
 
-//战斗开始推送
+//战斗角色推送
 //cmd:10024
-message S_BATTLE_START_NOTICE{
+message S_BATTLE_CHARACTER_NOTICE{
     repeated BattleCharacterPt battle_cters= 1;//战斗角色数据
 }

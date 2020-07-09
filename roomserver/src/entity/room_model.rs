@@ -499,7 +499,7 @@ impl MatchRoom {
                     .get("kick_not_prepare_time");
                 if let Some(time) = time_limit {
                     let time = u64::from_str(time.value.as_str())?;
-                    task.delay = time;
+                    task.delay = time + 500;
                 } else {
                     task.delay = 60000_u64;
                     warn!("the Constant kick_not_prepare_time is None!pls check!");

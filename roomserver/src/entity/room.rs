@@ -14,7 +14,7 @@ use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::room::{
-    S_BATTLE_START_NOTICE, S_CHANGE_TEAM, S_CHOOSE_LOCATION_NOTICE, S_CHOOSE_ROUND_ORDER_NOTICE,
+    S_BATTLE_CHARACTER_NOTICE, S_CHANGE_TEAM, S_CHOOSE_LOCATION_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE,
     S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_LEAVE_NOTICE,
     S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
 };
@@ -54,13 +54,12 @@ pub struct Room {
     tile_map: TileMap,                    //地图数据
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
     pub member_index: [u32; 4],           //玩家对应的位置
-    pub round_orders: [u32; 4],           //回合行动队列
-    pub location_orders: [u32; 4],        //位置选择顺序
+    pub turn_orders: [u32; 4],            //turn行动队列
+    pub choice_orders: [u32; 4],          //选择顺序
     state: u8,                            //房间状态
     pub setting: RoomSetting,             //房间设置
-    pub next_choice_location_user: u32,   //下一个选择占位玩家id
-    pub next_choice_round_user: u32,      //下一个选择回合顺序玩家id
-    pub next_round_index: u32,            //下个回合玩家
+    pub next_choice_user: u32,            //下一个选择占位玩家id
+    pub next_turn_index: u32,             //下个turn玩家
     room_type: u8,                        //房间类型
     sender: TcpSender,                    //sender
     task_sender: crossbeam::Sender<Task>, //任务sender
@@ -88,13 +87,12 @@ impl Room {
             tile_map: TileMap::default(),
             members: HashMap::new(),
             member_index: member_index,
-            round_orders: [0; 4],
-            location_orders: [0; 4],
+            turn_orders: [0; 4],
+            choice_orders: [0; 4],
             state: RoomState::Await as u8,
             setting: RoomSetting::default(),
-            next_choice_location_user: 0,
-            next_choice_round_user: 0,
-            next_round_index: 0,
+            next_choice_user: 0,
+            next_turn_index: 0,
             room_type,
             sender,
             task_sender,
@@ -115,10 +113,10 @@ impl Room {
         Ok(room)
     }
 
-    fn check_location_user(&mut self) -> bool {
+    fn check_location(&mut self) -> bool {
         let mut user_id = 0;
         let mut res = true;
-        for member_id in self.location_orders.iter() {
+        for member_id in self.turn_orders.iter() {
             if *member_id == 0 {
                 continue;
             }
@@ -129,10 +127,9 @@ impl Room {
                 break;
             }
         }
-        if res && self.next_choice_round_user == 0 {
-            self.next_choice_round_user = self.location_orders[0];
-        } else {
-            self.next_choice_location_user = user_id;
+        if !res {
+            self.next_choice_user = user_id;
+            self.build_choice_location_task();
         }
         res
     }
@@ -140,12 +137,13 @@ impl Room {
     ///选择占位
     pub fn choice_location(&mut self, user_id: u32, index: Option<u32>) {
         let location;
-        //代表系统随机
+        //玩家手动选的
         if let Some(index) = index {
             let member = self.members.get_mut(&user_id).unwrap();
             member.chose_cter.location = index;
             location = index;
         } else {
+            //系统随机
             let mut random = rand::thread_rng();
             let v = self.tile_map.get_able_cells();
             let index = random.gen_range(0, v.len());
@@ -174,7 +172,7 @@ impl Room {
         //此处有两种情况
         //第一种，成员还没选择完占位，则继续定时器选择占位，否则进入选择回合顺序定时器
 
-        let res = self.check_location_user();
+        let res = self.check_location();
         //都选择完了占位，进入选择回合顺序
         if res {
             self.build_choice_round_task();
@@ -186,16 +184,16 @@ impl Room {
 
     ///选择回合
     pub fn choice_round(&mut self, user_id: u32, order: Option<u32>) {
-        let round_order;
-        //如果玩家选择都
+        let turn_order;
+        //如果玩家选择的
         if let Some(order) = order {
-            self.location_orders[order as usize] = user_id;
-            round_order = order;
+            self.turn_orders[order as usize] = user_id;
+            turn_order = order;
         } else {
             //系统帮忙选
             let mut v = Vec::new();
             let mut index = 0;
-            for i in self.location_orders.iter() {
+            for i in self.choice_orders.iter() {
                 if *i == 0 {
                     v.push(index);
                 }
@@ -204,14 +202,14 @@ impl Room {
             let mut rand = rand::thread_rng();
             let res = rand.gen_range(0, v.len());
             let index = v.get(res).unwrap();
-            round_order = *index;
-            self.location_orders[round_order as usize] = user_id;
+            turn_order = *index;
+            self.turn_orders[turn_order as usize] = user_id;
         }
 
         //通知其他玩家
-        let mut scron = S_CHOOSE_ROUND_ORDER_NOTICE::new();
+        let mut scron = S_CHOOSE_TURN_ORDER_NOTICE::new();
         scron.user_id = user_id;
-        scron.order = round_order;
+        scron.order = turn_order;
         let bytes = scron.write_to_bytes().unwrap();
         for id in self.members.keys() {
             let res = Packet::build_packet_bytes(
@@ -225,9 +223,9 @@ impl Room {
         }
 
         let res = self.check_choice_round();
-        //如果都选完了，进入战斗
+        //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
-            let mut sbs = S_BATTLE_START_NOTICE::new();
+            let mut sbs = S_BATTLE_CHARACTER_NOTICE::new();
             self.cter_2_battle_cter();
             for member in self.members.values() {
                 sbs.battle_cters.push(member.convert_to_battle_cter());
@@ -245,58 +243,35 @@ impl Room {
                 self.sender.write(res);
             }
 
+            //开始执行选择占位逻辑
+            self.build_choice_location_task();
+
         //此处应该加上第一回合限制时间定时器
         } else {
             //如果没选完，继续选
-
-            let user_id = self.next_choice_round_user;
-            //没选择完，继续选
-            let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
-            let mut task = Task::default();
-            if let Some(time) = time_limit {
-                let time = u64::from_str(time.value.as_str());
-                match time {
-                    Ok(time) => {
-                        task.delay = time;
-                    }
-                    Err(e) => {
-                        task.delay = 5000_u64;
-                        error!("{:?}", e);
-                    }
-                }
-            } else {
-                task.delay = 5000_u64;
-                warn!("the choice_location_time of Constant config is None!pls check!");
-            }
-            task.cmd = TaskCmd::ChoiceRoundOrder as u16;
-
-            let mut map = serde_json::Map::new();
-            map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
-            task.data = serde_json::Value::from(map);
-            let res = self.task_sender.send(task);
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
-            }
+            self.build_choice_round_task();
         }
     }
 
     pub fn check_choice_round(&mut self) -> bool {
         let mut user_id = 0;
-        let res;
-        for i in self.location_orders.iter() {
+        let mut res = true;
+        for i in self.choice_orders.iter() {
             if *i == 0 {
                 continue;
             }
-            if !self.round_orders.contains(i) {
+            if !self.turn_orders.contains(i) {
                 res = false;
                 user_id = *i;
                 break;
             }
         }
-        if user_id > 0 {
-            self.next_choice_round_user = user_id;
+        if !res && user_id > 0 {
+            self.next_choice_user = user_id;
+        } else if res {
+            self.next_choice_user = self.turn_orders[0];
         }
-        true
+        res
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
@@ -361,6 +336,8 @@ impl Room {
         let mut ssn = S_START_NOTICE::new();
         ssn.set_room_status(self.state as u32);
         ssn.set_tile_map_id(self.tile_map.id);
+        let cell_v = self.tile_map.get_cells();
+        ssn.cells = cell_v;
         //封装世界块
         for (index, id) in self.tile_map.world_cell_map.iter() {
             let mut wcp = WorldCellPt::default();
@@ -368,7 +345,7 @@ impl Room {
             wcp.set_index(*id);
             ssn.world_cell.push(wcp);
         }
-        //随机出选择占位的顺序
+        //随机出选择的顺序
         let mut random = rand::thread_rng();
         let mut member_v = self.member_index.to_vec();
         let mut index = 0_u32;
@@ -378,12 +355,12 @@ impl Room {
             }
             let rm_index = random.gen_range(0, member_v.len());
             let res = member_v.remove(rm_index);
-            self.location_orders[index as usize] = res;
+            self.choice_orders[index as usize] = res;
             index += 1;
         }
         //此一次，所以直接取0下标的值
-        self.next_choice_location_user = self.location_orders[0];
-        ssn.location_order = self.location_orders.to_vec();
+        self.next_choice_user = self.choice_orders[0];
+        ssn.choice_order = self.choice_orders.to_vec();
 
         let bytes = ssn.write_to_bytes().unwrap();
         for id in self.members.keys() {
@@ -396,7 +373,7 @@ impl Room {
             );
             self.sender.write(bytes);
         }
-        self.build_choice_location_task();
+        self.build_choice_round_task();
     }
 
     ///发送表情包
@@ -422,6 +399,7 @@ impl Room {
         }
     }
 
+    ///成员离开推送
     pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32) {
         let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
         srmln.set_notice_type(notice_type as u32);
@@ -537,7 +515,7 @@ impl Room {
         member.team_id = size;
         member.join_time = Local::now().timestamp_millis() as u64;
         self.members.insert(user_id, member);
-        for i in 0..=self.member_index.len() - 1 {
+        for i in 0..self.member_index.len() {
             if self.member_index[i] != 0 {
                 continue;
             }
@@ -565,7 +543,7 @@ impl Room {
 
         self.member_leave_notice(notice_type, user_id);
         self.members.remove(user_id);
-        for i in 0..=self.member_index.len() - 1 {
+        for i in 0..self.member_index.len() {
             if self.member_index[i] != *user_id {
                 continue;
             }
@@ -585,35 +563,37 @@ impl Room {
     }
 
     fn handler_leave(&mut self, user_id: u32) {
-        let size = self.location_orders.len();
-        //如果下一次选择位置的玩家是离开的玩家就选出下一个
-        if self.next_choice_location_user == user_id {
-            self.next_choice_location_user = 0;
+        let size = self.choice_orders.len();
+        //如果下一个选择回合的玩家是离开的玩家，则选出下一个
+        if self.next_choice_user == user_id {
+            self.next_choice_user = 0;
             for i in 0..size {
-                if self.location_orders[i] == user_id {
+                if self.choice_orders[i] == user_id {
                     let index = i + 1;
+                    //在范围内，就选出下一个
                     if index <= size - 1 {
-                        self.next_choice_location_user = self.location_orders[index];
-                        //选择占位定时器任务
-                        if self.next_choice_location_user > 0 {
-                            self.build_choice_location_task();
+                        self.next_choice_user = self.choice_orders[index];
+                        //选择回合定时器任务
+                        if self.next_choice_user > 0 {
+                            self.build_choice_round_task();
                         }
                     }
                 }
             }
         }
 
-        //如果下一个选择回合的玩家是离开的玩家，则选出下一个
-        if self.next_choice_round_user == user_id {
-            self.next_choice_round_user = 0;
+        //如果下一次选择位置的玩家是离开的玩家就选出下一个
+        if self.next_choice_user == user_id {
+            self.next_choice_user = 0;
             for i in 0..size {
-                if self.location_orders[i] == user_id {
+                if self.turn_orders[i] == user_id {
                     let index = i + 1;
+                    //在范围内，就选出下一个
                     if index <= size - 1 {
-                        self.next_choice_round_user = self.location_orders[index];
-                        //选择回合定时器任务
-                        if self.next_choice_round_user > 0 {
-                            self.build_choice_round_task();
+                        self.next_choice_user = self.turn_orders[index];
+                        //选择占位定时器任务
+                        if self.next_choice_user > 0 {
+                            self.build_choice_location_task();
                         }
                     }
                 }
@@ -622,17 +602,17 @@ impl Room {
 
         //处理战斗相关的数据
         for i in 0..size {
-            if self.location_orders[i] == user_id {
-                self.location_orders[i] = 0;
+            if self.choice_orders[i] == user_id {
+                self.choice_orders[i] = 0;
             }
-            if self.round_orders[i] == user_id {
-                self.round_orders[i] = 0;
+            if self.turn_orders[i] == user_id {
+                self.turn_orders[i] = 0;
             }
         }
 
         //如果战斗已经开始了，下一个回合行动玩家是这个离线玩家，则轮到下一个玩家
-        if self.round_orders[self.next_round_index as usize] == user_id {
-            self.next_round_index += 1;
+        if self.turn_orders[self.next_turn_index as usize] == user_id {
+            self.next_turn_index += 1;
         }
     }
 
@@ -770,12 +750,12 @@ impl Room {
     pub fn generate_map(&self) -> TileMap {
         let cter_v = self.get_choose_cters();
         let tmd = TileMap::init(&TEMPLATES, cter_v);
-        println!("生成地图{:?}", tmd.clone());
+        info!("生成地图{:?}", tmd.clone());
         tmd
     }
 
     pub fn build_choice_round_task(&self) {
-        let user_id = self.next_choice_round_user;
+        let user_id = self.next_choice_user;
         //没选择完，继续选
         let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
         let mut task = Task::default();
@@ -783,7 +763,7 @@ impl Room {
             let time = u64::from_str(time.value.as_str());
             match time {
                 Ok(time) => {
-                    task.delay = time;
+                    task.delay = time + 500;
                 }
                 Err(e) => {
                     task.delay = 5000_u64;
@@ -815,7 +795,7 @@ impl Room {
             let time = u64::from_str(time.value.as_str());
             match time {
                 Ok(time) => {
-                    task.delay = time;
+                    task.delay = time + 500;
                 }
                 Err(e) => {
                     task.delay = 5000_u64;
@@ -831,7 +811,7 @@ impl Room {
         let mut map = serde_json::Map::new();
         map.insert(
             "user_id".to_owned(),
-            serde_json::Value::from(self.next_choice_location_user),
+            serde_json::Value::from(self.next_choice_user),
         );
         task.data = serde_json::Value::from(map);
         let res = self.task_sender.send(task);

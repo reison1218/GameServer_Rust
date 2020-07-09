@@ -89,7 +89,6 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                         error!("{:?}", res.err().unwrap());
                     }
                 }
-                _ => {}
             }
         }
     };

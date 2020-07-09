@@ -2,7 +2,7 @@ use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{S_MODIFY_NICK_NAME, S_SYNC_DATA, S_USER_LOGIN};
 use tools::protos::room::{
-    S_CHANGE_TEAM, S_CHOOSE_CHARACTER, S_CHOOSE_LOCATION, S_CHOOSE_ROUND_ORDER, S_EMOJI,
+    S_CHANGE_TEAM, S_CHOOSE_CHARACTER, S_CHOOSE_LOCATION, S_CHOOSE_TURN_ORDER, S_EMOJI,
     S_KICK_MEMBER, S_LEAVE_ROOM, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::tcp::TcpSender;
@@ -188,7 +188,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
         }
         //选择回合顺序返回
         ClientCode::ChoiceRoundOrder => {
-            let mut scl = S_CHOOSE_ROUND_ORDER::new();
+            let mut scl = S_CHOOSE_TURN_ORDER::new();
             scl.is_succ = false;
             scl.err_mess = error_mess;
             let bytes = Packet::build_packet_bytes(

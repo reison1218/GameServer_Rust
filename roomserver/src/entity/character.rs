@@ -41,7 +41,7 @@ pub struct BattleCharacter {
     pub atk: u32,         //攻击力
     pub hp: u32,          //角色血量
     pub defence: u32,     //角色防御
-    pub birth_index: u32, //角色初始位置
+    pub cell_index: u32,  //角色所在位置
     pub skills: Vec<u32>, //玩家次角色所有已解锁的技能id
     pub target_id: u32,   //玩家目标
 }
@@ -54,7 +54,7 @@ impl BattleCharacter {
         battle_cter.target_id = 0;
         battle_cter.grade = cter.grade;
         battle_cter.skills = cter.skills.clone();
-        battle_cter.birth_index = cter.location;
+        battle_cter.cell_index = cter.location;
         let cter_temp: Option<&CharacterTemp> =
             TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
         if cter_temp.is_none() {

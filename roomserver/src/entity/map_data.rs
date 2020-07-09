@@ -1,30 +1,35 @@
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use tools::templates::template::TemplatesMgr;
-use tools::templates::tile_map_temp::TileMapTemp;
 
 ///地图
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {
     pub id: u32,                           //地图id
-    pub map: Vec<u32>,                     //地图格子vec
+    pub map: Vec<Cell>,                    //地图格子vec
     pub world_cell_map: HashMap<u32, u32>, //世界块map，index，cellid
 }
 
+///块的封装结构体
+#[derive(Debug, Default, Clone)]
+pub struct Cell {
+    pub id: u32,        //块的配置id
+    pub index: usize,   //块的下标
+    pub buff: Vec<u32>, //块的效果
+    pub is_world: bool, //是否世界块
+}
+
 impl TileMap {
-    #[warn(dead_code)]
-    pub fn new(temp: &TileMapTemp) -> anyhow::Result<Self> {
-        let id = temp.id;
-        let map = temp.map.clone();
-        let mut cell_array = Vec::new();
-        for v in map {
-            cell_array.push(v);
+    //给客户端显示用的
+    pub fn get_cells(&self) -> Vec<u32> {
+        let mut v = Vec::new();
+        for cell in self.map.iter() {
+            if cell.id <= 2 {
+                continue;
+            }
+            v.push(cell.id);
         }
-        Ok(TileMap {
-            id,
-            map: cell_array,
-            world_cell_map: HashMap::new(),
-        })
+        v
     }
 
     pub fn get_able_cells(&self) -> Vec<u32> {
@@ -47,10 +52,13 @@ impl TileMap {
         let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
         let mut tmd = TileMap::default();
         tmd.id = 4001_u32;
-        let mut map = [0; 30];
+
+        let mut map = [(0, false); 30];
         let mut index = 0;
         for i in tile_map_temp.map.iter() {
-            map[index] = *i;
+            let mut cell = Cell::default();
+            cell.index = index;
+            map[index] = (*i, false);
             index += 1;
         }
         let mut empty_v = Vec::new();
@@ -71,7 +79,8 @@ impl TileMap {
             let index = rand.gen_range(0, empty_v.len());
             let index_value = empty_v.get(index).unwrap();
             let index_value = *index_value;
-            map[index_value] = *cell_id;
+
+            map[index_value] = (*cell_id, true);
             empty_v.remove(index);
             tmd.world_cell_map.insert(index_value as u32, *cell_id);
         }
@@ -82,7 +91,8 @@ impl TileMap {
             for _ in 1..=cter.cter_cell.count {
                 let index = rand.gen_range(0, empty_v.len());
                 let index_value = empty_v.get(index).unwrap();
-                map[*index_value] = cter.cter_cell.cell_id;
+
+                map[*index_value] = (cter.cter_cell.cell_id, false);
                 empty_v.remove(index);
             }
         }
@@ -103,20 +113,35 @@ impl TileMap {
                 //先随出celltype列表中的一个
                 let cell_v = hs_2_v(&temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap());
                 let index = rand.gen_range(0, cell_v.len());
-                let ss = cell_v.get(index).unwrap();
+                let cell_id = cell_v.get(index).unwrap();
 
                 for _ in 1..=2 {
                     //然后再随机放入地图里
                     let index = rand.gen_range(0, empty_v.len());
                     let index_value = empty_v.get(index).unwrap();
-                    map[*index_value] = *ss;
+                    map[*index_value] = (*cell_id, false);
                     empty_v.remove(index);
                     size += 1;
                 }
             }
         }
-        for i in &map[..] {
-            tmd.map.push(*i);
+        let mut index = 0;
+        for (cell_id, is_world) in map.iter() {
+            let mut cell = Cell::default();
+            cell.id = *cell_id;
+            cell.index = index;
+            cell.is_world = *is_world;
+            let buff;
+            if cell.is_world {
+                let res = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
+                buff = res.buff_id.clone();
+            } else {
+                let res = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
+                buff = res.buff_id.clone();
+            }
+            cell.buff = buff;
+            tmd.map.push(cell);
+            index += 1;
         }
         tmd
     }
