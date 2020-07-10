@@ -12,7 +12,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{RoomSettingPt, RoundTimePt};
+use tools::protos::base::RoomSettingPt;
 use tools::protos::room::S_LEAVE_ROOM;
 use tools::tcp::TcpSender;
 use tools::templates::template::TemplateMgrTrait;
@@ -126,36 +126,11 @@ impl BattleType {
     }
 }
 
-//回合时间
-#[derive(Debug, Copy, Clone, Default)]
-pub struct RoundTime {
-    pub consume_time: u32, //消耗时间
-    pub fixed_time: u32,   //固定时间
-}
-
-impl From<RoundTimePt> for RoundTime {
-    fn from(rtpt: RoundTimePt) -> Self {
-        let mut rt = RoundTime::default();
-        rt.consume_time = rtpt.consume_time;
-        rt.fixed_time = rtpt.fixed_time;
-        rt
-    }
-}
-
-impl From<RoundTime> for RoundTimePt {
-    fn from(rt: RoundTime) -> Self {
-        let mut rtp = RoundTimePt::new();
-        rtp.set_consume_time(rt.consume_time);
-        rtp.set_fixed_time(rt.fixed_time);
-        rtp
-    }
-}
-
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
     pub battle_type: u8,        //战斗类型
-    pub round_time: RoundTime,  //回合时间
+    pub turn_limit_time: u32,   //回合限制时间
     pub is_world_tile: bool,    //是否开启中立块
     pub victory_condition: u32, //胜利条件
 }
@@ -166,7 +141,7 @@ impl From<RoomSettingPt> for RoomSetting {
         rs.battle_type = rs_pt.battle_type as u8;
         rs.is_world_tile = rs_pt.is_open_world_tile;
         rs.victory_condition = rs_pt.victory_condition;
-        rs.round_time = RoundTime::from(rs_pt.take_round_time());
+        rs.turn_limit_time = rs_pt.turn_limit_time;
         rs
     }
 }
@@ -177,7 +152,7 @@ impl From<RoomSetting> for RoomSettingPt {
         rsp.set_victory_condition(r.victory_condition);
         rsp.set_battle_type(r.battle_type as u32);
         rsp.set_is_open_world_tile(r.is_world_tile);
-        rsp.set_round_time(r.round_time.into());
+        rsp.set_turn_limit_time(r.turn_limit_time);
         rsp
     }
 }

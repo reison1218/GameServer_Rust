@@ -1,6 +1,6 @@
 use crate::TEMPLATES;
 use log::warn;
-use tools::protos::base::CharacterPt;
+use tools::protos::base::{BattleCharacterPt, CharacterPt};
 use tools::templates::character_temp::CharacterTemp;
 
 #[derive(Clone, Debug, Default)]
@@ -36,14 +36,15 @@ impl Into<CharacterPt> for Character {
 
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
+    pub user_id: u32,     //玩家id
     pub cter_id: u32,     //角色的配置id
-    pub grade: u32,       //角色等级
     pub atk: u32,         //攻击力
     pub hp: u32,          //角色血量
     pub defence: u32,     //角色防御
     pub cell_index: u32,  //角色所在位置
     pub skills: Vec<u32>, //玩家次角色所有已解锁的技能id
     pub target_id: u32,   //玩家目标
+    pub turn_order: u32,  //行动回合顺序
 }
 
 impl BattleCharacter {
@@ -52,7 +53,6 @@ impl BattleCharacter {
         let cter_id = cter.cter_id;
         battle_cter.cter_id = cter_id;
         battle_cter.target_id = 0;
-        battle_cter.grade = cter.grade;
         battle_cter.skills = cter.skills.clone();
         battle_cter.cell_index = cter.location;
         let cter_temp: Option<&CharacterTemp> =
@@ -68,5 +68,17 @@ impl BattleCharacter {
         battle_cter.atk = cter_temp.attack;
         battle_cter.defence = cter_temp.defence;
         Ok(battle_cter)
+    }
+
+    pub fn convert_to_battle_cter(&self) -> BattleCharacterPt {
+        let mut battle_cter_pt = BattleCharacterPt::new();
+        battle_cter_pt.user_id = self.user_id;
+        battle_cter_pt.cter_id = self.cter_id;
+        battle_cter_pt.hp = self.hp;
+        battle_cter_pt.defence = self.defence;
+        battle_cter_pt.atk = self.atk;
+        battle_cter_pt.set_location_index(self.cell_index);
+        battle_cter_pt.set_turn_order(self.turn_order);
+        battle_cter_pt
     }
 }

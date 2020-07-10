@@ -27,201 +27,10 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 // const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_2_14_0;
 
 #[derive(PartialEq,Clone,Default)]
-pub struct RoundTimePt {
-    // message fields
-    pub consume_time: u32,
-    pub fixed_time: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a RoundTimePt {
-    fn default() -> &'a RoundTimePt {
-        <RoundTimePt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl RoundTimePt {
-    pub fn new() -> RoundTimePt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 consume_time = 1;
-
-
-    pub fn get_consume_time(&self) -> u32 {
-        self.consume_time
-    }
-    pub fn clear_consume_time(&mut self) {
-        self.consume_time = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_consume_time(&mut self, v: u32) {
-        self.consume_time = v;
-    }
-
-    // uint32 fixed_time = 2;
-
-
-    pub fn get_fixed_time(&self) -> u32 {
-        self.fixed_time
-    }
-    pub fn clear_fixed_time(&mut self) {
-        self.fixed_time = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_fixed_time(&mut self, v: u32) {
-        self.fixed_time = v;
-    }
-}
-
-impl ::protobuf::Message for RoundTimePt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.consume_time = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.fixed_time = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.consume_time != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.consume_time, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.fixed_time != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.fixed_time, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.consume_time != 0 {
-            os.write_uint32(1, self.consume_time)?;
-        }
-        if self.fixed_time != 0 {
-            os.write_uint32(2, self.fixed_time)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> RoundTimePt {
-        RoundTimePt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "consume_time",
-                    |m: &RoundTimePt| { &m.consume_time },
-                    |m: &mut RoundTimePt| { &mut m.consume_time },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "fixed_time",
-                    |m: &RoundTimePt| { &m.fixed_time },
-                    |m: &mut RoundTimePt| { &mut m.fixed_time },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<RoundTimePt>(
-                    "RoundTimePt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static RoundTimePt {
-        static mut instance: ::protobuf::lazy::Lazy<RoundTimePt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(RoundTimePt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for RoundTimePt {
-    fn clear(&mut self) {
-        self.consume_time = 0;
-        self.fixed_time = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for RoundTimePt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RoundTimePt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
 pub struct RoomSettingPt {
     // message fields
     pub battle_type: u32,
-    pub round_time: ::protobuf::SingularPtrField<RoundTimePt>,
+    pub turn_limit_time: u32,
     pub is_open_world_tile: bool,
     pub victory_condition: u32,
     // special fields
@@ -255,37 +64,19 @@ impl RoomSettingPt {
         self.battle_type = v;
     }
 
-    // .protos.RoundTimePt round_time = 2;
+    // uint32 turn_limit_time = 2;
 
 
-    pub fn get_round_time(&self) -> &RoundTimePt {
-        self.round_time.as_ref().unwrap_or_else(|| RoundTimePt::default_instance())
+    pub fn get_turn_limit_time(&self) -> u32 {
+        self.turn_limit_time
     }
-    pub fn clear_round_time(&mut self) {
-        self.round_time.clear();
-    }
-
-    pub fn has_round_time(&self) -> bool {
-        self.round_time.is_some()
+    pub fn clear_turn_limit_time(&mut self) {
+        self.turn_limit_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_round_time(&mut self, v: RoundTimePt) {
-        self.round_time = ::protobuf::SingularPtrField::some(v);
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_round_time(&mut self) -> &mut RoundTimePt {
-        if self.round_time.is_none() {
-            self.round_time.set_default();
-        }
-        self.round_time.as_mut().unwrap()
-    }
-
-    // Take field
-    pub fn take_round_time(&mut self) -> RoundTimePt {
-        self.round_time.take().unwrap_or_else(|| RoundTimePt::new())
+    pub fn set_turn_limit_time(&mut self, v: u32) {
+        self.turn_limit_time = v;
     }
 
     // bool is_open_world_tile = 3;
@@ -321,11 +112,6 @@ impl RoomSettingPt {
 
 impl ::protobuf::Message for RoomSettingPt {
     fn is_initialized(&self) -> bool {
-        for v in &self.round_time {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
         true
     }
 
@@ -341,7 +127,11 @@ impl ::protobuf::Message for RoomSettingPt {
                     self.battle_type = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.round_time)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.turn_limit_time = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -372,9 +162,8 @@ impl ::protobuf::Message for RoomSettingPt {
         if self.battle_type != 0 {
             my_size += ::protobuf::rt::value_size(1, self.battle_type, ::protobuf::wire_format::WireTypeVarint);
         }
-        if let Some(ref v) = self.round_time.as_ref() {
-            let len = v.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        if self.turn_limit_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.turn_limit_time, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.is_open_world_tile != false {
             my_size += 2;
@@ -391,10 +180,8 @@ impl ::protobuf::Message for RoomSettingPt {
         if self.battle_type != 0 {
             os.write_uint32(1, self.battle_type)?;
         }
-        if let Some(ref v) = self.round_time.as_ref() {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
+        if self.turn_limit_time != 0 {
+            os.write_uint32(2, self.turn_limit_time)?;
         }
         if self.is_open_world_tile != false {
             os.write_bool(3, self.is_open_world_tile)?;
@@ -446,10 +233,10 @@ impl ::protobuf::Message for RoomSettingPt {
                     |m: &RoomSettingPt| { &m.battle_type },
                     |m: &mut RoomSettingPt| { &mut m.battle_type },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<RoundTimePt>>(
-                    "round_time",
-                    |m: &RoomSettingPt| { &m.round_time },
-                    |m: &mut RoomSettingPt| { &mut m.round_time },
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "turn_limit_time",
+                    |m: &RoomSettingPt| { &m.turn_limit_time },
+                    |m: &mut RoomSettingPt| { &mut m.turn_limit_time },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
                     "is_open_world_tile",
@@ -481,7 +268,7 @@ impl ::protobuf::Message for RoomSettingPt {
 impl ::protobuf::Clear for RoomSettingPt {
     fn clear(&mut self) {
         self.battle_type = 0;
-        self.round_time.clear();
+        self.turn_limit_time = 0;
         self.is_open_world_tile = false;
         self.victory_condition = 0;
         self.unknown_fields.clear();
@@ -2591,15 +2378,12 @@ impl ::protobuf::reflect::ProtobufValue for CharacterPt {
 pub struct BattleCharacterPt {
     // message fields
     pub user_id: u32,
-    pub nick_name: ::std::string::String,
-    pub grade: u32,
     pub cter_id: u32,
-    pub birth_index: u32,
-    pub action_order: u32,
+    pub location_index: u32,
+    pub turn_order: u32,
     pub atk: u32,
     pub hp: u32,
     pub defence: u32,
-    pub skills: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2631,48 +2415,7 @@ impl BattleCharacterPt {
         self.user_id = v;
     }
 
-    // string nick_name = 2;
-
-
-    pub fn get_nick_name(&self) -> &str {
-        &self.nick_name
-    }
-    pub fn clear_nick_name(&mut self) {
-        self.nick_name.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_nick_name(&mut self, v: ::std::string::String) {
-        self.nick_name = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_nick_name(&mut self) -> &mut ::std::string::String {
-        &mut self.nick_name
-    }
-
-    // Take field
-    pub fn take_nick_name(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.nick_name, ::std::string::String::new())
-    }
-
-    // uint32 grade = 3;
-
-
-    pub fn get_grade(&self) -> u32 {
-        self.grade
-    }
-    pub fn clear_grade(&mut self) {
-        self.grade = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_grade(&mut self, v: u32) {
-        self.grade = v;
-    }
-
-    // uint32 cter_id = 4;
+    // uint32 cter_id = 3;
 
 
     pub fn get_cter_id(&self) -> u32 {
@@ -2687,37 +2430,37 @@ impl BattleCharacterPt {
         self.cter_id = v;
     }
 
-    // uint32 birth_index = 5;
+    // uint32 location_index = 4;
 
 
-    pub fn get_birth_index(&self) -> u32 {
-        self.birth_index
+    pub fn get_location_index(&self) -> u32 {
+        self.location_index
     }
-    pub fn clear_birth_index(&mut self) {
-        self.birth_index = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_birth_index(&mut self, v: u32) {
-        self.birth_index = v;
-    }
-
-    // uint32 action_order = 6;
-
-
-    pub fn get_action_order(&self) -> u32 {
-        self.action_order
-    }
-    pub fn clear_action_order(&mut self) {
-        self.action_order = 0;
+    pub fn clear_location_index(&mut self) {
+        self.location_index = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_action_order(&mut self, v: u32) {
-        self.action_order = v;
+    pub fn set_location_index(&mut self, v: u32) {
+        self.location_index = v;
     }
 
-    // uint32 atk = 7;
+    // uint32 turn_order = 5;
+
+
+    pub fn get_turn_order(&self) -> u32 {
+        self.turn_order
+    }
+    pub fn clear_turn_order(&mut self) {
+        self.turn_order = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_turn_order(&mut self, v: u32) {
+        self.turn_order = v;
+    }
+
+    // uint32 atk = 6;
 
 
     pub fn get_atk(&self) -> u32 {
@@ -2732,7 +2475,7 @@ impl BattleCharacterPt {
         self.atk = v;
     }
 
-    // uint32 hp = 8;
+    // uint32 hp = 7;
 
 
     pub fn get_hp(&self) -> u32 {
@@ -2747,7 +2490,7 @@ impl BattleCharacterPt {
         self.hp = v;
     }
 
-    // uint32 defence = 9;
+    // uint32 defence = 8;
 
 
     pub fn get_defence(&self) -> u32 {
@@ -2760,31 +2503,6 @@ impl BattleCharacterPt {
     // Param is passed by value, moved
     pub fn set_defence(&mut self, v: u32) {
         self.defence = v;
-    }
-
-    // repeated uint32 skills = 10;
-
-
-    pub fn get_skills(&self) -> &[u32] {
-        &self.skills
-    }
-    pub fn clear_skills(&mut self) {
-        self.skills.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_skills(&mut self, v: ::std::vec::Vec<u32>) {
-        self.skills = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_skills(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.skills
-    }
-
-    // Take field
-    pub fn take_skills(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.skills, ::std::vec::Vec::new())
     }
 }
 
@@ -2804,60 +2522,47 @@ impl ::protobuf::Message for BattleCharacterPt {
                     let tmp = is.read_uint32()?;
                     self.user_id = tmp;
                 },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.nick_name)?;
-                },
                 3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.grade = tmp;
-                },
-                4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
                     self.cter_id = tmp;
                 },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.location_index = tmp;
+                },
                 5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.birth_index = tmp;
+                    self.turn_order = tmp;
                 },
                 6 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.action_order = tmp;
+                    self.atk = tmp;
                 },
                 7 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.atk = tmp;
+                    self.hp = tmp;
                 },
                 8 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.hp = tmp;
-                },
-                9 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
                     self.defence = tmp;
-                },
-                10 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.skills)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -2874,33 +2579,24 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if !self.nick_name.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.nick_name);
-        }
-        if self.grade != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
-        }
         if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.birth_index != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.birth_index, ::protobuf::wire_format::WireTypeVarint);
+        if self.location_index != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.location_index, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.action_order != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.action_order, ::protobuf::wire_format::WireTypeVarint);
+        if self.turn_order != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.turn_order, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.atk != 0 {
-            my_size += ::protobuf::rt::value_size(7, self.atk, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(6, self.atk, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.hp != 0 {
-            my_size += ::protobuf::rt::value_size(8, self.hp, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(7, self.hp, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.defence != 0 {
-            my_size += ::protobuf::rt::value_size(9, self.defence, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(8, self.defence, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.skills {
-            my_size += ::protobuf::rt::value_size(10, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -2910,33 +2606,24 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
-        if !self.nick_name.is_empty() {
-            os.write_string(2, &self.nick_name)?;
-        }
-        if self.grade != 0 {
-            os.write_uint32(3, self.grade)?;
-        }
         if self.cter_id != 0 {
-            os.write_uint32(4, self.cter_id)?;
+            os.write_uint32(3, self.cter_id)?;
         }
-        if self.birth_index != 0 {
-            os.write_uint32(5, self.birth_index)?;
+        if self.location_index != 0 {
+            os.write_uint32(4, self.location_index)?;
         }
-        if self.action_order != 0 {
-            os.write_uint32(6, self.action_order)?;
+        if self.turn_order != 0 {
+            os.write_uint32(5, self.turn_order)?;
         }
         if self.atk != 0 {
-            os.write_uint32(7, self.atk)?;
+            os.write_uint32(6, self.atk)?;
         }
         if self.hp != 0 {
-            os.write_uint32(8, self.hp)?;
+            os.write_uint32(7, self.hp)?;
         }
         if self.defence != 0 {
-            os.write_uint32(9, self.defence)?;
+            os.write_uint32(8, self.defence)?;
         }
-        for v in &self.skills {
-            os.write_uint32(10, *v)?;
-        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -2981,30 +2668,20 @@ impl ::protobuf::Message for BattleCharacterPt {
                     |m: &BattleCharacterPt| { &m.user_id },
                     |m: &mut BattleCharacterPt| { &mut m.user_id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "nick_name",
-                    |m: &BattleCharacterPt| { &m.nick_name },
-                    |m: &mut BattleCharacterPt| { &mut m.nick_name },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "grade",
-                    |m: &BattleCharacterPt| { &m.grade },
-                    |m: &mut BattleCharacterPt| { &mut m.grade },
-                ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "cter_id",
                     |m: &BattleCharacterPt| { &m.cter_id },
                     |m: &mut BattleCharacterPt| { &mut m.cter_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "birth_index",
-                    |m: &BattleCharacterPt| { &m.birth_index },
-                    |m: &mut BattleCharacterPt| { &mut m.birth_index },
+                    "location_index",
+                    |m: &BattleCharacterPt| { &m.location_index },
+                    |m: &mut BattleCharacterPt| { &mut m.location_index },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "action_order",
-                    |m: &BattleCharacterPt| { &m.action_order },
-                    |m: &mut BattleCharacterPt| { &mut m.action_order },
+                    "turn_order",
+                    |m: &BattleCharacterPt| { &m.turn_order },
+                    |m: &mut BattleCharacterPt| { &mut m.turn_order },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "atk",
@@ -3020,11 +2697,6 @@ impl ::protobuf::Message for BattleCharacterPt {
                     "defence",
                     |m: &BattleCharacterPt| { &m.defence },
                     |m: &mut BattleCharacterPt| { &mut m.defence },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "skills",
-                    |m: &BattleCharacterPt| { &m.skills },
-                    |m: &mut BattleCharacterPt| { &mut m.skills },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<BattleCharacterPt>(
                     "BattleCharacterPt",
@@ -3046,15 +2718,12 @@ impl ::protobuf::Message for BattleCharacterPt {
 impl ::protobuf::Clear for BattleCharacterPt {
     fn clear(&mut self) {
         self.user_id = 0;
-        self.nick_name.clear();
-        self.grade = 0;
         self.cter_id = 0;
-        self.birth_index = 0;
-        self.action_order = 0;
+        self.location_index = 0;
+        self.turn_order = 0;
         self.atk = 0;
         self.hp = 0;
         self.defence = 0;
-        self.skills.clear();
         self.unknown_fields.clear();
     }
 }
@@ -3333,46 +3002,42 @@ impl ::protobuf::reflect::ProtobufValue for BattleActionPt {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\nbase.proto\x12\x06protos\"O\n\x0bRoundTimePt\x12!\n\x0cconsume_time\
-    \x18\x01\x20\x01(\rR\x0bconsumeTime\x12\x1d\n\nfixed_time\x18\x02\x20\
-    \x01(\rR\tfixedTime\"\xbe\x01\n\rRoomSettingPt\x12\x1f\n\x0bbattle_type\
-    \x18\x01\x20\x01(\rR\nbattleType\x122\n\nround_time\x18\x02\x20\x01(\x0b\
-    2\x13.protos.RoundTimePtR\troundTime\x12+\n\x12is_open_world_tile\x18\
-    \x03\x20\x01(\x08R\x0fisOpenWorldTile\x12+\n\x11victory_condition\x18\
-    \x04\x20\x01(\rR\x10victoryCondition\"`\n\x08PlayerPt\x12\x1b\n\tnick_na\
-    me\x18\x01\x20\x01(\tR\x08nickName\x12%\n\x0elast_character\x18\x02\x20\
-    \x01(\rR\rlastCharacter\x12\x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\
-    \x0bResourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\
-    \x02id\x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\
-    \x03num\"<\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06tea\
-    mId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xb5\x01\n\x08Me\
-    mberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnic\
-    k_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
-    \x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01\
-    (\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\
-    \n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\
-    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\
-    \x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_\
-    id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\
-    \rR\x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\
-    \x1f\n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\
-    \x18\x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07me\
-    mbers\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHis\
-    toryMessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07cter\
-    _id\x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
+    \n\nbase.proto\x12\x06protos\"\xb2\x01\n\rRoomSettingPt\x12\x1f\n\x0bbat\
+    tle_type\x18\x01\x20\x01(\rR\nbattleType\x12&\n\x0fturn_limit_time\x18\
+    \x02\x20\x01(\rR\rturnLimitTime\x12+\n\x12is_open_world_tile\x18\x03\x20\
+    \x01(\x08R\x0fisOpenWorldTile\x12+\n\x11victory_condition\x18\x04\x20\
+    \x01(\rR\x10victoryCondition\"`\n\x08PlayerPt\x12\x1b\n\tnick_name\x18\
+    \x01\x20\x01(\tR\x08nickName\x12%\n\x0elast_character\x18\x02\x20\x01(\r\
+    R\rlastCharacter\x12\x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bRes\
+    ourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\
+    \x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\
+    <\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06teamId\x12\
+    \x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xb5\x01\n\x08MemberPt\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
+    \x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\x0b2\
+    \x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01(\rR\
+    \x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\n\t\
+    join_time\x18\x06\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\x14\
+    \n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\
+    \x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\
+    \x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\
+    \x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\
+    \n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\
+    \x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07member\
+    s\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistory\
+    MessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07cter_id\
+    \x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
     \x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\
-    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\x90\x02\n\x11Battle\
-    CharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\
-    \tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\
-    \x20\x01(\rR\x05grade\x12\x17\n\x07cter_id\x18\x04\x20\x01(\rR\x06cterId\
-    \x12\x1f\n\x0bbirth_index\x18\x05\x20\x01(\rR\nbirthIndex\x12!\n\x0cacti\
-    on_order\x18\x06\x20\x01(\rR\x0bactionOrder\x12\x10\n\x03atk\x18\x07\x20\
-    \x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x08\x20\x01(\rR\x02hp\x12\x18\n\x07d\
-    efence\x18\t\x20\x01(\rR\x07defence\x12\x16\n\x06skills\x18\n\x20\x03(\r\
-    R\x06skills\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bcho\
-    oseIndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_\
-    action_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06proto3\
+    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\xc7\x01\n\x11Battle\
+    CharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\
+    \x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12%\n\x0elocation_index\x18\
+    \x04\x20\x01(\rR\rlocationIndex\x12\x1d\n\nturn_order\x18\x05\x20\x01(\r\
+    R\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\
+    \x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x08\x20\x01(\rR\x07d\
+    efence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\x20\
+    \x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bchooseI\
+    ndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_acti\
+    on_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

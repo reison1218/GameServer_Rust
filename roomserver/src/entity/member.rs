@@ -24,7 +24,6 @@ pub struct Member {
     pub team_id: u8,                    //玩家所属队伍id
     pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
     pub chose_cter: Character,          //玩家已经选择的角色
-    pub battle_cter: BattleCharacter,   //进入战斗后的角色数据
     pub join_time: u64,                 //玩家进入房间的时间
 }
 
@@ -32,21 +31,6 @@ impl Member {
     ///获得玩家id
     pub fn get_user_id(&self) -> u32 {
         self.user_id
-    }
-
-    pub fn convert_to_battle_cter(&self) -> BattleCharacterPt {
-        let mut battle_cter_pt = BattleCharacterPt::new();
-        battle_cter_pt.user_id = self.user_id;
-        battle_cter_pt.cter_id = self.battle_cter.cter_id;
-        battle_cter_pt.grade = self.battle_cter.grade;
-        battle_cter_pt.nick_name = self.nick_name.clone();
-        battle_cter_pt.skills = self.battle_cter.skills.clone();
-        battle_cter_pt.hp = self.battle_cter.hp;
-        battle_cter_pt.defence = self.battle_cter.defence;
-        battle_cter_pt.atk = self.battle_cter.atk;
-        battle_cter_pt.set_birth_index(self.battle_cter.cell_index);
-        battle_cter_pt.set_action_order(0);
-        battle_cter_pt
     }
 }
 

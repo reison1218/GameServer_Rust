@@ -16,15 +16,9 @@ package protos;
 //    ONEVONE = 3;         //1v1
 //}
 
-//回合时间封装体
-message RoundTimePt{
-    uint32 consume_time = 1; //消耗时间
-    uint32 fixed_time = 2;//固定时间
-}
-
 message RoomSettingPt{
     uint32 battle_type = 1;//战斗模式
-    RoundTimePt round_time = 2;//回合时间
+    uint32 turn_limit_time = 2;//回合时间限制
     bool is_open_world_tile = 3;//是否开启中立特殊块
     uint32 victory_condition = 4;//胜利条件
 }
@@ -95,15 +89,12 @@ message CharacterPt{
 //玩家战斗角色数据
 message BattleCharacterPt{
     uint32 user_id = 1;                 //玩家id
-    string nick_name = 2;               //玩家昵称
-    uint32 grade = 3;                   //角色等级
-    uint32 cter_id = 4;                 //角色id
-    uint32 birth_index = 5;             //角色初始位置
-    uint32 action_order = 6;            //行动顺序
-    uint32 atk = 7;                     //攻击力
-    uint32 hp = 8;                      //角色血量
-    uint32 defence = 9;                 //角色防御
-    repeated uint32 skills = 10;        //角色技能
+    uint32 cter_id = 3;                 //角色id
+    uint32 location_index = 4;          //角色位置
+    uint32 turn_order = 5;              //行动顺序
+    uint32 atk = 6;                     //攻击力
+    uint32 hp = 7;                      //角色血量
+    uint32 defence = 8;                 //角色防御
 }
 
 message BattleActionPt{

@@ -8,9 +8,10 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 pub enum TaskCmd {
-    MatchRoomStart = 101,   //匹配房间开始任务
-    ChoiceLocation = 102,   //选择占位
-    ChoiceRoundOrder = 103, //选择回合顺序
+    MatchRoomStart = 101,  //匹配房间开始任务
+    ChoiceLocation = 102,  //选择占位
+    ChoiceTurnOrder = 103, //选择回合顺序
+    BattleTurnTime = 104,  //战斗时间回合限制
 }
 
 impl From<u16> for TaskCmd {
@@ -75,10 +76,24 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                         error!("{:?}", res.err().unwrap());
                     }
                 }
-                TaskCmd::ChoiceRoundOrder => {
+                TaskCmd::ChoiceTurnOrder => {
                     let m = || {
                         std::thread::sleep(Duration::from_millis(task.delay));
-                        choice_round(rm_clone, task);
+                        choice_turn(rm_clone, task);
+                    };
+                    //设置线程名字和堆栈大小
+                    let thread_builder = std::thread::Builder::new()
+                        .name("TIMER_THREAD_TASK".to_owned())
+                        .stack_size(32 * 1024);
+                    let res = thread_builder.spawn(m);
+                    if res.is_err() {
+                        error!("{:?}", res.err().unwrap());
+                    }
+                }
+                TaskCmd::BattleTurnTime => {
+                    let m = || {
+                        std::thread::sleep(Duration::from_millis(task.delay));
+                        battle_turn_time(rm_clone, task);
                     };
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
@@ -203,7 +218,7 @@ fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
 }
 
 ///选择占位
-fn choice_round(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -227,5 +242,41 @@ fn choice_round(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         return;
     }
     let room = room.unwrap();
-    room.choice_round(user_id, None);
+    room.choice_turn(user_id, None);
+}
+
+fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id");
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap().as_u64();
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap() as u32;
+
+    let mut write = rm.write().unwrap();
+
+    let room = write.get_room_mut(&user_id);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+
+    let next_index = room.battle_data.next_turn_index;
+    let next_user_id = room.battle_data.turn_orders[next_index];
+    if next_user_id != user_id {
+        return;
+    }
+    //如果玩家啥都没做，就T出房间
+    if room.battle_data.turn_action.actions.is_empty() {
+        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    }
 }

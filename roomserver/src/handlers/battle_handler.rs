@@ -21,7 +21,13 @@ pub fn attack_target(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///跳过回合
-pub fn skip_round(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
+///跳过turn
+pub fn skip_turn(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
+    Ok(())
+}
+
+///翻地图块
+pub fn open(_rm: &mut RoomMgr, _packet: Packet) -> anyhow::Result<()> {
+    
     Ok(())
 }

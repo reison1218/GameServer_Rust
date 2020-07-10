@@ -39,28 +39,54 @@ pub enum RoomState {
     Started = 1, //已经开始
 }
 
+///回合行为类型
+#[derive(Clone, Debug)]
+enum ActionType {
+    Attack = 1,  //普通攻击
+    UseItem = 2, //使用道具
+    Skip = 3,    //跳过turn
+    Open = 4,    //翻块
+    Skill = 5,   //使用技能
+}
+
 ///行动单位
-#[derive(Clone, Debug, Copy, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ActionUnit {
-    team_id: u32,
-    user_id: u32,
+    pub team_id: u32,
+    pub user_id: u32,
+    pub turn_index: u32,
+    pub actions: Vec<Action>,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Action {
+    action_type: u8,
+    action_value: u32,
+}
+
+///房间战斗数据封装
+#[derive(Clone, Debug, Default)]
+pub struct BattleData {
+    pub next_turn_index: usize,                     //下个turn玩家
+    pub turn_action: ActionUnit,                    //当前回合数据单元封装
+    pub turn_orders: [u32; 4],                      //turn行动队列
+    pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
 }
 
 ///房间结构体，封装房间必要信息
 #[derive(Clone, Debug)]
 pub struct Room {
     id: u32,                              //房间id
+    room_type: u8,                        //房间类型
     owner_id: u32,                        //房主id
+    state: u8,                            //房间状态
     tile_map: TileMap,                    //地图数据
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
     pub member_index: [u32; 4],           //玩家对应的位置
-    pub turn_orders: [u32; 4],            //turn行动队列
     pub choice_orders: [u32; 4],          //选择顺序
-    state: u8,                            //房间状态
-    pub setting: RoomSetting,             //房间设置
     pub next_choice_user: u32,            //下一个选择占位玩家id
-    pub next_turn_index: u32,             //下个turn玩家
-    room_type: u8,                        //房间类型
+    pub setting: RoomSetting,             //房间设置
+    pub battle_data: BattleData,          //战斗相关数据封装
     sender: TcpSender,                    //sender
     task_sender: crossbeam::Sender<Task>, //任务sender
     time: DateTime<Utc>,                  //房间创建时间
@@ -87,12 +113,11 @@ impl Room {
             tile_map: TileMap::default(),
             members: HashMap::new(),
             member_index: member_index,
-            turn_orders: [0; 4],
             choice_orders: [0; 4],
             state: RoomState::Await as u8,
             setting: RoomSetting::default(),
+            battle_data: BattleData::default(),
             next_choice_user: 0,
-            next_turn_index: 0,
             room_type,
             sender,
             task_sender,
@@ -116,7 +141,8 @@ impl Room {
     fn check_location(&mut self) -> bool {
         let mut user_id = 0;
         let mut res = true;
-        for member_id in self.turn_orders.iter() {
+
+        for member_id in self.battle_data.turn_orders.iter() {
             if *member_id == 0 {
                 continue;
             }
@@ -175,7 +201,7 @@ impl Room {
         let res = self.check_location();
         //都选择完了占位，进入选择回合顺序
         if res {
-            self.build_choice_round_task();
+            self.build_choice_turn_task();
         } else {
             //没选择完，继续选
             self.build_choice_location_task();
@@ -183,11 +209,11 @@ impl Room {
     }
 
     ///选择回合
-    pub fn choice_round(&mut self, user_id: u32, order: Option<u32>) {
+    pub fn choice_turn(&mut self, user_id: u32, order: Option<u32>) {
         let turn_order;
         //如果玩家选择的
         if let Some(order) = order {
-            self.turn_orders[order as usize] = user_id;
+            self.battle_data.turn_orders[order as usize] = user_id;
             turn_order = order;
         } else {
             //系统帮忙选
@@ -203,7 +229,7 @@ impl Room {
             let res = rand.gen_range(0, v.len());
             let index = v.get(res).unwrap();
             turn_order = *index;
-            self.turn_orders[turn_order as usize] = user_id;
+            self.battle_data.turn_orders[turn_order as usize] = user_id;
         }
 
         //通知其他玩家
@@ -222,13 +248,13 @@ impl Room {
             self.sender.write(res);
         }
 
-        let res = self.check_choice_round();
+        let res = self.check_choice_turn();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
             let mut sbs = S_BATTLE_CHARACTER_NOTICE::new();
             self.cter_2_battle_cter();
-            for member in self.members.values() {
-                sbs.battle_cters.push(member.convert_to_battle_cter());
+            for battle_cter in self.battle_data.battle_cter.values() {
+                sbs.battle_cters.push(battle_cter.convert_to_battle_cter());
             }
 
             let bytes = sbs.write_to_bytes().unwrap();
@@ -243,24 +269,24 @@ impl Room {
                 self.sender.write(res);
             }
 
-            //开始执行选择占位逻辑
-            self.build_choice_location_task();
+            //开始执行战斗逻辑
+            self.build_battle_turn_task();
 
         //此处应该加上第一回合限制时间定时器
         } else {
             //如果没选完，继续选
-            self.build_choice_round_task();
+            self.build_choice_turn_task();
         }
     }
 
-    pub fn check_choice_round(&mut self) -> bool {
+    pub fn check_choice_turn(&mut self) -> bool {
         let mut user_id = 0;
         let mut res = true;
         for i in self.choice_orders.iter() {
             if *i == 0 {
                 continue;
             }
-            if !self.turn_orders.contains(i) {
+            if !self.battle_data.turn_orders.contains(i) {
                 res = false;
                 user_id = *i;
                 break;
@@ -269,7 +295,7 @@ impl Room {
         if !res && user_id > 0 {
             self.next_choice_user = user_id;
         } else if res {
-            self.next_choice_user = self.turn_orders[0];
+            self.next_choice_user = self.battle_data.turn_orders[0];
         }
         res
     }
@@ -373,7 +399,7 @@ impl Room {
             );
             self.sender.write(bytes);
         }
-        self.build_choice_round_task();
+        self.build_choice_turn_task();
     }
 
     ///发送表情包
@@ -575,7 +601,7 @@ impl Room {
                         self.next_choice_user = self.choice_orders[index];
                         //选择回合定时器任务
                         if self.next_choice_user > 0 {
-                            self.build_choice_round_task();
+                            self.build_choice_turn_task();
                         }
                     }
                 }
@@ -586,11 +612,11 @@ impl Room {
         if self.next_choice_user == user_id {
             self.next_choice_user = 0;
             for i in 0..size {
-                if self.turn_orders[i] == user_id {
+                if self.battle_data.turn_orders[i] == user_id {
                     let index = i + 1;
                     //在范围内，就选出下一个
                     if index <= size - 1 {
-                        self.next_choice_user = self.turn_orders[index];
+                        self.next_choice_user = self.battle_data.turn_orders[index];
                         //选择占位定时器任务
                         if self.next_choice_user > 0 {
                             self.build_choice_location_task();
@@ -605,14 +631,14 @@ impl Room {
             if self.choice_orders[i] == user_id {
                 self.choice_orders[i] = 0;
             }
-            if self.turn_orders[i] == user_id {
-                self.turn_orders[i] = 0;
+            if self.battle_data.turn_orders[i] == user_id {
+                self.battle_data.turn_orders[i] = 0;
             }
         }
 
         //如果战斗已经开始了，下一个回合行动玩家是这个离线玩家，则轮到下一个玩家
-        if self.turn_orders[self.next_turn_index as usize] == user_id {
-            self.next_turn_index += 1;
+        if self.battle_data.turn_orders[self.battle_data.next_turn_index as usize] == user_id {
+            self.battle_data.next_turn_index += 1;
         }
     }
 
@@ -704,8 +730,8 @@ impl Room {
             );
             anyhow::bail!(s)
         }
-        let member = member.unwrap();
-        member.battle_cter.target_id = *target_id;
+        let battle_cter = self.battle_data.battle_cter.get_mut(user_id).unwrap();
+        battle_cter.target_id = *target_id;
         Ok(())
     }
 
@@ -714,7 +740,7 @@ impl Room {
             let battle_cter = BattleCharacter::init(&member.chose_cter);
             match battle_cter {
                 Ok(b_cter) => {
-                    member.battle_cter = b_cter;
+                    self.battle_data.battle_cter.insert(member.user_id, b_cter);
                 }
                 Err(_) => {
                     return;
@@ -754,7 +780,41 @@ impl Room {
         tmd
     }
 
-    pub fn build_choice_round_task(&self) {
+    pub fn build_battle_turn_task(&self) {
+        let next_turn_index = self.battle_data.next_turn_index as usize;
+        let user_id = self.battle_data.turn_orders[next_turn_index];
+        let time_limit = TEMPLATES
+            .get_constant_ref()
+            .temps
+            .get("battle_turn_limit_time");
+        let mut task = Task::default();
+        if let Some(time) = time_limit {
+            let time = u64::from_str(time.value.as_str());
+            match time {
+                Ok(time) => {
+                    task.delay = time + 500;
+                }
+                Err(e) => {
+                    task.delay = 5000_u64;
+                    error!("{:?}", e);
+                }
+            }
+        } else {
+            task.delay = 5000_u64;
+            warn!("the battle_turn_limit_time of Constant config is None!pls check!");
+        }
+        task.cmd = TaskCmd::ChoiceTurnOrder as u16;
+
+        let mut map = serde_json::Map::new();
+        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
+        task.data = serde_json::Value::from(map);
+        let res = self.task_sender.send(task);
+        if res.is_err() {
+            error!("{:?}", res.err().unwrap());
+        }
+    }
+
+    pub fn build_choice_turn_task(&self) {
         let user_id = self.next_choice_user;
         //没选择完，继续选
         let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
@@ -774,7 +834,7 @@ impl Room {
             task.delay = 5000_u64;
             warn!("the choice_location_time of Constant config is None!pls check!");
         }
-        task.cmd = TaskCmd::ChoiceRoundOrder as u16;
+        task.cmd = TaskCmd::ChoiceTurnOrder as u16;
 
         let mut map = serde_json::Map::new();
         map.insert("user_id".to_owned(), serde_json::Value::from(user_id));

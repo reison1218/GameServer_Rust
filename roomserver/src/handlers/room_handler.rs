@@ -845,7 +845,7 @@ pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验他选过没有
-    if room.turn_orders.contains(&user_id) {
+    if room.battle_data.turn_orders.contains(&user_id) {
         let str = format!(
             "this player is already choice round order!user_id:{}",
             user_id
@@ -859,6 +859,6 @@ pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    room.choice_round(user_id, Some(order));
+    room.choice_turn(user_id, Some(order));
     Ok(())
 }

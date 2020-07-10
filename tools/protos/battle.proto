@@ -1,0 +1,44 @@
+syntax = "proto3";
+package protos;
+import "base.proto";
+
+//enum ActionType {
+//    Attack = 1,  //普通攻击
+//    UseItem = 2, //使用道具
+//    Skip = 3,    //跳过turn
+//    Open = 4,    //翻块
+//    Skill = 5,   //使用技能
+//}
+
+//行动请求
+message C_ACTION{
+    uint32 type = 1;//行动类型
+    uint32 value = 2;//行动对应类型的值
+    TargetPt target = 3;//目标
+}
+
+//行动返回
+message S_ACTION{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//行动推送
+message S_ACTION_NOTICE{
+    uint32 user_id = 1;//行动的玩家
+    uint32 type = 2;//行动类型
+    uint32 value = 3;//行动对应类型的值
+    TargetPt target = 4;//目标
+}
+
+//行动结算
+message ActionSettlePt{
+
+}
+
+message TargetPt{
+    uint32 type = 1;//目标类型
+    repeated uint32 targets = 3;//目标
+}
+
+

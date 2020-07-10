@@ -29,6 +29,10 @@ pub struct TemplatesMgr {
 }
 
 impl TemplatesMgr {
+    pub fn execute_init(&self){
+        self.get_constant_ref();
+    }
+
     pub fn get_character_ref(&self) -> &CharacterTempMgr {
         self.character_temp_mgr.borrow()
     }
@@ -54,7 +58,7 @@ impl TemplatesMgr {
     }
 }
 
-pub fn init_temps(path: &str) -> TemplatesMgr {
+pub fn init_temps_mgr(path: &str) -> TemplatesMgr {
     let res = read_templates_from_dir(path).unwrap();
     res
 }

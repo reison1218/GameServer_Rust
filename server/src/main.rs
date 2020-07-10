@@ -17,7 +17,7 @@ use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
-use tools::templates::template::TemplatesMgr;
+use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 
 #[macro_use]
 extern crate lazy_static;
@@ -54,7 +54,7 @@ lazy_static! {
         let path = env::current_dir().unwrap();
         let str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/template";
-        let conf = tools::templates::template::init_temps(res.as_str());
+        let conf = init_temps_mgr(res.as_str());
         conf
     };
 
@@ -78,6 +78,9 @@ fn main() {
     //初始化日志模块
     init_log(info_log, error_log);
 
+    //初始化配置
+    init_temps();
+
     //初始化定时器任务管理
     timer_mgr::init(game_mgr.clone());
 
@@ -86,6 +89,10 @@ fn main() {
 
     //初始化tcp服务端
     init_tcp_server(game_mgr.clone());
+}
+
+fn init_temps() {
+    TEMPLATES.execute_init();
 }
 
 ///初始化http服务端
