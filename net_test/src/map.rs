@@ -9,7 +9,7 @@ pub fn generate_map(){
     let path = env::current_dir().unwrap();
     let str = path.as_os_str().to_str().unwrap();
     let res = str.to_string()+"/template";
-    let  temp_mgr = tools::templates::template::init_temps(res.as_str());
+    let  temp_mgr = tools::templates::template::init_temps_mgr(res.as_str());
     let tmd = TileMapData::init(&temp_mgr);
     println!("{:?}",tmd);
 }

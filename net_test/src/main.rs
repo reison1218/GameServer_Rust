@@ -79,20 +79,7 @@ macro_rules! test{
     };
 }
 
-macro_rules! map{
-    (@unit $($x:tt)*) => (());
-    (@count $($rest:expr),*)=>(<[()]>::len(&[$(map!(@unit $rest)),*]));
-    ($($key:expr=>$value:expr$(,)*)*)=>{
-    {
-        let cap = map!(@count $($key),*);
-        let mut _map = std::collections::HashMap::with_capacity(cap);
-        $(
-         _map.insert($key,$value);
-        )*
-        _map
-    };
-    };
-}
+
 
 fn foo(words: &[&str]) {
     match words {
@@ -126,7 +113,7 @@ fn test_binary(){
     // let int = 123u32;
     // //(1)最原始直接基础的位操作方法。
     // let mut byte: u8 = 0b0000_0000;
-    // println!("{:0b}", int);
+    // println!("{:0x}", int);
     // byte |= 0b0000_1000; // Set a bit
     // println!("0b{:08b}", byte);
     // byte &= 0b1111_0111; // Unset a bit
@@ -156,10 +143,47 @@ fn test_binary(){
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
 }
 
+macro_rules! map{
+    (@unit $($x:tt)*) => (());
+    (@count $($rest:expr),*)=>(<[()]>::len(&[$(map!(@unit $rest)),*]));
+    ($($key:expr=>$value:expr$(,)*)*)=>{
+    {
+        let cap = map!(@count $($key),*);
+        let mut _map = std::collections::HashMap::with_capacity(cap);
+        $(
+         _map.insert($key,$value);
+        )*
+        _map
+    };
+    };
+}
+
+// macro_rules! test{
+//
+//     ($key:expr=>$value:expr,$yunsuan:ident)=>{
+//         if $key  $yunsuan $value{
+//             true
+//         }else{
+//         false
+//         }
+//     };
+// }
+
+// {
+// "panding": {
+// "cell_type": 1,
+// "yunsuanfu": ">",
+// "canshu": 1
+// },
+// "result":{"true":[1001,1002],"false":[1004]}
+// }
 
 fn main() -> anyhow::Result<()> {
+    //let test = test!(1=>2,<);
+
+    test_binary();
     //test_sort();
-    test_tcp_client();
+    //test_tcp_client();
     //map::generate_map();
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);
