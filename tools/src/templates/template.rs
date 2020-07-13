@@ -5,11 +5,14 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE};
+use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE, SKILL_TEMPLATE, SKILL_SCOPE_TEMPLATE, ITEM_TEMPLATE};
 use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
 use crate::templates::constant_temp::{ConstantTempMgr,ConstantTemp};
 use crate::templates::world_cell_temp::{WorldCellTempMgr, WorldCellTemp};
 use crate::templates::cell_temp::{CellTempMgr, CellTemp};
+use crate::templates::skill_temp::{SkillTempMgr, SkillTemp};
+use crate::templates::item_temp::{ItemTempMgr, ItemTemp};
+use crate::templates::skill_scope_temp::{SkillScopeTempMgr, SkillScopeTemp};
 
 pub trait Template {}
 
@@ -26,6 +29,9 @@ pub struct TemplatesMgr {
     constant_temp_mgr:ConstantTempMgr,//常量配置mgr
     world_cell_temp_mgr:WorldCellTempMgr,//worldcell配置mgr
     cell_temp_mgr:CellTempMgr,//cell配置mgr
+    skill_temp_mgr:SkillTempMgr,//技能配置mgr
+    item_temp_mgr:ItemTempMgr,//道具配置mgr
+    skill_scope_temp_mgr:SkillScopeTempMgr,//技能范围配置mgr
 }
 
 impl TemplatesMgr {
@@ -55,6 +61,16 @@ impl TemplatesMgr {
 
     pub fn get_cell_ref(&self) -> &CellTempMgr {
         self.cell_temp_mgr.borrow()
+    }
+
+    pub fn get_skill_ref(&self) -> &SkillTempMgr {
+        self.skill_temp_mgr.borrow()
+    }
+
+    pub fn get_skill_scope_ref(&self) -> &SkillScopeTempMgr { self.skill_scope_temp_mgr.borrow() }
+
+    pub fn get_item_ref(&self) -> &ItemTempMgr {
+        self.item_temp_mgr.borrow()
     }
 }
 
@@ -107,6 +123,18 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<CellTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.cell_temp_mgr = CellTempMgr::default();
             temps_mgr.cell_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
+            let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.skill_temp_mgr = SkillTempMgr::default();
+            temps_mgr.skill_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
+            let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.skill_scope_temp_mgr = SkillScopeTempMgr::default();
+            temps_mgr.skill_scope_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
+            let v: Vec<ItemTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.item_temp_mgr = ItemTempMgr::default();
+            temps_mgr.item_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

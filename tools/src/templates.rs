@@ -6,3 +6,6 @@ pub mod emoji_temp;
 pub mod constant_temp;
 pub mod cell_temp;
 pub mod world_cell_temp;
+pub mod skill_temp;
+pub mod skill_scope_temp;
+pub mod item_temp;

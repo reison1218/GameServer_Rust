@@ -54,6 +54,8 @@ pub enum RoomCode{
     ChoiceLoaction = 20014,
     //选择回合顺序
     ChoiceRoundOrder = 20015,
+    //战斗行动请求
+    Action = 20016,
     //返回最大值
     Max = 30000,
 }
@@ -108,6 +110,14 @@ pub enum ClientCode{
     ChoiceRoundOrderNotice = 10023,
     //战斗开始
     BattleStartNotice = 10024,
+    //行动返回
+    Action = 10025,
+    //行动推送
+    ActionNotice = 10026,
+    //地图刷新推送
+    MapRefreshNotice = 10027,
+    //结算推送
+    SettlementNotice = 10028,
     //最大命令号
     Max = 20000,
 }

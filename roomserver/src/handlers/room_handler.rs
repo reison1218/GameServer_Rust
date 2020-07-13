@@ -775,7 +775,7 @@ pub fn choice_location(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
     //校验是否轮到他了
-    if room.next_choice_user != user_id {
+    if room.battle_data.next_choice_user != user_id {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id
@@ -829,7 +829,7 @@ pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验是否轮到他了
-    if room.next_choice_user != user_id {
+    if room.battle_data.next_choice_user != user_id {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id

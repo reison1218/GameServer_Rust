@@ -1,6 +1,6 @@
-use crate::entity::character::{BattleCharacter, Character};
+use crate::entity::character::Character;
 use std::collections::HashMap;
-use tools::protos::base::{BattleCharacterPt, MemberPt};
+use tools::protos::base::MemberPt;
 use tools::protos::server_protocol::PlayerBattlePt;
 
 #[derive(Clone, Debug)]

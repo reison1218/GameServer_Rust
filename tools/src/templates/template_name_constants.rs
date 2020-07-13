@@ -10,3 +10,9 @@ pub const CONSTANT_TEMPLATE: &str = "Constant";
 
 pub const WORLD_CELL_TEMPLATE: &str = "WorldCell";
 
+pub const SKILL_TEMPLATE: &str = "Skill";
+
+pub const SKILL_SCOPE_TEMPLATE: &str = "SkillScope";
+
+pub const ITEM_TEMPLATE: &str = "Item";
+

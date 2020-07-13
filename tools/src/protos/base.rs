@@ -753,197 +753,6 @@ impl ::protobuf::reflect::ProtobufValue for ResourcesPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct TargetPt {
-    // message fields
-    pub team_id: u32,
-    pub user_id: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a TargetPt {
-    fn default() -> &'a TargetPt {
-        <TargetPt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl TargetPt {
-    pub fn new() -> TargetPt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 team_id = 1;
-
-
-    pub fn get_team_id(&self) -> u32 {
-        self.team_id
-    }
-    pub fn clear_team_id(&mut self) {
-        self.team_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_team_id(&mut self, v: u32) {
-        self.team_id = v;
-    }
-
-    // uint32 user_id = 2;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-}
-
-impl ::protobuf::Message for TargetPt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.team_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.team_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.team_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.team_id != 0 {
-            os.write_uint32(1, self.team_id)?;
-        }
-        if self.user_id != 0 {
-            os.write_uint32(2, self.user_id)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> TargetPt {
-        TargetPt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "team_id",
-                    |m: &TargetPt| { &m.team_id },
-                    |m: &mut TargetPt| { &mut m.team_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &TargetPt| { &m.user_id },
-                    |m: &mut TargetPt| { &mut m.user_id },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<TargetPt>(
-                    "TargetPt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static TargetPt {
-        static mut instance: ::protobuf::lazy::Lazy<TargetPt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(TargetPt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for TargetPt {
-    fn clear(&mut self) {
-        self.team_id = 0;
-        self.user_id = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for TargetPt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for TargetPt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
 pub struct MemberPt {
     // message fields
     pub user_id: u32,
@@ -3011,33 +2820,32 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     R\rlastCharacter\x12\x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bRes\
     ourcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\
     \x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\
-    <\n\x08TargetPt\x12\x17\n\x07team_id\x18\x01\x20\x01(\rR\x06teamId\x12\
-    \x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xb5\x01\n\x08MemberPt\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
-    \x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\x0b2\
-    \x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01(\rR\
-    \x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\n\t\
-    join_time\x18\x06\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\x14\
-    \n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\
-    \x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\
-    \x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\
-    \x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\
-    \n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\
-    \x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07member\
-    s\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistory\
-    MessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07cter_id\
-    \x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
-    \x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\
-    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\xc7\x01\n\x11Battle\
-    CharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\
-    \x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12%\n\x0elocation_index\x18\
-    \x04\x20\x01(\rR\rlocationIndex\x12\x1d\n\nturn_order\x18\x05\x20\x01(\r\
-    R\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\
-    \x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x08\x20\x01(\rR\x07d\
-    efence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bchooseI\
-    ndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_acti\
-    on_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06proto3\
+    \xb5\x01\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userI\
+    d\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\
+    \x18\x03\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05stat\
+    e\x18\x04\x20\x01(\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\
+    \x06teamId\x12\x1b\n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"G\n\
+    \x0bWorldCellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\
+    \rworld_cell_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\
+    \x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_i\
+    d\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\r\
+    R\x08roomType\x12\x1f\n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\
+    \x12/\n\x07setting\x18\x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07se\
+    tting\x12*\n\x07members\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07me\
+    mbers\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\
+    \x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
+    \x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\
+    \rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\
+    \xc7\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12%\n\x0e\
+    location_index\x18\x04\x20\x01(\rR\rlocationIndex\x12\x1d\n\nturn_order\
+    \x18\x05\x20\x01(\rR\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03\
+    atk\x12\x0e\n\x02hp\x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\
+    \x08\x20\x01(\rR\x07defence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07u\
+    ser_id\x18\x01\x20\x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\
+    \x01(\rR\x0bchooseIndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\
+    \x12(\n\x10next_action_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06pr\
+    oto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

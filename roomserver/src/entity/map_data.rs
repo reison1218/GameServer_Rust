@@ -134,10 +134,10 @@ impl TileMap {
             let buff;
             if cell.is_world {
                 let res = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
-                buff = res.buff_id.clone();
+                buff = res.skill_id.clone();
             } else {
                 let res = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
-                buff = res.buff_id.clone();
+                buff = res.skill_id.clone();
             }
             cell.buff = buff;
             tmd.map.push(cell);

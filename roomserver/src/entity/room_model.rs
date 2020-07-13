@@ -136,7 +136,7 @@ pub struct RoomSetting {
 }
 
 impl From<RoomSettingPt> for RoomSetting {
-    fn from(mut rs_pt: RoomSettingPt) -> Self {
+    fn from(rs_pt: RoomSettingPt) -> Self {
         let mut rs = RoomSetting::default();
         rs.battle_type = rs_pt.battle_type as u8;
         rs.is_world_tile = rs_pt.is_open_world_tile;

@@ -4,7 +4,7 @@ use crate::templates::template::Template;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct WorldCellTemp{
     pub id: u32,
-    pub buff_id: Vec<u32>,
+    pub skill_id: Vec<u32>,
 }
 
 impl Template for WorldCellTemp{}

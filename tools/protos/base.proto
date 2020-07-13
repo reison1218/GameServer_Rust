@@ -37,12 +37,6 @@ message ResourcesPt{
     uint32 num = 3;//数量
 }
 
-//目标结构体
-message TargetPt{
-    uint32 team_id = 1;//目标队伍
-    uint32 user_id = 2;//目标队伍所在的目标玩家
-}
-
 //队伍成员结构体
 message MemberPt{
     uint32 user_id = 1;//玩家id
