@@ -178,16 +178,22 @@ macro_rules! map{
 // "result":{"true":[1001,1002],"false":[1004]}
 // }
 
+enum  HH{
+    AA=1,
+}
+struct  TT{
+    s:HH,
+}
+
 fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
-    let mut v:Vec<u32> = Vec::new();
-    // v.push(1);
-    // v.push(2);
-    // v.push(3);
-    // v.remove(0);
-    for i in 0..v.len(){
-        println!("ss");
+    let t = TT{s:HH::AA};
+    match t.s {
+        HH::AA=>{
+
     }
+    }
+
     //test_binary();
     //test_sort();
     //test_tcp_client();
