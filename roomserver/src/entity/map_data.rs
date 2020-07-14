@@ -2,6 +2,12 @@ use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use tools::templates::template::TemplatesMgr;
 
+pub enum CellType {
+    InValid = 0,
+    UnUse = 1,
+    Valid = 2,
+}
+
 ///地图
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {

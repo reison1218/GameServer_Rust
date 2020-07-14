@@ -1,8 +1,9 @@
 use crate::entity::member::MemberState;
-use crate::entity::room::MemberLeaveNoticeType;
+use crate::entity::room::{MemberLeaveNoticeType, RoomState};
 use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
 use log::{error, info};
+use rand::Rng;
 use serde_json::Value as JsonValue;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
@@ -189,7 +190,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     room.start();
 }
 
-///选择占位
+///占位任务，没选的直接t出房间
 fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
@@ -214,10 +215,20 @@ fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         return;
     }
     let room = room.unwrap();
-    room.choice_location(user_id, None);
+
+    //判断房间状态
+    if room.get_state() != RoomState::ChoiceIndex as u8 {
+        return;
+    }
+    //判断是否轮到自己
+    if room.get_next_choice_user() != user_id {
+        return;
+    }
+    room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    write.player_room.remove(&user_id);
 }
 
-///选择占位
+///选择占位,超时了就跳过，如果是最后一个人超时，则系统帮忙给未选择的人随机分配
 fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
@@ -242,7 +253,49 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         return;
     }
     let room = room.unwrap();
-    room.choice_turn(user_id, None);
+
+    //判断房间状态
+    if room.get_state() != RoomState::ChoiceTurn as u8 {
+        return;
+    }
+
+    //判断当前是不是轮到自己选
+    let index = room.get_next_choice_index();
+    let next_user = room.get_choice_orders()[index];
+    if next_user != user_id {
+        return;
+    }
+
+    //跳过
+    room.skip_choice_turn(user_id);
+    //判断是否是最后一个人跳过，是就系统给未选择的人进行选
+    let size = room.get_member_count();
+    let last_user = room.get_choice_orders()[size - 1];
+    if last_user != user_id {
+        return;
+    }
+    //先选出可以随机的下标
+    let mut index_v: Vec<usize> = Vec::new();
+    for index in 0..room.get_turn_orders().len() {
+        if room.get_turn_orders()[index] != 0 {
+            continue;
+        }
+        index_v.push(index);
+    }
+    let mut rand = rand::thread_rng();
+    //如果是最后一个，直接给所有未选的玩家进行随机
+    for member_id in &room.member_index.clone()[..] {
+        //选过了就跳过
+        if room.get_turn_orders().contains(member_id) {
+            continue;
+        }
+        //系统帮忙选
+        let remove_index = rand.gen_range(0, index_v.len());
+        let index = index_v.get(remove_index).unwrap();
+        let turn_order = *index as usize;
+        room.choice_turn(*member_id, turn_order);
+        index_v.remove(remove_index);
+    }
 }
 
 fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {

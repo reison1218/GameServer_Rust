@@ -174,13 +174,13 @@ message S_START_NOTICE{
 
 //选择位置请求
 //cmd:20014
-message C_CHOOSE_LOCATION{
+message C_CHOOSE_INDEX{
     uint32 index = 1;//位置下标
 }
 
 //选择位置返回
 //cmd:10020
-message S_CHOOSE_LOCATION{
+message S_CHOOSE_INDEX{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
 }
@@ -200,9 +200,9 @@ message S_CHOOSE_TURN_ORDER{
 
 //选择位置通知
 //cmd:10022
-message S_CHOOSE_LOCATION_NOTICE{
+message S_CHOOSE_INDEX_NOTICE{
     uint32 user_id = 1;//玩家id
-    uint32 location = 2;//玩家所选择的位置
+    uint32 index = 2;//玩家所选择的位置
 }
 
 //选择回合顺序通知

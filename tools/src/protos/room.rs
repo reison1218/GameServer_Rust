@@ -4738,7 +4738,7 @@ impl ::protobuf::reflect::ProtobufValue for S_START_NOTICE {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct C_CHOOSE_LOCATION {
+pub struct C_CHOOSE_INDEX {
     // message fields
     pub index: u32,
     // special fields
@@ -4746,14 +4746,14 @@ pub struct C_CHOOSE_LOCATION {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a C_CHOOSE_LOCATION {
-    fn default() -> &'a C_CHOOSE_LOCATION {
-        <C_CHOOSE_LOCATION as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a C_CHOOSE_INDEX {
+    fn default() -> &'a C_CHOOSE_INDEX {
+        <C_CHOOSE_INDEX as ::protobuf::Message>::default_instance()
     }
 }
 
-impl C_CHOOSE_LOCATION {
-    pub fn new() -> C_CHOOSE_LOCATION {
+impl C_CHOOSE_INDEX {
+    pub fn new() -> C_CHOOSE_INDEX {
         ::std::default::Default::default()
     }
 
@@ -4773,7 +4773,7 @@ impl C_CHOOSE_LOCATION {
     }
 }
 
-impl ::protobuf::Message for C_CHOOSE_LOCATION {
+impl ::protobuf::Message for C_CHOOSE_INDEX {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -4843,8 +4843,8 @@ impl ::protobuf::Message for C_CHOOSE_LOCATION {
         Self::descriptor_static()
     }
 
-    fn new() -> C_CHOOSE_LOCATION {
-        C_CHOOSE_LOCATION::new()
+    fn new() -> C_CHOOSE_INDEX {
+        C_CHOOSE_INDEX::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -4854,11 +4854,11 @@ impl ::protobuf::Message for C_CHOOSE_LOCATION {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "index",
-                    |m: &C_CHOOSE_LOCATION| { &m.index },
-                    |m: &mut C_CHOOSE_LOCATION| { &mut m.index },
+                    |m: &C_CHOOSE_INDEX| { &m.index },
+                    |m: &mut C_CHOOSE_INDEX| { &mut m.index },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOOSE_LOCATION>(
-                    "C_CHOOSE_LOCATION",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOOSE_INDEX>(
+                    "C_CHOOSE_INDEX",
                     fields,
                     file_descriptor_proto()
                 )
@@ -4866,35 +4866,35 @@ impl ::protobuf::Message for C_CHOOSE_LOCATION {
         }
     }
 
-    fn default_instance() -> &'static C_CHOOSE_LOCATION {
-        static mut instance: ::protobuf::lazy::Lazy<C_CHOOSE_LOCATION> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static C_CHOOSE_INDEX {
+        static mut instance: ::protobuf::lazy::Lazy<C_CHOOSE_INDEX> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(C_CHOOSE_LOCATION::new)
+            instance.get(C_CHOOSE_INDEX::new)
         }
     }
 }
 
-impl ::protobuf::Clear for C_CHOOSE_LOCATION {
+impl ::protobuf::Clear for C_CHOOSE_INDEX {
     fn clear(&mut self) {
         self.index = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for C_CHOOSE_LOCATION {
+impl ::std::fmt::Debug for C_CHOOSE_INDEX {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for C_CHOOSE_LOCATION {
+impl ::protobuf::reflect::ProtobufValue for C_CHOOSE_INDEX {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_CHOOSE_LOCATION {
+pub struct S_CHOOSE_INDEX {
     // message fields
     pub is_succ: bool,
     pub err_mess: ::std::string::String,
@@ -4903,14 +4903,14 @@ pub struct S_CHOOSE_LOCATION {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_CHOOSE_LOCATION {
-    fn default() -> &'a S_CHOOSE_LOCATION {
-        <S_CHOOSE_LOCATION as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_CHOOSE_INDEX {
+    fn default() -> &'a S_CHOOSE_INDEX {
+        <S_CHOOSE_INDEX as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_CHOOSE_LOCATION {
-    pub fn new() -> S_CHOOSE_LOCATION {
+impl S_CHOOSE_INDEX {
+    pub fn new() -> S_CHOOSE_INDEX {
         ::std::default::Default::default()
     }
 
@@ -4956,7 +4956,7 @@ impl S_CHOOSE_LOCATION {
     }
 }
 
-impl ::protobuf::Message for S_CHOOSE_LOCATION {
+impl ::protobuf::Message for S_CHOOSE_INDEX {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -5035,8 +5035,8 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION {
         Self::descriptor_static()
     }
 
-    fn new() -> S_CHOOSE_LOCATION {
-        S_CHOOSE_LOCATION::new()
+    fn new() -> S_CHOOSE_INDEX {
+        S_CHOOSE_INDEX::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -5046,16 +5046,16 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
                     "is_succ",
-                    |m: &S_CHOOSE_LOCATION| { &m.is_succ },
-                    |m: &mut S_CHOOSE_LOCATION| { &mut m.is_succ },
+                    |m: &S_CHOOSE_INDEX| { &m.is_succ },
+                    |m: &mut S_CHOOSE_INDEX| { &mut m.is_succ },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
                     "err_mess",
-                    |m: &S_CHOOSE_LOCATION| { &m.err_mess },
-                    |m: &mut S_CHOOSE_LOCATION| { &mut m.err_mess },
+                    |m: &S_CHOOSE_INDEX| { &m.err_mess },
+                    |m: &mut S_CHOOSE_INDEX| { &mut m.err_mess },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_LOCATION>(
-                    "S_CHOOSE_LOCATION",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_INDEX>(
+                    "S_CHOOSE_INDEX",
                     fields,
                     file_descriptor_proto()
                 )
@@ -5063,15 +5063,15 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION {
         }
     }
 
-    fn default_instance() -> &'static S_CHOOSE_LOCATION {
-        static mut instance: ::protobuf::lazy::Lazy<S_CHOOSE_LOCATION> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_CHOOSE_INDEX {
+        static mut instance: ::protobuf::lazy::Lazy<S_CHOOSE_INDEX> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_CHOOSE_LOCATION::new)
+            instance.get(S_CHOOSE_INDEX::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_CHOOSE_LOCATION {
+impl ::protobuf::Clear for S_CHOOSE_INDEX {
     fn clear(&mut self) {
         self.is_succ = false;
         self.err_mess.clear();
@@ -5079,13 +5079,13 @@ impl ::protobuf::Clear for S_CHOOSE_LOCATION {
     }
 }
 
-impl ::std::fmt::Debug for S_CHOOSE_LOCATION {
+impl ::std::fmt::Debug for S_CHOOSE_INDEX {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_LOCATION {
+impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_INDEX {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -5446,23 +5446,23 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_TURN_ORDER {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_CHOOSE_LOCATION_NOTICE {
+pub struct S_CHOOSE_INDEX_NOTICE {
     // message fields
     pub user_id: u32,
-    pub location: u32,
+    pub index: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_CHOOSE_LOCATION_NOTICE {
-    fn default() -> &'a S_CHOOSE_LOCATION_NOTICE {
-        <S_CHOOSE_LOCATION_NOTICE as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_CHOOSE_INDEX_NOTICE {
+    fn default() -> &'a S_CHOOSE_INDEX_NOTICE {
+        <S_CHOOSE_INDEX_NOTICE as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_CHOOSE_LOCATION_NOTICE {
-    pub fn new() -> S_CHOOSE_LOCATION_NOTICE {
+impl S_CHOOSE_INDEX_NOTICE {
+    pub fn new() -> S_CHOOSE_INDEX_NOTICE {
         ::std::default::Default::default()
     }
 
@@ -5481,23 +5481,23 @@ impl S_CHOOSE_LOCATION_NOTICE {
         self.user_id = v;
     }
 
-    // uint32 location = 2;
+    // uint32 index = 2;
 
 
-    pub fn get_location(&self) -> u32 {
-        self.location
+    pub fn get_index(&self) -> u32 {
+        self.index
     }
-    pub fn clear_location(&mut self) {
-        self.location = 0;
+    pub fn clear_index(&mut self) {
+        self.index = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_location(&mut self, v: u32) {
-        self.location = v;
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
     }
 }
 
-impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
+impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -5518,7 +5518,7 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.location = tmp;
+                    self.index = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -5535,8 +5535,8 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.location != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.location, ::protobuf::wire_format::WireTypeVarint);
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.index, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -5547,8 +5547,8 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
-        if self.location != 0 {
-            os.write_uint32(2, self.location)?;
+        if self.index != 0 {
+            os.write_uint32(2, self.index)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -5580,8 +5580,8 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
         Self::descriptor_static()
     }
 
-    fn new() -> S_CHOOSE_LOCATION_NOTICE {
-        S_CHOOSE_LOCATION_NOTICE::new()
+    fn new() -> S_CHOOSE_INDEX_NOTICE {
+        S_CHOOSE_INDEX_NOTICE::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -5591,16 +5591,16 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "user_id",
-                    |m: &S_CHOOSE_LOCATION_NOTICE| { &m.user_id },
-                    |m: &mut S_CHOOSE_LOCATION_NOTICE| { &mut m.user_id },
+                    |m: &S_CHOOSE_INDEX_NOTICE| { &m.user_id },
+                    |m: &mut S_CHOOSE_INDEX_NOTICE| { &mut m.user_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "location",
-                    |m: &S_CHOOSE_LOCATION_NOTICE| { &m.location },
-                    |m: &mut S_CHOOSE_LOCATION_NOTICE| { &mut m.location },
+                    "index",
+                    |m: &S_CHOOSE_INDEX_NOTICE| { &m.index },
+                    |m: &mut S_CHOOSE_INDEX_NOTICE| { &mut m.index },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_LOCATION_NOTICE>(
-                    "S_CHOOSE_LOCATION_NOTICE",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_INDEX_NOTICE>(
+                    "S_CHOOSE_INDEX_NOTICE",
                     fields,
                     file_descriptor_proto()
                 )
@@ -5608,29 +5608,29 @@ impl ::protobuf::Message for S_CHOOSE_LOCATION_NOTICE {
         }
     }
 
-    fn default_instance() -> &'static S_CHOOSE_LOCATION_NOTICE {
-        static mut instance: ::protobuf::lazy::Lazy<S_CHOOSE_LOCATION_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_CHOOSE_INDEX_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_CHOOSE_INDEX_NOTICE> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_CHOOSE_LOCATION_NOTICE::new)
+            instance.get(S_CHOOSE_INDEX_NOTICE::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_CHOOSE_LOCATION_NOTICE {
+impl ::protobuf::Clear for S_CHOOSE_INDEX_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
-        self.location = 0;
+        self.index = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for S_CHOOSE_LOCATION_NOTICE {
+impl ::std::fmt::Debug for S_CHOOSE_INDEX_NOTICE {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_LOCATION_NOTICE {
+impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_INDEX_NOTICE {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -6316,17 +6316,17 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\
     \x18\x03\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x04\x20\x03(\x0b2\
     \x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoice_order\x18\x05\x20\
-    \x03(\rR\x0bchoiceOrder\")\n\x11C_CHOOSE_LOCATION\x12\x14\n\x05index\x18\
-    \x01\x20\x01(\rR\x05index\"G\n\x11S_CHOOSE_LOCATION\x12\x17\n\x07is_succ\
+    \x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\x14\n\x05index\x18\
+    \x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\x17\n\x07is_succ\
     \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
     \tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\x05order\x18\x01\
     \x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\x17\n\x07is_succ\
     \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"O\n\x18S_CHOOSE_LOCATION_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x1a\n\x08location\x18\x02\x20\x01(\rR\x08\
-    location\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\x05order\"\
-    Y\n\x19S_BATTLE_CHARACTER_NOTICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\
+    \tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\rR\x05ind\
+    ex\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\
+    \x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\x05order\"Y\n\
+    \x19S_BATTLE_CHARACTER_NOTICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\
     \x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"\x14\n\x12C_SKIP_TUR\
     N_CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07user_id\x18\x01\
     \x20\x01(\rR\x06userIdb\x06proto3\
