@@ -9,7 +9,6 @@ pub struct Character {
     pub grade: u32,
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
     pub last_use_skills: Vec<u32>, //上次使用的技能
-    pub location: u32,             //初始占位
 }
 
 impl From<CharacterPt> for Character {
@@ -54,7 +53,7 @@ impl BattleCharacter {
         battle_cter.cter_id = cter_id;
         battle_cter.target_id = 0;
         battle_cter.skills = cter.skills.clone();
-        battle_cter.cell_index = cter.location;
+        battle_cter.cell_index = 0;
         let cter_temp: Option<&CharacterTemp> =
             TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
         if cter_temp.is_none() {

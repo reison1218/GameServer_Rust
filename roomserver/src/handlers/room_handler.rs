@@ -775,7 +775,7 @@ pub fn choice_location(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
     //校验是否轮到他了
-    if room.battle_data.next_choice_user != user_id {
+    if room.get_next_choice_user() != user_id {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id
@@ -791,8 +791,8 @@ pub fn choice_location(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验他选过没有
-    let member = room.members.get(&user_id).unwrap();
-    if member.chose_cter.location != 0 {
+    let member = room.get_battle_cter_ref(&user_id).unwrap();
+    if member.cell_index != 0 {
         let str = format!("this player is already choice location!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(
@@ -808,7 +808,7 @@ pub fn choice_location(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///选择初始占位
-pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let mut ccl = C_CHOOSE_TURN_ORDER::new();
     ccl.merge_from_bytes(packet.get_data())?;
@@ -829,7 +829,7 @@ pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验是否轮到他了
-    if room.battle_data.next_choice_user != user_id {
+    if room.get_next_choice_user() != user_id {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id
@@ -845,7 +845,7 @@ pub fn choice_round(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验他选过没有
-    if room.battle_data.turn_orders.contains(&user_id) {
+    if room.get_turn_orders().contains(&user_id) {
         let str = format!(
             "this player is already choice round order!user_id:{}",
             user_id

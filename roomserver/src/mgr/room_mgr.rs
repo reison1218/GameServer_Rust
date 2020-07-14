@@ -2,8 +2,9 @@ use super::*;
 
 use crate::entity::room::Room;
 use crate::entity::room_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
+use crate::handlers::battle_handler::skip_choice_turn;
 use crate::handlers::room_handler::{
-    change_team, choice_location, choice_round, choose_character, create_room, emoji, join_room,
+    change_team, choice_location, choice_turn, choose_character, create_room, emoji, join_room,
     kick_member, leave_room, prepare_cancel, room_setting, search_room, start,
 };
 use crate::task_timer::Task;
@@ -148,6 +149,10 @@ impl RoomMgr {
 
         //选择回合顺序
         self.cmd_map
-            .insert(RoomCode::ChoiceRoundOrder as u32, choice_round);
+            .insert(RoomCode::ChoiceTurnOrder as u32, choice_turn);
+
+        //跳过选择turn顺序
+        self.cmd_map
+            .insert(RoomCode::SkipTurn as u32, skip_choice_turn);
     }
 }

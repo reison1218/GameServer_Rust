@@ -270,13 +270,13 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let room = room.unwrap();
 
-    let next_index = room.battle_data.next_turn_index;
-    let next_user_id = room.battle_data.turn_orders[next_index];
+    let next_index = room.get_next_turn_index();
+    let next_user_id = room.get_turn_orders()[next_index];
     if next_user_id != user_id {
         return;
     }
     //如果玩家啥都没做，就T出房间
-    if room.battle_data.turn_action.actions.is_empty() {
+    if room.is_battle_do_nothing() {
         room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
     }
 }

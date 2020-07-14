@@ -217,3 +217,15 @@ message S_CHOOSE_TURN_ORDER_NOTICE{
 message S_BATTLE_CHARACTER_NOTICE{
     repeated BattleCharacterPt battle_cters= 1;//战斗角色数据
 }
+
+//跳过选择回合顺序通知
+//cmd:20016
+message C_SKIP_TURN_CHOICE{
+
+}
+
+//跳过选择回合顺序通知
+//cmd:10025
+message S_SKIP_TURN_CHOICE_NOTICE{
+    uint32 user_id = 1;//跳过的玩家id
+}
