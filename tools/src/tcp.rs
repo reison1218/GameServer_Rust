@@ -224,7 +224,6 @@ pub mod tcp_server {
                         let res: Option<&mut MioTcpStream> = write.get_mut(&token);
                         match res {
                             Some(ts) => {
-
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 if let Err(e) = res{

@@ -144,20 +144,7 @@ fn test_binary(){
     // assert_eq!(clr!(0b0000_1111, 0), 0x0e);
 }
 
-macro_rules! map{
-    (@unit $($x:tt)*) => (());
-    (@count $($rest:expr),*)=>(<[()]>::len(&[$(map!(@unit $rest)),*]));
-    ($($key:expr=>$value:expr$(,)*)*)=>{
-    {
-        let cap = map!(@count $($key),*);
-        let mut _map = std::collections::HashMap::with_capacity(cap);
-        $(
-         _map.insert($key,$value);
-        )*
-        _map
-    };
-    };
-}
+
 
 // macro_rules! test{
 //
@@ -192,12 +179,27 @@ struct  TT{
 //     }
 // }
 
+macro_rules! map{
+    (@unit $($x:tt)*) => (());
+    (@count $($rest:expr),*)=>(<[()]>::len(&[$(map!(@unit $rest)),*]));
+    ($($key:expr=>$value:expr$(,)*)*)=>{
+        {
+            let cap = map!(@count $($key),*);
+            let mut _map = std::collections::HashMap::with_capacity(cap);
+            $(
+             _map.insert($key,$value);
+            )*
+            _map
+        };
+    };
+}
+
 fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
-    let index= 1_isize;
-    let mut v:Vec<u32> = Vec::new();
-    v.remove(0);
+
+
+    test!(1,2);
 
     //test_binary();
     //test_sort();
