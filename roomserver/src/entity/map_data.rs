@@ -91,18 +91,6 @@ impl TileMap {
             tmd.world_cell_map.insert(index_value as u32, *cell_id);
         }
 
-        //然后决定角色的cell
-        for cter_id in cters {
-            let cter = temp_mgr.get_character_ref().temps.get(&cter_id).unwrap();
-            for _ in 1..=cter.cter_cell.count {
-                let index = rand.gen_range(0, empty_v.len());
-                let index_value = empty_v.get(index).unwrap();
-
-                map[*index_value] = (cter.cter_cell.cell_id, false);
-                empty_v.remove(index);
-            }
-        }
-
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
             let type_vec = temp_mgr
@@ -111,23 +99,29 @@ impl TileMap {
                 .get(&cell_rare.rare)
                 .unwrap();
             let mut size = 0;
-            for cell_type in type_vec.iter() {
+
+            'out: loop {
                 if size >= cell_rare.count {
-                    break;
+                    break 'out;
                 }
+                for cell_type in type_vec.iter() {
+                    if size >= cell_rare.count {
+                        break 'out;
+                    }
 
-                //先随出celltype列表中的一个
-                let cell_v = hs_2_v(&temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap());
-                let index = rand.gen_range(0, cell_v.len());
-                let cell_id = cell_v.get(index).unwrap();
+                    //先随出celltype列表中的一个
+                    let cell_v = hs_2_v(&temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap());
+                    let index = rand.gen_range(0, cell_v.len());
+                    let cell_id = cell_v.get(index).unwrap();
 
-                for _ in 1..=2 {
-                    //然后再随机放入地图里
-                    let index = rand.gen_range(0, empty_v.len());
-                    let index_value = empty_v.get(index).unwrap();
-                    map[*index_value] = (*cell_id, false);
-                    empty_v.remove(index);
-                    size += 1;
+                    for _ in 1..=2 {
+                        //然后再随机放入地图里
+                        let index = rand.gen_range(0, empty_v.len());
+                        let index_value = empty_v.get(index).unwrap();
+                        map[*index_value] = (*cell_id, false);
+                        empty_v.remove(index);
+                        size += 1;
+                    }
                 }
             }
         }
@@ -137,15 +131,13 @@ impl TileMap {
             cell.id = *cell_id;
             cell.index = index;
             cell.is_world = *is_world;
-            let buff;
             if cell.is_world {
                 let res = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
-                buff = res.skill_id.clone();
-            } else {
+                cell.buff = res.skill_id.clone();
+            } else if cell_id > &(CellType::Valid as u32) {
                 let res = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
-                buff = res.skill_id.clone();
+                cell.buff = res.skill_id.clone();
             }
-            cell.buff = buff;
             tmd.map.push(cell);
             index += 1;
         }

@@ -1,4 +1,5 @@
 ///游戏服务专用命令号段枚举
+#[derive(Clone, Debug, PartialEq)]
 pub enum GameCode{
     //最小值
     Min = 1000,
@@ -23,6 +24,7 @@ pub enum GameCode{
 }
 
 ///房间服专属命令号段枚举
+#[derive(Clone, Debug, PartialEq)]
 pub enum RoomCode{
     //范围最小值
     Min = 20001,
@@ -61,6 +63,7 @@ pub enum RoomCode{
 }
 
 ///客户端专属命令号段枚举
+#[derive(Clone, Debug, PartialEq)]
 pub enum ClientCode{
     //最小命令号
     Min = 10001,
@@ -114,93 +117,4 @@ pub enum ClientCode{
     SkipTurnNotice = 10025,
     //最大命令号
     Max = 20000,
-}
-
-impl From<u32> for ClientCode{
-    fn from(v: u32) -> Self {
-        if v == ClientCode::Login as u32{
-            return ClientCode::Login;
-        }
-        //返回同步命令号
-        if v == ClientCode::SyncData as u32{
-            return ClientCode::SyncData
-        }
-        //请求修改昵称返回
-        if v == ClientCode::NickNameModify as u32{
-            return ClientCode::NickNameModify
-        }
-        //房间命令返回
-        if v == ClientCode::Room as u32{
-            return ClientCode::Room
-        }
-        //离开房间
-        if v == ClientCode::LeaveRoom as u32{
-            return ClientCode::LeaveRoom
-        }
-        //开始游戏
-        if v == ClientCode::Start as u32{
-            return ClientCode::Start
-        }
-        //改变队伍
-        if v == ClientCode::ChangeTeam as u32{
-            return ClientCode::ChangeTeam
-        }
-        //准备与取消
-        if v == ClientCode::PrepareCancel as u32{
-            return ClientCode::PrepareCancel
-        }
-        //房间设置
-        if v == ClientCode::RoomSetting as u32{
-            return ClientCode::RoomSetting
-        }
-        //成员变动推送
-        if v == ClientCode::RoomMemberNotice as u32{
-            return ClientCode::RoomMemberNotice
-        }
-        //T玩家
-        if v == ClientCode::KickMember as u32{
-            return ClientCode::KickMember
-        }
-        //选择角色和技能
-        if v == ClientCode::ChooseCharacter as u32{
-            return ClientCode::ChooseCharacter
-        }
-        //房间推送
-        if v == ClientCode::RoomNotice as u32{
-            return ClientCode::RoomNotice
-        }
-        //表情
-        if v == ClientCode::Emoji as u32{
-            return ClientCode::Emoji
-        }
-        //表情推送
-        if v == ClientCode::EmojiNotice as u32{
-            return ClientCode::EmojiNotice
-        }
-        //成员离开房间推送
-        if v == ClientCode::MemberLeaveNotice as u32{
-            return ClientCode::MemberLeaveNotice
-        }
-        //开始游戏推送
-        if v == ClientCode::StartNotice as u32{
-            return ClientCode::StartNotice
-        }
-        //选择位置返回
-        if v == ClientCode::ChoiceLoaction as u32{
-            return ClientCode::ChoiceLoaction
-        }
-        //选择回合顺序返回
-        if v == ClientCode::ChoiceRoundOrder as u32{
-            return ClientCode::ChoiceRoundOrder
-        }
-        //选择位置通知
-        if v == ClientCode::ChoiceLoactionNotice as u32{
-            return ClientCode::ChoiceLoactionNotice
-        }
-        //选择回合顺序通知
-        if v == ClientCode::ChoiceRoundOrderNotice as u32{
-            return ClientCode::ChoiceRoundOrderNotice
-        }
-        ClientCode::Login
-    }
 }

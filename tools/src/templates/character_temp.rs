@@ -2,12 +2,6 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 use std::borrow::Borrow;
 use std::collections::HashMap;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
-pub struct CterCell{
-    pub cell_id:u32,
-    pub count:u32,
-}
-
 ///角色配置结构体
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CharacterTemp {
@@ -20,7 +14,6 @@ pub struct CharacterTemp {
     pub lock_skills: Vec<u32>,
     pub is_dlc: u8,
     pub is_init: u8,
-    pub cter_cell:CterCell,
     pub usable_skill_count:u8,
     pub usable_item_count:u8,
 }

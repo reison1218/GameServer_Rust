@@ -217,7 +217,7 @@ fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room = room.unwrap();
 
     //判断房间状态
-    if room.get_state() != RoomState::ChoiceIndex as u8 {
+    if room.get_state() != &RoomState::ChoiceIndex {
         return;
     }
     //判断是否轮到自己
@@ -255,7 +255,7 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room = room.unwrap();
 
     //判断房间状态
-    if room.get_state() != RoomState::ChoiceTurn as u8 {
+    if room.get_state() != &RoomState::ChoiceTurn {
         return;
     }
 

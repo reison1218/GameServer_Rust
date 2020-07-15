@@ -76,7 +76,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
-    if room.get_state() != RoomState::Await as u8 {
+    if room.get_state() != &RoomState::Await {
         let str = format!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
@@ -788,12 +788,8 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    //判断房间状态
-    if room.get_state() != RoomState::ChoiceIndex as u8 {
-        return Ok(());
-    }
     //校验是否轮到他了
-    if room.get_next_choice_user() != user_id {
+    if room.is_can_choice_now(RoomState::ChoiceIndex, user_id) {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id
@@ -859,21 +855,8 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    //判断选择还能不能选回合顺序
-    if room.get_state() as u8 != RoomState::ChoiceTurn as u8 {
-        let str = format!("now can not choice the turn order!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceRoundOrder,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
-        return Ok(());
-    }
-
-    //校验是否轮到他了
-    if room.get_next_choice_user() != user_id {
+    //判断能不能选
+    if room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
         let str = format!(
             "this player is not the next choice location player!user_id:{}",
             user_id

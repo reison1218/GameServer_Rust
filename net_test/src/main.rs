@@ -60,6 +60,7 @@ use futures::executor::block_on;
 use std::thread::Thread;
 use rayon::prelude::ParallelSliceMut;
 use futures::SinkExt;
+use std::borrow::Borrow;
 
 
 #[macro_use]
@@ -177,7 +178,7 @@ macro_rules! map{
 // },
 // "result":{"true":[1001,1002],"false":[1004]}
 // }
-
+#[derive(PartialEq)]
 enum  HH{
     AA=1,
 }
@@ -185,15 +186,19 @@ struct  TT{
     s:HH,
 }
 
+// impl std::cmp::PartialEq<HH> for TT{
+//     fn eq(&self, other: &HH) -> bool {
+//         self.s == *other
+//     }
+// }
+
 fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
-    let t = TT{s:HH::AA};
-    match t.s {
-        HH::AA=>{
+    //crate::map::generate_map();
+    let v:Vec<u32> = Vec::new();
+    if v.len()>0{
 
     }
-    }
-
     //test_binary();
     //test_sort();
     //test_tcp_client();

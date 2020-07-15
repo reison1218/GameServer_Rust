@@ -124,13 +124,13 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             temps_mgr.cell_temp_mgr = CellTempMgr::default();
             temps_mgr.cell_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
-            let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            //let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.skill_temp_mgr = SkillTempMgr::default();
-            temps_mgr.skill_temp_mgr.init(v);
+            //temps_mgr.skill_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
-            let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
+           // let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.skill_scope_temp_mgr = SkillScopeTempMgr::default();
-            temps_mgr.skill_scope_temp_mgr.init(v);
+            //temps_mgr.skill_scope_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
             let v: Vec<ItemTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.item_temp_mgr = ItemTempMgr::default();

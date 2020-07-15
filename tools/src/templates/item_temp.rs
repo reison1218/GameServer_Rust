@@ -4,7 +4,7 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct ItemTemp {
     pub id: u32,//技能id
-    pub trgger_skill:u32,//触发的技能
+    pub trigger_skill:u32,//触发的技能
 }
 
 impl Template for ItemTemp {}
