@@ -195,10 +195,10 @@ struct  TT{
 fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
-    let v:Vec<u32> = Vec::new();
-    if v.len()>0{
+    let index= 1_isize;
+    let mut v:Vec<u32> = Vec::new();
+    v.remove(0);
 
-    }
     //test_binary();
     //test_sort();
     //test_tcp_client();

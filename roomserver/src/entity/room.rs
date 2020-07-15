@@ -176,7 +176,8 @@ impl Room {
     }
 
     pub fn insert_turn_orders(&mut self, index: usize, user_id: u32) {
-        if index > self.battle_data.turn_orders.len() - 1 {
+        let size = self.battle_data.turn_orders.len() as isize;
+        if index as isize >= size - 1 {
             self.battle_data.turn_orders.push(user_id);
         } else {
             self.battle_data.turn_orders.remove(index);
@@ -185,7 +186,8 @@ impl Room {
     }
 
     pub fn remove_turn_orders(&mut self, index: usize) {
-        if index > self.battle_data.turn_orders.len() - 1 {
+        let size = self.battle_data.turn_orders.len() as isize;
+        if index as isize > size - 1 {
             return;
         }
         self.battle_data.turn_orders.remove(index);
@@ -196,14 +198,16 @@ impl Room {
     }
 
     pub fn remove_choice_order(&mut self, index: usize) {
-        if index > self.battle_data.choice_orders.len() - 1 {
+        let size = self.battle_data.turn_orders.len() as isize;
+        if index as isize > size - 1 {
             return;
         }
-        self.battle_data.choice_orders.remove(index);
+        self.battle_data.choice_orders.remove(index as usize);
     }
 
     pub fn insert_choice_order(&mut self, index: usize, user_id: u32) {
-        if index > self.battle_data.choice_orders.len() - 1 {
+        let size = self.battle_data.choice_orders.len() as isize;
+        if index as isize >= size - 1 {
             self.battle_data.choice_orders.push(user_id);
         } else {
             self.battle_data.choice_orders.remove(index);
@@ -307,7 +311,7 @@ impl Room {
     ///选择回合
     pub fn choice_turn(&mut self, user_id: u32, order: usize) {
         //如果玩家选择的
-        self.insert_turn_orders(order as usize, user_id);
+        self.insert_turn_orders(order, user_id);
         //通知其他玩家
         let mut scron = S_CHOOSE_TURN_ORDER_NOTICE::new();
         scron.user_id = user_id;
