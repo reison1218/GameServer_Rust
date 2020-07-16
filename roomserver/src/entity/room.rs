@@ -2,7 +2,7 @@ use crate::entity::character::BattleCharacter;
 use crate::entity::map_data::CellType;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
-use crate::entity::room_model::RoomSetting;
+use crate::entity::room_model::{RoomSetting, RoomType};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
@@ -301,7 +301,7 @@ impl Room {
         let res = self.check_index_over();
         //都选择完了占位，进入选择回合顺序
         if res {
-            self.build_choice_turn_task();
+            self.build_battle_turn_task();
         } else {
             //没选择完，继续选
             self.build_choice_index_task();
@@ -408,6 +408,9 @@ impl Room {
             *user_id,
             spc.write_to_bytes().unwrap(),
         );
+        if self.check_ready() && self.room_type == RoomType::Match as u8 {
+            self.start();
+        }
     }
 
     ///房间变更通知
@@ -430,8 +433,6 @@ impl Room {
         let mut ssn = S_START_NOTICE::new();
         ssn.set_room_status(self.state.clone() as u32);
         ssn.set_tile_map_id(self.tile_map.id);
-        let cell_v = self.tile_map.get_cells();
-        ssn.cells = cell_v;
         //封装世界块
         for (index, id) in self.tile_map.world_cell_map.iter() {
             let mut wcp = WorldCellPt::default();
@@ -505,6 +506,7 @@ impl Room {
         packet.set_is_broad(false);
         packet.set_is_client(true);
         for member_id in self.members.keys() {
+            println!("发送离线");
             packet.set_user_id(*member_id);
             self.sender.write(packet.build_server_bytes());
         }
@@ -558,13 +560,16 @@ impl Room {
 
     ///检查准备状态
     pub fn check_ready(&self) -> bool {
+        let size = 4;
+        let mut index = 0;
         for member in self.members.values() {
             let res = member.state == MemberState::Ready as u8;
             if !res {
-                return res;
+                continue;
             }
+            index += 1;
         }
-        true
+        size == index
     }
 
     ///获得房主ID
@@ -842,8 +847,7 @@ impl Room {
     }
 
     pub fn generate_map(&self) -> TileMap {
-        let cter_v = self.get_choose_cters();
-        let tmd = TileMap::init(&TEMPLATES, cter_v);
+        let tmd = TileMap::init(&TEMPLATES);
         info!("生成地图{:?}", tmd.clone());
         tmd
     }
@@ -885,7 +889,7 @@ impl Room {
     pub fn build_choice_turn_task(&self) {
         let user_id = self.get_next_choice_user();
         //没选择完，继续选
-        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_round_time");
+        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_turn_time");
         let mut task = Task::default();
         if let Some(time) = time_limit {
             let time = u64::from_str(time.value.as_str());
@@ -900,7 +904,7 @@ impl Room {
             }
         } else {
             task.delay = 5000_u64;
-            warn!("the choice_location_time of Constant config is None!pls check!");
+            warn!("the choice_turn_time of Constant config is None!pls check!");
         }
         task.cmd = TaskCmd::ChoiceTurnOrder as u16;
 
@@ -914,10 +918,7 @@ impl Room {
     }
 
     pub fn build_choice_index_task(&self) {
-        let time_limit = TEMPLATES
-            .get_constant_ref()
-            .temps
-            .get("choice_location_time");
+        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_index_time");
         let mut task = Task::default();
         if let Some(time) = time_limit {
             let time = u64::from_str(time.value.as_str());
@@ -932,7 +933,7 @@ impl Room {
             }
         } else {
             task.delay = 5000_u64;
-            warn!("the choice_location_time of Constant config is None!pls check!");
+            warn!("the choice_index_time of Constant config is None!pls check!");
         }
         task.cmd = TaskCmd::ChoiceLocation as u16;
 

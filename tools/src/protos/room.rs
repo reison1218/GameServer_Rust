@@ -4420,7 +4420,6 @@ pub struct S_START_NOTICE {
     // message fields
     pub room_status: u32,
     pub tile_map_id: u32,
-    pub cells: ::std::vec::Vec<u32>,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
     pub choice_order: ::std::vec::Vec<u32>,
     // special fields
@@ -4469,32 +4468,7 @@ impl S_START_NOTICE {
         self.tile_map_id = v;
     }
 
-    // repeated uint32 cells = 3;
-
-
-    pub fn get_cells(&self) -> &[u32] {
-        &self.cells
-    }
-    pub fn clear_cells(&mut self) {
-        self.cells.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_cells(&mut self, v: ::std::vec::Vec<u32>) {
-        self.cells = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_cells(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.cells
-    }
-
-    // Take field
-    pub fn take_cells(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.cells, ::std::vec::Vec::new())
-    }
-
-    // repeated .protos.WorldCellPt world_cell = 4;
+    // repeated .protos.WorldCellPt world_cell = 3;
 
 
     pub fn get_world_cell(&self) -> &[super::base::WorldCellPt] {
@@ -4519,7 +4493,7 @@ impl S_START_NOTICE {
         ::std::mem::replace(&mut self.world_cell, ::protobuf::RepeatedField::new())
     }
 
-    // repeated uint32 choice_order = 5;
+    // repeated uint32 choice_order = 4;
 
 
     pub fn get_choice_order(&self) -> &[u32] {
@@ -4574,12 +4548,9 @@ impl ::protobuf::Message for S_START_NOTICE {
                     self.tile_map_id = tmp;
                 },
                 3 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.cells)?;
-                },
-                4 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.world_cell)?;
                 },
-                5 => {
+                4 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.choice_order)?;
                 },
                 _ => {
@@ -4600,15 +4571,12 @@ impl ::protobuf::Message for S_START_NOTICE {
         if self.tile_map_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.tile_map_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.cells {
-            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
         for value in &self.world_cell {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
         for value in &self.choice_order {
-            my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -4622,16 +4590,13 @@ impl ::protobuf::Message for S_START_NOTICE {
         if self.tile_map_id != 0 {
             os.write_uint32(2, self.tile_map_id)?;
         }
-        for v in &self.cells {
-            os.write_uint32(3, *v)?;
-        };
         for v in &self.world_cell {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
         for v in &self.choice_order {
-            os.write_uint32(5, *v)?;
+            os.write_uint32(4, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -4682,11 +4647,6 @@ impl ::protobuf::Message for S_START_NOTICE {
                     |m: &S_START_NOTICE| { &m.tile_map_id },
                     |m: &mut S_START_NOTICE| { &mut m.tile_map_id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "cells",
-                    |m: &S_START_NOTICE| { &m.cells },
-                    |m: &mut S_START_NOTICE| { &mut m.cells },
-                ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::WorldCellPt>>(
                     "world_cell",
                     |m: &S_START_NOTICE| { &m.world_cell },
@@ -4718,7 +4678,6 @@ impl ::protobuf::Clear for S_START_NOTICE {
     fn clear(&mut self) {
         self.room_status = 0;
         self.tile_map_id = 0;
-        self.cells.clear();
         self.world_cell.clear();
         self.choice_order.clear();
         self.unknown_fields.clear();
@@ -6311,25 +6270,24 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     S_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
     \x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEMBER_\
     LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\
-    \x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xbe\x01\n\x0eS_STA\
+    \x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xa8\x01\n\x0eS_STA\
     RT_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\
-    \x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\
-    \x18\x03\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x04\x20\x03(\x0b2\
-    \x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoice_order\x18\x05\x20\
-    \x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\x14\n\x05index\x18\
-    \x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\x17\n\x07is_succ\
-    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\x05order\x18\x01\
-    \x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\x17\n\x07is_succ\
-    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\rR\x05ind\
-    ex\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\x05order\"Y\n\
-    \x19S_BATTLE_CHARACTER_NOTICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\
-    \x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"\x14\n\x12C_SKIP_TUR\
-    N_CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userIdb\x06proto3\
+    \x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\
+    \x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoi\
+    ce_order\x18\x04\x20\x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\
+    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\
+    \x05order\x18\x01\x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\
+    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\
+    \x01(\rR\x05index\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_i\
+    d\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\
+    \x05order\"Y\n\x19S_BATTLE_CHARACTER_NOTICE\x12<\n\x0cbattle_cters\x18\
+    \x01\x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"\x14\n\
+    \x12C_SKIP_TURN_CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07us\
+    er_id\x18\x01\x20\x01(\rR\x06userIdb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

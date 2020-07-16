@@ -167,9 +167,8 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
 message S_START_NOTICE{
     uint32 room_status = 1;//房间状态
     uint32 tile_map_id = 2;//地图配置id
-    repeated uint32 cells = 3;//包含的块
-    repeated WorldCellPt world_cell = 4;//世界块
-    repeated uint32 choice_order = 5;//选择顺序
+    repeated WorldCellPt world_cell = 3;//世界块
+    repeated uint32 choice_order = 4;//选择顺序
 }
 
 //选择位置请求

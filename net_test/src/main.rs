@@ -68,19 +68,10 @@ extern crate lazy_static;
 
 lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
-        let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1011000000)));
+        let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1001)));
         id
     };
 }
-macro_rules! test{
-    ($a:expr)=>{
-        if $a>0 {
-            println!("{}",$a);
-        };
-    };
-}
-
-
 
 fn foo(words: &[&str]) {
     match words {
@@ -107,6 +98,7 @@ fn test_tcp_client(){
         std::thread::spawn(m);
         std::thread::sleep(Duration::from_millis(2000));
     }
+    // std::thread::sleep(Duration::from_millis(40000));
     tcp_client::test_tcp_client("test");
 }
 
@@ -198,12 +190,9 @@ fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
 
-
-    test!(1,2);
-
     //test_binary();
     //test_sort();
-    //test_tcp_client();
+    test_tcp_client();
     //map::generate_map();
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);

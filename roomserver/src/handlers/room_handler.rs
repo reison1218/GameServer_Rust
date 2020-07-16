@@ -858,7 +858,7 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //判断能不能选
     if room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
         let str = format!(
-            "this player is not the next choice location player!user_id:{}",
+            "this player is not the next choice turn player!user_id:{}",
             user_id
         );
         warn!("{:?}", str.as_str());

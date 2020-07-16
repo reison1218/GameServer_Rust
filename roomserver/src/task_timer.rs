@@ -1,12 +1,13 @@
 use crate::entity::member::MemberState;
-use crate::entity::room::{MemberLeaveNoticeType, RoomState};
+use crate::entity::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::entity::room_model::RoomModel;
 use crate::mgr::room_mgr::RoomMgr;
+use chrono::Local;
 use log::{error, info};
 use rand::Rng;
 use serde_json::Value as JsonValue;
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 pub enum TaskCmd {
     MatchRoomStart = 101,  //匹配房间开始任务
@@ -57,7 +58,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
                         .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(32 * 1024);
+                        .stack_size(128 * 1024);
                     let res = thread_builder.spawn(m);
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap());
@@ -71,7 +72,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
                         .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(32 * 1024);
+                        .stack_size(128 * 1024);
                     let res = thread_builder.spawn(m);
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap());
@@ -85,7 +86,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
                         .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(32 * 1024);
+                        .stack_size(128 * 1024);
                     let res = thread_builder.spawn(m);
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap());
@@ -99,7 +100,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
                         .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(32 * 1024);
+                        .stack_size(128 * 1024);
                     let res = thread_builder.spawn(m);
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap());
@@ -155,36 +156,64 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         return;
     }
     let room = room.unwrap();
+    //如果房间已经不再等待阶段了，就什么都不执行
+    if room.get_state() != &RoomState::Await {
+        return;
+    }
 
-    let mut v = Vec::new();
-    for member in room.members.values() {
-        if member.state == MemberState::NotReady as u8 {
-            v.push(member.user_id);
+    let now_time = Local::now();
+    let now_time = now_time.timestamp_millis() as u64;
+    //判断是否有新人进来了
+    for (_, member) in room.members.iter() {
+        if now_time - member.join_time < task.delay {
+            return;
         }
     }
-    if v.len() > 0 {
-        let mut rm_v = Vec::new();
-        for member_id in &v[..] {
-            let res =
-                match_room.leave_room(MemberLeaveNoticeType::Kicked as u8, &room_id, member_id);
-            if res.is_err() {}
-            match res {
-                Ok(_) => {
-                    rm_v.push(*member_id);
-                    info!(
-                        "由于匹配房人满，倒计时有玩家未准备，将未准备的玩家T出房间！room_id:{},user_id:{}",
-                        room_id, member_id
-                    );
-                }
-                Err(e) => {
-                    error!("{:?}", e);
-                }
+
+    //如果人未满，则取消准备
+    if room.get_member_count() as u8 != MEMBER_MAX {
+        let mut v = Vec::new();
+        for member in room.members.values() {
+            if member.state == MemberState::NotReady as u8 {
+                v.push(member.user_id);
             }
         }
-        for member_id in rm_v {
-            write.player_room.remove(&member_id);
+        for member_id in v {
+            room.prepare_cancel(&member_id, false);
         }
         return;
+    } else {
+        //满都就把未准备都玩家t出去
+        let mut v = Vec::new();
+        for member in room.members.values() {
+            if member.state == MemberState::NotReady as u8 {
+                v.push(member.user_id);
+            }
+        }
+        if v.len() > 0 {
+            let mut rm_v = Vec::new();
+            for member_id in &v[..] {
+                let res =
+                    match_room.leave_room(MemberLeaveNoticeType::Kicked as u8, &room_id, member_id);
+                if res.is_err() {}
+                match res {
+                    Ok(_) => {
+                        rm_v.push(*member_id);
+                        info!(
+                            "由于匹配房人满，倒计时有玩家未准备，将未准备的玩家T出房间！room_id:{},user_id:{}",
+                            room_id, member_id
+                        );
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
+                }
+            }
+            for member_id in rm_v {
+                write.player_room.remove(&member_id);
+            }
+            return;
+        }
     }
     //执行开始逻辑
     room.start();

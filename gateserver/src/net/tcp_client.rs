@@ -89,7 +89,9 @@ impl ClientHandler for TcpClientHandler {
                 match gate_user {
                     Some(user) => {
                         user.get_tcp_mut_ref().write(packet.build_client_bytes());
-                        info!("回客户端消息,cmd:{}", packet.get_cmd());
+                        if packet.get_cmd() == 10018 {
+                            info!("回客户端消息,cmd:{}", packet.get_cmd());
+                        }
                     }
                     None => {
                         warn!(

@@ -53,11 +53,12 @@ impl TileMap {
         v
     }
 
-    pub fn init(temp_mgr: &TemplatesMgr, cters: Vec<u32>) -> Self {
+    pub fn init(temp_mgr: &TemplatesMgr) -> Self {
         let tile_map_mgr = temp_mgr.get_tile_map_ref();
         let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
         let mut tmd = TileMap::default();
         tmd.id = 4001_u32;
+        tmd.map = Vec::with_capacity(30);
 
         let mut map = [(0, false); 30];
         let mut index = 0;
@@ -93,13 +94,15 @@ impl TileMap {
 
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
-            let type_vec = temp_mgr
+            let mut type_vec = temp_mgr
                 .get_cell_ref()
                 .rare_map
                 .get(&cell_rare.rare)
-                .unwrap();
+                .unwrap()
+                .clone();
             let mut size = 0;
 
+            let mut random_vec = temp_mgr.get_cell_ref().type_vec.clone();
             'out: loop {
                 if size >= cell_rare.count {
                     break 'out;
@@ -108,20 +111,23 @@ impl TileMap {
                     if size >= cell_rare.count {
                         break 'out;
                     }
-
                     //先随出celltype列表中的一个
-                    let cell_v = hs_2_v(&temp_mgr.get_cell_ref().type_vec.get(cell_type).unwrap());
+                    let mut cell_v = hs_2_v(&random_vec.get(cell_type).unwrap());
+                    if cell_v.len() == 0 {
+                        continue;
+                    }
                     let index = rand.gen_range(0, cell_v.len());
-                    let cell_id = cell_v.get(index).unwrap();
-
+                    let cell_id = *cell_v.get(index).unwrap();
                     for _ in 1..=2 {
                         //然后再随机放入地图里
                         let index = rand.gen_range(0, empty_v.len());
                         let index_value = empty_v.get(index).unwrap();
-                        map[*index_value] = (*cell_id, false);
+                        map[*index_value] = (cell_id, false);
                         empty_v.remove(index);
                         size += 1;
                     }
+                    cell_v.remove(index);
+                    random_vec.get_mut(cell_type).unwrap().remove(&cell_id);
                 }
             }
         }
@@ -134,7 +140,7 @@ impl TileMap {
             if cell.is_world {
                 let res = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
                 cell.buff = res.skill_id.clone();
-            } else if cell_id > &(CellType::Valid as u32) {
+            } else if cell_id > &2 {
                 let res = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
                 cell.buff = res.skill_id.clone();
             }

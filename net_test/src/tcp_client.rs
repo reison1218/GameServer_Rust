@@ -37,6 +37,7 @@ pub fn test_tcp_clients(){
             //tcp_client.on_read("192.168.1.100:16801".to_string());
             tcp_client.on_read("localhost:16801".to_string());
         };
+
         std::thread::spawn(m);
         std::thread::sleep(Duration::from_millis(100));
         println!("client:{}",i);
@@ -81,6 +82,33 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
 
+        std::thread::sleep(Duration::from_secs(2));
+
+        let mut ccc = C_CHOOSE_CHARACTER::new();
+        let mut write = ID.write().unwrap();
+        write.fetch_add(1,Ordering::SeqCst);
+        let cter_id = write.load(Ordering::SeqCst);
+        let mut v = Vec::new();
+        v.push(1001_u32);
+        v.push(1002_u32);
+        ccc.set_cter_id(cter_id);
+        ccc.set_skills(v);
+        packet.set_cmd(RoomCode::ChoiceCharacter as u32);
+        packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
+
+        std::thread::sleep(Duration::from_secs(2));
+
+        let mut cpc = C_PREPARE_CANCEL::new();
+        cpc.prepare = true;
+        packet.set_cmd(RoomCode::PrepareCancel as u32);
+        packet.set_data(&cpc.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
+
         // std::thread::sleep(Duration::from_secs(2));
         //
         // let mut cjr = C_JOIN_ROOM::new();
@@ -98,27 +126,9 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
         // self.ts.as_mut().unwrap().flush().unwrap();
 
-        // let mut cpc = C_PREPARE_CANCEL::new();
-        // cpc.prepare = true;
-        // packet.set_cmd(RoomCode::PrepareCancel as u32);
-        // packet.set_data(&cpc.write_to_bytes().unwrap()[..]);
-        // packet.set_len(16+packet.get_data().len() as u32);
-        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
 
-        // let mut ccc = C_CHOOSE_CHARACTER::new();
-        // let mut cp = CharacterPt::new();
-        // cp.temp_id = 1001;
-        // let mut v = Vec::new();
-        // v.push(1001_u32);
-        // v.push(1002_u32);
-        // cp.set_skills(v);
-        // ccc.set_cter(cp);
-        // packet.set_cmd(RoomCode::ChoiceCharacter as u32);
-        // packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
-        // packet.set_len(16+packet.get_data().len() as u32);
-        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
+
+
         // let mut c_r = C_SYNC_DATA::new();
         // let mut pp = PlayerPt::new();
         // let mut v = Vec::new();
