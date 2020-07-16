@@ -23,7 +23,8 @@ pub trait Handler: Send + Sync {
 ///tcp server sender
 #[derive(Clone,Debug)]
 pub struct TcpSender {
-    pub sender: crossbeam::channel::Sender<Data>,
+    pub sender : crossbeam::crossbeam_channel::Sender<Data>,
+    //pub sender: std::sync::mpsc::SyncSender<Data>,
     pub token: usize,
 }
 
@@ -95,6 +96,9 @@ pub mod tcp_server {
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
     use std::error::Error;
+    use crate::util::packet::Packet;
+    use crate::protos::room::S_ROOM_MEMBER_LEAVE_NOTICE;
+    use protobuf::Message;
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);
@@ -118,6 +122,7 @@ pub mod tcp_server {
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
         let (sender, rec) = crossbeam::crossbeam_channel::bounded(102400);
+        //let (sender, rec) = std::sync::mpsc::sync_channel(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
 
@@ -210,7 +215,8 @@ pub mod tcp_server {
 
     ///Read the data from the sender of the handler
     fn read_sender_mess(
-        rec: crossbeam::channel::Receiver<Data>,
+        rec: crossbeam::crossbeam_channel::Receiver<Data>,
+        //rec: std::sync::mpsc::Receiver<Data>,
         connections: Arc<RwLock<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
@@ -220,6 +226,20 @@ pub mod tcp_server {
                     Ok(data) => {
                         let token = data.token;
                         let bytes = data.bytes;
+                        let mut need = false;
+                        let packet = Packet::build_array_from_server(bytes.clone());
+                        if let Ok(pp)=packet {
+                            for p in pp{
+                                if  p.get_cmd()==10018{
+                                    let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
+                                    let res = srmln.merge_from_bytes(p.get_data());
+                                    if res.is_ok(){
+                                        println!("--------------------------user_id:{},{:?}",p.get_user_id(),srmln);
+                                    }
+                                    need = true;
+                                }
+                            }
+                        }
                         let mut write = connections.write().unwrap();
                         let res: Option<&mut MioTcpStream> = write.get_mut(&token);
                         match res {
@@ -229,6 +249,8 @@ pub mod tcp_server {
                                 if let Err(e) = res{
                                     error!("{:?}",e);
                                     continue;
+                                }else if need{
+                                    println!("--------------------------{}",res.unwrap());
                                 }
                                 let res = ts.flush();
                                 if let Err(e) = res{

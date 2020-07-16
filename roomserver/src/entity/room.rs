@@ -12,6 +12,7 @@ use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::room::{
@@ -506,7 +507,8 @@ impl Room {
         packet.set_is_broad(false);
         packet.set_is_client(true);
         for member_id in self.members.keys() {
-            println!("发送离线");
+            println!("发送离线,user_id:{},{:?}", *member_id, srmln);
+            //std::thread::sleep(Duration::from_millis(500));
             packet.set_user_id(*member_id);
             self.sender.write(packet.build_server_bytes());
         }

@@ -55,20 +55,21 @@ impl ChannelMgr {
 
     ///通知下线
     fn notice_off_line(&mut self, user_id: u32, token: &usize) {
+        //关闭连接
+        self.close_remove(token);
         //初始化包
         let mut packet = Packet::default();
         packet.set_user_id(user_id);
         packet.set_len(14_u32);
         packet.set_is_client(false);
         packet.set_is_broad(false);
+
         //发给游戏服
         packet.set_cmd(GameCode::LineOff as u32);
         self.write_to_game(packet.clone());
         //发给房间服
         packet.set_cmd(RoomCode::LineOff as u32);
         self.write_to_room(packet);
-        //关闭连接
-        self.close_remove(token);
     }
 
     ///写到游戏服
@@ -81,7 +82,6 @@ impl ChannelMgr {
         let size = gc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(s) => {
-                info!("write to GameServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = gc.flush();
                 if let Err(e) = res {
                     error!("flush has error!mess:{:?}", e);
@@ -105,7 +105,6 @@ impl ChannelMgr {
         let size = rc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(s) => {
-                info!("write to RoomServer cmd:{},size:{}", packet.get_cmd(), s);
                 let res = rc.flush();
                 if let Err(e) = res {
                     error!("{:?}", e);

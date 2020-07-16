@@ -190,6 +190,10 @@ fn main() -> anyhow::Result<()> {
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
 
+    // let i:u8 = 0;
+    // let j = true;
+    // println!("{}",std::mem::size_of_val(&i));
+    // println!("{}",std::mem::size_of_val(&j));
     //test_binary();
     //test_sort();
     test_tcp_client();
@@ -278,8 +282,6 @@ fn test_channel(){
         cb_sender.send(Test::default());
     }
     println!("cb_send time:{:?}",send_time.elapsed().unwrap());
-
-
 
     std::thread::sleep(Duration::from_millis(5000));
 

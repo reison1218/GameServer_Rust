@@ -1,5 +1,6 @@
 use super::*;
 use tools::cmd_code::RoomCode;
+use tools::protos::room::S_ROOM_MEMBER_LEAVE_NOTICE;
 
 pub enum TcpClientType {
     GameServer,
@@ -72,26 +73,28 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
+        println!("=========================================={}", mess.len());
         let packet_array = Packet::build_array_from_server(mess);
 
-        if packet_array.is_err() {
-            error!("{:?}", packet_array.err().unwrap().to_string());
+        if let Err(e) = packet_array {
+            error!("{:?}", e.to_string());
             return;
         }
         let packet_array = packet_array.unwrap();
 
         for mut packet in packet_array {
+            println!(
+                "******************************************接收到其他服信息,user_id:{},cmd:{}",
+                packet.get_user_id(),
+                packet.get_cmd(),
+            );
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
                 let mut write = self.cp.write().unwrap();
                 let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
-
                 match gate_user {
                     Some(user) => {
                         user.get_tcp_mut_ref().write(packet.build_client_bytes());
-                        if packet.get_cmd() == 10018 {
-                            info!("回客户端消息,cmd:{}", packet.get_cmd());
-                        }
                     }
                     None => {
                         warn!(
