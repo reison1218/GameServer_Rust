@@ -98,7 +98,7 @@ fn test_tcp_client(){
         std::thread::spawn(m);
         std::thread::sleep(Duration::from_millis(2000));
     }
-    // std::thread::sleep(Duration::from_millis(40000));
+     //std::thread::sleep(Duration::from_millis(40000));
     tcp_client::test_tcp_client("test");
 }
 

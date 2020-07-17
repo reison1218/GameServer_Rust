@@ -12,7 +12,6 @@ use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::time::Duration;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::room::{
@@ -38,7 +37,7 @@ pub enum MemberLeaveNoticeType {
     Kicked = 2, //被T
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RoomState {
     Await = 0,         //等待
     ChoiceTurn = 1,    //选择回合
@@ -91,7 +90,7 @@ pub struct Room {
     state: RoomState,                     //房间状态
     pub tile_map: TileMap,                //地图数据
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
-    pub member_index: Vec<u32>,           //玩家对应的位置
+    pub member_index: [u32; 4],           //玩家对应的位置
     pub setting: RoomSetting,             //房间设置
     pub battle_data: BattleData,          //战斗相关数据封装
     sender: TcpSender,                    //sender
@@ -118,7 +117,7 @@ impl Room {
             owner_id: user_id,
             tile_map: TileMap::default(),
             members: HashMap::new(),
-            member_index: Vec::new(),
+            member_index: [0; 4],
             state: RoomState::Await,
             setting: RoomSetting::default(),
             battle_data: BattleData::default(),
@@ -133,7 +132,7 @@ impl Room {
         owner.team_id = size;
         owner.join_time = Local::now().timestamp_millis() as u64;
         room.members.insert(user_id, owner);
-        room.member_index.push(user_id);
+        room.member_index[0] = user_id;
         //返回客户端
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
@@ -144,12 +143,12 @@ impl Room {
 
     pub fn check_choice_index(&self, index: usize) -> bool {
         let res = self.tile_map.map.get(index);
-        if let Some(cell) = res {
-            if cell.id > CellType::Valid as u32 {
-                true
-            } else {
-                false
-            }
+        if res.is_none() {
+            return false;
+        }
+        let cell = res.unwrap();
+        if cell.id > CellType::Valid as u32 {
+            true
         } else {
             false
         }
@@ -271,7 +270,6 @@ impl Room {
 
     ///选择占位
     pub fn choice_index(&mut self, user_id: u32, index: u32) {
-        //玩家手动选的
         let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
         member.cell_index = index;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
@@ -443,10 +441,13 @@ impl Room {
         }
         //随机出选择的顺序
         let mut random = rand::thread_rng();
-        let mut member_v = self.member_index.clone();
+        let member_count = self.get_member_count();
+        let mut member_v = self.member_index.clone().to_vec();
+        member_v.resize(member_count, 0);
         let mut index = 0_u32;
+
         loop {
-            if index >= (self.member_index.len() - 1) as u32 {
+            if index > (member_count - 1) as u32 {
                 break;
             }
             let rm_index = random.gen_range(0, member_v.len());
@@ -457,6 +458,7 @@ impl Room {
             self.insert_choice_order(index as usize, res);
             index += 1;
         }
+        info!("choice_order 生成完毕！{:?}", self.get_choice_orders());
         //此一次，所以直接取0下标的值
         self.set_next_choice_index(0);
         ssn.choice_order = self.get_choice_orders().to_vec();
@@ -507,8 +509,6 @@ impl Room {
         packet.set_is_broad(false);
         packet.set_is_client(true);
         for member_id in self.members.keys() {
-            println!("发送离线,user_id:{},{:?}", *member_id, srmln);
-            //std::thread::sleep(Duration::from_millis(500));
             packet.set_user_id(*member_id);
             self.sender.write(packet.build_server_bytes());
         }
@@ -516,7 +516,7 @@ impl Room {
 
     pub fn get_member_index(&self, user_id: u32) -> i32 {
         for i in 0..self.member_index.len() {
-            if self.member_index.get(i).unwrap() != &user_id {
+            if self.member_index[i] != user_id {
                 continue;
             }
             return i as i32;
@@ -617,7 +617,13 @@ impl Room {
         member.team_id = size;
         member.join_time = Local::now().timestamp_millis() as u64;
         self.members.insert(user_id, member);
-        self.member_index.push(user_id);
+        for i in 0..self.member_index.len() {
+            if self.member_index[i] != 0 {
+                continue;
+            }
+            self.member_index[i] = user_id;
+            break;
+        }
 
         //返回客户端消息
         let mut sr = S_ROOM::new();
@@ -641,10 +647,10 @@ impl Room {
         self.members.remove(user_id);
 
         for i in 0..self.member_index.len() {
-            if self.member_index.get(i).unwrap() != user_id {
+            if self.member_index[i] != *user_id {
                 continue;
             }
-            self.member_index.remove(i);
+            self.member_index[i] = 0;
             break;
         }
         if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
@@ -664,7 +670,8 @@ impl Room {
 
     pub fn get_next_choice_user(&self) -> u32 {
         let index = self.get_next_choice_index();
-        self.get_choice_orders()[index]
+        let res = self.get_choice_orders()[index];
+        res
     }
 
     fn handler_leave(&mut self, user_id: u32) {
@@ -806,7 +813,7 @@ impl Room {
     }
 
     pub fn cter_2_battle_cter(&mut self) {
-        let member_size = self.member_index.len();
+        let member_size = self.members.len();
         for member in self.members.values_mut() {
             let battle_cter = BattleCharacter::init(&member.chose_cter);
             match battle_cter {

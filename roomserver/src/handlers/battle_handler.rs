@@ -1,8 +1,4 @@
 use crate::mgr::room_mgr::RoomMgr;
-use protobuf::Message;
-use rand::Rng;
-use tools::cmd_code::ClientCode;
-use tools::protos::room::{C_SKIP_TURN_CHOICE, S_SKIP_TURN_CHOICE_NOTICE};
 use tools::util::packet::Packet;
 
 ///跳过选择回合顺序

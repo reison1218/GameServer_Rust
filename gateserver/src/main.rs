@@ -29,7 +29,7 @@ lazy_static! {
         let game_name = "game_name".to_string();
         let user_name = "user_name".to_string();
         let sys_name = "sys_name".to_string();
-        let mtp = MyThreadPool::init(game_name, 4, user_name, 8, sys_name, 2);
+        let mtp = MyThreadPool::init(game_name, 8, user_name, 8, sys_name, 4);
         mtp
     };
     static ref CONF_MAP: Conf = {

@@ -1,9 +1,9 @@
 use crate::entity::member::Member;
-use crate::entity::room::{MemberLeaveNoticeType, RoomMemberNoticeType};
+use crate::entity::room::{MemberLeaveNoticeType, RoomMemberNoticeType, RoomState};
 use crate::entity::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
-use log::{error, warn};
+use log::{error, info, warn};
 use protobuf::Message;
 use rayon::slice::ParallelSliceMut;
 use serde_json::{Map, Value};
@@ -364,14 +364,27 @@ impl RoomModel for MatchRoom {
     ///离开房间
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
-        let room_id = room.get_room_id();
+        let room_id = *room_id;
+        let member_count = room.get_member_count();
         room.remove_member(notice_type, user_id);
-        let member_count = room.get_member_count() as u32;
-        let mut need_add_cache = true;
-        if room.is_empty() {
-            self.rm_room(&room_id)?;
-            need_add_cache = false;
+        let need_remove = room.is_empty();
+        let now_count = room.get_member_count();
+        let mut need_add_cache = false;
+        //如果房间之前是满都，就给所有人取消准备
+        if member_count == MEMBER_MAX as usize && now_count < member_count {
+            let map = room.members.clone();
+            for id in map.keys() {
+                room.prepare_cancel(id, false);
+            }
+            if room.get_state() == &RoomState::Await {
+                need_add_cache = true;
+            }
         }
+
+        if need_remove {
+            self.rm_room(&room_id)?;
+        }
+
         let room_cache = self.get_room_cache_mut(&room_id);
         if room_cache.is_some() {
             let rc = room_cache.unwrap();
@@ -381,10 +394,14 @@ impl RoomModel for MatchRoom {
         } else if room_cache.is_none() && need_add_cache {
             let mut rc = RoomCache::default();
             rc.room_id = room_id;
-            rc.count = member_count;
+            rc.count = now_count as u32;
             self.room_cache.push(rc);
             //重新排序
             self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
+            info!(
+                "玩家离开房间匹配房间，满足条件，将放进重新放入匹配队列,room_id:{}",
+                room_id
+            );
         }
         Ok(room_id)
     }
@@ -433,6 +450,7 @@ impl MatchRoom {
         //此处缺少房间随机规则，暂时硬编码
         let map_id = 1002 as u32;
         let room_id: u32;
+        let user_id = member.user_id;
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
@@ -448,6 +466,7 @@ impl MatchRoom {
                 sender,
                 task_sender,
             )?;
+            info!("创建匹配房间,room_id:{},user_id:{}", room_id, user_id);
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;
@@ -457,8 +476,9 @@ impl MatchRoom {
                 let s = format!("this map config is None,map_id:{}", map_id);
                 anyhow::bail!(s)
             }
-            room_mut.add_member(member)?;
 
+            room_mut.add_member(member)?;
+            info!("加入匹配房间,room_id:{}，user_id:{}", room_id, user_id);
             let room_cache_array: &mut Vec<RoomCache> = self.room_cache.as_mut();
             let room_cache = room_cache_array.last_mut().unwrap();
             //cache人数加1
@@ -466,6 +486,7 @@ impl MatchRoom {
             //如果人满里，则从缓存房间列表中弹出
             if room_cache.count >= MEMBER_MAX as u32 {
                 room_cache_array.pop();
+                info!("匹配房人满,将房间从匹配队列移除！room_id:{}", room_id);
                 //创建延迟任务，并发送给定时器接收方执行
                 let mut task = Task::default();
                 let time_limit = TEMPLATES

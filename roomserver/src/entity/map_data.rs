@@ -94,7 +94,7 @@ impl TileMap {
 
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
-            let mut type_vec = temp_mgr
+            let type_vec = temp_mgr
                 .get_cell_ref()
                 .rare_map
                 .get(&cell_rare.rare)

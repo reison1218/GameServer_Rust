@@ -73,7 +73,6 @@ impl ClientHandler for TcpClientHandler {
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
-        println!("=========================================={}", mess.len());
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
@@ -83,11 +82,6 @@ impl ClientHandler for TcpClientHandler {
         let packet_array = packet_array.unwrap();
 
         for mut packet in packet_array {
-            println!(
-                "******************************************接收到其他服信息,user_id:{},cmd:{}",
-                packet.get_user_id(),
-                packet.get_cmd(),
-            );
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
                 let mut write = self.cp.write().unwrap();
@@ -95,6 +89,11 @@ impl ClientHandler for TcpClientHandler {
                 match gate_user {
                     Some(user) => {
                         user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                        info!(
+                            "回给客户端消息,user_id:{},cmd:{}",
+                            packet.get_user_id(),
+                            packet.get_cmd(),
+                        );
                     }
                     None => {
                         warn!(
@@ -102,7 +101,7 @@ impl ClientHandler for TcpClientHandler {
                             &packet.get_user_id(),
                             packet.get_cmd()
                         );
-                        return;
+                        continue;
                     }
                 }
             } else {

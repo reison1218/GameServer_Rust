@@ -7,7 +7,7 @@ use log::{error, info};
 use rand::Rng;
 use serde_json::Value as JsonValue;
 use std::sync::{Arc, RwLock};
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 
 pub enum TaskCmd {
     MatchRoomStart = 101,  //匹配房间开始任务
@@ -166,6 +166,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     //判断是否有新人进来了
     for (_, member) in room.members.iter() {
         if now_time - member.join_time < task.delay {
+            info!("有新成员进来，定时检测房间开始任务取消");
             return;
         }
     }
@@ -174,11 +175,15 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if room.get_member_count() as u8 != MEMBER_MAX {
         let mut v = Vec::new();
         for member in room.members.values() {
-            if member.state == MemberState::NotReady as u8 {
+            if member.state == MemberState::Ready as u8 {
                 v.push(member.user_id);
             }
         }
         for member_id in v {
+            info!(
+                "定时检测房间开始任务,取消其他成员准备,user_id:{}",
+                member_id
+            );
             room.prepare_cancel(&member_id, false);
         }
         return;
@@ -253,6 +258,7 @@ fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if room.get_next_choice_user() != user_id {
         return;
     }
+    info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
     room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
     write.player_room.remove(&user_id);
 }
@@ -313,7 +319,7 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let mut rand = rand::thread_rng();
     //如果是最后一个，直接给所有未选的玩家进行随机
-    for member_id in &room.member_index.clone()[..] {
+    for member_id in room.members.clone().keys() {
         //选过了就跳过
         if room.get_turn_orders().contains(member_id) {
             continue;

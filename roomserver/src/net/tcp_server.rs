@@ -48,7 +48,7 @@ impl tools::tcp::Handler for TcpServerHandler {
             //判断是否是房间服的命令，如果不是，则直接无视掉
             if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {
                 error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
-                return;
+                continue;
             }
             //异步处理业务逻辑
             async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));

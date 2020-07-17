@@ -242,9 +242,7 @@ pub mod packet {
         pub fn build_array_from_server(bytes:Vec<u8>)->Result<Vec<Packet>, String>{
             let mut bb = ByteBuf::form_vec(bytes);
             let mut v = Vec::new();
-            println!("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
             loop{
-                println!("v_size:{},bb_index:{}",v.len(),bb.index());
                 if bb.index() == bb.get_len(){
                     return Ok(v);
                 }

@@ -174,9 +174,12 @@ fn handle_login(bytes: &[u8], write: &mut RwLockWriteGuard<ChannelMgr>) -> anyho
     if uc_res || mem_res {
         // modify_redis_user(c_login.get_user_id(), false);
         let str = format!(
-            "this account already login!user_id:{}",
+            "this account already login!uc_res:{},mem_res:{},user_id:{}",
+            uc_res,
+            mem_res,
             &c_login.get_user_id()
         );
+        info!("{:?}", str.as_str());
         anyhow::bail!("{:?}", str)
     }
     Ok(())
