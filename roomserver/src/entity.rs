@@ -1,3 +1,4 @@
+pub mod battle;
 pub mod character;
 pub mod map_data;
 pub mod member;

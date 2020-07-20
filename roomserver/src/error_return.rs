@@ -2,8 +2,8 @@ use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{S_MODIFY_NICK_NAME, S_SYNC_DATA, S_USER_LOGIN};
 use tools::protos::room::{
-    S_CHANGE_TEAM, S_CHOOSE_CHARACTER, S_CHOOSE_INDEX, S_CHOOSE_TURN_ORDER, S_EMOJI, S_KICK_MEMBER,
-    S_LEAVE_ROOM, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING, S_START,
+    S_CHANGE_TEAM_NOTICE, S_CHOOSE_CHARACTER, S_CHOOSE_INDEX, S_CHOOSE_SKILL, S_CHOOSE_TURN_ORDER,
+    S_EMOJI, S_KICK_MEMBER, S_LEAVE_ROOM, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -88,8 +88,8 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
             );
             sender.write(bytes);
         }
-        ClientCode::ChangeTeam => {
-            let mut sul = S_CHANGE_TEAM::new();
+        ClientCode::PrepareCancel => {
+            let mut sul = S_PREPARE_CANCEL::new();
             sul.err_mess = error_mess;
             sul.is_succ = false;
             let bytes = Packet::build_packet_bytes(
@@ -101,8 +101,8 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
             );
             sender.write(bytes);
         }
-        ClientCode::PrepareCancel => {
-            let mut sul = S_PREPARE_CANCEL::new();
+        ClientCode::ChoiceSkill => {
+            let mut sul = S_CHOOSE_SKILL::new();
             sul.err_mess = error_mess;
             sul.is_succ = false;
             let bytes = Packet::build_packet_bytes(
@@ -127,7 +127,6 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
             );
             sender.write(bytes);
         }
-        ClientCode::RoomMemberNotice => {}
         ClientCode::KickMember => {
             let mut sul = S_KICK_MEMBER::new();
             sul.err_mess = error_mess;
@@ -141,7 +140,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
             );
             sender.write(bytes);
         }
-        ClientCode::ChooseCharacter => {
+        ClientCode::ChoiceCharacter => {
             let mut sul = S_CHOOSE_CHARACTER::new();
             sul.err_mess = error_mess;
             sul.is_succ = false;

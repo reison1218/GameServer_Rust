@@ -245,7 +245,7 @@ impl RoomModel for CustomRoom {
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
         //同志房间其他成员
-        room.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
+        room.room_add_member_notice(&user_id);
         Ok(room_id)
     }
 

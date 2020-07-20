@@ -3,9 +3,11 @@ package protos;
 import "base.proto";
 
 //enum ActionType {
-//    Attack = 1,  //普通攻击
-//    UseItem = 2, //使用道具
-//    Skill = 3,   //使用技能
+//Attack = 1,  //普通攻击
+//UseItem = 2, //使用道具
+//Skip = 3,    //跳过turn
+//Open = 4,    //翻块
+//Skill = 5,   //使用技能
 //}
 
 //翻块
@@ -43,7 +45,7 @@ message S_SKIP_NOTICE{
 
 //行动请求
 message C_ACTION{
-    uint32 type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
+    uint32 action_type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
     uint32 value = 2;//行动对应类型的值
     repeated uint32 target = 3;//目标 可以是块，可以是玩家，可以是自己
 }

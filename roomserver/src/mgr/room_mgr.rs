@@ -2,10 +2,10 @@ use super::*;
 
 use crate::entity::room::Room;
 use crate::entity::room_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
-use crate::handlers::battle_handler::skip_choice_turn;
+use crate::handlers::battle_handler::action;
 use crate::handlers::room_handler::{
-    change_team, choice_index, choice_turn, choose_character, create_room, emoji, join_room,
-    kick_member, leave_room, prepare_cancel, room_setting, search_room, start,
+    change_team, choice_index, choice_skills, choice_turn, choose_character, create_room, emoji,
+    join_room, kick_member, leave_room, prepare_cancel, room_setting, search_room, start,
 };
 use crate::task_timer::Task;
 use log::warn;
@@ -135,9 +135,12 @@ impl RoomMgr {
         //房间设置
         self.cmd_map
             .insert(RoomCode::RoomSetting as u32, room_setting);
-        //选择角色和技能
+        //选择角色
         self.cmd_map
             .insert(RoomCode::ChoiceCharacter as u32, choose_character);
+        //选择技能
+        self.cmd_map
+            .insert(RoomCode::ChoiceSkill as u32, choice_skills);
         //发送表情
         self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
         //开始游戏
@@ -152,7 +155,7 @@ impl RoomMgr {
             .insert(RoomCode::ChoiceTurnOrder as u32, choice_turn);
 
         //跳过选择turn顺序
-        self.cmd_map
-            .insert(RoomCode::SkipTurn as u32, skip_choice_turn);
+        self.cmd_map.insert(RoomCode::SkipTurn as u32, action);
+        //------------------------------------以下是战斗相关的--------------------------------
     }
 }

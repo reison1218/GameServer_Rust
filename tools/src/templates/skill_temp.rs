@@ -4,16 +4,13 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct SkillTemp {
     pub id: u32,//技能id
-    pub target_type: u8,//作用目标类型
-    pub effect_type:u8,//效果类型
-    pub effect_value:u16,//效果值
+    pub skill_judge: u16,//判定条件
     pub consume_type:u8,//消耗类型
     pub consume_value:u16,//消耗值
     pub cd:u8,//cd
     pub keep_time:u8,//持续轮次数
     pub scope:u32,//范围
-    pub trigger_condition:u8,//触发条件
-    pub trgger_value:Vec<u32>,//触发的技能
+    pub trigger_time:u16,//触发条件
 }
 
 impl Template for SkillTemp {}

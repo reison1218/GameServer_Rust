@@ -16,3 +16,7 @@ pub const SKILL_SCOPE_TEMPLATE: &str = "SkillScope";
 
 pub const ITEM_TEMPLATE: &str = "Item";
 
+pub const SKILL_JUDGE_TEMPLATE: &str = "SkillJudge";
+
+pub const TRIGGER_TIME_TEMPLATE: &str = "TriggerTime";
+

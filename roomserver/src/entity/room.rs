@@ -1,3 +1,4 @@
+use crate::entity::battle::BattleData;
 use crate::entity::character::BattleCharacter;
 use crate::entity::map_data::CellType;
 use crate::entity::map_data::TileMap;
@@ -15,9 +16,10 @@ use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::room::{
-    S_BATTLE_CHARACTER_NOTICE, S_CHANGE_TEAM, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE,
-    S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_ROOM, S_ROOM_MEMBER_LEAVE_NOTICE,
-    S_ROOM_MEMBER_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE, S_START_NOTICE,
+    S_BATTLE_CHARACTER_NOTICE, S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE,
+    S_CHOOSE_TURN_ORDER_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL,
+    S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE,
+    S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE, S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -43,42 +45,6 @@ pub enum RoomState {
     ChoiceTurn = 1,    //选择回合
     ChoiceIndex = 2,   //选择占位
     BattleStarted = 3, //战斗开始
-}
-
-///回合行为类型
-#[derive(Clone, Debug, PartialEq)]
-enum ActionType {
-    Attack = 1,  //普通攻击
-    UseItem = 2, //使用道具
-    Skip = 3,    //跳过turn
-    Open = 4,    //翻块
-    Skill = 5,   //使用技能
-}
-
-///行动单位
-#[derive(Clone, Debug, Default)]
-pub struct ActionUnit {
-    pub team_id: u32,
-    pub user_id: u32,
-    pub turn_index: u32,
-    pub actions: Vec<Action>,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Action {
-    action_type: u8,
-    action_value: u32,
-}
-
-///房间战斗数据封装
-#[derive(Clone, Debug, Default)]
-pub struct BattleData {
-    pub choice_orders: Vec<u32>,                    //选择顺序里面放玩家id
-    pub next_choice_index: usize,                   //下一个选择的下标
-    pub next_turn_index: usize,                     //下个turn的下标
-    pub turn_action: ActionUnit,                    //当前回合数据单元封装
-    pub turn_orders: Vec<u32>,                      //turn行动队列，里面放玩家id
-    pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
 }
 
 ///房间结构体，封装房间必要信息
@@ -401,7 +367,7 @@ impl Room {
         //通知其他玩家
         let mut spc = S_PREPARE_CANCEL::new();
         spc.is_succ = true;
-        self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
+        self.prepare_cancel_notice(*user_id, pregare_cancel);
         self.send_2_client(
             ClientCode::PrepareCancel,
             *user_id,
@@ -525,9 +491,8 @@ impl Room {
     }
 
     ///推送消息
-    pub fn room_member_notice(&mut self, notice_type: u8, user_id: &u32) {
-        let mut srmn = S_ROOM_MEMBER_NOTICE::new();
-        srmn.set_notice_type(notice_type as u32);
+    pub fn room_add_member_notice(&mut self, user_id: &u32) {
+        let mut srmn = S_ROOM_ADD_MEMBER_NOTICE::new();
         srmn.set_index(self.get_member_index(*user_id) as u32);
         let member = self.members.get(user_id);
         if member.is_none() {
@@ -536,8 +501,24 @@ impl Room {
         let mp = member.unwrap().clone().into();
         srmn.set_member(mp);
 
-        let mut packet = Packet::new(ClientCode::RoomMemberNotice as u32, 0, 0);
+        let mut packet = Packet::new(ClientCode::RoomAddMemberNotice as u32, 0, 0);
         packet.set_data_from_vec(srmn.write_to_bytes().unwrap());
+        packet.set_is_broad(false);
+        packet.set_is_client(true);
+        if self.get_member_count() > 0 {
+            for id in self.members.keys() {
+                packet.set_user_id(*id);
+                self.sender.write(packet.build_server_bytes());
+            }
+        }
+    }
+
+    pub fn prepare_cancel_notice(&mut self, user_id: u32, state: bool) {
+        let mut spcn = S_PREPARE_CANCEL_NOTICE::new();
+        spcn.set_user_id(user_id);
+        spcn.set_prepare(state);
+        let mut packet = Packet::new(ClientCode::PrepareCancelNotice as u32, 0, 0);
+        packet.set_data_from_vec(spcn.write_to_bytes().unwrap());
         packet.set_is_broad(false);
         packet.set_is_client(true);
         if self.get_member_count() > 0 {
@@ -632,7 +613,7 @@ impl Room {
         self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
 
         //通知房间里其他人
-        self.room_member_notice(RoomMemberNoticeType::AddMember as u8, &user_id);
+        self.room_add_member_notice(&user_id);
         Ok(self.id)
     }
 
@@ -721,22 +702,17 @@ impl Room {
 
     ///换队伍
     pub fn change_team(&mut self, user_id: &u32, team_id: &u8) {
-        let res = self.members.contains_key(user_id);
-        if !res {
-            return;
-        }
-        let mut sct = S_CHANGE_TEAM::new();
-        sct.is_succ = true;
-        self.send_2_client(
-            ClientCode::ChangeTeam,
-            *user_id,
-            sct.write_to_bytes().unwrap(),
-        );
-
-        let mut member = self.get_member_mut(user_id).unwrap();
+        let member = self.get_member_mut(user_id).unwrap();
         member.team_id = *team_id;
-        //推送其他玩家
-        self.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, user_id);
+
+        let mut sct = S_CHANGE_TEAM_NOTICE::new();
+        sct.set_user_id(*user_id);
+        sct.set_team_id(*team_id as u32);
+        let bytes = sct.write_to_bytes().unwrap();
+        let members = self.members.clone();
+        for member_id in members.keys() {
+            self.send_2_client(ClientCode::ChangeTeamNotice, *member_id, bytes.clone());
+        }
     }
 
     ///T人
@@ -944,7 +920,7 @@ impl Room {
             task.delay = 5000_u64;
             warn!("the choice_index_time of Constant config is None!pls check!");
         }
-        task.cmd = TaskCmd::ChoiceLocation as u16;
+        task.cmd = TaskCmd::ChoiceIndex as u16;
 
         let mut map = serde_json::Map::new();
         map.insert(

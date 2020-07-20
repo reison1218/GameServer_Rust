@@ -1,3 +1,4 @@
+use crate::entity::battle::BattleCterState;
 use crate::TEMPLATES;
 use log::warn;
 use tools::protos::base::{BattleCharacterPt, CharacterPt};
@@ -25,25 +26,36 @@ impl From<CharacterPt> for Character {
 impl Into<CharacterPt> for Character {
     fn into(self) -> CharacterPt {
         let mut cter_pt = CharacterPt::new();
-        cter_pt.set_skills(self.skills);
         cter_pt.set_cter_id(self.cter_id);
         cter_pt.set_grade(self.grade);
-        cter_pt.set_last_use_skills(self.last_use_skills);
         cter_pt
     }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
-    pub user_id: u32,     //玩家id
-    pub cter_id: u32,     //角色的配置id
-    pub atk: u32,         //攻击力
-    pub hp: u32,          //角色血量
-    pub defence: u32,     //角色防御
-    pub cell_index: u32,  //角色所在位置
-    pub skills: Vec<u32>, //玩家次角色所有已解锁的技能id
-    pub target_id: u32,   //玩家目标
-    pub turn_order: u32,  //行动回合顺序
+    pub user_id: u32,             //玩家id
+    pub cter_id: u32,             //角色的配置id
+    pub atk: u32,                 //攻击力
+    pub hp: i32,                  //角色血量
+    pub defence: u32,             //角色防御
+    pub cell_index: u32,          //角色所在位置
+    pub skills: Vec<u32>,         //玩家选择的主动技能id
+    pub passive_skills: Vec<u32>, //被动技能id
+    pub target_id: u32,           //玩家目标
+    pub turn_order: u32,          //行动回合顺序
+    pub buff_array: Vec<Buff>,    //角色身上的buff
+    pub state: u8,                //角色状态
+    pub open_times: u32,          //翻地图块次数
+    pub turn_times: u32,          //轮到自己的次数
+}
+
+///buff结构体
+#[derive(Clone, Debug, Default)]
+pub struct Buff {
+    skill_id: u32, //技能id
+    cd: u8,        //技能配置cd
+    keep_time: u8, //技能配置持续时间
 }
 
 impl BattleCharacter {
@@ -63,9 +75,10 @@ impl BattleCharacter {
         }
         let cter_temp = cter_temp.unwrap();
         //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
-        battle_cter.hp = cter_temp.hp;
+        battle_cter.hp = cter_temp.hp as i32;
         battle_cter.atk = cter_temp.attack;
         battle_cter.defence = cter_temp.defence;
+        battle_cter.passive_skills = cter_temp.passive_skill.clone();
         Ok(battle_cter)
     }
 
@@ -73,7 +86,7 @@ impl BattleCharacter {
         let mut battle_cter_pt = BattleCharacterPt::new();
         battle_cter_pt.user_id = self.user_id;
         battle_cter_pt.cter_id = self.cter_id;
-        battle_cter_pt.hp = self.hp;
+        battle_cter_pt.hp = self.hp as u32;
         battle_cter_pt.defence = self.defence;
         battle_cter_pt.atk = self.atk;
         battle_cter_pt.set_location_index(self.cell_index);

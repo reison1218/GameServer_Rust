@@ -48,16 +48,18 @@ pub enum RoomCode{
     SearchRoom = 20010,
     //房间设置
     RoomSetting = 20011,
-    //选择角色和技能
+    //选择角色
     ChoiceCharacter = 20012,
     //表情符号
     Emoji = 20013,
+    //选择角色技能
+    ChoiceSkill = 20014,
     //选择位置
-    ChoiceLoaction = 20014,
+    ChoiceLoaction = 20015,
     //选择回合顺序
-    ChoiceTurnOrder = 20015,
+    ChoiceTurnOrder = 20016,
     //跳过回合顺序选择
-    SkipTurn = 20016,
+    SkipTurn = 20017,
     //返回最大值
     Max = 30000,
 }
@@ -81,18 +83,18 @@ pub enum ClientCode{
     LeaveRoom = 10007,
     //开始游戏
     Start = 10008,
-    //换队伍
-    ChangeTeam = 10009,
+    //换队伍通知
+    ChangeTeamNotice = 10009,
     //准备与取消准备
     PrepareCancel=10010,
     //房间设置
     RoomSetting=10011,
-    //房间成员变动推送消息
-    RoomMemberNotice=10012,
+    //房间新成员推送消息
+    RoomAddMemberNotice=10012,
     //T人返回
     KickMember=10013,
     //选择角色
-    ChooseCharacter=10014,
+    ChoiceCharacter=10014,
     //房间推送
     RoomNotice=10015,
     //表情符号
@@ -101,20 +103,26 @@ pub enum ClientCode{
     EmojiNotice = 10017,
     //离开房间推送
     MemberLeaveNotice = 10018,
+    //选择角色推送
+    ChoiceCharacterNotice=10019,
+    //选择角色技能
+    ChoiceSkill = 10020,
+    //准备状态推送
+    PrepareCancelNotice = 10021,
     //游戏开始推送
-    StartNotice = 10019,
+    StartNotice = 10022,
     //选择位置返回
-    ChoiceLoaction = 10020,
+    ChoiceLoaction = 10023,
     //选择回合顺序返回
-    ChoiceRoundOrder = 10021,
+    ChoiceRoundOrder = 10024,
     //选择位置通知
-    ChoiceLoactionNotice = 10022,
+    ChoiceLoactionNotice = 10025,
     //选择回合顺序通知
-    ChoiceRoundOrderNotice = 10023,
+    ChoiceRoundOrderNotice = 10026,
     //战斗开始
-    BattleStartNotice = 10024,
+    BattleStartNotice = 10027,
     //跳过选回合顺序推送
-    SkipTurnNotice = 10025,
+    SkipTurnNotice = 10028,
     //最大命令号
     Max = 20000,
 }

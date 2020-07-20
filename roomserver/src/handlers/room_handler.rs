@@ -2,7 +2,10 @@ use super::*;
 use crate::entity::character::Character;
 use crate::entity::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::error_return::err_back;
-use tools::protos::room::{C_CHOOSE_INDEX, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER, S_START};
+use tools::protos::room::{
+    C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER,
+    S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_START,
+};
 
 ///创建房间
 pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
@@ -221,13 +224,35 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     //校验玩家是否选了角色
     let member = room.members.get(&user_id).unwrap();
-    if member.chose_cter.cter_id == 0 {
+    let cter_id = member.chose_cter.cter_id;
+    if cter_id == 0 {
         let str = format!(
             "prepare_cancel: this player has not choose character yet!user_id:{}",
             user_id
         );
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::PrepareCancel,
+            user_id,
+            str,
+            room.get_sender_mut(),
+        );
+        return Ok(());
+    }
+
+    let cter = crate::TEMPLATES
+        .get_character_ref()
+        .temps
+        .get(&cter_id)
+        .unwrap();
+
+    //校验玩家是否选了技能
+    if prepare && member.chose_cter.skills.len() < cter.usable_skill_count as usize {
+        let str = format!(
+            "prepare_cancel: this player has not choose character'skill yet!user_id:{}",
+            user_id
+        );
+        err_back(
+            ClientCode::PrepareCancel,
             user_id,
             str,
             room.get_sender_mut(),
@@ -292,14 +317,12 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if team_id < TeamId::Min as u32 || team_id > TeamId::Max as u32 {
         let str = format!("target_team_id:{} is invaild!", team_id);
         warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room_id = rm.get_room_id(user_id);
     if let None = room_id {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room_id = room_id.unwrap();
@@ -307,7 +330,6 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if let None = room {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChangeTeam, *user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -561,7 +583,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         let str = format!("this player is not in room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::ChoiceCharacter,
             user_id,
             str,
             rm.get_sender_mut(),
@@ -574,7 +596,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         let str = format!("this room already started!room_id:{}", room.get_room_id());
         warn!("{:?}", str.as_str());
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::ChoiceCharacter,
             user_id,
             str,
             room.get_sender_mut(),
@@ -590,7 +612,6 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         return Ok(());
     }
     let cter_id = ccc.cter_id;
-    let skills = ccc.skills;
 
     //校验角色
     let res = room.check_character(cter_id);
@@ -598,7 +619,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         let str = e.to_string();
         warn!("{:?}", str.as_str());
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::ChoiceCharacter,
             user_id,
             str,
             room.get_sender_mut(),
@@ -612,7 +633,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         let str = format!("this player is already prepare!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::ChoiceCharacter,
             user_id,
             str,
             rm.get_sender_mut(),
@@ -629,7 +650,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         );
         warn!("{:?}", str.as_str());
         err_back(
-            ClientCode::ChooseCharacter,
+            ClientCode::ChoiceCharacter,
             user_id,
             str,
             rm.get_sender_mut(),
@@ -638,47 +659,14 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     }
     if cter.is_some() {
         let cter = cter.unwrap();
-
-        let cter_temp = crate::TEMPLATES
-            .get_character_ref()
-            .get_temp_ref(&cter_id)
-            .unwrap();
-        //校验技能数量
-        if skills.len() > cter_temp.usable_skill_count as usize {
-            let str = format!("this cter's skill count is error! cter_id:{}", cter_id);
-            warn!("{:?}", str.as_str());
-            err_back(
-                ClientCode::ChooseCharacter,
-                user_id,
-                str,
-                rm.get_sender_mut(),
-            );
-            return Ok(());
-        }
-        for skill in skills.iter() {
-            if !cter.skills.contains(skill) {
-                let str = format!(
-                    "this do not have this skill!user_id:{},cter_id:{},skill_id:{}",
-                    user_id, cter_id, *skill
-                );
-                warn!("{:?}", str.as_str());
-                err_back(
-                    ClientCode::ChooseCharacter,
-                    user_id,
-                    str,
-                    rm.get_sender_mut(),
-                );
-                return Ok(());
-            }
-        }
-
         let mut choice_cter = cter.clone();
-        choice_cter.skills = skills;
         member.chose_cter = choice_cter;
     } else if cter_id == 0 {
         let choice_cter = Character::default();
         member.chose_cter = choice_cter;
     }
+
+    let grade = member.chose_cter.grade;
 
     //走正常逻辑
     let mut scc = S_CHOOSE_CHARACTER::new();
@@ -686,12 +674,116 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
 
     //返回客户端
     room.send_2_client(
-        ClientCode::ChooseCharacter,
+        ClientCode::ChoiceCharacter,
         user_id,
         scc.write_to_bytes().unwrap(),
     );
     //通知其他成员
-    room.room_member_notice(RoomMemberNoticeType::UpdateMember as u8, &user_id);
+    let mut sccn = S_CHOOSE_CHARACTER_NOTICE::new();
+    sccn.user_id = user_id;
+    sccn.cter_id = cter_id;
+    sccn.cter_grade = grade;
+    let bytes = sccn.write_to_bytes().unwrap();
+    let members = room.members.clone();
+    for member_id in members.keys() {
+        let mess = Packet::build_packet_bytes(
+            ClientCode::ChoiceCharacterNotice as u32,
+            *member_id,
+            bytes.clone(),
+            true,
+            true,
+        );
+        room.get_sender_mut().write(mess);
+    }
+    Ok(())
+}
+
+///选择技能
+pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut ccs = C_CHOOSE_SKILL::new();
+    let res = ccs.merge_from_bytes(packet.get_data());
+    if res.is_err() {
+        error!("{:?}", res.err().unwrap());
+        return Ok(());
+    }
+    let skills = ccs.get_skills();
+
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        let str = format!("this player is not in room!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+
+    let room = room.unwrap();
+    let member = room.get_member_mut(&user_id).unwrap();
+    if member.chose_cter.cter_id == 0 {
+        let str = format!(
+            "this player not choice cter yet!can not choice skill of cter!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+
+    let cter_id = member.chose_cter.cter_id;
+
+    let cter = member.cters.get(&cter_id).unwrap();
+
+    let cter_temp = crate::TEMPLATES
+        .get_character_ref()
+        .get_temp_ref(&cter_id)
+        .unwrap();
+    //校验技能数量
+    if skills.len() > cter_temp.usable_skill_count as usize {
+        let str = format!("this cter's skill count is error! cter_id:{}", cter_id);
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+    //校验技能有效性
+    for skill in skills.iter() {
+        if !cter.skills.contains(skill) {
+            let str = format!(
+                "this cter do not have this skill!user_id:{},cter_id:{},skill_id:{}",
+                user_id, cter_id, *skill
+            );
+            warn!("{:?}", str.as_str());
+            err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+            return Ok(());
+        }
+    }
+
+    //校验技能合法性
+    for group in cter_temp.skills.iter() {
+        let mut count = 0;
+        for skill in skills {
+            if !group.group.contains(skill) {
+                continue;
+            }
+            count += 1;
+            if count >= 2 {
+                let str = format!("the skill group is error!user_id:{}", user_id);
+                warn!("{:?}", str.as_str());
+                err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+                return Ok(());
+            }
+        }
+    }
+
+    //走正常逻辑
+    member.chose_cter.skills = skills.to_vec();
+    let mut scs = S_CHOOSE_SKILL::new();
+    scs.is_succ = true;
+    scs.skills = skills.to_vec();
+    room.send_2_client(
+        ClientCode::ChoiceSkill,
+        user_id,
+        scs.write_to_bytes().unwrap(),
+    );
     Ok(())
 }
 

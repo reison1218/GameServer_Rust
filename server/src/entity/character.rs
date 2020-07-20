@@ -305,7 +305,13 @@ fn get_init_characters(user_id: u32) -> Result<Vec<Character>, String> {
     let characters = cter_temp.get_init_character();
     for c in characters {
         let mut map = Map::new();
-        let skill_array = JsonValue::from(c.skills.clone());
+        let mut skill_v = Vec::new();
+        for group in c.skills.iter() {
+            for skill_id in group.group.iter() {
+                skill_v.push(*skill_id);
+            }
+        }
+        let skill_array = JsonValue::from(skill_v);
         map.insert(
             SKILLS.to_owned(),
             serde_json::Value::from(skill_array.clone()),

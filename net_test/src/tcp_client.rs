@@ -11,7 +11,7 @@ use crate::ID;
 
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
-use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER, S_ROOM_MEMBER_NOTICE};
+use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER, S_ROOM_ADD_MEMBER_NOTICE};
 use tools::protos::base::{PlayerPt, CharacterPt};
 
 pub fn test_tcp_client(pid:&str){
@@ -92,7 +92,7 @@ impl ClientHandler for TcpClientHandler {
         v.push(1001_u32);
         v.push(1002_u32);
         ccc.set_cter_id(cter_id);
-        ccc.set_skills(v);
+
         packet.set_cmd(RoomCode::ChoiceCharacter as u32);
         packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
         packet.set_len(16+packet.get_data().len() as u32);
@@ -169,12 +169,12 @@ impl ClientHandler for TcpClientHandler {
             let mut s = S_PREPARE_CANCEL::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-prepare:{:?}",s);
-        }else if packet.get_cmd() == ClientCode::ChooseCharacter as u32{
+        }else if packet.get_cmd() == ClientCode::ChoiceCharacter as u32{
             let mut s = S_CHOOSE_CHARACTER::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-choosecter:{:?}",s);
-        }else if packet.get_cmd() == ClientCode::RoomMemberNotice as u32{
-            let mut s = S_ROOM_MEMBER_NOTICE::new();
+        }else if packet.get_cmd() == ClientCode::RoomAddMemberNotice as u32{
+            let mut s = S_ROOM_ADD_MEMBER_NOTICE::new();
             s.merge_from_bytes(packet.get_data());
             println!("client:{},from server-mem-notice:{:?}",self.user_id,s);
         }

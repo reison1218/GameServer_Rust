@@ -196,7 +196,7 @@ fn main() -> anyhow::Result<()> {
     // println!("{}",std::mem::size_of_val(&j));
     //test_binary();
     //test_sort();
-    test_tcp_client();
+    //test_tcp_client();
     //map::generate_map();
     // let res = Local::now().timestamp_millis();
     // println!("{}",res);

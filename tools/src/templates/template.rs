@@ -5,7 +5,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE, SKILL_TEMPLATE, SKILL_SCOPE_TEMPLATE, ITEM_TEMPLATE};
+use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE, SKILL_TEMPLATE, SKILL_SCOPE_TEMPLATE, ITEM_TEMPLATE, SKILL_JUDGE_TEMPLATE, TRIGGER_TIME_TEMPLATE};
 use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
 use crate::templates::constant_temp::{ConstantTempMgr,ConstantTemp};
 use crate::templates::world_cell_temp::{WorldCellTempMgr, WorldCellTemp};
@@ -13,6 +13,8 @@ use crate::templates::cell_temp::{CellTempMgr, CellTemp};
 use crate::templates::skill_temp::{SkillTempMgr, SkillTemp};
 use crate::templates::item_temp::{ItemTempMgr, ItemTemp};
 use crate::templates::skill_scope_temp::{SkillScopeTempMgr, SkillScopeTemp};
+use crate::templates::trigger_time_temp::{TriggerTimeTempMgr, TriggerTimeTemp};
+use crate::templates::skill_judge_temp::{SkillJudgeTempMgr, SkillJudgeTemp};
 
 pub trait Template {}
 
@@ -32,6 +34,8 @@ pub struct TemplatesMgr {
     skill_temp_mgr:SkillTempMgr,//技能配置mgr
     item_temp_mgr:ItemTempMgr,//道具配置mgr
     skill_scope_temp_mgr:SkillScopeTempMgr,//技能范围配置mgr
+    trigger_time_temp_mgr:TriggerTimeTempMgr,//触发条件配置mgr
+    skill_judge_temp_mgr:SkillJudgeTempMgr,//判定条件配置mgr
 }
 
 impl TemplatesMgr {
@@ -72,6 +76,14 @@ impl TemplatesMgr {
     pub fn get_item_ref(&self) -> &ItemTempMgr {
         self.item_temp_mgr.borrow()
     }
+
+    pub fn get_trigger_time_ref(&self) -> &TriggerTimeTempMgr {
+        self.trigger_time_temp_mgr.borrow()
+    }
+
+    pub fn get_skill_judge_ref(&self) -> &SkillJudgeTempMgr {
+        self.skill_judge_temp_mgr.borrow()
+    }
 }
 
 pub fn init_temps_mgr(path: &str) -> TemplatesMgr {
@@ -87,6 +99,9 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
     for f in result {
         let file = f.unwrap();
         let name = file.file_name();
+        if name.eq(".DS_Store"){
+            continue;
+        }
         let mut str = String::new();
         str.push_str(file.path().parent().unwrap().to_str().unwrap().borrow());
         str.push_str("/");
@@ -124,17 +139,25 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             temps_mgr.cell_temp_mgr = CellTempMgr::default();
             temps_mgr.cell_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
-            //let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.skill_temp_mgr = SkillTempMgr::default();
-            //temps_mgr.skill_temp_mgr.init(v);
+            temps_mgr.skill_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
-           // let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
+           let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.skill_scope_temp_mgr = SkillScopeTempMgr::default();
-            //temps_mgr.skill_scope_temp_mgr.init(v);
+            temps_mgr.skill_scope_temp_mgr.init(v);
         }else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
             let v: Vec<ItemTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.item_temp_mgr = ItemTempMgr::default();
             temps_mgr.item_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(SKILL_JUDGE_TEMPLATE) {
+            let v: Vec<SkillJudgeTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.skill_judge_temp_mgr = SkillJudgeTempMgr::default();
+            temps_mgr.skill_judge_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(TRIGGER_TIME_TEMPLATE) {
+            let v: Vec<TriggerTimeTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.trigger_time_temp_mgr = TriggerTimeTempMgr::default();
+            temps_mgr.trigger_time_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

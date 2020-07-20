@@ -11,7 +11,7 @@ use std::time::Duration;
 
 pub enum TaskCmd {
     MatchRoomStart = 101,  //匹配房间开始任务
-    ChoiceLocation = 102,  //选择占位
+    ChoiceIndex = 102,     //选择占位
     ChoiceTurnOrder = 103, //选择回合顺序
     BattleTurnTime = 104,  //战斗时间回合限制
 }
@@ -64,10 +64,10 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                         error!("{:?}", res.err().unwrap());
                     }
                 }
-                TaskCmd::ChoiceLocation => {
+                TaskCmd::ChoiceIndex => {
                     let m = || {
                         std::thread::sleep(Duration::from_millis(task.delay));
-                        choice_location(rm_clone, task);
+                        choice_index(rm_clone, task);
                     };
                     //设置线程名字和堆栈大小
                     let thread_builder = std::thread::Builder::new()
@@ -225,7 +225,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
 }
 
 ///占位任务，没选的直接t出房间
-fn choice_location(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {

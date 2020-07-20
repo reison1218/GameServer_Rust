@@ -10,12 +10,18 @@ pub struct CharacterTemp {
     pub attack: u32,
     pub defence:u32,
     pub energy: u32,
-    pub skills: Vec<u32>,
-    pub lock_skills: Vec<u32>,
+    pub skills: Vec<Group>,
+    pub passive_skill: Vec<u32>,
+    pub lock_skills: Vec<Group>,
     pub is_dlc: u8,
     pub is_init: u8,
     pub usable_skill_count:u8,
     pub usable_item_count:u8,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct Group{
+    pub group:Vec<u32>,
 }
 
 impl Template for CharacterTemp {}
