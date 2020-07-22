@@ -371,7 +371,10 @@ impl RoomModel for MatchRoom {
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
         //如果房间之前是满都，就给所有人取消准备
-        if member_count == MEMBER_MAX as usize && now_count < member_count {
+        if room.get_state() == &RoomState::Await
+            && member_count == MEMBER_MAX as usize
+            && now_count < member_count
+        {
             let map = room.members.clone();
             for id in map.keys() {
                 room.prepare_cancel(id, false);
