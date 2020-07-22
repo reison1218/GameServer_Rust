@@ -3,11 +3,12 @@ package protos;
 import "base.proto";
 
 //enum ActionType {
-//Attack = 1,  //普通攻击
-//UseItem = 2, //使用道具
-//Skip = 3,    //跳过turn
-//Open = 4,    //翻块
-//Skill = 5,   //使用技能
+//    None = 0;
+//    Attack = 1;  //普通攻击
+//    UseItem = 2; //使用道具
+//    Skip = 3;    //跳过turn
+//    Open = 4;    //翻块
+//    Skill = 5;   //使用技能
 //}
 
 //翻块

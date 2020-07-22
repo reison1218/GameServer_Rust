@@ -2188,7 +2188,7 @@ pub struct BattleCharacterPt {
     // message fields
     pub user_id: u32,
     pub cter_id: u32,
-    pub location_index: u32,
+    pub index: u32,
     pub turn_order: u32,
     pub atk: u32,
     pub hp: u32,
@@ -2239,19 +2239,19 @@ impl BattleCharacterPt {
         self.cter_id = v;
     }
 
-    // uint32 location_index = 4;
+    // uint32 index = 4;
 
 
-    pub fn get_location_index(&self) -> u32 {
-        self.location_index
+    pub fn get_index(&self) -> u32 {
+        self.index
     }
-    pub fn clear_location_index(&mut self) {
-        self.location_index = 0;
+    pub fn clear_index(&mut self) {
+        self.index = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_location_index(&mut self, v: u32) {
-        self.location_index = v;
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
     }
 
     // uint32 turn_order = 5;
@@ -2343,7 +2343,7 @@ impl ::protobuf::Message for BattleCharacterPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.location_index = tmp;
+                    self.index = tmp;
                 },
                 5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -2391,8 +2391,8 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.cter_id != 0 {
             my_size += ::protobuf::rt::value_size(3, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.location_index != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.location_index, ::protobuf::wire_format::WireTypeVarint);
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.index, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.turn_order != 0 {
             my_size += ::protobuf::rt::value_size(5, self.turn_order, ::protobuf::wire_format::WireTypeVarint);
@@ -2418,8 +2418,8 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.cter_id != 0 {
             os.write_uint32(3, self.cter_id)?;
         }
-        if self.location_index != 0 {
-            os.write_uint32(4, self.location_index)?;
+        if self.index != 0 {
+            os.write_uint32(4, self.index)?;
         }
         if self.turn_order != 0 {
             os.write_uint32(5, self.turn_order)?;
@@ -2483,9 +2483,9 @@ impl ::protobuf::Message for BattleCharacterPt {
                     |m: &mut BattleCharacterPt| { &mut m.cter_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "location_index",
-                    |m: &BattleCharacterPt| { &m.location_index },
-                    |m: &mut BattleCharacterPt| { &mut m.location_index },
+                    "index",
+                    |m: &BattleCharacterPt| { &m.index },
+                    |m: &mut BattleCharacterPt| { &mut m.index },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "turn_order",
@@ -2528,7 +2528,7 @@ impl ::protobuf::Clear for BattleCharacterPt {
     fn clear(&mut self) {
         self.user_id = 0;
         self.cter_id = 0;
-        self.location_index = 0;
+        self.index = 0;
         self.turn_order = 0;
         self.atk = 0;
         self.hp = 0;
@@ -2836,16 +2836,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
     \x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\
     \rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\
-    \xc7\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12%\n\x0e\
-    location_index\x18\x04\x20\x01(\rR\rlocationIndex\x12\x1d\n\nturn_order\
-    \x18\x05\x20\x01(\rR\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03\
-    atk\x12\x0e\n\x02hp\x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\
-    \x08\x20\x01(\rR\x07defence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07u\
-    ser_id\x18\x01\x20\x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\
-    \x01(\rR\x0bchooseIndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\
-    \x12(\n\x10next_action_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06pr\
-    oto3\
+    \xb6\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x14\n\
+    \x05index\x18\x04\x20\x01(\rR\x05index\x12\x1d\n\nturn_order\x18\x05\x20\
+    \x01(\rR\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03atk\x12\x0e\
+    \n\x02hp\x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x08\x20\x01(\
+    \rR\x07defence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\
+    \x0bchooseIndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\
+    \x10next_action_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

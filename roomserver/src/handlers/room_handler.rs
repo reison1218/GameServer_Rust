@@ -215,7 +215,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let room = room.unwrap();
     //校验房间是否已经开始游戏
-    if room.is_started() {
+    if room.get_state() != &RoomState::Await {
         let str = format!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
@@ -659,8 +659,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     }
     if cter.is_some() {
         let cter = cter.unwrap();
-        let mut choice_cter = cter.clone();
-        member.chose_cter = choice_cter;
+        member.chose_cter = cter.clone();
     } else if cter_id == 0 {
         let choice_cter = Character::default();
         member.chose_cter = choice_cter;
@@ -868,7 +867,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验参数
-    if !room.check_choice_index(index as usize) {
+    if !room.battle_data.check_choice_index(index as usize) {
         let str = format!("the index is error!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(
@@ -913,7 +912,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///选择初始占位
+///选择回合顺序
 pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let mut ccl = C_CHOOSE_TURN_ORDER::new();
@@ -979,5 +978,28 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     room.choice_turn(user_id, order as usize);
+    Ok(())
+}
+
+///跳过选择回合顺序
+pub fn skip_choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        let str = format!("this player is not in the room!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        return Ok(());
+    }
+    let room = room.unwrap();
+    //判断能不能选
+    if !room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
+        let str = format!(
+            "this player is not the next choice turn player!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        return Ok(());
+    }
+    room.skip_choice_turn(user_id);
     Ok(())
 }

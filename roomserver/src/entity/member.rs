@@ -47,7 +47,8 @@ impl From<PlayerBattlePt> for Member {
 
         let v = res.to_vec();
         for i in v {
-            let cter = Character::from(i);
+            let mut cter = Character::from(i);
+            cter.user_id = pbp.user_id;
             cters.insert(cter.cter_id, cter);
         }
         member.cters = cters;

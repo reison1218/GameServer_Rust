@@ -61,6 +61,7 @@ use std::thread::Thread;
 use rayon::prelude::ParallelSliceMut;
 use futures::SinkExt;
 use std::borrow::Borrow;
+use std::hash::Hasher;
 
 
 #[macro_use]
@@ -161,9 +162,28 @@ fn test_binary(){
 enum  HH{
     AA=1,
 }
+
 struct  TT{
-    s:HH,
+    s:String,
 }
+
+impl PartialEq for TT{
+    fn eq(&self, other: &Self) -> bool {
+        self.s.eq_ignore_ascii_case(other.s.as_str())
+    }
+}
+
+impl std::cmp::Eq for TT{
+
+}
+
+impl std::hash::Hash for TT{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.s.hash(state)
+    }
+}
+
+
 
 // impl std::cmp::PartialEq<HH> for TT{
 //     fn eq(&self, other: &HH) -> bool {
@@ -187,9 +207,10 @@ macro_rules! map{
 }
 
 fn main() -> anyhow::Result<()> {
+    test_unsafe();
+
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
-
     // let i:u8 = 0;
     // let j = true;
     // println!("{}",std::mem::size_of_val(&i));
@@ -291,33 +312,42 @@ fn test_channel(){
 
 #[derive(Debug,Default)]
 struct Test{
-    str:String
+    pub str:String
 }
 
-
-async fn async_test(){
-    println!("test");
+impl Drop for Test{
+    fn drop(&mut self) {
+       println!("drop:{:?}",self.str);
+    }
 }
 
 fn test_unsafe(){
     unsafe {
-        let mut str = "test".to_owned();
-        let s_p = &str as *const String;
-        let s_p_m = &mut str as *mut String;
-        assert_eq!(s_p, s_p_m);
-        println!("s_p:{}", *s_p);
-        println!("s_p_m:{}", *s_p_m);
-        std::mem::drop(str);
-        let s_p_m = &mut *s_p_m;
-        s_p_m.push_str("sss");
-        println!("str:{:?}", s_p_m);
-
-        let address = 0x7ffee3b103af_usize;
-        let s = address as *mut String;
+        let mut test = Test{str:"test".to_owned()};
+        let test_p = &mut test as *mut Test;
+        let s = test_p.as_mut().unwrap();
+        let s1 = test_p.as_mut().unwrap();
+        s1.str.push_str("2");
+        s.str.push_str("1");
         println!("{:?}",s);
-        let s = &mut *s;
-        s.push_str("ss");
-        println!("{:?}",s);
+        println!("{:?}",s1);
+        // let mut str = "test".to_owned();
+        // let s_p = &str as *const String;
+        // let s_p_m = &mut str as *mut String;
+        // assert_eq!(s_p, s_p_m);
+        // println!("s_p:{}", *s_p);
+        // println!("s_p_m:{}", *s_p_m);
+        // std::mem::drop(str);
+        // let s_p_m = &mut *s_p_m;
+        // s_p_m.push_str("sss");
+        // println!("str:{:?}", s_p_m);
+        //
+        // let address = 0x7ffee3b103af_usize;
+        // let s = address as *mut String;
+        // println!("{:?}",s);
+        // let s = &mut *s;
+        // s.push_str("ss");
+        // println!("{:?}",s);
     }
 }
 fn test_sort(){

@@ -54,7 +54,6 @@ pub struct Room {
     room_type: u8,                        //房间类型
     owner_id: u32,                        //房主id
     state: RoomState,                     //房间状态
-    pub tile_map: TileMap,                //地图数据
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
     pub member_index: [u32; 4],           //玩家对应的位置
     pub setting: RoomSetting,             //房间设置
@@ -81,12 +80,11 @@ impl Room {
         let mut room = Room {
             id: id,
             owner_id: user_id,
-            tile_map: TileMap::default(),
             members: HashMap::new(),
             member_index: [0; 4],
             state: RoomState::Await,
             setting: RoomSetting::default(),
-            battle_data: BattleData::default(),
+            battle_data: BattleData::new(task_sender.clone(), sender.clone()),
             room_type,
             sender,
             task_sender,
@@ -105,19 +103,6 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
-    }
-
-    pub fn check_choice_index(&self, index: usize) -> bool {
-        let res = self.tile_map.map.get(index);
-        if res.is_none() {
-            return false;
-        }
-        let cell = res.unwrap();
-        if cell.id > CellType::Valid as u32 {
-            true
-        } else {
-            false
-        }
     }
 
     ///判断选择是否能选
@@ -232,12 +217,35 @@ impl Room {
             );
             self.sender.write(res);
         }
+
+        //先选出可以随机的下标
+        let mut index_v: Vec<usize> = Vec::new();
+        for index in 0..self.get_turn_orders().len() {
+            if self.get_turn_orders()[index] != 0 {
+                continue;
+            }
+            index_v.push(index);
+        }
+        let mut rand = rand::thread_rng();
+        //如果是最后一个，直接给所有未选的玩家进行随机
+        for member_id in self.members.clone().keys() {
+            //选过了就跳过
+            if self.get_turn_orders().contains(member_id) {
+                continue;
+            }
+            //系统帮忙选
+            let remove_index = rand.gen_range(0, index_v.len());
+            let index = index_v.get(remove_index).unwrap();
+            let turn_order = *index as usize;
+            self.choice_turn(*member_id, turn_order);
+            index_v.remove(remove_index);
+        }
     }
 
     ///选择占位
     pub fn choice_index(&mut self, user_id: u32, index: u32) {
         let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
-        member.cell_index = index;
+        member.cell_index = index as usize;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
         scln.set_user_id(user_id);
         scln.index = index;
@@ -266,7 +274,7 @@ impl Room {
         let res = self.check_index_over();
         //都选择完了占位，进入选择回合顺序
         if res {
-            self.build_battle_turn_task();
+            self.battle_data.build_battle_turn_task();
         } else {
             //没选择完，继续选
             self.build_choice_index_task();
@@ -292,12 +300,13 @@ impl Room {
             );
             self.sender.write(res);
         }
-        let index = self.get_next_choice_index();
+        let len = self.battle_data.turn_orders.len();
         //判断是否最后一个选的,是就进入选择占位状态
-        if index >= self.get_member_count() - 1 {
+        if len >= self.get_member_count() {
             self.state = RoomState::ChoiceIndex;
             self.set_next_choice_index(0);
         } else {
+            let index = self.get_next_choice_index();
             self.set_next_choice_index(index + 1);
         }
         let res = self.check_choice_turn_over();
@@ -397,9 +406,9 @@ impl Room {
     pub fn start_notice(&mut self) {
         let mut ssn = S_START_NOTICE::new();
         ssn.set_room_status(self.state.clone() as u32);
-        ssn.set_tile_map_id(self.tile_map.id);
+        ssn.set_tile_map_id(self.battle_data.tile_map.id);
         //封装世界块
-        for (index, id) in self.tile_map.world_cell_map.iter() {
+        for (index, id) in self.battle_data.tile_map.world_cell_map.iter() {
             let mut wcp = WorldCellPt::default();
             wcp.set_index(*index);
             wcp.set_index(*id);
@@ -651,8 +660,8 @@ impl Room {
 
     pub fn get_next_choice_user(&self) -> u32 {
         let index = self.get_next_choice_index();
-        let res = self.get_choice_orders()[index];
-        res
+        let res = self.get_choice_orders().get(index).unwrap();
+        *res
     }
 
     fn handler_leave(&mut self, user_id: u32) {
@@ -696,7 +705,7 @@ impl Room {
             } else {
                 self.set_next_turn_index(turn_index + 1);
             }
-            self.build_battle_turn_task();
+            self.battle_data.build_battle_turn_task();
         }
     }
 
@@ -816,7 +825,7 @@ impl Room {
 
     pub fn start(&mut self) {
         //生成地图
-        self.tile_map = self.generate_map();
+        self.battle_data.tile_map = self.generate_map();
         //改变房间状态
         self.state = RoomState::ChoiceTurn;
         //下发通知
@@ -835,40 +844,6 @@ impl Room {
         let tmd = TileMap::init(&TEMPLATES);
         info!("生成地图{:?}", tmd.clone());
         tmd
-    }
-
-    pub fn build_battle_turn_task(&self) {
-        let next_turn_index = self.get_next_turn_index();
-        let user_id = self.get_turn_orders()[next_turn_index];
-        let time_limit = TEMPLATES
-            .get_constant_ref()
-            .temps
-            .get("battle_turn_limit_time");
-        let mut task = Task::default();
-        if let Some(time) = time_limit {
-            let time = u64::from_str(time.value.as_str());
-            match time {
-                Ok(time) => {
-                    task.delay = time + 500;
-                }
-                Err(e) => {
-                    task.delay = 5000_u64;
-                    error!("{:?}", e);
-                }
-            }
-        } else {
-            task.delay = 5000_u64;
-            warn!("the battle_turn_limit_time of Constant config is None!pls check!");
-        }
-        task.cmd = TaskCmd::ChoiceTurnOrder as u16;
-
-        let mut map = serde_json::Map::new();
-        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
-        task.data = serde_json::Value::from(map);
-        let res = self.task_sender.send(task);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap());
-        }
     }
 
     pub fn build_choice_turn_task(&self) {

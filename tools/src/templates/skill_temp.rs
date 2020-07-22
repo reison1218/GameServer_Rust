@@ -8,7 +8,7 @@ pub struct SkillTemp {
     pub consume_type:u8,//消耗类型
     pub consume_value:u16,//消耗值
     pub cd:u8,//cd
-    pub keep_time:u8,//持续轮次数
+    pub keep_time:i8,//持续轮次数
     pub scope:u32,//范围
     pub trigger_time:u16,//触发条件
 }
@@ -20,6 +20,7 @@ impl Template for SkillTemp {}
 #[derive(Debug, Default, Clone)]
 pub struct SkillTempMgr {
     pub temps: HashMap<u32, SkillTemp>,//key:id value:celltemp
+    pub lock_skills:Vec<u32>,
 }
 
 impl SkillTempMgr {
@@ -35,6 +36,9 @@ impl SkillTempMgr {
 
     pub fn init(&mut self, t: Vec<SkillTemp>) {
         for tt in t{
+            if tt.id == 321{
+                self.lock_skills.push(tt.id);
+            }
             self.temps.insert(tt.id,tt);
         }
     }

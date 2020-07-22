@@ -55,11 +55,11 @@ pub enum RoomCode{
     //选择角色技能
     ChoiceSkill = 20014,
     //选择位置
-    ChoiceLoaction = 20015,
+    ChoiceIndex = 20015,
     //选择回合顺序
     ChoiceTurnOrder = 20016,
     //跳过回合顺序选择
-    SkipTurn = 20017,
+    SkipChoiceTurn = 20017,
     //返回最大值
     Max = 30000,
 }
