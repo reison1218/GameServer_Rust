@@ -34,10 +34,10 @@ impl Cell {
     pub fn check_is_locked(&self) -> bool {
         for buff in self.buff.iter() {
             if buff.id == 321 {
-                return false;
+                return true;
             }
         }
-        true
+        false
     }
 }
 

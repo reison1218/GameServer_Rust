@@ -80,11 +80,11 @@ pub struct Action {
 #[derive(Clone, Debug)]
 pub struct BattleData {
     pub tile_map: TileMap,                          //地图数据
-    pub choice_orders: Vec<u32>,                    //选择顺序里面放玩家id
+    pub choice_orders: [u32; 4],                    //选择顺序里面放玩家id
     pub next_choice_index: usize,                   //下一个选择的下标
     pub next_turn_index: usize,                     //下个turn的下标
     pub turn_action: ActionUnit,                    //当前回合数据单元封装
-    pub turn_orders: Vec<u32>,                      //turn行动队列，里面放玩家id
+    pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     task_sender: crossbeam::Sender<Task>,           //任务sender
     sender: TcpSender,                              //sender
@@ -94,11 +94,11 @@ impl BattleData {
     pub fn new(task_sender: crossbeam::Sender<Task>, sender: TcpSender) -> Self {
         BattleData {
             tile_map: TileMap::default(),
-            choice_orders: Vec::new(),
+            choice_orders: [0; 4],
             next_choice_index: 0,
             next_turn_index: 0,
             turn_action: ActionUnit::default(),
-            turn_orders: Vec::new(),
+            turn_orders: [0; 4],
             battle_cter: HashMap::new(),
             task_sender,
             sender,
@@ -303,10 +303,8 @@ impl BattleData {
             let source_index = *target_array.get(0).unwrap() as usize;
             let target_index = *target_array.get(1).unwrap() as usize;
             self.change_index(user_id, source_index, target_index);
-        }
-
-        //展示地图块
-        if skill_judge == SkillJudge::ShowIndex as u16 {
+        } else if skill_judge == SkillJudge::ShowIndex as u16 {
+            //展示地图块
             if target_array.is_none() {
                 return;
             }
@@ -314,12 +312,10 @@ impl BattleData {
             if target.is_empty() {
                 return;
             }
-            let index = target.get(0).unwrap() as usize;
-            self.show_index(user_id, index);
-        }
-
-        //相临玩家造成3点伤害，持续1轮
-        if skill_judge == SkillJudge::AddSkillDamgeBuff as u16 {
+            let index = *target.get(0).unwrap() as usize;
+            self.show_index(index);
+        } else if skill_judge == SkillJudge::AddSkillDamgeBuff as u16 {
+            //相临玩家造成3点伤害，持续1轮
             self.damge_near_user_move_to(skill_id);
         }
     }
@@ -355,8 +351,10 @@ impl BattleData {
         }
 
         //翻开的地图块不能展示
-        if cell.pair_index > 0 {
-            return;
+        if let Some(pair_index) = cell.pair_index {
+            if pair_index > 0 {
+                return;
+            }
         }
 
         //todo 下发给客户端
@@ -411,7 +409,15 @@ impl BattleData {
     ///新建战斗回合定时器任务
     pub fn build_battle_turn_task(&self) {
         let next_turn_index = self.next_turn_index;
-        let user_id = self.turn_orders.get(next_turn_index).unwrap();
+        let user_id = self.turn_orders.get(next_turn_index);
+        if user_id.is_none() {
+            error!(
+                "user_id is none!next_turn_index:{},turn_orders:{:?}",
+                next_turn_index, self.turn_orders
+            );
+            return;
+        }
+        let user_id = user_id.unwrap();
         let time_limit = TEMPLATES
             .get_constant_ref()
             .temps

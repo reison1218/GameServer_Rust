@@ -881,9 +881,10 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验是否轮到他了
     if !room.is_can_choice_now(RoomState::ChoiceIndex, user_id) {
-        let str = format!(
-            "this player is not the next choice location player!user_id:{}",
-            user_id
+        let str =
+            format!(
+            "this player is not the next choice index player!user_id:{},index:{},choice_order:{:?}",
+            user_id,room.get_next_choice_index(),room.battle_data.choice_orders
         );
         warn!("{:?}", str.as_str());
         err_back(
@@ -949,8 +950,8 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //判断能不能选
     if !room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
         let str = format!(
-            "this player is not the next choice turn player!user_id:{}",
-            user_id
+            "this player is not the next choice turn player!user_id:{},order:{:?}",
+            user_id, room.battle_data.choice_orders
         );
         warn!("{:?}", str.as_str());
         err_back(

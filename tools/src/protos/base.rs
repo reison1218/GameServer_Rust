@@ -2188,8 +2188,6 @@ pub struct BattleCharacterPt {
     // message fields
     pub user_id: u32,
     pub cter_id: u32,
-    pub index: u32,
-    pub turn_order: u32,
     pub atk: u32,
     pub hp: u32,
     pub defence: u32,
@@ -2224,7 +2222,7 @@ impl BattleCharacterPt {
         self.user_id = v;
     }
 
-    // uint32 cter_id = 3;
+    // uint32 cter_id = 2;
 
 
     pub fn get_cter_id(&self) -> u32 {
@@ -2239,37 +2237,7 @@ impl BattleCharacterPt {
         self.cter_id = v;
     }
 
-    // uint32 index = 4;
-
-
-    pub fn get_index(&self) -> u32 {
-        self.index
-    }
-    pub fn clear_index(&mut self) {
-        self.index = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_index(&mut self, v: u32) {
-        self.index = v;
-    }
-
-    // uint32 turn_order = 5;
-
-
-    pub fn get_turn_order(&self) -> u32 {
-        self.turn_order
-    }
-    pub fn clear_turn_order(&mut self) {
-        self.turn_order = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_turn_order(&mut self, v: u32) {
-        self.turn_order = v;
-    }
-
-    // uint32 atk = 6;
+    // uint32 atk = 3;
 
 
     pub fn get_atk(&self) -> u32 {
@@ -2284,7 +2252,7 @@ impl BattleCharacterPt {
         self.atk = v;
     }
 
-    // uint32 hp = 7;
+    // uint32 hp = 4;
 
 
     pub fn get_hp(&self) -> u32 {
@@ -2299,7 +2267,7 @@ impl BattleCharacterPt {
         self.hp = v;
     }
 
-    // uint32 defence = 8;
+    // uint32 defence = 5;
 
 
     pub fn get_defence(&self) -> u32 {
@@ -2331,42 +2299,28 @@ impl ::protobuf::Message for BattleCharacterPt {
                     let tmp = is.read_uint32()?;
                     self.user_id = tmp;
                 },
-                3 => {
+                2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
                     self.cter_id = tmp;
                 },
-                4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.index = tmp;
-                },
-                5 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.turn_order = tmp;
-                },
-                6 => {
+                3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
                     self.atk = tmp;
                 },
-                7 => {
+                4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
                     self.hp = tmp;
                 },
-                8 => {
+                5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -2389,22 +2343,16 @@ impl ::protobuf::Message for BattleCharacterPt {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.index != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.index, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.turn_order != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.turn_order, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.atk != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.atk, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.atk, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.hp != 0 {
-            my_size += ::protobuf::rt::value_size(7, self.hp, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.hp, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.defence != 0 {
-            my_size += ::protobuf::rt::value_size(8, self.defence, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(5, self.defence, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -2416,22 +2364,16 @@ impl ::protobuf::Message for BattleCharacterPt {
             os.write_uint32(1, self.user_id)?;
         }
         if self.cter_id != 0 {
-            os.write_uint32(3, self.cter_id)?;
-        }
-        if self.index != 0 {
-            os.write_uint32(4, self.index)?;
-        }
-        if self.turn_order != 0 {
-            os.write_uint32(5, self.turn_order)?;
+            os.write_uint32(2, self.cter_id)?;
         }
         if self.atk != 0 {
-            os.write_uint32(6, self.atk)?;
+            os.write_uint32(3, self.atk)?;
         }
         if self.hp != 0 {
-            os.write_uint32(7, self.hp)?;
+            os.write_uint32(4, self.hp)?;
         }
         if self.defence != 0 {
-            os.write_uint32(8, self.defence)?;
+            os.write_uint32(5, self.defence)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2483,16 +2425,6 @@ impl ::protobuf::Message for BattleCharacterPt {
                     |m: &mut BattleCharacterPt| { &mut m.cter_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "index",
-                    |m: &BattleCharacterPt| { &m.index },
-                    |m: &mut BattleCharacterPt| { &mut m.index },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "turn_order",
-                    |m: &BattleCharacterPt| { &m.turn_order },
-                    |m: &mut BattleCharacterPt| { &mut m.turn_order },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "atk",
                     |m: &BattleCharacterPt| { &m.atk },
                     |m: &mut BattleCharacterPt| { &mut m.atk },
@@ -2528,8 +2460,6 @@ impl ::protobuf::Clear for BattleCharacterPt {
     fn clear(&mut self) {
         self.user_id = 0;
         self.cter_id = 0;
-        self.index = 0;
-        self.turn_order = 0;
         self.atk = 0;
         self.hp = 0;
         self.defence = 0;
@@ -2836,15 +2766,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
     \x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\
     \rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\
-    \xb6\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x14\n\
-    \x05index\x18\x04\x20\x01(\rR\x05index\x12\x1d\n\nturn_order\x18\x05\x20\
-    \x01(\rR\tturnOrder\x12\x10\n\x03atk\x18\x06\x20\x01(\rR\x03atk\x12\x0e\
-    \n\x02hp\x18\x07\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x08\x20\x01(\
-    \rR\x07defence\"\x8a\x01\n\x0eBattleActionPt\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\
-    \x0bchooseIndex\x12\x12\n\x04skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\
-    \x10next_action_user\x18\x04\x20\x01(\rR\x0enextActionUserb\x06proto3\
+    \x81\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x10\n\
+    \x03atk\x18\x03\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x04\x20\x01(\rR\
+    \x02hp\x12\x18\n\x07defence\x18\x05\x20\x01(\rR\x07defence\"\x8a\x01\n\
+    \x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bchooseIndex\x12\x12\n\x04\
+    skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_action_user\x18\x04\
+    \x20\x01(\rR\x0enextActionUserb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

@@ -49,7 +49,6 @@ pub struct BattleCharacter {
     pub skills: Vec<Skill>,              //玩家选择的主动技能id
     pub passive_skills: Vec<Skill>,      //被动技能id
     pub target_id: u32,                  //玩家目标
-    pub turn_order: u32,                 //行动回合顺序
     pub buff_array: Vec<Skill>,          //角色身上的buff
     pub state: u8,                       //角色状态
     pub residue_open_times: u32,         //剩余翻地图块次数
@@ -121,8 +120,6 @@ impl BattleCharacter {
         battle_cter_pt.hp = self.hp as u32;
         battle_cter_pt.defence = self.defence;
         battle_cter_pt.atk = self.atk;
-        battle_cter_pt.set_index(self.cell_index as u32);
-        battle_cter_pt.set_turn_order(self.turn_order);
         battle_cter_pt
     }
 }

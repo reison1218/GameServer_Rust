@@ -78,7 +78,7 @@ impl Room {
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
         let mut room = Room {
-            id: id,
+            id,
             owner_id: user_id,
             members: HashMap::new(),
             member_index: [0; 4],
@@ -122,18 +122,24 @@ impl Room {
         self.battle_data.next_choice_index
     }
 
+    pub fn add_next_choice_index(&mut self) {
+        self.battle_data.next_choice_index += 1;
+    }
+
+    pub fn add_next_turn_index(&mut self) {
+        self.battle_data.next_turn_index += 1;
+    }
+
     pub fn get_turn_orders(&self) -> &[u32] {
         &self.battle_data.turn_orders[..]
     }
 
     pub fn insert_turn_orders(&mut self, index: usize, user_id: u32) {
         let size = self.battle_data.turn_orders.len() as isize;
-        if index as isize >= size - 1 {
-            self.battle_data.turn_orders.push(user_id);
-        } else {
-            self.battle_data.turn_orders.remove(index);
-            self.battle_data.turn_orders.insert(index, user_id);
+        if index as isize > size - 1 {
+            return;
         }
+        self.battle_data.turn_orders[index] = user_id;
     }
 
     pub fn remove_turn_orders(&mut self, index: usize) {
@@ -141,7 +147,7 @@ impl Room {
         if index as isize > size - 1 {
             return;
         }
-        self.battle_data.turn_orders.remove(index);
+        self.battle_data.turn_orders[index] = 0;
     }
 
     pub fn get_choice_orders(&self) -> &[u32] {
@@ -149,21 +155,19 @@ impl Room {
     }
 
     pub fn remove_choice_order(&mut self, index: usize) {
-        let size = self.battle_data.turn_orders.len() as isize;
+        let size = self.battle_data.choice_orders.len() as isize;
         if index as isize > size - 1 {
             return;
         }
-        self.battle_data.choice_orders.remove(index as usize);
+        self.battle_data.choice_orders[index] = 0;
     }
 
     pub fn insert_choice_order(&mut self, index: usize, user_id: u32) {
         let size = self.battle_data.choice_orders.len() as isize;
-        if index as isize >= size - 1 {
-            self.battle_data.choice_orders.push(user_id);
-        } else {
-            self.battle_data.choice_orders.remove(index);
-            self.battle_data.choice_orders.insert(index, user_id);
+        if index as isize > size - 1 {
+            return;
         }
+        self.battle_data.choice_orders[index] = user_id;
     }
 
     pub fn get_next_turn_index(&self) -> usize {
@@ -198,10 +202,12 @@ impl Room {
 
     ///选择跳过
     pub fn skip_choice_turn(&mut self, user_id: u32) {
-        let index = self.get_next_choice_index();
-        if index < self.get_member_count() - 1 {
-            self.set_next_choice_index(index + 1);
-        }
+        let mut index = self.get_next_choice_index();
+        info!(
+            "choice skpi_choice_turn user_id:{},index:{},choice_order:{:?}",
+            user_id, index, self.battle_data.choice_orders
+        );
+        self.add_next_choice_index();
         let mut sstcn = S_SKIP_TURN_CHOICE_NOTICE::new();
         sstcn.user_id = user_id;
         let bytes = sstcn.write_to_bytes().unwrap();
@@ -218,6 +224,72 @@ impl Room {
             self.sender.write(res);
         }
 
+        let is_all_choice = self.check_is_all_choice_turn();
+        index = self.get_next_choice_index();
+        let size = self.get_member_count();
+        if is_all_choice {
+            self.state = RoomState::ChoiceIndex;
+            self.set_next_choice_index(0);
+        } else if index >= size {
+            self.random_choice_turn();
+        }
+    }
+
+    ///选择占位
+    pub fn choice_index(&mut self, user_id: u32, index: u32) {
+        let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
+        member.cell_index = index as usize;
+        let mut scln = S_CHOOSE_INDEX_NOTICE::new();
+        scln.set_user_id(user_id);
+        scln.index = index;
+        let bytes = scln.write_to_bytes().unwrap();
+        //通知给房间成员
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::ChoiceLoactionNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+
+        self.add_next_choice_index();
+        //校验是否选完了
+        if self.get_next_choice_index() >= self.get_member_count() {
+            self.state = RoomState::BattleStarted;
+            self.set_next_choice_index(0);
+        }
+
+        //选完了就进入战斗
+        let res = self.check_index_over();
+        //都选择完了占位，进入选择回合顺序
+        if res {
+            self.battle_data.build_battle_turn_task();
+        } else {
+            //没选择完，继续选
+            self.build_choice_index_task();
+        }
+    }
+
+    //检查是否都选了回合顺序
+    pub fn check_is_all_choice_turn(&self) -> bool {
+        let index = self.get_next_choice_index();
+        if index >= self.get_member_count() {
+            for i in self.battle_data.turn_orders.iter() {
+                if i == &0 {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+        true
+    }
+
+    //给没选都人随机回合顺序
+    pub fn random_choice_turn(&mut self) {
         //先选出可以随机的下标
         let mut index_v: Vec<usize> = Vec::new();
         for index in 0..self.get_turn_orders().len() {
@@ -242,45 +314,6 @@ impl Room {
         }
     }
 
-    ///选择占位
-    pub fn choice_index(&mut self, user_id: u32, index: u32) {
-        let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
-        member.cell_index = index as usize;
-        let mut scln = S_CHOOSE_INDEX_NOTICE::new();
-        scln.set_user_id(user_id);
-        scln.index = index;
-        let bytes = scln.write_to_bytes().unwrap();
-        //通知给房间成员
-        for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::ChoiceLoactionNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
-        }
-
-        let index = self.get_next_choice_index();
-        //校验是否选完了
-        if index >= self.get_member_count() - 1 {
-            self.state = RoomState::BattleStarted;
-        } else {
-            self.set_next_choice_index(index + 1);
-        }
-
-        //选完了就进入战斗
-        let res = self.check_index_over();
-        //都选择完了占位，进入选择回合顺序
-        if res {
-            self.battle_data.build_battle_turn_task();
-        } else {
-            //没选择完，继续选
-            self.build_choice_index_task();
-        }
-    }
-
     ///选择回合
     pub fn choice_turn(&mut self, user_id: u32, order: usize) {
         //如果玩家选择的
@@ -300,15 +333,27 @@ impl Room {
             );
             self.sender.write(res);
         }
-        let len = self.battle_data.turn_orders.len();
-        //判断是否最后一个选的,是就进入选择占位状态
-        if len >= self.get_member_count() {
+        let mut index = self.get_next_choice_index();
+        info!(
+            "choice choice_turn user_id:{},index:{},choice_order:{:?}",
+            user_id, index, self.battle_data.choice_orders
+        );
+        //index+1
+        self.add_next_choice_index();
+        index = self.get_next_choice_index();
+        let size = self.get_member_count();
+        let is_all_choice = self.check_is_all_choice_turn();
+        if is_all_choice {
             self.state = RoomState::ChoiceIndex;
             self.set_next_choice_index(0);
-        } else {
-            let index = self.get_next_choice_index();
-            self.set_next_choice_index(index + 1);
+            info!(
+                "choice_turn finish!turn_order:{:?}",
+                self.battle_data.turn_orders
+            );
+        } else if index >= size {
+            self.random_choice_turn();
         }
+
         let res = self.check_choice_turn_over();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
@@ -660,8 +705,24 @@ impl Room {
 
     pub fn get_next_choice_user(&self) -> u32 {
         let index = self.get_next_choice_index();
-        let res = self.get_choice_orders().get(index).unwrap();
-        *res
+        let res = self.get_choice_orders().get(index);
+        if res.is_none() {
+            error!("get_next_choice_user is none for index:{} ", index);
+            return 0;
+        }
+        let user_id = *res.unwrap();
+        user_id
+    }
+
+    pub fn get_next_turn_user(&self) -> u32 {
+        let index = self.get_next_turn_index();
+        let res = self.get_turn_orders().get(index);
+        if res.is_none() {
+            error!("get_next_turn_user is none for index:{} ", index);
+            return 0;
+        }
+        let user_id = *res.unwrap();
+        user_id
     }
 
     fn handler_leave(&mut self, user_id: u32) {
@@ -684,28 +745,48 @@ impl Room {
             turn_index += 1;
         }
         if self.state == RoomState::ChoiceTurn {
+            let next_choice_user = self.get_next_choice_user();
             //处理选择回合顺序
             self.remove_choice_order(chocie_index);
             if chocie_index < self.get_member_count() - 1 {
-                self.set_next_choice_index(chocie_index + 1);
-                self.build_choice_turn_task();
+                //如果下一个选择都玩家正好是离开了的玩家，就下一个
+                if next_choice_user == user_id {
+                    self.add_next_choice_index();
+                    self.build_choice_turn_task();
+                }
             }
         } else if self.state == RoomState::ChoiceIndex {
+            let next_choice_user = self.get_next_choice_user();
             //处理选择占位
             self.remove_choice_order(chocie_index);
             if chocie_index < self.get_member_count() - 1 {
-                self.set_next_choice_index(chocie_index + 1);
+                //如果下一个选择都玩家正好是离开了的玩家，就下一个
+                if next_choice_user == user_id {
+                    self.add_next_choice_index();
+                }
+                if self.get_next_index_index() >= self.get_member_count() {
+                    self.set_next_index_index(0);
+                }
+                self.build_choice_index_task();
+            } else {
                 self.build_choice_index_task();
             }
         } else if self.state == RoomState::BattleStarted {
+            let next_turn_user = self.get_next_turn_user();
             //处理正在开始的战斗
             self.remove_turn_orders(turn_index);
-            if self.get_next_turn_index() >= self.get_member_count() - 1 {
-                self.set_next_turn_index(0);
+            if self.get_next_turn_index() < self.get_member_count() - 1 {
+                if next_turn_user == user_id {
+                    self.add_next_turn_index();
+                }
+                if self.get_next_turn_index() >= self.get_member_count() {
+                    self.set_next_turn_index(0);
+                }
+                self.battle_data.build_battle_turn_task();
             } else {
-                self.set_next_turn_index(turn_index + 1);
+                self.set_next_turn_index(0);
+                self.battle_data.build_battle_turn_task();
             }
-            self.battle_data.build_battle_turn_task();
         }
     }
 
@@ -798,7 +879,6 @@ impl Room {
     }
 
     pub fn cter_2_battle_cter(&mut self) {
-        let member_size = self.members.len();
         for member in self.members.values_mut() {
             let battle_cter = BattleCharacter::init(&member.chose_cter);
             match battle_cter {
@@ -810,10 +890,7 @@ impl Room {
                 }
             }
         }
-        self.battle_data.turn_orders = Vec::with_capacity(member_size);
     }
-
-    pub fn random_location_order(&mut self) {}
 
     pub fn is_started(&self) -> bool {
         if self.state != RoomState::BattleStarted {

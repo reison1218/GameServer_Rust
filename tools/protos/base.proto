@@ -83,12 +83,10 @@ message CharacterPt{
 //玩家战斗角色数据
 message BattleCharacterPt{
     uint32 user_id = 1;                 //玩家id
-    uint32 cter_id = 3;                 //角色id
-    uint32 index = 4;                   //角色位置
-    uint32 turn_order = 5;              //行动顺序
-    uint32 atk = 6;                     //攻击力
-    uint32 hp = 7;                      //角色血量
-    uint32 defence = 8;                 //角色防御
+    uint32 cter_id = 2;                 //角色id
+    uint32 atk = 3;                     //攻击力
+    uint32 hp = 4;                      //角色血量
+    uint32 defence = 5;                 //角色防御
 }
 
 message BattleActionPt{
