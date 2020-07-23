@@ -353,7 +353,6 @@ impl Room {
         } else if index >= size {
             self.random_choice_turn();
         }
-
         let res = self.check_choice_turn_over();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
@@ -725,10 +724,106 @@ impl Room {
         user_id
     }
 
+    ///处理选择回合顺序时候的离开
+    fn handler_leave_choice_turn(&mut self, user_id: u32, index: usize) {
+        let next_turn_user = self.get_next_choice_user();
+        let member_size = self.get_member_count();
+        if member_size == 1 {
+            return;
+        }
+        let last_order_user = self.battle_data.choice_orders[member_size - 1];
+
+        //处理正在开始的战斗
+        self.remove_choice_order(index);
+        //如果当前离开玩家不是当前顺序则退出
+        if next_turn_user != user_id {
+            return;
+        }
+        //如果当前玩家正好处于最后一个顺序
+        if last_order_user == user_id {
+            self.set_next_choice_index(0);
+            self.state = RoomState::ChoiceIndex;
+            //系统帮忙选回合顺序
+            self.random_choice_turn();
+            let mut sbs = S_BATTLE_CHARACTER_NOTICE::new();
+            self.cter_2_battle_cter();
+            for battle_cter in self.battle_data.battle_cter.values() {
+                sbs.battle_cters.push(battle_cter.convert_to_battle_cter());
+            }
+
+            let bytes = sbs.write_to_bytes().unwrap();
+            for id in self.members.keys() {
+                let res = Packet::build_packet_bytes(
+                    ClientCode::BattleStartNotice as u32,
+                    *id,
+                    bytes.clone(),
+                    true,
+                    true,
+                );
+                self.sender.write(res);
+            }
+            //开始执行占位逻辑
+            self.build_choice_index_task();
+        } else {
+            //不是最后一个就轮到下一个
+            self.add_next_choice_index();
+            self.build_choice_turn_task();
+        }
+    }
+
+    ///处理选择占位时候的离开
+    fn handler_leave_choice_index(&mut self, user_id: u32, index: usize) {
+        let next_turn_user = self.get_next_choice_user();
+        let member_size = self.get_member_count();
+        if member_size == 1 {
+            return;
+        }
+        let last_order_user = self.battle_data.choice_orders[member_size - 1];
+        self.remove_choice_order(index);
+        //如果当前离开的玩家不是当前顺序就退出
+        if next_turn_user != user_id {
+            return;
+        }
+        //如果当前玩家正好处于最后一个顺序
+        if last_order_user == user_id {
+            self.state = RoomState::BattleStarted;
+            self.set_next_choice_index(0);
+            self.battle_data.build_battle_turn_task();
+        } else {
+            //不是最后一个就轮到下一个
+            self.add_next_choice_index();
+            self.build_choice_index_task();
+        }
+    }
+
+    ///处理选择战斗回合时候的离开
+    fn handler_leave_battle_turn(&mut self, user_id: u32, index: usize) {
+        let next_turn_user = self.get_next_turn_user();
+        let member_size = self.get_member_count();
+        if member_size == 1 {
+            return;
+        }
+        let last_order_user = self.battle_data.choice_orders[member_size - 1];
+        self.remove_turn_orders(index);
+        //如果当前离开的玩家不是当前顺序就退出
+        if next_turn_user != user_id {
+            return;
+        }
+        //如果当前玩家正好处于最后一个顺序
+        if last_order_user == user_id {
+            self.set_next_turn_index(0);
+            self.battle_data.build_battle_turn_task();
+        } else {
+            //不是最后一个就轮到下一个
+            self.add_next_turn_index();
+            self.battle_data.build_battle_turn_task();
+        }
+    }
+
+    ///处理玩家离开
     fn handler_leave(&mut self, user_id: u32) {
         let mut chocie_index = 0;
         let mut turn_index = 0;
-
         //找出离开玩家的选择下标
         for i in self.get_choice_orders() {
             if i == &user_id {
@@ -745,48 +840,11 @@ impl Room {
             turn_index += 1;
         }
         if self.state == RoomState::ChoiceTurn {
-            let next_choice_user = self.get_next_choice_user();
-            //处理选择回合顺序
-            self.remove_choice_order(chocie_index);
-            if chocie_index < self.get_member_count() - 1 {
-                //如果下一个选择都玩家正好是离开了的玩家，就下一个
-                if next_choice_user == user_id {
-                    self.add_next_choice_index();
-                    self.build_choice_turn_task();
-                }
-            }
+            self.handler_leave_choice_turn(user_id, chocie_index);
         } else if self.state == RoomState::ChoiceIndex {
-            let next_choice_user = self.get_next_choice_user();
-            //处理选择占位
-            self.remove_choice_order(chocie_index);
-            if chocie_index < self.get_member_count() - 1 {
-                //如果下一个选择都玩家正好是离开了的玩家，就下一个
-                if next_choice_user == user_id {
-                    self.add_next_choice_index();
-                }
-                if self.get_next_index_index() >= self.get_member_count() {
-                    self.set_next_index_index(0);
-                }
-                self.build_choice_index_task();
-            } else {
-                self.build_choice_index_task();
-            }
+            self.handler_leave_choice_index(user_id, chocie_index);
         } else if self.state == RoomState::BattleStarted {
-            let next_turn_user = self.get_next_turn_user();
-            //处理正在开始的战斗
-            self.remove_turn_orders(turn_index);
-            if self.get_next_turn_index() < self.get_member_count() - 1 {
-                if next_turn_user == user_id {
-                    self.add_next_turn_index();
-                }
-                if self.get_next_turn_index() >= self.get_member_count() {
-                    self.set_next_turn_index(0);
-                }
-                self.battle_data.build_battle_turn_task();
-            } else {
-                self.set_next_turn_index(0);
-                self.battle_data.build_battle_turn_task();
-            }
+            self.handler_leave_battle_turn(user_id, turn_index);
         }
     }
 

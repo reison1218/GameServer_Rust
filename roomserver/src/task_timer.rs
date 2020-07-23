@@ -269,16 +269,6 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
     room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
-    if !room.is_empty() {
-        //判断是否最后一个选的,是就进入选择占位状态
-        if room.get_next_choice_index() >= room.get_member_count() {
-            room.set_status(RoomState::BattleStarted);
-            room.set_next_choice_index(0);
-            room.battle_data.build_battle_turn_task();
-        } else {
-            room.build_choice_index_task();
-        }
-    }
     write.player_room.remove(&user_id);
 }
 
