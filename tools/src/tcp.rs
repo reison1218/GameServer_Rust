@@ -225,7 +225,13 @@ pub mod tcp_server {
                     Ok(data) => {
                         let token = data.token;
                         let bytes = data.bytes;
-                        let mut write = connections.write().unwrap();
+                        let write = connections.write();
+                        if let Err(e) = write{
+                            error!("{:?}",e);
+                            continue;
+                        }
+                        let mut write = write.unwrap();
+
                         let res: Option<&mut MioTcpStream> = write.get_mut(&token);
                         match res {
                             Some(ts) => {
@@ -400,16 +406,27 @@ pub trait ClientHandler: Send + Sync {
     fn get_address(&self) -> &str;
     ///start read mess from server
     fn on_read(&mut self, address: String) {
-        let mut read = new_tcp_client(address.as_str());
-        let write = read.try_clone().unwrap();
+        let read = new_tcp_client(address.as_str());
+        if let Err(e) = read{
+            error!("{:?}",e);
+            return;
+        }
+        let mut read = read.unwrap();
+        let write = read.try_clone();
+        if let Err(e) = write{
+            error!("{:?}",e);
+            return;
+        }
+        let write = write.unwrap();
+
         self.on_open(write);
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
         loop {
             //读取从tcp服务端发过来的数据
             let size = read.read(&mut read_bytes);
-            if size.is_err() {
-                error!("TCP-CLIENT:{:?}", size.unwrap_err());
+            if let Err(e) = size {
+                error!("TCP-CLIENT:{:?}", e);
                 self.on_close();
                 break;
             }
@@ -433,7 +450,7 @@ pub trait ClientHandler: Send + Sync {
 
 ///new tcp client
 #[warn(unused_assignments)]
-pub fn new_tcp_client(address: &str) -> TcpStream {
+pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream>{
     let mut ts: Option<std::io::Result<TcpStream>>;
     let result: Option<TcpStream>;
     let dur = Duration::from_secs(5);
@@ -452,26 +469,27 @@ pub fn new_tcp_client(address: &str) -> TcpStream {
 
     let result = result.unwrap();
     //设置参数
-    set_tream_param(&result);
+    set_tream_param(&result)?;
     info!("连接服务器成功！{:?}", address);
-    result
+    Ok(result)
 }
 
 ///set tcp params
-fn set_tream_param(ts: &TcpStream) {
+fn set_tream_param(ts: &TcpStream)->anyhow::Result<()> {
     //No package, direct send
-    ts.set_nodelay(true).unwrap();
+    ts.set_nodelay(true)?;
     //ts.set_read_timeout(Some(Duration::from_millis(50)))
     //TCP receive buffer size
-    ts.set_recv_buffer_size(1024 * 16 as usize).unwrap();
+    ts.set_recv_buffer_size(1024 * 16 as usize)?;
     //TCP send buffer size
-    ts.set_send_buffer_size(1024 * 16 as usize).unwrap();
+    ts.set_send_buffer_size(1024 * 16 as usize)?;
     //When TCP is off, wait 5s for the data to be processed
     let d = Duration::from_secs(5);
-    ts.set_linger(Some(d)).unwrap();
+    ts.set_linger(Some(d))?;
     //tTcp2 is tested connection every 2 hours
     let d = Duration::from_secs(3600 * 2);
-    ts.set_keepalive(Some(d)).unwrap();
+    ts.set_keepalive(Some(d))?;
+    Ok(())
 }
 
 ///New TCP connection (for client)

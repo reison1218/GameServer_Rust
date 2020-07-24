@@ -142,16 +142,26 @@ impl BattleData {
         //todo 通知客户端
     }
 
-    pub fn get_next_turn_user(&self) -> u32 {
+    pub fn get_next_turn_user(&self) -> anyhow::Result<u32> {
         let index = self.next_turn_index;
-        *self.turn_orders.get(index).unwrap()
+        let res = self.turn_orders.get(index);
+        if let None = res {
+            let str = format!("get_next_turn_user is none!index:{}", index);
+            anyhow::bail!(str)
+        }
+        let user_id = *res.unwrap();
+        Ok(user_id)
     }
 
     ///翻地图块
     pub fn open_cell(&mut self, index: usize) {
         //todo 此处应该计算技能cd
         let user_id = self.get_next_turn_user();
-
+        if let Err(e) = user_id {
+            error!("{:?}", e);
+            return;
+        }
+        let user_id = user_id.unwrap();
         unsafe {
             let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
@@ -323,6 +333,11 @@ impl BattleData {
     //其他玩家移动到与你相邻的地图块时，对其造成3点伤害。持续1轮。
     pub fn damge_near_user_move_to(&mut self, skill_id: u32) {
         let user_id = self.get_next_turn_user();
+        if let Err(e) = user_id {
+            error!("{:?}", e);
+            return;
+        }
+        let user_id = user_id.unwrap();
         let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
         let skill = battle_cter.skills.get(skill_id as usize);
         //校验技能合法性

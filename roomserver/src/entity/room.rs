@@ -143,23 +143,29 @@ impl Room {
         }
         let user_id = self.get_choice_user(Some(index));
         if let Ok(user_id) = user_id {
-            if user_id == 0 {
-                self.add_next_choice_index();
+            if user_id != 0 {
+                return;
             }
+            self.add_next_choice_index();
+        } else {
+            warn!("{:?}", user_id.err().unwrap());
         }
     }
 
     pub fn add_next_turn_index(&mut self) {
         self.battle_data.next_turn_index += 1;
-        let index = self.battle_data.next_choice_index;
+        let index = self.battle_data.next_turn_index;
         if index > (MEMBER_MAX - 1) as usize {
             return;
         }
         let user_id = self.get_turn_user(Some(index));
         if let Ok(user_id) = user_id {
-            if user_id == 0 {
-                self.add_next_turn_index();
+            if user_id != 0 {
+                return;
             }
+            self.add_next_turn_index();
+        } else {
+            warn!("{:?}", user_id.err().unwrap());
         }
     }
 
@@ -262,7 +268,12 @@ impl Room {
 
     ///选择占位
     pub fn choice_index(&mut self, user_id: u32, index: u32) {
-        let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
+        let member = self.get_battle_cter_mut_ref(&user_id);
+        if member.is_none() {
+            error!("choice_index member is none!user_id:{}", user_id);
+            return;
+        }
+        let member = member.unwrap();
         member.cell_index = index as usize;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
         scln.set_user_id(user_id);
@@ -315,9 +326,6 @@ impl Room {
 
     //给没选都人随机回合顺序
     pub fn random_choice_turn(&mut self) {
-        if self.state != RoomState::ChoiceTurn {
-            return;
-        }
         //先选出可以随机的下标
         let mut index_v: Vec<usize> = Vec::new();
         for index in 0..MEMBER_MAX as usize {
