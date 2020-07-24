@@ -18,7 +18,13 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = res.unwrap();
-    if room.get_next_choice_user() != user_id {
+    let next_user = room.get_choice_user(None);
+    if let Err(e) = next_user {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let next_user = next_user.unwrap();
+    if next_user != user_id {
         return Ok(());
     }
     //校验房间状态
@@ -169,8 +175,12 @@ fn skip_choice_turn(rm: &mut Room, user_id: u32) {
 
 ///校验现在是不是该玩家回合
 fn check_is_user_turn(rm: &Room, user_id: u32) -> bool {
-    let index = rm.get_next_choice_index();
-    let next_user = rm.get_choice_orders()[index];
+    let next_user = rm.get_turn_user(None);
+    if let Err(e) = next_user {
+        error!("{:?}", e);
+        return false;
+    }
+    let next_user = next_user.unwrap();
     if next_user != user_id {
         return false;
     }

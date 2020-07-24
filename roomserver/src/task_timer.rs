@@ -263,8 +263,13 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if room.get_state() != &RoomState::ChoiceIndex {
         return;
     }
+    let next_user = room.get_turn_user(None);
+    if let Err(_) = next_user {
+        return;
+    }
+    let next_user = next_user.unwrap();
     //判断是否轮到自己
-    if room.get_next_choice_user() != user_id {
+    if next_user != user_id {
         return;
     }
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
@@ -304,8 +309,12 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
 
     //判断当前是不是轮到自己选
-    let index = room.get_next_choice_index();
-    let next_user = room.get_choice_orders()[index];
+    let next_user = room.get_choice_user(None);
+    if let Err(e) = next_user {
+        warn!("{:?}", e);
+        return;
+    }
+    let next_user = next_user.unwrap();
     if next_user != user_id {
         warn!(
             "timer choice_turn next_user!=user_id!next_user:{},user_id:{}",
@@ -343,8 +352,12 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let room = room.unwrap();
 
-    let next_index = room.get_next_turn_index();
-    let next_user_id = room.get_turn_orders()[next_index];
+    let next_user_id = room.get_turn_user(None);
+    if let Err(e) = next_user_id {
+        warn!("{:?}", e);
+        return;
+    }
+    let next_user_id = next_user_id.unwrap();
     if next_user_id != user_id {
         return;
     }

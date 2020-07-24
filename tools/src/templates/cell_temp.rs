@@ -5,7 +5,7 @@ use anyhow::Result;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CellTemp {
     pub id: u32,
-    pub skill_id: Vec<u32>,
+    pub buff: Vec<u32>,
     pub cell_type: u32,
     pub rare:u32,
     pub is_cter:u32

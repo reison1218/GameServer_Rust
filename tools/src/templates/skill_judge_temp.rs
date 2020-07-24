@@ -4,6 +4,7 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct SkillJudgeTemp {
     pub id: u32,//技能id
+    pub target:u32,//目标
     pub par1: u32,//参数1
     pub par2:u32,//参数2
     pub par3:u32,//参数3

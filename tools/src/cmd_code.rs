@@ -112,7 +112,7 @@ pub enum ClientCode{
     //游戏开始推送
     StartNotice = 10022,
     //选择位置返回
-    ChoiceLoaction = 10023,
+    ChoiceIndex = 10023,
     //选择回合顺序返回
     ChoiceRoundOrder = 10024,
     //选择位置通知

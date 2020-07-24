@@ -172,7 +172,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
         //游戏开始推送
         ClientCode::StartNotice => {}
         //选择位置返回
-        ClientCode::ChoiceLoaction => {
+        ClientCode::ChoiceIndex => {
             let mut scl = S_CHOOSE_INDEX::new();
             scl.is_succ = false;
             scl.err_mess = error_mess;

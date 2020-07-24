@@ -149,7 +149,11 @@ pub mod tcp_server {
                             continue;
                         }
                         let (mut connection, client_address) = result.unwrap();
-                        connection.set_nodelay(true).unwrap();
+                        let res = connection.set_nodelay(true);
+                        if res.is_err(){
+                            error!("{:?}",res.err().unwrap());
+                            continue;
+                        }
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream
                         let mut hd = handler.try_clone();

@@ -18,5 +18,5 @@ pub const ITEM_TEMPLATE: &str = "Item";
 
 pub const SKILL_JUDGE_TEMPLATE: &str = "SkillJudge";
 
-pub const TRIGGER_TIME_TEMPLATE: &str = "TriggerTime";
+pub const BUFF: &str = "Buff";
 

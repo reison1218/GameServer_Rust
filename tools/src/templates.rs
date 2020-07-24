@@ -10,4 +10,4 @@ pub mod skill_temp;
 pub mod skill_scope_temp;
 pub mod item_temp;
 pub mod skill_judge_temp;
-pub mod trigger_time_temp;
+pub mod buff_temp;

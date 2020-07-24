@@ -4,6 +4,7 @@ use log::warn;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use tools::protos::base::{BattleCharacterPt, CharacterPt};
+use tools::templates::buff_temp::BuffTemp;
 use tools::templates::character_temp::CharacterTemp;
 use tools::templates::skill_temp::SkillTemp;
 
@@ -47,7 +48,7 @@ pub struct BattleCharacter {
     pub element: u8,                     //角色元素
     pub cell_index: usize,               //角色所在位置
     pub skills: Vec<Skill>,              //玩家选择的主动技能id
-    pub passive_skills: Vec<Skill>,      //被动技能id
+    pub passive_buffs: Vec<Buff>,        //被动技能id
     pub target_id: u32,                  //玩家目标
     pub buff_array: Vec<Skill>,          //角色身上的buff
     pub state: u8,                       //角色状态
@@ -65,6 +66,13 @@ pub struct Skill {
     pub cd_times: i8, //剩余cd,如果是消耗能量则无视这个值
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct Buff {
+    pub id: u32,
+    pub buff_temp: BuffTemp,
+    pub trigger_timesed: i8, //已经触发过的次数
+}
+
 impl BattleCharacter {
     pub fn init(cter: &Character) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
@@ -73,6 +81,7 @@ impl BattleCharacter {
         battle_cter.cter_id = cter_id;
         battle_cter.target_id = 0;
         let skill_ref = TEMPLATES.get_skill_ref();
+        let buff_ref = TEMPLATES.get_buff_ref();
         for skill_id in cter.skills.iter() {
             let res = skill_ref.temps.get(skill_id);
             if res.is_none() {
@@ -102,12 +111,13 @@ impl BattleCharacter {
         battle_cter.defence = cter_temp.defence;
         battle_cter.element = cter_temp.element;
         battle_cter.energy = cter_temp.energy;
-        for skill_id in cter_temp.passive_skill.iter() {
-            let skill_temp = skill_ref.temps.get(skill_id).unwrap();
-            let mut skill = Skill::default();
-            skill.id = skill_temp.id;
-            skill.skill_temp = skill_temp.clone();
-            battle_cter.passive_skills.push(skill);
+        for buff_id in cter_temp.passive_buff.iter() {
+            let buff_temp = buff_ref.temps.get(buff_id).unwrap();
+            let mut buff = Buff::default();
+            buff.id = buff_temp.id;
+            buff.buff_temp = buff_temp.clone();
+            buff.trigger_timesed = 0;
+            battle_cter.passive_buffs.push(buff);
         }
         Ok(battle_cter)
     }

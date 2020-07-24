@@ -1,4 +1,4 @@
-use crate::entity::character::Skill;
+use crate::entity::character::{Buff, Skill};
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::slice::Iter;
@@ -23,9 +23,9 @@ pub struct TileMap {
 pub struct Cell {
     pub id: u32,                   //块的配置id
     pub index: usize,              //块的下标
-    pub buff: Vec<Skill>,          //块的效果
+    pub buff: Vec<Buff>,           //块的效果
     pub is_world: bool,            //是否世界块
-    pub extra_buff: Vec<Skill>,    //额外玩家对其添加的buff
+    pub extra_buff: Vec<Buff>,     //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
     pub pair_index: Option<usize>, //与之配对的下标
 }
@@ -154,24 +154,24 @@ impl TileMap {
             cell.id = *cell_id;
             cell.index = index;
             cell.is_world = *is_world;
-            let mut skills: Option<Iter<u32>> = None;
+            let mut buffs: Option<Iter<u32>> = None;
             if cell.is_world {
                 let world_cell = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
-                skills = Some(world_cell.skill_id.iter());
+                buffs = Some(world_cell.buff.iter());
             } else if cell_id > &(CellType::Valid as u32) {
                 let cell_temp = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
-                skills = Some(cell_temp.skill_id.iter());
+                buffs = Some(cell_temp.buff.iter());
             }
-            if let Some(skills) = skills {
-                let mut skill_array = Vec::new();
-                for skill_id in skills {
-                    let mut skill = Skill::default();
-                    skill.id = *skill_id;
-                    let skill_temp = crate::TEMPLATES.get_skill_ref().get_temp(skill_id).unwrap();
-                    skill.skill_temp = skill_temp.clone();
-                    skill_array.push(skill);
+            if let Some(buffs) = buffs {
+                let mut buff_array = Vec::new();
+                for buff_id in buffs {
+                    let mut buff = Buff::default();
+                    buff.id = *buff_id;
+                    let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
+                    buff.buff_temp = buff_temp.clone();
+                    buff_array.push(buff);
                 }
-                cell.buff = skill_array;
+                cell.buff = buff_array;
             }
             tmd.map.push(cell);
             index += 1;

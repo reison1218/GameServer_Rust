@@ -856,12 +856,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if room.is_none() {
         let str = format!("this player is not in the room!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceLoaction,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room = room.unwrap();
@@ -870,43 +865,28 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if !room.battle_data.check_choice_index(index as usize) {
         let str = format!("the index is error!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceLoaction,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     //校验是否轮到他了
-    if !room.is_can_choice_now(RoomState::ChoiceIndex, user_id) {
+    if !room.is_can_choice_index_now(user_id) {
         let str =
             format!(
             "this player is not the next choice index player!user_id:{},index:{},choice_order:{:?}",
             user_id,room.get_next_choice_index(),room.battle_data.choice_orders
         );
         warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceLoaction,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
     if member.cell_index != 0 {
-        let str = format!("this player is already choice location!user_id:{}", user_id);
+        let str = format!("this player is already choice index!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceLoaction,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     room.choice_index(user_id, index);
@@ -935,7 +915,7 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验参数
-    if order > (room.get_member_count() - 1) as u32 {
+    if order > (MEMBER_MAX - 1) as u32 {
         let str = format!("the order's value is error!!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(
@@ -948,7 +928,7 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //判断能不能选
-    if !room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
+    if !room.is_can_choice_turn_now(user_id) {
         let str = format!(
             "this player is not the next choice turn player!user_id:{},order:{:?}",
             user_id, room.battle_data.choice_orders
@@ -964,7 +944,7 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验他选过没有
-    if room.get_turn_orders().contains(&user_id) {
+    if room.turn_order_contains(&user_id) {
         let str = format!(
             "this player is already choice round order!user_id:{}",
             user_id
@@ -978,7 +958,7 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    room.choice_turn(user_id, order as usize);
+    room.choice_turn(user_id, order as usize, true);
     Ok(())
 }
 
@@ -993,7 +973,7 @@ pub fn skip_choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     }
     let room = room.unwrap();
     //判断能不能选
-    if !room.is_can_choice_now(RoomState::ChoiceTurn, user_id) {
+    if !room.is_can_choice_turn_now(user_id) {
         let str = format!(
             "this player is not the next choice turn player!user_id:{}",
             user_id

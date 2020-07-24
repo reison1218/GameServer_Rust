@@ -4,7 +4,12 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct SkillScopeTemp {
     pub id: u32,//技能id
-    scope:String,//范围
+    pub scope:Vec<Direction>,//范围
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct Direction{
+    pub direction:Vec<i32>,
 }
 
 impl Template for SkillScopeTemp {}

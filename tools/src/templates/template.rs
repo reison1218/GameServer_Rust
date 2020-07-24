@@ -5,7 +5,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE, SKILL_TEMPLATE, SKILL_SCOPE_TEMPLATE, ITEM_TEMPLATE, SKILL_JUDGE_TEMPLATE, TRIGGER_TIME_TEMPLATE};
+use crate::templates::template_name_constants::{TILE_MAP_TEMPLATE, CHARACTER_TEMPLATE, EMOJI_TEMPLATE, CONSTANT_TEMPLATE, WORLD_CELL_TEMPLATE, CELL_TEMPLATE, SKILL_TEMPLATE, SKILL_SCOPE_TEMPLATE, ITEM_TEMPLATE, SKILL_JUDGE_TEMPLATE, BUFF};
 use crate::templates::emoji_temp::{EmojiTempMgr, EmojiTemp};
 use crate::templates::constant_temp::{ConstantTempMgr,ConstantTemp};
 use crate::templates::world_cell_temp::{WorldCellTempMgr, WorldCellTemp};
@@ -13,8 +13,8 @@ use crate::templates::cell_temp::{CellTempMgr, CellTemp};
 use crate::templates::skill_temp::{SkillTempMgr, SkillTemp};
 use crate::templates::item_temp::{ItemTempMgr, ItemTemp};
 use crate::templates::skill_scope_temp::{SkillScopeTempMgr, SkillScopeTemp};
-use crate::templates::trigger_time_temp::{TriggerTimeTempMgr, TriggerTimeTemp};
 use crate::templates::skill_judge_temp::{SkillJudgeTempMgr, SkillJudgeTemp};
+use crate::templates::buff_temp::{BuffTemp, BuffTempMgr};
 
 pub trait Template {}
 
@@ -34,7 +34,7 @@ pub struct TemplatesMgr {
     skill_temp_mgr:SkillTempMgr,//技能配置mgr
     item_temp_mgr:ItemTempMgr,//道具配置mgr
     skill_scope_temp_mgr:SkillScopeTempMgr,//技能范围配置mgr
-    trigger_time_temp_mgr:TriggerTimeTempMgr,//触发条件配置mgr
+    buff_temp_mgr:BuffTempMgr,//buff配置mgr
     skill_judge_temp_mgr:SkillJudgeTempMgr,//判定条件配置mgr
 }
 
@@ -77,8 +77,8 @@ impl TemplatesMgr {
         self.item_temp_mgr.borrow()
     }
 
-    pub fn get_trigger_time_ref(&self) -> &TriggerTimeTempMgr {
-        self.trigger_time_temp_mgr.borrow()
+    pub fn get_buff_ref(&self) -> &BuffTempMgr {
+        self.buff_temp_mgr.borrow()
     }
 
     pub fn get_skill_judge_ref(&self) -> &SkillJudgeTempMgr {
@@ -154,10 +154,10 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<SkillJudgeTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.skill_judge_temp_mgr = SkillJudgeTempMgr::default();
             temps_mgr.skill_judge_temp_mgr.init(v);
-        }else if name.eq_ignore_ascii_case(TRIGGER_TIME_TEMPLATE) {
-            let v: Vec<TriggerTimeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.trigger_time_temp_mgr = TriggerTimeTempMgr::default();
-            temps_mgr.trigger_time_temp_mgr.init(v);
+        }else if name.eq_ignore_ascii_case(BUFF) {
+            let v: Vec<BuffTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.buff_temp_mgr = BuffTempMgr::default();
+            temps_mgr.buff_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

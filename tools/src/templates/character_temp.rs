@@ -12,7 +12,7 @@ pub struct CharacterTemp {
     pub energy: u32,
     pub element:u8,
     pub skills: Vec<Group>,
-    pub passive_skill: Vec<u32>,
+    pub passive_buff: Vec<u32>,
     pub lock_skills: Vec<Group>,
     pub is_dlc: u8,
     pub is_init: u8,

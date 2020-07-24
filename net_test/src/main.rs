@@ -207,7 +207,13 @@ macro_rules! map{
 }
 
 fn main() -> anyhow::Result<()> {
-    test_unsafe();
+    //test_unsafe();
+    let v = vec![1,2,3];
+    let res = v[..].get(5);
+
+    for i in 0..4{
+        println!("{}",i);
+    }
 
     //let test = test!(1=>2,<);
     //crate::map::generate_map();
