@@ -206,14 +206,26 @@ macro_rules! map{
     };
 }
 
+struct Foo {
+    x: i32,
+}
+
+
 fn main() -> anyhow::Result<()> {
     //test_unsafe();
-    let v = vec![1,2,3];
-    let res = v[..].get(5);
+    let mut foo = Foo { x: 42 };
+    let x = &mut foo.x;
+    *x = 13;
+    let y = foo;
+    println!("{}", y.x); // -> 42; expected result: 13
 
-    for i in 0..4{
-        println!("{}",i);
-    }
+    let mut foo = Foo { x: 42 };
+
+    let x = &mut foo.x;
+    *x = 13;
+    let y = foo;
+    println!("{:?}", (&y).x);  //only added this line
+    println!("{:?}", y.x); //13
 
     //let test = test!(1=>2,<);
     //crate::map::generate_map();

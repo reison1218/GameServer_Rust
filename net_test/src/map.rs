@@ -116,10 +116,10 @@ impl TileMap{
             cell.is_world = *is_world;
             if cell.is_world {
                 let res = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
-                cell.buff = res.skill_id.clone();
+                cell.buff = res.buff.clone();
             } else if cell_id>&2{
                 let res = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
-                cell.buff = res.skill_id.clone();
+                cell.buff = res.buff.clone();
             }
             tmd.map.push(cell);
             index += 1;
