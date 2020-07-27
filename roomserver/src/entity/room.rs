@@ -153,20 +153,7 @@ impl Room {
     }
 
     pub fn add_next_turn_index(&mut self) {
-        self.battle_data.next_turn_index += 1;
-        let index = self.battle_data.next_turn_index;
-        if index >= (MEMBER_MAX - 1) as usize {
-            return;
-        }
-        let user_id = self.get_turn_user(Some(index));
-        if let Ok(user_id) = user_id {
-            if user_id != 0 {
-                return;
-            }
-            self.add_next_turn_index();
-        } else {
-            warn!("{:?}", user_id.err().unwrap());
-        }
+        self.battle_data.add_next_turn_index();
     }
 
     pub fn insert_turn_orders(&mut self, index: usize, user_id: u32) {
@@ -797,19 +784,7 @@ impl Room {
     }
 
     pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
-        let index;
-        if let Some(_index) = _index {
-            index = _index;
-        } else {
-            index = self.get_next_turn_index();
-        }
-        let res = self.battle_data.turn_orders.get(index);
-        if res.is_none() {
-            let str = format!("get_next_turn_user is none for index:{} ", index);
-            return anyhow::bail!(str);
-        }
-        let user_id = *res.unwrap();
-        Ok(user_id)
+        self.battle_data.get_turn_user(_index)
     }
 
     ///处理选择回合顺序时候的离开

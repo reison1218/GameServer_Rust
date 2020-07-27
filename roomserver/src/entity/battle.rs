@@ -1,6 +1,7 @@
 use super::*;
 use crate::entity::character::{BattleCharacter, Buff};
 use crate::entity::map_data::{Cell, CellType, TileMap};
+use crate::entity::room::MEMBER_MAX;
 use crate::handlers::battle_handler::Find;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
@@ -168,11 +169,41 @@ impl BattleData {
         self.turn_start_trigger();
 
         //计算下一个回合
-        self.next_turn_index += 1;
-        if self.next_turn_index > self.turn_orders.len() - 1 {
-            self.next_turn_index = 0;
-        }
+        self.add_next_turn_index();
         //todo 通知客户端
+    }
+
+    pub fn add_next_turn_index(&mut self) {
+        self.next_turn_index += 1;
+        let index = self.next_turn_index;
+        if index >= (MEMBER_MAX - 1) as usize {
+            return;
+        }
+        let user_id = self.get_turn_user(Some(index));
+        if let Ok(user_id) = user_id {
+            if user_id != 0 {
+                return;
+            }
+            self.add_next_turn_index();
+        } else {
+            warn!("{:?}", user_id.err().unwrap());
+        }
+    }
+
+    pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
+        let index;
+        if let Some(_index) = _index {
+            index = _index;
+        } else {
+            index = self.next_turn_index;
+        }
+        let res = self.turn_orders.get(index);
+        if res.is_none() {
+            let str = format!("get_next_turn_user is none for index:{} ", index);
+            return anyhow::bail!(str);
+        }
+        let user_id = *res.unwrap();
+        Ok(user_id)
     }
 
     pub fn get_next_turn_user(&self) -> anyhow::Result<u32> {
@@ -256,9 +287,7 @@ impl BattleData {
     }
 
     ///结算上一回合
-    pub fn settlement_last_turn(&mut self) {
-        //todo
-    }
+    pub fn settlement_last_turn(&mut self) {}
 
     ///获得玩家回合下标
     pub fn get_turn_index(&self, user_id: u32) -> isize {
@@ -373,15 +402,17 @@ impl BattleData {
             if target_array.len() < 2 {
                 return;
             }
-            let source_index = *target_array.get(0).unwrap() as usize;
-            let target_index = *target_array.get(1).unwrap() as usize;
+            let source_index = target_array.get(0).unwrap();
+            let target_index = target_array.get(1).unwrap();
+
+            let source_index = *source_index as usize;
+            let target_index = *target_index as usize;
             self.change_index(user_id, source_index, target_index);
         } else if skill_id == SkillID::ShowIndex as u32 {
             //展示地图块
             if target_array.is_empty() {
                 return;
             }
-
             let index = *target_array.get(0).unwrap() as usize;
             self.show_index(index);
         } else if skill_id == 121 {
