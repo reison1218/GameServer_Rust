@@ -329,65 +329,65 @@ impl BattleData {
 
     ///使用技能
     pub fn use_skill(&mut self, skill_id: u32, target_array: Vec<u32>) {
-        // //如果目标
-        // if target_array.is_empty() {
-        //     return;
-        // }
-        //
-        // let user_id = *self.turn_orders.get(self.next_turn_index).unwrap();
-        // //战斗角色
-        // let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
-        // //战斗角色身上的技能
-        // let skill = battle_cter.skills.get_mut((skill_id as usize)).unwrap();
-        // //技能判定
-        // let skill_judge = skill.skill_temp.skill_judge;
-        // if skill_judge != 0 {
-        //     let skill_judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&(skill_id as u32));
-        //     if let Ok(skill_judge) = skill_judge_temp {
-        //         // todo  目前没有判定条件，先留着
-        //     }
-        // }
-        //
-        // let target = skill.skill_temp.target;
-        // let target_type = TargetType::from(target);
-        // //校验目标类型
-        // let res = self.check_target_array(user_id, target_type, target_array);
-        // if !res {
-        //     return;
-        // }
-        //
-        // //校验所选目标范围
-        // let scope = skill.skill_temp.scope;
-        // let skill_scope_temp = TEMPLATES.get_skill_scope_ref().temps.get(&scope).unwrap();
-        //
-        // for direction in skill_scope_temp.scope.iter() {
-        //     for value in direction.direction.iter() {
-        //         if value == &0 {
-        //             continue;
-        //         }
-        //     }
-        // }
-        //
-        // //换地图块位置
-        // if skill_id == SkillID::ChangeIndex as u32 {
-        //     if target_array.len() < 2 {
-        //         return;
-        //     }
-        //     let source_index = *target_array.get(0).unwrap() as usize;
-        //     let target_index = *target_array.get(1).unwrap() as usize;
-        //     self.change_index(user_id, source_index, target_index);
-        // } else if skill_id == SkillID::ShowIndex as u32 {
-        //     //展示地图块
-        //     if target_array.is_empty() {
-        //         return;
-        //     }
-        //
-        //     let index = *target_array.get(0).unwrap() as usize;
-        //     self.show_index(index);
-        // } else if skill_id == 121 {
-        //     //相临玩家造成3点伤害，持续1轮
-        //     self.damge_near_user_move_to(skill_id);
-        // }
+        //如果目标
+        if target_array.is_empty() {
+            return;
+        }
+
+        let user_id = *self.turn_orders.get(self.next_turn_index).unwrap();
+        //战斗角色
+        let battle_cter = self.battle_cter.get(&user_id).unwrap();
+        //战斗角色身上的技能
+        let skill = battle_cter.skills.get((skill_id as usize)).unwrap();
+        //技能判定
+        let skill_judge = skill.skill_temp.skill_judge;
+        if skill_judge != 0 {
+            let skill_judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&(skill_id as u32));
+            if let Ok(skill_judge) = skill_judge_temp {
+                // todo  目前没有判定条件，先留着
+            }
+        }
+
+        let target = skill.skill_temp.target;
+        let target_type = TargetType::from(target);
+        //校验目标类型
+        let res = self.check_target_array(user_id, target_type, &target_array);
+        if !res {
+            return;
+        }
+
+        //校验所选目标范围
+        let scope = skill.skill_temp.scope;
+        let skill_scope_temp = TEMPLATES.get_skill_scope_ref().temps.get(&scope).unwrap();
+
+        for direction in skill_scope_temp.scope.iter() {
+            for value in direction.direction.iter() {
+                if value == &0 {
+                    continue;
+                }
+            }
+        }
+
+        //换地图块位置
+        if skill_id == SkillID::ChangeIndex as u32 {
+            if target_array.len() < 2 {
+                return;
+            }
+            let source_index = *target_array.get(0).unwrap() as usize;
+            let target_index = *target_array.get(1).unwrap() as usize;
+            self.change_index(user_id, source_index, target_index);
+        } else if skill_id == SkillID::ShowIndex as u32 {
+            //展示地图块
+            if target_array.is_empty() {
+                return;
+            }
+
+            let index = *target_array.get(0).unwrap() as usize;
+            self.show_index(index);
+        } else if skill_id == 121 {
+            //相临玩家造成3点伤害，持续1轮
+            self.damge_near_user_move_to(skill_id);
+        }
     }
 
     fn check_scope(&self) {}
@@ -396,7 +396,7 @@ impl BattleData {
         &self,
         user_id: u32,
         target_type: TargetType,
-        target_array: Vec<u32>,
+        target_array: &Vec<u32>,
     ) -> bool {
         match target_type {
             TargetType::None => return false, //无效目标
@@ -404,6 +404,7 @@ impl BattleData {
                 //校验地图块下标有效性
 
                 for index in target_array {
+                    let index = *index;
                     let res = self.tile_map.map.get(index as usize);
                     if res.is_none() {
                         return false;
@@ -438,7 +439,7 @@ impl BattleData {
             } //所有玩家
             TargetType::OtherAllPlayer => {
                 for member_id in target_array {
-                    if member_id != user_id && !self.battle_cter.contains_key(&user_id) {
+                    if member_id != &user_id && !self.battle_cter.contains_key(&user_id) {
                         return false;
                     }
                 }
@@ -460,6 +461,7 @@ impl BattleData {
             } //除自己外任意玩家
             TargetType::UnOpenCell => {
                 for index in target_array {
+                    let index = *index;
                     let cell = self.tile_map.map.get(index as usize);
                     if cell.is_none() {
                         return false;
@@ -476,6 +478,7 @@ impl BattleData {
             } //未翻开的地图块
             TargetType::UnPairCell => {
                 for index in target_array {
+                    let index = *index;
                     let cell = self.tile_map.map.get(index as usize);
                     if cell.is_none() {
                         return false;
@@ -492,6 +495,7 @@ impl BattleData {
             } //未配对的地图块
             TargetType::NullCell => {
                 for index in target_array {
+                    let index = *index;
                     let cell = self.tile_map.map.get(index as usize);
                     if cell.is_none() {
                         return false;
@@ -508,6 +512,7 @@ impl BattleData {
             } //空的地图块，上面没人
             TargetType::UnPairNullCell => {
                 for index in target_array {
+                    let index = *index;
                     let cell = self.tile_map.map.get(index as usize);
                     if cell.is_none() {
                         return false;
