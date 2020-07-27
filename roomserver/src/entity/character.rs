@@ -50,7 +50,7 @@ pub struct BattleCharacter {
     pub skills: Vec<Skill>,              //玩家选择的主动技能id
     pub passive_buffs: Vec<Buff>,        //被动技能id
     pub target_id: u32,                  //玩家目标
-    pub buff_array: Vec<Skill>,          //角色身上的buff
+    pub buff_array: Vec<Buff>,           //角色身上的buff
     pub state: u8,                       //角色状态
     pub residue_open_times: u32,         //剩余翻地图块次数
     pub turn_times: u32,                 //轮到自己的次数
@@ -71,6 +71,7 @@ pub struct Buff {
     pub id: u32,
     pub buff_temp: BuffTemp,
     pub trigger_timesed: i8, //已经触发过的次数
+    pub keep_times: i8,      //持续轮数
 }
 
 impl BattleCharacter {

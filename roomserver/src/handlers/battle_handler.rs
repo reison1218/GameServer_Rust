@@ -45,11 +45,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let action_type = ca.get_action_type();
-    let target: Option<Vec<u32>> = if ca.target.is_empty() {
-        None
-    } else {
-        Some(ca.target)
-    };
+    let mut target = ca.target;
     let value = ca.value;
     //行为分支
     let action_type = ActionType::from(action_type);
@@ -66,7 +62,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             use_skill(room, user_id, value, target);
         }
         ActionType::Attack => {
-            attack(room, user_id, target.unwrap());
+            attack(room, user_id, target);
         }
     }
     Ok(())
@@ -145,7 +141,7 @@ fn attack(rm: &mut Room, user_id: u32, target_array: Vec<u32>) {
 }
 
 ///使用技能
-fn use_skill(rm: &mut Room, user_id: u32, skill_id: u32, target_array: Option<Vec<u32>>) {
+fn use_skill(rm: &mut Room, user_id: u32, skill_id: u32, target_array: Vec<u32>) {
     //校验技能id有效性
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     let skill = battle_cter.skills.get(skill_id as usize);

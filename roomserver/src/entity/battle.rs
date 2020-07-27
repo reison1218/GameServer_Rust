@@ -1,5 +1,5 @@
 use super::*;
-use crate::entity::character::BattleCharacter;
+use crate::entity::character::{BattleCharacter, Buff};
 use crate::entity::map_data::{Cell, CellType, TileMap};
 use crate::handlers::battle_handler::Find;
 use crate::task_timer::{Task, TaskCmd};
@@ -11,19 +11,9 @@ use std::str::FromStr;
 use tools::tcp::TcpSender;
 
 ///技能判定枚举
-pub enum SkillJudge {
-    ChangeIndex = 1,                   //换地图块位置
-    ShowIndex = 2,                     //展示地图块
-    AddSkillDamgeBuff = 3,             //加技能伤害buff
-    Hurted = 4,                        //受到伤害
-    SkillDamgeNearCterAndCure = 5,     //对相临角色造成技能伤害并回血
-    SkillDamgeAndChangeSkill = 6,      //造成技能伤害，使用后变成其他技能
-    AutoPairCell = 7,                  //自动配对地图块
-    LockUnPairCell = 8,                //锁定未配对的地图块
-    MoveCter = 9,                      //移动一个角色
-    SkillDamge10 = 10,                 //造成3点技能伤害
-    SkillRangeDamgeAndCenterMore = 11, //范围技能伤害，中心更高
-    SkillDamge12 = 12,                 //造成2点技能伤害
+pub enum SkillID {
+    ChangeIndex = 111, //换地图块位置
+    ShowIndex = 112,   //展示地图块
 }
 
 //技能消耗类型
@@ -60,6 +50,49 @@ impl From<u32> for ActionType {
             _ => ActionType::None,
         }
     }
+}
+
+///目标类型枚举
+pub enum TargetType {
+    None = 0,            //无效目标
+    Cell = 1,            //地图块
+    AnyPlayer = 2,       //任意玩家
+    PlayerSelf = 3,      //玩家自己
+    AllPlayer = 4,       //所有玩家
+    OtherAllPlayer = 5,  //除自己外所有玩家
+    OtherAnyPlayer = 6,  //除自己外任意玩家
+    UnOpenCell = 7,      //未翻开的地图块
+    UnPairCell = 8,      //未配对的地图块
+    NullCell = 9,        //空的地图块，上面没人
+    UnPairNullCell = 10, //未配对的地图块
+    CellPlayer = 11,     //地图块上的玩家
+}
+
+impl From<u32> for TargetType {
+    fn from(value: u32) -> Self {
+        match value {
+            1 => TargetType::Cell,
+            2 => TargetType::AnyPlayer,
+            3 => TargetType::PlayerSelf,
+            4 => TargetType::AllPlayer,
+            5 => TargetType::OtherAllPlayer,
+            6 => TargetType::OtherAnyPlayer,
+            7 => TargetType::UnOpenCell,
+            8 => TargetType::UnPairCell,
+            9 => TargetType::NullCell,
+            10 => TargetType::UnPairNullCell,
+            11 => TargetType::CellPlayer,
+            _ => TargetType::None,
+        }
+    }
+}
+
+///元素类型
+pub enum ElementType {
+    Nature = 1, //生命元素
+    Water = 2,  //水元素
+    Earth = 3,  //土元素
+    Fire = 4,   //火元素
 }
 
 ///行动单位
@@ -295,39 +328,206 @@ impl BattleData {
     }
 
     ///使用技能
-    pub fn use_skill(&mut self, skill_id: u32, target_array: Option<Vec<u32>>) {
-        let user_id = *self.turn_orders.get(self.next_turn_index).unwrap();
-        //战斗角色
-        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
-        //战斗角色身上的技能
-        let skill = battle_cter.skills.get_mut((skill_id as usize)).unwrap();
-        //技能判定
-        let skill_judge = skill.skill_temp.skill_judge;
+    pub fn use_skill(&mut self, skill_id: u32, target_array: Vec<u32>) {
+        // //如果目标
+        // if target_array.is_empty() {
+        //     return;
+        // }
+        //
+        // let user_id = *self.turn_orders.get(self.next_turn_index).unwrap();
+        // //战斗角色
+        // let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+        // //战斗角色身上的技能
+        // let skill = battle_cter.skills.get_mut((skill_id as usize)).unwrap();
+        // //技能判定
+        // let skill_judge = skill.skill_temp.skill_judge;
+        // if skill_judge != 0 {
+        //     let skill_judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&(skill_id as u32));
+        //     if let Ok(skill_judge) = skill_judge_temp {
+        //         // todo  目前没有判定条件，先留着
+        //     }
+        // }
+        //
+        // let target = skill.skill_temp.target;
+        // let target_type = TargetType::from(target);
+        // //校验目标类型
+        // let res = self.check_target_array(user_id, target_type, target_array);
+        // if !res {
+        //     return;
+        // }
+        //
+        // //校验所选目标范围
+        // let scope = skill.skill_temp.scope;
+        // let skill_scope_temp = TEMPLATES.get_skill_scope_ref().temps.get(&scope).unwrap();
+        //
+        // for direction in skill_scope_temp.scope.iter() {
+        //     for value in direction.direction.iter() {
+        //         if value == &0 {
+        //             continue;
+        //         }
+        //     }
+        // }
+        //
+        // //换地图块位置
+        // if skill_id == SkillID::ChangeIndex as u32 {
+        //     if target_array.len() < 2 {
+        //         return;
+        //     }
+        //     let source_index = *target_array.get(0).unwrap() as usize;
+        //     let target_index = *target_array.get(1).unwrap() as usize;
+        //     self.change_index(user_id, source_index, target_index);
+        // } else if skill_id == SkillID::ShowIndex as u32 {
+        //     //展示地图块
+        //     if target_array.is_empty() {
+        //         return;
+        //     }
+        //
+        //     let index = *target_array.get(0).unwrap() as usize;
+        //     self.show_index(index);
+        // } else if skill_id == 121 {
+        //     //相临玩家造成3点伤害，持续1轮
+        //     self.damge_near_user_move_to(skill_id);
+        // }
+    }
 
-        //换地图块位置
-        if skill_judge == SkillJudge::ChangeIndex as u16 {
-            let target_array = target_array.unwrap();
-            if target_array.len() < 2 {
-                return;
-            }
-            let source_index = *target_array.get(0).unwrap() as usize;
-            let target_index = *target_array.get(1).unwrap() as usize;
-            self.change_index(user_id, source_index, target_index);
-        } else if skill_judge == SkillJudge::ShowIndex as u16 {
-            //展示地图块
-            if target_array.is_none() {
-                return;
-            }
-            let target = target_array.unwrap();
-            if target.is_empty() {
-                return;
-            }
-            let index = *target.get(0).unwrap() as usize;
-            self.show_index(index);
-        } else if skill_judge == SkillJudge::AddSkillDamgeBuff as u16 {
-            //相临玩家造成3点伤害，持续1轮
-            self.damge_near_user_move_to(skill_id);
+    fn check_scope(&self) {}
+
+    fn check_target_array(
+        &self,
+        user_id: u32,
+        target_type: TargetType,
+        target_array: Vec<u32>,
+    ) -> bool {
+        match target_type {
+            TargetType::None => return false, //无效目标
+            TargetType::Cell => {
+                //校验地图块下标有效性
+
+                for index in target_array {
+                    let res = self.tile_map.map.get(index as usize);
+                    if res.is_none() {
+                        return false;
+                    }
+                    let cell = res.unwrap();
+                    if cell.id <= CellType::Valid as u32 {
+                        return false;
+                    }
+                }
+                return true;
+            } //地图块
+            TargetType::AnyPlayer => {
+                //校验玩家id
+                let target_id = target_array.get(0);
+                if target_id.is_none() {
+                    return false;
+                }
+                let target_id = target_id.unwrap();
+                if !self.battle_cter.contains_key(target_id) {
+                    return false;
+                }
+                return true;
+            } //任意玩家
+            TargetType::PlayerSelf => {}      //玩家自己
+            TargetType::AllPlayer => {
+                for member_id in target_array {
+                    if !self.battle_cter.contains_key(&member_id) {
+                        return false;
+                    }
+                }
+                return true;
+            } //所有玩家
+            TargetType::OtherAllPlayer => {
+                for member_id in target_array {
+                    if member_id != user_id && !self.battle_cter.contains_key(&user_id) {
+                        return false;
+                    }
+                }
+                return true;
+            } //除自己外所有玩家
+            TargetType::OtherAnyPlayer => {
+                let member_id = target_array.get(0);
+                if member_id.is_none() {
+                    return false;
+                }
+                let member_id = member_id.unwrap();
+                if member_id == &user_id {
+                    return false;
+                }
+                if !self.battle_cter.contains_key(&member_id) {
+                    return false;
+                }
+                return true;
+            } //除自己外任意玩家
+            TargetType::UnOpenCell => {
+                for index in target_array {
+                    let cell = self.tile_map.map.get(index as usize);
+                    if cell.is_none() {
+                        return false;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.id <= CellType::Valid as u32 {
+                        return false;
+                    }
+                    if cell.pair_index.is_some() {
+                        return false;
+                    }
+                }
+                return true;
+            } //未翻开的地图块
+            TargetType::UnPairCell => {
+                for index in target_array {
+                    let cell = self.tile_map.map.get(index as usize);
+                    if cell.is_none() {
+                        return false;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.id <= CellType::Valid as u32 {
+                        return false;
+                    }
+                    if cell.pair_index.is_some() {
+                        return false;
+                    }
+                }
+                return true;
+            } //未配对的地图块
+            TargetType::NullCell => {
+                for index in target_array {
+                    let cell = self.tile_map.map.get(index as usize);
+                    if cell.is_none() {
+                        return false;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.id <= CellType::Valid as u32 {
+                        return false;
+                    }
+                    if cell.user_id != 0 {
+                        return false;
+                    }
+                }
+                return true;
+            } //空的地图块，上面没人
+            TargetType::UnPairNullCell => {
+                for index in target_array {
+                    let cell = self.tile_map.map.get(index as usize);
+                    if cell.is_none() {
+                        return false;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.id <= CellType::Valid as u32 {
+                        return false;
+                    }
+                    if cell.user_id != 0 {
+                        return false;
+                    }
+                    if cell.pair_index.is_some() {
+                        return false;
+                    }
+                }
+                return true;
+            } //未配对的空地图块
+            TargetType::CellPlayer => {}
         }
+        true
     }
 
     //其他玩家移动到与你相邻的地图块时，对其造成3点伤害。持续1轮。
@@ -345,6 +545,27 @@ impl BattleData {
             return;
         }
         let skill = skill.unwrap();
+
+        //校验buff
+        let buff_id = skill.skill_temp.buff as u32;
+        let buff = TEMPLATES.get_buff_ref().get_temp(&buff_id);
+        if let Err(e) = buff {
+            error!("{:?}", e);
+            return;
+        }
+        let buff_temp = buff.unwrap();
+        let battle_cter = self.battle_cter.get_mut(&user_id);
+        if battle_cter.is_none() {
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
+        let mut buff = Buff::default();
+        buff.id = buff_temp.id;
+        buff.buff_temp = buff_temp.clone();
+        buff.trigger_timesed = 0;
+        buff.keep_times = buff_temp.keep_time as i8;
+        battle_cter.buff_array.push(buff);
+        //todo 通知客户端
     }
 
     ///展示地图块

@@ -155,7 +155,7 @@ impl Room {
     pub fn add_next_turn_index(&mut self) {
         self.battle_data.next_turn_index += 1;
         let index = self.battle_data.next_turn_index;
-        if index > (MEMBER_MAX - 1) as usize {
+        if index >= (MEMBER_MAX - 1) as usize {
             return;
         }
         let user_id = self.get_turn_user(Some(index));
@@ -268,12 +268,20 @@ impl Room {
 
     ///选择占位
     pub fn choice_index(&mut self, user_id: u32, index: u32) {
+        let turn_index = self.get_next_turn_index();
+        let turn_order = self.battle_data.turn_orders;
         let member = self.get_battle_cter_mut_ref(&user_id);
         if member.is_none() {
             error!("choice_index member is none!user_id:{}", user_id);
             return;
         }
         let member = member.unwrap();
+
+        info!(
+            "choice choice_index user_id:{},index:{},turn_order:{:?}",
+            user_id, turn_index, turn_order
+        );
+
         member.cell_index = index as usize;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
         scln.set_user_id(user_id);
@@ -293,7 +301,7 @@ impl Room {
 
         self.add_next_turn_index();
         //校验是否选完了
-        if self.get_next_turn_index() >= MEMBER_MAX as usize - 1 {
+        if self.get_next_turn_index() >= MEMBER_MAX as usize {
             self.state = RoomState::BattleStarted;
             self.set_next_turn_index(0);
         }
@@ -313,8 +321,8 @@ impl Room {
     pub fn check_is_all_choice_turn(&self) -> bool {
         let index = self.get_next_choice_index();
         if index >= MEMBER_MAX as usize {
-            for i in self.battle_data.turn_orders.iter() {
-                if i == &0 {
+            for member_id in self.members.keys() {
+                if !self.battle_data.turn_orders.contains(member_id) {
                     return false;
                 }
             }
@@ -355,6 +363,10 @@ impl Room {
         }
         self.state = RoomState::ChoiceIndex;
         self.set_next_turn_index(0);
+        let next_turn_user = self.get_turn_user(None).unwrap();
+        if next_turn_user == 0 {
+            self.add_next_turn_index();
+        }
     }
 
     pub fn choice_order_contains(&self, user_id: &u32) -> bool {
@@ -395,11 +407,16 @@ impl Room {
         //index+1
         self.add_next_choice_index();
         index = self.get_next_choice_index();
-        let size = self.get_member_count();
+        let size = MEMBER_MAX as usize;
         let is_all_choice = self.check_is_all_choice_turn();
         if is_all_choice {
             self.state = RoomState::ChoiceIndex;
             self.set_next_turn_index(0);
+            //校验下一个是不是为0
+            let next_turn_user = self.get_turn_user(None).unwrap();
+            if next_turn_user == 0 {
+                self.add_next_turn_index();
+            }
             info!(
                 "choice_turn finish!turn_order:{:?}",
                 self.battle_data.turn_orders
@@ -804,10 +821,10 @@ impl Room {
         }
         let next_turn_user = next_turn_user.unwrap();
         let member_size = MEMBER_MAX as usize;
-        if self.members.len() == 1 {
-            //todo
-            return;
-        }
+        // if self.members.len() == 1 {
+        //     //todo
+        //     return;
+        // }
         let last_order_user = self.battle_data.choice_orders[member_size - 1];
 
         //处理正在开始的战斗
@@ -844,6 +861,11 @@ impl Room {
         } else {
             //不是最后一个就轮到下一个
             self.add_next_choice_index();
+            println!(
+                "------------------------------index:{},choice_orders:{:?}",
+                self.get_next_choice_index(),
+                self.get_choice_orders()
+            );
             self.build_choice_turn_task();
         }
     }
@@ -871,6 +893,10 @@ impl Room {
         if last_order_user == user_id {
             self.state = RoomState::BattleStarted;
             self.set_next_turn_index(0);
+            let next_turn_user = self.get_turn_user(None).unwrap();
+            if next_turn_user == 0 {
+                self.add_next_turn_index();
+            }
             self.battle_data.build_battle_turn_task();
         } else {
             //不是最后一个就轮到下一个
@@ -901,6 +927,10 @@ impl Room {
         //如果当前玩家正好处于最后一个顺序
         if last_order_user == user_id {
             self.set_next_turn_index(0);
+            let next_turn_user = self.get_turn_user(None).unwrap();
+            if next_turn_user == 0 {
+                self.add_next_turn_index();
+            }
             self.battle_data.build_battle_turn_task();
         } else {
             //不是最后一个就轮到下一个

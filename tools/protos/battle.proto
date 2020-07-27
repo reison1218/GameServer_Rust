@@ -9,6 +9,17 @@ import "base.proto";
 //    Skip = 3;    //跳过turn
 //    Open = 4;    //翻块
 //    Skill = 5;   //使用技能
+//    Buff = 6;    //触发buff
+//}
+
+//enum EffectType {
+//    None = 0;
+//    Attacked = 1;  //受到普通攻击
+//    SkillDamge = 2; //受到技能伤害
+//    Skip = 3;    //跳过turn
+//    Open = 4;    //翻块
+//    Skill = 5;   //使用技能
+//    Buff = 6;    //触发buff
 //}
 
 //翻块
@@ -51,25 +62,32 @@ message C_ACTION{
     repeated uint32 target = 3;//目标 可以是块，可以是玩家，可以是自己
 }
 
-//行动返回
-message S_ACTION{
-    bool is_succ = 1;//是否成功;
-    string err_mess = 2;//错误信息;
-}
-
 //行动推送
 message S_ACTION_NOTICE{
-    uint32 user_id = 1;//行动的玩家
+    repeated ActionUnit action_uints = 1;//行动单位
+}
+
+message ActionUnit{
+    uint32 from_user = 1;//发起的玩家
     uint32 type = 2;//行动类型
     uint32 value = 3;//行动对应类型的值
-    repeated TargetPt targets = 4;//产生的效果列表
+    repeated TargetPt targets = 4;//目标列表
 }
+
 
 //受影响封装
 message TargetPt{
     uint32 target_id = 1;//目标id
-    uint32 value = 2;//受影响的值
-    repeated uint32 buffs = 3;//触发的额外buff
+    uint32 effect_type = 2;//效果类型
+    uint32 effect_value = 3;//效果值
+    repeated uint32 buffs = 4;//触发的额外buff
+    repeated TriggerEffectPt passiveEffect = 5;	//触发的被动
+}
+
+//触发效果
+message TriggerEffectPt{
+     uint32 type = 1;					//效果类型
+     uint32 value = 2;					//效果值
 }
 
 //地图刷新推送
