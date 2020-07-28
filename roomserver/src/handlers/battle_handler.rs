@@ -50,7 +50,10 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //行为分支
     let action_type = ActionType::from(action_type);
     match action_type {
-        ActionType::None => {}
+        ActionType::None => {
+            warn!("action_type is 0!");
+            return Ok(());
+        }
         ActionType::UseItem => use_item(room, user_id, value),
         ActionType::Skip => {
             skip_choice_turn(room, user_id);

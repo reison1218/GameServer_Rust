@@ -40,12 +40,18 @@ pub enum BattleCterState {
 ///回合行为类型
 #[derive(Clone, Debug, PartialEq)]
 pub enum ActionType {
-    None = 0,    //无效值
-    Attack = 1,  //普通攻击
-    UseItem = 2, //使用道具
-    Skip = 3,    //跳过turn
-    Open = 4,    //翻块
-    Skill = 5,   //使用技能
+    ///无效值
+    None = 0,
+    ///普通攻击
+    Attack = 1,
+    ///使用道具
+    UseItem = 2,
+    ///跳过turn
+    Skip = 3,
+    ///翻块
+    Open = 4,
+    ///使用技能
+    Skill = 5,
 }
 
 impl From<u32> for ActionType {
@@ -252,12 +258,44 @@ impl BattleData {
             battle_cter.residue_open_times -= 1;
 
             //todo 处理移动后的事件
+            self.handler_cter_move(index);
 
             //todo 下发到客户端
 
+            //如果没有剩余翻块次数了，就下一个turn
             if battle_cter.residue_open_times <= 0 {
-                //下一个turn
                 self.next_turn();
+            }
+        }
+    }
+
+    ///处理角色移动之后的事件
+    pub unsafe fn handler_cter_move(&mut self, index: usize) {
+        let index = index as isize;
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+        let user_id = self.get_turn_user(None).unwrap();
+        let cter = self.battle_cter.get_mut(&user_id).unwrap();
+
+        //踩到别人到范围
+        for other_cter in battle_cters.as_mut().unwrap().values_mut() {
+            let cter_index = other_cter.cell_index as isize;
+            for buff in other_cter.buff_array.iter() {
+                for dir in buff.scope.iter() {
+                    for scope_index in dir.direction.iter() {
+                        let res = cter_index + *scope_index as isize;
+                        if res != index {
+                            continue;
+                        }
+                        //todo 触发自己踩中别人到范围事件
+                    }
+                }
+            }
+            //触发别人进入自己的范围
+            if cter.user_id == other_cter.user_id {
+                continue;
+            }
+            for buff in cter.buff_array.iter() {
+                //todo 别人进入自己的范围，干些事情
             }
         }
     }

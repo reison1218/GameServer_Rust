@@ -87,8 +87,9 @@ impl From<&'static SkillTemp> for Skill {
 pub struct Buff {
     pub id: u32,
     pub buff_temp: &'static BuffTemp,
-    pub trigger_timesed: i8, //已经触发过的次数
-    pub keep_times: i8,      //持续轮数
+    pub trigger_timesed: i8,   //已经触发过的次数
+    pub keep_times: i8,        //持续轮数
+    pub scope: Vec<Direction>, //buff的作用范围
 }
 
 impl Buff {
@@ -105,9 +106,28 @@ impl From<&'static BuffTemp> for Buff {
             trigger_timesed: bt.trigger_times as i8,
             keep_times: bt.keep_time as i8,
             buff_temp: bt,
+            scope: Vec::new(),
         };
+        let mut v = Vec::new();
+        let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
+        if let Ok(scope_temp) = scope_temp {
+            if !scope_temp.scope.is_empty() {
+                for direction in scope_temp.scope.iter() {
+                    let dir = Direction {
+                        direction: &direction.direction,
+                    };
+                    v.push(dir);
+                }
+                b.scope = v;
+            }
+        }
         b
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct Direction {
+    pub direction: &'static Vec<i32>,
 }
 
 impl BattleCharacter {
