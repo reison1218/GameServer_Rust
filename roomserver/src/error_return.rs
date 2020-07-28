@@ -204,8 +204,8 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
         ClientCode::ChoiceLoactionNotice => {}
         //选择回合顺序通知
         ClientCode::ChoiceRoundOrderNotice => {}
-        //战斗开始
-        ClientCode::BattleStartNotice => {}
+        //选择占位
+        ClientCode::ChoiceIndexNotice => {}
         _ => {}
     }
 }

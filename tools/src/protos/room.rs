@@ -6522,58 +6522,26 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_TURN_ORDER_NOTICE {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_BATTLE_CHARACTER_NOTICE {
-    // message fields
-    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
+pub struct S_CHOICE_INDEX_NOTICE {
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_BATTLE_CHARACTER_NOTICE {
-    fn default() -> &'a S_BATTLE_CHARACTER_NOTICE {
-        <S_BATTLE_CHARACTER_NOTICE as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_CHOICE_INDEX_NOTICE {
+    fn default() -> &'a S_CHOICE_INDEX_NOTICE {
+        <S_CHOICE_INDEX_NOTICE as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_BATTLE_CHARACTER_NOTICE {
-    pub fn new() -> S_BATTLE_CHARACTER_NOTICE {
+impl S_CHOICE_INDEX_NOTICE {
+    pub fn new() -> S_CHOICE_INDEX_NOTICE {
         ::std::default::Default::default()
     }
-
-    // repeated .protos.BattleCharacterPt battle_cters = 1;
-
-
-    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
-        &self.battle_cters
-    }
-    pub fn clear_battle_cters(&mut self) {
-        self.battle_cters.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
-        self.battle_cters = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        &mut self.battle_cters
-    }
-
-    // Take field
-    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
-    }
 }
 
-impl ::protobuf::Message for S_BATTLE_CHARACTER_NOTICE {
+impl ::protobuf::Message for S_CHOICE_INDEX_NOTICE {
     fn is_initialized(&self) -> bool {
-        for v in &self.battle_cters {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
         true
     }
 
@@ -6581,9 +6549,6 @@ impl ::protobuf::Message for S_BATTLE_CHARACTER_NOTICE {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
-                1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
-                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -6596,21 +6561,12 @@ impl ::protobuf::Message for S_BATTLE_CHARACTER_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.battle_cters {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.battle_cters {
-            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -6641,22 +6597,17 @@ impl ::protobuf::Message for S_BATTLE_CHARACTER_NOTICE {
         Self::descriptor_static()
     }
 
-    fn new() -> S_BATTLE_CHARACTER_NOTICE {
-        S_BATTLE_CHARACTER_NOTICE::new()
+    fn new() -> S_CHOICE_INDEX_NOTICE {
+        S_CHOICE_INDEX_NOTICE::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
         static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
             descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
-                    "battle_cters",
-                    |m: &S_BATTLE_CHARACTER_NOTICE| { &m.battle_cters },
-                    |m: &mut S_BATTLE_CHARACTER_NOTICE| { &mut m.battle_cters },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_BATTLE_CHARACTER_NOTICE>(
-                    "S_BATTLE_CHARACTER_NOTICE",
+                let fields = ::std::vec::Vec::new();
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOICE_INDEX_NOTICE>(
+                    "S_CHOICE_INDEX_NOTICE",
                     fields,
                     file_descriptor_proto()
                 )
@@ -6664,28 +6615,27 @@ impl ::protobuf::Message for S_BATTLE_CHARACTER_NOTICE {
         }
     }
 
-    fn default_instance() -> &'static S_BATTLE_CHARACTER_NOTICE {
-        static mut instance: ::protobuf::lazy::Lazy<S_BATTLE_CHARACTER_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_CHOICE_INDEX_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_CHOICE_INDEX_NOTICE> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_BATTLE_CHARACTER_NOTICE::new)
+            instance.get(S_CHOICE_INDEX_NOTICE::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_BATTLE_CHARACTER_NOTICE {
+impl ::protobuf::Clear for S_CHOICE_INDEX_NOTICE {
     fn clear(&mut self) {
-        self.battle_cters.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for S_BATTLE_CHARACTER_NOTICE {
+impl ::std::fmt::Debug for S_CHOICE_INDEX_NOTICE {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_BATTLE_CHARACTER_NOTICE {
+impl ::protobuf::reflect::ProtobufValue for S_CHOICE_INDEX_NOTICE {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -7025,10 +6975,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x14\n\x05index\x18\x02\x20\x01(\rR\x05index\"K\n\x1aS_CHOOSE_TURN_O\
     RDER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\
-    \x05order\x18\x02\x20\x01(\rR\x05order\"Y\n\x19S_BATTLE_CHARACTER_NOTICE\
-    \x12<\n\x0cbattle_cters\x18\x01\x20\x03(\x0b2\x19.protos.BattleCharacter\
-    PtR\x0bbattleCters\"\x14\n\x12C_SKIP_TURN_CHOICE\"4\n\x19S_SKIP_TURN_CHO\
-    ICE_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userIdb\x06proto3\
+    \x05order\x18\x02\x20\x01(\rR\x05order\"\x17\n\x15S_CHOICE_INDEX_NOTICE\
+    \"\x14\n\x12C_SKIP_TURN_CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\
+    \n\x07user_id\x18\x01\x20\x01(\rR\x06userIdb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

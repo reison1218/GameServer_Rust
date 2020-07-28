@@ -1,5 +1,5 @@
 use crate::entity::battle::BattleData;
-use crate::entity::character::BattleCharacter;
+use crate::entity::character::{BattleCharacter, Buff};
 use crate::entity::map_data::CellType;
 use crate::entity::map_data::TileMap;
 use crate::entity::member::{Member, MemberState};
@@ -15,11 +15,12 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
+use tools::protos::battle::S_BATTLE_START_NOTICE;
 use tools::protos::room::{
-    S_BATTLE_CHARACTER_NOTICE, S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE,
-    S_CHOOSE_TURN_ORDER_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL,
-    S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE,
-    S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE, S_START_NOTICE,
+    S_CHANGE_TEAM_NOTICE, S_CHOICE_INDEX_NOTICE, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE,
+    S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM,
+    S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
+    S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -233,7 +234,7 @@ impl Room {
         //推送给所有人
         for member_id in self.member_index.iter() {
             let res = Packet::build_packet_bytes(
-                ClientCode::SkipTurnNotice as u32,
+                ClientCode::SkipChoiceTurnNotice as u32,
                 *member_id,
                 bytes.clone(),
                 true,
@@ -297,6 +298,7 @@ impl Room {
         let res = self.check_index_over();
         //都选择完了占位，进入选择回合顺序
         if res {
+            self.battle_start();
             self.battle_data.build_battle_turn_task();
         } else {
             //没选择完，继续选
@@ -414,16 +416,12 @@ impl Room {
         let res = self.check_choice_turn_over();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
-            let mut sbs = S_BATTLE_CHARACTER_NOTICE::new();
+            let mut sbs = S_CHOICE_INDEX_NOTICE::new();
             self.cter_2_battle_cter();
-            for battle_cter in self.battle_data.battle_cter.values() {
-                sbs.battle_cters.push(battle_cter.convert_to_battle_cter());
-            }
-
             let bytes = sbs.write_to_bytes().unwrap();
             for id in self.members.keys() {
                 let res = Packet::build_packet_bytes(
-                    ClientCode::BattleStartNotice as u32,
+                    ClientCode::ChoiceIndexNotice as u32,
                     *id,
                     bytes.clone(),
                     true,
@@ -814,16 +812,12 @@ impl Room {
             self.state = RoomState::ChoiceIndex;
             //系统帮忙选回合顺序
             self.random_choice_turn();
-            let mut sbs = S_BATTLE_CHARACTER_NOTICE::new();
+            let mut sbs = S_CHOICE_INDEX_NOTICE::new();
             self.cter_2_battle_cter();
-            for battle_cter in self.battle_data.battle_cter.values() {
-                sbs.battle_cters.push(battle_cter.convert_to_battle_cter());
-            }
-
             let bytes = sbs.write_to_bytes().unwrap();
             for id in self.members.keys() {
                 let res = Packet::build_packet_bytes(
-                    ClientCode::BattleStartNotice as u32,
+                    ClientCode::ChoiceIndexNotice as u32,
                     *id,
                     bytes.clone(),
                     true,
@@ -872,6 +866,7 @@ impl Room {
             if next_turn_user == 0 {
                 self.add_next_turn_index();
             }
+            self.battle_start();
             self.battle_data.build_battle_turn_task();
         } else {
             //不是最后一个就轮到下一个
@@ -1109,6 +1104,48 @@ impl Room {
         let res = self.task_sender.send(task);
         if res.is_err() {
             error!("{:?}", res.err().unwrap());
+        }
+    }
+
+    ///战斗开始
+    pub fn battle_start(&mut self) {
+        //判断是否有世界块,有的话，
+        if !self.battle_data.tile_map.world_cell_map.is_empty() {
+            for world_cell_id in self.battle_data.tile_map.world_cell_map.values() {
+                let world_cell_temp = TEMPLATES.get_world_cell_ref().temps.get(world_cell_id);
+                if world_cell_temp.is_none() {
+                    error!("world_cell_temp is None! world_cell_id:{}", world_cell_id);
+                    continue;
+                }
+                let world_cell_temp = world_cell_temp.unwrap();
+                for buff_id in world_cell_temp.buff.iter() {
+                    let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id);
+                    if let Err(e) = buff_temp {
+                        error!("{:?}", e);
+                        continue;
+                    }
+                    let buff_temp = buff_temp.unwrap();
+                    let buff = Buff::from(buff_temp);
+                    for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
+                        battle_cter.buff_array.push(buff.clone());
+                    }
+                }
+            }
+        }
+        let mut sbsn = S_BATTLE_START_NOTICE::new();
+        for battle_cter in self.battle_data.battle_cter.values() {
+            let cter_pt = battle_cter.convert_to_battle_cter();
+            sbsn.battle_cters.push(cter_pt);
+        }
+        let res = sbsn.write_to_bytes();
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        let bytes = res.unwrap();
+        let members = self.members.clone();
+        for member_id in members.keys() {
+            self.send_2_client(ClientCode::BattleStartedNotice, *member_id, bytes.clone());
         }
     }
 

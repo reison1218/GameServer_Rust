@@ -60,6 +60,9 @@ pub enum RoomCode{
     ChoiceTurnOrder = 20016,
     //跳过回合顺序选择
     SkipChoiceTurn = 20017,
+//--------------------------------------以下战斗相关---------------------------
+    //请求行动
+    Action = 20031,
     //返回最大值
     Max = 30000,
 }
@@ -119,10 +122,19 @@ pub enum ClientCode{
     ChoiceLoactionNotice = 10025,
     //选择回合顺序通知
     ChoiceRoundOrderNotice = 10026,
-    //战斗开始
-    BattleStartNotice = 10027,
+    //选择占位推送
+    ChoiceIndexNotice = 10027,
     //跳过选回合顺序推送
-    SkipTurnNotice = 10028,
+    SkipChoiceTurnNotice = 10028,
+    //--------------------------------------以下战斗相关---------------------------
+    //战斗开始推送
+    BattleStartedNotice = 10030,
+    //行动推送
+    ActionNotice = 10031,
+    //地图刷新推送
+    MapRefreshNotice = 10032,
+    //结算推送
+    SettlementNotice = 10033,
     //最大命令号
     Max = 20000,
 }

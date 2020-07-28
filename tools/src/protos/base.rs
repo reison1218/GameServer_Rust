@@ -2191,6 +2191,7 @@ pub struct BattleCharacterPt {
     pub atk: u32,
     pub hp: u32,
     pub defence: u32,
+    pub buffs: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2281,6 +2282,31 @@ impl BattleCharacterPt {
     pub fn set_defence(&mut self, v: u32) {
         self.defence = v;
     }
+
+    // repeated uint32 buffs = 6;
+
+
+    pub fn get_buffs(&self) -> &[u32] {
+        &self.buffs
+    }
+    pub fn clear_buffs(&mut self) {
+        self.buffs.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_buffs(&mut self, v: ::std::vec::Vec<u32>) {
+        self.buffs = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_buffs(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.buffs
+    }
+
+    // Take field
+    pub fn take_buffs(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
+    }
 }
 
 impl ::protobuf::Message for BattleCharacterPt {
@@ -2327,6 +2353,9 @@ impl ::protobuf::Message for BattleCharacterPt {
                     let tmp = is.read_uint32()?;
                     self.defence = tmp;
                 },
+                6 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -2354,6 +2383,9 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.defence != 0 {
             my_size += ::protobuf::rt::value_size(5, self.defence, ::protobuf::wire_format::WireTypeVarint);
         }
+        for value in &self.buffs {
+            my_size += ::protobuf::rt::value_size(6, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -2375,6 +2407,9 @@ impl ::protobuf::Message for BattleCharacterPt {
         if self.defence != 0 {
             os.write_uint32(5, self.defence)?;
         }
+        for v in &self.buffs {
+            os.write_uint32(6, *v)?;
+        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -2439,6 +2474,11 @@ impl ::protobuf::Message for BattleCharacterPt {
                     |m: &BattleCharacterPt| { &m.defence },
                     |m: &mut BattleCharacterPt| { &mut m.defence },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "buffs",
+                    |m: &BattleCharacterPt| { &m.buffs },
+                    |m: &mut BattleCharacterPt| { &mut m.buffs },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<BattleCharacterPt>(
                     "BattleCharacterPt",
                     fields,
@@ -2463,6 +2503,7 @@ impl ::protobuf::Clear for BattleCharacterPt {
         self.atk = 0;
         self.hp = 0;
         self.defence = 0;
+        self.buffs.clear();
         self.unknown_fields.clear();
     }
 }
@@ -2480,91 +2521,132 @@ impl ::protobuf::reflect::ProtobufValue for BattleCharacterPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct BattleActionPt {
+pub struct TargetPt {
     // message fields
-    pub user_id: u32,
-    pub choose_index: u32,
-    pub skip: bool,
-    pub next_action_user: u32,
+    pub target_id: u32,
+    pub effect_type: u32,
+    pub effect_value: u32,
+    pub buffs: ::std::vec::Vec<u32>,
+    pub passiveEffect: ::protobuf::RepeatedField<TriggerEffectPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a BattleActionPt {
-    fn default() -> &'a BattleActionPt {
-        <BattleActionPt as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a TargetPt {
+    fn default() -> &'a TargetPt {
+        <TargetPt as ::protobuf::Message>::default_instance()
     }
 }
 
-impl BattleActionPt {
-    pub fn new() -> BattleActionPt {
+impl TargetPt {
+    pub fn new() -> TargetPt {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // uint32 target_id = 1;
 
 
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
+    pub fn get_target_id(&self) -> u32 {
+        self.target_id
     }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // uint32 choose_index = 2;
-
-
-    pub fn get_choose_index(&self) -> u32 {
-        self.choose_index
-    }
-    pub fn clear_choose_index(&mut self) {
-        self.choose_index = 0;
+    pub fn clear_target_id(&mut self) {
+        self.target_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_choose_index(&mut self, v: u32) {
-        self.choose_index = v;
+    pub fn set_target_id(&mut self, v: u32) {
+        self.target_id = v;
     }
 
-    // bool skip = 3;
+    // uint32 effect_type = 2;
 
 
-    pub fn get_skip(&self) -> bool {
-        self.skip
+    pub fn get_effect_type(&self) -> u32 {
+        self.effect_type
     }
-    pub fn clear_skip(&mut self) {
-        self.skip = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_skip(&mut self, v: bool) {
-        self.skip = v;
-    }
-
-    // uint32 next_action_user = 4;
-
-
-    pub fn get_next_action_user(&self) -> u32 {
-        self.next_action_user
-    }
-    pub fn clear_next_action_user(&mut self) {
-        self.next_action_user = 0;
+    pub fn clear_effect_type(&mut self) {
+        self.effect_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_next_action_user(&mut self, v: u32) {
-        self.next_action_user = v;
+    pub fn set_effect_type(&mut self, v: u32) {
+        self.effect_type = v;
+    }
+
+    // uint32 effect_value = 3;
+
+
+    pub fn get_effect_value(&self) -> u32 {
+        self.effect_value
+    }
+    pub fn clear_effect_value(&mut self) {
+        self.effect_value = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_effect_value(&mut self, v: u32) {
+        self.effect_value = v;
+    }
+
+    // repeated uint32 buffs = 4;
+
+
+    pub fn get_buffs(&self) -> &[u32] {
+        &self.buffs
+    }
+    pub fn clear_buffs(&mut self) {
+        self.buffs.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_buffs(&mut self, v: ::std::vec::Vec<u32>) {
+        self.buffs = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_buffs(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.buffs
+    }
+
+    // Take field
+    pub fn take_buffs(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
+    }
+
+    // repeated .protos.TriggerEffectPt passiveEffect = 5;
+
+
+    pub fn get_passiveEffect(&self) -> &[TriggerEffectPt] {
+        &self.passiveEffect
+    }
+    pub fn clear_passiveEffect(&mut self) {
+        self.passiveEffect.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_passiveEffect(&mut self, v: ::protobuf::RepeatedField<TriggerEffectPt>) {
+        self.passiveEffect = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_passiveEffect(&mut self) -> &mut ::protobuf::RepeatedField<TriggerEffectPt> {
+        &mut self.passiveEffect
+    }
+
+    // Take field
+    pub fn take_passiveEffect(&mut self) -> ::protobuf::RepeatedField<TriggerEffectPt> {
+        ::std::mem::replace(&mut self.passiveEffect, ::protobuf::RepeatedField::new())
     }
 }
 
-impl ::protobuf::Message for BattleActionPt {
+impl ::protobuf::Message for TargetPt {
     fn is_initialized(&self) -> bool {
+        for v in &self.passiveEffect {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -2577,28 +2659,27 @@ impl ::protobuf::Message for BattleActionPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
+                    self.target_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.choose_index = tmp;
+                    self.effect_type = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_bool()?;
-                    self.skip = tmp;
+                    let tmp = is.read_uint32()?;
+                    self.effect_value = tmp;
                 },
                 4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.next_action_user = tmp;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                },
+                5 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.passiveEffect)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -2612,17 +2693,241 @@ impl ::protobuf::Message for BattleActionPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.target_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.target_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.choose_index != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.choose_index, ::protobuf::wire_format::WireTypeVarint);
+        if self.effect_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.effect_type, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.skip != false {
-            my_size += 2;
+        if self.effect_value != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.effect_value, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.next_action_user != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.next_action_user, ::protobuf::wire_format::WireTypeVarint);
+        for value in &self.buffs {
+            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
+        for value in &self.passiveEffect {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.target_id != 0 {
+            os.write_uint32(1, self.target_id)?;
+        }
+        if self.effect_type != 0 {
+            os.write_uint32(2, self.effect_type)?;
+        }
+        if self.effect_value != 0 {
+            os.write_uint32(3, self.effect_value)?;
+        }
+        for v in &self.buffs {
+            os.write_uint32(4, *v)?;
+        };
+        for v in &self.passiveEffect {
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> TargetPt {
+        TargetPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "target_id",
+                    |m: &TargetPt| { &m.target_id },
+                    |m: &mut TargetPt| { &mut m.target_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "effect_type",
+                    |m: &TargetPt| { &m.effect_type },
+                    |m: &mut TargetPt| { &mut m.effect_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "effect_value",
+                    |m: &TargetPt| { &m.effect_value },
+                    |m: &mut TargetPt| { &mut m.effect_value },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "buffs",
+                    |m: &TargetPt| { &m.buffs },
+                    |m: &mut TargetPt| { &mut m.buffs },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TriggerEffectPt>>(
+                    "passiveEffect",
+                    |m: &TargetPt| { &m.passiveEffect },
+                    |m: &mut TargetPt| { &mut m.passiveEffect },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<TargetPt>(
+                    "TargetPt",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static TargetPt {
+        static mut instance: ::protobuf::lazy::Lazy<TargetPt> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(TargetPt::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for TargetPt {
+    fn clear(&mut self) {
+        self.target_id = 0;
+        self.effect_type = 0;
+        self.effect_value = 0;
+        self.buffs.clear();
+        self.passiveEffect.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for TargetPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for TargetPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct TriggerEffectPt {
+    // message fields
+    pub field_type: u32,
+    pub value: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a TriggerEffectPt {
+    fn default() -> &'a TriggerEffectPt {
+        <TriggerEffectPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl TriggerEffectPt {
+    pub fn new() -> TriggerEffectPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 type = 1;
+
+
+    pub fn get_field_type(&self) -> u32 {
+        self.field_type
+    }
+    pub fn clear_field_type(&mut self) {
+        self.field_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_field_type(&mut self, v: u32) {
+        self.field_type = v;
+    }
+
+    // uint32 value = 2;
+
+
+    pub fn get_value(&self) -> u32 {
+        self.value
+    }
+    pub fn clear_value(&mut self) {
+        self.value = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_value(&mut self, v: u32) {
+        self.value = v;
+    }
+}
+
+impl ::protobuf::Message for TriggerEffectPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.field_type = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.value = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.field_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.value != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.value, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -2630,17 +2935,11 @@ impl ::protobuf::Message for BattleActionPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
+        if self.field_type != 0 {
+            os.write_uint32(1, self.field_type)?;
         }
-        if self.choose_index != 0 {
-            os.write_uint32(2, self.choose_index)?;
-        }
-        if self.skip != false {
-            os.write_bool(3, self.skip)?;
-        }
-        if self.next_action_user != 0 {
-            os.write_uint32(4, self.next_action_user)?;
+        if self.value != 0 {
+            os.write_uint32(2, self.value)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2672,8 +2971,8 @@ impl ::protobuf::Message for BattleActionPt {
         Self::descriptor_static()
     }
 
-    fn new() -> BattleActionPt {
-        BattleActionPt::new()
+    fn new() -> TriggerEffectPt {
+        TriggerEffectPt::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -2682,27 +2981,17 @@ impl ::protobuf::Message for BattleActionPt {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &BattleActionPt| { &m.user_id },
-                    |m: &mut BattleActionPt| { &mut m.user_id },
+                    "type",
+                    |m: &TriggerEffectPt| { &m.field_type },
+                    |m: &mut TriggerEffectPt| { &mut m.field_type },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "choose_index",
-                    |m: &BattleActionPt| { &m.choose_index },
-                    |m: &mut BattleActionPt| { &mut m.choose_index },
+                    "value",
+                    |m: &TriggerEffectPt| { &m.value },
+                    |m: &mut TriggerEffectPt| { &mut m.value },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "skip",
-                    |m: &BattleActionPt| { &m.skip },
-                    |m: &mut BattleActionPt| { &mut m.skip },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "next_action_user",
-                    |m: &BattleActionPt| { &m.next_action_user },
-                    |m: &mut BattleActionPt| { &mut m.next_action_user },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<BattleActionPt>(
-                    "BattleActionPt",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<TriggerEffectPt>(
+                    "TriggerEffectPt",
                     fields,
                     file_descriptor_proto()
                 )
@@ -2710,31 +2999,304 @@ impl ::protobuf::Message for BattleActionPt {
         }
     }
 
-    fn default_instance() -> &'static BattleActionPt {
-        static mut instance: ::protobuf::lazy::Lazy<BattleActionPt> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static TriggerEffectPt {
+        static mut instance: ::protobuf::lazy::Lazy<TriggerEffectPt> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(BattleActionPt::new)
+            instance.get(TriggerEffectPt::new)
         }
     }
 }
 
-impl ::protobuf::Clear for BattleActionPt {
+impl ::protobuf::Clear for TriggerEffectPt {
     fn clear(&mut self) {
-        self.user_id = 0;
-        self.choose_index = 0;
-        self.skip = false;
-        self.next_action_user = 0;
+        self.field_type = 0;
+        self.value = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for BattleActionPt {
+impl ::std::fmt::Debug for TriggerEffectPt {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for BattleActionPt {
+impl ::protobuf::reflect::ProtobufValue for TriggerEffectPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ActionUnitPt {
+    // message fields
+    pub from_user: u32,
+    pub field_type: u32,
+    pub value: u32,
+    pub targets: ::protobuf::RepeatedField<TargetPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a ActionUnitPt {
+    fn default() -> &'a ActionUnitPt {
+        <ActionUnitPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ActionUnitPt {
+    pub fn new() -> ActionUnitPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 from_user = 1;
+
+
+    pub fn get_from_user(&self) -> u32 {
+        self.from_user
+    }
+    pub fn clear_from_user(&mut self) {
+        self.from_user = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_from_user(&mut self, v: u32) {
+        self.from_user = v;
+    }
+
+    // uint32 type = 2;
+
+
+    pub fn get_field_type(&self) -> u32 {
+        self.field_type
+    }
+    pub fn clear_field_type(&mut self) {
+        self.field_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_field_type(&mut self, v: u32) {
+        self.field_type = v;
+    }
+
+    // uint32 value = 3;
+
+
+    pub fn get_value(&self) -> u32 {
+        self.value
+    }
+    pub fn clear_value(&mut self) {
+        self.value = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_value(&mut self, v: u32) {
+        self.value = v;
+    }
+
+    // repeated .protos.TargetPt targets = 4;
+
+
+    pub fn get_targets(&self) -> &[TargetPt] {
+        &self.targets
+    }
+    pub fn clear_targets(&mut self) {
+        self.targets.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_targets(&mut self, v: ::protobuf::RepeatedField<TargetPt>) {
+        self.targets = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_targets(&mut self) -> &mut ::protobuf::RepeatedField<TargetPt> {
+        &mut self.targets
+    }
+
+    // Take field
+    pub fn take_targets(&mut self) -> ::protobuf::RepeatedField<TargetPt> {
+        ::std::mem::replace(&mut self.targets, ::protobuf::RepeatedField::new())
+    }
+}
+
+impl ::protobuf::Message for ActionUnitPt {
+    fn is_initialized(&self) -> bool {
+        for v in &self.targets {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.from_user = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.field_type = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.value = tmp;
+                },
+                4 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.targets)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.from_user != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.from_user, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.field_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.value != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.value, ::protobuf::wire_format::WireTypeVarint);
+        }
+        for value in &self.targets {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.from_user != 0 {
+            os.write_uint32(1, self.from_user)?;
+        }
+        if self.field_type != 0 {
+            os.write_uint32(2, self.field_type)?;
+        }
+        if self.value != 0 {
+            os.write_uint32(3, self.value)?;
+        }
+        for v in &self.targets {
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ActionUnitPt {
+        ActionUnitPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "from_user",
+                    |m: &ActionUnitPt| { &m.from_user },
+                    |m: &mut ActionUnitPt| { &mut m.from_user },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "type",
+                    |m: &ActionUnitPt| { &m.field_type },
+                    |m: &mut ActionUnitPt| { &mut m.field_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "value",
+                    |m: &ActionUnitPt| { &m.value },
+                    |m: &mut ActionUnitPt| { &mut m.value },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TargetPt>>(
+                    "targets",
+                    |m: &ActionUnitPt| { &m.targets },
+                    |m: &mut ActionUnitPt| { &mut m.targets },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<ActionUnitPt>(
+                    "ActionUnitPt",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static ActionUnitPt {
+        static mut instance: ::protobuf::lazy::Lazy<ActionUnitPt> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(ActionUnitPt::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for ActionUnitPt {
+    fn clear(&mut self) {
+        self.from_user = 0;
+        self.field_type = 0;
+        self.value = 0;
+        self.targets.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ActionUnitPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ActionUnitPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -2766,14 +3328,21 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
     \x18\x02\x20\x01(\rR\x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\
     \rR\rlastUseSkills\x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\
-    \x81\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x97\x01\n\x11BattleCharacterPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
     \x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x10\n\
     \x03atk\x18\x03\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x04\x20\x01(\rR\
-    \x02hp\x12\x18\n\x07defence\x18\x05\x20\x01(\rR\x07defence\"\x8a\x01\n\
-    \x0eBattleActionPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12!\n\x0cchoose_index\x18\x02\x20\x01(\rR\x0bchooseIndex\x12\x12\n\x04\
-    skip\x18\x03\x20\x01(\x08R\x04skip\x12(\n\x10next_action_user\x18\x04\
-    \x20\x01(\rR\x0enextActionUserb\x06proto3\
+    \x02hp\x12\x18\n\x07defence\x18\x05\x20\x01(\rR\x07defence\x12\x14\n\x05\
+    buffs\x18\x06\x20\x03(\rR\x05buffs\"\xc0\x01\n\x08TargetPt\x12\x1b\n\tta\
+    rget_id\x18\x01\x20\x01(\rR\x08targetId\x12\x1f\n\x0beffect_type\x18\x02\
+    \x20\x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0be\
+    ffectValue\x12\x14\n\x05buffs\x18\x04\x20\x03(\rR\x05buffs\x12=\n\rpassi\
+    veEffect\x18\x05\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffec\
+    t\";\n\x0fTriggerEffectPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\
+    \x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\"\x81\x01\n\x0cActionUn\
+    itPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x12\n\x04t\
+    ype\x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\
+    \x05value\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\
+    \x07targetsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

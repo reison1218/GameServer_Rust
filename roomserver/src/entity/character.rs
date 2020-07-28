@@ -1,11 +1,12 @@
-use crate::entity::battle::BattleCterState;
+use crate::entity::battle::{BattleCterState, TargetType};
 use crate::TEMPLATES;
 use log::warn;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use tools::protos::base::{BattleCharacterPt, CharacterPt};
 use tools::templates::buff_temp::BuffTemp;
 use tools::templates::character_temp::CharacterTemp;
+use tools::templates::item_temp::ItemTemp;
 use tools::templates::skill_temp::SkillTemp;
 
 #[derive(Clone, Debug, Default)]
@@ -52,31 +53,67 @@ pub struct BattleCharacter {
     pub target_id: u32,                  //玩家目标
     pub buff_array: Vec<Buff>,           //角色身上的buff
     pub state: u8,                       //角色状态
-    pub residue_open_times: u32,         //剩余翻地图块次数
+    pub residue_open_times: u8,          //剩余翻地图块次数
     pub turn_times: u32,                 //轮到自己的次数
     pub is_can_attack: bool,             //是否可以攻击
-    pub item_array: Vec<u32>,            //角色身上的道具
-    pub recently_open_cell_index: usize, //最近一次翻开的地图块
+    pub items: HashMap<u32, Item>,       //角色身上的道具
+    pub recently_open_cell_index: isize, //最近一次翻开的地图块
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
+pub struct Item {
+    pub id: u32,                        //物品id
+    pub skill_temp: &'static SkillTemp, //物品带的技能
+}
+
+#[derive(Clone, Debug)]
 pub struct Skill {
     pub id: u32,
-    pub skill_temp: SkillTemp,
+    pub skill_temp: &'static SkillTemp,
     pub cd_times: i8, //剩余cd,如果是消耗能量则无视这个值
 }
 
-#[derive(Clone, Debug, Default)]
+impl From<&'static SkillTemp> for Skill {
+    fn from(skill_temp: &'static SkillTemp) -> Self {
+        Skill {
+            id: skill_temp.id,
+            cd_times: skill_temp.cd as i8,
+            skill_temp: skill_temp,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct Buff {
     pub id: u32,
-    pub buff_temp: BuffTemp,
+    pub buff_temp: &'static BuffTemp,
     pub trigger_timesed: i8, //已经触发过的次数
     pub keep_times: i8,      //持续轮数
+}
+
+impl Buff {
+    pub fn get_target(&self) -> TargetType {
+        let target_type = TargetType::from(self.buff_temp.target);
+        target_type
+    }
+}
+
+impl From<&'static BuffTemp> for Buff {
+    fn from(bt: &'static BuffTemp) -> Self {
+        let mut b = Buff {
+            id: bt.id,
+            trigger_timesed: bt.trigger_times as i8,
+            keep_times: bt.keep_time as i8,
+            buff_temp: bt,
+        };
+        b
+    }
 }
 
 impl BattleCharacter {
     pub fn init(cter: &Character) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
+        battle_cter.recently_open_cell_index = -1;
         let cter_id = cter.cter_id;
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
@@ -91,10 +128,7 @@ impl BattleCharacter {
                 anyhow::bail!(str)
             }
             let skill_temp = res.unwrap();
-            let mut skill = Skill::default();
-            skill.id = skill_temp.id;
-            skill.skill_temp = skill_temp.clone();
-            skill.cd_times = 0;
+            let mut skill = Skill::from(skill_temp);
             battle_cter.skills.push(skill);
         }
         battle_cter.cell_index = 0;
@@ -114,10 +148,7 @@ impl BattleCharacter {
         battle_cter.energy = cter_temp.energy;
         for buff_id in cter_temp.passive_buff.iter() {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
-            let mut buff = Buff::default();
-            buff.id = buff_temp.id;
-            buff.buff_temp = buff_temp.clone();
-            buff.trigger_timesed = 0;
+            let mut buff = Buff::from(buff_temp);
             battle_cter.passive_buffs.push(buff);
         }
         Ok(battle_cter)
@@ -131,6 +162,11 @@ impl BattleCharacter {
         battle_cter_pt.hp = self.hp as u32;
         battle_cter_pt.defence = self.defence;
         battle_cter_pt.atk = self.atk;
+        let mut v = Vec::new();
+        for buff in self.buff_array.iter() {
+            v.push(buff.id);
+        }
+        battle_cter_pt.buffs = v;
         battle_cter_pt
     }
 }

@@ -87,11 +87,28 @@ message BattleCharacterPt{
     uint32 atk = 3;                     //攻击力
     uint32 hp = 4;                      //角色血量
     uint32 defence = 5;                 //角色防御
+    repeated uint32 buffs = 6;          //角色身上的buff
 }
 
-message BattleActionPt{
-    uint32 user_id = 1;                 //玩家id
-    uint32 choose_index = 2;            //玩家选择的位置
-    bool skip = 3;                      //是否跳过
-    uint32 next_action_user = 4;        //下一个行动玩家
+//受影响封装
+message TargetPt{
+    uint32 target_id = 1;//目标id
+    uint32 effect_type = 2;//效果类型
+    uint32 effect_value = 3;//效果值
+    repeated uint32 buffs = 4;//触发的额外buff
+    repeated TriggerEffectPt passiveEffect = 5;	//触发的被动
+}
+
+//触发效果
+message TriggerEffectPt{
+    uint32 type = 1;					//效果类型
+    uint32 value = 2;					//效果值
+}
+
+//行动单元封装
+message ActionUnitPt{
+    uint32 from_user = 1;//发起的玩家
+    uint32 type = 2;//行动类型
+    uint32 value = 3;//行动对应类型的值
+    repeated TargetPt targets = 4;//目标列表
 }

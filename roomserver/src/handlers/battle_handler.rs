@@ -1,4 +1,4 @@
-use crate::entity::battle::{ActionType, SkillConsumeType};
+use crate::entity::battle::{ActionType, SkillConsumeType, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::entity::character::{BattleCharacter, Skill};
 use crate::entity::map_data::CellType;
 use crate::entity::room::{Room, RoomState};
@@ -18,7 +18,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = res.unwrap();
-    let next_user = room.get_choice_user(None);
+    let next_user = room.get_turn_user(None);
     if let Err(e) = next_user {
         error!("{:?}", e);
         return Ok(());
@@ -71,9 +71,16 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 ///使用道具
 fn use_item(rm: &mut Room, user_id: u32, item_id: u32) {
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
-    if battle_cter.item_array.is_empty() {
+    if battle_cter.items.is_empty() {
         return;
     }
+    let res = battle_cter.items.contains_key(&item_id);
+    if !res {
+        return;
+    }
+    let mut targets = Vec::new();
+    targets.push(user_id);
+    rm.battle_data.use_skill(item_id, targets);
 }
 
 ///翻地图块
@@ -165,6 +172,36 @@ fn skip_choice_turn(rm: &mut Room, user_id: u32) {
     if !res {
         return;
     }
+
+    //校验现在能不能跳过
+    let next_user = rm.get_turn_user(None);
+    if let Err(e) = next_user {
+        warn!("{:?}", e);
+        return;
+    }
+    //如果不是下一个turn的，不让跳过
+    let next_user = next_user.unwrap();
+    if next_user != user_id {
+        warn!(
+            "skip_choice_turn next_user!=user_id! next_user:{},user_id:{}",
+            next_user, user_id
+        );
+        return;
+    }
+
+    //拿到战斗角色
+    let battle_cter = rm.battle_data.battle_cter.get(&user_id);
+    if battle_cter.is_none() {
+        warn!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
+        return;
+    }
+
+    //没有翻过地图块，则跳过
+    let battle_cter = battle_cter.unwrap();
+    if battle_cter.recently_open_cell_index < 0 {
+        return;
+    }
+
     //跳过当前这个人
     rm.battle_data.skip_turn();
 }
@@ -196,7 +233,7 @@ fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> bool {
     true
 }
 
-pub trait Find<T: Clone + Debug + Default> {
+pub trait Find<T: Clone + Debug> {
     fn get(&self, key: usize) -> Option<&T>;
 
     fn get_mut(&mut self, key: usize) -> Option<&mut T>;

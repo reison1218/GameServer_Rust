@@ -1,15 +1,23 @@
 use super::*;
-use crate::entity::character::{BattleCharacter, Buff};
+use crate::entity::character::{BattleCharacter, Buff, Item};
 use crate::entity::map_data::{Cell, CellType, TileMap};
 use crate::entity::room::MEMBER_MAX;
 use crate::handlers::battle_handler::Find;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
-use std::borrow::Borrow;
+use protobuf::Message;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
+use tools::cmd_code::ClientCode;
+use tools::protos::base::ActionUnitPt;
+use tools::protos::battle::S_ACTION_NOTICE;
 use tools::tcp::TcpSender;
+use tools::util::packet::Packet;
+
+//默认每个turn翻地图块次数
+pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
 ///技能判定枚举
 pub enum SkillID {
@@ -163,13 +171,11 @@ impl BattleData {
 
     ///下个回合
     pub fn next_turn(&mut self) {
-        //结算上一回合
-        self.settlement_last_turn();
-        //开始回合触发
-        self.turn_start_trigger();
-
         //计算下一个回合
         self.add_next_turn_index();
+        //开始回合触发
+        self.turn_start_settlement();
+
         //todo 通知客户端
     }
 
@@ -226,68 +232,200 @@ impl BattleData {
             return;
         }
         let user_id = user_id.unwrap();
+        let is_pair;
         unsafe {
             let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-
             let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-
-            let recently_open_cell_index = battle_cter.recently_open_cell_index;
-            let recently_open_cell_id = self
-                .tile_map
-                .map
-                .get_mut(recently_open_cell_index)
-                .unwrap()
-                .id;
-
-            let cell = self.tile_map.map.get_mut(index).unwrap() as *mut Cell;
-            let cell = &mut *cell;
-
-            let last_cell =
-                self.tile_map.map.get_mut(recently_open_cell_index).unwrap() as *mut Cell;
-            let last_cell = &mut *last_cell;
-            let cell_id = cell.id;
-            //如果配对了，则修改地图块配对的下标
-            if cell_id == recently_open_cell_id {
-                cell.pair_index = Some(recently_open_cell_index);
-                last_cell.pair_index = Some(index);
+            //处理配对和角色换位置逻辑
+            is_pair = self.handler_cell_pair(user_id, index);
+            //处理配对成功触发buff逻辑
+            if is_pair {
+                self.handler_cell_pair_buff(user_id, index);
             }
-
-            //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
-            if cell.user_id > 0 {
-                let target_cter = self.battle_cter.get_mut(&cell_id).unwrap();
-                target_cter.cell_index = battle_cter.cell_index;
-
-                let source_cell = self.tile_map.map.get_mut(battle_cter.cell_index).unwrap();
-                source_cell.user_id = target_cter.user_id;
-            }
-            //改变角色位置
-            battle_cter.cell_index = index;
-            cell.user_id = battle_cter.user_id;
+            //处理地图块额外其他的buff
+            self.handler_cell_extra_buff(user_id, index);
 
             //更新最近一次翻的下标
-            battle_cter.recently_open_cell_index = index;
+            battle_cter.recently_open_cell_index = index as isize;
 
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
+
+            //todo 处理移动后的事件
+
+            //todo 下发到客户端
+
+            if battle_cter.residue_open_times <= 0 {
+                //下一个turn
+                self.next_turn();
+            }
+        }
+    }
+
+    ///处理地图块额外其他buff
+    pub unsafe fn handler_cell_extra_buff(&mut self, user_id: u32, index: usize) {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+
+        let cell = self.tile_map.map.get_mut(index).unwrap();
+
+        for buff in cell.extra_buff.iter() {}
+    }
+
+    ///处理地图块配对逻辑
+    pub unsafe fn handler_cell_pair(&mut self, user_id: u32, index: usize) -> bool {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+
+        let recently_open_cell_index = battle_cter.recently_open_cell_index;
+        let recently_open_cell_id = self
+            .tile_map
+            .map
+            .get_mut(recently_open_cell_index as usize)
+            .unwrap()
+            .id;
+
+        let cell = self.tile_map.map.get_mut(index).unwrap() as *mut Cell;
+        let cell = &mut *cell;
+        let is_pair;
+        let last_cell = self
+            .tile_map
+            .map
+            .get_mut(recently_open_cell_index as usize)
+            .unwrap() as *mut Cell;
+        let last_cell = &mut *last_cell;
+        let cell_id = cell.id;
+        //如果配对了，则修改地图块配对的下标
+        if cell_id == recently_open_cell_id {
+            cell.pair_index = Some(recently_open_cell_index as usize);
+            last_cell.pair_index = Some(index);
+            is_pair = true;
+        } else {
+            is_pair = false;
         }
 
-        //todo 检测地图块有没有陷阱
+        //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
+        if cell.user_id > 0 {
+            let target_cter = self.battle_cter.get_mut(&cell_id).unwrap();
+            target_cter.cell_index = battle_cter.cell_index;
 
-        //todo 下发到客户端
+            let source_cell = self.tile_map.map.get_mut(battle_cter.cell_index).unwrap();
+            source_cell.user_id = target_cter.user_id;
+        }
+        //改变角色位置
+        battle_cter.cell_index = index;
+        cell.user_id = battle_cter.user_id;
+        is_pair
+    }
 
-        //下一个turn
-        self.next_turn();
+    ///处理地图块配对成功之后的buff
+    pub unsafe fn handler_cell_pair_buff(&mut self, user_id: u32, index: usize) {
+        let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let cell = self.tile_map.map.get(index).unwrap();
+        let last_index = battle_cter.recently_open_cell_index as usize;
+        let last_cell = self.tile_map.map.get(last_index).unwrap();
+
+        for buff in cell.buff.iter() {
+            //获得道具
+            if [30011, 30021, 30031, 30041].contains(&buff.id) {
+                let item_id = buff.buff_temp.par1;
+                let item = TEMPLATES.get_item_ref().get_temp(&item_id);
+                if let Err(e) = item {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let item_temp = item.unwrap();
+                let skill_id = item_temp.trigger_skill;
+                let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+                if let Err(e) = skill_temp {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let skill_temp = skill_temp.unwrap();
+                let item = Item {
+                    id: item_id,
+                    skill_temp,
+                };
+                //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
+                if buff.buff_temp.target == TargetType::CellPlayer as u32 {
+                    let last_cell_user = battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
+                    if let Some(last_cell_user) = last_cell_user {
+                        last_cell_user.items.insert(item_id, item.clone());
+                    }
+                }
+                battle_cter.items.insert(item_id, item);
+            } else if 30012 == buff.id {
+                //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
+                if buff.buff_temp.target == TargetType::CellPlayer as u32 {
+                    let last_cell_user = battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
+                    if let Some(last_cell_user) = last_cell_user {
+                        last_cell_user.hp += buff.buff_temp.par1 as i32;
+                    }
+                }
+                //恢复生命值
+                battle_cter.hp += buff.buff_temp.par1 as i32;
+            } else if 30022 == buff.id {
+                //相临玩家增加技能cd
+                //恢复生命值
+                //todo
+            } else if [30022].contains(&buff.id) {
+                //获得buff
+                let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff.id);
+                if let Err(e) = buff_temp {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let buff_temp = buff_temp.unwrap();
+                let buff = Buff::from(buff_temp);
+
+                //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
+                if buff.buff_temp.target == TargetType::CellPlayer as u32 {
+                    let last_cell_user = battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
+                    if let Some(last_cell_user) = last_cell_user {
+                        last_cell_user.buff_array.push(buff.clone());
+                    }
+                }
+                battle_cter.buff_array.push(buff);
+            }
+        }
     }
 
     ///回合开始触发
-    pub fn turn_start_trigger(&mut self) {
-        //todo
+    pub fn turn_start_settlement(&mut self) {
+        let user_id = self.get_turn_user(None);
+        if let Err(e) = user_id {
+            error!("{:?}", e);
+            return;
+        }
+        let user_id = user_id.unwrap();
+        let mut battle_cter = self.battle_cter.get_mut(&user_id);
+        if let None = battle_cter {
+            error!("battle_cter is None!user_id:{}", user_id);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
+
+        //玩家身上所有buff持续轮次-1
+        let mut need_remove = Vec::new();
+        let mut index = 0_usize;
+        for buff in battle_cter.buff_array.iter_mut() {
+            buff.keep_times -= 1;
+            if buff.keep_times <= 0 {
+                need_remove.push(index);
+            }
+            index += 1;
+        }
+        //删除buff
+        for index in need_remove {
+            battle_cter.buff_array.remove(index);
+        }
+
         //创建战斗检测定时器任务
         self.build_battle_turn_task();
     }
-
-    ///结算上一回合
-    pub fn settlement_last_turn(&mut self) {}
 
     ///获得玩家回合下标
     pub fn get_turn_index(&self, user_id: u32) -> isize {
@@ -332,13 +470,34 @@ impl BattleData {
         value as isize
     }
 
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
+        self.get_sender_mut().write(bytes);
+    }
+
+    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
+        self.sender.borrow_mut()
+    }
+
     //跳过回合
     pub fn skip_turn(&mut self) {
-        self.next_choice_index != 1;
-        if self.next_turn_index > self.turn_orders.len() {
-            self.next_turn_index = 0;
-        }
         //返回客户端
+        let mut san = S_ACTION_NOTICE::new();
+        let mut apt = ActionUnitPt::new();
+        apt.set_field_type(ActionType::Skip as u32);
+        apt.set_from_user(self.get_next_turn_user().unwrap());
+        san.action_uints.push(apt);
+        let res = san.write_to_bytes();
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        let bytes = res.unwrap();
+        for member_id in self.battle_cter.clone().keys() {
+            self.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
+        }
+        //下一个turn
+        self.next_turn();
     }
 
     ///校验是否翻过块
@@ -354,6 +513,19 @@ impl BattleData {
             return true;
         }
         return false;
+    }
+
+    ///使用道具,道具都是一次性的，用完了就删掉
+    pub fn use_item(&mut self, item_id: u32) {
+        let user_id = self.get_next_turn_user().unwrap();
+        let battle_cter = self.battle_cter.get(&user_id).unwrap();
+        let item = battle_cter.items.get(&item_id).unwrap();
+        let mut targets = Vec::new();
+        targets.push(user_id);
+        self.use_skill(item.skill_temp.id, targets);
+        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+        //用完了就删除
+        battle_cter.items.remove(&item_id);
     }
 
     ///使用技能
@@ -595,11 +767,7 @@ impl BattleData {
             return;
         }
         let battle_cter = battle_cter.unwrap();
-        let mut buff = Buff::default();
-        buff.id = buff_temp.id;
-        buff.buff_temp = buff_temp.clone();
-        buff.trigger_timesed = 0;
-        buff.keep_times = buff_temp.keep_time as i8;
+        let mut buff = Buff::from(buff_temp);
         battle_cter.buff_array.push(buff);
         //todo 通知客户端
     }

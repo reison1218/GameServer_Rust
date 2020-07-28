@@ -165,10 +165,8 @@ impl TileMap {
             if let Some(buffs) = buffs {
                 let mut buff_array = Vec::new();
                 for buff_id in buffs {
-                    let mut buff = Buff::default();
-                    buff.id = *buff_id;
                     let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
-                    buff.buff_temp = buff_temp.clone();
+                    let mut buff = Buff::from(buff_temp);
                     buff_array.push(buff);
                 }
                 cell.buff = buff_array;

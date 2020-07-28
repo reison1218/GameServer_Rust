@@ -238,10 +238,10 @@ message S_CHOOSE_TURN_ORDER_NOTICE{
     uint32 order = 2;//玩家所选择的顺位
 }
 
-//战斗角色推送
+//选择角色占位推送
 //cmd:10027
-message S_BATTLE_CHARACTER_NOTICE{
-    repeated BattleCharacterPt battle_cters= 1;//战斗角色数据
+message S_CHOICE_INDEX_NOTICE{
+
 }
 
 //跳过选择回合顺序请求

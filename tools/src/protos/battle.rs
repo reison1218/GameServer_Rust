@@ -27,1025 +27,6 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 // const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_2_14_0;
 
 #[derive(PartialEq,Clone,Default)]
-pub struct C_OPEN {
-    // message fields
-    pub index: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a C_OPEN {
-    fn default() -> &'a C_OPEN {
-        <C_OPEN as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl C_OPEN {
-    pub fn new() -> C_OPEN {
-        ::std::default::Default::default()
-    }
-
-    // uint32 index = 1;
-
-
-    pub fn get_index(&self) -> u32 {
-        self.index
-    }
-    pub fn clear_index(&mut self) {
-        self.index = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_index(&mut self, v: u32) {
-        self.index = v;
-    }
-}
-
-impl ::protobuf::Message for C_OPEN {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.index = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.index != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.index, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.index != 0 {
-            os.write_uint32(1, self.index)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> C_OPEN {
-        C_OPEN::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "index",
-                    |m: &C_OPEN| { &m.index },
-                    |m: &mut C_OPEN| { &mut m.index },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_OPEN>(
-                    "C_OPEN",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static C_OPEN {
-        static mut instance: ::protobuf::lazy::Lazy<C_OPEN> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(C_OPEN::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for C_OPEN {
-    fn clear(&mut self) {
-        self.index = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for C_OPEN {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for C_OPEN {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct S_OPEN {
-    // message fields
-    pub is_succ: bool,
-    pub err_mess: ::std::string::String,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_OPEN {
-    fn default() -> &'a S_OPEN {
-        <S_OPEN as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_OPEN {
-    pub fn new() -> S_OPEN {
-        ::std::default::Default::default()
-    }
-
-    // bool is_succ = 1;
-
-
-    pub fn get_is_succ(&self) -> bool {
-        self.is_succ
-    }
-    pub fn clear_is_succ(&mut self) {
-        self.is_succ = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_is_succ(&mut self, v: bool) {
-        self.is_succ = v;
-    }
-
-    // string err_mess = 2;
-
-
-    pub fn get_err_mess(&self) -> &str {
-        &self.err_mess
-    }
-    pub fn clear_err_mess(&mut self) {
-        self.err_mess.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_err_mess(&mut self, v: ::std::string::String) {
-        self.err_mess = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
-        &mut self.err_mess
-    }
-
-    // Take field
-    pub fn take_err_mess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
-    }
-}
-
-impl ::protobuf::Message for S_OPEN {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_bool()?;
-                    self.is_succ = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.is_succ != false {
-            my_size += 2;
-        }
-        if !self.err_mess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.is_succ != false {
-            os.write_bool(1, self.is_succ)?;
-        }
-        if !self.err_mess.is_empty() {
-            os.write_string(2, &self.err_mess)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_OPEN {
-        S_OPEN::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "is_succ",
-                    |m: &S_OPEN| { &m.is_succ },
-                    |m: &mut S_OPEN| { &mut m.is_succ },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "err_mess",
-                    |m: &S_OPEN| { &m.err_mess },
-                    |m: &mut S_OPEN| { &mut m.err_mess },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_OPEN>(
-                    "S_OPEN",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static S_OPEN {
-        static mut instance: ::protobuf::lazy::Lazy<S_OPEN> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(S_OPEN::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for S_OPEN {
-    fn clear(&mut self) {
-        self.is_succ = false;
-        self.err_mess.clear();
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_OPEN {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_OPEN {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct S_OPEN_NOTICE {
-    // message fields
-    pub user_id: u32,
-    pub index: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_OPEN_NOTICE {
-    fn default() -> &'a S_OPEN_NOTICE {
-        <S_OPEN_NOTICE as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_OPEN_NOTICE {
-    pub fn new() -> S_OPEN_NOTICE {
-        ::std::default::Default::default()
-    }
-
-    // uint32 user_id = 1;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // uint32 index = 2;
-
-
-    pub fn get_index(&self) -> u32 {
-        self.index
-    }
-    pub fn clear_index(&mut self) {
-        self.index = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_index(&mut self, v: u32) {
-        self.index = v;
-    }
-}
-
-impl ::protobuf::Message for S_OPEN_NOTICE {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.index = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.index != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.index, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        if self.index != 0 {
-            os.write_uint32(2, self.index)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_OPEN_NOTICE {
-        S_OPEN_NOTICE::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &S_OPEN_NOTICE| { &m.user_id },
-                    |m: &mut S_OPEN_NOTICE| { &mut m.user_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "index",
-                    |m: &S_OPEN_NOTICE| { &m.index },
-                    |m: &mut S_OPEN_NOTICE| { &mut m.index },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_OPEN_NOTICE>(
-                    "S_OPEN_NOTICE",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static S_OPEN_NOTICE {
-        static mut instance: ::protobuf::lazy::Lazy<S_OPEN_NOTICE> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(S_OPEN_NOTICE::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for S_OPEN_NOTICE {
-    fn clear(&mut self) {
-        self.user_id = 0;
-        self.index = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_OPEN_NOTICE {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_OPEN_NOTICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct C_SKIP_TURN {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a C_SKIP_TURN {
-    fn default() -> &'a C_SKIP_TURN {
-        <C_SKIP_TURN as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl C_SKIP_TURN {
-    pub fn new() -> C_SKIP_TURN {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for C_SKIP_TURN {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> C_SKIP_TURN {
-        C_SKIP_TURN::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SKIP_TURN>(
-                    "C_SKIP_TURN",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static C_SKIP_TURN {
-        static mut instance: ::protobuf::lazy::Lazy<C_SKIP_TURN> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(C_SKIP_TURN::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for C_SKIP_TURN {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for C_SKIP_TURN {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for C_SKIP_TURN {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct S_SKIP_TURN {
-    // message fields
-    pub is_succ: bool,
-    pub err_mess: ::std::string::String,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_SKIP_TURN {
-    fn default() -> &'a S_SKIP_TURN {
-        <S_SKIP_TURN as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_SKIP_TURN {
-    pub fn new() -> S_SKIP_TURN {
-        ::std::default::Default::default()
-    }
-
-    // bool is_succ = 1;
-
-
-    pub fn get_is_succ(&self) -> bool {
-        self.is_succ
-    }
-    pub fn clear_is_succ(&mut self) {
-        self.is_succ = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_is_succ(&mut self, v: bool) {
-        self.is_succ = v;
-    }
-
-    // string err_mess = 2;
-
-
-    pub fn get_err_mess(&self) -> &str {
-        &self.err_mess
-    }
-    pub fn clear_err_mess(&mut self) {
-        self.err_mess.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_err_mess(&mut self, v: ::std::string::String) {
-        self.err_mess = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
-        &mut self.err_mess
-    }
-
-    // Take field
-    pub fn take_err_mess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
-    }
-}
-
-impl ::protobuf::Message for S_SKIP_TURN {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_bool()?;
-                    self.is_succ = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.is_succ != false {
-            my_size += 2;
-        }
-        if !self.err_mess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.is_succ != false {
-            os.write_bool(1, self.is_succ)?;
-        }
-        if !self.err_mess.is_empty() {
-            os.write_string(2, &self.err_mess)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_SKIP_TURN {
-        S_SKIP_TURN::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "is_succ",
-                    |m: &S_SKIP_TURN| { &m.is_succ },
-                    |m: &mut S_SKIP_TURN| { &mut m.is_succ },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "err_mess",
-                    |m: &S_SKIP_TURN| { &m.err_mess },
-                    |m: &mut S_SKIP_TURN| { &mut m.err_mess },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SKIP_TURN>(
-                    "S_SKIP_TURN",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static S_SKIP_TURN {
-        static mut instance: ::protobuf::lazy::Lazy<S_SKIP_TURN> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(S_SKIP_TURN::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for S_SKIP_TURN {
-    fn clear(&mut self) {
-        self.is_succ = false;
-        self.err_mess.clear();
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_SKIP_TURN {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_SKIP_TURN {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct S_SKIP_NOTICE {
-    // message fields
-    pub user_id: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_SKIP_NOTICE {
-    fn default() -> &'a S_SKIP_NOTICE {
-        <S_SKIP_NOTICE as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_SKIP_NOTICE {
-    pub fn new() -> S_SKIP_NOTICE {
-        ::std::default::Default::default()
-    }
-
-    // uint32 user_id = 1;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-}
-
-impl ::protobuf::Message for S_SKIP_NOTICE {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_SKIP_NOTICE {
-        S_SKIP_NOTICE::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &S_SKIP_NOTICE| { &m.user_id },
-                    |m: &mut S_SKIP_NOTICE| { &mut m.user_id },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SKIP_NOTICE>(
-                    "S_SKIP_NOTICE",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static S_SKIP_NOTICE {
-        static mut instance: ::protobuf::lazy::Lazy<S_SKIP_NOTICE> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(S_SKIP_NOTICE::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for S_SKIP_NOTICE {
-    fn clear(&mut self) {
-        self.user_id = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_SKIP_NOTICE {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_SKIP_NOTICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
 pub struct C_ACTION {
     // message fields
     pub action_type: u32,
@@ -1278,70 +259,58 @@ impl ::protobuf::reflect::ProtobufValue for C_ACTION {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_ACTION {
+pub struct S_BATTLE_START_NOTICE {
     // message fields
-    pub is_succ: bool,
-    pub err_mess: ::std::string::String,
+    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_ACTION {
-    fn default() -> &'a S_ACTION {
-        <S_ACTION as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_BATTLE_START_NOTICE {
+    fn default() -> &'a S_BATTLE_START_NOTICE {
+        <S_BATTLE_START_NOTICE as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_ACTION {
-    pub fn new() -> S_ACTION {
+impl S_BATTLE_START_NOTICE {
+    pub fn new() -> S_BATTLE_START_NOTICE {
         ::std::default::Default::default()
     }
 
-    // bool is_succ = 1;
+    // repeated .protos.BattleCharacterPt battle_cters = 1;
 
 
-    pub fn get_is_succ(&self) -> bool {
-        self.is_succ
+    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
+        &self.battle_cters
     }
-    pub fn clear_is_succ(&mut self) {
-        self.is_succ = false;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_is_succ(&mut self, v: bool) {
-        self.is_succ = v;
-    }
-
-    // string err_mess = 2;
-
-
-    pub fn get_err_mess(&self) -> &str {
-        &self.err_mess
-    }
-    pub fn clear_err_mess(&mut self) {
-        self.err_mess.clear();
+    pub fn clear_battle_cters(&mut self) {
+        self.battle_cters.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_err_mess(&mut self, v: ::std::string::String) {
-        self.err_mess = v;
+    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
+        self.battle_cters = v;
     }
 
     // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
-        &mut self.err_mess
+    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        &mut self.battle_cters
     }
 
     // Take field
-    pub fn take_err_mess(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
+    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
     }
 }
 
-impl ::protobuf::Message for S_ACTION {
+impl ::protobuf::Message for S_BATTLE_START_NOTICE {
     fn is_initialized(&self) -> bool {
+        for v in &self.battle_cters {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -1350,14 +319,7 @@ impl ::protobuf::Message for S_ACTION {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_bool()?;
-                    self.is_succ = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1371,24 +333,21 @@ impl ::protobuf::Message for S_ACTION {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.is_succ != false {
-            my_size += 2;
-        }
-        if !self.err_mess.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
-        }
+        for value in &self.battle_cters {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.is_succ != false {
-            os.write_bool(1, self.is_succ)?;
-        }
-        if !self.err_mess.is_empty() {
-            os.write_string(2, &self.err_mess)?;
-        }
+        for v in &self.battle_cters {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -1419,8 +378,8 @@ impl ::protobuf::Message for S_ACTION {
         Self::descriptor_static()
     }
 
-    fn new() -> S_ACTION {
-        S_ACTION::new()
+    fn new() -> S_BATTLE_START_NOTICE {
+        S_BATTLE_START_NOTICE::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1428,18 +387,13 @@ impl ::protobuf::Message for S_ACTION {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "is_succ",
-                    |m: &S_ACTION| { &m.is_succ },
-                    |m: &mut S_ACTION| { &mut m.is_succ },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
+                    "battle_cters",
+                    |m: &S_BATTLE_START_NOTICE| { &m.battle_cters },
+                    |m: &mut S_BATTLE_START_NOTICE| { &mut m.battle_cters },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                    "err_mess",
-                    |m: &S_ACTION| { &m.err_mess },
-                    |m: &mut S_ACTION| { &mut m.err_mess },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_ACTION>(
-                    "S_ACTION",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_BATTLE_START_NOTICE>(
+                    "S_BATTLE_START_NOTICE",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1447,29 +401,28 @@ impl ::protobuf::Message for S_ACTION {
         }
     }
 
-    fn default_instance() -> &'static S_ACTION {
-        static mut instance: ::protobuf::lazy::Lazy<S_ACTION> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_BATTLE_START_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_BATTLE_START_NOTICE> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_ACTION::new)
+            instance.get(S_BATTLE_START_NOTICE::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_ACTION {
+impl ::protobuf::Clear for S_BATTLE_START_NOTICE {
     fn clear(&mut self) {
-        self.is_succ = false;
-        self.err_mess.clear();
+        self.battle_cters.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for S_ACTION {
+impl ::std::fmt::Debug for S_BATTLE_START_NOTICE {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_ACTION {
+impl ::protobuf::reflect::ProtobufValue for S_BATTLE_START_NOTICE {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1478,10 +431,7 @@ impl ::protobuf::reflect::ProtobufValue for S_ACTION {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_ACTION_NOTICE {
     // message fields
-    pub user_id: u32,
-    pub field_type: u32,
-    pub value: u32,
-    pub targets: ::protobuf::RepeatedField<TargetPt>,
+    pub action_uints: ::protobuf::RepeatedField<super::base::ActionUnitPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1498,80 +448,35 @@ impl S_ACTION_NOTICE {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // repeated .protos.ActionUnitPt action_uints = 1;
 
 
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
+    pub fn get_action_uints(&self) -> &[super::base::ActionUnitPt] {
+        &self.action_uints
     }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // uint32 type = 2;
-
-
-    pub fn get_field_type(&self) -> u32 {
-        self.field_type
-    }
-    pub fn clear_field_type(&mut self) {
-        self.field_type = 0;
+    pub fn clear_action_uints(&mut self) {
+        self.action_uints.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_field_type(&mut self, v: u32) {
-        self.field_type = v;
-    }
-
-    // uint32 value = 3;
-
-
-    pub fn get_value(&self) -> u32 {
-        self.value
-    }
-    pub fn clear_value(&mut self) {
-        self.value = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_value(&mut self, v: u32) {
-        self.value = v;
-    }
-
-    // repeated .protos.TargetPt targets = 4;
-
-
-    pub fn get_targets(&self) -> &[TargetPt] {
-        &self.targets
-    }
-    pub fn clear_targets(&mut self) {
-        self.targets.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_targets(&mut self, v: ::protobuf::RepeatedField<TargetPt>) {
-        self.targets = v;
+    pub fn set_action_uints(&mut self, v: ::protobuf::RepeatedField<super::base::ActionUnitPt>) {
+        self.action_uints = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_targets(&mut self) -> &mut ::protobuf::RepeatedField<TargetPt> {
-        &mut self.targets
+    pub fn mut_action_uints(&mut self) -> &mut ::protobuf::RepeatedField<super::base::ActionUnitPt> {
+        &mut self.action_uints
     }
 
     // Take field
-    pub fn take_targets(&mut self) -> ::protobuf::RepeatedField<TargetPt> {
-        ::std::mem::replace(&mut self.targets, ::protobuf::RepeatedField::new())
+    pub fn take_action_uints(&mut self) -> ::protobuf::RepeatedField<super::base::ActionUnitPt> {
+        ::std::mem::replace(&mut self.action_uints, ::protobuf::RepeatedField::new())
     }
 }
 
 impl ::protobuf::Message for S_ACTION_NOTICE {
     fn is_initialized(&self) -> bool {
-        for v in &self.targets {
+        for v in &self.action_uints {
             if !v.is_initialized() {
                 return false;
             }
@@ -1584,28 +489,7 @@ impl ::protobuf::Message for S_ACTION_NOTICE {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.field_type = tmp;
-                },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.value = tmp;
-                },
-                4 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.targets)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.action_uints)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1619,16 +503,7 @@ impl ::protobuf::Message for S_ACTION_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.field_type != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.value != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.value, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.targets {
+        for value in &self.action_uints {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -1638,17 +513,8 @@ impl ::protobuf::Message for S_ACTION_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        if self.field_type != 0 {
-            os.write_uint32(2, self.field_type)?;
-        }
-        if self.value != 0 {
-            os.write_uint32(3, self.value)?;
-        }
-        for v in &self.targets {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+        for v in &self.action_uints {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -1691,25 +557,10 @@ impl ::protobuf::Message for S_ACTION_NOTICE {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &S_ACTION_NOTICE| { &m.user_id },
-                    |m: &mut S_ACTION_NOTICE| { &mut m.user_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "type",
-                    |m: &S_ACTION_NOTICE| { &m.field_type },
-                    |m: &mut S_ACTION_NOTICE| { &mut m.field_type },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "value",
-                    |m: &S_ACTION_NOTICE| { &m.value },
-                    |m: &mut S_ACTION_NOTICE| { &mut m.value },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TargetPt>>(
-                    "targets",
-                    |m: &S_ACTION_NOTICE| { &m.targets },
-                    |m: &mut S_ACTION_NOTICE| { &mut m.targets },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::ActionUnitPt>>(
+                    "action_uints",
+                    |m: &S_ACTION_NOTICE| { &m.action_uints },
+                    |m: &mut S_ACTION_NOTICE| { &mut m.action_uints },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_ACTION_NOTICE>(
                     "S_ACTION_NOTICE",
@@ -1730,10 +581,7 @@ impl ::protobuf::Message for S_ACTION_NOTICE {
 
 impl ::protobuf::Clear for S_ACTION_NOTICE {
     fn clear(&mut self) {
-        self.user_id = 0;
-        self.field_type = 0;
-        self.value = 0;
-        self.targets.clear();
+        self.action_uints.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1745,238 +593,6 @@ impl ::std::fmt::Debug for S_ACTION_NOTICE {
 }
 
 impl ::protobuf::reflect::ProtobufValue for S_ACTION_NOTICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct TargetPt {
-    // message fields
-    pub target_id: u32,
-    pub value: u32,
-    pub buffs: ::std::vec::Vec<u32>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a TargetPt {
-    fn default() -> &'a TargetPt {
-        <TargetPt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl TargetPt {
-    pub fn new() -> TargetPt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 target_id = 1;
-
-
-    pub fn get_target_id(&self) -> u32 {
-        self.target_id
-    }
-    pub fn clear_target_id(&mut self) {
-        self.target_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_target_id(&mut self, v: u32) {
-        self.target_id = v;
-    }
-
-    // uint32 value = 2;
-
-
-    pub fn get_value(&self) -> u32 {
-        self.value
-    }
-    pub fn clear_value(&mut self) {
-        self.value = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_value(&mut self, v: u32) {
-        self.value = v;
-    }
-
-    // repeated uint32 buffs = 3;
-
-
-    pub fn get_buffs(&self) -> &[u32] {
-        &self.buffs
-    }
-    pub fn clear_buffs(&mut self) {
-        self.buffs.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_buffs(&mut self, v: ::std::vec::Vec<u32>) {
-        self.buffs = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_buffs(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.buffs
-    }
-
-    // Take field
-    pub fn take_buffs(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
-    }
-}
-
-impl ::protobuf::Message for TargetPt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.target_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.value = tmp;
-                },
-                3 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.target_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.target_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.value != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.value, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.buffs {
-            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.target_id != 0 {
-            os.write_uint32(1, self.target_id)?;
-        }
-        if self.value != 0 {
-            os.write_uint32(2, self.value)?;
-        }
-        for v in &self.buffs {
-            os.write_uint32(3, *v)?;
-        };
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> TargetPt {
-        TargetPt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "target_id",
-                    |m: &TargetPt| { &m.target_id },
-                    |m: &mut TargetPt| { &mut m.target_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "value",
-                    |m: &TargetPt| { &m.value },
-                    |m: &mut TargetPt| { &mut m.value },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "buffs",
-                    |m: &TargetPt| { &m.buffs },
-                    |m: &mut TargetPt| { &mut m.buffs },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<TargetPt>(
-                    "TargetPt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static TargetPt {
-        static mut instance: ::protobuf::lazy::Lazy<TargetPt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(TargetPt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for TargetPt {
-    fn clear(&mut self) {
-        self.target_id = 0;
-        self.value = 0;
-        self.buffs.clear();
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for TargetPt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for TargetPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -2391,29 +1007,17 @@ impl ::protobuf::reflect::ProtobufValue for S_SETTLEMENT_NOTICE {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"\x1e\n\x06C_OPEN\x12\
-    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"<\n\x06S_OPEN\x12\x17\n\
-    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\">\n\rS_OPEN_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\rR\x05ind\
-    ex\"\r\n\x0bC_SKIP_TURN\"A\n\x0bS_SKIP_TURN\x12\x17\n\x07is_succ\x18\x01\
-    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
-    rMess\"(\n\rS_SKIP_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06us\
-    erId\"Y\n\x08C_ACTION\x12\x1f\n\x0baction_type\x18\x01\x20\x01(\rR\nacti\
-    onType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\x12\x16\n\x06targ\
-    et\x18\x03\x20\x03(\rR\x06target\">\n\x08S_ACTION\x12\x17\n\x07is_succ\
-    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"\x80\x01\n\x0fS_ACTION_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\
-    \x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\x12*\n\x07targets\x18\
-    \x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\"S\n\x08TargetPt\x12\
-    \x1b\n\ttarget_id\x18\x01\x20\x01(\rR\x08targetId\x12\x14\n\x05value\x18\
-    \x02\x20\x01(\rR\x05value\x12\x14\n\x05buffs\x18\x03\x20\x03(\rR\x05buff\
-    s\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1e\n\x0btile_map_id\x18\x02\
-    \x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\x18\x03\x20\x03(\rR\x05cells\
-    \x122\n\nworld_cell\x18\x04\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworld\
-    Cell\".\n\x13S_SETTLEMENT_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x03(\r\
-    R\x06userIdb\x06proto3\
+    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"Y\n\x08C_ACTION\x12\
+    \x1f\n\x0baction_type\x18\x01\x20\x01(\rR\nactionType\x12\x14\n\x05value\
+    \x18\x02\x20\x01(\rR\x05value\x12\x16\n\x06target\x18\x03\x20\x03(\rR\
+    \x06target\"U\n\x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\x01\
+    \x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"J\n\x0fS_AC\
+    TION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.Acti\
+    onUnitPtR\x0bactionUints\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1e\n\
+    \x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\x18\
+    \x03\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x04\x20\x03(\x0b2\x13.p\
+    rotos.WorldCellPtR\tworldCell\".\n\x13S_SETTLEMENT_NOTICE\x12\x17\n\x07u\
+    ser_id\x18\x01\x20\x03(\rR\x06userIdb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

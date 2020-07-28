@@ -22,75 +22,28 @@ import "base.proto";
 //    Buff = 6;    //触发buff
 //}
 
-//翻块
-message C_OPEN{
-    uint32 index = 1;//要翻开的块下标
-}
-
-//翻块返回
-message S_OPEN{
-    bool is_succ = 1;//是否成功;
-    string err_mess = 2;//错误信息;
-}
-
-//翻块推送
-message S_OPEN_NOTICE{
-    uint32 user_id = 1;//翻块的玩家id
-    uint32 index = 2;//翻开的下标
-}
-
-//跳过回合
-message C_SKIP_TURN{
-
-}
-
-//跳过回合
-message S_SKIP_TURN{
-    bool is_succ = 1;//是否成功;
-    string err_mess = 2;//错误信息;
-}
-
-//跳过推送
-message S_SKIP_NOTICE{
-    uint32 user_id = 1;//玩家id
-}
-
 //行动请求
+//cmd=20021
 message C_ACTION{
     uint32 action_type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
     uint32 value = 2;//行动对应类型的值
     repeated uint32 target = 3;//目标 可以是块，可以是玩家，可以是自己
 }
 
+//战斗开始通知
+//cmd=10030
+message S_BATTLE_START_NOTICE{
+    repeated BattleCharacterPt battle_cters = 1;//战斗角色数据
+}
+
 //行动推送
+//cmd=10031
 message S_ACTION_NOTICE{
-    repeated ActionUnit action_uints = 1;//行动单位
-}
-
-message ActionUnit{
-    uint32 from_user = 1;//发起的玩家
-    uint32 type = 2;//行动类型
-    uint32 value = 3;//行动对应类型的值
-    repeated TargetPt targets = 4;//目标列表
-}
-
-
-//受影响封装
-message TargetPt{
-    uint32 target_id = 1;//目标id
-    uint32 effect_type = 2;//效果类型
-    uint32 effect_value = 3;//效果值
-    repeated uint32 buffs = 4;//触发的额外buff
-    repeated TriggerEffectPt passiveEffect = 5;	//触发的被动
-}
-
-//触发效果
-message TriggerEffectPt{
-     uint32 type = 1;					//效果类型
-     uint32 value = 2;					//效果值
+    repeated ActionUnitPt action_uints = 1;//行动单位
 }
 
 //地图刷新推送
+//cmd = 10032
 message S_MAP_REFRESH_NOTICE{
     uint32 tile_map_id = 2;//地图配置id
     repeated uint32 cells = 3;//包含的块
@@ -98,8 +51,7 @@ message S_MAP_REFRESH_NOTICE{
 }
 
 //结算推送
+//cmd=10033
 message S_SETTLEMENT_NOTICE{
     repeated uint32 user_id = 1;//玩家名次
 }
-
-
