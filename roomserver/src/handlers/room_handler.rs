@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::character::Character;
-use crate::entity::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
+use crate::entity::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::error_return::err_back;
 use tools::protos::room::{
     C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER,
@@ -437,10 +437,11 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
-    if room.is_started() {
+    if room.get_state() != &RoomState::Await {
         let str = format!(
-            "can not leave room,this room is already started!room_id:{}",
-            room.get_room_id()
+            "can not setting room!room_id:{},room_state:{:?}",
+            room.get_room_id(),
+            room.get_state()
         );
         anyhow::bail!(str)
     }
@@ -468,16 +469,36 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let member = room.get_member_ref(&user_id).unwrap();
+    if member.state == MemberState::Ready as u8 {
+        let str = format!("this owner is ready!,user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::RoomSetting, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+
     //走正常逻辑
     if srs.is_succ {
         let mut rs = C_ROOM_SETTING::new();
         let res = rs.merge_from_bytes(packet.get_data());
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
+            return Ok(());
         }
-        let rs_pt = rs.take_setting();
-        let rs = crate::entity::room_model::RoomSetting::from(rs_pt);
-        room.set_room_setting(rs);
+        let set_type = rs.get_set_type();
+        let room_set_type = RoomSettingType::from(set_type);
+        match room_set_type {
+            RoomSettingType::AILevel => {
+                room.setting.ai_level = rs.get_value();
+            }
+            RoomSettingType::IsOpenWorldCell => {
+                room.setting.is_world_tile = rs.get_value() == 1;
+            }
+            RoomSettingType::TurnLimitTime => {
+                room.setting.turn_limit_time = rs.get_value();
+            }
+            _ => {}
+        }
     }
 
     //回给客户端

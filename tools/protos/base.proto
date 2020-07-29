@@ -20,7 +20,8 @@ message RoomSettingPt{
     uint32 battle_type = 1;//战斗模式
     uint32 turn_limit_time = 2;//回合时间限制
     bool is_open_world_tile = 3;//是否开启中立特殊块
-    uint32 victory_condition = 4;//胜利条件
+    uint32 ai_level = 4;//ai级别
+    uint32 victory_condition = 5;//胜利条件
 }
 
 //玩家信息

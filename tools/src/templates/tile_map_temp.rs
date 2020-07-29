@@ -7,7 +7,7 @@ pub struct TileMapTemp {
     pub id: u32,
     pub map: Vec<u32>,
     pub cell_rare: Vec<CellRare>,
-    pub world_cell: Vec<u32>,
+    pub world_cell: u32,
     pub map_type: u8,
     pub member_count:u32,
 }

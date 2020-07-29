@@ -237,13 +237,13 @@ fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> bool {
 }
 
 pub trait Find<T: Clone + Debug> {
-    fn get(&self, key: usize) -> Option<&T>;
+    fn find(&self, key: usize) -> Option<&T>;
 
-    fn get_mut(&mut self, key: usize) -> Option<&mut T>;
+    fn find_mut(&mut self, key: usize) -> Option<&mut T>;
 }
 
 impl Find<Skill> for Vec<Skill> {
-    fn get(&self, key: usize) -> Option<&Skill> {
+    fn find(&self, key: usize) -> Option<&Skill> {
         for value in self.iter() {
             if value.id != key as u32 {
                 continue;
@@ -253,7 +253,7 @@ impl Find<Skill> for Vec<Skill> {
         None
     }
 
-    fn get_mut(&mut self, key: usize) -> Option<&mut Skill> {
+    fn find_mut(&mut self, key: usize) -> Option<&mut Skill> {
         for value in self.iter_mut() {
             if value.id != key as u32 {
                 continue;
@@ -261,5 +261,22 @@ impl Find<Skill> for Vec<Skill> {
             return Some(value);
         }
         None
+    }
+}
+
+pub trait Delete<T: Clone + Debug> {
+    fn delete(&mut self, key: usize);
+}
+
+impl Delete<Skill> for Vec<Skill> {
+    fn delete(&mut self, key: usize) {
+        for index in 0..self.len() {
+            let res = self.find(key);
+            if res.is_none() {
+                continue;
+            }
+            self.remove(index);
+            break;
+        }
     }
 }

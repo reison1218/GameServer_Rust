@@ -4,11 +4,16 @@ use anyhow::Result;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CellTemp {
+    //配置id
     pub id: u32,
+    //buff
     pub buff: Vec<u32>,
-    pub cell_type: u32,
+    ///元素
+    pub element: u8,
+    ///稀有度
     pub rare:u32,
-    pub is_cter:u32
+    ///是否角色块
+    pub is_cter:u32,
 }
 
 impl Template for CellTemp {}
@@ -37,18 +42,18 @@ impl CellTempMgr {
             let id = tt.id;
             let rare = tt.rare;
             let is_cter = if tt.is_cter == 1{true}else{false};
-            let cell_type = tt.cell_type;
+            let element = tt.element as u32;
             self.temps.insert(tt.id, tt);
             if !self.rare_map.contains_key(&rare){
                 self.rare_map.insert(rare,HashSet::new());
             }
             let vec = self.rare_map.get_mut(&rare).unwrap();
-            vec.insert(cell_type);
+            vec.insert(element);
 
-            if !self.type_vec.contains_key(&cell_type){
-                self.type_vec.insert(cell_type,HashSet::new());
+            if !self.type_vec.contains_key(&element){
+                self.type_vec.insert(element,HashSet::new());
             }
-            let v = self.type_vec.get_mut(&cell_type).unwrap();
+            let v = self.type_vec.get_mut(&element).unwrap();
             if is_cter{
                 continue;
             }

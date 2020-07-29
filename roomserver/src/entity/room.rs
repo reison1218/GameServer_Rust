@@ -28,6 +28,24 @@ use tools::util::packet::Packet;
 //最大成员数量
 pub const MEMBER_MAX: u8 = 4;
 
+pub enum RoomSettingType {
+    None = 0,
+    AILevel = 1,
+    IsOpenWorldCell = 2,
+    TurnLimitTime = 3,
+}
+
+impl From<u32> for RoomSettingType {
+    fn from(value: u32) -> Self {
+        match value {
+            1 => RoomSettingType::AILevel,
+            2 => RoomSettingType::IsOpenWorldCell,
+            3 => RoomSettingType::TurnLimitTime,
+            _ => RoomSettingType::None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum RoomMemberNoticeType {
     AddMember = 1,
@@ -91,7 +109,7 @@ impl Room {
             task_sender,
             time,
         };
-
+        room.setting.turn_limit_time = 60000;
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;
@@ -986,6 +1004,7 @@ impl Room {
         rp.room_id = self.get_room_id();
         rp.set_room_type(self.get_room_type() as u32);
         rp.set_room_status(self.state.clone() as u32);
+        rp.set_setting(self.setting.clone().into());
         for user_id in self.member_index.iter() {
             let member = self.members.get(user_id);
             if member.is_some() {

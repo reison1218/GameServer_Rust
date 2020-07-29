@@ -132,6 +132,7 @@ pub struct RoomSetting {
     pub battle_type: u8,        //战斗类型
     pub turn_limit_time: u32,   //回合限制时间
     pub is_world_tile: bool,    //是否开启中立块
+    pub ai_level: u32,          //ai难度级别
     pub victory_condition: u32, //胜利条件
 }
 
@@ -153,6 +154,7 @@ impl From<RoomSetting> for RoomSettingPt {
         rsp.set_battle_type(r.battle_type as u32);
         rsp.set_is_open_world_tile(r.is_world_tile);
         rsp.set_turn_limit_time(r.turn_limit_time);
+        rsp.set_ai_level(r.ai_level);
         rsp
     }
 }
