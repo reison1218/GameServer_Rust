@@ -23,6 +23,8 @@ pub struct CellRare {
 #[derive(Debug, Default, Clone)]
 pub struct TileMapTempMgr {
     pub temps: HashMap<u32, TileMapTemp>,
+    ///key:member_count key:is_has_world_cell
+    pub member_temps:HashMap<u32,HashMap<bool,Vec<TileMapTemp>>>,
 }
 
 impl TileMapTempMgr {
@@ -38,7 +40,17 @@ impl TileMapTempMgr {
 
     pub fn init(&mut self, t: Vec<TileMapTemp>) {
         for tt in t {
+            if self.member_temps.contains_key(&tt.member_count){
+                self.member_temps.insert(tt.member_count,HashMap::new());
+            }
+            let map = self.member_temps.get_mut(&tt.member_count).unwrap();
+            let res = tt.world_cell>0;
+            if map.contains_key(&res){
+                map.insert(res,Vec::new());
+            }
+            map.get_mut(&res).unwrap().push(tt.clone());
             self.temps.insert(tt.id, tt);
+
         }
     }
 }

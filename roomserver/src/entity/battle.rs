@@ -255,14 +255,22 @@ impl BattleData {
             //处理地图块额外其他的buff
             self.handler_cell_extra_buff(user_id, index);
 
+            //处理移动后的事件
+            self.handler_cter_move(user_id, index);
+
             //更新最近一次翻的下标
             battle_cter.recently_open_cell_index = index as isize;
 
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
 
-            //todo 处理移动后的事件
-            self.handler_cter_move(index);
+            //玩家技能cd-1
+            for skill in battle_cter.skills.iter_mut() {
+                skill.cd_times -= 1;
+                if skill.cd_times <= 0 {
+                    skill.cd_times = skill.skill_temp.cd as i8;
+                }
+            }
 
             //todo 下发到客户端
 
@@ -274,10 +282,9 @@ impl BattleData {
     }
 
     ///处理角色移动之后的事件
-    pub unsafe fn handler_cter_move(&mut self, index: usize) {
+    pub unsafe fn handler_cter_move(&mut self, user_id: u32, index: usize) {
         let index = index as isize;
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-        let user_id = self.get_turn_user(None).unwrap();
         let cter = self.battle_cter.get_mut(&user_id).unwrap();
 
         //踩到别人到范围
@@ -681,6 +688,14 @@ impl BattleData {
             let battle_cter = battle_cter_ptr.as_mut().unwrap();
             //战斗角色身上的技能
             let skill = battle_cter.skills.get_mut((skill_id as usize)).unwrap();
+            //校验cd
+            if skill.cd_times > 0 {
+                warn!(
+                    "can not use this skill!skill_id:{},cd:{}",
+                    skill_id, skill.cd_times
+                );
+                return;
+            }
             //技能判定
             let skill_judge = skill.skill_temp.skill_judge;
             if skill_judge != 0 {
@@ -737,6 +752,13 @@ impl BattleData {
                 //将1个地图块自动配对。本回合内不能攻击。
             } else if [222].contains(&skill_id) {
                 //选择一个玩家，将其移动到一个空地图块上。
+                if target_array.len() < 2 {
+                    warn!("move_user,the target_array size is:{}", target_array.len());
+                    return;
+                }
+                let target_user = target_array.get(0).unwrap();
+                let target_index = target_array.get(1).unwrap();
+                self.move_user(*target_user, *target_index as usize);
             } else if [321].contains(&skill_id) {
                 //对你相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
             } else if [411, 421, 20004, 20005].contains(&skill_id) {
@@ -744,14 +766,54 @@ impl BattleData {
             } else if [20003].contains(&skill_id) {
                 //目标的技能CD-2。
             }
-            if skill.cd_times <= 0 {
-                battle_cter.skills.delete(skill_id as usize);
-            }
+            //把技能cd+上
+            skill.cd_times = skill.skill_temp.cd as i8;
             //todo 通知客户端
         }
     }
 
-    fn check_scope(&self) {}
+    ///移动玩家
+    fn move_user(&mut self, target_user: u32, target_index: usize) {
+        //校验下标的地图块
+        let target_cell = self.tile_map.map.get_mut(target_index);
+        if let None = target_cell {
+            warn!("there is no cell!index:{}", target_index);
+            return;
+        }
+        let target_cell = target_cell.unwrap();
+        //校验有效性
+        if target_cell.id < CellType::Valid as u32 {
+            warn!("this cell can not be choice!index:{}", target_index);
+            return;
+        }
+        //校验世界块
+        if target_cell.is_world {
+            warn!("world cell can not be choice!index:{}", target_index);
+            return;
+        }
+
+        target_cell.user_id = target_user;
+
+        let target_cter = self.battle_cter.get_mut(&target_user);
+        if let None = target_cter {
+            warn!("there is no cter!user_id:{}", target_user);
+            return;
+        }
+
+        //更新目标玩家的下标
+        let target_cter = target_cter.unwrap();
+        let last_index = target_cter.cell_index;
+        target_cter.cell_index = target_index;
+        //重制之前地图块上的玩家id
+        let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
+        last_cell.user_id = 0;
+
+        //处理移动后事件
+        unsafe {
+            self.handler_cter_move(target_user, target_index);
+        }
+        //todo 通知客户的
+    }
 
     fn check_target_array(
         &self,

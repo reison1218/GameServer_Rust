@@ -1068,7 +1068,12 @@ impl Room {
 
     pub fn start(&mut self) {
         //生成地图
-        self.battle_data.tile_map = self.generate_map();
+        let res = self.generate_map();
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        self.battle_data.tile_map = res.unwrap();
         //改变房间状态
         self.state = RoomState::ChoiceTurn;
         //下发通知
@@ -1083,10 +1088,12 @@ impl Room {
         cter_v
     }
 
-    pub fn generate_map(&self) -> TileMap {
-        let tmd = TileMap::init(&TEMPLATES);
+    pub fn generate_map(&self) -> anyhow::Result<TileMap> {
+        let member_count = self.members.len() as u32;
+        let is_open_world_cell = self.setting.is_world_tile;
+        let tmd = TileMap::init(member_count, is_open_world_cell)?;
         info!("生成地图{:?}", tmd.clone());
-        tmd
+        Ok(tmd)
     }
 
     pub fn build_choice_turn_task(&self) {

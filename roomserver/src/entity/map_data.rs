@@ -1,4 +1,6 @@
 use crate::entity::character::{Buff, Skill};
+use crate::TEMPLATES;
+use log::error;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::slice::Iter;
@@ -70,11 +72,29 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(temp_mgr: &TemplatesMgr) -> Self {
-        let tile_map_mgr = temp_mgr.get_tile_map_ref();
-        let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
+    pub fn init(member_count: u32, is_open_world_cell: bool) -> anyhow::Result<Self> {
+        let tile_map_mgr = TEMPLATES.get_tile_map_ref();
+        let res = tile_map_mgr.member_temps.get(&member_count);
+        if let None = res {
+            let str = format!("there is no map config for member_count:{}", member_count);
+            anyhow::bail!(str)
+        }
+        let res = res.unwrap();
+        let res = res.get(&is_open_world_cell);
+        if let None = res {
+            let str = format!(
+                "there is no map config for member_count:{},is_open_world_cell:{}",
+                member_count, is_open_world_cell
+            );
+            anyhow::bail!(str)
+        }
+
+        let res = res.unwrap();
+        let mut rand = rand::thread_rng();
+        let map_random_index = rand.gen_range(0, res.len());
+        let tile_map_temp = res.get(map_random_index).unwrap();
         let mut tmd = TileMap::default();
-        tmd.id = 4001_u32;
+        tmd.id = tile_map_temp.id;
         tmd.map = Vec::with_capacity(30);
 
         let mut map = [(0, false); 30];
@@ -94,24 +114,22 @@ impl TileMap {
             }
             empty_v.push(index);
         }
-        let mut rand = rand::thread_rng();
-        //先随机worldcell
-        for cell_id in tile_map_temp.world_cell.iter() {
-            if cell_id == &0 {
-                continue;
-            }
+
+        //确定worldcell
+        if tile_map_temp.world_cell != 0 {
             let index = rand.gen_range(0, empty_v.len());
             let index_value = empty_v.get(index).unwrap();
             let index_value = *index_value;
 
-            map[index_value] = (*cell_id, true);
+            map[index_value] = (tile_map_temp.world_cell, true);
             empty_v.remove(index);
-            tmd.world_cell_map.insert(index_value as u32, *cell_id);
+            tmd.world_cell_map
+                .insert(index_value as u32, tile_map_temp.world_cell);
         }
 
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
-            let type_vec = temp_mgr
+            let type_vec = TEMPLATES
                 .get_cell_ref()
                 .rare_map
                 .get(&cell_rare.rare)
@@ -119,7 +137,7 @@ impl TileMap {
                 .clone();
             let mut size = 0;
 
-            let mut random_vec = temp_mgr.get_cell_ref().type_vec.clone();
+            let mut random_vec = TEMPLATES.get_cell_ref().type_vec.clone();
             'out: loop {
                 if size >= cell_rare.count {
                     break 'out;
@@ -156,10 +174,10 @@ impl TileMap {
             cell.is_world = *is_world;
             let mut buffs: Option<Iter<u32>> = None;
             if cell.is_world {
-                let world_cell = temp_mgr.get_world_cell_ref().temps.get(cell_id).unwrap();
+                let world_cell = TEMPLATES.get_world_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(world_cell.buff.iter());
             } else if cell_id > &(CellType::Valid as u32) {
-                let cell_temp = temp_mgr.get_cell_ref().temps.get(cell_id).unwrap();
+                let cell_temp = TEMPLATES.get_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(cell_temp.buff.iter());
             }
             if let Some(buffs) = buffs {
@@ -174,7 +192,7 @@ impl TileMap {
             tmd.map.push(cell);
             index += 1;
         }
-        tmd
+        Ok(tmd)
     }
 }
 
