@@ -110,6 +110,7 @@ impl Room {
             time,
         };
         room.setting.turn_limit_time = 60000;
+        room.setting.is_world_tile = true;
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;

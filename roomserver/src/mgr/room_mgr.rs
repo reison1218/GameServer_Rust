@@ -159,5 +159,7 @@ impl RoomMgr {
         self.cmd_map
             .insert(RoomCode::SkipChoiceTurn as u32, skip_choice_turn);
         //------------------------------------以下是战斗相关的--------------------------------
+        //请求行动
+        self.cmd_map.insert(RoomCode::Action as u32, action);
     }
 }

@@ -57,17 +57,16 @@ impl TileMap{
         }
         let mut rand = rand::thread_rng();
         //先随机worldcell
-        for cell_id in tile_map_temp.world_cell.iter() {
-            if cell_id == &0 {
-                continue;
-            }
+
+        if tile_map_temp.world_cell!=0{
+
             let index = rand.gen_range(0, empty_v.len());
             let index_value = empty_v.get(index).unwrap();
             let index_value = *index_value;
 
-            map[index_value] = (*cell_id, true);
+            map[index_value] = (tile_map_temp.world_cell, true);
             empty_v.remove(index);
-            tmd.world_cell_map.insert(index_value as u32, *cell_id);
+            tmd.world_cell_map.insert(index_value as u32, tile_map_temp.world_cell);
         }
 
         //然后就是rare_cell

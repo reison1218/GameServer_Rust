@@ -53,7 +53,7 @@ pub struct TcpClientHandler {
 
 impl TcpClientHandler {
     pub fn new() -> TcpClientHandler {
-        let mut tch = TcpClientHandler { ts: None,user_id:0 as u32};
+        let tch = TcpClientHandler { ts: None,user_id:0 as u32};
         tch
     }
 }

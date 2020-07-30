@@ -109,7 +109,7 @@ message TriggerEffectPt{
 //行动单元封装
 message ActionUnitPt{
     uint32 from_user = 1;//发起的玩家
-    uint32 type = 2;//行动类型
-    uint32 value = 3;//行动对应类型的值
+    uint32 action_type = 2;//行动类型
+    uint32 action_value = 3;//行动对应类型的值
     repeated TargetPt targets = 4;//目标列表
 }

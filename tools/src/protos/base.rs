@@ -3066,8 +3066,8 @@ impl ::protobuf::reflect::ProtobufValue for TriggerEffectPt {
 pub struct ActionUnitPt {
     // message fields
     pub from_user: u32,
-    pub field_type: u32,
-    pub value: u32,
+    pub action_type: u32,
+    pub action_value: u32,
     pub targets: ::protobuf::RepeatedField<TargetPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -3100,34 +3100,34 @@ impl ActionUnitPt {
         self.from_user = v;
     }
 
-    // uint32 type = 2;
+    // uint32 action_type = 2;
 
 
-    pub fn get_field_type(&self) -> u32 {
-        self.field_type
+    pub fn get_action_type(&self) -> u32 {
+        self.action_type
     }
-    pub fn clear_field_type(&mut self) {
-        self.field_type = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_field_type(&mut self, v: u32) {
-        self.field_type = v;
-    }
-
-    // uint32 value = 3;
-
-
-    pub fn get_value(&self) -> u32 {
-        self.value
-    }
-    pub fn clear_value(&mut self) {
-        self.value = 0;
+    pub fn clear_action_type(&mut self) {
+        self.action_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_value(&mut self, v: u32) {
-        self.value = v;
+    pub fn set_action_type(&mut self, v: u32) {
+        self.action_type = v;
+    }
+
+    // uint32 action_value = 3;
+
+
+    pub fn get_action_value(&self) -> u32 {
+        self.action_value
+    }
+    pub fn clear_action_value(&mut self) {
+        self.action_value = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_action_value(&mut self, v: u32) {
+        self.action_value = v;
     }
 
     // repeated .protos.TargetPt targets = 4;
@@ -3182,14 +3182,14 @@ impl ::protobuf::Message for ActionUnitPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.field_type = tmp;
+                    self.action_type = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.value = tmp;
+                    self.action_value = tmp;
                 },
                 4 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.targets)?;
@@ -3209,11 +3209,11 @@ impl ::protobuf::Message for ActionUnitPt {
         if self.from_user != 0 {
             my_size += ::protobuf::rt::value_size(1, self.from_user, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.field_type != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        if self.action_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.action_type, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.value != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.value, ::protobuf::wire_format::WireTypeVarint);
+        if self.action_value != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.action_value, ::protobuf::wire_format::WireTypeVarint);
         }
         for value in &self.targets {
             let len = value.compute_size();
@@ -3228,11 +3228,11 @@ impl ::protobuf::Message for ActionUnitPt {
         if self.from_user != 0 {
             os.write_uint32(1, self.from_user)?;
         }
-        if self.field_type != 0 {
-            os.write_uint32(2, self.field_type)?;
+        if self.action_type != 0 {
+            os.write_uint32(2, self.action_type)?;
         }
-        if self.value != 0 {
-            os.write_uint32(3, self.value)?;
+        if self.action_value != 0 {
+            os.write_uint32(3, self.action_value)?;
         }
         for v in &self.targets {
             os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -3284,14 +3284,14 @@ impl ::protobuf::Message for ActionUnitPt {
                     |m: &mut ActionUnitPt| { &mut m.from_user },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "type",
-                    |m: &ActionUnitPt| { &m.field_type },
-                    |m: &mut ActionUnitPt| { &mut m.field_type },
+                    "action_type",
+                    |m: &ActionUnitPt| { &m.action_type },
+                    |m: &mut ActionUnitPt| { &mut m.action_type },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "value",
-                    |m: &ActionUnitPt| { &m.value },
-                    |m: &mut ActionUnitPt| { &mut m.value },
+                    "action_value",
+                    |m: &ActionUnitPt| { &m.action_value },
+                    |m: &mut ActionUnitPt| { &mut m.action_value },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TargetPt>>(
                     "targets",
@@ -3318,8 +3318,8 @@ impl ::protobuf::Message for ActionUnitPt {
 impl ::protobuf::Clear for ActionUnitPt {
     fn clear(&mut self) {
         self.from_user = 0;
-        self.field_type = 0;
-        self.value = 0;
+        self.action_type = 0;
+        self.action_value = 0;
         self.targets.clear();
         self.unknown_fields.clear();
     }
@@ -3374,11 +3374,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x05buffs\x18\x04\x20\x03(\rR\x05buffs\x12=\n\rpassiveEffect\x18\x05\
     \x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\";\n\x0fTrigge\
     rEffectPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05val\
-    ue\x18\x02\x20\x01(\rR\x05value\"\x81\x01\n\x0cActionUnitPt\x12\x1b\n\tf\
-    rom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x12\n\x04type\x18\x02\x20\
-    \x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\x12*\n\
-    \x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targetsb\x06pr\
-    oto3\
+    ue\x18\x02\x20\x01(\rR\x05value\"\x9b\x01\n\x0cActionUnitPt\x12\x1b\n\tf\
+    rom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\
+    \x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x01(\rR\
+    \x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.Targe\
+    tPtR\x07targetsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

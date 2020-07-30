@@ -10,7 +10,7 @@ use std::fmt::Debug;
 use tools::protos::battle::C_ACTION;
 use tools::util::packet::Packet;
 
-///翻地图块
+///行动请求
 pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
@@ -104,34 +104,14 @@ fn open_cell(rm: &mut Room, user_id: u32, target_cell_index: usize) {
     if battle_cter.residue_open_times == 0 {
         return;
     }
-
     let cell = cell.unwrap();
-
     //校验地图块有效性
-    if cell.id < CellType::Valid as u32 {
+    let res = battle_data.check_open_cell(cell);
+    if let Err(e) = res {
+        warn!("{:?}", e);
         return;
     }
 
-    //世界块不让翻
-    if cell.is_world {
-        return;
-    }
-
-    //锁住不让翻
-    if cell.check_is_locked() {
-        return;
-    }
-
-    //如果地图块已经配对，不能翻
-    if cell.pair_index.is_some() {
-        return;
-    }
-
-    //校验地图块合法性
-    let res = battle_data.check_choice_index(target_cell_index);
-    if !res {
-        return;
-    }
     let battle_data = rm.battle_data.borrow_mut();
     battle_data.open_cell(target_cell_index);
 }
@@ -141,13 +121,17 @@ fn attack(rm: &mut Room, user_id: u32, target_array: Vec<u32>) {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     if !battle_cter.is_can_attack {
+        warn!("now can not attack!user_id:{}", user_id);
         return;
     }
     //如果目标为空
     if target_array.is_empty() {
+        warn!("the target_array is empty!user_id:{}", user_id);
         return;
     }
-    rm.battle_data.attack(user_id, target_array);
+    unsafe {
+        rm.battle_data.attack(user_id, target_array);
+    }
 }
 
 ///使用技能

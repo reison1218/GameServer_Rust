@@ -42,7 +42,7 @@ use std::ops::DerefMut;
 use rand::prelude::*;
 use std::collections::BTreeMap;
 use std::alloc::System;
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, RefCell, RefMut};
 use serde_json::Value;
 use serde::private::de::IdentifierDeserializer;
 use std::str::FromStr;
@@ -60,8 +60,9 @@ use futures::executor::block_on;
 use std::thread::Thread;
 use rayon::prelude::ParallelSliceMut;
 use futures::SinkExt;
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use std::hash::Hasher;
+use std::rc::Rc;
 
 
 #[macro_use]
@@ -213,19 +214,19 @@ struct Foo {
 
 fn main() -> anyhow::Result<()> {
     //test_unsafe();
-    let mut foo = Foo { x: 42 };
-    let x = &mut foo.x;
-    *x = 13;
-    let y = foo;
-    println!("{}", y.x); // -> 42; expected result: 13
-
-    let mut foo = Foo { x: 42 };
-
-    let x = &mut foo.x;
-    *x = 13;
-    let y = foo;
-    println!("{:?}", (&y).x);  //only added this line
-    println!("{:?}", y.x); //13
+    // let mut foo = Foo { x: 42 };
+    // let x = &mut foo.x;
+    // *x = 13;
+    // let y = foo;
+    // println!("{}", y.x); // -> 42; expected result: 13
+    //
+    // let mut foo = Foo { x: 42 };
+    //
+    // let x = &mut foo.x;
+    // *x = 13;
+    // let y = foo;
+    // println!("{:?}", (&y).x);  //only added this line
+    // println!("{:?}", y.x); //13
 
     //let test = test!(1=>2,<);
     //crate::map::generate_map();

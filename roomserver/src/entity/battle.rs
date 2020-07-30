@@ -1,5 +1,5 @@
 use super::*;
-use crate::entity::character::{BattleCharacter, Buff, Item};
+use crate::entity::character::{BattleCharacter, Buff, Item, Skill};
 use crate::entity::map_data::{Cell, CellType, TileMap};
 use crate::entity::room::MEMBER_MAX;
 use crate::handlers::battle_handler::{Delete, Find};
@@ -9,9 +9,10 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::ActionUnitPt;
+use tools::protos::base::{ActionUnitPt, TargetPt};
 use tools::protos::battle::S_ACTION_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -21,12 +22,6 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
-
-///技能判定枚举
-pub enum SkillID {
-    ChangeIndex = 111, //换地图块位置
-    ShowIndex = 112,   //展示地图块
-}
 
 //技能消耗类型
 pub enum SkillConsumeType {
@@ -157,28 +152,6 @@ impl BattleData {
         }
     }
 
-    //检测地图块是否可以翻
-    pub fn check_choice_index(&self, index: usize) -> bool {
-        let res = self.tile_map.map.get(index);
-        if res.is_none() {
-            return false;
-        }
-        let cell = res.unwrap();
-        //校验地图块合法性
-        if cell.id < CellType::Valid as u32 {
-            return false;
-        }
-        //校验地图块是否被锁住
-        if cell.check_is_locked() {
-            return false;
-        }
-        //校验是否是世界块
-        if cell.is_world {
-            return false;
-        }
-        true
-    }
-
     ///下个回合
     pub fn next_turn(&mut self) {
         //计算下一个回合
@@ -264,12 +237,12 @@ impl BattleData {
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
 
+            //状态改为可以进行攻击
+            battle_cter.is_can_attack = true;
+
             //玩家技能cd-1
             for skill in battle_cter.skills.iter_mut() {
-                skill.cd_times -= 1;
-                if skill.cd_times <= 0 {
-                    skill.cd_times = skill.skill_temp.cd as i8;
-                }
+                skill.sub_cd(None);
             }
 
             //todo 下发到客户端
@@ -487,14 +460,14 @@ impl BattleData {
                     if cter.user_id == user_id {
                         continue;
                     }
-                    let cter_index = cter.cell_index;
+                    let cter_index = cter.cell_index as isize;
                     for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                         let res = isize_index + *scope_index;
-                        if cter_index != cter_index {
+                        if res != cter_index {
                             continue;
                         }
                         for skill in cter.skills.iter_mut() {
-                            skill.cd_times += buff.buff_temp.par1 as i8;
+                            skill.add_cd(Some(buff.buff_temp.par1 as i8));
                         }
                     }
                 }
@@ -588,32 +561,95 @@ impl BattleData {
     }
 
     ///普通攻击
-    pub fn attack(&mut self, user_id: u32, targets: Vec<u32>) {
+    pub unsafe fn attack(&mut self, user_id: u32, targets: Vec<u32>) {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+        let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let damege = self.calc_damage(user_id);
+        let mut aoe_buff: Option<u32> = None;
+        for buff in cter.buff_array.iter() {
+            if buff.id != 4 {
+                continue;
+            }
+            aoe_buff = Some(buff.id);
+        }
+        let target_user = targets.get(0).unwrap();
+
+        let target_cter = battle_cters.as_mut().unwrap().get_mut(target_user);
+        if let None = target_cter {
+            warn!("there is no cter!user_id:{}", target_user);
+            return;
+        }
+        let target_cter = target_cter.unwrap();
+        let is_died = target_cter.sub_hp(damege);
+        if is_died {
+            //todo 触发角色死亡事件
+        }
+
+        let target_cter_index = target_cter.cell_index as i32;
+        if let Some(buff) = aoe_buff {
+            let buff = TEMPLATES.get_buff_ref().get_temp(&buff);
+            if let Err(e) = buff {
+                error!("{:?}", e);
+                return;
+            }
+            let buff = buff.unwrap();
+            let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&buff.scope);
+            if let Err(e) = scope_temp {
+                error!("{:?}", e);
+                return;
+            }
+            let scope_temp = scope_temp.unwrap();
+
+            for other_cter in self.battle_cter.values_mut() {
+                if other_cter.user_id == *target_user {
+                    continue;
+                }
+                'out: for dir in scope_temp.scope.iter() {
+                    for scope_index in dir.direction.iter() {
+                        let res = target_cter_index + *scope_index;
+                        if other_cter.cell_index as i32 != res {
+                            continue;
+                        }
+                        let is_died = other_cter.sub_hp(damege);
+                        if is_died {
+                            //todo 触发角色死亡事件
+                        }
+                        break 'out;
+                    }
+                }
+            }
+        }
+
         for target_id in targets.iter() {
             let reduce_damage = self.calc_reduce_damage(*target_id);
             let res = damege - reduce_damage;
-            let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+            let battle_cter = self.battle_cter.get_mut(target_id).unwrap();
             battle_cter.sub_hp(res as i32);
-
-            //todo 将计算结果推送给客户端
         }
+        cter.is_can_attack = false;
+        //todo 将计算结果推送给客户端
     }
 
-    ///计算伤害
-    fn calc_damage(&self, user_id: u32) -> isize {
+    ///计算攻击力
+    fn calc_damage(&self, user_id: u32) -> i32 {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
-        let damage = battle_cter.atk;
-        //todo 此处应该加上角色身上的buff加成
-        damage as isize
+        let mut damage = battle_cter.atk;
+        for buff in battle_cter.buff_array.iter() {
+            //加攻击力的buff
+            if buff.id != 4 {
+                continue;
+            }
+            damage += buff.buff_temp.par1;
+        }
+        damage as i32
     }
 
     ///计算减伤
-    fn calc_reduce_damage(&self, user_id: u32) -> isize {
+    fn calc_reduce_damage(&self, user_id: u32) -> i32 {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
         let mut value = battle_cter.defence;
         //todo 此处应该加上角色身上的减伤buff
-        value as isize
+        value as i32
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
@@ -676,10 +712,6 @@ impl BattleData {
 
     ///使用技能
     pub fn use_skill(&mut self, skill_id: u32, target_array: Vec<u32>) {
-        //如果目标
-        if target_array.is_empty() {
-            return;
-        }
         let user_id = *self.turn_orders.get(self.next_turn_index).unwrap();
         unsafe {
             //战斗角色
@@ -708,26 +740,14 @@ impl BattleData {
             let target = skill.skill_temp.target;
             let target_type = TargetType::from(target);
 
-            //校验所选目标范围
-            let scope = skill.skill_temp.scope;
-            let skill_scope_temp = TEMPLATES.get_skill_scope_ref().temps.get(&scope).unwrap();
-
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
             if !res {
                 return;
             }
 
-            for direction in skill_scope_temp.scope.iter() {
-                for value in direction.direction.iter() {
-                    if value == &0 {
-                        continue;
-                    }
-                }
-            }
-
             //换地图块位置
-            if skill_id == SkillID::ChangeIndex as u32 {
+            if [111].contains(&skill_id) {
                 if target_array.len() < 2 {
                     return;
                 }
@@ -736,7 +756,7 @@ impl BattleData {
 
                 let source_index = *source_index as usize;
                 let target_index = *target_index as usize;
-                self.change_index(user_id, source_index, target_index);
+                self.change_index(user_id, skill_id, source_index, target_index);
             } else if [20001, 112].contains(&skill_id) {
                 //展示地图块
                 if target_array.is_empty() {
@@ -747,9 +767,10 @@ impl BattleData {
             } else if [121, 211, 221, 311, 322, 20002].contains(&skill_id) {
                 //上持续性buff
                 self.add_buff(skill_id, target_array);
-            // self.damge_near_user_move_to(skill_id);
             } else if [212].contains(&skill_id) {
                 //将1个地图块自动配对。本回合内不能攻击。
+                let index = target_array.get(0).unwrap();
+                self.auto_pair_cell(user_id, *index as usize);
             } else if [222].contains(&skill_id) {
                 //选择一个玩家，将其移动到一个空地图块上。
                 if target_array.len() < 2 {
@@ -761,15 +782,220 @@ impl BattleData {
                 self.move_user(*target_user, *target_index as usize);
             } else if [321].contains(&skill_id) {
                 //对你相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
-            } else if [411, 421, 20004, 20005].contains(&skill_id) {
-                //造成技能伤害
+                self.skill_damage_and_cure(user_id, battle_cter.cell_index, skill_id);
+            } else if [411, 421].contains(&skill_id) {
+                //造成技能AOE伤害
+                self.skill_aoe_damage(user_id, skill_id, target_array);
+            } else if [20004, 20005].contains(&skill_id) {
+                let target_user = target_array.get(0).unwrap();
+                //单体技能伤害
+                self.single_skill_damage(user_id, skill_id, *target_user);
             } else if [20003].contains(&skill_id) {
-                //目标的技能CD-2。
+                //减目标技能cd
+                let target_user = target_array.get(0).unwrap();
+                self.sub_cd(*target_user);
             }
-            //把技能cd+上
-            skill.cd_times = skill.skill_temp.cd as i8;
+            //技能cd重制
+            skill.reset_cd();
             //todo 通知客户端
         }
+    }
+
+    ///减技能cd
+    fn sub_cd(&mut self, target_user: u32) {
+        //目标的技能CD-2。
+        let battle_cter = self.battle_cter.get_mut(&target_user);
+        if battle_cter.is_none() {
+            warn!("there is no player!user_id:{}", target_user);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
+        for _skill in battle_cter.skills.iter_mut() {
+            _skill.sub_cd(Some(_skill.skill_temp.par1 as i8));
+        }
+        //todo 通知客户端
+    }
+
+    ///自动配对地图块
+    unsafe fn auto_pair_cell(&mut self, user_id: u32, target_index: usize) {
+        let map = &mut self.tile_map.map as *mut Vec<Cell>;
+        //校验目标下标的地图块
+        let cell = map.as_mut().unwrap().get_mut(target_index);
+        if let None = cell {
+            warn!("there is no cell!index:{}", target_index);
+            return;
+        }
+        let cell = cell.unwrap();
+        //校验地图块
+        let res = self.check_open_cell(cell);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return;
+        }
+        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+        //找到与之匹配的地图块自动配对
+        for _cell in map.as_mut().unwrap().iter_mut() {
+            if _cell.id != cell.id {
+                continue;
+            }
+            _cell.pair_index = Some(cell.index);
+            cell.pair_index = Some(_cell.index);
+        }
+        //处理本turn不能攻击
+        battle_cter.is_can_attack = false;
+        //todo 通知客户端
+    }
+
+    pub fn check_open_cell(&self, cell: &Cell) -> anyhow::Result<()> {
+        if cell.id < CellType::Valid as u32 {
+            let str = format!(
+                "auto_pair_cell, this is cell can not be choice!index:{}",
+                cell.index
+            );
+            anyhow::bail!(str)
+        }
+        if cell.is_world {
+            let str = format!(
+                "auto_pair_cell, world_cell can not be choice!index:{}",
+                cell.index
+            );
+            anyhow::bail!(str)
+        }
+        if cell.pair_index.is_some() {
+            let str = format!(
+                "auto_pair_cell, this cell already pair!index:{}",
+                cell.index
+            );
+            anyhow::bail!(str)
+        }
+        if cell.check_is_locked() {
+            let str = format!("auto_pair_cell, this cell is locked!index:{}", cell.index);
+            anyhow::bail!(str)
+        }
+        Ok(())
+    }
+
+    ///单体技能伤害
+    fn single_skill_damage(&mut self, user_id: u32, skill_id: u32, target_user: u32) {
+        let target_cter = self.battle_cter.get_mut(&target_user);
+        if let None = target_cter {
+            warn!("there is no cter!cter_id:{}", target_user);
+            return;
+        }
+        let target_cter = target_cter.unwrap();
+        let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
+        let is_died = target_cter.sub_hp(skill.par1 as i32);
+        if is_died {
+            //todo 触发角色死亡事件
+        }
+    }
+
+    ///技能aoe伤害
+    fn skill_aoe_damage(&mut self, user_id: u32, skill_id: u32, mut targets: Vec<u32>) {
+        let battle_cter = self.battle_cter.get(&user_id).unwrap();
+        let skill = battle_cter.skills.find(skill_id as usize).unwrap();
+        let damage = skill.skill_temp.par1 as i32;
+        let damage_deep = skill.skill_temp.par2 as i32;
+        let scope_id = skill.skill_temp.scope;
+        let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&scope_id);
+        if let Err(e) = scope_temp {
+            error!("there is no scope_temp!scope_id:{}", scope_id);
+            return;
+        }
+        let scope_temp = scope_temp.unwrap();
+
+        //校验下标
+        for index in targets.iter() {
+            let cell = self.tile_map.map.get(*index as usize);
+            if let None = cell {
+                warn!("there is no cell!index:{}", index);
+                return;
+            }
+        }
+
+        let center_index = targets.remove(0) as isize;
+        let target_type = TargetType::from(skill.skill_temp.target);
+
+        //校验范围
+        'out: for dir in scope_temp.scope.iter() {
+            for scope_index in dir.direction.iter() {
+                for index in targets.iter() {
+                    let res = center_index - *scope_index as isize;
+                    if res != *index as isize {
+                        continue;
+                    }
+                    let cell = self.tile_map.map.get(res as usize);
+                    if cell.is_none() {
+                        warn!("there is no cell!index:{}", res);
+                        continue;
+                    }
+                    let cell = cell.unwrap();
+                    let other_user = cell.user_id;
+                    //如果目标不能是自己，就跳过
+                    if target_type == TargetType::OtherAllPlayer
+                        || target_type == TargetType::OtherAnyPlayer
+                    {
+                        continue;
+                    }
+                    let cter = self.battle_cter.get_mut(&other_user);
+                    if cter.is_none() {
+                        warn!("there is no battle_cter!user_id:{}", other_user);
+                        continue;
+                    }
+                    let cter = cter.unwrap();
+                    let is_died;
+                    //判断是否中心位置
+                    if cter.cell_index == center_index as usize {
+                        is_died = cter.sub_hp(damage_deep);
+                    } else {
+                        is_died = cter.sub_hp(damage);
+                    }
+                    if is_died {
+                        //todo  触发角色死了的事件
+                    }
+                    break 'out;
+                }
+            }
+        }
+    }
+
+    ///技能伤害，并治疗
+    unsafe fn skill_damage_and_cure(&mut self, user_id: u32, cter_index: usize, skill_id: u32) {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let skill = battle_cter.skills.find(skill_id as usize).unwrap();
+        let res = TEMPLATES
+            .get_skill_scope_ref()
+            .get_temp(&skill.skill_temp.scope);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        let scope_temp = res.unwrap();
+        let mut add_hp = 0_u32;
+        let cter_index = cter_index as isize;
+        for cter in battle_cters.as_mut().unwrap().values_mut() {
+            if skill.skill_temp.target == TargetType::OtherAllPlayer as u32
+                && cter.user_id == user_id
+            {
+                continue;
+            }
+            for dir in scope_temp.scope.iter() {
+                for scope_index in dir.direction.iter() {
+                    let res = cter_index + *scope_index as isize;
+                    if cter.cell_index as isize != res {
+                        continue;
+                    }
+                    add_hp += skill.skill_temp.par1;
+                    //扣血
+                    cter.sub_hp(skill.skill_temp.par1 as i32);
+                    break;
+                }
+            }
+        }
+
+        battle_cter.add_hp(add_hp as i32);
+        //todo 通知客户端
     }
 
     ///移动玩家
@@ -815,6 +1041,7 @@ impl BattleData {
         //todo 通知客户的
     }
 
+    ///检查目标数组
     fn check_target_array(
         &self,
         user_id: u32,
@@ -996,40 +1223,6 @@ impl BattleData {
         }
     }
 
-    //其他玩家移动到与你相邻的地图块时，对其造成3点伤害。持续1轮。
-    pub fn damge_near_user_move_to(&mut self, skill_id: u32) {
-        let user_id = self.get_next_turn_user();
-        if let Err(e) = user_id {
-            error!("{:?}", e);
-            return;
-        }
-        let user_id = user_id.unwrap();
-        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
-        let skill = battle_cter.skills.get(skill_id as usize);
-        //校验技能合法性
-        if skill.is_none() {
-            return;
-        }
-        let skill = skill.unwrap();
-
-        //校验buff
-        let buff_id = skill.skill_temp.buff as u32;
-        let buff = TEMPLATES.get_buff_ref().get_temp(&buff_id);
-        if let Err(e) = buff {
-            error!("{:?}", e);
-            return;
-        }
-        let buff_temp = buff.unwrap();
-        let battle_cter = self.battle_cter.get_mut(&user_id);
-        if battle_cter.is_none() {
-            return;
-        }
-        let battle_cter = battle_cter.unwrap();
-        let mut buff = Buff::from(buff_temp);
-        battle_cter.buff_array.push(buff);
-        //todo 通知客户端
-    }
-
     ///展示地图块
     pub fn show_index(&mut self, index: usize) {
         //校验index合法性
@@ -1039,27 +1232,44 @@ impl BattleData {
         }
         //校验index合法性
         let cell = cell.unwrap();
-        if cell.id < CellType::Valid as u32 {
+        let res = self.check_open_cell(cell);
+        if let Err(e) = res {
+            warn!("{:?}", e);
             return;
         }
-
-        //校验是否世界块
-        if cell.is_world {
-            return;
-        }
-
-        //翻开的地图块不能展示
-        if let Some(pair_index) = cell.pair_index {
-            if pair_index > 0 {
-                return;
-            }
-        }
-
         //todo 下发给客户端
     }
 
+    //检测地图块是否可以翻
+    pub fn check_choice_index(&self, index: usize) -> bool {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            return false;
+        }
+        let cell = res.unwrap();
+        //校验地图块合法性
+        if cell.id < CellType::Valid as u32 {
+            return false;
+        }
+        //校验地图块是否被锁住
+        if cell.check_is_locked() {
+            return false;
+        }
+        //校验是否是世界块
+        if cell.is_world {
+            return false;
+        }
+        true
+    }
+
     ///地图块换位置
-    pub fn change_index(&mut self, user_id: u32, source_index: usize, target_index: usize) {
+    pub fn change_index(
+        &mut self,
+        user_id: u32,
+        skill_id: u32,
+        source_index: usize,
+        target_index: usize,
+    ) {
         let lock_skills = &TEMPLATES.get_skill_ref().lock_skills[..];
         let map_size = self.tile_map.map.len();
         //校验地图块
@@ -1102,6 +1312,14 @@ impl BattleData {
         self.tile_map.map.insert(target_cell.index, target_cell);
 
         //todo 通知客户端
+
+        let mut san = S_ACTION_NOTICE::new();
+        let mut au = ActionUnitPt::new();
+        au.set_from_user(user_id);
+        au.set_action_type(ActionType::Skill as u32);
+        au.set_action_value(skill_id);
+        let mut target_pt = TargetPt::new();
+        target_pt.
     }
 
     ///新建战斗回合定时器任务

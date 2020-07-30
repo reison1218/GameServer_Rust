@@ -51,6 +51,34 @@ pub struct Skill {
     pub cd_times: i8, //剩余cd,如果是消耗能量则无视这个值
 }
 
+impl Skill {
+    ///减去技能cd
+    pub fn sub_cd(&mut self, value: Option<i8>) {
+        if let Some(value) = value {
+            self.cd_times -= value;
+        } else {
+            self.cd_times -= 1;
+        }
+        if self.cd_times < 0 {
+            self.cd_times = 0;
+        }
+    }
+
+    ///增加技能cd
+    pub fn add_cd(&mut self, value: Option<i8>) {
+        if let Some(value) = value {
+            self.cd_times += value;
+        } else {
+            self.cd_times += 1;
+        }
+    }
+
+    ///重制技能cd
+    pub fn reset_cd(&mut self) {
+        self.cd_times = self.skill_temp.cd as i8;
+    }
+}
+
 impl From<&'static SkillTemp> for Skill {
     fn from(skill_temp: &'static SkillTemp) -> Self {
         Skill {
@@ -170,7 +198,7 @@ impl BattleCharacter {
         battle_cter.hp_max = cter_temp.hp as i32;
         for buff_id in cter_temp.passive_buff.iter() {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
-            let mut buff = Buff::from(buff_temp);
+            let buff = Buff::from(buff_temp);
             battle_cter.passive_buffs.push(buff);
         }
         Ok(battle_cter)
@@ -182,12 +210,13 @@ impl BattleCharacter {
     }
 
     ///扣血
-    pub fn sub_hp(&mut self, hp: i32) {
+    pub fn sub_hp(&mut self, hp: i32) -> bool {
         self.hp -= hp;
         if self.hp <= 0 {
             self.hp = 0;
             self.state = BattleCterState::Die as u8;
         }
+        self.state == BattleCterState::Die as u8
     }
 
     ///加血
