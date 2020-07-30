@@ -1,9 +1,9 @@
-use crate::entity::battle::BattleData;
-use crate::entity::character::{BattleCharacter, Buff};
-use crate::entity::map_data::CellType;
-use crate::entity::map_data::TileMap;
-use crate::entity::member::{Member, MemberState};
-use crate::entity::room_model::{RoomSetting, RoomType};
+use crate::battle::battle::BattleData;
+use crate::room::character::{BattleCharacter, Buff};
+use crate::room::map_data::CellType;
+use crate::room::map_data::TileMap;
+use crate::room::member::{Member, MemberState};
+use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
@@ -1075,6 +1075,7 @@ impl Room {
             return;
         }
         self.battle_data.tile_map = res.unwrap();
+        self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
         //改变房间状态
         self.state = RoomState::ChoiceTurn;
         //下发通知

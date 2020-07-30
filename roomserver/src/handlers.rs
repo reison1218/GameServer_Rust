@@ -1,9 +1,9 @@
 pub mod battle_handler;
 pub mod room_handler;
-use crate::entity::member::{Member, MemberState};
-use crate::entity::room::RoomMemberNoticeType;
-use crate::entity::room_model::{BattleType, RoomModel, RoomType, TeamId};
 use crate::mgr::room_mgr::RoomMgr;
+use crate::room::member::{Member, MemberState};
+use crate::room::room::RoomMemberNoticeType;
+use crate::room::room_model::{BattleType, RoomModel, RoomType, TeamId};
 use log::{error, info, warn};
 use protobuf::Message;
 use tools::cmd_code::{ClientCode, RoomCode};

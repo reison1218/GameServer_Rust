@@ -1,4 +1,4 @@
-use crate::entity::character::Character;
+use crate::room::character::Character;
 use std::collections::HashMap;
 use tools::protos::base::MemberPt;
 use tools::protos::server_protocol::PlayerBattlePt;

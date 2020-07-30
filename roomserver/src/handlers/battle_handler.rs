@@ -1,8 +1,8 @@
-use crate::entity::battle::{ActionType, SkillConsumeType, TURN_DEFAULT_OPEN_CELL_TIMES};
-use crate::entity::character::{BattleCharacter, Skill};
-use crate::entity::map_data::CellType;
-use crate::entity::room::{Room, RoomState};
+use crate::battle::battle_enum::{ActionType, SkillConsumeType, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::mgr::room_mgr::RoomMgr;
+use crate::room::character::{BattleCharacter, Skill};
+use crate::room::map_data::CellType;
+use crate::room::room::{Room, RoomState};
 use log::{error, info, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
@@ -56,7 +56,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         }
         ActionType::UseItem => use_item(room, user_id, value),
         ActionType::Skip => {
-            skip_choice_turn(room, user_id);
+            skip_turn(room, user_id);
         }
         ActionType::Open => {
             open_cell(room, user_id, value as usize);
@@ -81,9 +81,7 @@ fn use_item(rm: &mut Room, user_id: u32, item_id: u32) {
     if !res {
         return;
     }
-    let mut targets = Vec::new();
-    targets.push(user_id);
-    rm.battle_data.use_skill(item_id, targets);
+    rm.battle_data.use_item(user_id, item_id);
 }
 
 ///翻地图块
@@ -149,11 +147,11 @@ fn use_skill(rm: &mut Room, user_id: u32, skill_id: u32, target_array: Vec<u32>)
         return;
     }
     //使用技能，走正常逻辑
-    rm.battle_data.use_skill(skill_id, target_array);
+    rm.battle_data.use_skill(user_id, skill_id, target_array);
 }
 
 ///跳过选择回合顺序
-fn skip_choice_turn(rm: &mut Room, user_id: u32) {
+fn skip_turn(rm: &mut Room, user_id: u32) {
     //判断是否是轮到自己操作
     let res = check_is_user_turn(rm, user_id);
     if !res {

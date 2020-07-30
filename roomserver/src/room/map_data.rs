@@ -1,4 +1,4 @@
-use crate::entity::character::{Buff, Skill};
+use crate::room::character::{Buff, Skill};
 use crate::TEMPLATES;
 use log::error;
 use rand::Rng;

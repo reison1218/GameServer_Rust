@@ -1,4 +1,4 @@
-use crate::entity::battle::{BattleCterState, TargetType};
+use crate::battle::battle_enum::{BattleCterState, TargetType};
 use crate::TEMPLATES;
 use log::warn;
 use std::collections::{HashMap, HashSet};

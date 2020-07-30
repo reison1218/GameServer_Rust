@@ -1,7 +1,7 @@
 use super::*;
-use crate::entity::character::Character;
-use crate::entity::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::error_return::err_back;
+use crate::room::character::Character;
+use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use tools::protos::room::{
     C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER,
     S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_START,

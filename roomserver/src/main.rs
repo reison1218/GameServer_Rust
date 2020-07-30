@@ -1,8 +1,9 @@
-mod entity;
+mod battle;
 mod error_return;
 mod handlers;
 mod mgr;
 mod net;
+mod room;
 mod task_timer;
 #[macro_use]
 extern crate lazy_static;
