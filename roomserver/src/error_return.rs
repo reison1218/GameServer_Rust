@@ -205,7 +205,7 @@ pub fn err_back(cmd: ClientCode, user_id: u32, error_mess: String, sender: &mut 
         //选择回合顺序通知
         ClientCode::ChoiceRoundOrderNotice => {}
         //选择占位
-        ClientCode::ChoiceIndexNotice => {}
+        ClientCode::StartChoiceIndexNotice => {}
         _ => {}
     }
 }

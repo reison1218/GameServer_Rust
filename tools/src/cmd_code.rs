@@ -123,7 +123,7 @@ pub enum ClientCode{
     //选择回合顺序通知
     ChoiceRoundOrderNotice = 10026,
     //选择占位推送
-    ChoiceIndexNotice = 10027,
+    StartChoiceIndexNotice = 10027,
     //跳过选回合顺序推送
     SkipChoiceTurnNotice = 10028,
     //--------------------------------------以下战斗相关---------------------------

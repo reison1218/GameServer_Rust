@@ -1,16 +1,33 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
+use crate::battle::battle_enum::{ActionType, TargetType, TRIGGER_SCOPE_NEAR};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
 use crate::task_timer::{Task, TaskCmd};
 use log::{error, info, warn};
+use protobuf::{Message, RepeatedField};
 use std::borrow::BorrowMut;
 use tools::cmd_code::ClientCode;
+use tools::protos::base::ActionUnitPt;
+use tools::protos::battle::S_ACTION_NOTICE;
 use tools::tcp::TcpSender;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
+    ///校验是否翻过块
+    pub fn check_user_is_opened_cell(&self) -> bool {
+        if self.turn_action.actions.is_empty() {
+            return false;
+        }
+        for action in self.turn_action.actions.iter() {
+            let action_type = ActionType::from(action.action_type as u32);
+            if action_type.eq(&ActionType::Open) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
     ///获得战斗角色可变借用指针
     pub fn get_battle_cter_mut(
         &mut self,
@@ -87,6 +104,16 @@ impl BattleData {
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         self.get_sender_mut().write(bytes);
+    }
+
+    ///推送action通知
+    pub fn push_action_notice(&mut self, aus: Vec<ActionUnitPt>) {
+        let mut san = S_ACTION_NOTICE::new();
+        san.set_action_uints(RepeatedField::from(aus));
+        let bytes = san.write_to_bytes().unwrap();
+        for member_id in self.battle_cter.clone().keys() {
+            self.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
+        }
     }
 
     pub fn get_sender_mut(&mut self) -> &mut TcpSender {
@@ -166,7 +193,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //地图块
+            } //任意玩家
             TargetType::AnyPlayer => {
                 //校验玩家id
                 let target_id = target_array.get(0);
@@ -178,8 +205,9 @@ impl BattleData {
                     return false;
                 }
                 return true;
-            } //任意玩家
+            } //玩家自己
             TargetType::PlayerSelf => {}      //玩家自己
+            //全图
             TargetType::AllPlayer => {
                 for member_id in target_array {
                     if !self.battle_cter.contains_key(&member_id) {
@@ -187,7 +215,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //所有玩家
+            } //不包括自己的其他玩家
             TargetType::OtherAllPlayer => {
                 for member_id in target_array {
                     if member_id != &user_id && !self.battle_cter.contains_key(&user_id) {
@@ -195,7 +223,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //除自己外所有玩家
+            } //除自己外任意玩家
             TargetType::OtherAnyPlayer => {
                 let member_id = target_array.get(0);
                 if member_id.is_none() {
@@ -209,7 +237,7 @@ impl BattleData {
                     return false;
                 }
                 return true;
-            } //除自己外任意玩家
+            } //未翻开的地图块
             TargetType::UnOpenCell => {
                 for index in target_array {
                     let index = *index;
@@ -226,7 +254,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //未翻开的地图块
+            } //未配对的地图块
             TargetType::UnPairCell => {
                 for index in target_array {
                     let index = *index;
@@ -243,7 +271,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //未配对的地图块
+            } //空的地图块
             TargetType::NullCell => {
                 for index in target_array {
                     let index = *index;
@@ -280,7 +308,7 @@ impl BattleData {
                     }
                 }
                 return true;
-            } //未配对的空地图块
+            } //地图块上的玩家
             TargetType::CellPlayer => {}
         }
         true
@@ -334,6 +362,10 @@ impl BattleData {
         }
     }
 
+    ///计算范围
+    /// 当targets和scope_temp为None时,以⭕️为校验范围有没有人
+    /// 当targets为None,scope_temp为Some则校验scope_temp范围内有没有人
+    /// 当targets和scope_temp都不为None时，校验targets是否在scope_temp范围内
     pub fn cal_scope(
         &self,
         user_id: u32,
@@ -365,6 +397,31 @@ impl BattleData {
                     continue;
                 }
                 v.push(cell.user_id);
+            }
+        } else if targets.is_none() && scope_temp.is_some() {
+            let scope_temp = scope_temp.unwrap();
+            //否则校验选中的区域
+            for dir in scope_temp.scope.iter() {
+                for scope_index in dir.direction.iter() {
+                    let index = center_index + *scope_index as isize;
+                    if index < 0 {
+                        continue;
+                    }
+                    let index = index as usize;
+                    let cell = self.tile_map.map.get(index);
+                    if cell.is_none() {
+                        continue;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.user_id <= 0 {
+                        continue;
+                    }
+                    //不能选中自己
+                    if cell.user_id == user_id {
+                        continue;
+                    }
+                    v.push(cell.user_id);
+                }
             }
         } else {
             let targets = targets.unwrap();

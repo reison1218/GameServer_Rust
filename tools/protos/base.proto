@@ -1,6 +1,14 @@
 syntax = "proto3";
 package protos;
 
+//enum EffectType{
+//    SkillDamage = 1;
+//    AttackDamage = 2;
+//    Cure = 3;
+//    SubDamage = 4;
+//    ParryAttackDamage = 5;
+//}
+
 //enum RoomTypePt{
 //    NONE = 0;         //无效占位数值，protobuf枚举必须包含0
 //    CUSTOM = 1;       //自定义房间
@@ -93,11 +101,12 @@ message BattleCharacterPt{
 
 //受影响封装
 message TargetPt{
-    uint32 target_id = 1;//目标id
-    uint32 effect_type = 2;//效果类型
-    uint32 effect_value = 3;//效果值
-    repeated uint32 buffs = 4;//触发的额外buff
-    repeated TriggerEffectPt passiveEffect = 5;	//触发的被动
+    uint32 target_type = 1;//目标类型
+    uint32 target_value = 2;//目标id
+    uint32 effect_type = 3;//效果类型
+    uint32 effect_value = 4;//效果值
+    repeated uint32 buffs = 5;//触发的额外buff
+    repeated TriggerEffectPt passiveEffect = 6;	//触发的被动
 }
 
 //触发效果

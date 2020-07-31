@@ -1,5 +1,6 @@
 use crate::battle::battle::BattleData;
-use crate::room::character::{BattleCharacter, Buff};
+use crate::battle::battle_buff::Buff;
+use crate::room::character::BattleCharacter;
 use crate::room::map_data::CellType;
 use crate::room::map_data::TileMap;
 use crate::room::member::{Member, MemberState};
@@ -17,10 +18,10 @@ use tools::cmd_code::ClientCode;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::battle::S_BATTLE_START_NOTICE;
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_CHOICE_INDEX_NOTICE, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE,
-    S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM,
+    S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE, S_EMOJI,
+    S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM,
     S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
-    S_START_NOTICE,
+    S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -435,12 +436,12 @@ impl Room {
         let res = self.check_choice_turn_over();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
         if res {
-            let mut sbs = S_CHOICE_INDEX_NOTICE::new();
+            let mut sbs = S_START_CHOOSE_INDEX_NOTICE::new();
             self.cter_2_battle_cter();
             let bytes = sbs.write_to_bytes().unwrap();
             for id in self.members.keys() {
                 let res = Packet::build_packet_bytes(
-                    ClientCode::ChoiceIndexNotice as u32,
+                    ClientCode::StartChoiceIndexNotice as u32,
                     *id,
                     bytes.clone(),
                     true,
@@ -831,12 +832,12 @@ impl Room {
             self.state = RoomState::ChoiceIndex;
             //系统帮忙选回合顺序
             self.random_choice_turn();
-            let mut sbs = S_CHOICE_INDEX_NOTICE::new();
+            let mut sbs = S_START_CHOOSE_INDEX_NOTICE::new();
             self.cter_2_battle_cter();
             let bytes = sbs.write_to_bytes().unwrap();
             for id in self.members.keys() {
                 let res = Packet::build_packet_bytes(
-                    ClientCode::ChoiceIndexNotice as u32,
+                    ClientCode::StartChoiceIndexNotice as u32,
                     *id,
                     bytes.clone(),
                     true,

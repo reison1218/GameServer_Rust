@@ -2558,7 +2558,8 @@ impl ::protobuf::reflect::ProtobufValue for BattleCharacterPt {
 #[derive(PartialEq,Clone,Default)]
 pub struct TargetPt {
     // message fields
-    pub target_id: u32,
+    pub target_type: u32,
+    pub target_value: u32,
     pub effect_type: u32,
     pub effect_value: u32,
     pub buffs: ::std::vec::Vec<u32>,
@@ -2579,22 +2580,37 @@ impl TargetPt {
         ::std::default::Default::default()
     }
 
-    // uint32 target_id = 1;
+    // uint32 target_type = 1;
 
 
-    pub fn get_target_id(&self) -> u32 {
-        self.target_id
+    pub fn get_target_type(&self) -> u32 {
+        self.target_type
     }
-    pub fn clear_target_id(&mut self) {
-        self.target_id = 0;
+    pub fn clear_target_type(&mut self) {
+        self.target_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_target_id(&mut self, v: u32) {
-        self.target_id = v;
+    pub fn set_target_type(&mut self, v: u32) {
+        self.target_type = v;
     }
 
-    // uint32 effect_type = 2;
+    // uint32 target_value = 2;
+
+
+    pub fn get_target_value(&self) -> u32 {
+        self.target_value
+    }
+    pub fn clear_target_value(&mut self) {
+        self.target_value = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_target_value(&mut self, v: u32) {
+        self.target_value = v;
+    }
+
+    // uint32 effect_type = 3;
 
 
     pub fn get_effect_type(&self) -> u32 {
@@ -2609,7 +2625,7 @@ impl TargetPt {
         self.effect_type = v;
     }
 
-    // uint32 effect_value = 3;
+    // uint32 effect_value = 4;
 
 
     pub fn get_effect_value(&self) -> u32 {
@@ -2624,7 +2640,7 @@ impl TargetPt {
         self.effect_value = v;
     }
 
-    // repeated uint32 buffs = 4;
+    // repeated uint32 buffs = 5;
 
 
     pub fn get_buffs(&self) -> &[u32] {
@@ -2649,7 +2665,7 @@ impl TargetPt {
         ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
     }
 
-    // repeated .protos.TriggerEffectPt passiveEffect = 5;
+    // repeated .protos.TriggerEffectPt passiveEffect = 6;
 
 
     pub fn get_passiveEffect(&self) -> &[TriggerEffectPt] {
@@ -2694,26 +2710,33 @@ impl ::protobuf::Message for TargetPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.target_id = tmp;
+                    self.target_type = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.effect_type = tmp;
+                    self.target_value = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.effect_value = tmp;
+                    self.effect_type = tmp;
                 },
                 4 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.effect_value = tmp;
                 },
                 5 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                },
+                6 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.passiveEffect)?;
                 },
                 _ => {
@@ -2728,17 +2751,20 @@ impl ::protobuf::Message for TargetPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.target_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.target_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.target_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.target_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.target_value != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.target_value, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.effect_type != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.effect_type, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.effect_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.effect_value != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.effect_value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.effect_value, ::protobuf::wire_format::WireTypeVarint);
         }
         for value in &self.buffs {
-            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         for value in &self.passiveEffect {
             let len = value.compute_size();
@@ -2750,20 +2776,23 @@ impl ::protobuf::Message for TargetPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.target_id != 0 {
-            os.write_uint32(1, self.target_id)?;
+        if self.target_type != 0 {
+            os.write_uint32(1, self.target_type)?;
+        }
+        if self.target_value != 0 {
+            os.write_uint32(2, self.target_value)?;
         }
         if self.effect_type != 0 {
-            os.write_uint32(2, self.effect_type)?;
+            os.write_uint32(3, self.effect_type)?;
         }
         if self.effect_value != 0 {
-            os.write_uint32(3, self.effect_value)?;
+            os.write_uint32(4, self.effect_value)?;
         }
         for v in &self.buffs {
-            os.write_uint32(4, *v)?;
+            os.write_uint32(5, *v)?;
         };
         for v in &self.passiveEffect {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -2807,9 +2836,14 @@ impl ::protobuf::Message for TargetPt {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "target_id",
-                    |m: &TargetPt| { &m.target_id },
-                    |m: &mut TargetPt| { &mut m.target_id },
+                    "target_type",
+                    |m: &TargetPt| { &m.target_type },
+                    |m: &mut TargetPt| { &mut m.target_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "target_value",
+                    |m: &TargetPt| { &m.target_value },
+                    |m: &mut TargetPt| { &mut m.target_value },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "effect_type",
@@ -2850,7 +2884,8 @@ impl ::protobuf::Message for TargetPt {
 
 impl ::protobuf::Clear for TargetPt {
     fn clear(&mut self) {
-        self.target_id = 0;
+        self.target_type = 0;
+        self.target_value = 0;
         self.effect_type = 0;
         self.effect_value = 0;
         self.buffs.clear();
@@ -3368,17 +3403,18 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x10\n\x03atk\x18\x03\x20\
     \x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x04\x20\x01(\rR\x02hp\x12\x18\n\x07d\
     efence\x18\x05\x20\x01(\rR\x07defence\x12\x14\n\x05buffs\x18\x06\x20\x03\
-    (\rR\x05buffs\"\xc0\x01\n\x08TargetPt\x12\x1b\n\ttarget_id\x18\x01\x20\
-    \x01(\rR\x08targetId\x12\x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\neffec\
-    tType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0beffectValue\x12\x14\
-    \n\x05buffs\x18\x04\x20\x03(\rR\x05buffs\x12=\n\rpassiveEffect\x18\x05\
-    \x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\";\n\x0fTrigge\
-    rEffectPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05val\
-    ue\x18\x02\x20\x01(\rR\x05value\"\x9b\x01\n\x0cActionUnitPt\x12\x1b\n\tf\
-    rom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\
-    \x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x01(\rR\
-    \x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.Targe\
-    tPtR\x07targetsb\x06proto3\
+    (\rR\x05buffs\"\xe7\x01\n\x08TargetPt\x12\x1f\n\x0btarget_type\x18\x01\
+    \x20\x01(\rR\ntargetType\x12!\n\x0ctarget_value\x18\x02\x20\x01(\rR\x0bt\
+    argetValue\x12\x1f\n\x0beffect_type\x18\x03\x20\x01(\rR\neffectType\x12!\
+    \n\x0ceffect_value\x18\x04\x20\x01(\rR\x0beffectValue\x12\x14\n\x05buffs\
+    \x18\x05\x20\x03(\rR\x05buffs\x12=\n\rpassiveEffect\x18\x06\x20\x03(\x0b\
+    2\x17.protos.TriggerEffectPtR\rpassiveEffect\";\n\x0fTriggerEffectPt\x12\
+    \x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\
+    \x20\x01(\rR\x05value\"\x9b\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\
+    \x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\
+    \x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x01(\rR\x0bactio\
+    nValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07t\
+    argetsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

@@ -257,11 +257,9 @@ pub mod packet {
                 packet.set_cmd(cmd);
                 packet.set_is_client(is_client);
                 packet.set_is_broad(is_broad);
-                if body_size ==0{
-                    v.push(packet);
-                    return Ok(v);
+                if body_size > 0{
+                    packet.set_data(bb.read_bytes_size(body_size as usize)?);
                 }
-                packet.set_data(bb.read_bytes_size(body_size as usize)?);
                 v.push(packet);
             }
         }

@@ -1,6 +1,7 @@
 use crate::battle::battle_enum::{ActionType, SkillConsumeType, TURN_DEFAULT_OPEN_CELL_TIMES};
+use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
-use crate::room::character::{BattleCharacter, Skill};
+use crate::room::character::BattleCharacter;
 use crate::room::map_data::CellType;
 use crate::room::room::{Room, RoomState};
 use log::{error, info, warn};
@@ -67,6 +68,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         ActionType::Attack => {
             attack(room, user_id, target);
         }
+        _ => {}
     }
     Ok(())
 }

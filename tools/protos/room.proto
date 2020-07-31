@@ -241,7 +241,7 @@ message S_CHOOSE_TURN_ORDER_NOTICE{
 
 //选择角色占位推送
 //cmd:10027
-message S_CHOICE_INDEX_NOTICE{
+message S_START_CHOOSE_INDEX_NOTICE{
 
 }
 

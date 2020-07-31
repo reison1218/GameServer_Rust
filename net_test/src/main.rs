@@ -214,11 +214,11 @@ struct Foo {
 
 fn main() -> anyhow::Result<()> {
     //test_unsafe();
-    // let mut foo = Foo { x: 42 };
-    // let x = &mut foo.x;
-    // *x = 13;
-    // let y = foo;
-    // println!("{}", y.x); // -> 42; expected result: 13
+    let mut foo = Foo { x: 42 };
+    let x = &mut foo.x;
+    *x = 13;
+    let y = foo;
+    println!("{}", y.x); // -> 42; expected result: 13
     //
     // let mut foo = Foo { x: 42 };
     //

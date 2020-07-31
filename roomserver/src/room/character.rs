@@ -1,4 +1,7 @@
+use crate::battle::battle::Item;
+use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::{BattleCterState, TargetType};
+use crate::battle::battle_skill::Skill;
 use crate::TEMPLATES;
 use log::warn;
 use std::collections::{HashMap, HashSet};
@@ -36,104 +39,6 @@ impl Into<CharacterPt> for Character {
         cter_pt.set_grade(self.grade);
         cter_pt
     }
-}
-
-#[derive(Clone, Debug)]
-pub struct Item {
-    pub id: u32,                        //物品id
-    pub skill_temp: &'static SkillTemp, //物品带的技能
-}
-
-#[derive(Clone, Debug)]
-pub struct Skill {
-    pub id: u32,
-    pub skill_temp: &'static SkillTemp,
-    pub cd_times: i8, //剩余cd,如果是消耗能量则无视这个值
-}
-
-impl Skill {
-    ///减去技能cd
-    pub fn sub_cd(&mut self, value: Option<i8>) {
-        if let Some(value) = value {
-            self.cd_times -= value;
-        } else {
-            self.cd_times -= 1;
-        }
-        if self.cd_times < 0 {
-            self.cd_times = 0;
-        }
-    }
-
-    ///增加技能cd
-    pub fn add_cd(&mut self, value: Option<i8>) {
-        if let Some(value) = value {
-            self.cd_times += value;
-        } else {
-            self.cd_times += 1;
-        }
-    }
-
-    ///重制技能cd
-    pub fn reset_cd(&mut self) {
-        self.cd_times = self.skill_temp.cd as i8;
-    }
-}
-
-impl From<&'static SkillTemp> for Skill {
-    fn from(skill_temp: &'static SkillTemp) -> Self {
-        Skill {
-            id: skill_temp.id,
-            cd_times: skill_temp.cd as i8,
-            skill_temp: skill_temp,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Buff {
-    pub id: u32,
-    pub buff_temp: &'static BuffTemp,
-    pub trigger_timesed: i8,   //已经触发过的次数
-    pub keep_times: i8,        //持续轮数
-    pub scope: Vec<Direction>, //buff的作用范围
-}
-
-impl Buff {
-    pub fn get_target(&self) -> TargetType {
-        let target_type = TargetType::from(self.buff_temp.target);
-        target_type
-    }
-}
-
-impl From<&'static BuffTemp> for Buff {
-    fn from(bt: &'static BuffTemp) -> Self {
-        let mut b = Buff {
-            id: bt.id,
-            trigger_timesed: bt.trigger_times as i8,
-            keep_times: bt.keep_time as i8,
-            buff_temp: bt,
-            scope: Vec::new(),
-        };
-        let mut v = Vec::new();
-        let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
-        if let Ok(scope_temp) = scope_temp {
-            if !scope_temp.scope.is_empty() {
-                for direction in scope_temp.scope.iter() {
-                    let dir = Direction {
-                        direction: &direction.direction,
-                    };
-                    v.push(dir);
-                }
-                b.scope = v;
-            }
-        }
-        b
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Direction {
-    pub direction: &'static Vec<i32>,
 }
 
 #[derive(Clone, Debug, Default)]

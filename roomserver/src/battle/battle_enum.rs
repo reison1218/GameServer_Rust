@@ -4,6 +4,21 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 
+///效果类型
+#[derive(Clone, Debug, PartialEq)]
+pub enum EffectType {
+    ///技能伤害
+    SkillDamage = 1,
+    ///攻击伤害
+    AttackDamage = 2,
+    ///治疗血量
+    Cure = 3,
+    ///减攻击伤害
+    SubDamage = 4,
+    ///格挡攻击伤害
+    ParryAttackDamage = 5,
+}
+
 //技能消耗类型
 pub enum SkillConsumeType {
     Energy = 1, //能量
@@ -31,6 +46,8 @@ pub enum ActionType {
     Open = 4,
     ///使用技能
     Skill = 5,
+    ///触发buff
+    Buff = 6,
 }
 
 impl From<u32> for ActionType {
