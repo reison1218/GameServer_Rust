@@ -1,9 +1,10 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::{ActionType, TargetType};
+use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType, TargetType};
 use crate::handlers::battle_handler::Find;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
+use crate::room::member::MemberState;
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
@@ -61,38 +62,53 @@ impl BattleData {
     ///地图块换位置
     pub fn change_index(
         &mut self,
-        user_id: u32,
-        skill_id: u32,
         source_index: usize,
         target_index: usize,
-    ) {
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let lock_skills = &TEMPLATES.get_skill_ref().lock_skills[..];
         let map_size = self.tile_map.map.len();
         //校验地图块
         if source_index > map_size || target_index > map_size {
-            return;
+            let str = format!(
+                "index is error!source_index:{},target_index:{}",
+                source_index, target_index
+            );
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
         let source_cell = self.tile_map.map.get(source_index).unwrap();
         let target_cell = self.tile_map.map.get(target_index).unwrap();
 
         //无效块不能换，锁定不能换
         if source_cell.id <= 1 || target_cell.id <= 1 {
-            return;
+            let str = format!(
+                "index is error!source_index:{},target_index:{}",
+                source_index, target_index
+            );
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
         //已配对的块不能换
         if source_cell.pair_index.is_some() || target_cell.pair_index.is_some() {
-            return;
+            let str = format!("this cell is already pair!");
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
         //锁定不能换
         for skill in source_cell.buff.iter() {
             if lock_skills.contains(&skill.id) {
-                return;
+                let str = format!("this cell is already locked!source_index:{}", source_index);
+                warn!("{:?}", str.as_str());
+                anyhow::bail!(str)
             }
         }
         //锁定不能换
         for skill in target_cell.buff.iter() {
             if lock_skills.contains(&skill.id) {
-                return;
+                let str = format!("this cell is already locked!target_index:{}", target_index);
+                warn!("{:?}", str.as_str());
+                anyhow::bail!(str)
             }
         }
 
@@ -108,94 +124,69 @@ impl BattleData {
         self.tile_map.map.insert(target_cell.index, target_cell);
 
         //通知客户端
-        let mut au = ActionUnitPt::new();
-        au.set_from_user(user_id);
-        au.set_action_type(ActionType::Skill as u32);
-        au.set_action_value(skill_id);
         let mut target_pt = TargetPt::new();
         target_pt.target_type = TargetType::Cell as u32;
         target_pt.target_value = source_index as u32;
         au.targets.push(target_pt);
-        let mut v = Vec::new();
-        v.push(au);
-        self.push_action_notice(v);
+        Ok(None)
     }
 
     ///展示地图块
-    pub fn show_index(&mut self, user_id: u32, skill_id: u32, index: usize) {
+    pub fn show_index(
+        &mut self,
+        index: usize,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //校验index合法性
         let cell = self.tile_map.map.get(index);
         if cell.is_none() {
             let str = format!("show_index cell is none!index:{}", index);
-            warn!("{:?}", str);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
         //校验index合法性
         let cell = cell.unwrap();
         let res = self.check_open_cell(cell);
         if let Err(e) = res {
             let str = format!("show_index {:?}", e);
-            warn!("{:?}", str);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
         let cell_id = cell.id;
         //todo 下发给客户端
-        let mut san = S_ACTION_NOTICE::new();
-        let mut au = ActionUnitPt::new();
-        au.action_type = ActionType::Skill as u32;
-        au.action_value = skill_id;
-        au.from_user = user_id;
+
         let mut target_pt = TargetPt::new();
         target_pt.target_type = TargetType::Cell as u32;
         au.targets.push(target_pt);
-        san.action_uints.push(au);
-
-        unsafe {
-            let san = &mut san as *mut S_ACTION_NOTICE;
-            let target_pt = san
-                .as_mut()
-                .unwrap()
-                .action_uints
-                .get_mut(0)
-                .unwrap()
-                .targets
-                .get_mut(0)
-                .unwrap();
-            for member_id in self.battle_cter.clone().keys() {
-                let bytes;
-                if member_id == &user_id {
-                    target_pt.target_value = cell_id;
-                } else if target_pt.target_value > 0 {
-                    target_pt.target_value = 0;
-                }
-                bytes = san.as_ref().unwrap().write_to_bytes().unwrap();
-                self.send_2_client(ClientCode::ActionNotice, user_id, bytes);
-            }
-        }
+        Ok(None)
     }
 
     ///移动玩家
     pub fn move_user(
         &mut self,
-        user_id: u32,
-        skill_id: u32,
         target_user: u32,
         target_index: usize,
-    ) {
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //校验下标的地图块
         let target_cell = self.tile_map.map.get_mut(target_index);
         if let None = target_cell {
-            warn!("there is no cell!index:{}", target_index);
-            return;
+            let str = format!("there is no cell!index:{}", target_index);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!("")
         }
         let target_cell = target_cell.unwrap();
         //校验有效性
         if target_cell.id < CellType::Valid as u32 {
-            warn!("this cell can not be choice!index:{}", target_index);
-            return;
+            let str = format!("this cell can not be choice!index:{}", target_index);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!("")
         }
         //校验世界块
         if target_cell.is_world {
-            warn!("world cell can not be choice!index:{}", target_index);
-            return;
+            let str = format!("world cell can not be choice!index:{}", target_index);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!("")
         }
 
         target_cell.user_id = target_user;
@@ -203,7 +194,7 @@ impl BattleData {
         let target_cter = self.get_battle_cter_mut(Some(target_user));
         if let Err(e) = target_cter {
             warn!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
 
         //更新目标玩家的下标
@@ -214,25 +205,26 @@ impl BattleData {
         let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
         last_cell.user_id = 0;
 
-        let mut au = ActionUnitPt::new();
-        au.from_user = user_id;
-        au.action_type = ActionType::Skill as u32;
-        au.action_value = skill_id;
-
         let mut target_pt = TargetPt::new();
         target_pt.target_type = TargetType::AnyPlayer as u32;
         target_pt.target_value = target_user;
+        au.targets.push(target_pt);
 
         //处理移动后事件
         unsafe {
             let v = self.handler_cter_move(target_user, target_index);
-            self.push_action_notice(v);
+            Ok(Some(v))
         }
-        //todo 通知客户的
     }
 
     ///技能伤害，并治疗
-    pub unsafe fn skill_damage_and_cure(&mut self, user_id: u32, cter_index: usize, skill_id: u32) {
+    pub unsafe fn skill_damage_and_cure(
+        &mut self,
+        user_id: u32,
+        cter_index: usize,
+        skill_id: u32,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let skill = battle_cter.skills.find(skill_id as usize).unwrap();
@@ -241,7 +233,7 @@ impl BattleData {
             .get_temp(&skill.skill_temp.scope);
         if let Err(e) = res {
             error!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let scope_temp = res.unwrap();
         let cter_index = cter_index as isize;
@@ -249,11 +241,17 @@ impl BattleData {
         let res = self.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
         if let Err(e) = res {
             error!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let v = res.unwrap();
         let mut add_hp = 0_u32;
         for user in v {
+            let mut target_pt = TargetPt::new();
+            target_pt.target_type = TargetType::AnyPlayer as u32;
+            target_pt.target_value = user;
+            target_pt.effect_type = EffectType::SkillDamage as u32;
+            target_pt.effect_value = skill.skill_temp.par1;
+            au.targets.push(target_pt);
             let cter = self.get_battle_cter_mut(Some(user)).unwrap();
             add_hp += skill.skill_temp.par1;
             //扣血
@@ -262,31 +260,44 @@ impl BattleData {
                 //todo 触发角色死亡事件
             }
         }
+
+        //给自己加血
+        let mut target_pt = TargetPt::new();
+        target_pt.target_type = TargetType::AnyPlayer as u32;
+        target_pt.target_value = user_id;
+        target_pt.effect_type = EffectType::Cure as u32;
+        target_pt.effect_value = add_hp as u32;
+        au.targets.push(target_pt);
         battle_cter.add_hp(add_hp as i32);
-        //todo 通知客户端
+        Ok(None)
     }
 
     ///自动配对地图块
-    pub unsafe fn auto_pair_cell(&mut self, user_id: u32, skill_id: u32, target_index: usize) {
-        let mut au = ActionUnitPt::new();
+    pub unsafe fn auto_pair_cell(
+        &mut self,
+        user_id: u32,
+        target_index: usize,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let map = &mut self.tile_map.map as *mut Vec<Cell>;
         //校验目标下标的地图块
         let cell = map.as_mut().unwrap().get_mut(target_index);
         if let None = cell {
-            warn!("there is no cell!index:{}", target_index);
-            return;
+            let str = format!("there is no cell!index:{}", target_index);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!("{:?}", str)
         }
         let cell = cell.unwrap();
         //校验地图块
         let res = self.check_open_cell(cell);
         if let Err(e) = res {
             warn!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let battle_cter = self.get_battle_cter_mut(Some(user_id));
         if let Err(e) = battle_cter {
             error!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let battle_cter = battle_cter.unwrap();
         //找到与之匹配的地图块自动配对
@@ -299,41 +310,82 @@ impl BattleData {
         }
         //处理本turn不能攻击
         battle_cter.is_can_attack = false;
-        //todo 通知客户端
+
+        let mut target_pt = TargetPt::new();
+        target_pt.set_target_type(TargetType::Cell as u32);
+        target_pt.set_target_value(target_index as u32);
+        au.targets.push(target_pt);
+        Ok(None)
     }
 
     ///减技能cd
-    pub fn sub_cd(&mut self, user_id: u32, target_user: u32) {
+    pub fn sub_cd(
+        &mut self,
+        skill_id: u32,
+        target_user: u32,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //目标的技能CD-2。
         let battle_cter = self.get_battle_cter_mut(Some(target_user));
         if let Err(e) = battle_cter {
             warn!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
+
+        let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
+
         let battle_cter = battle_cter.unwrap();
+
+        let mut target_pt = TargetPt::new();
+        target_pt.target_type = TargetType::AnyPlayer as u32;
+        target_pt.target_value = battle_cter.user_id;
+        target_pt.effect_type = EffectType::SubSkillCd as u32;
+        target_pt.effect_value = skill.par1;
+        au.targets.push(target_pt);
         for _skill in battle_cter.skills.iter_mut() {
-            _skill.sub_cd(Some(_skill.skill_temp.par1 as i8));
+            _skill.sub_cd(Some(skill.par1 as i8));
         }
-        //todo 通知客户端
+        Ok(None)
     }
 
     ///单体技能伤害
-    pub fn single_skill_damage(&mut self, user_id: u32, skill_id: u32, target_user: u32) {
+    pub fn single_skill_damage(
+        &mut self,
+        skill_id: u32,
+        target_user: u32,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let target_cter = self.get_battle_cter_mut(Some(target_user));
         if let Err(e) = target_cter {
             warn!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
+
+        let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
         let target_cter = target_cter.unwrap();
+
+        let mut target_pt = TargetPt::new();
+        target_pt.target_type = TargetType::AnyPlayer as u32;
+        target_pt.target_value = target_cter.user_id;
+        target_pt.effect_type = EffectType::SkillDamage as u32;
+        target_pt.effect_value = skill.par1;
+        au.targets.push(target_pt);
         let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
         let is_died = target_cter.sub_hp(skill.par1 as i32);
         if is_died {
-            //todo 触发角色死亡事件
+            target_cter.state = BattleCterState::Die as u8;
         }
+        Ok(None)
     }
 
     ///技能aoe伤害
-    pub fn skill_aoe_damage(&mut self, user_id: u32, skill_id: u32, mut targets: Vec<u32>) {
+    pub fn skill_aoe_damage(
+        &mut self,
+        user_id: u32,
+        skill_id: u32,
+        mut targets: Vec<u32>,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
         let skill = battle_cter.skills.find(skill_id as usize).unwrap();
         let damage = skill.skill_temp.par1 as i32;
@@ -342,7 +394,7 @@ impl BattleData {
         let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&scope_id);
         if let Err(e) = scope_temp {
             error!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let scope_temp = scope_temp.unwrap();
 
@@ -350,8 +402,9 @@ impl BattleData {
         for index in targets.iter() {
             let cell = self.tile_map.map.get(*index as usize);
             if let None = cell {
-                warn!("there is no cell!index:{}", index);
-                return;
+                let str = format!("there is no cell!index:{}", index);
+                warn!("{:?}", str.as_str());
+                anyhow::bail!("")
             }
         }
 
@@ -370,23 +423,37 @@ impl BattleData {
             .unwrap();
 
         for member_id in v {
+            let mut target_pt = TargetPt::new();
+            target_pt.target_type = TargetType::AnyPlayer as u32;
+            target_pt.target_value = member_id;
+            target_pt.effect_type = EffectType::SkillDamage as u32;
+
             let cter = self.get_battle_cter_mut(Some(member_id)).unwrap();
             let is_died;
             //判断是否中心位置
             if cter.cell_index == center_index as usize {
                 is_died = cter.sub_hp(damage_deep);
+                target_pt.effect_value = damage_deep as u32;
             } else {
                 is_died = cter.sub_hp(damage);
+                target_pt.effect_value = damage as u32;
             }
+            au.targets.push(target_pt);
             if is_died {
-                //todo  触发角色死了的事件
+                cter.state = BattleCterState::Die as u8;
             }
         }
+        Ok(None)
     }
 
     ///上buff
-    pub fn add_buff(&mut self, user_id: u32, skill_id: u32, target_array: Vec<u32>) {
-        let mut v = Vec::new();
+    pub fn add_buff(
+        &mut self,
+        user_id: u32,
+        skill_id: u32,
+        target_array: Vec<u32>,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //121, 211, 221, 311, 322, 20002
         let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
         //先计算单体的
@@ -396,18 +463,13 @@ impl BattleData {
         let buff_id = buff.id;
         let target_type = TargetType::from(skill_temp.target);
 
-        let mut au = ActionUnitPt::new();
-        au.from_user = user_id;
-        au.action_type = ActionType::Skill as u32;
-        au.action_value = skill_id;
-
         let mut target_pt = TargetPt::new();
         match target_type {
             TargetType::PlayerSelf => {
                 let cter = self.get_battle_cter_mut(Some(user_id));
                 if let Err(e) = cter {
                     warn!("{:?}", e);
-                    return;
+                    anyhow::bail!("")
                 }
                 let cter = cter.unwrap();
                 cter.buff_array.push(buff);
@@ -421,19 +483,19 @@ impl BattleData {
                 let cell = self.tile_map.map.get_mut(index);
                 if cell.is_none() {
                     let str = format!("cell not find!index:{}", index);
-                    warn!("{:?}", str);
-                    return;
+                    warn!("{:?}", str.as_str());
+                    anyhow::bail!("{:?}", str)
                 }
                 let cell = cell.unwrap();
                 if cell.is_world {
                     let str = format!("world_cell can not be choice!index:{}", index);
-                    warn!("{:?}", str);
-                    return;
+                    warn!("{:?}", str.as_str());
+                    anyhow::bail!("{:?}", str)
                 }
                 if cell.pair_index.is_some() {
                     let str = format!("this cell is already paired!index:{}", index);
-                    warn!("{:?}", str);
-                    return;
+                    warn!("{:?}", str.as_str());
+                    anyhow::bail!("{:?}", str)
                 }
                 cell.extra_buff.push(buff);
 
@@ -444,7 +506,6 @@ impl BattleData {
             _ => {}
         }
         au.targets.push(target_pt);
-        v.push(au);
-        self.push_action_notice(v);
+        Ok(None)
     }
 }

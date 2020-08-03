@@ -17,6 +17,12 @@ pub enum EffectType {
     SubDamage = 4,
     ///格挡攻击伤害
     ParryAttackDamage = 5,
+    ///技能减少cd
+    SubSkillCd = 6,
+    ///获得道具
+    RewardItem = 7,
+    ///增加技能cd
+    AddSkillCd = 8,
 }
 
 //技能消耗类型

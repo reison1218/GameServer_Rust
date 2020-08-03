@@ -22,6 +22,23 @@ import "base.proto";
 //    Buff = 6;    //触发buff
 //}
 
+///目标类型枚举
+//#[derive(Clone, Debug, PartialEq)]
+//pub enum TargetType {
+//        None = 0,            //无效目标
+//        Cell = 1,            //地图块
+//        AnyPlayer = 2,       //任意玩家
+//        PlayerSelf = 3,      //玩家自己
+//        AllPlayer = 4,       //所有玩家
+//        OtherAllPlayer = 5,  //除自己外所有玩家
+//        OtherAnyPlayer = 6,  //除自己外任意玩家
+//        UnOpenCell = 7,      //未翻开的地图块
+//        UnPairCell = 8,      //未配对的地图块
+//        NullCell = 9,        //空的地图块，上面没人
+//        UnPairNullCell = 10, //未配对的地图块
+//        CellPlayer = 11,     //地图块上的玩家
+//}
+
 //行动请求
 //cmd=20021
 message C_ACTION{

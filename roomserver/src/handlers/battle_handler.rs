@@ -5,10 +5,13 @@ use crate::room::character::BattleCharacter;
 use crate::room::map_data::CellType;
 use crate::room::room::{Room, RoomState};
 use log::{error, info, warn};
+use protobuf::reflect::ProtobufValue;
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt::Debug;
-use tools::protos::battle::C_ACTION;
+use tools::cmd_code::ClientCode;
+use tools::protos::base::ActionUnitPt;
+use tools::protos::battle::{C_ACTION, S_ACTION_NOTICE};
 use tools::util::packet::Packet;
 
 ///行动请求
@@ -45,152 +48,239 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", res.err().unwrap());
         return Ok(());
     }
+
+    let mut au = ActionUnitPt::new();
+    au.action_value = ca.value;
+    au.from_user = user_id;
     let action_type = ca.get_action_type();
     let mut target = ca.target;
     let value = ca.value;
     //行为分支
     let action_type = ActionType::from(action_type);
+    let res;
     match action_type {
         ActionType::None => {
-            warn!("action_type is 0!");
-            return Ok(());
+            res = anyhow::bail!("action_type is 0!");
         }
-        ActionType::UseItem => use_item(room, user_id, value),
+        ActionType::UseItem => {
+            au.action_type = ActionType::UseItem as u32;
+            res = use_item(room, user_id, value, &mut au);
+        }
         ActionType::Skip => {
-            skip_turn(room, user_id);
+            au.action_type = ActionType::Skip as u32;
+            res = skip_turn(room, user_id, &mut au);
         }
         ActionType::Open => {
-            open_cell(room, user_id, value as usize);
+            au.action_type = ActionType::Open as u32;
+            res = open_cell(room, user_id, value as usize, &mut au);
         }
         ActionType::Skill => {
-            use_skill(room, user_id, value, target);
+            au.action_type = ActionType::Skill as u32;
+            res = use_skill(room, user_id, value, target, &mut au);
         }
         ActionType::Attack => {
-            attack(room, user_id, target);
+            au.action_type = ActionType::Attack as u32;
+            res = attack(room, user_id, target, &mut au);
         }
-        _ => {}
+        _ => {
+            res = anyhow::bail!("action_type is error!");
+        }
+    }
+
+    //如果有问题就返回
+    if let Err(_) = res {
+        return Ok(());
+    }
+
+    //回给客户端
+    let mut san = S_ACTION_NOTICE::new();
+    san.action_uints.push(au);
+
+    if let Ok(au_vec) = res {
+        if let Some(v) = au_vec {
+            for au in v {
+                san.action_uints.push(au);
+            }
+        }
+    } else {
+        return Ok(());
+    }
+
+    let bytes = san.write_to_bytes();
+    if let Err(e) = bytes {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let bytes = bytes.unwrap();
+    for member_id in rm.player_room.clone().keys() {
+        rm.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
     }
     Ok(())
 }
 
 ///使用道具
-fn use_item(rm: &mut Room, user_id: u32, item_id: u32) {
+fn use_item(
+    rm: &mut Room,
+    user_id: u32,
+    item_id: u32,
+    au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     if battle_cter.items.is_empty() {
-        return;
+        let str = format!("battle_cter is not find!user_id:{}", user_id);
+        error!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
     let res = battle_cter.items.contains_key(&item_id);
     if !res {
-        return;
+        let str = format!(
+            "this user not have this item!item_id:{},user_id:{}",
+            item_id, user_id
+        );
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
-    rm.battle_data.use_item(user_id, item_id);
+    rm.battle_data.use_item(user_id, item_id, au)
 }
 
 ///翻地图块
-fn open_cell(rm: &mut Room, user_id: u32, target_cell_index: usize) {
+fn open_cell(
+    rm: &mut Room,
+    user_id: u32,
+    target_cell_index: usize,
+    au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let battle_data = rm.battle_data.borrow();
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     //校验是否轮到自己
     if !check_is_user_turn(rm, user_id) {
-        return;
+        let str = format!("is not this player'turn now!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
     //校验这个地图块能不能翻
     let cell = battle_data.tile_map.map.get(target_cell_index);
     if cell.is_none() {
-        return;
+        let str = format!("can not find this cell!index:{}", target_cell_index);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
 
     //校验剩余翻块次数
-    if battle_cter.residue_open_times == 0 {
-        return;
+    if battle_cter.residue_open_times <= 0 {
+        let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
     let cell = cell.unwrap();
     //校验地图块有效性
     let res = battle_data.check_open_cell(cell);
     if let Err(e) = res {
         warn!("{:?}", e);
-        return;
+        anyhow::bail!("")
     }
 
     let battle_data = rm.battle_data.borrow_mut();
-    battle_data.open_cell(target_cell_index);
+    battle_data.open_cell(target_cell_index, au)
 }
 
 ///进行普通攻击
-fn attack(rm: &mut Room, user_id: u32, target_array: Vec<u32>) {
+fn attack(
+    rm: &mut Room,
+    user_id: u32,
+    target_array: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     if !battle_cter.is_can_attack {
-        warn!("now can not attack!user_id:{}", user_id);
-        return;
+        let str = format!("now can not attack!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
     //如果目标为空
     if target_array.is_empty() {
-        warn!("the target_array is empty!user_id:{}", user_id);
-        return;
+        let str = format!("the target_array is empty!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
-    unsafe {
-        rm.battle_data.attack(user_id, target_array);
-    }
+    unsafe { rm.battle_data.attack(user_id, target_array, au) }
 }
 
 ///使用技能
-fn use_skill(rm: &mut Room, user_id: u32, skill_id: u32, target_array: Vec<u32>) {
+fn use_skill(
+    rm: &mut Room,
+    user_id: u32,
+    skill_id: u32,
+    target_array: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验技能id有效性
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     let skill = battle_cter.skills.get(skill_id as usize);
     if skill.is_none() {
-        return;
+        anyhow::bail!("this skill is none!skill_id:{}", user_id)
     }
     //校验技能可用状态
     let skill = skill.unwrap();
     let res = check_skill_useable(battle_cter, skill);
     if !res {
-        return;
+        anyhow::bail!("skill useable check fail!user_id:{}", skill_id)
     }
     //使用技能，走正常逻辑
-    rm.battle_data.use_skill(user_id, skill_id, target_array);
+    rm.battle_data
+        .use_skill(user_id, skill_id, target_array, au)
 }
 
 ///跳过选择回合顺序
-fn skip_turn(rm: &mut Room, user_id: u32) {
+fn skip_turn(
+    rm: &mut Room,
+    user_id: u32,
+    _au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //判断是否是轮到自己操作
     let res = check_is_user_turn(rm, user_id);
     if !res {
-        return;
+        let str = format!("is not your turn!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
 
     //校验现在能不能跳过
     let next_user = rm.get_turn_user(None);
     if let Err(e) = next_user {
-        warn!("{:?}", e);
-        return;
+        error!("{:?}", e);
+        anyhow::bail!("")
     }
     //如果不是下一个turn的，不让跳过
     let next_user = next_user.unwrap();
     if next_user != user_id {
-        warn!(
+        let str = format!(
             "skip_choice_turn next_user!=user_id! next_user:{},user_id:{}",
             next_user, user_id
         );
-        return;
+        warn!("{:?}", str.as_str());
+        anyhow::bail!("{:?}", str)
     }
 
     //拿到战斗角色
     let battle_cter = rm.battle_data.battle_cter.get(&user_id);
     if battle_cter.is_none() {
-        warn!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
-        return;
+        let str = format!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!("{:?}", str)
     }
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
     if battle_cter.recently_open_cell_index < 0 {
-        return;
+        let str = format!("this player not open any cell yet!user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
     }
 
     //跳过当前这个人
-    rm.battle_data.skip_turn();
+    rm.battle_data.skip_turn(_au)
 }
 
 ///校验现在是不是该玩家回合
