@@ -3,7 +3,7 @@ use crate::battle::battle_enum::{ActionType, TargetType, TRIGGER_SCOPE_NEAR};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
 use crate::task_timer::{Task, TaskCmd};
-use log::{error, info, warn};
+use log::{error, warn};
 use protobuf::{Message, RepeatedField};
 use std::borrow::BorrowMut;
 use tools::cmd_code::ClientCode;
@@ -61,7 +61,7 @@ impl BattleData {
         let res = self.turn_orders.get(index);
         if res.is_none() {
             let str = format!("get_next_turn_user is none for index:{} ", index);
-            return anyhow::bail!(str);
+            anyhow::bail!(str)
         }
         let user_id = *res.unwrap();
         Ok(user_id)
@@ -96,7 +96,7 @@ impl BattleData {
     ///计算减伤
     pub fn calc_reduce_damage(&self, user_id: u32) -> i32 {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
-        let mut value = battle_cter.defence;
+        let value = battle_cter.defence;
         //todo 此处应该加上角色身上的减伤buff
         value as i32
     }

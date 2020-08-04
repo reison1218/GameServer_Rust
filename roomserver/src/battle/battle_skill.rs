@@ -1,17 +1,13 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType, TargetType};
+use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType};
 use crate::handlers::battle_handler::Find;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
-use crate::room::member::MemberState;
 use crate::TEMPLATES;
-use log::{error, info, warn};
-use protobuf::Message;
+use log::{error, warn};
 use std::collections::HashMap;
-use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, TargetPt};
-use tools::protos::battle::S_ACTION_NOTICE;
 use tools::templates::skill_temp::SkillTemp;
 
 #[derive(Clone, Debug)]
@@ -157,6 +153,7 @@ impl BattleData {
 
         let mut target_pt = TargetPt::new();
         target_pt.target_type = TargetType::Cell as u32;
+        target_pt.target_value = cell_id;
         au.targets.push(target_pt);
         Ok(None)
     }

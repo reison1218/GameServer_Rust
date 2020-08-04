@@ -1,5 +1,5 @@
 use crate::room::member::Member;
-use crate::room::room::{MemberLeaveNoticeType, RoomMemberNoticeType, RoomState};
+use crate::room::room::{MemberLeaveNoticeType, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;

@@ -131,10 +131,12 @@ pub enum ClientCode{
     BattleStartedNotice = 10030,
     //行动推送
     ActionNotice = 10031,
+    //turn结算推送
+    BattleTurnNotice = 10032,
     //地图刷新推送
-    MapRefreshNotice = 10032,
+    MapRefreshNotice = 10033,
     //结算推送
-    SettlementNotice = 10033,
+    SettlementNotice = 10034,
     //最大命令号
     Max = 20000,
 }

@@ -1,9 +1,10 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
+use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
 use crate::TEMPLATES;
-use log::{error, info, warn};
+use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, TargetPt};
@@ -14,7 +15,7 @@ pub struct Buff {
     pub id: u32,
     pub buff_temp: &'static BuffTemp,
     pub trigger_timesed: i8,   //已经触发过的次数
-    pub keep_times: i8,        //持续轮数
+    pub keep_times: i8,        //剩余持续轮数
     pub scope: Vec<Direction>, //buff的作用范围
 }
 
@@ -22,6 +23,20 @@ impl Buff {
     pub fn get_target(&self) -> TargetType {
         let target_type = TargetType::from(self.buff_temp.target);
         target_type
+    }
+
+    pub fn sub_trigger_timesed(&mut self) {
+        self.trigger_timesed -= 1;
+        if self.trigger_timesed < 0 {
+            self.trigger_timesed = 0;
+        }
+    }
+
+    pub fn sub_keep_times(&mut self) {
+        self.keep_times -= 1;
+        if self.keep_times < 0 {
+            self.keep_times = 0;
+        }
     }
 }
 
@@ -62,7 +77,7 @@ impl BattleData {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let cell = self.tile_map.map.get(index).unwrap();
-        let last_index = battle_cter.recently_open_cell_index as usize;
+        let last_index = battle_cter.recently_open_cell_index.unwrap();
         let last_cell = self.tile_map.map.get(last_index).unwrap();
         let cell_temp = TEMPLATES.get_cell_ref().get_temp(&cell.id).unwrap();
         for buff in cell.buff.iter() {
@@ -252,7 +267,7 @@ impl BattleData {
                     let mut other_aupt = ActionUnitPt::new();
                     other_aupt.from_user = other_cter.user_id;
                     other_aupt.action_type = ActionType::Buff as u32;
-                    other_aupt.action_value = buff.id;
+                    other_aupt.action_value.push(buff.id);
                     let mut target_pt = TargetPt::new();
                     target_pt.target_type = TargetType::AnyPlayer as u32;
                     target_pt.target_value = cter.user_id;
@@ -285,7 +300,7 @@ impl BattleData {
                     let mut self_aupt = ActionUnitPt::new();
                     self_aupt.from_user = user_id;
                     self_aupt.action_type = ActionType::Buff as u32;
-                    self_aupt.action_value = buff.id;
+                    self_aupt.action_value.push(buff.id);
                     let mut target_pt = TargetPt::new();
                     target_pt.target_type = TargetType::AnyPlayer as u32;
                     target_pt.target_value = other_cter.user_id;
@@ -302,5 +317,43 @@ impl BattleData {
             }
         }
         v
+    }
+}
+
+impl Find<Buff> for Vec<Buff> {
+    fn find(&self, key: usize) -> Option<&Buff> {
+        for buff in self.iter() {
+            if buff.id != key as u32 {
+                continue;
+            }
+            return Some(buff);
+        }
+        return None;
+    }
+
+    fn find_mut(&mut self, key: usize) -> Option<&mut Buff> {
+        for buff in self.iter_mut() {
+            if buff.id != key as u32 {
+                continue;
+            }
+            return Some(buff);
+        }
+        return None;
+    }
+}
+
+impl Delete<Buff> for Vec<Buff> {
+    fn delete(&mut self, key: usize) {
+        for index in 0..self.len() {
+            let res = self.get(index);
+            if res.is_none() {
+                continue;
+            }
+            let res = res.unwrap();
+            if res.id != key as u32 {
+                continue;
+            }
+            self.remove(index);
+        }
     }
 }

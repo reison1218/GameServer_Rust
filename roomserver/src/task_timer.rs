@@ -4,7 +4,6 @@ use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::room::room_model::RoomModel;
 use chrono::Local;
 use log::{error, info, warn};
-use rand::Rng;
 use serde_json::Value as JsonValue;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;

@@ -107,6 +107,7 @@ message TargetPt{
     uint32 effect_value = 4;//效果值
     repeated uint32 buffs = 5;//触发的额外buff
     repeated TriggerEffectPt passiveEffect = 6;	//触发的被动
+    repeated uint32 lost_buffs = 7;//目标失效的buff
 }
 
 //触发效果
@@ -119,6 +120,14 @@ message TriggerEffectPt{
 message ActionUnitPt{
     uint32 from_user = 1;//发起的玩家
     uint32 action_type = 2;//行动类型
-    uint32 action_value = 3;//行动对应类型的值
+    repeated uint32 action_value = 3;//行动对应类型的值
     repeated TargetPt targets = 4;//目标列表
+    repeated uint32 lost_buffs= 5;//玩家失效的buff
+}
+
+//buff结构体
+message BuffPt{
+    uint32 buff_id = 1;//buffid
+    uint32 trigger_timesed = 2;   //已经触发过的次数
+    uint32 keep_times = 3;//剩余持续轮数
 }

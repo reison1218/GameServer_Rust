@@ -15,14 +15,18 @@ pub enum EffectType {
     Cure = 3,
     ///减攻击伤害
     SubDamage = 4,
-    ///格挡攻击伤害
-    ParryAttackDamage = 5,
     ///技能减少cd
-    SubSkillCd = 6,
+    SubSkillCd = 5,
     ///获得道具
-    RewardItem = 7,
+    RewardItem = 6,
     ///增加技能cd
-    AddSkillCd = 8,
+    AddSkillCd = 7,
+}
+
+///被动触发效果类型
+pub enum TriggerEffectType {
+    ///触发buff
+    Buff = 1,
 }
 
 //技能消耗类型

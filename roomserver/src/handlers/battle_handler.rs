@@ -1,11 +1,9 @@
-use crate::battle::battle_enum::{ActionType, SkillConsumeType, TURN_DEFAULT_OPEN_CELL_TIMES};
+use crate::battle::battle_enum::{ActionType, SkillConsumeType};
 use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::CellType;
 use crate::room::room::{Room, RoomState};
-use log::{error, info, warn};
-use protobuf::reflect::ProtobufValue;
+use log::{error, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt::Debug;
@@ -50,17 +48,18 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let mut au = ActionUnitPt::new();
-    au.action_value = ca.value;
+    au.action_value.push(ca.value);
     au.from_user = user_id;
     let action_type = ca.get_action_type();
-    let mut target = ca.target;
+    let target = ca.target;
     let value = ca.value;
     //行为分支
     let action_type = ActionType::from(action_type);
     let res;
     match action_type {
         ActionType::None => {
-            res = anyhow::bail!("action_type is 0!");
+            warn!("action_type is 0!");
+            return Ok(());
         }
         ActionType::UseItem => {
             au.action_type = ActionType::UseItem as u32;
@@ -83,7 +82,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             res = attack(room, user_id, target, &mut au);
         }
         _ => {
-            res = anyhow::bail!("action_type is error!");
+            warn!("action_type is error!action_type:{:?}", action_type);
+            return Ok(());
         }
     }
 
@@ -112,9 +112,31 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let bytes = bytes.unwrap();
-    for member_id in rm.player_room.clone().keys() {
-        rm.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
+    for member_id in room.members.clone().keys() {
+        room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
     }
+
+    unsafe {
+        let room = room as *mut Room;
+        let battle_cter = room
+            .as_ref()
+            .unwrap()
+            .battle_data
+            .get_battle_cter(Some(user_id));
+
+        match battle_cter {
+            Ok(cter) => {
+                //如果没有剩余翻块次数了，就下一个turn
+                if cter.residue_open_times <= 0 && !cter.is_can_attack {
+                    room.as_mut().unwrap().battle_data.next_turn();
+                }
+            }
+            Err(e) => {
+                error!("{:?}", e);
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -273,7 +295,7 @@ fn skip_turn(
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
-    if battle_cter.recently_open_cell_index < 0 {
+    if battle_cter.recently_open_cell_index.is_none() {
         let str = format!("this player not open any cell yet!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

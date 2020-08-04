@@ -40,7 +40,7 @@ import "base.proto";
 //}
 
 //行动请求
-//cmd=20021
+//cmd=20031
 message C_ACTION{
     uint32 action_type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
     uint32 value = 2;//行动对应类型的值
@@ -59,16 +59,23 @@ message S_ACTION_NOTICE{
     repeated ActionUnitPt action_uints = 1;//行动单位
 }
 
-//地图刷新推送
+//turn玩家状态结算，turn开始的时候
 //cmd = 10032
+message S_BATTLE_TURN_NOTICE{
+    uint32 user_id = 1;//玩家id
+    repeated BuffPt buffs = 2;//玩家身上buff数据
+}
+
+//地图刷新推送
+//cmd = 10033
 message S_MAP_REFRESH_NOTICE{
-    uint32 tile_map_id = 2;//地图配置id
-    repeated uint32 cells = 3;//包含的块
-    repeated WorldCellPt world_cell = 4;//世界块
+    uint32 tile_map_id = 1;//地图配置id
+    repeated uint32 cells = 2;//包含的块
+    repeated WorldCellPt world_cell = 3;//世界块
 }
 
 //结算推送
-//cmd=10033
+//cmd=10034
 message S_SETTLEMENT_NOTICE{
     repeated uint32 user_id = 1;//玩家名次
 }

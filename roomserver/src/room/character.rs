@@ -1,16 +1,13 @@
 use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::{BattleCterState, TargetType};
+use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
+use crate::handlers::battle_handler::{Delete, Find};
 use crate::TEMPLATES;
 use log::warn;
-use std::collections::{HashMap, HashSet};
-use std::hash::{Hash, Hasher};
+use std::collections::HashMap;
 use tools::protos::base::{BattleCharacterPt, CharacterPt};
-use tools::templates::buff_temp::BuffTemp;
 use tools::templates::character_temp::CharacterTemp;
-use tools::templates::item_temp::ItemTemp;
-use tools::templates::skill_temp::SkillTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -43,31 +40,31 @@ impl Into<CharacterPt> for Character {
 
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
-    pub user_id: u32,                    //玩家id
-    pub cter_id: u32,                    //角色的配置id
-    pub atk: u32,                        //攻击力
-    pub hp: i32,                         //角色血量
-    pub defence: u32,                    //角色防御
-    pub energy: u32,                     //角色能量
-    pub element: u8,                     //角色元素
-    pub cell_index: usize,               //角色所在位置
-    pub skills: Vec<Skill>,              //玩家选择的主动技能id
-    pub passive_buffs: Vec<Buff>,        //被动技能id
-    pub target_id: u32,                  //玩家目标
-    pub buff_array: Vec<Buff>,           //角色身上的buff
-    pub state: u8,                       //角色状态
-    pub residue_open_times: u8,          //剩余翻地图块次数
-    pub turn_times: u32,                 //轮到自己的次数
-    pub is_can_attack: bool,             //是否可以攻击
-    pub items: HashMap<u32, Item>,       //角色身上的道具
-    pub recently_open_cell_index: isize, //最近一次翻开的地图块
-    pub hp_max: i32,                     //血上限
+    pub user_id: u32,                            //玩家id
+    pub cter_id: u32,                            //角色的配置id
+    pub atk: u32,                                //攻击力
+    pub hp: i32,                                 //角色血量
+    pub defence: u32,                            //角色防御
+    pub energy: u32,                             //角色能量
+    pub element: u8,                             //角色元素
+    pub cell_index: usize,                       //角色所在位置
+    pub skills: Vec<Skill>,                      //玩家选择的主动技能id
+    pub passive_buffs: Vec<Buff>,                //被动技能id
+    pub target_id: u32,                          //玩家目标
+    pub buff_array: Vec<Buff>,                   //角色身上的buff
+    pub state: u8,                               //角色状态
+    pub residue_open_times: u8,                  //剩余翻地图块次数
+    pub turn_times: u32,                         //轮到自己的次数
+    pub is_can_attack: bool,                     //是否可以攻击
+    pub items: HashMap<u32, Item>,               //角色身上的道具
+    pub recently_open_cell_index: Option<usize>, //最近一次翻开的地图块
+    pub hp_max: i32,                             //血上限
 }
 
 impl BattleCharacter {
     pub fn init(cter: &Character) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
-        battle_cter.recently_open_cell_index = -1;
+        battle_cter.recently_open_cell_index = None;
         let cter_id = cter.cter_id;
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
@@ -82,7 +79,7 @@ impl BattleCharacter {
                 anyhow::bail!(str)
             }
             let skill_temp = res.unwrap();
-            let mut skill = Skill::from(skill_temp);
+            let skill = Skill::from(skill_temp);
             battle_cter.skills.push(skill);
         }
         battle_cter.cell_index = 0;
@@ -106,7 +103,27 @@ impl BattleCharacter {
             let buff = Buff::from(buff_temp);
             battle_cter.passive_buffs.push(buff);
         }
+        battle_cter.reset_residue_open_times();
         Ok(battle_cter)
+    }
+
+    pub fn reset_residue_open_times(&mut self) {
+        self.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
+    }
+
+    pub fn trigger_attack_damge_gd(&mut self) -> (u32, u8) {
+        let gd_buff = self.buff_array.find_mut(2);
+        let mut buff_id = 0;
+        let mut trigger_timesed = 0;
+        if let Some(gd_buff) = gd_buff {
+            gd_buff.sub_trigger_timesed();
+            buff_id = gd_buff.id;
+            trigger_timesed = gd_buff.trigger_timesed as u8;
+        }
+        if buff_id > 0 && trigger_timesed == 0 {
+            self.buff_array.delete(buff_id as usize);
+        }
+        (buff_id, trigger_timesed)
     }
 
     ///校验角色是否死亡

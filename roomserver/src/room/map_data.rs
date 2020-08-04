@@ -1,10 +1,8 @@
 use crate::battle::battle_buff::Buff;
 use crate::TEMPLATES;
-use log::error;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::slice::Iter;
-use tools::templates::template::TemplatesMgr;
 
 pub enum CellType {
     InValid = 0,
@@ -184,7 +182,7 @@ impl TileMap {
                 let mut buff_array = Vec::new();
                 for buff_id in buffs {
                     let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
-                    let mut buff = Buff::from(buff_temp);
+                    let buff = Buff::from(buff_temp);
                     buff_array.push(buff);
                 }
                 cell.buff = buff_array;

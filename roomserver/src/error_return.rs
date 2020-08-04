@@ -1,10 +1,10 @@
-use log::{error, info, warn};
+use log::error;
 use protobuf::Message;
 use tools::cmd_code::ClientCode;
 use tools::protos::protocol::{S_MODIFY_NICK_NAME, S_SYNC_DATA, S_USER_LOGIN};
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_CHOOSE_CHARACTER, S_CHOOSE_INDEX, S_CHOOSE_SKILL, S_CHOOSE_TURN_ORDER,
-    S_EMOJI, S_KICK_MEMBER, S_LEAVE_ROOM, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING, S_START,
+    S_CHOOSE_CHARACTER, S_CHOOSE_INDEX, S_CHOOSE_SKILL, S_CHOOSE_TURN_ORDER, S_EMOJI,
+    S_KICK_MEMBER, S_LEAVE_ROOM, S_PREPARE_CANCEL, S_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;

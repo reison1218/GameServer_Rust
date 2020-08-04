@@ -738,6 +738,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let room = room.unwrap();
+    let room_state = *room.get_state();
     let member = room.get_member_mut(&user_id).unwrap();
     if member.chose_cter.cter_id == 0 {
         let str = format!(
@@ -752,6 +753,25 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let cter_id = member.chose_cter.cter_id;
 
     let cter = member.cters.get(&cter_id).unwrap();
+
+    //校验房间壮体啊
+    if &room_state != &RoomState::Await {
+        let str = format!("can not choice skill now!");
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
+
+    //校验成员状态
+    if member.state == MemberState::Ready as u8 {
+        let str = format!(
+            "this player already ready,can not choice skill now!user_id:{}",
+            user_id
+        );
+        warn!("{:?}", str.as_str());
+        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        return Ok(());
+    }
 
     let cter_temp = crate::TEMPLATES
         .get_character_ref()
