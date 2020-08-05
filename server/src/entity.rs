@@ -125,7 +125,7 @@ pub trait Entity: Send + Sync {
     ///获得数据
     fn get_data_mut(&mut self) -> &mut JsonValue;
     ///初始化函数，注意，这里函数返回地方加上了where从句限定方式，用于规避"trait object safe"问题
-    /// 当使用"trait object"的时候，只允许"Sized"的类型数据，并且函数前面参数部分必须包含self参数
+    /// 当使用"trait object"的时候，只允许"?Sized"的类型数据，并且函数前面参数部分必须包含self参数
     /// 这里加上从句是让编译器在处理"trait object"的时候，无视这个函数。
     fn init(user_id: u32, tem_id: Option<u32>, js: JsonValue) -> Self
     where
