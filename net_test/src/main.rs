@@ -3,6 +3,7 @@ mod tcp_client;
 mod web_socket;
 mod mio_test;
 mod map;
+mod test_async;
 use serde_json::json;
 use std::time::{Duration, SystemTime};
 use protobuf::Message;
@@ -63,6 +64,8 @@ use futures::SinkExt;
 use std::borrow::{Borrow, BorrowMut};
 use std::hash::Hasher;
 use std::rc::Rc;
+use futures::join;
+use crate::test_async::async_main;
 
 
 #[macro_use]
@@ -215,6 +218,9 @@ struct Foo {
 fn main() -> anyhow::Result<()> {
     let foo = Foo{x:1};
     let mut rc = Rc::new(foo);
+
+
+    block_on(async_main());
 
     //test_unsafe();
     //

@@ -1072,10 +1072,7 @@ impl Room {
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u32;
         let mut is_open_world_cell = self.setting.is_world_tile;
-        //todo 地处方便客户端调试，之后要记得干掉
-        is_open_world_cell = true;
         let tmd = TileMap::init(member_count, is_open_world_cell)?;
-        info!("生成地图{:?}", tmd.clone());
         Ok(tmd)
     }
 

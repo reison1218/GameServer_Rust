@@ -115,15 +115,17 @@ impl BattleData {
                 }
                 //状态改为可以进行攻击
                 battle_cter.is_can_attack = true;
+                //如果配对了，则清除上一次翻的地图块
+                battle_cter.recently_open_cell_index = None;
+            } else {
+                //更新最近一次翻的下标
+                battle_cter.recently_open_cell_index = Some(index);
             }
             //处理地图块额外其他的buff
             self.handler_cell_extra_buff(user_id, index);
 
             //处理移动后的事件
             let v = self.handler_cter_move(user_id, index);
-
-            //更新最近一次翻的下标
-            battle_cter.recently_open_cell_index = Some(index);
 
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
@@ -197,6 +199,10 @@ impl BattleData {
             target_pt.target_type = TargetType::Cell as u32;
             target_pt.target_value = recently_open_cell_index.unwrap() as u32;
             au.targets.push(target_pt);
+            println!(
+                "=======================================user:{} open cell pair! last_cell:{},now_cell:{}",
+                battle_cter.user_id, recently_open_cell_index.unwrap() as u32, index
+            );
         }
         is_pair
     }
@@ -284,6 +290,11 @@ impl BattleData {
             anyhow::bail!(str)
         }
         let target_cter = target_cter.unwrap();
+        if target_cter.user_id == user_id {
+            let str = format!("the attack target can not be Self!user_id:{}", user_id);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
+        }
         let mut res = damege - target_cter.defence as i32;
         let mut target_pt = TargetPt::new();
         let gd_buff = target_cter.trigger_attack_damge_gd();

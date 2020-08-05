@@ -124,7 +124,8 @@ impl TileMap {
             tmd.world_cell_map
                 .insert(index_value as u32, tile_map_temp.world_cell);
         }
-
+        //这里是为了去重，进行拷贝
+        let mut random_vec = TEMPLATES.get_cell_ref().type_vec.clone();
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
             let type_vec = TEMPLATES
@@ -134,8 +135,6 @@ impl TileMap {
                 .unwrap()
                 .clone();
             let mut size = 0;
-
-            let mut random_vec = TEMPLATES.get_cell_ref().type_vec.clone();
             'out: loop {
                 if size >= cell_rare.count {
                     break 'out;
@@ -160,6 +159,7 @@ impl TileMap {
                         size += 1;
                     }
                     cell_v.remove(index);
+                    //删掉选中的，进行去重
                     random_vec.get_mut(cell_type).unwrap().remove(&cell_id);
                 }
             }

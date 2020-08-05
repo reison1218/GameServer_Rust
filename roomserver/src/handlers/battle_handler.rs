@@ -20,17 +20,12 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = res.unwrap();
-    let next_user = room.get_turn_user(None);
-    if let Err(e) = next_user {
-        error!("{:?}", e);
-        return Ok(());
-    }
-    let next_user = next_user.unwrap();
-    if next_user != user_id {
-        return Ok(());
-    }
     //校验房间状态
     if room.get_state() != &RoomState::BattleStarted {
+        warn!(
+            "room state is not battle_started!room_id:{}",
+            room.get_room_id()
+        );
         return Ok(());
     }
     //判断是否是轮到该玩家操作
@@ -46,37 +41,48 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", res.err().unwrap());
         return Ok(());
     }
+    //客户端请求的actiontype
+    let action_type = ca.get_action_type();
+    //客户端请求对应的目标
+    let target = ca.target;
+    //客户端请求target对应的值
+    let value = ca.value;
 
+    //行动方actionunitpt
     let mut au = ActionUnitPt::new();
     au.action_value.push(ca.value);
     au.from_user = user_id;
-    let action_type = ca.get_action_type();
-    let target = ca.target;
-    let value = ca.value;
-    //行为分支
-    let action_type = ActionType::from(action_type);
+
     let res;
+    let action_type = ActionType::from(action_type);
+    //行为分支
     match action_type {
+        //无意义分支
         ActionType::None => {
             warn!("action_type is 0!");
             return Ok(());
         }
+        //使用道具
         ActionType::UseItem => {
             au.action_type = ActionType::UseItem as u32;
             res = use_item(room, user_id, value, &mut au);
         }
+        //跳过
         ActionType::Skip => {
             au.action_type = ActionType::Skip as u32;
             res = skip_turn(room, user_id, &mut au);
         }
+        //翻地图块
         ActionType::Open => {
             au.action_type = ActionType::Open as u32;
             res = open_cell(room, user_id, value as usize, &mut au);
         }
+        //使用技能
         ActionType::Skill => {
             au.action_type = ActionType::Skill as u32;
             res = use_skill(room, user_id, value, target, &mut au);
         }
+        //普通攻击
         ActionType::Attack => {
             au.action_type = ActionType::Attack as u32;
             res = attack(room, user_id, target, &mut au);
@@ -92,20 +98,20 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    //回给客户端
+    //回给客户端,添加action主动方
     let mut san = S_ACTION_NOTICE::new();
     san.action_uints.push(au);
 
+    //添加额外的行动方
     if let Ok(au_vec) = res {
         if let Some(v) = au_vec {
             for au in v {
                 san.action_uints.push(au);
             }
         }
-    } else {
-        return Ok(());
     }
 
+    //以下通知客户端结果
     let bytes = san.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
@@ -114,27 +120,6 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let bytes = bytes.unwrap();
     for member_id in room.members.clone().keys() {
         room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
-    }
-
-    unsafe {
-        let room = room as *mut Room;
-        let battle_cter = room
-            .as_ref()
-            .unwrap()
-            .battle_data
-            .get_battle_cter(Some(user_id));
-
-        match battle_cter {
-            Ok(cter) => {
-                //如果没有剩余翻块次数了，就下一个turn
-                if cter.residue_open_times <= 0 && !cter.is_can_attack {
-                    room.as_mut().unwrap().battle_data.next_turn();
-                }
-            }
-            Err(e) => {
-                error!("{:?}", e);
-            }
-        }
     }
 
     Ok(())
@@ -314,6 +299,10 @@ fn check_is_user_turn(rm: &Room, user_id: u32) -> bool {
     }
     let next_user = next_user.unwrap();
     if next_user != user_id {
+        warn!(
+            "next_user is not this user!next_user:{},user_id:{}",
+            next_user, user_id
+        );
         return false;
     }
     true
