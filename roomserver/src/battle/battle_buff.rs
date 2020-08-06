@@ -17,6 +17,7 @@ pub struct Buff {
     pub trigger_timesed: i8,   //已经触发过的次数
     pub keep_times: i8,        //剩余持续轮数
     pub scope: Vec<Direction>, //buff的作用范围
+    pub permanent: bool,       //是否永久
 }
 
 impl Buff {
@@ -48,6 +49,7 @@ impl From<&'static BuffTemp> for Buff {
             keep_times: bt.keep_time as i8,
             buff_temp: bt,
             scope: Vec::new(),
+            permanent: bt.keep_time == 0 && bt.trigger_times == 0,
         };
         let mut v = Vec::new();
         let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
@@ -152,7 +154,7 @@ impl BattleData {
                 if target_type == TargetType::CellPlayer {
                     let last_cell_user = battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
                     if let Some(last_cell_user) = last_cell_user {
-                        last_cell_user.buff_array.push(buff.clone());
+                        last_cell_user.buffs.insert(buff.id, buff.clone());
                         target_pt.target_value = last_cell_user.user_id;
                         au.targets.push(target_pt.clone());
                     }
@@ -160,7 +162,7 @@ impl BattleData {
                 //给自己加
                 target_pt.target_value = user_id;
                 au.targets.push(target_pt);
-                battle_cter.buff_array.push(buff);
+                battle_cter.buffs.insert(buff.id, buff);
             //todo 通知客户端
             } else if [30032].contains(&buff.id) {
                 target_pt.effect_type = EffectType::AddSkillCd as u32;
@@ -177,9 +179,9 @@ impl BattleData {
                         if res != cter_index {
                             continue;
                         }
-                        for skill in cter.skills.iter_mut() {
-                            skill.add_cd(Some(buff.buff_temp.par1 as i8));
-                        }
+                        cter.skills
+                            .values_mut()
+                            .for_each(|skill| skill.add_cd(Some(buff.buff_temp.par1 as i8)));
                     }
                     target_pt.target_value = cter.user_id;
                     au.targets.push(target_pt.clone());
@@ -235,11 +237,11 @@ impl BattleData {
     pub unsafe fn handler_cell_extra_buff(&mut self, user_id: u32, index: usize) {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
-        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let _battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
 
         let cell = self.tile_map.map.get_mut(index).unwrap();
 
-        for buff in cell.extra_buff.iter() {}
+        for _buff in cell.extra_buff.iter() {}
     }
 
     ///处理角色移动之后的事件
@@ -253,7 +255,7 @@ impl BattleData {
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
             let cter_index = other_cter.cell_index as isize;
 
-            for buff in other_cter.buff_array.iter() {
+            for buff in other_cter.buffs.values_mut() {
                 if buff.id != 1 {
                     continue;
                 }
@@ -278,7 +280,7 @@ impl BattleData {
                     break;
                 }
                 if cter.is_died() {
-                    //todo  处理角色死亡事件
+                    cter.state = BattleCterState::Die as u8;
                     break;
                 }
             }
@@ -286,7 +288,7 @@ impl BattleData {
             if cter.user_id == other_cter.user_id {
                 continue;
             }
-            for buff in cter.buff_array.iter() {
+            for buff in cter.buffs.values_mut() {
                 if buff.id != 1 {
                     continue;
                 }
@@ -309,7 +311,7 @@ impl BattleData {
                     self_aupt.targets.push(target_pt);
                     v.push(self_aupt);
                     if other_cter.is_died() {
-                        //todo  处理角色死亡事件
+                        other_cter.state = BattleCterState::Die as u8;
                         break;
                     }
                     break;

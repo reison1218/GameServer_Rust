@@ -1,4 +1,4 @@
-use crate::battle::battle_enum::{ActionType, SkillConsumeType};
+use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
 use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
@@ -9,7 +9,7 @@ use std::borrow::{Borrow, BorrowMut};
 use std::fmt::Debug;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::ActionUnitPt;
-use tools::protos::battle::{C_ACTION, S_ACTION_NOTICE};
+use tools::protos::battle::{C_ACTION, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
 use tools::util::packet::Packet;
 
 ///行动请求
@@ -125,6 +125,72 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+///处理pos
+pub fn pos(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let res = rm.get_room_mut(&user_id);
+    if let None = res {
+        return Ok(());
+    }
+    let room = res.unwrap();
+    //校验房间状态
+    if room.get_state() != &RoomState::BattleStarted {
+        warn!(
+            "room state is not battle_started!room_id:{}",
+            room.get_room_id()
+        );
+        return Ok(());
+    }
+    //判断是否是轮到该玩家操作
+    let res = check_is_user_turn(room, user_id);
+    if !res {
+        warn!("now is not this user turn!user_id:{}", user_id);
+        return Ok(());
+    }
+
+    let battle_cter = room.get_battle_cter_mut_ref(&user_id);
+    if battle_cter.is_none() {
+        warn!("battle_cter is not find!user_id:{}", user_id);
+        return Ok(());
+    }
+    let battle_cter = battle_cter.unwrap();
+
+    let mut cp = C_POS::new();
+    let res = cp.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let skill_id = cp.skill_id;
+    let pos_type = cp.field_type;
+    //校验技能
+    let res = battle_cter.skills.contains_key(&skill_id);
+    if !res {
+        warn!(
+            "this battle_cter has no this skill!cter_id:{},skill_id:{}",
+            battle_cter.cter_id, skill_id
+        );
+        return Ok(());
+    }
+    //校验操作类型
+    if pos_type < PosType::ChangePos as u32 || pos_type > PosType::CancelPos as u32 {
+        warn!(
+            "the pos_type is error!user_id:{},pos_type:{}",
+            user_id, pos_type
+        );
+        return Ok(());
+    }
+    let mut spn = S_POS_NOTICE::new();
+    spn.set_user_id(user_id);
+    spn.set_field_type(pos_type);
+    spn.set_skill_id(skill_id);
+    let bytes = spn.write_to_bytes().unwrap();
+    for member_id in room.members.clone().keys() {
+        room.send_2_client(ClientCode::PosNotice, *member_id, bytes.clone());
+    }
+    Ok(())
+}
+
 ///使用道具
 fn use_item(
     rm: &mut Room,
@@ -165,26 +231,18 @@ fn open_cell(
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-    //校验这个地图块能不能翻
-    let cell = battle_data.tile_map.map.get(target_cell_index);
-    if cell.is_none() {
-        let str = format!("can not find this cell!index:{}", target_cell_index);
+    //校验地图块
+    let res = battle_data.check_choice_index(target_cell_index, true, true, true, false);
+    if let Err(e) = res {
+        let str = format!("{:?}", e);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-
     //校验剩余翻块次数
     if battle_cter.residue_open_times <= 0 {
         let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
-    }
-    let cell = cell.unwrap();
-    //校验地图块有效性
-    let res = battle_data.check_open_cell(cell);
-    if let Err(e) = res {
-        warn!("{:?}", e);
-        anyhow::bail!("")
     }
 
     let battle_data = rm.battle_data.borrow_mut();
@@ -224,7 +282,7 @@ fn use_skill(
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验技能id有效性
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
-    let skill = battle_cter.skills.get(skill_id as usize);
+    let skill = battle_cter.skills.get(&skill_id);
     if skill.is_none() {
         anyhow::bail!("this skill is none!skill_id:{}", user_id)
     }
@@ -280,7 +338,7 @@ fn skip_turn(
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
-    if battle_cter.recently_open_cell_index.is_none() {
+    if !battle_cter.is_opened_cell {
         let str = format!("this player not open any cell yet!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

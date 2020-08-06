@@ -6,7 +6,7 @@ use crate::room::map_data::{Cell, TileMap};
 use crate::room::room::MEMBER_MAX;
 use crate::task_timer::Task;
 use crate::TEMPLATES;
-use log::{error, warn};
+use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
@@ -93,7 +93,6 @@ impl BattleData {
         index: usize,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        //todo 此处应该计算技能cd
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             warn!("{:?}", e);
@@ -116,11 +115,12 @@ impl BattleData {
                 //状态改为可以进行攻击
                 battle_cter.is_can_attack = true;
                 //如果配对了，则清除上一次翻的地图块
-                battle_cter.recently_open_cell_index = None;
+                battle_cter.set_recently_open_cell_index(None);
             } else {
                 //更新最近一次翻的下标
-                battle_cter.recently_open_cell_index = Some(index);
+                battle_cter.set_recently_open_cell_index(Some(index));
             }
+            battle_cter.is_opened_cell = true;
             //处理地图块额外其他的buff
             self.handler_cell_extra_buff(user_id, index);
 
@@ -131,9 +131,11 @@ impl BattleData {
             battle_cter.residue_open_times -= 1;
 
             //玩家技能cd-1
-            for skill in battle_cter.skills.iter_mut() {
-                skill.sub_cd(None);
-            }
+            battle_cter
+                .skills
+                .values_mut()
+                .for_each(|skill| skill.sub_cd(None));
+
             Ok(Some(v))
         }
     }
@@ -171,8 +173,8 @@ impl BattleData {
                 .unwrap() as *mut Cell;
             let last_cell = &mut *last_cell;
             //如果配对了，则修改地图块配对的下标
-            if let Some(recently_open_cell_id) = recently_open_cell_id {
-                if cell_id == recently_open_cell_id {
+            if let Some(id) = recently_open_cell_id {
+                if cell_id == id {
                     cell.pair_index = Some(recently_open_cell_index as usize);
                     last_cell.pair_index = Some(index);
                     is_pair = true;
@@ -199,9 +201,11 @@ impl BattleData {
             target_pt.target_type = TargetType::Cell as u32;
             target_pt.target_value = recently_open_cell_index.unwrap() as u32;
             au.targets.push(target_pt);
-            println!(
-                "=======================================user:{} open cell pair! last_cell:{},now_cell:{}",
-                battle_cter.user_id, recently_open_cell_index.unwrap() as u32, index
+            info!(
+                "user:{} open cell pair! last_cell:{},now_cell:{}",
+                battle_cter.user_id,
+                recently_open_cell_index.unwrap() as u32,
+                index
             );
         }
         is_pair
@@ -221,22 +225,7 @@ impl BattleData {
             return;
         }
         let battle_cter = battle_cter.unwrap();
-        battle_cter.reset_residue_open_times();
-        battle_cter.is_can_attack = false;
-        //玩家身上所有buff持续轮次-1
-        let mut need_remove = Vec::new();
-        let mut index = 0_usize;
-        for buff in battle_cter.buff_array.iter_mut() {
-            buff.sub_keep_times();
-            if buff.keep_times <= 0 {
-                need_remove.push(index);
-            }
-            index += 1;
-        }
-        //删除buff
-        for index in need_remove {
-            battle_cter.buff_array.remove(index);
-        }
+        battle_cter.turn_reset();
     }
 
     ///发送战斗turn推送
@@ -249,13 +238,14 @@ impl BattleData {
         let cter = cter.unwrap();
         let mut sbtn = S_BATTLE_TURN_NOTICE::new();
         sbtn.user_id = cter.user_id;
-        for buff in cter.buff_array.iter() {
+        cter.buffs.values().for_each(|buff| {
             let mut buff_pt = BuffPt::new();
             buff_pt.buff_id = buff.id;
             buff_pt.trigger_timesed = buff.trigger_timesed as u32;
             buff_pt.keep_times = buff.keep_times as u32;
             sbtn.buffs.push(buff_pt);
-        }
+        });
+
         let bytes = sbtn.write_to_bytes().unwrap();
         for user_id in self.battle_cter.clone().keys() {
             self.send_2_client(ClientCode::BattleTurnNotice, *user_id, bytes.clone());
@@ -275,12 +265,14 @@ impl BattleData {
         let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let damege = self.calc_damage(user_id);
         let mut aoe_buff: Option<u32> = None;
-        for buff in cter.buff_array.iter() {
-            if buff.id != 4 {
-                continue;
-            }
-            aoe_buff = Some(buff.id);
-        }
+
+        cter.buffs
+            .values()
+            .filter(|buff| buff.id == 4)
+            .for_each(|buff| {
+                aoe_buff = Some(buff.id);
+            });
+
         let target_user = targets.get(0).unwrap();
 
         let target_cter = battle_cters.as_mut().unwrap().get_mut(target_user);
@@ -435,7 +427,7 @@ impl BattleData {
                 self.get_battle_cter_mut(Some(user_id)).unwrap() as *mut BattleCharacter;
             let battle_cter = battle_cter_ptr.as_mut().unwrap();
             //战斗角色身上的技能
-            let skill = battle_cter.skills.get_mut(skill_id as usize).unwrap();
+            let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
             //校验cd
             if skill.cd_times > 0 {
                 let str = format!(
@@ -459,8 +451,8 @@ impl BattleData {
 
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
-            if !res {
-                let str = "target_array check fail!".to_owned();
+            if let Err(e) = res {
+                let str = format!("{:?}", e);
                 warn!("{:?}", str.as_str());
                 anyhow::bail!(str)
             }

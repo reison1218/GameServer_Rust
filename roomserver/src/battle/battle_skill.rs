@@ -1,7 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType};
-use crate::handlers::battle_handler::Find;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
 use crate::TEMPLATES;
@@ -134,20 +133,14 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //校验index合法性
-        let cell = self.tile_map.map.get(index);
-        if cell.is_none() {
-            let str = format!("show_index cell is none!index:{}", index);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!(str)
-        }
-        //校验index合法性
-        let cell = cell.unwrap();
-        let res = self.check_open_cell(cell);
+        let res = self.check_choice_index(index, true, true, true, false);
         if let Err(e) = res {
             let str = format!("show_index {:?}", e);
             warn!("{:?}", str.as_str());
             anyhow::bail!(str)
         }
+
+        let cell = self.tile_map.map.get(index).unwrap();
         let cell_id = cell.id;
         //todo 下发给客户端
 
@@ -224,7 +217,7 @@ impl BattleData {
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let skill = battle_cter.skills.find(skill_id as usize).unwrap();
+        let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
         let res = TEMPLATES
             .get_skill_scope_ref()
             .get_temp(&skill.skill_temp.scope);
@@ -254,7 +247,7 @@ impl BattleData {
             //扣血
             let is_died = cter.sub_hp(skill.skill_temp.par1 as i32);
             if is_died {
-                //todo 触发角色死亡事件
+                cter.state = BattleCterState::Die as u8;
             }
         }
 
@@ -276,21 +269,18 @@ impl BattleData {
         target_index: usize,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let map = &mut self.tile_map.map as *mut Vec<Cell>;
-        //校验目标下标的地图块
-        let cell = map.as_mut().unwrap().get_mut(target_index);
-        if let None = cell {
-            let str = format!("there is no cell!index:{}", target_index);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
-        let cell = cell.unwrap();
-        //校验地图块
-        let res = self.check_open_cell(cell);
+        let res = self.check_choice_index(target_index, true, true, true, false);
         if let Err(e) = res {
-            warn!("{:?}", e);
-            anyhow::bail!("")
+            let str = format!("{:?}", e);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
         }
+
+        let map = &mut self.tile_map.map as *mut Vec<Cell>;
+
+        //校验目标下标的地图块
+        let cell = map.as_mut().unwrap().get_mut(target_index).unwrap();
+
         let battle_cter = self.get_battle_cter_mut(Some(user_id));
         if let Err(e) = battle_cter {
             error!("{:?}", e);
@@ -329,7 +319,7 @@ impl BattleData {
             anyhow::bail!("")
         }
 
-        let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
+        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
 
         let battle_cter = battle_cter.unwrap();
 
@@ -337,11 +327,12 @@ impl BattleData {
         target_pt.target_type = TargetType::AnyPlayer as u32;
         target_pt.target_value = battle_cter.user_id;
         target_pt.effect_type = EffectType::SubSkillCd as u32;
-        target_pt.effect_value = skill.par1;
+        target_pt.effect_value = skill_temp.par1;
         au.targets.push(target_pt);
-        for _skill in battle_cter.skills.iter_mut() {
-            _skill.sub_cd(Some(skill.par1 as i8));
-        }
+        battle_cter
+            .skills
+            .values_mut()
+            .for_each(|skill| skill.sub_cd(Some(skill_temp.par1 as i8)));
         Ok(None)
     }
 
@@ -384,7 +375,7 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
-        let skill = battle_cter.skills.find(skill_id as usize).unwrap();
+        let skill = battle_cter.skills.get(&skill_id).unwrap();
         let damage = skill.skill_temp.par1 as i32;
         let damage_deep = skill.skill_temp.par2 as i32;
         let scope_id = skill.skill_temp.scope;
@@ -469,7 +460,7 @@ impl BattleData {
                     anyhow::bail!("")
                 }
                 let cter = cter.unwrap();
-                cter.buff_array.push(buff);
+                cter.buffs.insert(buff.id, buff);
 
                 target_pt.target_type = TargetType::PlayerSelf as u32;
                 target_pt.target_value = user_id;

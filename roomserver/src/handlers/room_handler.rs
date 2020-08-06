@@ -902,9 +902,12 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
 
+    let res = room
+        .battle_data
+        .check_choice_index(index as usize, false, true, false, false);
     //校验参数
-    if !room.battle_data.check_choice_index(index as usize) {
-        let str = format!("the index is error!user_id:{}", user_id);
+    if let Err(e) = res {
+        let str = format!("{:?}", e);
         warn!("{:?}", str.as_str());
         err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());

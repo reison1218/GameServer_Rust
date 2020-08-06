@@ -1071,7 +1071,7 @@ impl Room {
 
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u32;
-        let mut is_open_world_cell = self.setting.is_world_tile;
+        let is_open_world_cell = self.setting.is_world_tile;
         let tmd = TileMap::init(member_count, is_open_world_cell)?;
         Ok(tmd)
     }
@@ -1133,7 +1133,7 @@ impl Room {
                     let buff_temp = buff_temp.unwrap();
                     let buff = Buff::from(buff_temp);
                     for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.buff_array.push(buff.clone());
+                        battle_cter.buffs.insert(buff.id, buff.clone());
                     }
                 }
             }

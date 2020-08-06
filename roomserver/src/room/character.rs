@@ -2,7 +2,6 @@ use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
-use crate::handlers::battle_handler::{Delete, Find};
 use crate::TEMPLATES;
 use log::warn;
 use std::collections::HashMap;
@@ -48,10 +47,10 @@ pub struct BattleCharacter {
     pub energy: u32,                             //角色能量
     pub element: u8,                             //角色元素
     pub cell_index: usize,                       //角色所在位置
-    pub skills: Vec<Skill>,                      //玩家选择的主动技能id
-    pub passive_buffs: Vec<Buff>,                //被动技能id
+    pub skills: HashMap<u32, Skill>,             //玩家选择的主动技能id
+    pub passive_buffs: HashMap<u32, Buff>,       //被动技能id
     pub target_id: u32,                          //玩家目标
-    pub buff_array: Vec<Buff>,                   //角色身上的buff
+    pub buffs: HashMap<u32, Buff>,               //角色身上的buff
     pub state: u8,                               //角色状态
     pub residue_open_times: u8,                  //剩余翻地图块次数
     pub turn_times: u32,                         //轮到自己的次数
@@ -59,6 +58,7 @@ pub struct BattleCharacter {
     pub items: HashMap<u32, Item>,               //角色身上的道具
     pub recently_open_cell_index: Option<usize>, //最近一次翻开的地图块
     pub hp_max: i32,                             //血上限
+    pub is_opened_cell: bool,                    //是否本回合翻过地图块
 }
 
 impl BattleCharacter {
@@ -80,7 +80,7 @@ impl BattleCharacter {
             }
             let skill_temp = res.unwrap();
             let skill = Skill::from(skill_temp);
-            battle_cter.skills.push(skill);
+            battle_cter.skills.insert(*skill_id, skill);
         }
         battle_cter.cell_index = 0;
         let cter_temp: Option<&CharacterTemp> =
@@ -98,21 +98,50 @@ impl BattleCharacter {
         battle_cter.element = cter_temp.element;
         battle_cter.energy = cter_temp.energy;
         battle_cter.hp_max = cter_temp.hp as i32;
-        for buff_id in cter_temp.passive_buff.iter() {
+
+        cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.passive_buffs.push(buff);
-        }
+            battle_cter.passive_buffs.insert(*buff_id, buff);
+        });
+
         battle_cter.reset_residue_open_times();
         Ok(battle_cter)
+    }
+
+    pub fn set_recently_open_cell_index(&mut self, index: Option<usize>) {
+        self.recently_open_cell_index = index;
     }
 
     pub fn reset_residue_open_times(&mut self) {
         self.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
     }
 
+    ///回合结算
+    pub fn turn_reset(&mut self) {
+        self.reset_residue_open_times();
+        self.is_can_attack = false;
+        self.is_opened_cell = false;
+        self.set_recently_open_cell_index(None);
+
+        //玩家身上所有buff持续轮次-1
+        let mut need_remove = Vec::new();
+
+        self.buffs.values_mut().for_each(|buff| {
+            buff.sub_keep_times();
+            if buff.keep_times <= 0 && !buff.permanent {
+                need_remove.push(buff.id);
+            }
+        });
+
+        //删除buff
+        for buff_id in need_remove {
+            self.buffs.remove(&buff_id);
+        }
+    }
+
     pub fn trigger_attack_damge_gd(&mut self) -> (u32, u8) {
-        let gd_buff = self.buff_array.find_mut(2);
+        let gd_buff = self.buffs.get_mut(&2);
         let mut buff_id = 0;
         let mut trigger_timesed = 0;
         if let Some(gd_buff) = gd_buff {
@@ -121,7 +150,7 @@ impl BattleCharacter {
             trigger_timesed = gd_buff.trigger_timesed as u8;
         }
         if buff_id > 0 && trigger_timesed == 0 {
-            self.buff_array.delete(buff_id as usize);
+            self.buffs.remove(&buff_id);
         }
         (buff_id, trigger_timesed)
     }
@@ -157,11 +186,15 @@ impl BattleCharacter {
         battle_cter_pt.hp = self.hp as u32;
         battle_cter_pt.defence = self.defence;
         battle_cter_pt.atk = self.atk;
-        let mut v = Vec::new();
-        for buff in self.buff_array.iter() {
-            v.push(buff.id);
-        }
-        battle_cter_pt.buffs = v;
+        self.buffs
+            .values()
+            .for_each(|buff| battle_cter_pt.buffs.push(buff.id));
+        self.skills
+            .keys()
+            .for_each(|skill_id| battle_cter_pt.skills.push(*skill_id));
+        self.items
+            .keys()
+            .for_each(|item_id| battle_cter_pt.items.push(*item_id));
         battle_cter_pt
     }
 }

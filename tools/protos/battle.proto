@@ -2,42 +2,89 @@ syntax = "proto3";
 package protos;
 import "base.proto";
 
-//enum ActionType {
-//    None = 0;
-//    Attack = 1;  //普通攻击
-//    UseItem = 2; //使用道具
-//    Skip = 3;    //跳过turn
-//    Open = 4;    //翻块
-//    Skill = 5;   //使用技能
-//    Buff = 6;    //触发buff
-//}
+// ///默认每个turn翻地图块次数
+// pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
-//enum EffectType {
-//    None = 0;
-//    Attacked = 1;  //受到普通攻击
-//    SkillDamge = 2; //受到技能伤害
-//    Skip = 3;    //跳过turn
-//    Open = 4;    //翻块
-//    Skill = 5;   //使用技能
-//    Buff = 6;    //触发buff
-//}
+// ///效果类型
+// pub enum EffectType {
+//     ///技能伤害
+//     SkillDamage = 1,
+//     ///攻击伤害
+//     AttackDamage = 2,
+//     ///治疗血量
+//     Cure = 3,
+//     ///减攻击伤害
+//     SubDamage = 4,
+//     ///技能减少cd
+//     SubSkillCd = 5,
+//     ///获得道具
+//     RewardItem = 6,
+//     ///增加技能cd
+//     AddSkillCd = 7,
+// }
+//
+// ///被动触发效果类型
+// pub enum TriggerEffectType {
+//     ///触发buff
+//     Buff = 1,
+// }
+//
+// //技能消耗类型
+// pub enum SkillConsumeType {
+//     Energy = 1, //能量
+// }
+//
+// ///回合行为类型
+// #[derive(Clone, Debug, PartialEq)]
+// pub enum BattleCterState {
+//     Alive = 0,
+//     Die = 1,
+// }
+//
+// ///回合行为类型
+// #[derive(Clone, Debug, PartialEq)]
+// pub enum ActionType {
+//     ///无效值
+//     None = 0,
+//     ///普通攻击
+//     Attack = 1,
+//     ///使用道具
+//     UseItem = 2,
+//     ///跳过turn
+//     Skip = 3,
+//     ///翻块
+//     Open = 4,
+//     ///使用技能
+//     Skill = 5,
+//     ///触发buff
+//     Buff = 6,
+// }
 
-///目标类型枚举
-//#[derive(Clone, Debug, PartialEq)]
-//pub enum TargetType {
-//        None = 0,            //无效目标
-//        Cell = 1,            //地图块
-//        AnyPlayer = 2,       //任意玩家
-//        PlayerSelf = 3,      //玩家自己
-//        AllPlayer = 4,       //所有玩家
-//        OtherAllPlayer = 5,  //除自己外所有玩家
-//        OtherAnyPlayer = 6,  //除自己外任意玩家
-//        UnOpenCell = 7,      //未翻开的地图块
-//        UnPairCell = 8,      //未配对的地图块
-//        NullCell = 9,        //空的地图块，上面没人
-//        UnPairNullCell = 10, //未配对的地图块
-//        CellPlayer = 11,     //地图块上的玩家
-//}
+// ///目标类型枚举
+// pub enum TargetType {
+//     None = 0,            //无效目标
+//     Cell = 1,            //地图块
+//     AnyPlayer = 2,       //任意玩家
+//     PlayerSelf = 3,      //玩家自己
+//     AllPlayer = 4,       //所有玩家
+//     OtherAllPlayer = 5,  //除自己外所有玩家
+//     OtherAnyPlayer = 6,  //除自己外任意玩家
+//     UnOpenCell = 7,      //未翻开的地图块
+//     UnPairCell = 8,      //未配对的地图块
+//     NullCell = 9,        //空的地图块，上面没人
+//     UnPairNullCell = 10, //未配对的地图块
+//     CellPlayer = 11,     //地图块上的玩家
+// }
+//
+// ///元素类型
+// pub enum ElementType {
+//     Nature = 1, //生命元素
+//     Earth = 2,  //土元素
+//     Water = 3,  //水元素
+//     Fire = 4,   //火元素
+// }
+
+
 
 //行动请求
 //cmd=20031
@@ -66,8 +113,23 @@ message S_BATTLE_TURN_NOTICE{
     repeated BuffPt buffs = 2;//玩家身上buff数据
 }
 
-//地图刷新推送
+//架势请求
+//cmd = 20032
+message C_POS{
+    uint32 type = 1;//1:切换架势，2:取消架势
+    uint32 skill_id = 2;//技能id
+}
+
+//架势请求
 //cmd = 10033
+message S_POS_NOTICE{
+    uint32 user_id = 1;//玩家ID
+    uint32 type = 2;//1:切换架势，2:取消架势
+    uint32 skill_id = 3;//技能id
+}
+
+//地图刷新推送
+//cmd = 10040
 message S_MAP_REFRESH_NOTICE{
     uint32 tile_map_id = 1;//地图配置id
     repeated uint32 cells = 2;//包含的块
@@ -75,7 +137,7 @@ message S_MAP_REFRESH_NOTICE{
 }
 
 //结算推送
-//cmd=10034
+//cmd=10041
 message S_SETTLEMENT_NOTICE{
     repeated uint32 user_id = 1;//玩家名次
 }

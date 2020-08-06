@@ -804,6 +804,423 @@ impl ::protobuf::reflect::ProtobufValue for S_BATTLE_TURN_NOTICE {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct C_POS {
+    // message fields
+    pub field_type: u32,
+    pub skill_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_POS {
+    fn default() -> &'a C_POS {
+        <C_POS as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_POS {
+    pub fn new() -> C_POS {
+        ::std::default::Default::default()
+    }
+
+    // uint32 type = 1;
+
+
+    pub fn get_field_type(&self) -> u32 {
+        self.field_type
+    }
+    pub fn clear_field_type(&mut self) {
+        self.field_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_field_type(&mut self, v: u32) {
+        self.field_type = v;
+    }
+
+    // uint32 skill_id = 2;
+
+
+    pub fn get_skill_id(&self) -> u32 {
+        self.skill_id
+    }
+    pub fn clear_skill_id(&mut self) {
+        self.skill_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_skill_id(&mut self, v: u32) {
+        self.skill_id = v;
+    }
+}
+
+impl ::protobuf::Message for C_POS {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.field_type = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.skill_id = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.field_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.skill_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.skill_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.field_type != 0 {
+            os.write_uint32(1, self.field_type)?;
+        }
+        if self.skill_id != 0 {
+            os.write_uint32(2, self.skill_id)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_POS {
+        C_POS::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "type",
+                    |m: &C_POS| { &m.field_type },
+                    |m: &mut C_POS| { &mut m.field_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "skill_id",
+                    |m: &C_POS| { &m.skill_id },
+                    |m: &mut C_POS| { &mut m.skill_id },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_POS>(
+                    "C_POS",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static C_POS {
+        static mut instance: ::protobuf::lazy::Lazy<C_POS> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(C_POS::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for C_POS {
+    fn clear(&mut self) {
+        self.field_type = 0;
+        self.skill_id = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_POS {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_POS {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_POS_NOTICE {
+    // message fields
+    pub user_id: u32,
+    pub field_type: u32,
+    pub skill_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_POS_NOTICE {
+    fn default() -> &'a S_POS_NOTICE {
+        <S_POS_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_POS_NOTICE {
+    pub fn new() -> S_POS_NOTICE {
+        ::std::default::Default::default()
+    }
+
+    // uint32 user_id = 1;
+
+
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
+    }
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
+    }
+
+    // uint32 type = 2;
+
+
+    pub fn get_field_type(&self) -> u32 {
+        self.field_type
+    }
+    pub fn clear_field_type(&mut self) {
+        self.field_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_field_type(&mut self, v: u32) {
+        self.field_type = v;
+    }
+
+    // uint32 skill_id = 3;
+
+
+    pub fn get_skill_id(&self) -> u32 {
+        self.skill_id
+    }
+    pub fn clear_skill_id(&mut self) {
+        self.skill_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_skill_id(&mut self, v: u32) {
+        self.skill_id = v;
+    }
+}
+
+impl ::protobuf::Message for S_POS_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.field_type = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.skill_id = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.field_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.skill_id != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.skill_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.user_id != 0 {
+            os.write_uint32(1, self.user_id)?;
+        }
+        if self.field_type != 0 {
+            os.write_uint32(2, self.field_type)?;
+        }
+        if self.skill_id != 0 {
+            os.write_uint32(3, self.skill_id)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_POS_NOTICE {
+        S_POS_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "user_id",
+                    |m: &S_POS_NOTICE| { &m.user_id },
+                    |m: &mut S_POS_NOTICE| { &mut m.user_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "type",
+                    |m: &S_POS_NOTICE| { &m.field_type },
+                    |m: &mut S_POS_NOTICE| { &mut m.field_type },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "skill_id",
+                    |m: &S_POS_NOTICE| { &m.skill_id },
+                    |m: &mut S_POS_NOTICE| { &mut m.skill_id },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_POS_NOTICE>(
+                    "S_POS_NOTICE",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static S_POS_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_POS_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(S_POS_NOTICE::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for S_POS_NOTICE {
+    fn clear(&mut self) {
+        self.user_id = 0;
+        self.field_type = 0;
+        self.skill_id = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_POS_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_POS_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct S_MAP_REFRESH_NOTICE {
     // message fields
     pub tile_map_id: u32,
@@ -1220,7 +1637,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     TION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.Acti\
     onUnitPtR\x0bactionUints\"U\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07user_\
     id\x18\x01\x20\x01(\rR\x06userId\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\
-    \x0e.protos.BuffPtR\x05buffs\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1e\
+    \x0e.protos.BuffPtR\x05buffs\"6\n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\
+    \x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\x07skillId\"V\
+    \n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\
+    \x03\x20\x01(\rR\x07skillId\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1e\
     \n\x0btile_map_id\x18\x01\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\x18\
     \x02\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.p\
     rotos.WorldCellPtR\tworldCell\".\n\x13S_SETTLEMENT_NOTICE\x12\x17\n\x07u\

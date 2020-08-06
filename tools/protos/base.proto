@@ -1,14 +1,6 @@
 syntax = "proto3";
 package protos;
 
-//enum EffectType{
-//    SkillDamage = 1;
-//    AttackDamage = 2;
-//    Cure = 3;
-//    SubDamage = 4;
-//    ParryAttackDamage = 5;
-//}
-
 //enum RoomTypePt{
 //    NONE = 0;         //无效占位数值，protobuf枚举必须包含0
 //    CUSTOM = 1;       //自定义房间
@@ -97,6 +89,8 @@ message BattleCharacterPt{
     uint32 hp = 4;                      //角色血量
     uint32 defence = 5;                 //角色防御
     repeated uint32 buffs = 6;          //角色身上的buff
+    repeated uint32 skills = 7;         //玩家选择的技能
+    repeated uint32 items = 8;          //玩家身上的道具
 }
 
 //受影响封装

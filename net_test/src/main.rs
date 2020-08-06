@@ -210,17 +210,20 @@ macro_rules! map{
     };
 }
 
+#[derive(Debug)]
 struct Foo {
     x: i32,
 }
 
 
 fn main() -> anyhow::Result<()> {
-    let foo = Foo{x:1};
-    let mut rc = Rc::new(foo);
+    // let foo = Foo{x:1};
+    // let mut rc = Rc::new(foo);
+    //
+    //
+    // block_on(async_main());
 
 
-    block_on(async_main());
 
     //test_unsafe();
     //

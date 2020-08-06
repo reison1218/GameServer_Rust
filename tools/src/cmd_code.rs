@@ -63,6 +63,8 @@ pub enum RoomCode{
 //--------------------------------------以下战斗相关---------------------------
     //请求行动
     Action = 20031,
+    //架势请求
+    Pos = 20032,
     //返回最大值
     Max = 30000,
 }
@@ -133,10 +135,12 @@ pub enum ClientCode{
     ActionNotice = 10031,
     //turn结算推送
     BattleTurnNotice = 10032,
+    //架势推送
+    PosNotice = 10033,
     //地图刷新推送
-    MapRefreshNotice = 10033,
+    MapRefreshNotice = 10040,
     //结算推送
-    SettlementNotice = 10034,
+    SettlementNotice = 10041,
     //最大命令号
     Max = 20000,
 }

@@ -4,6 +4,13 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 
+///pos操作类型
+#[derive(Clone, Debug, PartialEq)]
+pub enum PosType {
+    ChangePos = 1, //切换架势
+    CancelPos = 2, //取消架势
+}
+
 ///效果类型
 #[derive(Clone, Debug, PartialEq)]
 pub enum EffectType {
@@ -112,8 +119,8 @@ impl From<u32> for TargetType {
 ///元素类型
 pub enum ElementType {
     Nature = 1, //生命元素
-    Water = 2,  //水元素
-    Earth = 3,  //土元素
+    Earth = 2,  //土元素
+    Water = 3,  //水元素
     Fire = 4,   //火元素
 }
 

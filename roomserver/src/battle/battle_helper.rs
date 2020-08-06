@@ -1,7 +1,7 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::{ActionType, TargetType, TRIGGER_SCOPE_NEAR};
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, CellType};
+use crate::room::map_data::CellType;
 use crate::task_timer::{Task, TaskCmd};
 use log::{error, warn};
 use protobuf::{Message, RepeatedField};
@@ -83,13 +83,13 @@ impl BattleData {
     pub fn calc_damage(&self, user_id: u32) -> i32 {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
         let mut damage = battle_cter.atk;
-        for buff in battle_cter.buff_array.iter() {
-            //加攻击力的buff
-            if buff.id != 4 {
-                continue;
-            }
-            damage += buff.buff_temp.par1;
-        }
+
+        battle_cter
+            .buffs
+            .values()
+            .filter(|buff| buff.id == 4)
+            .for_each(|buff| damage += buff.buff_temp.par1);
+
         damage as i32
     }
 
@@ -140,7 +140,100 @@ impl BattleData {
         Ok(cter.unwrap())
     }
 
-    pub fn check_open_cell(&self, cell: &Cell) -> anyhow::Result<()> {
+    ///检查目标数组
+    pub fn check_target_array(
+        &self,
+        user_id: u32,
+        target_type: TargetType,
+        target_array: &[u32],
+    ) -> anyhow::Result<()> {
+        match target_type {
+            //无效目标
+            TargetType::None => {
+                let str = format!("this target_type is invaild!target_type:{:?}", target_type);
+                anyhow::bail!(str)
+            }
+            //任意玩家
+            TargetType::AnyPlayer => {
+                self.check_user_target(target_array, None)? //不包括自己的其他玩家
+            } //玩家自己
+            TargetType::PlayerSelf => {} //玩家自己
+            //全图玩家
+            TargetType::AllPlayer => self.check_user_target(target_array, None)?, //不包括自己的其他玩家
+            TargetType::OtherAllPlayer => {
+                //除自己所有玩家
+                self.check_user_target(target_array, Some(user_id))?
+            } //除自己外任意玩家
+            TargetType::OtherAnyPlayer => self.check_user_target(target_array, Some(user_id))?,
+            //地图块
+            TargetType::Cell => {
+                //校验地图块下标有效性
+                for index in target_array {
+                    let index = *index as usize;
+                    self.check_choice_index(index, false, true, false, false)?
+                }
+            }
+            //未翻开的地图块
+            TargetType::UnOpenCell => {
+                for index in target_array {
+                    self.check_choice_index(*index as usize, true, true, true, true)?;
+                }
+            } //未配对的地图块
+            TargetType::UnPairCell => {
+                for index in target_array {
+                    self.check_choice_index(*index as usize, true, true, true, true)?
+                }
+            } //空的地图块
+            TargetType::NullCell => {
+                for index in target_array {
+                    self.check_choice_index(*index as usize, true, true, false, true)?
+                }
+            } //空的地图块，上面没人
+            TargetType::UnPairNullCell => {
+                for index in target_array {
+                    let index = *index as usize;
+                    self.check_choice_index(index, false, false, false, true)?
+                }
+            } //地图块上的玩家
+            TargetType::CellPlayer => {}
+        }
+        Ok(())
+    }
+
+    ///检测目标玩家
+    pub fn check_user_target(&self, vec: &[u32], check_self_id: Option<u32>) -> anyhow::Result<()> {
+        for member_id in vec.iter() {
+            let member_id = *member_id;
+            //校验有没有
+            if !self.battle_cter.contains_key(&member_id) {
+                let str = format!("battle_cter is not find!user_id:{}", member_id);
+                anyhow::bail!(str)
+            }
+            //校验是不是自己
+            if check_self_id.is_some() && member_id == check_self_id.unwrap() {
+                let str = format!("target_user_id=self!target_user_id:{}", member_id);
+                anyhow::bail!(str)
+            }
+        }
+        Ok(())
+    }
+
+    //检测地图块是否选择
+    pub fn check_choice_index(
+        &self,
+        index: usize,
+        is_check_pair: bool,
+        is_check_world: bool,
+        is_check_locked: bool,
+        is_check_has_user: bool,
+    ) -> anyhow::Result<()> {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            let str = format!("this cell is not find!index:{}", index);
+            anyhow::bail!(str)
+        }
+        let cell = res.unwrap();
+
         if cell.id < CellType::Valid as u32 {
             let str = format!(
                 "auto_pair_cell, this is cell can not be choice!index:{}",
@@ -148,192 +241,29 @@ impl BattleData {
             );
             anyhow::bail!(str)
         }
-        if cell.is_world {
-            let str = format!(
-                "auto_pair_cell, world_cell can not be choice!index:{}",
-                cell.index
-            );
-            anyhow::bail!(str)
-        }
-        if cell.pair_index.is_some() {
+
+        let cell = res.unwrap();
+        if is_check_pair && cell.pair_index.is_some() {
             let str = format!(
                 "auto_pair_cell, this cell already pair!index:{}",
                 cell.index
             );
             anyhow::bail!(str)
         }
-        if cell.check_is_locked() {
-            let str = format!("auto_pair_cell, this cell is locked!index:{}", cell.index);
+
+        if is_check_world && cell.is_world {
+            let str = format!("world_cell can not be choice!index:{}", cell.index);
+            anyhow::bail!(str)
+        }
+        if is_check_locked && cell.check_is_locked() {
+            let str = format!("this cell is locked!index:{}", cell.index);
+            anyhow::bail!(str)
+        }
+        if is_check_has_user && cell.user_id > 0 {
+            let str = format!("this cell has user!index:{}", cell.index);
             anyhow::bail!(str)
         }
         Ok(())
-    }
-
-    ///检查目标数组
-    pub fn check_target_array(
-        &self,
-        user_id: u32,
-        target_type: TargetType,
-        target_array: &Vec<u32>,
-    ) -> bool {
-        match target_type {
-            TargetType::None => return false, //无效目标
-            TargetType::Cell => {
-                //校验地图块下标有效性
-
-                for index in target_array {
-                    let index = *index;
-                    let res = self.tile_map.map.get(index as usize);
-                    if res.is_none() {
-                        return false;
-                    }
-                    let cell = res.unwrap();
-                    if cell.id <= CellType::Valid as u32 {
-                        return false;
-                    }
-                }
-                return true;
-            } //任意玩家
-            TargetType::AnyPlayer => {
-                //校验玩家id
-                let target_id = target_array.get(0);
-                if target_id.is_none() {
-                    return false;
-                }
-                let target_id = target_id.unwrap();
-                if !self.battle_cter.contains_key(target_id) {
-                    return false;
-                }
-                return true;
-            } //玩家自己
-            TargetType::PlayerSelf => {}      //玩家自己
-            //全图
-            TargetType::AllPlayer => {
-                for member_id in target_array {
-                    if !self.battle_cter.contains_key(&member_id) {
-                        return false;
-                    }
-                }
-                return true;
-            } //不包括自己的其他玩家
-            TargetType::OtherAllPlayer => {
-                for member_id in target_array {
-                    if member_id != &user_id && !self.battle_cter.contains_key(&user_id) {
-                        return false;
-                    }
-                }
-                return true;
-            } //除自己外任意玩家
-            TargetType::OtherAnyPlayer => {
-                let member_id = target_array.get(0);
-                if member_id.is_none() {
-                    return false;
-                }
-                let member_id = member_id.unwrap();
-                if member_id == &user_id {
-                    return false;
-                }
-                if !self.battle_cter.contains_key(&member_id) {
-                    return false;
-                }
-                return true;
-            } //未翻开的地图块
-            TargetType::UnOpenCell => {
-                for index in target_array {
-                    let index = *index;
-                    let cell = self.tile_map.map.get(index as usize);
-                    if cell.is_none() {
-                        return false;
-                    }
-                    let cell = cell.unwrap();
-                    if cell.id <= CellType::Valid as u32 {
-                        return false;
-                    }
-                    if cell.pair_index.is_some() {
-                        return false;
-                    }
-                }
-                return true;
-            } //未配对的地图块
-            TargetType::UnPairCell => {
-                for index in target_array {
-                    let index = *index;
-                    let cell = self.tile_map.map.get(index as usize);
-                    if cell.is_none() {
-                        return false;
-                    }
-                    let cell = cell.unwrap();
-                    if cell.id <= CellType::Valid as u32 {
-                        return false;
-                    }
-                    if cell.pair_index.is_some() {
-                        return false;
-                    }
-                }
-                return true;
-            } //空的地图块
-            TargetType::NullCell => {
-                for index in target_array {
-                    let index = *index;
-                    let cell = self.tile_map.map.get(index as usize);
-                    if cell.is_none() {
-                        return false;
-                    }
-                    let cell = cell.unwrap();
-                    if cell.id <= CellType::Valid as u32 {
-                        return false;
-                    }
-                    if cell.user_id != 0 {
-                        return false;
-                    }
-                }
-                return true;
-            } //空的地图块，上面没人
-            TargetType::UnPairNullCell => {
-                for index in target_array {
-                    let index = *index;
-                    let cell = self.tile_map.map.get(index as usize);
-                    if cell.is_none() {
-                        return false;
-                    }
-                    let cell = cell.unwrap();
-                    if cell.id <= CellType::Valid as u32 {
-                        return false;
-                    }
-                    if cell.user_id != 0 {
-                        return false;
-                    }
-                    if cell.pair_index.is_some() {
-                        return false;
-                    }
-                }
-                return true;
-            } //地图块上的玩家
-            TargetType::CellPlayer => {}
-        }
-        true
-    }
-
-    //检测地图块是否选择
-    pub fn check_choice_index(&self, index: usize) -> bool {
-        let res = self.tile_map.map.get(index);
-        if res.is_none() {
-            return false;
-        }
-        let cell = res.unwrap();
-        //校验地图块合法性
-        if cell.id < CellType::Valid as u32 {
-            return false;
-        }
-        //校验地图块是否被锁住
-        if cell.check_is_locked() {
-            return false;
-        }
-        //校验是否是世界块
-        if cell.is_world {
-            return false;
-        }
-        true
     }
 
     ///新建战斗回合定时器任务
