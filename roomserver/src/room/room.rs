@@ -1,5 +1,4 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_buff::Buff;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::member::{Member, MemberState};
@@ -1125,15 +1124,8 @@ impl Room {
                 }
                 let world_cell_temp = world_cell_temp.unwrap();
                 for buff_id in world_cell_temp.buff.iter() {
-                    let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id);
-                    if let Err(e) = buff_temp {
-                        error!("{:?}", e);
-                        continue;
-                    }
-                    let buff_temp = buff_temp.unwrap();
-                    let buff = Buff::from(buff_temp);
                     for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.buffs.insert(buff.id, buff.clone());
+                        battle_cter.add_buff(*buff_id);
                     }
                 }
             }

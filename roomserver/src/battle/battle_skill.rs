@@ -1,5 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
+use crate::battle::battle_enum::buff_type::{ADD_ATTACK, ADD_ATTACK_AND_AOE, SUB_ATTACK_DAMAGE};
 use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
@@ -446,9 +447,7 @@ impl BattleData {
         let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
         //先计算单体的
         let buff_id = skill_temp.buff as u32;
-        let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
-        let buff = Buff::from(buff_temp);
-        let buff_id = buff.id;
+
         let target_type = TargetType::from(skill_temp.target);
 
         let mut target_pt = TargetPt::new();
@@ -460,7 +459,8 @@ impl BattleData {
                     anyhow::bail!("")
                 }
                 let cter = cter.unwrap();
-                cter.buffs.insert(buff.id, buff);
+
+                cter.add_buff(buff_id);
 
                 target_pt.target_type = TargetType::PlayerSelf as u32;
                 target_pt.target_value = user_id;
@@ -485,8 +485,9 @@ impl BattleData {
                     warn!("{:?}", str.as_str());
                     anyhow::bail!("{:?}", str)
                 }
+                let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
+                let buff = Buff::from(buff_temp);
                 cell.extra_buff.push(buff);
-
                 target_pt.target_type = TargetType::UnPairNullCell as u32;
                 target_pt.target_value = index as u32;
                 target_pt.buffs.push(buff_id);

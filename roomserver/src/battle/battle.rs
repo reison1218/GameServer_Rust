@@ -106,12 +106,16 @@ impl BattleData {
             let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
             //处理配对和角色换位置逻辑
             is_pair = self.handler_cell_pair(user_id, index, au_ptr.as_mut().unwrap());
-            //处理配对成功触发buff逻辑
+
+            //处理翻地图块触发buff
+            let res =
+                self.open_cell_trigger_buff(user_id, index, au_ptr.as_mut().unwrap(), is_pair);
+            if let Err(e) = res {
+                anyhow::bail!("{:?}", e)
+            }
+
+            //处理配对成功与否后的数据
             if is_pair {
-                let res = self.handler_cell_pair_buff(user_id, index, au_ptr.as_mut().unwrap());
-                if let Err(e) = res {
-                    anyhow::bail!("{:?}", e)
-                }
                 //状态改为可以进行攻击
                 battle_cter.is_can_attack = true;
                 //如果配对了，则清除上一次翻的地图块
@@ -120,9 +124,10 @@ impl BattleData {
                 //更新最近一次翻的下标
                 battle_cter.set_recently_open_cell_index(Some(index));
             }
+
             battle_cter.is_opened_cell = true;
             //处理地图块额外其他的buff
-            self.handler_cell_extra_buff(user_id, index);
+            self.trigger_cell_extra_buff(user_id, index);
 
             //处理移动后的事件
             let v = self.handler_cter_move(user_id, index);
@@ -308,8 +313,10 @@ impl BattleData {
         target_pt.effect_type = EffectType::AttackDamage as u32;
         target_pt.effect_value = res as u32;
         //如果有抵挡攻击伤害的buff，并且触发次数为0了
-        if gd_buff.0 > 0 && gd_buff.1 == 0 {
+        if gd_buff.0 > 0 && gd_buff.1 {
             target_pt.lost_buffs.push(gd_buff.0);
+        } else {
+            target_cter.is_attacked = true;
         }
         au.targets.push(target_pt.clone());
         //检查aoebuff
@@ -369,8 +376,10 @@ impl BattleData {
                 }
                 target_pt.target_value = cter.user_id;
                 target_pt.effect_value = res as u32;
-                if gd_buff.0 > 0 && gd_buff.1 == 0 {
+                if gd_buff.0 > 0 && gd_buff.1 {
                     target_pt.lost_buffs.push(gd_buff.0);
+                } else {
+                    cter.is_attacked = true;
                 }
                 au.targets.push(target_pt.clone());
             }

@@ -25,6 +25,7 @@ pub struct Cell {
     pub index: usize,              //块的下标
     pub buff: Vec<Buff>,           //块的效果
     pub is_world: bool,            //是否世界块
+    pub element: u8,               //地图块的属性
     pub extra_buff: Vec<Buff>,     //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
     pub pair_index: Option<usize>, //与之配对的下标
@@ -177,6 +178,7 @@ impl TileMap {
             } else if cell_id > &(CellType::Valid as u32) {
                 let cell_temp = TEMPLATES.get_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(cell_temp.buff.iter());
+                cell.element = cell_temp.element;
             }
             if let Some(buffs) = buffs {
                 let mut buff_array = Vec::new();

@@ -84,20 +84,38 @@ impl BattleData {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
         let mut damage = battle_cter.atk;
 
-        battle_cter
-            .buffs
-            .values()
-            .filter(|buff| buff.id == 4)
-            .for_each(|buff| damage += buff.buff_temp.par1);
-
+        for (buff_id, times) in battle_cter.add_damage_buffs.iter() {
+            let buff = battle_cter.buffs.get(buff_id);
+            if buff.is_none() {
+                continue;
+            }
+            let buff = buff.unwrap();
+            for _ in 0..*times {
+                if buff_id == &1001 {
+                    damage += buff.buff_temp.par2;
+                } else {
+                    damage += buff.buff_temp.par1;
+                }
+            }
+        }
         damage as i32
     }
 
     ///计算减伤
     pub fn calc_reduce_damage(&self, user_id: u32) -> i32 {
         let battle_cter = self.battle_cter.get(&user_id).unwrap();
-        let value = battle_cter.defence;
-        //todo 此处应该加上角色身上的减伤buff
+        let mut value = battle_cter.defence;
+
+        for (buff_id, times) in battle_cter.sub_damage_buffs.iter() {
+            let buff = battle_cter.buffs.get(buff_id);
+            if buff.is_none() {
+                continue;
+            }
+            let buff = buff.unwrap();
+            for _ in 0..*times {
+                value += buff.buff_temp.par1;
+            }
+        }
         value as i32
     }
 

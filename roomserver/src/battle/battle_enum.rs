@@ -4,6 +4,33 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 
+///buff类型
+pub mod buff_type {
+    ///增加攻击力并变成AOE
+    pub static ADD_ATTACK_AND_AOE: [u32; 1] = [4];
+    ///增加攻击力
+    pub static ADD_ATTACK: [u32; 2] = [4, 7];
+    ///减伤buff
+    pub static SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
+    ///获得道具
+    pub static AWARD_ITEM: [u32; 5] = [10003, 30011, 30021, 30031, 30041];
+    ///配对恢复生命
+    pub static PAIR_CURE: [u32; 1] = [30012];
+    ///获得buff
+    pub static AWARD_BUFF: [u32; 1] = [30022];
+    ///相临技能cd增加
+    pub static NEAR_ADD_CD: [u32; 1] = [30032];
+    ///相临造成技能伤害
+    pub static NEAR_SKILL_DAMAGE: [u32; 1] = [30042];
+    ///相临造成技能伤害
+    /// 配对属性一样的地图块+hp
+    pub static WORLD_CELL_PAIR_ADD_HP: [u32; 1] = [9];
+    /// 翻开属性一样的地图块+攻击
+    pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
+    /// 翻开地图块干点啥，配对又干点啥
+    pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
+}
+
 ///pos操作类型
 #[derive(Clone, Debug, PartialEq)]
 pub enum PosType {
@@ -28,6 +55,8 @@ pub enum EffectType {
     RewardItem = 6,
     ///增加技能cd
     AddSkillCd = 7,
+    ///增加能量
+    AddEnergy = 8,
 }
 
 ///被动触发效果类型
