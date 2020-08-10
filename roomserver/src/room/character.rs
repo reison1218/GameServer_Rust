@@ -113,7 +113,7 @@ impl BattleCharacter {
 
     ///触发增加伤害buff
     pub fn trigger_add_damage_buff(&mut self, buff_id: u32) {
-        if self.add_damage_buffs.contains_key(&buff_id) {
+        if !self.add_damage_buffs.contains_key(&buff_id) {
             self.add_damage_buffs.insert(buff_id, 1);
         } else {
             let res = self.add_damage_buffs.get(&buff_id).unwrap();
@@ -124,7 +124,7 @@ impl BattleCharacter {
 
     ///触发减伤buff
     pub fn trigger_sub_damage_buff(&mut self, buff_id: u32) {
-        if self.sub_damage_buffs.contains_key(&buff_id) {
+        if !self.sub_damage_buffs.contains_key(&buff_id) {
             self.sub_damage_buffs.insert(buff_id, 1);
         } else {
             let res = self.sub_damage_buffs.get(&buff_id).unwrap();

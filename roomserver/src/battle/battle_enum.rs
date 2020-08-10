@@ -4,6 +4,28 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 
+///技能类型
+pub mod skill_type {
+    ///自动配对地图块
+    pub static AUTO_PAIR_CELL: [u32; 1] = [212];
+    ///上buff
+    pub static ADD_BUFF: [u32; 6] = [121, 211, 221, 311, 322, 20002];
+    ///地图块换位置
+    pub static CHANGE_INDEX: [u32; 1] = [111];
+    ///展示地图块
+    pub static SHOW_INDEX: [u32; 2] = [112, 20001];
+    ///移动玩家
+    pub static MOVE_USER: [u32; 1] = [222];
+    ///相临玩家造成技能伤害并恢复生命
+    pub static NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
+    ///技能伤害
+    pub static SKILL_DAMAGE: [u32; 2] = [20004, 20005];
+    ///技能aoe
+    pub static SKILL_AOE: [u32; 2] = [411, 421];
+    ///减技能cd
+    pub static RED_SKILL_CD: [u32; 1] = [20003];
+}
+
 ///buff类型
 pub mod buff_type {
     ///增加攻击力并变成AOE

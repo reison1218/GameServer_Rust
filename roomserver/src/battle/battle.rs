@@ -1,3 +1,7 @@
+use crate::battle::battle_enum::skill_type::{
+    ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
+    SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
+};
 use crate::battle::battle_enum::{
     ActionUnit, BattleCterState, EffectType, TargetType, TriggerEffectType,
 };
@@ -271,6 +275,7 @@ impl BattleData {
         let damege = self.calc_damage(user_id);
         let mut aoe_buff: Option<u32> = None;
 
+        //塞选出ape的buff
         cter.buffs
             .values()
             .filter(|buff| buff.id == 4)
@@ -467,7 +472,7 @@ impl BattleData {
             }
 
             //换地图块位置
-            if [111].contains(&skill_id) {
+            if CHANGE_INDEX.contains(&skill_id) {
                 if target_array.len() < 2 {
                     let str = format!(
                         "target_array size is error!skill_id:{},user_id:{}",
@@ -482,7 +487,7 @@ impl BattleData {
                 let source_index = *source_index as usize;
                 let target_index = *target_index as usize;
                 au_vec = self.change_index(source_index, target_index, au);
-            } else if [20001, 112].contains(&skill_id) {
+            } else if SHOW_INDEX.contains(&skill_id) {
                 //展示地图块
                 if target_array.is_empty() {
                     let str = format!(
@@ -494,14 +499,14 @@ impl BattleData {
                 }
                 let index = *target_array.get(0).unwrap() as usize;
                 au_vec = self.show_index(index, au);
-            } else if [121, 211, 221, 311, 322, 20002].contains(&skill_id) {
+            } else if ADD_BUFF.contains(&skill_id) {
                 //上持续性buff
                 au_vec = self.add_buff(user_id, skill_id, target_array, au);
-            } else if [212].contains(&skill_id) {
+            } else if AUTO_PAIR_CELL.contains(&skill_id) {
                 //将1个地图块自动配对。本回合内不能攻击。
                 let index = target_array.get(0).unwrap();
                 au_vec = self.auto_pair_cell(user_id, *index as usize, au);
-            } else if [222].contains(&skill_id) {
+            } else if MOVE_USER.contains(&skill_id) {
                 //选择一个玩家，将其移动到一个空地图块上。
                 if target_array.len() < 2 {
                     let str = format!(
@@ -514,29 +519,30 @@ impl BattleData {
                 let target_user = target_array.get(0).unwrap();
                 let target_index = target_array.get(1).unwrap();
                 au_vec = self.move_user(*target_user, *target_index as usize, au);
-            } else if [321].contains(&skill_id) {
+            } else if NEAR_SKILL_DAMAGE_AND_CURE.contains(&skill_id) {
                 //对你相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
                 au_vec = self.skill_damage_and_cure(user_id, battle_cter.cell_index, skill_id, au);
-            } else if [411, 421].contains(&skill_id) {
+            } else if SKILL_AOE.contains(&skill_id) {
                 //造成技能AOE伤害
                 au_vec = self.skill_aoe_damage(user_id, skill_id, target_array, au);
-            } else if [20004, 20005].contains(&skill_id) {
+            } else if SKILL_DAMAGE.contains(&skill_id) {
                 let target_user = target_array.get(0).unwrap();
                 //单体技能伤害
                 au_vec = self.single_skill_damage(skill_id, *target_user, au);
-            } else if [20003].contains(&skill_id) {
+            } else if RED_SKILL_CD.contains(&skill_id) {
                 //减目标技能cd
                 let target_user = target_array.get(0).unwrap();
                 au_vec = self.sub_cd(skill_id, *target_user, au);
             }
             //技能cd重制
             skill.reset_cd();
-            if let Ok(v) = au_vec {
-                if let Some(v) = v {
-                    return Ok(Some(v));
+
+            match au_vec {
+                Ok(v) => {
+                    return Ok(v);
                 }
+                Err(_) => Ok(None),
             }
-            Ok(None)
         }
     }
 }

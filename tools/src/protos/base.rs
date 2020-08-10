@@ -2644,7 +2644,7 @@ pub struct TargetPt {
     pub target_value: u32,
     pub effect_type: u32,
     pub effect_value: u32,
-    pub buffs: ::std::vec::Vec<u32>,
+    pub add_buffs: ::std::vec::Vec<u32>,
     pub passiveEffect: ::protobuf::RepeatedField<TriggerEffectPt>,
     pub lost_buffs: ::std::vec::Vec<u32>,
     // special fields
@@ -2723,29 +2723,29 @@ impl TargetPt {
         self.effect_value = v;
     }
 
-    // repeated uint32 buffs = 5;
+    // repeated uint32 add_buffs = 5;
 
 
-    pub fn get_buffs(&self) -> &[u32] {
-        &self.buffs
+    pub fn get_add_buffs(&self) -> &[u32] {
+        &self.add_buffs
     }
-    pub fn clear_buffs(&mut self) {
-        self.buffs.clear();
+    pub fn clear_add_buffs(&mut self) {
+        self.add_buffs.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_buffs(&mut self, v: ::std::vec::Vec<u32>) {
-        self.buffs = v;
+    pub fn set_add_buffs(&mut self, v: ::std::vec::Vec<u32>) {
+        self.add_buffs = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_buffs(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.buffs
+    pub fn mut_add_buffs(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.add_buffs
     }
 
     // Take field
-    pub fn take_buffs(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
+    pub fn take_add_buffs(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.add_buffs, ::std::vec::Vec::new())
     }
 
     // repeated .protos.TriggerEffectPt passiveEffect = 6;
@@ -2842,7 +2842,7 @@ impl ::protobuf::Message for TargetPt {
                     self.effect_value = tmp;
                 },
                 5 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.add_buffs)?;
                 },
                 6 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.passiveEffect)?;
@@ -2874,7 +2874,7 @@ impl ::protobuf::Message for TargetPt {
         if self.effect_value != 0 {
             my_size += ::protobuf::rt::value_size(4, self.effect_value, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.buffs {
+        for value in &self.add_buffs {
             my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         for value in &self.passiveEffect {
@@ -2902,7 +2902,7 @@ impl ::protobuf::Message for TargetPt {
         if self.effect_value != 0 {
             os.write_uint32(4, self.effect_value)?;
         }
-        for v in &self.buffs {
+        for v in &self.add_buffs {
             os.write_uint32(5, *v)?;
         };
         for v in &self.passiveEffect {
@@ -2973,9 +2973,9 @@ impl ::protobuf::Message for TargetPt {
                     |m: &mut TargetPt| { &mut m.effect_value },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "buffs",
-                    |m: &TargetPt| { &m.buffs },
-                    |m: &mut TargetPt| { &mut m.buffs },
+                    "add_buffs",
+                    |m: &TargetPt| { &m.add_buffs },
+                    |m: &mut TargetPt| { &mut m.add_buffs },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TriggerEffectPt>>(
                     "passiveEffect",
@@ -3010,7 +3010,7 @@ impl ::protobuf::Clear for TargetPt {
         self.target_value = 0;
         self.effect_type = 0;
         self.effect_value = 0;
-        self.buffs.clear();
+        self.add_buffs.clear();
         self.passiveEffect.clear();
         self.lost_buffs.clear();
         self.unknown_fields.clear();
@@ -3800,14 +3800,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x04\x20\x01(\rR\x02hp\x12\x18\n\x07d\
     efence\x18\x05\x20\x01(\rR\x07defence\x12\x14\n\x05buffs\x18\x06\x20\x03\
     (\rR\x05buffs\x12\x16\n\x06skills\x18\x07\x20\x03(\rR\x06skills\x12\x14\
-    \n\x05items\x18\x08\x20\x03(\rR\x05items\"\x86\x02\n\x08TargetPt\x12\x1f\
+    \n\x05items\x18\x08\x20\x03(\rR\x05items\"\x8d\x02\n\x08TargetPt\x12\x1f\
     \n\x0btarget_type\x18\x01\x20\x01(\rR\ntargetType\x12!\n\x0ctarget_value\
     \x18\x02\x20\x01(\rR\x0btargetValue\x12\x1f\n\x0beffect_type\x18\x03\x20\
     \x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\x04\x20\x01(\rR\x0beffec\
-    tValue\x12\x14\n\x05buffs\x18\x05\x20\x03(\rR\x05buffs\x12=\n\rpassiveEf\
-    fect\x18\x06\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\
-    \x12\x1d\n\nlost_buffs\x18\x07\x20\x03(\rR\tlostBuffs\";\n\x0fTriggerEff\
-    ectPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\
+    tValue\x12\x1b\n\tadd_buffs\x18\x05\x20\x03(\rR\x08addBuffs\x12=\n\rpass\
+    iveEffect\x18\x06\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffe\
+    ct\x12\x1d\n\nlost_buffs\x18\x07\x20\x03(\rR\tlostBuffs\";\n\x0fTriggerE\
+    ffectPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x14\n\x05value\
     \x18\x02\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfro\
     m_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\
     \x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0ba\

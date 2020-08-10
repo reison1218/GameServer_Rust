@@ -48,7 +48,7 @@ impl From<&'static SkillTemp> for Skill {
     fn from(skill_temp: &'static SkillTemp) -> Self {
         Skill {
             id: skill_temp.id,
-            cd_times: skill_temp.cd as i8,
+            cd_times: 0,
             skill_temp: skill_temp,
         }
     }
@@ -62,7 +62,6 @@ impl BattleData {
         target_index: usize,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let lock_skills = &TEMPLATES.get_skill_ref().lock_skills[..];
         let map_size = self.tile_map.map.len();
         //校验地图块
         if source_index > map_size || target_index > map_size {
@@ -73,39 +72,19 @@ impl BattleData {
             warn!("{:?}", str.as_str());
             anyhow::bail!(str)
         }
-        let source_cell = self.tile_map.map.get(source_index).unwrap();
-        let target_cell = self.tile_map.map.get(target_index).unwrap();
 
-        //无效块不能换，锁定不能换
-        if source_cell.id <= 1 || target_cell.id <= 1 {
-            let str = format!(
-                "index is error!source_index:{},target_index:{}",
-                source_index, target_index
-            );
-            warn!("{:?}", str.as_str());
-            anyhow::bail!(str)
+        //校验原下标
+        let res = self.check_choice_index(source_index, true, true, true, false);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            anyhow::bail!("")
         }
-        //已配对的块不能换
-        if source_cell.pair_index.is_some() || target_cell.pair_index.is_some() {
-            let str = format!("this cell is already pair!");
-            warn!("{:?}", str.as_str());
-            anyhow::bail!(str)
-        }
-        //锁定不能换
-        for skill in source_cell.buff.iter() {
-            if lock_skills.contains(&skill.id) {
-                let str = format!("this cell is already locked!source_index:{}", source_index);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!(str)
-            }
-        }
-        //锁定不能换
-        for skill in target_cell.buff.iter() {
-            if lock_skills.contains(&skill.id) {
-                let str = format!("this cell is already locked!target_index:{}", target_index);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!(str)
-            }
+
+        //校验目标下标
+        let res = self.check_choice_index(target_index, true, true, true, false);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            anyhow::bail!("")
         }
 
         //先删掉
@@ -464,7 +443,7 @@ impl BattleData {
 
                 target_pt.target_type = TargetType::PlayerSelf as u32;
                 target_pt.target_value = user_id;
-                target_pt.buffs.push(buff_id);
+                target_pt.add_buffs.push(buff_id);
             }
             TargetType::UnPairNullCell => {
                 let index = *target_array.get(0).unwrap() as usize;
@@ -490,7 +469,7 @@ impl BattleData {
                 cell.extra_buff.push(buff);
                 target_pt.target_type = TargetType::UnPairNullCell as u32;
                 target_pt.target_value = index as u32;
-                target_pt.buffs.push(buff_id);
+                target_pt.add_buffs.push(buff_id);
             }
             _ => {}
         }

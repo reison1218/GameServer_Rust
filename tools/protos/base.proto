@@ -99,8 +99,8 @@ message TargetPt{
     uint32 target_value = 2;//目标id
     uint32 effect_type = 3;//效果类型
     uint32 effect_value = 4;//效果值
-    repeated uint32 buffs = 5;//触发的额外buff
-    repeated TriggerEffectPt passiveEffect = 6;	//触发的被动
+    repeated uint32 add_buffs = 5;//对目标增加对buff
+    repeated TriggerEffectPt passiveEffect = 6;	//被动效果
     repeated uint32 lost_buffs = 7;//目标失效的buff
 }
 

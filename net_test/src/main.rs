@@ -217,6 +217,21 @@ struct Foo {
 
 
 fn main() -> anyhow::Result<()> {
+
+    let words:[u32;5] = [1,2,3,4,5];
+    match words {
+        // // Ignore everything but the last element, which must be "!".
+        // [.., "!"] => println!("!!!"),
+        //[aa @..,5] =>println!("test::{:?}",aa),
+        // `start` is a slice of everything except the last element, which must be "z".
+        [1, start@..] => println!("starts with: {:?}", start),
+
+
+        rest => println!("{:?}", rest),
+    }
+
+
+
     // let foo = Foo{x:1};
     // let mut rc = Rc::new(foo);
     //

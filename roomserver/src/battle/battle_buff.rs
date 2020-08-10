@@ -83,14 +83,15 @@ impl BattleData {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let cell = self.tile_map.map.get(index).unwrap();
-        let last_index = battle_cter.recently_open_cell_index.unwrap();
-        let last_cell = self.tile_map.map.get(last_index).unwrap();
+        let last_index = battle_cter.recently_open_cell_index;
         let cell_temp = TEMPLATES.get_cell_ref().get_temp(&cell.id).unwrap();
         for buff in cell.buff.iter() {
             let mut target_pt = TargetPt::new();
             target_pt.target_type = TargetType::AnyPlayer as u32;
             target_pt.target_value = user_id;
             if is_pair {
+                let last_index = last_index.unwrap();
+                let last_cell = self.tile_map.map.get(last_index).unwrap();
                 //获得道具
                 if AWARD_ITEM.contains(&buff.id) {
                     let item_id = buff.buff_temp.par1;
@@ -146,7 +147,7 @@ impl BattleData {
                 //todo 通知客户端
                 } else if AWARD_BUFF.contains(&buff.id) {
                     //获得一个buff
-                    target_pt.buffs.push(buff.id);
+                    target_pt.add_buffs.push(buff.id);
                     let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff.buff_temp.par1);
                     if let Err(e) = buff_temp {
                         error!("{:?}", e);
