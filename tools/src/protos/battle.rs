@@ -31,7 +31,7 @@ pub struct C_ACTION {
     // message fields
     pub action_type: u32,
     pub value: u32,
-    pub target: ::std::vec::Vec<u32>,
+    pub target_index: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -78,29 +78,29 @@ impl C_ACTION {
         self.value = v;
     }
 
-    // repeated uint32 target = 3;
+    // repeated uint32 target_index = 3;
 
 
-    pub fn get_target(&self) -> &[u32] {
-        &self.target
+    pub fn get_target_index(&self) -> &[u32] {
+        &self.target_index
     }
-    pub fn clear_target(&mut self) {
-        self.target.clear();
+    pub fn clear_target_index(&mut self) {
+        self.target_index.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_target(&mut self, v: ::std::vec::Vec<u32>) {
-        self.target = v;
+    pub fn set_target_index(&mut self, v: ::std::vec::Vec<u32>) {
+        self.target_index = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_target(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.target
+    pub fn mut_target_index(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.target_index
     }
 
     // Take field
-    pub fn take_target(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.target, ::std::vec::Vec::new())
+    pub fn take_target_index(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.target_index, ::std::vec::Vec::new())
     }
 }
 
@@ -128,7 +128,7 @@ impl ::protobuf::Message for C_ACTION {
                     self.value = tmp;
                 },
                 3 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.target)?;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.target_index)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -148,7 +148,7 @@ impl ::protobuf::Message for C_ACTION {
         if self.value != 0 {
             my_size += ::protobuf::rt::value_size(2, self.value, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.target {
+        for value in &self.target_index {
             my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
@@ -163,7 +163,7 @@ impl ::protobuf::Message for C_ACTION {
         if self.value != 0 {
             os.write_uint32(2, self.value)?;
         }
-        for v in &self.target {
+        for v in &self.target_index {
             os.write_uint32(3, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
@@ -216,9 +216,9 @@ impl ::protobuf::Message for C_ACTION {
                     |m: &mut C_ACTION| { &mut m.value },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "target",
-                    |m: &C_ACTION| { &m.target },
-                    |m: &mut C_ACTION| { &mut m.target },
+                    "target_index",
+                    |m: &C_ACTION| { &m.target_index },
+                    |m: &mut C_ACTION| { &mut m.target_index },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_ACTION>(
                     "C_ACTION",
@@ -241,7 +241,7 @@ impl ::protobuf::Clear for C_ACTION {
     fn clear(&mut self) {
         self.action_type = 0;
         self.value = 0;
-        self.target.clear();
+        self.target_index.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1469,7 +1469,7 @@ impl ::protobuf::reflect::ProtobufValue for S_MAP_REFRESH_NOTICE {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_SETTLEMENT_NOTICE {
     // message fields
-    pub user_id: ::std::vec::Vec<u32>,
+    pub settle_datas: ::protobuf::RepeatedField<super::base::SettleDataPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1486,34 +1486,39 @@ impl S_SETTLEMENT_NOTICE {
         ::std::default::Default::default()
     }
 
-    // repeated uint32 user_id = 1;
+    // repeated .protos.SettleDataPt settle_datas = 1;
 
 
-    pub fn get_user_id(&self) -> &[u32] {
-        &self.user_id
+    pub fn get_settle_datas(&self) -> &[super::base::SettleDataPt] {
+        &self.settle_datas
     }
-    pub fn clear_user_id(&mut self) {
-        self.user_id.clear();
+    pub fn clear_settle_datas(&mut self) {
+        self.settle_datas.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: ::std::vec::Vec<u32>) {
-        self.user_id = v;
+    pub fn set_settle_datas(&mut self, v: ::protobuf::RepeatedField<super::base::SettleDataPt>) {
+        self.settle_datas = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_user_id(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.user_id
+    pub fn mut_settle_datas(&mut self) -> &mut ::protobuf::RepeatedField<super::base::SettleDataPt> {
+        &mut self.settle_datas
     }
 
     // Take field
-    pub fn take_user_id(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.user_id, ::std::vec::Vec::new())
+    pub fn take_settle_datas(&mut self) -> ::protobuf::RepeatedField<super::base::SettleDataPt> {
+        ::std::mem::replace(&mut self.settle_datas, ::protobuf::RepeatedField::new())
     }
 }
 
 impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
     fn is_initialized(&self) -> bool {
+        for v in &self.settle_datas {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -1522,7 +1527,7 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.user_id)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.settle_datas)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1536,8 +1541,9 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.user_id {
-            my_size += ::protobuf::rt::value_size(1, *value, ::protobuf::wire_format::WireTypeVarint);
+        for value in &self.settle_datas {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1545,8 +1551,10 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.user_id {
-            os.write_uint32(1, *v)?;
+        for v in &self.settle_datas {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1587,10 +1595,10 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &S_SETTLEMENT_NOTICE| { &m.user_id },
-                    |m: &mut S_SETTLEMENT_NOTICE| { &mut m.user_id },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SettleDataPt>>(
+                    "settle_datas",
+                    |m: &S_SETTLEMENT_NOTICE| { &m.settle_datas },
+                    |m: &mut S_SETTLEMENT_NOTICE| { &mut m.settle_datas },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SETTLEMENT_NOTICE>(
                     "S_SETTLEMENT_NOTICE",
@@ -1611,7 +1619,7 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
 
 impl ::protobuf::Clear for S_SETTLEMENT_NOTICE {
     fn clear(&mut self) {
-        self.user_id.clear();
+        self.settle_datas.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1629,23 +1637,24 @@ impl ::protobuf::reflect::ProtobufValue for S_SETTLEMENT_NOTICE {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"Y\n\x08C_ACTION\x12\
+    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"d\n\x08C_ACTION\x12\
     \x1f\n\x0baction_type\x18\x01\x20\x01(\rR\nactionType\x12\x14\n\x05value\
-    \x18\x02\x20\x01(\rR\x05value\x12\x16\n\x06target\x18\x03\x20\x03(\rR\
-    \x06target\"U\n\x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\x01\
-    \x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"J\n\x0fS_AC\
-    TION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.Acti\
-    onUnitPtR\x0bactionUints\"U\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07user_\
-    id\x18\x01\x20\x01(\rR\x06userId\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\
-    \x0e.protos.BuffPtR\x05buffs\"6\n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\
-    \x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\x07skillId\"V\
-    \n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\
-    \x03\x20\x01(\rR\x07skillId\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1e\
-    \n\x0btile_map_id\x18\x01\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\x18\
-    \x02\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.p\
-    rotos.WorldCellPtR\tworldCell\".\n\x13S_SETTLEMENT_NOTICE\x12\x17\n\x07u\
-    ser_id\x18\x01\x20\x03(\rR\x06userIdb\x06proto3\
+    \x18\x02\x20\x01(\rR\x05value\x12!\n\x0ctarget_index\x18\x03\x20\x03(\rR\
+    \x0btargetIndex\"U\n\x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\
+    \x01\x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"J\n\x0f\
+    S_ACTION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.\
+    ActionUnitPtR\x0bactionUints\"U\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07u\
+    ser_id\x18\x01\x20\x01(\rR\x06userId\x12$\n\x05buffs\x18\x02\x20\x03(\
+    \x0b2\x0e.protos.BuffPtR\x05buffs\"6\n\x05C_POS\x12\x12\n\x04type\x18\
+    \x01\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\x07sk\
+    illId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06u\
+    serId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08skill_i\
+    d\x18\x03\x20\x01(\rR\x07skillId\"\x80\x01\n\x14S_MAP_REFRESH_NOTICE\x12\
+    \x1e\n\x0btile_map_id\x18\x01\x20\x01(\rR\ttileMapId\x12\x14\n\x05cells\
+    \x18\x02\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\
+    \x13.protos.WorldCellPtR\tworldCell\"N\n\x13S_SETTLEMENT_NOTICE\x127\n\
+    \x0csettle_datas\x18\x01\x20\x03(\x0b2\x14.protos.SettleDataPtR\x0bsettl\
+    eDatasb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

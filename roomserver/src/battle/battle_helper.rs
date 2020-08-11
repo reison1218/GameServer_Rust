@@ -14,20 +14,6 @@ use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
-    ///校验是否翻过块
-    pub fn check_user_is_opened_cell(&self) -> bool {
-        if self.turn_action.actions.is_empty() {
-            return false;
-        }
-        for action in self.turn_action.actions.iter() {
-            let action_type = ActionType::from(action.action_type as u32);
-            if action_type.eq(&ActionType::Open) {
-                continue;
-            }
-            return true;
-        }
-        return false;
-    }
     ///获得战斗角色可变借用指针
     pub fn get_battle_cter_mut(
         &mut self,

@@ -139,6 +139,14 @@ impl Room {
         Ok(room)
     }
 
+    pub fn get_member_vec(&self) -> Vec<u32> {
+        let mut v = Vec::new();
+        for member in self.members.keys() {
+            v.push(*member);
+        }
+        v
+    }
+
     ///判断选择是否能选
     pub fn is_can_choice_turn_now(&self, user_id: u32) -> bool {
         let res = self.get_choice_user(None);
@@ -239,10 +247,6 @@ impl Room {
 
     pub fn get_battle_cter_mut_ref(&mut self, key: &u32) -> Option<&mut BattleCharacter> {
         self.battle_data.battle_cter.get_mut(key)
-    }
-
-    pub fn is_battle_do_nothing(&self) -> bool {
-        self.battle_data.turn_action.actions.is_empty()
     }
 
     fn check_index_over(&mut self) -> bool {

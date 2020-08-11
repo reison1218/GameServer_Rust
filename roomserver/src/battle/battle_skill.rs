@@ -100,8 +100,7 @@ impl BattleData {
 
         //通知客户端
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::Cell as u32;
-        target_pt.target_value = source_index as u32;
+        target_pt.target_value.push(source_index as u32);
         au.targets.push(target_pt);
         Ok(None)
     }
@@ -123,10 +122,9 @@ impl BattleData {
         let cell = self.tile_map.map.get(index).unwrap();
         let cell_id = cell.id;
         //todo 下发给客户端
-
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::Cell as u32;
-        target_pt.target_value = cell_id;
+        target_pt.target_value.push(cell_id);
+        target_pt.target_value.push(cell.index as u32);
         au.targets.push(target_pt);
         Ok(None)
     }
@@ -139,6 +137,9 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //校验下标的地图块
+
+        let res = self.check_choice_index(target_index, false, false, false, true);
+
         let target_cell = self.tile_map.map.get_mut(target_index);
         if let None = target_cell {
             let str = format!("there is no cell!index:{}", target_index);
@@ -176,8 +177,7 @@ impl BattleData {
         last_cell.user_id = 0;
 
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::AnyPlayer as u32;
-        target_pt.target_value = target_user;
+        target_pt.target_value.push(target_index as u32);
         au.targets.push(target_pt);
 
         //处理移动后事件
@@ -216,12 +216,6 @@ impl BattleData {
         let v = res.unwrap();
         let mut add_hp = 0_u32;
         for user in v {
-            let mut target_pt = TargetPt::new();
-            target_pt.target_type = TargetType::AnyPlayer as u32;
-            target_pt.target_value = user;
-            target_pt.effect_type = EffectType::SkillDamage as u32;
-            target_pt.effect_value = skill.skill_temp.par1;
-            au.targets.push(target_pt);
             let cter = self.get_battle_cter_mut(Some(user)).unwrap();
             add_hp += skill.skill_temp.par1;
             //扣血
@@ -229,12 +223,17 @@ impl BattleData {
             if is_died {
                 cter.state = BattleCterState::Die as u8;
             }
+
+            let mut target_pt = TargetPt::new();
+            target_pt.target_value.push(cter.cell_index as u32);
+            target_pt.effect_type = EffectType::SkillDamage as u32;
+            target_pt.effect_value = skill.skill_temp.par1;
+            au.targets.push(target_pt);
         }
 
         //给自己加血
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::AnyPlayer as u32;
-        target_pt.target_value = user_id;
+        target_pt.target_value.push(battle_cter.cell_index as u32);
         target_pt.effect_type = EffectType::Cure as u32;
         target_pt.effect_value = add_hp as u32;
         au.targets.push(target_pt);
@@ -279,9 +278,19 @@ impl BattleData {
         battle_cter.is_can_attack = false;
 
         let mut target_pt = TargetPt::new();
-        target_pt.set_target_type(TargetType::Cell as u32);
-        target_pt.set_target_value(target_index as u32);
+        target_pt.target_value.push(target_index as u32);
         au.targets.push(target_pt);
+
+        //处理配对触发逻辑
+        let res = self.open_cell_trigger_buff(user_id, au, true);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return Ok(None);
+        }
+        let res = res.unwrap();
+        if let Some(res) = res {
+            return Ok(Some(vec![res]));
+        }
         Ok(None)
     }
 
@@ -304,8 +313,7 @@ impl BattleData {
         let battle_cter = battle_cter.unwrap();
 
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::AnyPlayer as u32;
-        target_pt.target_value = battle_cter.user_id;
+        target_pt.target_value.push(battle_cter.cell_index as u32);
         target_pt.effect_type = EffectType::SubSkillCd as u32;
         target_pt.effect_value = skill_temp.par1;
         au.targets.push(target_pt);
@@ -333,8 +341,7 @@ impl BattleData {
         let target_cter = target_cter.unwrap();
 
         let mut target_pt = TargetPt::new();
-        target_pt.target_type = TargetType::AnyPlayer as u32;
-        target_pt.target_value = target_cter.user_id;
+        target_pt.target_value.push(target_cter.cell_index as u32);
         target_pt.effect_type = EffectType::SkillDamage as u32;
         target_pt.effect_value = skill.par1;
         au.targets.push(target_pt);
@@ -391,12 +398,10 @@ impl BattleData {
             .unwrap();
 
         for member_id in v {
-            let mut target_pt = TargetPt::new();
-            target_pt.target_type = TargetType::AnyPlayer as u32;
-            target_pt.target_value = member_id;
-            target_pt.effect_type = EffectType::SkillDamage as u32;
-
             let cter = self.get_battle_cter_mut(Some(member_id)).unwrap();
+            let mut target_pt = TargetPt::new();
+            target_pt.target_value.push(cter.cell_index as u32);
+            target_pt.effect_type = EffectType::SkillDamage as u32;
             let is_died;
             //判断是否中心位置
             if cter.cell_index == center_index as usize {
@@ -441,8 +446,7 @@ impl BattleData {
 
                 cter.add_buff(buff_id);
 
-                target_pt.target_type = TargetType::PlayerSelf as u32;
-                target_pt.target_value = user_id;
+                target_pt.target_value.push(cter.cell_index as u32);
                 target_pt.add_buffs.push(buff_id);
             }
             TargetType::UnPairNullCell => {
@@ -467,8 +471,7 @@ impl BattleData {
                 let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
                 let buff = Buff::from(buff_temp);
                 cell.extra_buff.push(buff);
-                target_pt.target_type = TargetType::UnPairNullCell as u32;
-                target_pt.target_value = index as u32;
+                target_pt.target_value.push(index as u32);
                 target_pt.add_buffs.push(buff_id);
             }
             _ => {}

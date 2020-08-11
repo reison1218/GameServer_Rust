@@ -174,18 +174,3 @@ pub enum ElementType {
     Water = 3,  //水元素
     Fire = 4,   //火元素
 }
-
-///行动单位
-#[derive(Clone, Debug, Default)]
-pub struct ActionUnit {
-    pub team_id: u32,
-    pub user_id: u32,
-    pub turn_index: u32,
-    pub actions: Vec<Action>,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct Action {
-    pub action_type: u8,
-    pub action_value: u32,
-}

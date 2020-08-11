@@ -2,9 +2,7 @@ use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
     SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
 };
-use crate::battle::battle_enum::{
-    ActionUnit, BattleCterState, EffectType, TargetType, TriggerEffectType,
-};
+use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType, TriggerEffectType};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, TileMap};
 use crate::room::room::MEMBER_MAX;
@@ -12,10 +10,11 @@ use crate::task_timer::Task;
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{ActionUnitPt, BuffPt, TargetPt, TriggerEffectPt};
-use tools::protos::battle::S_BATTLE_TURN_NOTICE;
+use tools::protos::base::{ActionUnitPt, BuffPt, SettleDataPt, TargetPt, TriggerEffectPt};
+use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SETTLEMENT_NOTICE};
 use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
 
@@ -37,9 +36,9 @@ pub struct BattleData {
     pub choice_orders: [u32; 4],                    //选择顺序里面放玩家id
     pub next_choice_index: usize,                   //下一个选择的下标
     pub next_turn_index: usize,                     //下个turn的下标
-    pub turn_action: ActionUnit,                    //当前回合数据单元封装
     pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
+    pub rank_map: HashMap<u32, Vec<u32>>,           //排名  user_id
     pub turn_limit_time: u64,
     pub task_sender: crossbeam::Sender<Task>, //任务sender
     pub sender: TcpSender,                    //sender
@@ -52,13 +51,21 @@ impl BattleData {
             choice_orders: [0; 4],
             next_choice_index: 0,
             next_turn_index: 0,
-            turn_action: ActionUnit::default(),
             turn_orders: [0; 4],
             battle_cter: HashMap::new(),
+            rank_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
             task_sender,
             sender,
         }
+    }
+
+    pub fn get_battle_cters_vec(&self) -> Vec<u32> {
+        let mut v = Vec::new();
+        for id in self.battle_cter.keys() {
+            v.push(*id);
+        }
+        v
     }
 
     ///下个回合
@@ -108,12 +115,18 @@ impl BattleData {
             let au_ptr = au as *mut ActionUnitPt;
             let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
             let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-            //处理配对和角色换位置逻辑
-            is_pair = self.handler_cell_pair(user_id, index, au_ptr.as_mut().unwrap());
+
+            //先移动
+            let v = self.handler_cter_move(user_id, index);
+            //判断玩家死了没
+            if battle_cter.is_died() {
+                return Ok(Some(v));
+            }
+            //再配对
+            is_pair = self.handler_cell_pair(user_id, au_ptr.as_mut().unwrap());
 
             //处理翻地图块触发buff
-            let res =
-                self.open_cell_trigger_buff(user_id, index, au_ptr.as_mut().unwrap(), is_pair);
+            let res = self.open_cell_trigger_buff(user_id, au_ptr.as_mut().unwrap(), is_pair);
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }
@@ -124,6 +137,7 @@ impl BattleData {
                 battle_cter.is_can_attack = true;
                 //如果配对了，则清除上一次翻的地图块
                 battle_cter.set_recently_open_cell_index(None);
+                self.tile_map.un_pair_count += 2;
             } else {
                 //更新最近一次翻的下标
                 battle_cter.set_recently_open_cell_index(Some(index));
@@ -132,9 +146,6 @@ impl BattleData {
             battle_cter.is_opened_cell = true;
             //处理地图块额外其他的buff
             self.trigger_cell_extra_buff(user_id, index);
-
-            //处理移动后的事件
-            let v = self.handler_cter_move(user_id, index);
 
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
@@ -150,16 +161,12 @@ impl BattleData {
     }
 
     ///处理地图块配对逻辑
-    pub unsafe fn handler_cell_pair(
-        &mut self,
-        user_id: u32,
-        index: usize,
-        au: &mut ActionUnitPt,
-    ) -> bool {
+    pub unsafe fn handler_cell_pair(&mut self, user_id: u32, au: &mut ActionUnitPt) -> bool {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
 
+        let index = battle_cter.cell_index;
         let cell = self.tile_map.map.get_mut(index).unwrap() as *mut Cell;
         let cell = &mut *cell;
         let mut is_pair = false;
@@ -193,22 +200,12 @@ impl BattleData {
             }
         }
 
-        //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
-        if cell.user_id > 0 {
-            let target_cter = self.battle_cter.get_mut(&cell.user_id).unwrap();
-            target_cter.cell_index = battle_cter.cell_index;
-
-            let source_cell = self.tile_map.map.get_mut(battle_cter.cell_index).unwrap();
-            source_cell.user_id = target_cter.user_id;
-        }
-        //改变角色位置
-        battle_cter.cell_index = index;
-        cell.user_id = battle_cter.user_id;
-
+        //配对了就封装
         if is_pair && recently_open_cell_index.is_some() {
             let mut target_pt = TargetPt::new();
-            target_pt.target_type = TargetType::Cell as u32;
-            target_pt.target_value = recently_open_cell_index.unwrap() as u32;
+            target_pt
+                .target_value
+                .push(recently_open_cell_index.unwrap() as u32);
             au.targets.push(target_pt);
             info!(
                 "user:{} open cell pair! last_cell:{},now_cell:{}",
@@ -308,13 +305,10 @@ impl BattleData {
             target_pt.passiveEffect.push(te_pt);
         }
 
-        let is_died = target_cter.sub_hp(res);
-        if is_died {
-            target_cter.state = BattleCterState::Die as u8;
-        }
+        //扣血
+        self.deduct_hp(target_cter.user_id, res, true);
 
-        target_pt.target_type = TargetType::AnyPlayer as u32;
-        target_pt.target_value = target_cter.user_id;
+        target_pt.target_value.push(target_cter.cell_index as u32);
         target_pt.effect_type = EffectType::AttackDamage as u32;
         target_pt.effect_value = res as u32;
         //如果有抵挡攻击伤害的buff，并且触发次数为0了
@@ -358,9 +352,9 @@ impl BattleData {
                 if target_cter.user_id == user {
                     continue;
                 }
-                let cter = self.get_battle_cter_mut(Some(user));
-                if let Err(e) = cter {
-                    error!("{:?}", e);
+                let cter = battle_cters.as_mut().unwrap().get_mut(&user);
+                if let None = cter {
+                    error!("battle cter is not find!user:{}", user);
                     continue;
                 }
                 let cter = cter.unwrap();
@@ -375,11 +369,11 @@ impl BattleData {
                     te_pt.set_value(gd_buff.0);
                     target_pt.passiveEffect.push(te_pt);
                 }
-                let is_died = cter.sub_hp(res);
-                if is_died {
-                    cter.state = BattleCterState::Die as u8;
-                }
-                target_pt.target_value = cter.user_id;
+
+                //扣血
+                self.deduct_hp(cter.user_id, res, true);
+
+                target_pt.target_value.push(cter.cell_index as u32);
                 target_pt.effect_value = res as u32;
                 if gd_buff.0 > 0 && gd_buff.1 {
                     target_pt.lost_buffs.push(gd_buff.0);
@@ -544,5 +538,85 @@ impl BattleData {
                 Err(_) => Ok(None),
             }
         }
+    }
+
+    ///扣血
+    pub fn deduct_hp(&mut self, target: u32, value: i32, is_same_action: bool) {
+        let mut rank_max = self.rank_map.clone();
+        let rank_max = rank_max.keys().max();
+        let cter = self.battle_cter.get_mut(&target).unwrap();
+        let res = cter.sub_hp(value);
+
+        if res {
+            let mut rank = 0_u32;
+            if let Some(rank_max) = rank_max {
+                rank = *rank_max;
+            }
+            if rank_max.is_some() && !is_same_action {
+                rank += 1;
+            }
+            if !self.rank_map.contains_key(&rank) {
+                self.rank_map.insert(rank, Vec::new());
+            }
+            let v = self.rank_map.get_mut(&rank).unwrap();
+            v.push(target);
+        }
+    }
+
+    ///处理结算
+    pub unsafe fn handler_settle(&mut self) -> bool {
+        let allive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.state == BattleCterState::Alive as u8)
+            .count();
+        let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+        let battle_cters = battle_cters_prt.as_mut().unwrap();
+        let tile_map_prt = self.tile_map.borrow_mut() as *mut TileMap;
+        let tile_map = tile_map_prt.as_mut().unwrap();
+        //如果达到结算条件，则进行结算
+        if allive_count <= 1 {
+            let mut is_first = false;
+            let mut grade = 0_u32;
+            let mut ssn = S_SETTLEMENT_NOTICE::new();
+            for (rank, members) in self.rank_map.iter() {
+                if *rank == 1 {
+                    is_first = true;
+                } else {
+                    is_first = false;
+                }
+                for member_id in members {
+                    grade = 0;
+                    if is_first {
+                        let cter = battle_cters.get_mut(member_id).unwrap();
+                        cter.grade += 1;
+                        grade = cter.grade;
+                    }
+                    let mut smp = SettleDataPt::new();
+                    smp.user_id = *member_id;
+                    smp.rank = *rank;
+                    smp.grade = grade;
+                    ssn.settle_datas.push(smp);
+                }
+            }
+
+            let res = ssn.write_to_bytes();
+
+            match res {
+                Ok(bytes) => {
+                    let v = self.get_battle_cters_vec();
+                    for member_id in v {
+                        self.send_2_client(ClientCode::SettlementNotice, member_id, bytes.clone());
+                    }
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
+            }
+            return true;
+        }
+
+        if allive_count >= 2 && tile_map.un_pair_count <= 2 {}
+        return false;
     }
 }

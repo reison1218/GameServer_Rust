@@ -360,8 +360,16 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if next_user_id != user_id {
         return;
     }
+
+    let battle_cter = room.battle_data.get_battle_cter(Some(user_id));
+    if let Err(e) = battle_cter {
+        warn!("{:?}", e);
+        return;
+    }
+    let battle_cter = battle_cter.unwrap();
+
     //如果玩家啥都没做，就T出房间
-    if room.is_battle_do_nothing() {
+    if !battle_cter.is_opened_cell {
         room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
     }
 }

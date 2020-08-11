@@ -66,6 +66,7 @@ use std::hash::Hasher;
 use std::rc::Rc;
 use futures::join;
 use crate::test_async::async_main;
+use std::collections::btree_map::Range;
 
 
 #[macro_use]
@@ -216,19 +217,23 @@ struct Foo {
 }
 
 
+
+
 fn main() -> anyhow::Result<()> {
 
-    let words:[u32;5] = [1,2,3,4,5];
-    match words {
-        // // Ignore everything but the last element, which must be "!".
-        // [.., "!"] => println!("!!!"),
-        //[aa @..,5] =>println!("test::{:?}",aa),
-        // `start` is a slice of everything except the last element, which must be "z".
-        [1, start@..] => println!("starts with: {:?}", start),
+    // let words:[u32;5] = [1,2,3,4,5];
+    //
+    // let id = 2_u32;
+    // match id {
+    //     ss@ =>{
+    //
+    //     }
+    // }
 
+    let map:HashMap<u32,u32>= HashMap::new();
+    let res = map.keys().max();
+    println!("{:?}",res);
 
-        rest => println!("{:?}", rest),
-    }
 
 
 

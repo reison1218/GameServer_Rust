@@ -91,7 +91,7 @@ import "base.proto";
 message C_ACTION{
     uint32 action_type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
     uint32 value = 2;//行动对应类型的值
-    repeated uint32 target = 3;//目标 可以是块，可以是玩家，可以是自己
+    repeated uint32 target_index = 3;//目标 可以是块，可以是玩家，可以是自己
 }
 
 //战斗开始通知
@@ -139,5 +139,5 @@ message S_MAP_REFRESH_NOTICE{
 //结算推送
 //cmd=10041
 message S_SETTLEMENT_NOTICE{
-    repeated uint32 user_id = 1;//玩家名次
+    repeated SettleDataPt settle_datas = 1;//数据
 }

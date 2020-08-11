@@ -3,6 +3,7 @@ use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::{Room, RoomState};
+use crate::room::room_model::{BattleType, RoomModel, RoomType};
 use log::{error, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
@@ -33,6 +34,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if !res {
         return Ok(());
     }
+    let room_id = room.get_room_id();
+    let battle_type = room.setting.battle_type;
 
     //解析protobuf
     let mut ca = C_ACTION::new();
@@ -44,7 +47,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //客户端请求的actiontype
     let action_type = ca.get_action_type();
     //客户端请求对应的目标
-    let target = ca.target;
+    let target_index = ca.target_index;
     //客户端请求target对应的值
     let value = ca.value;
 
@@ -80,12 +83,12 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //使用技能
         ActionType::Skill => {
             au.action_type = ActionType::Skill as u32;
-            res = use_skill(room, user_id, value, target, &mut au);
+            res = use_skill(room, user_id, value, target_index, &mut au);
         }
         //普通攻击
         ActionType::Attack => {
             au.action_type = ActionType::Attack as u32;
-            res = attack(room, user_id, target, &mut au);
+            res = attack(room, user_id, target_index, &mut au);
         }
         _ => {
             warn!("action_type is error!action_type:{:?}", action_type);
@@ -122,6 +125,31 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
     }
 
+    //处理结算
+    unsafe {
+        let res = room.battle_data.handler_settle();
+        let room_type = room.get_room_type();
+        let room_type = RoomType::from(room_type);
+        //如果要结算,卸载数据
+        if res {
+            let v = room.get_member_vec();
+
+            match room_type {
+                RoomType::Match => {
+                    let res = rm.match_rooms.get_match_room_mut(&battle_type);
+                    res.rm_room(&room_id);
+                }
+                RoomType::Custom => {
+                    rm.custom_room.rm_room(&room_id);
+                }
+                _ => {}
+            }
+            for user_id in v {
+                rm.player_room.remove(&user_id);
+            }
+        } else {
+        }
+    }
     Ok(())
 }
 

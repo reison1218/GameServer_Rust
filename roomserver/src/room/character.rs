@@ -42,6 +42,7 @@ impl Into<CharacterPt> for Character {
 pub struct BattleCharacter {
     pub user_id: u32,                            //玩家id
     pub cter_id: u32,                            //角色的配置id
+    pub grade: u32,                              //等级
     pub atk: u32,                                //攻击力
     pub hp: i32,                                 //角色血量
     pub defence: u32,                            //角色防御
@@ -86,7 +87,7 @@ impl BattleCharacter {
     pub fn add_buff(&mut self, buff_id: u32) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
-            error!("buff_temp not find!buff_id:{}", buff_id);
+            error!("{:?}", e);
             return;
         }
         let buff_temp = buff_temp.unwrap();
@@ -140,6 +141,7 @@ impl BattleCharacter {
         let cter_id = cter.cter_id;
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
+        battle_cter.grade = cter.grade;
         battle_cter.target_id = 0;
         let skill_ref = TEMPLATES.get_skill_ref();
         let buff_ref = TEMPLATES.get_buff_ref();

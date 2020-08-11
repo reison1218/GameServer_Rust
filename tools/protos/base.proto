@@ -73,6 +73,7 @@ message NoticeMessPt{
 
 }
 
+
 //玩家角色数据
 message CharacterPt{
     uint32 cter_id = 1;//角色的配置id
@@ -95,13 +96,12 @@ message BattleCharacterPt{
 
 //受影响封装
 message TargetPt{
-    uint32 target_type = 1;//目标类型
-    uint32 target_value = 2;//目标id
-    uint32 effect_type = 3;//效果类型
-    uint32 effect_value = 4;//效果值
-    repeated uint32 add_buffs = 5;//对目标增加对buff
-    repeated TriggerEffectPt passiveEffect = 6;	//被动效果
-    repeated uint32 lost_buffs = 7;//目标失效的buff
+    repeated uint32 target_value = 1;//目标值
+    uint32 effect_type = 2;//效果类型
+    uint32 effect_value = 3;//效果值
+    repeated uint32 add_buffs = 4;//对目标增加对buff
+    repeated TriggerEffectPt passiveEffect = 5;	//被动效果
+    repeated uint32 lost_buffs = 6;//目标失效的buff
 }
 
 //触发效果
@@ -124,4 +124,11 @@ message BuffPt{
     uint32 buff_id = 1;//buffid
     uint32 trigger_timesed = 2;   //已经触发过的次数
     uint32 keep_times = 3;//剩余持续轮数
+}
+
+//结算玩家
+message SettleDataPt{
+    uint32 user_id = 1;//玩家id
+    uint32 grade = 2;//等级
+    uint32 rank = 3;//排名
 }

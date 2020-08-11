@@ -7,6 +7,7 @@ use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
+use crate::room::map_data::TileMap;
 use crate::TEMPLATES;
 use log::error;
 use std::borrow::BorrowMut;
@@ -76,19 +77,19 @@ impl BattleData {
     pub unsafe fn open_cell_trigger_buff(
         &mut self,
         user_id: u32,
-        index: usize,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) -> anyhow::Result<Option<ActionUnitPt>> {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let cell = self.tile_map.map.get(index).unwrap();
+        let index = battle_cter.cell_index;
+        let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
+        let cell = tile_map.as_mut().unwrap().map.get(index).unwrap();
         let last_index = battle_cter.recently_open_cell_index;
         let cell_temp = TEMPLATES.get_cell_ref().get_temp(&cell.id).unwrap();
         for buff in cell.buff.iter() {
             let mut target_pt = TargetPt::new();
-            target_pt.target_type = TargetType::AnyPlayer as u32;
-            target_pt.target_value = user_id;
+            target_pt.target_value.push(cell.index as u32);
             if is_pair {
                 let last_index = last_index.unwrap();
                 let last_cell = self.tile_map.map.get(last_index).unwrap();
@@ -119,12 +120,14 @@ impl BattleData {
                         let last_cell_user =
                             battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
                         if let Some(last_cell_user) = last_cell_user {
-                            target_pt.target_value = last_cell_user.user_id;
+                            target_pt
+                                .target_value
+                                .push(last_cell_user.cell_index as u32);
                             au.targets.push(target_pt.clone());
                             last_cell_user.items.insert(item_id, item.clone());
                         }
                     }
-                    target_pt.target_value = user_id;
+                    target_pt.target_value.push(index as u32);
                     au.targets.push(target_pt.clone());
                     battle_cter.items.insert(item_id, item);
                 } else if PAIR_CURE.contains(&buff.id) {
@@ -135,12 +138,14 @@ impl BattleData {
                         let last_cell_user =
                             battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
                         if let Some(last_cell_user) = last_cell_user {
-                            target_pt.target_value = last_cell_user.user_id;
+                            target_pt
+                                .target_value
+                                .push(last_cell_user.cell_index as u32);
                             au.targets.push(target_pt.clone());
                             last_cell_user.add_hp(buff.buff_temp.par1 as i32);
                         }
                     }
-                    target_pt.target_value = user_id;
+                    target_pt.target_value.push(index as u32);
                     au.targets.push(target_pt.clone());
                     //恢复生命值
                     battle_cter.add_hp(buff.buff_temp.par1 as i32);
@@ -163,12 +168,14 @@ impl BattleData {
                             battle_cters.as_mut().unwrap().get_mut(&last_cell.user_id);
                         if let Some(last_cell_user) = last_cell_user {
                             last_cell_user.buffs.insert(buff.id, buff.clone());
-                            target_pt.target_value = last_cell_user.user_id;
+                            target_pt
+                                .target_value
+                                .push(last_cell_user.cell_index as u32);
                             au.targets.push(target_pt.clone());
                         }
                     }
                     //给自己加
-                    target_pt.target_value = user_id;
+                    target_pt.target_value.push(index as u32);
                     au.targets.push(target_pt.clone());
                     battle_cter.buffs.insert(buff.id, buff);
                 //todo 通知客户端
@@ -191,7 +198,7 @@ impl BattleData {
                                 .values_mut()
                                 .for_each(|skill| skill.add_cd(Some(buff.buff_temp.par1 as i8)));
                         }
-                        target_pt.target_value = cter.user_id;
+                        target_pt.target_value.push(cter.cell_index as u32);
                         au.targets.push(target_pt.clone());
                     }
                 //todo 通知客户端
@@ -215,13 +222,10 @@ impl BattleData {
 
                     for user in v.iter() {
                         let cter = battle_cters.as_mut().unwrap().get_mut(user).unwrap();
-                        target_pt.target_value = *user;
+                        target_pt.target_value.push(cter.cell_index as u32);
                         au.targets.push(target_pt.clone());
                         //造成技能伤害
-                        let is_died = cter.sub_hp(buff.buff_temp.par1 as i32);
-                        if is_died {
-                            cter.state = BattleCterState::Die as u8;
-                        }
+                        self.deduct_hp(*user, buff.buff_temp.par1 as i32, true);
                     }
                 //todo 通知客户端
                 } else if [9].contains(&buff.id) {
@@ -254,9 +258,9 @@ impl BattleData {
                     energy += buff.buff_temp.par2;
                 }
                 battle_cter.energy = energy;
+                target_pt.target_value.push(index as u32);
                 target_pt.effect_type = EffectType::AddEnergy as u32;
-                target_pt.target_value = energy;
-                au.targets.push(target_pt.clone());
+                target_pt.effect_value = energy;
             }
         }
         Ok(None)
@@ -275,10 +279,29 @@ impl BattleData {
 
     ///处理角色移动之后的事件
     pub unsafe fn handler_cter_move(&mut self, user_id: u32, index: usize) -> Vec<ActionUnitPt> {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
+        let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
+        let last_index = battle_cter.cell_index;
+        //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
+        if cell.user_id > 0 {
+            let target_cter = self.battle_cter.get_mut(&cell.user_id).unwrap();
+            target_cter.cell_index = battle_cter.cell_index;
+
+            let source_cell = self.tile_map.map.get_mut(last_index).unwrap();
+            source_cell.user_id = target_cter.user_id;
+        } else {
+            //重制之前地图块上的玩家id
+            let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
+            last_cell.user_id = 0;
+        }
+        //改变角色位置
+        battle_cter.cell_index = index;
+        cell.user_id = battle_cter.user_id;
+
         let mut v = Vec::new();
         let index = index as isize;
-        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-        let cter = self.battle_cter.get_mut(&user_id).unwrap();
 
         //踩到别人到范围
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
@@ -293,31 +316,28 @@ impl BattleData {
                     if index != res {
                         continue;
                     }
-                    cter.sub_hp(buff.buff_temp.par1 as i32);
-
+                    self.deduct_hp(battle_cter.user_id, buff.buff_temp.par1 as i32, false);
                     let mut other_aupt = ActionUnitPt::new();
                     other_aupt.from_user = other_cter.user_id;
                     other_aupt.action_type = ActionType::Buff as u32;
                     other_aupt.action_value.push(buff.id);
                     let mut target_pt = TargetPt::new();
-                    target_pt.target_type = TargetType::AnyPlayer as u32;
-                    target_pt.target_value = cter.user_id;
+                    target_pt.target_value.push(battle_cter.cell_index as u32);
                     target_pt.effect_type = EffectType::SkillDamage as u32;
                     target_pt.effect_value = buff.buff_temp.par1;
                     other_aupt.targets.push(target_pt);
                     v.push(other_aupt);
                     break;
                 }
-                if cter.is_died() {
-                    cter.state = BattleCterState::Die as u8;
+                if battle_cter.is_died() {
                     break;
                 }
             }
             //别人进入自己的范围触发
-            if cter.user_id == other_cter.user_id {
+            if battle_cter.user_id == other_cter.user_id {
                 continue;
             }
-            for buff in cter.buffs.values_mut() {
+            for buff in battle_cter.buffs.values_mut() {
                 if buff.id != 1 {
                     continue;
                 }
@@ -333,16 +353,11 @@ impl BattleData {
                     self_aupt.action_type = ActionType::Buff as u32;
                     self_aupt.action_value.push(buff.id);
                     let mut target_pt = TargetPt::new();
-                    target_pt.target_type = TargetType::AnyPlayer as u32;
-                    target_pt.target_value = other_cter.user_id;
+                    target_pt.target_value.push(other_cter.cell_index as u32);
                     target_pt.effect_type = EffectType::SkillDamage as u32;
                     target_pt.effect_value = buff.buff_temp.par1;
                     self_aupt.targets.push(target_pt);
                     v.push(self_aupt);
-                    if other_cter.is_died() {
-                        other_cter.state = BattleCterState::Die as u8;
-                        break;
-                    }
                     break;
                 }
             }

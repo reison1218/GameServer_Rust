@@ -16,6 +16,7 @@ pub struct TileMap {
     pub id: u32,                           //地图id
     pub map: Vec<Cell>,                    //地图格子vec
     pub world_cell_map: HashMap<u32, u32>, //世界块map，index，cellid
+    pub un_pair_count: i32,                //未配对地图块数量
 }
 
 ///块的封装结构体
@@ -166,6 +167,7 @@ impl TileMap {
             }
         }
         let mut index = 0;
+        let mut un_pair_count = 0;
         for (cell_id, is_world) in map.iter() {
             let mut cell = Cell::default();
             cell.id = *cell_id;
@@ -179,6 +181,7 @@ impl TileMap {
                 let cell_temp = TEMPLATES.get_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(cell_temp.buff.iter());
                 cell.element = cell_temp.element;
+                un_pair_count += 1;
             }
             if let Some(buffs) = buffs {
                 let mut buff_array = Vec::new();
@@ -192,6 +195,7 @@ impl TileMap {
             tmd.map.push(cell);
             index += 1;
         }
+        tmd.un_pair_count = un_pair_count;
         Ok(tmd)
     }
 }
