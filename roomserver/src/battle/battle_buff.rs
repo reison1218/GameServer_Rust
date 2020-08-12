@@ -7,7 +7,7 @@ use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::TileMap;
+use crate::room::map_data::{Cell, TileMap};
 use crate::TEMPLATES;
 use log::error;
 use std::borrow::BorrowMut;
@@ -74,25 +74,27 @@ impl From<&'static BuffTemp> for Buff {
 }
 
 impl BattleData {
-    pub unsafe fn open_cell_trigger_buff(
+    unsafe fn match_buff(
         &mut self,
         user_id: u32,
+        battle_cters: *mut HashMap<u32, BattleCharacter>,
+        buffs: &Vec<Buff>,
+        index: u32,
+        last_index: Option<usize>,
         au: &mut ActionUnitPt,
         is_pair: bool,
-    ) -> anyhow::Result<Option<ActionUnitPt>> {
-        let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+    ) {
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let index = battle_cter.cell_index;
-        let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
-        let cell = tile_map.as_mut().unwrap().map.get(index).unwrap();
-        let last_index = battle_cter.recently_open_cell_index;
+        let cell = self.tile_map.map.get(index as usize);
+        let cell = cell.unwrap();
+        let cell_element = cell.element;
         let cell_temp = TEMPLATES.get_cell_ref().get_temp(&cell.id).unwrap();
-        for buff in cell.buff.iter() {
+        for buff in buffs.iter() {
             let mut target_pt = TargetPt::new();
-            target_pt.target_value.push(cell.index as u32);
+            target_pt.target_value.push(index);
             if is_pair {
                 let last_index = last_index.unwrap();
-                let last_cell = self.tile_map.map.get(last_index).unwrap();
+                let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
                 //获得道具
                 if AWARD_ITEM.contains(&buff.id) {
                     let item_id = buff.buff_temp.par1;
@@ -233,7 +235,7 @@ impl BattleData {
                     //配对属性一样的地图块+hp
                     //查看配对的cell的属性是否与角色属性匹配
                     if cell_temp.element != battle_cter.element {
-                        return Ok(None);
+                        continue;
                     }
                     target_pt.effect_type = EffectType::Cure as u32;
                     target_pt.effect_value = buff.buff_temp.par1;
@@ -246,7 +248,7 @@ impl BattleData {
             ///此处触发加攻击不用通知客户端
             if SAME_CELL_ELEMENT_ADD_ATTACK.contains(&buff.id) {
                 if buff.buff_temp.par1 as u8 == battle_cter.element
-                    && battle_cter.element == cell.element
+                    && battle_cter.element == cell_element
                 {
                     battle_cter.trigger_add_damage_buff(buff.id);
                 }
@@ -257,12 +259,50 @@ impl BattleData {
                 if is_pair {
                     energy += buff.buff_temp.par2;
                 }
-                battle_cter.energy = energy;
+                battle_cter.energy += energy;
                 target_pt.target_value.push(index as u32);
                 target_pt.effect_type = EffectType::AddEnergy as u32;
                 target_pt.effect_value = energy;
             }
         }
+    }
+
+    pub unsafe fn open_cell_trigger_buff(
+        &mut self,
+        user_id: u32,
+        au: &mut ActionUnitPt,
+        is_pair: bool,
+    ) -> anyhow::Result<Option<ActionUnitPt>> {
+        let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let index = battle_cter.cell_index;
+        let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
+        let cell = tile_map.as_mut().unwrap().map.get(index).unwrap();
+        let last_index = battle_cter.recently_open_cell_index;
+        //匹配地图块的
+        self.match_buff(
+            user_id,
+            battle_cters,
+            &cell.buff,
+            index as u32,
+            last_index,
+            au,
+            is_pair,
+        );
+        //匹配玩家身上的
+        let mut buff_v = Vec::new();
+        for v in battle_cter.buffs.values() {
+            buff_v.push(v.clone());
+        }
+        self.match_buff(
+            user_id,
+            battle_cters,
+            &buff_v,
+            index as u32,
+            last_index,
+            au,
+            is_pair,
+        );
         Ok(None)
     }
 

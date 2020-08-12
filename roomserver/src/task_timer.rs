@@ -351,6 +351,16 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let room = room.unwrap();
 
+    //校验房间状态
+    if room.state != RoomState::BattleStarted {
+        warn!(
+            "battle_turn_time,the room state is not RoomState::BattleStarted!room_id:{}",
+            room.get_room_id()
+        );
+        return;
+    }
+
+    //校验当前是不是这个人
     let next_user_id = room.get_turn_user(None);
     if let Err(e) = next_user_id {
         warn!("{:?}", e);

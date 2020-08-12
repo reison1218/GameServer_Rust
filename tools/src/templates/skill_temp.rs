@@ -10,7 +10,7 @@ pub struct SkillTemp {
     pub par2:u32,//参数2
     pub par3:u32,//参数3
     pub consume_type:u8,//消耗类型
-    pub consume_value:u16,//消耗值
+    pub consume_value:u32,//消耗值
     pub cd:u8,//cd
     pub scope:u32,//范围
     pub buff:u16,//能够触发的buff

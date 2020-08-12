@@ -47,6 +47,7 @@ pub struct BattleCharacter {
     pub hp: i32,                                 //角色血量
     pub defence: u32,                            //角色防御
     pub energy: u32,                             //角色能量
+    pub max_energy: u32,                         //能量上限
     pub element: u8,                             //角色元素
     pub cell_index: usize,                       //角色所在位置
     pub skills: HashMap<u32, Skill>,             //玩家选择的主动技能id
@@ -170,7 +171,8 @@ impl BattleCharacter {
         battle_cter.atk = cter_temp.attack;
         battle_cter.defence = cter_temp.defence;
         battle_cter.element = cter_temp.element;
-        battle_cter.energy = cter_temp.energy;
+        battle_cter.energy = cter_temp.start_energy;
+        battle_cter.max_energy = cter_temp.max_energy;
         battle_cter.hp_max = cter_temp.hp as i32;
 
         cter_temp.passive_buff.iter().for_each(|buff_id| {

@@ -229,10 +229,11 @@ fn main() -> anyhow::Result<()> {
     //
     //     }
     // }
+    let a = -1;
+    let b = 2;
+    let res = b+*&a;
+    println!("{}",res);
 
-    let map:HashMap<u32,u32>= HashMap::new();
-    let res = map.keys().max();
-    println!("{:?}",res);
 
 
 

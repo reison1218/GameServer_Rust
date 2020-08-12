@@ -70,12 +70,12 @@ pub struct Room {
     id: u32,                              //房间id
     room_type: u8,                        //房间类型
     owner_id: u32,                        //房主id
-    state: RoomState,                     //房间状态
+    pub(crate) state: RoomState,          //房间状态
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
     pub member_index: [u32; 4],           //玩家对应的位置
     pub setting: RoomSetting,             //房间设置
     pub battle_data: BattleData,          //战斗相关数据封装
-    sender: TcpSender,                    //sender
+    pub(crate) sender: TcpSender,         //sender
     task_sender: crossbeam::Sender<Task>, //任务sender
     time: DateTime<Utc>,                  //房间创建时间
 }
@@ -137,6 +137,51 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    ///开始选择占位
+    pub fn start_choice_index(&mut self) {
+        //刷新地图
+        self.state = RoomState::ChoiceIndex;
+        self.set_next_turn_index(0);
+        //校验下一个是不是为0
+        let next_turn_user = self.get_turn_user(None).unwrap();
+        if next_turn_user == 0 {
+            self.add_next_turn_index();
+        }
+        info!(
+            "choice_turn finish!turn_order:{:?}",
+            self.battle_data.turn_orders
+        );
+        let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
+        //如果不是刷新，则需要把cter转换成battle_cter
+        if !self.battle_data.is_refreshed {
+            self.cter_2_battle_cter();
+        }
+        let bytes = sbs.write_to_bytes().unwrap();
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::StartChoiceIndexNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+        //开始执行占位逻辑
+        self.build_choice_index_task();
+    }
+
+    ///刷新地图
+    pub fn refresh_map(&mut self) {
+        let is_world_cell = self.setting.is_world_tile;
+        let res = self.battle_data.reset(is_world_cell);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        self.start_choice_index();
     }
 
     pub fn get_member_vec(&self) -> Vec<u32> {
@@ -306,7 +351,15 @@ impl Room {
             user_id, turn_index, turn_order
         );
 
+        //更新角色下标和地图块上面的角色id
         member.cell_index = index as usize;
+        let cell = self
+            .battle_data
+            .tile_map
+            .map
+            .get_mut(index as usize)
+            .unwrap();
+        cell.user_id = user_id;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
         scln.set_user_id(user_id);
         scln.index = index;
@@ -426,40 +479,13 @@ impl Room {
         let size = MEMBER_MAX as usize;
         let is_all_choice = self.check_is_all_choice_turn();
         if is_all_choice {
-            self.state = RoomState::ChoiceIndex;
-            self.set_next_turn_index(0);
-            //校验下一个是不是为0
-            let next_turn_user = self.get_turn_user(None).unwrap();
-            if next_turn_user == 0 {
-                self.add_next_turn_index();
-            }
-            info!(
-                "choice_turn finish!turn_order:{:?}",
-                self.battle_data.turn_orders
-            );
-        } else if index >= size && need_random {
+            self.start_choice_index();
+        } else if !is_all_choice && index >= size && need_random {
             self.random_choice_turn();
         }
         let res = self.check_choice_turn_over();
         //如果都选完了，开始选占位，并发送战斗数据给客户端
-        if res {
-            let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
-            self.cter_2_battle_cter();
-            let bytes = sbs.write_to_bytes().unwrap();
-            for id in self.members.keys() {
-                let res = Packet::build_packet_bytes(
-                    ClientCode::StartChoiceIndexNotice as u32,
-                    *id,
-                    bytes.clone(),
-                    true,
-                    true,
-                );
-                self.sender.write(res);
-            }
-            //开始执行占位逻辑
-            self.build_choice_index_task();
-        //此处应该加上第一回合限制时间定时器
-        } else {
+        if !res {
             //如果没选完，继续选
             self.build_choice_turn_task();
         }
@@ -866,8 +892,16 @@ impl Room {
             //todo 只剩一个人就直接战斗结算
             return;
         }
+
+        //去掉地图块上的玩家id
+        let cell = self.battle_data.tile_map.map.get_mut(index);
+        if let Some(cell) = cell {
+            cell.user_id = 0;
+        }
+
         let last_order_user = self.battle_data.turn_orders[member_size - 1];
         self.remove_turn_orders(index);
+
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
             return;
@@ -1119,7 +1153,7 @@ impl Room {
     ///战斗开始
     pub fn battle_start(&mut self) {
         //判断是否有世界块,有的话，
-        if !self.battle_data.tile_map.world_cell_map.is_empty() {
+        if !self.battle_data.tile_map.world_cell_map.is_empty() && !self.battle_data.is_refreshed {
             for world_cell_id in self.battle_data.tile_map.world_cell_map.values() {
                 let world_cell_temp = TEMPLATES.get_world_cell_ref().temps.get(world_cell_id);
                 if world_cell_temp.is_none() {

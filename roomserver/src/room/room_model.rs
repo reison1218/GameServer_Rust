@@ -191,7 +191,7 @@ pub trait RoomModel {
     ) -> anyhow::Result<u32>;
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
-    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()>;
+    fn rm_room(&mut self, room_id: &u32);
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room>;
 
@@ -270,9 +270,8 @@ impl RoomModel for CustomRoom {
         Ok(room_id)
     }
 
-    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()> {
+    fn rm_room(&mut self, room_id: &u32) {
         self.rooms.remove(room_id);
-        Ok(())
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
@@ -387,7 +386,7 @@ impl RoomModel for MatchRoom {
         }
 
         if need_remove {
-            self.rm_room(&room_id)?;
+            self.rm_room(&room_id);
         }
 
         let room_cache = self.get_room_cache_mut(&room_id);
@@ -412,10 +411,9 @@ impl RoomModel for MatchRoom {
     }
 
     ///删除房间
-    fn rm_room(&mut self, room_id: &u32) -> anyhow::Result<()> {
+    fn rm_room(&mut self, room_id: &u32) {
         self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
-        Ok(())
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {

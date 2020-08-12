@@ -4,13 +4,14 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{BattleType, RoomModel, RoomType};
-use log::{error, warn};
+use log::{error, info, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt::Debug;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::{C_ACTION, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
+use tools::protos::room::S_START_CHOOSE_INDEX_NOTICE;
 use tools::util::packet::Packet;
 
 ///行动请求
@@ -24,8 +25,9 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验房间状态
     if room.get_state() != &RoomState::BattleStarted {
         warn!(
-            "room state is not battle_started!room_id:{}",
-            room.get_room_id()
+            "room state is not battle_started!room_id:{},state:{:?}",
+            room.get_room_id(),
+            room.state
         );
         return Ok(());
     }
@@ -97,7 +99,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //如果有问题就返回
-    if let Err(_) = res {
+    if let Err(e) = res {
+        warn!("{:?}", e);
         return Ok(());
     }
 
@@ -127,27 +130,36 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //处理结算
     unsafe {
-        let res = room.battle_data.handler_settle();
+        let rm_ptr = rm as *mut RoomMgr;
+        let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
+        let (is_settle, allive_count) = room.battle_data.handler_settle();
         let room_type = room.get_room_type();
         let room_type = RoomType::from(room_type);
         //如果要结算,卸载数据
-        if res {
+        if is_settle {
             let v = room.get_member_vec();
 
             match room_type {
                 RoomType::Match => {
-                    let res = rm.match_rooms.get_match_room_mut(&battle_type);
+                    let res = rm_ptr
+                        .as_mut()
+                        .unwrap()
+                        .match_rooms
+                        .get_match_room_mut(&battle_type);
                     res.rm_room(&room_id);
                 }
                 RoomType::Custom => {
-                    rm.custom_room.rm_room(&room_id);
+                    rm_ptr.as_mut().unwrap().custom_room.rm_room(&room_id);
                 }
                 _ => {}
             }
             for user_id in v {
-                rm.player_room.remove(&user_id);
+                rm_ptr.as_mut().unwrap().player_room.remove(&user_id);
             }
-        } else {
+        } else if allive_count >= 2 && room.battle_data.tile_map.un_pair_count <= 2 {
+            //校验是否要刷新地图
+            room.battle_data.is_refreshed = true;
+            room.refresh_map();
         }
     }
     Ok(())
@@ -318,7 +330,11 @@ fn use_skill(
     let skill = skill.unwrap();
     let res = check_skill_useable(battle_cter, skill);
     if !res {
-        anyhow::bail!("skill useable check fail!user_id:{}", skill_id)
+        warn!(
+            "skill useable check fail!user_id:{},skill_id:{}",
+            user_id, skill_id
+        );
+        anyhow::bail!("")
     }
     //使用技能，走正常逻辑
     rm.battle_data

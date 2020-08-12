@@ -1,6 +1,5 @@
 use super::*;
 use tools::cmd_code::RoomCode;
-use tools::protos::room::S_ROOM_MEMBER_LEAVE_NOTICE;
 
 pub enum TcpClientType {
     GameServer,

@@ -137,8 +137,11 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         //校验下标的地图块
-
         let res = self.check_choice_index(target_index, false, false, false, true);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            anyhow::bail!("")
+        }
 
         let target_cell = self.tile_map.map.get_mut(target_index);
         if let None = target_cell {
@@ -147,19 +150,6 @@ impl BattleData {
             anyhow::bail!("")
         }
         let target_cell = target_cell.unwrap();
-        //校验有效性
-        if target_cell.id < CellType::Valid as u32 {
-            let str = format!("this cell can not be choice!index:{}", target_index);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!("")
-        }
-        //校验世界块
-        if target_cell.is_world {
-            let str = format!("world cell can not be choice!index:{}", target_index);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!("")
-        }
-
         target_cell.user_id = target_user;
 
         let target_cter = self.get_battle_cter_mut(Some(target_user));
@@ -383,7 +373,7 @@ impl BattleData {
             }
         }
 
-        let center_index = targets.remove(0) as isize;
+        let center_index = *targets.get(0).unwrap() as isize;
         let target_type = TargetType::from(skill.skill_temp.target);
 
         //计算符合中心范围内的玩家
@@ -404,17 +394,14 @@ impl BattleData {
             target_pt.effect_type = EffectType::SkillDamage as u32;
             let is_died;
             //判断是否中心位置
-            if cter.cell_index == center_index as usize {
-                is_died = cter.sub_hp(damage_deep);
+            if cter.cell_index == center_index as usize && damage_deep > 0 {
+                cter.sub_hp(damage_deep);
                 target_pt.effect_value = damage_deep as u32;
             } else {
                 is_died = cter.sub_hp(damage);
                 target_pt.effect_value = damage as u32;
             }
             au.targets.push(target_pt);
-            if is_died {
-                cter.state = BattleCterState::Die as u8;
-            }
         }
         Ok(None)
     }

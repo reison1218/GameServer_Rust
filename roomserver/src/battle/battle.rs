@@ -2,7 +2,9 @@ use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
     SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
 };
-use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType, TriggerEffectType};
+use crate::battle::battle_enum::{
+    BattleCterState, EffectType, SkillConsumeType, TargetType, TriggerEffectType,
+};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, TileMap};
 use crate::room::room::MEMBER_MAX;
@@ -39,9 +41,10 @@ pub struct BattleData {
     pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_map: HashMap<u32, Vec<u32>>,           //排名  user_id
-    pub turn_limit_time: u64,
-    pub task_sender: crossbeam::Sender<Task>, //任务sender
-    pub sender: TcpSender,                    //sender
+    pub turn_limit_time: u64,                       //战斗turn时间限制
+    pub is_refreshed: bool,                         //是否刷新
+    pub task_sender: crossbeam::Sender<Task>,       //任务sender
+    pub sender: TcpSender,                          //sender
 }
 
 impl BattleData {
@@ -55,9 +58,17 @@ impl BattleData {
             battle_cter: HashMap::new(),
             rank_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
+            is_refreshed: false,
             task_sender,
             sender,
         }
+    }
+
+    ///刷新地图
+    pub fn reset(&mut self, is_world_cell: bool) -> anyhow::Result<()> {
+        let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
+        self.tile_map = res;
+        Ok(())
     }
 
     pub fn get_battle_cters_vec(&self) -> Vec<u32> {
@@ -81,18 +92,33 @@ impl BattleData {
     }
 
     pub fn add_next_turn_index(&mut self) {
+        let allive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.state == BattleCterState::Alive as u8)
+            .count();
+        if allive_count <= 1 {
+            return;
+        }
+
         self.next_turn_index += 1;
         let index = self.next_turn_index;
         if index >= MEMBER_MAX as usize {
             self.next_turn_index = 0;
-            return;
         }
+
         let user_id = self.get_turn_user(Some(index));
         if let Ok(user_id) = user_id {
-            if user_id != 0 {
+            if user_id == 0 {
+                self.add_next_turn_index();
                 return;
             }
-            self.add_next_turn_index();
+
+            let cter = self.battle_cter.get(&user_id).unwrap();
+            if cter.state == BattleCterState::Die as u8 {
+                self.add_next_turn_index();
+                return;
+            }
         } else {
             warn!("{:?}", user_id.err().unwrap());
         }
@@ -127,8 +153,8 @@ impl BattleData {
 
             //处理翻地图块触发buff
             let res = self.open_cell_trigger_buff(user_id, au_ptr.as_mut().unwrap(), is_pair);
-            if let Err(e) = res {
-                anyhow::bail!("{:?}", e)
+            if let Err(_) = res {
+                anyhow::bail!("")
             }
 
             //处理配对成功与否后的数据
@@ -137,7 +163,7 @@ impl BattleData {
                 battle_cter.is_can_attack = true;
                 //如果配对了，则清除上一次翻的地图块
                 battle_cter.set_recently_open_cell_index(None);
-                self.tile_map.un_pair_count += 2;
+                self.tile_map.un_pair_count -= 2;
             } else {
                 //更新最近一次翻的下标
                 battle_cter.set_recently_open_cell_index(Some(index));
@@ -528,8 +554,18 @@ impl BattleData {
                 let target_user = target_array.get(0).unwrap();
                 au_vec = self.sub_cd(skill_id, *target_user, au);
             }
-            //技能cd重制
-            skill.reset_cd();
+
+            //如果不是用能量的，则重制cd
+            if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 {
+                skill.reset_cd();
+            } else {
+                //减能量
+                if skill.skill_temp.consume_value > battle_cter.energy {
+                    battle_cter.energy = 0;
+                } else {
+                    battle_cter.energy -= skill.skill_temp.consume_value;
+                }
+            }
 
             match au_vec {
                 Ok(v) => {
@@ -564,7 +600,7 @@ impl BattleData {
     }
 
     ///处理结算
-    pub unsafe fn handler_settle(&mut self) -> bool {
+    pub unsafe fn handler_settle(&mut self) -> (bool, usize) {
         let allive_count = self
             .battle_cter
             .values()
@@ -613,10 +649,8 @@ impl BattleData {
                     error!("{:?}", e);
                 }
             }
-            return true;
+            return (true, allive_count);
         }
-
-        if allive_count >= 2 && tile_map.un_pair_count <= 2 {}
-        return false;
+        return (false, allive_count);
     }
 }

@@ -174,7 +174,7 @@ impl BattleData {
                 //校验地图块下标有效性
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, true, false, false)?
+                    self.check_choice_index(index, false, false, false, false)?
                 }
             }
             //未翻开的地图块
@@ -313,7 +313,8 @@ impl BattleData {
         if targets.is_none() && scope_temp.is_none() {
             let ss = TRIGGER_SCOPE_NEAR;
             for cell_index in ss.iter() {
-                let index = center_index + *cell_index;
+                let _cell_index = *cell_index;
+                let index = center_index + _cell_index;
                 if index < 0 {
                     continue;
                 }
@@ -337,7 +338,8 @@ impl BattleData {
             //否则校验选中的区域
             for dir in scope_temp.scope.iter() {
                 for scope_index in dir.direction.iter() {
-                    let index = center_index + *scope_index as isize;
+                    let _scope_index = *scope_index as isize;
+                    let index = center_index + _scope_index;
                     if index < 0 {
                         continue;
                     }
@@ -350,10 +352,18 @@ impl BattleData {
                     if cell.user_id <= 0 {
                         continue;
                     }
-                    //不能选中自己
-                    if cell.user_id == user_id {
+
+                    //如果目标不能是自己，就跳过
+                    if (target_type == TargetType::OtherAllPlayer
+                        || target_type == TargetType::OtherAnyPlayer)
+                        && cell.user_id == user_id
+                    {
                         continue;
                     }
+                    //不能选中自己
+                    // if cell.user_id == user_id {
+                    //     continue;
+                    // }
                     v.push(cell.user_id);
                 }
             }
@@ -363,12 +373,14 @@ impl BattleData {
             //否则校验选中的区域
             for dir in scope_temp.scope.iter() {
                 for scope_index in dir.direction.iter() {
+                    let _scope_index = *scope_index;
+                    let res = center_index + _scope_index as isize;
                     for index in targets.iter() {
-                        let res = center_index - *scope_index as isize;
-                        if res != *index as isize {
+                        let _index = *index as isize;
+                        if res != _index {
                             continue;
                         }
-                        let cell = self.tile_map.map.get(res as usize);
+                        let cell = self.tile_map.map.get(*index as usize);
                         if cell.is_none() {
                             warn!("there is no cell!index:{}", res);
                             continue;
@@ -382,13 +394,19 @@ impl BattleData {
                         {
                             continue;
                         }
-                        let cter = self.get_battle_cter(Some(other_user));
-                        if let Err(e) = cter {
-                            warn!("{:?}", e);
-                            continue;
+                        if other_user > 0 {
+                            let cter = self.get_battle_cter(Some(other_user));
+                            if let Err(e) = cter {
+                                warn!("{:?}", e);
+                                continue;
+                            }
+                            let cter = cter.unwrap();
+                            if v.contains(&cter.user_id) {
+                                continue;
+                            }
+                            v.push(cter.user_id);
+                            break;
                         }
-                        let cter = cter.unwrap();
-                        v.push(cter.user_id);
                     }
                 }
             }
