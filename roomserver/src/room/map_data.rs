@@ -24,17 +24,17 @@ pub struct TileMap {
 pub struct Cell {
     pub id: u32,                   //块的配置id
     pub index: usize,              //块的下标
-    pub buff: Vec<Buff>,           //块的效果
+    pub buffs: Vec<Buff>,          //块的效果
     pub is_world: bool,            //是否世界块
     pub element: u8,               //地图块的属性
-    pub extra_buff: Vec<Buff>,     //额外玩家对其添加的buff
+    pub passive_buffs: Vec<Buff>,  //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
     pub pair_index: Option<usize>, //与之配对的下标
 }
 
 impl Cell {
     pub fn check_is_locked(&self) -> bool {
-        for buff in self.buff.iter() {
+        for buff in self.buffs.iter() {
             if buff.id == 321 {
                 return true;
             }
@@ -190,7 +190,8 @@ impl TileMap {
                     let buff = Buff::from(buff_temp);
                     buff_array.push(buff);
                 }
-                cell.buff = buff_array;
+                cell.buffs = buff_array.clone();
+                cell.passive_buffs = buff_array;
             }
             tmd.map.push(cell);
             index += 1;

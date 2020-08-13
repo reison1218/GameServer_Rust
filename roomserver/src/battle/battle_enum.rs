@@ -19,7 +19,7 @@ pub mod skill_type {
     ///相临玩家造成技能伤害并恢复生命
     pub static NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub static SKILL_DAMAGE: [u32; 2] = [20004, 20005];
+    pub static SKILL_DAMAGE: [u32; 3] = [20004, 20005, 323];
     ///技能aoe
     pub static SKILL_AOE: [u32; 2] = [411, 421];
     ///减技能cd
@@ -28,6 +28,8 @@ pub mod skill_type {
 
 ///buff类型
 pub mod buff_type {
+    ///变成技能
+    pub static CHANGE_SKILL: [u32; 1] = [3];
     ///增加攻击力并变成AOE
     pub static ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
@@ -79,6 +81,8 @@ pub enum EffectType {
     AddSkillCd = 7,
     ///增加能量
     AddEnergy = 8,
+    ///增加技能
+    AddSkill = 9,
 }
 
 ///被动触发效果类型

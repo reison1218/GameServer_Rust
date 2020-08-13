@@ -1,3 +1,4 @@
+use crate::battle::battle_enum::buff_type::CHANGE_SKILL;
 use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
     SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
@@ -15,7 +16,9 @@ use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{ActionUnitPt, BuffPt, SettleDataPt, TargetPt, TriggerEffectPt};
+use tools::protos::base::{
+    ActionUnitPt, BuffPt, CellBuffPt, CterStatusPt, SettleDataPt, TargetPt, TriggerEffectPt,
+};
 use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SETTLEMENT_NOTICE};
 use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
@@ -107,7 +110,7 @@ impl BattleData {
             self.next_turn_index = 0;
         }
 
-        let user_id = self.get_turn_user(Some(index));
+        let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {
             if user_id == 0 {
                 self.add_next_turn_index();
@@ -256,27 +259,82 @@ impl BattleData {
             error!("battle_cter is None!user_id:{}", user_id);
             return;
         }
+        //结算玩家自己的
         let battle_cter = battle_cter.unwrap();
         battle_cter.turn_reset();
+
+        //结算玩家加在别的玩家身上的
+        for cter in self.battle_cter.values_mut() {
+            if cter.user_id == user_id {
+                continue;
+            }
+            let mut delete = Vec::new();
+            for buff in cter.buffs.values_mut() {
+                if buff.user_id != user_id {
+                    continue;
+                }
+                buff.sub_keep_times();
+                if buff.keep_times > 0 {
+                    continue;
+                }
+                delete.push(buff.id);
+            }
+            for buff_id in delete {
+                cter.buffs.remove(&buff_id);
+            }
+        }
+
+        let mut delete = HashMap::new();
+        //结算该玩家加在地图块上的buff
+        for cell in self.tile_map.map.iter_mut() {
+            for buff_index in 0..cell.buffs.len() {
+                let buff = cell.buffs.get_mut(buff_index).unwrap();
+                if buff.user_id != user_id {
+                    continue;
+                }
+                buff.sub_keep_times();
+                if buff.keep_times > 0 {
+                    continue;
+                }
+                if !delete.contains_key(&cell.index) {
+                    delete.insert(cell.index, Vec::new());
+                }
+                delete.get_mut(&cell.index).unwrap().push(buff_index);
+            }
+        }
+
+        //删掉buff
+        for (cell_index, buff_indexs) in delete.iter() {
+            let cell = self.tile_map.map.get_mut(*cell_index).unwrap();
+            for buff_index in buff_indexs {
+                cell.buffs.remove(*buff_index);
+            }
+        }
     }
 
     ///发送战斗turn推送
     pub fn send_battle_turn_notice(&mut self) {
-        let cter = self.get_battle_cter_mut(None);
-        if let Err(e) = cter {
-            error!("{:?}", e);
-            return;
-        }
-        let cter = cter.unwrap();
         let mut sbtn = S_BATTLE_TURN_NOTICE::new();
-        sbtn.user_id = cter.user_id;
-        cter.buffs.values().for_each(|buff| {
-            let mut buff_pt = BuffPt::new();
-            buff_pt.buff_id = buff.id;
-            buff_pt.trigger_timesed = buff.trigger_timesed as u32;
-            buff_pt.keep_times = buff.keep_times as u32;
-            sbtn.buffs.push(buff_pt);
-        });
+        sbtn.set_user_id(self.get_turn_user(None).unwrap());
+        //角色身上的
+        for cter in self.battle_cter.values() {
+            let cter_pt = cter.convert_to_battle_cter();
+            sbtn.cters.push(cter_pt);
+        }
+
+        //地图块身上的
+        for cell in self.tile_map.map.iter() {
+            let mut cbp = CellBuffPt::new();
+            cbp.index = cell.index as u32;
+            for buff in cell.buffs.iter() {
+                let mut buff_pt = BuffPt::new();
+                buff_pt.buff_id = buff.id;
+                buff_pt.trigger_timesed = buff.trigger_timesed as u32;
+                buff_pt.keep_times = buff.keep_times as u32;
+                cbp.buffs.push(buff_pt);
+            }
+            sbtn.cell_buffs.push(cbp);
+        }
 
         let bytes = sbtn.write_to_bytes().unwrap();
         for user_id in self.battle_cter.clone().keys() {
@@ -333,6 +391,9 @@ impl BattleData {
 
         //扣血
         self.deduct_hp(target_cter.user_id, res, true);
+
+        //目标被攻击，触发目标buff
+        self.attacked_trigger_buffs(target_cter.user_id, &mut target_pt);
 
         target_pt.target_value.push(target_cter.cell_index as u32);
         target_pt.effect_type = EffectType::AttackDamage as u32;
@@ -395,10 +456,12 @@ impl BattleData {
                     te_pt.set_value(gd_buff.0);
                     target_pt.passiveEffect.push(te_pt);
                 }
-
+                let mut target_pt = TargetPt::new();
+                target_pt.effect_type = EffectType::AttackDamage as u32;
                 //扣血
-                self.deduct_hp(cter.user_id, res, true);
-
+                self.deduct_hp(cter.user_id, res, false);
+                //目标被攻击，触发目标buff
+                self.attacked_trigger_buffs(cter.user_id, &mut target_pt);
                 target_pt.target_value.push(cter.cell_index as u32);
                 target_pt.effect_value = res as u32;
                 if gd_buff.0 > 0 && gd_buff.1 {
@@ -411,6 +474,17 @@ impl BattleData {
         }
         cter.is_can_attack = false;
         Ok(None)
+    }
+
+    ///受到普通攻击触发的buff
+    pub fn attacked_trigger_buffs(&mut self, user_id: u32, target_pt: &mut TargetPt) {
+        let cter = self.battle_cter.get_mut(&user_id).unwrap();
+        for buff_id in cter.buffs.clone().keys() {
+            if CHANGE_SKILL.contains(buff_id) {
+                cter.buffs.remove(buff_id);
+                target_pt.lost_buffs.push(*buff_id);
+            }
+        }
     }
 
     ///跳过回合
@@ -577,8 +651,8 @@ impl BattleData {
     }
 
     ///扣血
-    pub fn deduct_hp(&mut self, target: u32, value: i32, is_same_action: bool) {
-        let mut rank_max = self.rank_map.clone();
+    pub fn deduct_hp(&mut self, target: u32, value: i32, need_rank: bool) {
+        let rank_max = self.rank_map.clone();
         let rank_max = rank_max.keys().max();
         let cter = self.battle_cter.get_mut(&target).unwrap();
         let res = cter.sub_hp(value);
@@ -588,7 +662,7 @@ impl BattleData {
             if let Some(rank_max) = rank_max {
                 rank = *rank_max;
             }
-            if rank_max.is_some() && !is_same_action {
+            if rank_max.is_some() && !need_rank {
                 rank += 1;
             }
             if !self.rank_map.contains_key(&rank) {

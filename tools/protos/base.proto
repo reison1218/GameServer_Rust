@@ -132,3 +132,14 @@ message SettleDataPt{
     uint32 grade = 2;//等级
     uint32 rank = 3;//排名
 }
+
+message CterStatusPt{
+    uint32 user_id = 1;//玩家id
+    repeated uint32 skills = 2;//角色技能
+    repeated BuffPt buffs = 3;//玩家身上buff数据
+}
+
+message CellBuffPt{
+    uint32 index = 1;//地图块下标
+    repeated BuffPt buffs = 2;//地图块上buff数据
+}

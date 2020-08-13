@@ -1,6 +1,7 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{ADD_ATTACK, ADD_ATTACK_AND_AOE, SUB_ATTACK_DAMAGE};
+use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
@@ -205,17 +206,17 @@ impl BattleData {
         }
         let v = res.unwrap();
         let mut add_hp = 0_u32;
+        let mut need_rank = true;
         for user in v {
             let cter = self.get_battle_cter_mut(Some(user)).unwrap();
             add_hp += skill.skill_temp.par1;
+            let target_id = cter.user_id;
+            let target_index = cter.cell_index as u32;
             //扣血
-            let is_died = cter.sub_hp(skill.skill_temp.par1 as i32);
-            if is_died {
-                cter.state = BattleCterState::Die as u8;
-            }
-
+            self.deduct_hp(target_id, skill.skill_temp.par1 as i32, need_rank);
+            need_rank = false;
             let mut target_pt = TargetPt::new();
-            target_pt.target_value.push(cter.cell_index as u32);
+            target_pt.target_value.push(target_index);
             target_pt.effect_type = EffectType::SkillDamage as u32;
             target_pt.effect_value = skill.skill_temp.par1;
             au.targets.push(target_pt);
@@ -336,9 +337,28 @@ impl BattleData {
         target_pt.effect_value = skill.par1;
         au.targets.push(target_pt);
         let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
-        let is_died = target_cter.sub_hp(skill.par1 as i32);
-        if is_died {
-            target_cter.state = BattleCterState::Die as u8;
+        self.deduct_hp(target_user, skill.par1 as i32, true);
+        //替换技能
+        if skill.par2 > 0 {
+            let user_id = au.from_user;
+            let cter = self.battle_cter.get_mut(&user_id).unwrap();
+            cter.skills.remove(&skill_id);
+
+            let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+            match skill_temp {
+                Ok(st) => {
+                    let mut target_pt = TargetPt::new();
+                    target_pt.target_value.push(user_id);
+                    target_pt.lost_buffs.push(skill_id);
+                    target_pt.effect_type = AddSkill as u32;
+                    target_pt.effect_value = st.id;
+                    let skill = Skill::from(st);
+                    cter.skills.insert(skill.id, skill);
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
+            }
         }
         Ok(None)
     }
@@ -348,7 +368,7 @@ impl BattleData {
         &mut self,
         user_id: u32,
         skill_id: u32,
-        mut targets: Vec<u32>,
+        targets: Vec<u32>,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
@@ -387,21 +407,23 @@ impl BattleData {
             )
             .unwrap();
 
+        let mut need_rank = true;
         for member_id in v {
             let cter = self.get_battle_cter_mut(Some(member_id)).unwrap();
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(cter.cell_index as u32);
             target_pt.effect_type = EffectType::SkillDamage as u32;
-            let is_died;
+            let damage_res;
             //判断是否中心位置
             if cter.cell_index == center_index as usize && damage_deep > 0 {
-                cter.sub_hp(damage_deep);
-                target_pt.effect_value = damage_deep as u32;
+                damage_res = damage_deep;
             } else {
-                is_died = cter.sub_hp(damage);
-                target_pt.effect_value = damage as u32;
+                damage_res = damage;
             }
+            self.deduct_hp(member_id, damage_res, need_rank);
+            target_pt.effect_value = damage_res as u32;
             au.targets.push(target_pt);
+            need_rank = false;
         }
         Ok(None)
     }
@@ -456,8 +478,9 @@ impl BattleData {
                     anyhow::bail!("{:?}", str)
                 }
                 let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
-                let buff = Buff::from(buff_temp);
-                cell.extra_buff.push(buff);
+                let mut buff = Buff::from(buff_temp);
+                buff.user_id = user_id;
+                cell.buffs.push(buff);
                 target_pt.target_value.push(index as u32);
                 target_pt.add_buffs.push(buff_id);
             }

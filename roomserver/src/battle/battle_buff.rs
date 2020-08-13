@@ -23,6 +23,7 @@ pub struct Buff {
     pub keep_times: i8,        //剩余持续轮数
     pub scope: Vec<Direction>, //buff的作用范围
     pub permanent: bool,       //是否永久
+    pub user_id: u32,          //来源的玩家id
 }
 
 impl Buff {
@@ -55,6 +56,7 @@ impl From<&'static BuffTemp> for Buff {
             buff_temp: bt,
             scope: Vec::new(),
             permanent: bt.keep_time == 0 && bt.trigger_times == 0,
+            user_id: 0,
         };
         let mut v = Vec::new();
         let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
@@ -221,13 +223,14 @@ impl BattleData {
                     let v = self
                         .cal_scope(user_id, isize_index, target_type, None, Some(scope_temp))
                         .unwrap();
-
+                    let mut need_rank = true;
                     for user in v.iter() {
                         let cter = battle_cters.as_mut().unwrap().get_mut(user).unwrap();
                         target_pt.target_value.push(cter.cell_index as u32);
                         au.targets.push(target_pt.clone());
                         //造成技能伤害
-                        self.deduct_hp(*user, buff.buff_temp.par1 as i32, true);
+                        self.deduct_hp(*user, buff.buff_temp.par1 as i32, need_rank);
+                        need_rank = false;
                     }
                 //todo 通知客户端
                 } else if [9].contains(&buff.id) {
@@ -260,6 +263,10 @@ impl BattleData {
                     energy += buff.buff_temp.par2;
                 }
                 battle_cter.energy += energy;
+                if battle_cter.energy >= battle_cter.max_energy {
+                    energy = battle_cter.energy - battle_cter.max_energy;
+                    battle_cter.energy = battle_cter.max_energy;
+                }
                 target_pt.target_value.push(index as u32);
                 target_pt.effect_type = EffectType::AddEnergy as u32;
                 target_pt.effect_value = energy;
@@ -283,7 +290,7 @@ impl BattleData {
         self.match_buff(
             user_id,
             battle_cters,
-            &cell.buff,
+            &cell.buffs,
             index as u32,
             last_index,
             au,
@@ -314,7 +321,7 @@ impl BattleData {
 
         let cell = self.tile_map.map.get_mut(index).unwrap();
 
-        for _buff in cell.extra_buff.iter() {}
+        for _buff in cell.buffs.iter() {}
     }
 
     ///处理角色移动之后的事件
@@ -356,7 +363,7 @@ impl BattleData {
                     if index != res {
                         continue;
                     }
-                    self.deduct_hp(battle_cter.user_id, buff.buff_temp.par1 as i32, false);
+                    self.deduct_hp(battle_cter.user_id, buff.buff_temp.par1 as i32, true);
                     let mut other_aupt = ActionUnitPt::new();
                     other_aupt.from_user = other_cter.user_id;
                     other_aupt.action_type = ActionType::Buff as u32;
@@ -381,13 +388,13 @@ impl BattleData {
                 if buff.id != 1 {
                     continue;
                 }
+                let mut need_rank = true;
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                     let res = index + scope_index;
                     if cter_index != res {
                         continue;
                     }
-                    other_cter.sub_hp(buff.buff_temp.par1 as i32);
-
+                    self.deduct_hp(other_cter.user_id, buff.buff_temp.par1 as i32, need_rank);
                     let mut self_aupt = ActionUnitPt::new();
                     self_aupt.from_user = user_id;
                     self_aupt.action_type = ActionType::Buff as u32;
@@ -400,6 +407,7 @@ impl BattleData {
                     v.push(self_aupt);
                     break;
                 }
+                need_rank = false;
             }
         }
         v

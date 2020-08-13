@@ -1,6 +1,6 @@
 use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::buff_type::{ADD_ATTACK, SUB_ATTACK_DAMAGE};
+use crate::battle::battle_enum::buff_type::{ADD_ATTACK, CHANGE_SKILL, SUB_ATTACK_DAMAGE};
 use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::TEMPLATES;
@@ -186,10 +186,12 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
+    ///最近一次翻开的地图块下标
     pub fn set_recently_open_cell_index(&mut self, index: Option<usize>) {
         self.recently_open_cell_index = index;
     }
 
+    ///重制翻块次数
     pub fn reset_residue_open_times(&mut self) {
         self.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
     }
@@ -197,17 +199,38 @@ impl BattleCharacter {
     ///回合开始触发
     pub fn trigger_turn_start(&mut self) {
         for buff in self.buffs.values() {
-            if [3].contains(&buff.id) && !self.is_attacked {
-                //todo self.skills.remove()buff.buff_temp.par1;
+            if CHANGE_SKILL.contains(&buff.id) {
+                let skill_id = buff.buff_temp.par1;
+
+                let skill_temp = TEMPLATES.get_skill_ref().temps.get(&skill_id);
+                match skill_temp {
+                    None => {
+                        error!(
+                            "trigger_turn_start the skill_temp can not find!skill_id:{}",
+                            skill_id
+                        );
+                    }
+                    Some(st) => {
+                        let skill = Skill::from(st);
+                        self.skills.remove(&buff.buff_temp.par2);
+                        self.skills.insert(skill_id, skill);
+                    }
+                }
             }
         }
     }
 
     ///回合结算
     pub fn turn_reset(&mut self) {
+        //回合开始触发buff
+        self.trigger_turn_start();
+        //重制剩余翻块地处
         self.reset_residue_open_times();
+        //重制是否可以攻击
         self.is_can_attack = false;
+        //重制是否翻过地图块
         self.is_opened_cell = false;
+        //重制最近一次翻地图块的下标
         self.set_recently_open_cell_index(None);
 
         //玩家身上所有buff持续轮次-1

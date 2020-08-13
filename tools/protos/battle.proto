@@ -21,6 +21,10 @@ import "base.proto";
 //     RewardItem = 6,
 //     ///增加技能cd
 //     AddSkillCd = 7,
+//     ///增加能量
+//     AddEnergy = 8,
+//     ///增加技能
+//     AddSkill = 9,
 // }
 //
 // ///被动触发效果类型
@@ -109,8 +113,9 @@ message S_ACTION_NOTICE{
 //turn玩家状态结算，turn开始的时候
 //cmd = 10032
 message S_BATTLE_TURN_NOTICE{
-    uint32 user_id = 1;//玩家id
-    repeated BuffPt buffs = 2;//玩家身上buff数据
+    uint32 user_id = 1;//当前turn的玩家id
+    repeated BattleCharacterPt cters = 2;//所有玩家角色
+    repeated CellBuffPt cell_buffs = 3;//地图块上的buff
 }
 
 //架势请求

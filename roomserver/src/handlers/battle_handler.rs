@@ -11,7 +11,6 @@ use std::fmt::Debug;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::{C_ACTION, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
-use tools::protos::room::S_START_CHOOSE_INDEX_NOTICE;
 use tools::util::packet::Packet;
 
 ///行动请求
