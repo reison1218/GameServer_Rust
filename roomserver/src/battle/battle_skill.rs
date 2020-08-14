@@ -1,10 +1,9 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::buff_type::{ADD_ATTACK, ADD_ATTACK_AND_AOE, SUB_ATTACK_DAMAGE};
 use crate::battle::battle_enum::EffectType::AddSkill;
-use crate::battle::battle_enum::{BattleCterState, EffectType, TargetType};
+use crate::battle::battle_enum::{EffectType, TargetType};
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, CellType};
+use crate::room::map_data::Cell;
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::collections::HashMap;
@@ -133,7 +132,7 @@ impl BattleData {
     ///移动玩家
     pub fn move_user(
         &mut self,
-        target_user: u32,
+        target_user_index: usize,
         target_index: usize,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
@@ -143,7 +142,17 @@ impl BattleData {
             warn!("{:?}", e);
             anyhow::bail!("")
         }
-
+        let target_cter = self.get_battle_cter_mut_by_cell_index(target_user_index);
+        if let Err(e) = target_cter {
+            warn!("cter is not find!index:{}", target_user_index);
+            anyhow::bail!("")
+        }
+        let target_cter = target_cter.unwrap();
+        let target_cter_index = target_cter.cell_index;
+        let target_user = target_cter.user_id;
+        //更新目标玩家的下标
+        let last_index = target_cter_index;
+        target_cter.cell_index = target_index;
         let target_cell = self.tile_map.map.get_mut(target_index);
         if let None = target_cell {
             let str = format!("there is no cell!index:{}", target_index);
@@ -153,16 +162,6 @@ impl BattleData {
         let target_cell = target_cell.unwrap();
         target_cell.user_id = target_user;
 
-        let target_cter = self.get_battle_cter_mut(Some(target_user));
-        if let Err(e) = target_cter {
-            warn!("{:?}", e);
-            anyhow::bail!("")
-        }
-
-        //更新目标玩家的下标
-        let target_cter = target_cter.unwrap();
-        let last_index = target_cter.cell_index;
-        target_cter.cell_index = target_index;
         //重制之前地图块上的玩家id
         let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
         last_cell.user_id = 0;
@@ -213,7 +212,7 @@ impl BattleData {
             let target_id = cter.user_id;
             let target_index = cter.cell_index as u32;
             //扣血
-            self.deduct_hp(target_id, skill.skill_temp.par1 as i32, need_rank);
+            self.deduct_hp(target_id, skill.skill_temp.par1 as i32, false, need_rank);
             need_rank = false;
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(target_index);
@@ -257,6 +256,7 @@ impl BattleData {
             anyhow::bail!("")
         }
         let battle_cter = battle_cter.unwrap();
+        let mut pair_cell: Option<&mut Cell> = None;
         //找到与之匹配的地图块自动配对
         for _cell in map.as_mut().unwrap().iter_mut() {
             if _cell.id != cell.id {
@@ -264,13 +264,29 @@ impl BattleData {
             }
             _cell.pair_index = Some(cell.index);
             cell.pair_index = Some(_cell.index);
+            pair_cell = Some(_cell);
+            break;
         }
+
+        if pair_cell.is_none() {
+            warn!(
+                "there is no cell pair for target_index:{},target_cell_id:{}",
+                target_index, cell.id
+            );
+            anyhow::bail!("")
+        }
+
+        let pair_cell = pair_cell.unwrap();
         //处理本turn不能攻击
         battle_cter.is_can_attack = false;
 
         let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(cell.id);
         target_pt.target_value.push(target_index as u32);
-        au.targets.push(target_pt);
+        au.targets.push(target_pt.clone());
+        target_pt.target_value.push(pair_cell.id);
+        target_pt.target_value.push(pair_cell.index as u32);
+        au.targets.push(target_pt.clone());
 
         //处理配对触发逻辑
         let res = self.open_cell_trigger_buff(user_id, au, true);
@@ -337,7 +353,7 @@ impl BattleData {
         target_pt.effect_value = skill.par1;
         au.targets.push(target_pt);
         let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
-        self.deduct_hp(target_user, skill.par1 as i32, true);
+        self.deduct_hp(target_user, skill.par1 as i32, false, true);
         //替换技能
         if skill.par2 > 0 {
             let user_id = au.from_user;
@@ -420,7 +436,7 @@ impl BattleData {
             } else {
                 damage_res = damage;
             }
-            self.deduct_hp(member_id, damage_res, need_rank);
+            self.deduct_hp(member_id, damage_res, false, need_rank);
             target_pt.effect_value = damage_res as u32;
             au.targets.push(target_pt);
             need_rank = false;

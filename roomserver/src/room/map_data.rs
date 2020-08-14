@@ -44,6 +44,36 @@ impl Cell {
 }
 
 impl TileMap {
+    pub fn get_cell_by_user_id(&self, user_id: u32) -> Option<&Cell> {
+        for cell in self.map.iter() {
+            if cell.user_id != user_id {
+                continue;
+            }
+            return Some(cell);
+        }
+        None
+    }
+
+    pub fn get_cell_mut_by_user_id(&mut self, user_id: u32) -> Option<&mut Cell> {
+        for cell in self.map.iter_mut() {
+            if cell.user_id != user_id {
+                continue;
+            }
+            return Some(cell);
+        }
+        None
+    }
+
+    pub fn remove_user(&mut self, user_id: u32) {
+        for cell in self.map.iter_mut() {
+            if cell.user_id != user_id {
+                continue;
+            }
+            cell.user_id = 0;
+            break;
+        }
+    }
+
     //给客户端显示用的
     pub fn get_cells(&self) -> Vec<u32> {
         let mut v = Vec::new();
@@ -72,7 +102,7 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(member_count: u32, is_open_world_cell: bool) -> anyhow::Result<Self> {
+    pub fn init(member_count: u32, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
         let tile_map_mgr = TEMPLATES.get_tile_map_ref();
         let res = tile_map_mgr.member_temps.get(&member_count);
         if let None = res {
@@ -80,17 +110,26 @@ impl TileMap {
             anyhow::bail!(str)
         }
         let res = res.unwrap();
-        let res = res.get(&is_open_world_cell);
+        let mut rand = rand::thread_rng();
+        let open_world_cell;
+        if let Some(res) = is_open_world_cell {
+            open_world_cell = res;
+        } else {
+            let res = rand.gen_range(0, 2);
+            open_world_cell = res > 0;
+        }
+
+        let res = res.get(&open_world_cell);
         if let None = res {
             let str = format!(
                 "there is no map config for member_count:{},is_open_world_cell:{}",
-                member_count, is_open_world_cell
+                member_count, open_world_cell
             );
             anyhow::bail!(str)
         }
 
         let res = res.unwrap();
-        let mut rand = rand::thread_rng();
+
         let map_random_index = rand.gen_range(0, res.len());
         let tile_map_temp = res.get(map_random_index).unwrap();
         let mut tmd = TileMap::default();

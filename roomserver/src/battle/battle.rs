@@ -68,7 +68,7 @@ impl BattleData {
     }
 
     ///刷新地图
-    pub fn reset(&mut self, is_world_cell: bool) -> anyhow::Result<()> {
+    pub fn reset(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
         let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
         self.tile_map = res;
         Ok(())
@@ -82,7 +82,7 @@ impl BattleData {
         v
     }
 
-    ///下个回合
+    ///下个turn
     pub fn next_turn(&mut self) {
         //计算下一个回合
         self.add_next_turn_index();
@@ -117,10 +117,17 @@ impl BattleData {
                 return;
             }
 
-            let cter = self.battle_cter.get(&user_id).unwrap();
-            if cter.state == BattleCterState::Die as u8 {
-                self.add_next_turn_index();
-                return;
+            let cter = self.battle_cter.get(&user_id);
+            match cter {
+                Some(cter) => {
+                    if cter.state == BattleCterState::Die as u8 {
+                        self.add_next_turn_index();
+                        return;
+                    }
+                }
+                None => {
+                    warn!("add_next_turn_index cter is none!user_id:{}", user_id);
+                }
             }
         } else {
             warn!("{:?}", user_id.err().unwrap());
@@ -228,14 +235,8 @@ impl BattleData {
                 is_pair = false;
             }
         }
-
         //配对了就封装
         if is_pair && recently_open_cell_index.is_some() {
-            let mut target_pt = TargetPt::new();
-            target_pt
-                .target_value
-                .push(recently_open_cell_index.unwrap() as u32);
-            au.targets.push(target_pt);
             info!(
                 "user:{} open cell pair! last_cell:{},now_cell:{}",
                 battle_cter.user_id,
@@ -364,49 +365,31 @@ impl BattleData {
                 aoe_buff = Some(buff.id);
             });
 
-        let target_user = targets.get(0).unwrap();
+        let index = targets.get(0).unwrap();
+        let target_cter = self.get_battle_cter_mut_by_cell_index(*index as usize);
 
-        let target_cter = battle_cters.as_mut().unwrap().get_mut(target_user);
-        if let None = target_cter {
-            let str = format!("there is no cter!user_id:{}", target_user);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!(str)
+        if let Err(e) = target_cter {
+            warn!("{:?}", e);
+            anyhow::bail!("")
         }
+
         let target_cter = target_cter.unwrap();
-        if target_cter.user_id == user_id {
+        let target_user_id = target_cter.user_id;
+        let target_user_index = target_cter.cell_index;
+        if target_user_id == user_id {
             let str = format!("the attack target can not be Self!user_id:{}", user_id);
             warn!("{:?}", str.as_str());
             anyhow::bail!(str)
         }
-        let mut res = damege - target_cter.defence as i32;
-        let mut target_pt = TargetPt::new();
-        let gd_buff = target_cter.trigger_attack_damge_gd();
-        if gd_buff.0 > 0 {
-            res = 0;
-            let mut te_pt = TriggerEffectPt::new();
-            te_pt.set_field_type(TriggerEffectType::Buff as u32);
-            te_pt.set_value(gd_buff.0);
-            target_pt.passiveEffect.push(te_pt);
-        }
 
         //扣血
-        self.deduct_hp(target_cter.user_id, res, true);
+        let mut target_pt = self.deduct_hp(target_user_id, damege, true, true);
 
         //目标被攻击，触发目标buff
-        self.attacked_trigger_buffs(target_cter.user_id, &mut target_pt);
+        self.attacked_trigger_buffs(target_user_id, &mut target_pt);
 
-        target_pt.target_value.push(target_cter.cell_index as u32);
-        target_pt.effect_type = EffectType::AttackDamage as u32;
-        target_pt.effect_value = res as u32;
-        //如果有抵挡攻击伤害的buff，并且触发次数为0了
-        if gd_buff.0 > 0 && gd_buff.1 {
-            target_pt.lost_buffs.push(gd_buff.0);
-        } else {
-            target_cter.is_attacked = true;
-        }
         au.targets.push(target_pt.clone());
         //检查aoebuff
-        let target_cter_index = target_cter.cell_index as i32;
         if let Some(buff) = aoe_buff {
             let buff = TEMPLATES.get_buff_ref().get_temp(&buff);
             if let Err(e) = buff {
@@ -423,7 +406,7 @@ impl BattleData {
 
             let res = self.cal_scope(
                 user_id,
-                target_cter_index as isize,
+                target_user_index as isize,
                 TargetType::OtherAnyPlayer,
                 None,
                 Some(scope_temp),
@@ -436,40 +419,14 @@ impl BattleData {
 
             //目标周围的玩家
             for user in v {
-                if target_cter.user_id == user {
+                if target_user_id == user {
                     continue;
                 }
-                let cter = battle_cters.as_mut().unwrap().get_mut(&user);
-                if let None = cter {
-                    error!("battle cter is not find!user:{}", user);
-                    continue;
-                }
-                let cter = cter.unwrap();
-
-                let reduce_damage = cter.defence as i32;
-                let mut res = damege - reduce_damage;
-                let gd_buff = cter.trigger_attack_damge_gd();
-                if gd_buff.0 > 0 {
-                    res = 0;
-                    let mut te_pt = TriggerEffectPt::new();
-                    te_pt.set_field_type(TriggerEffectType::Buff as u32);
-                    te_pt.set_value(gd_buff.0);
-                    target_pt.passiveEffect.push(te_pt);
-                }
-                let mut target_pt = TargetPt::new();
-                target_pt.effect_type = EffectType::AttackDamage as u32;
                 //扣血
-                self.deduct_hp(cter.user_id, res, false);
+                let mut target_pt = self.deduct_hp(user, damege, true, false);
                 //目标被攻击，触发目标buff
-                self.attacked_trigger_buffs(cter.user_id, &mut target_pt);
-                target_pt.target_value.push(cter.cell_index as u32);
-                target_pt.effect_value = res as u32;
-                if gd_buff.0 > 0 && gd_buff.1 {
-                    target_pt.lost_buffs.push(gd_buff.0);
-                } else {
-                    cter.is_attacked = true;
-                }
-                au.targets.push(target_pt.clone());
+                self.attacked_trigger_buffs(user, &mut target_pt);
+                au.targets.push(target_pt);
             }
         }
         cter.is_can_attack = false;
@@ -610,9 +567,9 @@ impl BattleData {
                     warn!("{:?}", str.as_str());
                     anyhow::bail!(str)
                 }
-                let target_user = target_array.get(0).unwrap();
-                let target_index = target_array.get(1).unwrap();
-                au_vec = self.move_user(*target_user, *target_index as usize, au);
+                let target_user_index = *target_array.get(0).unwrap() as usize;
+                let target_index = *target_array.get(1).unwrap() as usize;
+                au_vec = self.move_user(target_user_index, target_index, au);
             } else if NEAR_SKILL_DAMAGE_AND_CURE.contains(&skill_id) {
                 //对你相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
                 au_vec = self.skill_damage_and_cure(user_id, battle_cter.cell_index, skill_id, au);
@@ -651,13 +608,46 @@ impl BattleData {
     }
 
     ///扣血
-    pub fn deduct_hp(&mut self, target: u32, value: i32, need_rank: bool) {
+    pub fn deduct_hp(
+        &mut self,
+        target: u32,
+        damege: i32,
+        is_attack: bool,
+        need_rank: bool,
+    ) -> TargetPt {
+        let mut target_pt = TargetPt::new();
+
+        target_pt.effect_type = EffectType::SkillDamage as u32;
+
         let rank_max = self.rank_map.clone();
         let rank_max = rank_max.keys().max();
         let cter = self.battle_cter.get_mut(&target).unwrap();
-        let res = cter.sub_hp(value);
+        target_pt.target_value.push(cter.cell_index as u32);
+        let mut res = damege;
+        //如果是普通攻击，要算上减伤
+        if is_attack {
+            target_pt.effect_type = EffectType::AttackDamage as u32;
+            res = damege - cter.defence as i32;
+            if res < 0 {
+                res = 0;
+            }
+            let gd_buff = cter.trigger_attack_damge_gd();
+            if gd_buff.0 > 0 {
+                let mut te_pt = TriggerEffectPt::new();
+                te_pt.set_field_type(TriggerEffectType::Buff as u32);
+                te_pt.set_value(gd_buff.0);
+                target_pt.passiveEffect.push(te_pt);
+                if gd_buff.1 {
+                    target_pt.lost_buffs.push(gd_buff.0);
+                }
+            } else {
+                cter.is_attacked = true;
+            }
+        }
+        target_pt.effect_value = res as u32;
+        let is_die = cter.sub_hp(res);
 
-        if res {
+        if is_die {
             let mut rank = 0_u32;
             if let Some(rank_max) = rank_max {
                 rank = *rank_max;
@@ -671,6 +661,7 @@ impl BattleData {
             let v = self.rank_map.get_mut(&rank).unwrap();
             v.push(target);
         }
+        target_pt
     }
 
     ///处理结算
@@ -683,7 +674,6 @@ impl BattleData {
         let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cters = battle_cters_prt.as_mut().unwrap();
         let tile_map_prt = self.tile_map.borrow_mut() as *mut TileMap;
-        let tile_map = tile_map_prt.as_mut().unwrap();
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
             let mut is_first = false;

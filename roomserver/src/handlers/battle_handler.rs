@@ -4,7 +4,7 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{BattleType, RoomModel, RoomType};
-use log::{error, info, warn};
+use log::{error, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt::Debug;
@@ -262,14 +262,15 @@ fn open_cell(
     target_cell_index: usize,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-    let battle_data = rm.battle_data.borrow();
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     //校验是否轮到自己
     if !check_is_user_turn(rm, user_id) {
         let str = format!("is not this player'turn now!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
+    let battle_data = rm.battle_data.borrow();
+    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+
     //校验地图块
     let res = battle_data.check_choice_index(target_cell_index, true, true, true, false);
     if let Err(e) = res {

@@ -123,8 +123,6 @@ impl Room {
                 warn!("constant temp's battle_turn_limit_time is none!")
             }
         }
-
-        room.setting.is_world_tile = true;
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;
@@ -175,7 +173,12 @@ impl Room {
 
     ///刷新地图
     pub fn refresh_map(&mut self) {
-        let is_world_cell = self.setting.is_world_tile;
+        let is_world_cell;
+        if self.room_type == RoomType::Match as u8 {
+            is_world_cell = None;
+        } else {
+            is_world_cell = Some(self.setting.is_world_tile);
+        }
         let res = self.battle_data.reset(is_world_cell);
         if let Err(e) = res {
             error!("{:?}", e);
@@ -870,11 +873,6 @@ impl Room {
         } else {
             //不是最后一个就轮到下一个
             self.add_next_choice_index();
-            println!(
-                "------------------------------index:{},choice_orders:{:?}",
-                self.get_next_choice_index(),
-                self.get_choice_orders()
-            );
             self.build_choice_turn_task();
         }
     }
@@ -902,6 +900,9 @@ impl Room {
         let last_order_user = self.battle_data.turn_orders[member_size - 1];
         self.remove_turn_orders(index);
 
+        //移除战斗角色
+        self.battle_data.battle_cter.remove(&user_id);
+        self.battle_data.tile_map.remove_user(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
             return;
@@ -934,7 +935,11 @@ impl Room {
             //todo  只剩一个人就直接战斗结算
             return;
         }
+        //移除顺位数据
         self.remove_turn_orders(index);
+        //移除玩家战斗数据
+        self.battle_data.battle_cter.remove(&user_id);
+        self.battle_data.tile_map.remove_user(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
             return;
@@ -1108,8 +1113,13 @@ impl Room {
 
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u32;
-        let is_open_world_cell = self.setting.is_world_tile;
-        let tmd = TileMap::init(member_count, is_open_world_cell)?;
+        let is_world_cell;
+        if self.room_type == RoomType::Match as u8 {
+            is_world_cell = None;
+        } else {
+            is_world_cell = Some(self.setting.is_world_tile);
+        }
+        let tmd = TileMap::init(member_count, is_world_cell)?;
         Ok(tmd)
     }
 

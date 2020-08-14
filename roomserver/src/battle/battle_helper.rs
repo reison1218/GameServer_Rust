@@ -4,8 +4,7 @@ use crate::room::character::BattleCharacter;
 use crate::room::map_data::CellType;
 use crate::task_timer::{Task, TaskCmd};
 use log::{error, warn};
-use protobuf::{Message, RepeatedField};
-use std::borrow::BorrowMut;
+use std::borrow::{Borrow, BorrowMut};
 use tools::cmd_code::ClientCode;
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::S_ACTION_NOTICE;
@@ -110,16 +109,6 @@ impl BattleData {
         self.get_sender_mut().write(bytes);
     }
 
-    ///推送action通知
-    pub fn push_action_notice(&mut self, aus: Vec<ActionUnitPt>) {
-        let mut san = S_ACTION_NOTICE::new();
-        san.set_action_uints(RepeatedField::from(aus));
-        let bytes = san.write_to_bytes().unwrap();
-        for member_id in self.battle_cter.clone().keys() {
-            self.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
-        }
-    }
-
     pub fn get_sender_mut(&mut self) -> &mut TcpSender {
         self.sender.borrow_mut()
     }
@@ -144,6 +133,43 @@ impl BattleData {
         Ok(cter.unwrap())
     }
 
+    pub fn get_battle_cter_by_cell_index(&self, index: usize) -> anyhow::Result<&BattleCharacter> {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no cell!index:{}", index)
+        }
+        let cell = res.unwrap();
+        let user_id = cell.user_id;
+        if user_id <= 0 {
+            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+        }
+        let cter = self.battle_cter.get(&user_id);
+        if cter.is_none() {
+            anyhow::bail!("cter not find!user_id:{}", user_id)
+        }
+        Ok(cter.unwrap())
+    }
+
+    pub fn get_battle_cter_mut_by_cell_index(
+        &mut self,
+        index: usize,
+    ) -> anyhow::Result<&mut BattleCharacter> {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no cell!index:{}", index)
+        }
+        let cell = res.unwrap();
+        let user_id = cell.user_id;
+        if user_id <= 0 {
+            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+        }
+        let cter = self.battle_cter.get_mut(&user_id);
+        if cter.is_none() {
+            anyhow::bail!("cter not find!user_id:{}", user_id)
+        }
+        Ok(cter.unwrap())
+    }
+
     ///检查目标数组
     pub fn check_target_array(
         &self,
@@ -159,14 +185,37 @@ impl BattleData {
             }
             //任意玩家
             TargetType::AnyPlayer => {
-                self.check_user_target(target_array, None)? //不包括自己的其他玩家
+                let mut v = Vec::new();
+                for index in target_array {
+                    let res = self.get_battle_cter_by_cell_index(*index as usize);
+                    if let Ok(cter) = res {
+                        v.push(cter.user_id);
+                    }
+                }
+                self.check_user_target(&v[..], None)? //不包括自己的其他玩家
             } //玩家自己
             TargetType::PlayerSelf => {} //玩家自己
             //全图玩家
-            TargetType::AllPlayer => self.check_user_target(target_array, None)?, //不包括自己的其他玩家
+            TargetType::AllPlayer => {
+                let mut v = Vec::new();
+                for index in target_array {
+                    let res = self.get_battle_cter_by_cell_index(*index as usize);
+                    if let Ok(cter) = res {
+                        v.push(cter.user_id);
+                    }
+                }
+                self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
+            }
             TargetType::OtherAllPlayer => {
+                let mut v = Vec::new();
+                for index in target_array {
+                    let res = self.get_battle_cter_by_cell_index(*index as usize);
+                    if let Ok(cter) = res {
+                        v.push(cter.user_id);
+                    }
+                }
                 //除自己所有玩家
-                self.check_user_target(target_array, Some(user_id))?
+                self.check_user_target(&v[..], Some(user_id))?
             } //除自己外任意玩家
             TargetType::OtherAnyPlayer => self.check_user_target(target_array, Some(user_id))?,
             //地图块

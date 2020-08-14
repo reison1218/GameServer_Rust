@@ -53,6 +53,8 @@ pub mod buff_type {
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     /// 翻开地图块干点啥，配对又干点啥
     pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
+    ///配对与自己相同元素时恢复生命
+    pub static PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
 }
 
 ///pos操作类型
