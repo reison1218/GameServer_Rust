@@ -19,6 +19,8 @@ pub enum GameCode{
     JoinRoom = 1007,
     //匹配房间
     SearchRoom = 1008,
+    //战斗结算
+    Settle = 1009,
     //范围最大值
     Max = 10000,
 }

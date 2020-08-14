@@ -7,7 +7,7 @@ use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
+    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_G_SETTLE,
 };
 use tools::util::packet::Packet;
 
@@ -320,5 +320,37 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     grs.set_pbp(pbp);
     //发给房间
     gm.send_2_room(RoomCode::SearchRoom, user_id, grs.write_to_bytes()?);
+    Ok(())
+}
+
+///匹配房间
+pub fn settle(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let mut rgs = R_G_SETTLE::new();
+    let res = rgs.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    for winner in rgs.get_winners() {
+        let res = gm.users.get_mut(&winner.user_id);
+        if let None = res {
+            error! {"settle!UserData is not find! user_id:{}",winner.user_id};
+            continue;
+        }
+        let user_data = res.unwrap();
+        let res = user_data
+            .get_characters_mut_ref()
+            .cter_map
+            .get_mut(&winner.cter_id);
+        if let None = res {
+            error! {"settle!Character is not find! user_id:{},cter_id:{}",winner.user_id,winner.cter_id};
+            continue;
+        }
+        let cter = res.unwrap();
+        let res = cter.add_grade();
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
+    }
     Ok(())
 }

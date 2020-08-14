@@ -3,7 +3,7 @@ use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::{Room, RoomState};
-use crate::room::room_model::{BattleType, RoomModel, RoomType};
+use crate::room::room_model::{RoomModel, RoomType};
 use log::{error, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
@@ -35,9 +35,6 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if !res {
         return Ok(());
     }
-    let room_id = room.get_room_id();
-    let battle_type = room.setting.battle_type;
-
     //解析protobuf
     let mut ca = C_ACTION::new();
     let res = ca.merge_from_bytes(packet.get_data());
@@ -131,37 +128,34 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     unsafe {
         let rm_ptr = rm as *mut RoomMgr;
         let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        let (is_settle, allive_count) = room.battle_data.handler_settle();
-        let room_type = room.get_room_type();
-        let room_type = RoomType::from(room_type);
-        //如果要结算,卸载数据
-        if is_settle {
-            let v = room.get_member_vec();
-
-            match room_type {
-                RoomType::Match => {
-                    let res = rm_ptr
-                        .as_mut()
-                        .unwrap()
-                        .match_rooms
-                        .get_match_room_mut(&battle_type);
-                    res.rm_room(&room_id);
-                }
-                RoomType::Custom => {
-                    rm_ptr.as_mut().unwrap().custom_room.rm_room(&room_id);
-                }
-                _ => {}
-            }
-            for user_id in v {
-                rm_ptr.as_mut().unwrap().player_room.remove(&user_id);
-            }
-        } else if allive_count >= 2 && room.battle_data.tile_map.un_pair_count <= 2 {
-            //校验是否要刷新地图
-            room.battle_data.is_refreshed = true;
-            room.refresh_map();
-        }
+        battle_settle(rm_ptr.as_mut().unwrap(), room);
     }
     Ok(())
+}
+
+///战斗结算
+pub unsafe fn battle_settle(rm: &mut RoomMgr, room: &mut Room) {
+    let is_settle = room.handler_settle();
+    let room_type = RoomType::from(room.get_room_type());
+    let battle_type = room.setting.battle_type;
+    let room_id = room.get_room_id();
+    //如果要结算,卸载数据
+    if is_settle {
+        let v = room.get_member_vec();
+        match room_type {
+            RoomType::Match => {
+                let res = rm.match_rooms.get_match_room_mut(&battle_type);
+                res.rm_room(&room_id);
+            }
+            RoomType::Custom => {
+                rm.custom_room.rm_room(&room_id);
+            }
+            _ => {}
+        }
+        for user_id in v {
+            rm.player_room.remove(&user_id);
+        }
+    }
 }
 
 ///处理pos

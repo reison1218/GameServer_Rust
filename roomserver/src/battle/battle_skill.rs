@@ -144,7 +144,7 @@ impl BattleData {
         }
         let target_cter = self.get_battle_cter_mut_by_cell_index(target_user_index);
         if let Err(e) = target_cter {
-            warn!("cter is not find!index:{}", target_user_index);
+            warn!("{:?}", e);
             anyhow::bail!("")
         }
         let target_cter = target_cter.unwrap();
@@ -206,13 +206,17 @@ impl BattleData {
         let v = res.unwrap();
         let mut add_hp = 0_u32;
         let mut need_rank = true;
-        for user in v {
-            let cter = self.get_battle_cter_mut(Some(user)).unwrap();
+        for target_user in v {
+            let target_cter = self.get_battle_cter_mut(Some(target_user)).unwrap();
             add_hp += skill.skill_temp.par1;
-            let target_id = cter.user_id;
-            let target_index = cter.cell_index as u32;
+            let target_index = target_cter.cell_index as u32;
             //扣血
-            self.deduct_hp(target_id, skill.skill_temp.par1 as i32, false, need_rank);
+            self.deduct_hp(
+                user_id,
+                target_user,
+                Some(skill.skill_temp.par1 as i32),
+                need_rank,
+            );
             need_rank = false;
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(target_index);
@@ -334,6 +338,7 @@ impl BattleData {
     ///单体技能伤害
     pub fn single_skill_damage(
         &mut self,
+        user_id: u32,
         skill_id: u32,
         target_user: u32,
         au: &mut ActionUnitPt,
@@ -353,7 +358,9 @@ impl BattleData {
         target_pt.effect_value = skill.par1;
         au.targets.push(target_pt);
         let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
-        self.deduct_hp(target_user, skill.par1 as i32, false, true);
+        unsafe {
+            self.deduct_hp(user_id, target_user, Some(skill.par1 as i32), true);
+        }
         //替换技能
         if skill.par2 > 0 {
             let user_id = au.from_user;
@@ -424,8 +431,8 @@ impl BattleData {
             .unwrap();
 
         let mut need_rank = true;
-        for member_id in v {
-            let cter = self.get_battle_cter_mut(Some(member_id)).unwrap();
+        for target_user in v {
+            let cter = self.get_battle_cter_mut(Some(target_user)).unwrap();
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(cter.cell_index as u32);
             target_pt.effect_type = EffectType::SkillDamage as u32;
@@ -436,7 +443,9 @@ impl BattleData {
             } else {
                 damage_res = damage;
             }
-            self.deduct_hp(member_id, damage_res, false, need_rank);
+            unsafe {
+                self.deduct_hp(user_id, target_user, Some(damage_res), need_rank);
+            }
             target_pt.effect_value = damage_res as u32;
             au.targets.push(target_pt);
             need_rank = false;

@@ -1,13 +1,11 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::{ActionType, TargetType, TRIGGER_SCOPE_NEAR};
+use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::CellType;
 use crate::task_timer::{Task, TaskCmd};
 use log::{error, warn};
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::ActionUnitPt;
-use tools::protos::battle::S_ACTION_NOTICE;
 use tools::tcp::TcpSender;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
@@ -62,46 +60,6 @@ impl BattleData {
             index += 1;
         }
         return -1;
-    }
-
-    ///计算攻击力
-    pub fn calc_damage(&self, user_id: u32) -> i32 {
-        let battle_cter = self.battle_cter.get(&user_id).unwrap();
-        let mut damage = battle_cter.atk;
-
-        for (buff_id, times) in battle_cter.add_damage_buffs.iter() {
-            let buff = battle_cter.buffs.get(buff_id);
-            if buff.is_none() {
-                continue;
-            }
-            let buff = buff.unwrap();
-            for _ in 0..*times {
-                if buff_id == &1001 {
-                    damage += buff.buff_temp.par2;
-                } else {
-                    damage += buff.buff_temp.par1;
-                }
-            }
-        }
-        damage as i32
-    }
-
-    ///计算减伤
-    pub fn calc_reduce_damage(&self, user_id: u32) -> i32 {
-        let battle_cter = self.battle_cter.get(&user_id).unwrap();
-        let mut value = battle_cter.defence;
-
-        for (buff_id, times) in battle_cter.sub_damage_buffs.iter() {
-            let buff = battle_cter.buffs.get(buff_id);
-            if buff.is_none() {
-                continue;
-            }
-            let buff = buff.unwrap();
-            for _ in 0..*times {
-                value += buff.buff_temp.par1;
-            }
-        }
-        value as i32
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {

@@ -188,6 +188,19 @@ impl Character {
         Ok(res)
     }
 
+    pub fn add_grade(&mut self) -> anyhow::Result<u32> {
+        let res = self.get_grade();
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return Ok(0);
+        }
+        let mut grade = res.unwrap() as usize;
+        grade += 1;
+        self.set_usize(GRADE.to_string(), grade);
+        self.add_version();
+        Ok(grade as u32)
+    }
+
     #[warn(dead_code)]
     pub fn query(table_name: &str, user_id: u32, tem_id: Option<u32>) -> Option<Self> {
         let mut v: Vec<Value> = Vec::new();

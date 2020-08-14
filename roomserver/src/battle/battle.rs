@@ -13,11 +13,11 @@ use crate::task_timer::Task;
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{
-    ActionUnitPt, BuffPt, CellBuffPt, CterStatusPt, SettleDataPt, TargetPt, TriggerEffectPt,
+    ActionUnitPt, BuffPt, CellBuffPt, SettleDataPt, TargetPt, TriggerEffectPt,
 };
 use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SETTLEMENT_NOTICE};
 use tools::tcp::TcpSender;
@@ -354,7 +354,6 @@ impl BattleData {
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let damege = self.calc_damage(user_id);
         let mut aoe_buff: Option<u32> = None;
 
         //塞选出ape的buff
@@ -383,7 +382,7 @@ impl BattleData {
         }
 
         //扣血
-        let mut target_pt = self.deduct_hp(target_user_id, damege, true, true);
+        let mut target_pt = self.deduct_hp(user_id, target_user_id, None, true);
 
         //目标被攻击，触发目标buff
         self.attacked_trigger_buffs(target_user_id, &mut target_pt);
@@ -418,14 +417,14 @@ impl BattleData {
             let v = res.unwrap();
 
             //目标周围的玩家
-            for user in v {
-                if target_user_id == user {
+            for target_user in v {
+                if target_user_id == target_user {
                     continue;
                 }
                 //扣血
-                let mut target_pt = self.deduct_hp(user, damege, true, false);
+                let mut target_pt = self.deduct_hp(user_id, target_user, None, false);
                 //目标被攻击，触发目标buff
-                self.attacked_trigger_buffs(user, &mut target_pt);
+                self.attacked_trigger_buffs(target_user, &mut target_pt);
                 au.targets.push(target_pt);
             }
         }
@@ -579,7 +578,7 @@ impl BattleData {
             } else if SKILL_DAMAGE.contains(&skill_id) {
                 let target_user = target_array.get(0).unwrap();
                 //单体技能伤害
-                au_vec = self.single_skill_damage(skill_id, *target_user, au);
+                au_vec = self.single_skill_damage(user_id, skill_id, *target_user, au);
             } else if RED_SKILL_CD.contains(&skill_id) {
                 //减目标技能cd
                 let target_user = target_array.get(0).unwrap();
@@ -608,30 +607,44 @@ impl BattleData {
     }
 
     ///扣血
-    pub fn deduct_hp(
+    pub unsafe fn deduct_hp(
         &mut self,
+        from: u32,
         target: u32,
-        damege: i32,
-        is_attack: bool,
+        skill_damege: Option<i32>,
         need_rank: bool,
     ) -> TargetPt {
+        let battle_data_ptr = self as *mut BattleData;
         let mut target_pt = TargetPt::new();
 
         target_pt.effect_type = EffectType::SkillDamage as u32;
 
         let rank_max = self.rank_map.clone();
         let rank_max = rank_max.keys().max();
-        let cter = self.battle_cter.get_mut(&target).unwrap();
-        target_pt.target_value.push(cter.cell_index as u32);
-        let mut res = damege;
+        let target_cter = battle_data_ptr
+            .as_mut()
+            .unwrap()
+            .battle_cter
+            .get_mut(&target)
+            .unwrap();
+        target_pt.target_value.push(target_cter.cell_index as u32);
+        let mut res = 0;
         //如果是普通攻击，要算上减伤
-        if is_attack {
+        if skill_damege.is_none() {
+            let from_cter = battle_data_ptr
+                .as_mut()
+                .unwrap()
+                .battle_cter
+                .get_mut(&from)
+                .unwrap();
+            let attack_damage = from_cter.calc_damage();
+            let reduce_damage = target_cter.calc_reduce_damage();
             target_pt.effect_type = EffectType::AttackDamage as u32;
-            res = damege - cter.defence as i32;
+            res = attack_damage - reduce_damage;
             if res < 0 {
                 res = 0;
             }
-            let gd_buff = cter.trigger_attack_damge_gd();
+            let gd_buff = target_cter.trigger_attack_damge_gd();
             if gd_buff.0 > 0 {
                 let mut te_pt = TriggerEffectPt::new();
                 te_pt.set_field_type(TriggerEffectType::Buff as u32);
@@ -641,11 +654,13 @@ impl BattleData {
                     target_pt.lost_buffs.push(gd_buff.0);
                 }
             } else {
-                cter.is_attacked = true;
+                target_cter.is_attacked = true;
             }
+        } else {
+            res = skill_damege.unwrap();
         }
         target_pt.effect_value = res as u32;
-        let is_die = cter.sub_hp(res);
+        let is_die = target_cter.sub_hp(res);
 
         if is_die {
             let mut rank = 0_u32;
@@ -665,7 +680,7 @@ impl BattleData {
     }
 
     ///处理结算
-    pub unsafe fn handler_settle(&mut self) -> (bool, usize) {
+    pub unsafe fn handler_settle(&mut self) -> (bool, usize, Option<HashMap<u32, u32>>) {
         let allive_count = self
             .battle_cter
             .values()
@@ -673,10 +688,12 @@ impl BattleData {
             .count();
         let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cters = battle_cters_prt.as_mut().unwrap();
-        let tile_map_prt = self.tile_map.borrow_mut() as *mut TileMap;
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
+            let mut first_map = HashMap::new();
+            //是否第一名
             let mut is_first = false;
+            //等级
             let mut grade = 0_u32;
             let mut ssn = S_SETTLEMENT_NOTICE::new();
             for (rank, members) in self.rank_map.iter() {
@@ -686,17 +703,17 @@ impl BattleData {
                     is_first = false;
                 }
                 for member_id in members {
-                    grade = 0;
+                    let cter = battle_cters.get_mut(member_id).unwrap();
+                    grade = cter.grade;
                     if is_first {
-                        let cter = battle_cters.get_mut(member_id).unwrap();
-                        cter.grade += 1;
-                        grade = cter.grade;
+                        grade += 1;
                     }
                     let mut smp = SettleDataPt::new();
                     smp.user_id = *member_id;
                     smp.rank = *rank;
                     smp.grade = grade;
                     ssn.settle_datas.push(smp);
+                    first_map.insert(*member_id, cter.cter_id);
                 }
             }
 
@@ -713,8 +730,8 @@ impl BattleData {
                     error!("{:?}", e);
                 }
             }
-            return (true, allive_count);
+            return (true, allive_count, Some(first_map));
         }
-        return (false, allive_count);
+        return (false, allive_count, None);
     }
 }

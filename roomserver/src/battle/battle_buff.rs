@@ -3,13 +3,13 @@ use crate::battle::battle_enum::buff_type::{
     AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, OPEN_CELL_AND_PAIR, PAIR_CURE,
     PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{ActionType, BattleCterState, EffectType};
+use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, TileMap};
+use crate::room::map_data::TileMap;
 use crate::TEMPLATES;
-use log::{error, warn};
+use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, TargetPt};
@@ -282,13 +282,21 @@ impl BattleData {
             .cal_scope(user_id, isize_index, target_type, None, Some(scope_temp))
             .unwrap();
         let mut need_rank = true;
-        for user in v.iter() {
-            let cter = battle_cters.get_mut(user).unwrap();
+        for target_user in v.iter() {
+            let target_cter = battle_cters.get_mut(target_user).unwrap();
             target_pt.target_value.clear();
-            target_pt.target_value.push(cter.cell_index as u32);
+            target_pt.target_value.push(target_cter.cell_index as u32);
             au.targets.push(target_pt.clone());
             //造成技能伤害
-            self.deduct_hp(*user, buff_temp.par1 as i32, false, need_rank);
+            unsafe {
+                self.deduct_hp(
+                    user_id,
+                    *target_user,
+                    Some(buff_temp.par1 as i32),
+                    need_rank,
+                );
+            }
+
             need_rank = false;
         }
     }
@@ -405,7 +413,7 @@ impl BattleData {
                 }
             }
 
-            ///此处触发加攻击不用通知客户端
+            //此处触发加攻击不用通知客户端
             if SAME_CELL_ELEMENT_ADD_ATTACK.contains(&buff.id) {
                 if buff.buff_temp.par1 as u8 == battle_cter.element
                     && battle_cter.element == cell_element
@@ -413,7 +421,7 @@ impl BattleData {
                     battle_cter.trigger_add_damage_buff(buff.id);
                 }
             }
-            ///翻开地图块加能量，配对加能量
+            //翻开地图块加能量，配对加能量
             if OPEN_CELL_AND_PAIR.contains(&buff.id) {
                 self.open_cell_and_pair(user_id, buff.id, cters, is_pair, au);
             }
@@ -492,7 +500,12 @@ impl BattleData {
                     if index != res {
                         continue;
                     }
-                    self.deduct_hp(battle_cter.user_id, buff.buff_temp.par1 as i32, false, true);
+                    self.deduct_hp(
+                        other_cter.user_id,
+                        battle_cter.user_id,
+                        Some(buff.buff_temp.par1 as i32),
+                        true,
+                    );
                     let mut other_aupt = ActionUnitPt::new();
                     other_aupt.from_user = other_cter.user_id;
                     other_aupt.action_type = ActionType::Buff as u32;
@@ -524,9 +537,9 @@ impl BattleData {
                         continue;
                     }
                     self.deduct_hp(
+                        battle_cter.user_id,
                         other_cter.user_id,
-                        buff.buff_temp.par1 as i32,
-                        false,
+                        Some(buff.buff_temp.par1 as i32),
                         need_rank,
                     );
                     let mut self_aupt = ActionUnitPt::new();

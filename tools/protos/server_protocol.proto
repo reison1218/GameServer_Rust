@@ -20,6 +20,16 @@ message G_R_SEARCH_ROOM{
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 
+///游戏服务器发给房间服务器，快速开始
+message R_G_SETTLE{
+    repeated WinnerPt winners = 1;//获胜方
+}
+
+message WinnerPt{
+    uint32 user_id = 1;//玩家id
+    uint32 cter_id= 2;//角色id
+}
+
 //玩家战斗数据封装proto
 message PlayerBattlePt{
     uint32 user_id = 1;//玩家id

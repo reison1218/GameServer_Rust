@@ -12,7 +12,7 @@ use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
-use tools::cmd_code::ClientCode;
+use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::battle::S_BATTLE_START_NOTICE;
 use tools::protos::room::{
@@ -21,6 +21,7 @@ use tools::protos::room::{
     S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
     S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
 };
+use tools::protos::server_protocol::{WinnerPt, R_G_SETTLE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -135,6 +136,37 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    ///处理结算
+    pub unsafe fn handler_settle(&mut self) -> bool {
+        if self.state != RoomState::ChoiceIndex || self.state != RoomState::BattleStarted {
+            return false;
+        }
+        let (is_settle, allive_count, first_v) = self.battle_data.handler_settle();
+        if is_settle {
+            let mut rgs = R_G_SETTLE::new();
+            for member in first_v.unwrap() {
+                let mut winner_pt = WinnerPt::new();
+                winner_pt.user_id = member.0;
+                winner_pt.cter_id = member.1;
+                rgs.winners.push(winner_pt);
+            }
+            let bytes = rgs.write_to_bytes().unwrap();
+            //发给游戏服同步结算数据
+            self.send_2_game(GameCode::Settle, bytes);
+        } else if allive_count >= 2 && self.battle_data.tile_map.un_pair_count <= 2 {
+            //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
+            //校验是否要刷新地图
+            self.battle_data.is_refreshed = true;
+            self.refresh_map();
+        }
+        is_settle
+    }
+
+    pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd as u32, 0, bytes, true, false);
+        self.get_sender_mut().write(bytes);
     }
 
     ///开始选择占位
@@ -886,11 +918,10 @@ impl Room {
         }
         let next_turn_user = next_turn_user.unwrap();
         let member_size = MEMBER_MAX as usize;
-        if self.members.len() == 1 {
-            //todo 只剩一个人就直接战斗结算
+        //只剩下一个人了就直接返回
+        if self.members.len() <= 1 {
             return;
         }
-
         //去掉地图块上的玩家id
         let cell = self.battle_data.tile_map.map.get_mut(index);
         if let Some(cell) = cell {
@@ -931,8 +962,8 @@ impl Room {
             return;
         }
         let next_turn_user = next_turn_user.unwrap();
-        if self.members.len() == 1 {
-            //todo  只剩一个人就直接战斗结算
+        //只剩下一个人了就直接返回
+        if self.members.len() <= 1 {
             return;
         }
         //移除顺位数据
@@ -972,6 +1003,11 @@ impl Room {
             self.handler_leave_choice_index(user_id, chocie_index);
         } else if self.state == RoomState::BattleStarted {
             self.handler_leave_battle_turn(user_id, turn_index);
+        }
+
+        //处理结算
+        unsafe {
+            self.handler_settle();
         }
     }
 

@@ -84,6 +84,44 @@ impl BattleCharacter {
         None
     }
 
+    ///计算攻击力
+    pub fn calc_damage(&self) -> i32 {
+        let mut damage = self.atk;
+
+        for (buff_id, times) in self.add_damage_buffs.iter() {
+            let buff = self.buffs.get(buff_id);
+            if buff.is_none() {
+                continue;
+            }
+            let buff = buff.unwrap();
+            for _ in 0..*times {
+                if buff_id == &1001 {
+                    damage += buff.buff_temp.par2;
+                } else {
+                    damage += buff.buff_temp.par1;
+                }
+            }
+        }
+        damage as i32
+    }
+
+    ///计算减伤
+    pub fn calc_reduce_damage(&self) -> i32 {
+        let mut value = self.defence;
+
+        for (buff_id, times) in self.sub_damage_buffs.iter() {
+            let buff = self.buffs.get(buff_id);
+            if buff.is_none() {
+                continue;
+            }
+            let buff = buff.unwrap();
+            for _ in 0..*times {
+                value += buff.buff_temp.par1;
+            }
+        }
+        value as i32
+    }
+
     ///添加buff
     pub fn add_buff(&mut self, buff_id: u32) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
