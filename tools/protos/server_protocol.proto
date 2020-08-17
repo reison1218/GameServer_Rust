@@ -21,7 +21,7 @@ message G_R_SEARCH_ROOM{
 }
 
 ///游戏服务器发给房间服务器，快速开始
-message R_G_SETTLE{
+message R_G_SUMMARY{
     repeated WinnerPt winners = 1;//获胜方
 }
 

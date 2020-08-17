@@ -666,7 +666,7 @@ impl ::protobuf::reflect::ProtobufValue for G_R_SEARCH_ROOM {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct R_G_SETTLE {
+pub struct R_G_SUMMARY {
     // message fields
     pub winners: ::protobuf::RepeatedField<WinnerPt>,
     // special fields
@@ -674,14 +674,14 @@ pub struct R_G_SETTLE {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a R_G_SETTLE {
-    fn default() -> &'a R_G_SETTLE {
-        <R_G_SETTLE as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a R_G_SUMMARY {
+    fn default() -> &'a R_G_SUMMARY {
+        <R_G_SUMMARY as ::protobuf::Message>::default_instance()
     }
 }
 
-impl R_G_SETTLE {
-    pub fn new() -> R_G_SETTLE {
+impl R_G_SUMMARY {
+    pub fn new() -> R_G_SUMMARY {
         ::std::default::Default::default()
     }
 
@@ -711,7 +711,7 @@ impl R_G_SETTLE {
     }
 }
 
-impl ::protobuf::Message for R_G_SETTLE {
+impl ::protobuf::Message for R_G_SUMMARY {
     fn is_initialized(&self) -> bool {
         for v in &self.winners {
             if !v.is_initialized() {
@@ -785,8 +785,8 @@ impl ::protobuf::Message for R_G_SETTLE {
         Self::descriptor_static()
     }
 
-    fn new() -> R_G_SETTLE {
-        R_G_SETTLE::new()
+    fn new() -> R_G_SUMMARY {
+        R_G_SUMMARY::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -796,11 +796,11 @@ impl ::protobuf::Message for R_G_SETTLE {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<WinnerPt>>(
                     "winners",
-                    |m: &R_G_SETTLE| { &m.winners },
-                    |m: &mut R_G_SETTLE| { &mut m.winners },
+                    |m: &R_G_SUMMARY| { &m.winners },
+                    |m: &mut R_G_SUMMARY| { &mut m.winners },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_SETTLE>(
-                    "R_G_SETTLE",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_SUMMARY>(
+                    "R_G_SUMMARY",
                     fields,
                     file_descriptor_proto()
                 )
@@ -808,28 +808,28 @@ impl ::protobuf::Message for R_G_SETTLE {
         }
     }
 
-    fn default_instance() -> &'static R_G_SETTLE {
-        static mut instance: ::protobuf::lazy::Lazy<R_G_SETTLE> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static R_G_SUMMARY {
+        static mut instance: ::protobuf::lazy::Lazy<R_G_SUMMARY> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(R_G_SETTLE::new)
+            instance.get(R_G_SUMMARY::new)
         }
     }
 }
 
-impl ::protobuf::Clear for R_G_SETTLE {
+impl ::protobuf::Clear for R_G_SUMMARY {
     fn clear(&mut self) {
         self.winners.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for R_G_SETTLE {
+impl ::std::fmt::Debug for R_G_SUMMARY {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for R_G_SETTLE {
+impl ::protobuf::reflect::ProtobufValue for R_G_SUMMARY {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1281,8 +1281,8 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\\\n\
     \x0fG_R_SEARCH_ROOM\x12\x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattle\
     Type\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03p\
-    bp\"8\n\nR_G_SETTLE\x12*\n\x07winners\x18\x01\x20\x03(\x0b2\x10.protos.W\
-    innerPtR\x07winners\"<\n\x08WinnerPt\x12\x17\n\x07user_id\x18\x01\x20\
+    bp\"9\n\x0bR_G_SUMMARY\x12*\n\x07winners\x18\x01\x20\x03(\x0b2\x10.proto\
+    s.WinnerPtR\x07winners\"<\n\x08WinnerPt\x12\x17\n\x07user_id\x18\x01\x20\
     \x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"q\
     \n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\

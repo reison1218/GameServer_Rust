@@ -1516,54 +1516,54 @@ impl ::protobuf::reflect::ProtobufValue for S_MAP_REFRESH_NOTICE {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct S_SETTLEMENT_NOTICE {
+pub struct S_SUMMARY_NOTICE {
     // message fields
-    pub settle_datas: ::protobuf::RepeatedField<super::base::SettleDataPt>,
+    pub summary_datas: ::protobuf::RepeatedField<super::base::SummaryDataPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a S_SETTLEMENT_NOTICE {
-    fn default() -> &'a S_SETTLEMENT_NOTICE {
-        <S_SETTLEMENT_NOTICE as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a S_SUMMARY_NOTICE {
+    fn default() -> &'a S_SUMMARY_NOTICE {
+        <S_SUMMARY_NOTICE as ::protobuf::Message>::default_instance()
     }
 }
 
-impl S_SETTLEMENT_NOTICE {
-    pub fn new() -> S_SETTLEMENT_NOTICE {
+impl S_SUMMARY_NOTICE {
+    pub fn new() -> S_SUMMARY_NOTICE {
         ::std::default::Default::default()
     }
 
-    // repeated .protos.SettleDataPt settle_datas = 1;
+    // repeated .protos.SummaryDataPt summary_datas = 1;
 
 
-    pub fn get_settle_datas(&self) -> &[super::base::SettleDataPt] {
-        &self.settle_datas
+    pub fn get_summary_datas(&self) -> &[super::base::SummaryDataPt] {
+        &self.summary_datas
     }
-    pub fn clear_settle_datas(&mut self) {
-        self.settle_datas.clear();
+    pub fn clear_summary_datas(&mut self) {
+        self.summary_datas.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_settle_datas(&mut self, v: ::protobuf::RepeatedField<super::base::SettleDataPt>) {
-        self.settle_datas = v;
+    pub fn set_summary_datas(&mut self, v: ::protobuf::RepeatedField<super::base::SummaryDataPt>) {
+        self.summary_datas = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_settle_datas(&mut self) -> &mut ::protobuf::RepeatedField<super::base::SettleDataPt> {
-        &mut self.settle_datas
+    pub fn mut_summary_datas(&mut self) -> &mut ::protobuf::RepeatedField<super::base::SummaryDataPt> {
+        &mut self.summary_datas
     }
 
     // Take field
-    pub fn take_settle_datas(&mut self) -> ::protobuf::RepeatedField<super::base::SettleDataPt> {
-        ::std::mem::replace(&mut self.settle_datas, ::protobuf::RepeatedField::new())
+    pub fn take_summary_datas(&mut self) -> ::protobuf::RepeatedField<super::base::SummaryDataPt> {
+        ::std::mem::replace(&mut self.summary_datas, ::protobuf::RepeatedField::new())
     }
 }
 
-impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
+impl ::protobuf::Message for S_SUMMARY_NOTICE {
     fn is_initialized(&self) -> bool {
-        for v in &self.settle_datas {
+        for v in &self.summary_datas {
             if !v.is_initialized() {
                 return false;
             }
@@ -1576,7 +1576,7 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.settle_datas)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.summary_datas)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1590,7 +1590,7 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.settle_datas {
+        for value in &self.summary_datas {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -1600,7 +1600,7 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.settle_datas {
+        for v in &self.summary_datas {
             os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -1635,8 +1635,8 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
         Self::descriptor_static()
     }
 
-    fn new() -> S_SETTLEMENT_NOTICE {
-        S_SETTLEMENT_NOTICE::new()
+    fn new() -> S_SUMMARY_NOTICE {
+        S_SUMMARY_NOTICE::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1644,13 +1644,13 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SettleDataPt>>(
-                    "settle_datas",
-                    |m: &S_SETTLEMENT_NOTICE| { &m.settle_datas },
-                    |m: &mut S_SETTLEMENT_NOTICE| { &mut m.settle_datas },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
+                    "summary_datas",
+                    |m: &S_SUMMARY_NOTICE| { &m.summary_datas },
+                    |m: &mut S_SUMMARY_NOTICE| { &mut m.summary_datas },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SETTLEMENT_NOTICE>(
-                    "S_SETTLEMENT_NOTICE",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SUMMARY_NOTICE>(
+                    "S_SUMMARY_NOTICE",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1658,28 +1658,28 @@ impl ::protobuf::Message for S_SETTLEMENT_NOTICE {
         }
     }
 
-    fn default_instance() -> &'static S_SETTLEMENT_NOTICE {
-        static mut instance: ::protobuf::lazy::Lazy<S_SETTLEMENT_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static S_SUMMARY_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<S_SUMMARY_NOTICE> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(S_SETTLEMENT_NOTICE::new)
+            instance.get(S_SUMMARY_NOTICE::new)
         }
     }
 }
 
-impl ::protobuf::Clear for S_SETTLEMENT_NOTICE {
+impl ::protobuf::Clear for S_SUMMARY_NOTICE {
     fn clear(&mut self) {
-        self.settle_datas.clear();
+        self.summary_datas.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for S_SETTLEMENT_NOTICE {
+impl ::std::fmt::Debug for S_SUMMARY_NOTICE {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for S_SETTLEMENT_NOTICE {
+impl ::protobuf::reflect::ProtobufValue for S_SUMMARY_NOTICE {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1702,9 +1702,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\x80\x01\n\x14S_M\
     AP_REFRESH_NOTICE\x12\x1e\n\x0btile_map_id\x18\x01\x20\x01(\rR\ttileMapI\
     d\x12\x14\n\x05cells\x18\x02\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\
-    \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x13S_SETTLEME\
-    NT_NOTICE\x127\n\x0csettle_datas\x18\x01\x20\x03(\x0b2\x14.protos.Settle\
-    DataPtR\x0bsettleDatasb\x06proto3\
+    \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x10S_SUMMARY_\
+    NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDat\
+    aPtR\x0csummaryDatasb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

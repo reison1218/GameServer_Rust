@@ -20,7 +20,7 @@ pub enum GameCode{
     //匹配房间
     SearchRoom = 1008,
     //战斗结算
-    Settle = 1009,
+    Summary = 1009,
     //范围最大值
     Max = 10000,
 }
@@ -142,7 +142,7 @@ pub enum ClientCode{
     //地图刷新推送
     MapRefreshNotice = 10040,
     //结算推送
-    SettlementNotice = 10041,
+    SummaryNotice = 10041,
     //最大命令号
     Max = 20000,
 }

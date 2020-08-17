@@ -3740,7 +3740,7 @@ impl ::protobuf::reflect::ProtobufValue for BuffPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct SettleDataPt {
+pub struct SummaryDataPt {
     // message fields
     pub user_id: u32,
     pub grade: u32,
@@ -3750,14 +3750,14 @@ pub struct SettleDataPt {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a SettleDataPt {
-    fn default() -> &'a SettleDataPt {
-        <SettleDataPt as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a SummaryDataPt {
+    fn default() -> &'a SummaryDataPt {
+        <SummaryDataPt as ::protobuf::Message>::default_instance()
     }
 }
 
-impl SettleDataPt {
-    pub fn new() -> SettleDataPt {
+impl SummaryDataPt {
+    pub fn new() -> SummaryDataPt {
         ::std::default::Default::default()
     }
 
@@ -3807,7 +3807,7 @@ impl SettleDataPt {
     }
 }
 
-impl ::protobuf::Message for SettleDataPt {
+impl ::protobuf::Message for SummaryDataPt {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -3903,8 +3903,8 @@ impl ::protobuf::Message for SettleDataPt {
         Self::descriptor_static()
     }
 
-    fn new() -> SettleDataPt {
-        SettleDataPt::new()
+    fn new() -> SummaryDataPt {
+        SummaryDataPt::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -3914,21 +3914,21 @@ impl ::protobuf::Message for SettleDataPt {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "user_id",
-                    |m: &SettleDataPt| { &m.user_id },
-                    |m: &mut SettleDataPt| { &mut m.user_id },
+                    |m: &SummaryDataPt| { &m.user_id },
+                    |m: &mut SummaryDataPt| { &mut m.user_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "grade",
-                    |m: &SettleDataPt| { &m.grade },
-                    |m: &mut SettleDataPt| { &mut m.grade },
+                    |m: &SummaryDataPt| { &m.grade },
+                    |m: &mut SummaryDataPt| { &mut m.grade },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "rank",
-                    |m: &SettleDataPt| { &m.rank },
-                    |m: &mut SettleDataPt| { &mut m.rank },
+                    |m: &SummaryDataPt| { &m.rank },
+                    |m: &mut SummaryDataPt| { &mut m.rank },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<SettleDataPt>(
-                    "SettleDataPt",
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<SummaryDataPt>(
+                    "SummaryDataPt",
                     fields,
                     file_descriptor_proto()
                 )
@@ -3936,15 +3936,15 @@ impl ::protobuf::Message for SettleDataPt {
         }
     }
 
-    fn default_instance() -> &'static SettleDataPt {
-        static mut instance: ::protobuf::lazy::Lazy<SettleDataPt> = ::protobuf::lazy::Lazy::INIT;
+    fn default_instance() -> &'static SummaryDataPt {
+        static mut instance: ::protobuf::lazy::Lazy<SummaryDataPt> = ::protobuf::lazy::Lazy::INIT;
         unsafe {
-            instance.get(SettleDataPt::new)
+            instance.get(SummaryDataPt::new)
         }
     }
 }
 
-impl ::protobuf::Clear for SettleDataPt {
+impl ::protobuf::Clear for SummaryDataPt {
     fn clear(&mut self) {
         self.user_id = 0;
         self.grade = 0;
@@ -3953,13 +3953,13 @@ impl ::protobuf::Clear for SettleDataPt {
     }
 }
 
-impl ::std::fmt::Debug for SettleDataPt {
+impl ::std::fmt::Debug for SummaryDataPt {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for SettleDataPt {
+impl ::protobuf::reflect::ProtobufValue for SummaryDataPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -4462,14 +4462,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\
     \rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\
     \x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTimes\
-    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"Q\n\x0cSettleDa\
-    taPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05gra\
-    de\x18\x02\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x03\x20\x01(\rR\
-    \x04rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05b\
-    uffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\
-    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\
-    \x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"R\n\rSummaryDat\
+    aPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05grad\
+    e\x18\x02\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x03\x20\x01(\rR\x04\
+    rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06us\
+    erId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\
+    \x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\
+    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\
+    \x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;
