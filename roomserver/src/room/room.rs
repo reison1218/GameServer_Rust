@@ -21,7 +21,7 @@ use tools::protos::room::{
     S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
     S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
 };
-use tools::protos::server_protocol::{WinnerPt, R_G_SETTLE};
+use tools::protos::server_protocol::{WinnerPt, R_G_SUMMARY};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -71,12 +71,12 @@ pub struct Room {
     id: u32,                              //房间id
     room_type: u8,                        //房间类型
     owner_id: u32,                        //房主id
-    pub(crate) state: RoomState,          //房间状态
+    pub state: RoomState,                 //房间状态
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
     pub member_index: [u32; 4],           //玩家对应的位置
     pub setting: RoomSetting,             //房间设置
     pub battle_data: BattleData,          //战斗相关数据封装
-    pub(crate) sender: TcpSender,         //sender
+    pub sender: TcpSender,                //sender
     task_sender: crossbeam::Sender<Task>, //任务sender
     time: DateTime<Utc>,                  //房间创建时间
 }
@@ -140,12 +140,12 @@ impl Room {
 
     ///处理结算
     pub unsafe fn handler_settle(&mut self) -> bool {
-        if self.state != RoomState::ChoiceIndex || self.state != RoomState::BattleStarted {
+        if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
-        let (is_settle, allive_count, first_v) = self.battle_data.handler_settle();
-        if is_settle {
-            let mut rgs = R_G_SETTLE::new();
+        let (is_summary, allive_count, first_v) = self.battle_data.handler_summary();
+        if is_summary {
+            let mut rgs = R_G_SUMMARY::new();
             for member in first_v.unwrap() {
                 let mut winner_pt = WinnerPt::new();
                 winner_pt.user_id = member.0;
@@ -154,14 +154,14 @@ impl Room {
             }
             let bytes = rgs.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
-            self.send_2_game(GameCode::Settle, bytes);
+            self.send_2_game(GameCode::Summary, bytes);
         } else if allive_count >= 2 && self.battle_data.tile_map.un_pair_count <= 2 {
             //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
             //校验是否要刷新地图
             self.battle_data.is_refreshed = true;
             self.refresh_map();
         }
-        is_settle
+        is_summary
     }
 
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
@@ -173,6 +173,7 @@ impl Room {
     pub fn start_choice_index(&mut self) {
         //刷新地图
         self.state = RoomState::ChoiceIndex;
+        let s = self.state as u8;
         self.set_next_turn_index(0);
         //校验下一个是不是为0
         let next_turn_user = self.get_turn_user(None).unwrap();
@@ -869,10 +870,6 @@ impl Room {
         }
         let next_turn_user = next_turn_user.unwrap();
         let member_size = MEMBER_MAX as usize;
-        // if self.members.len() == 1 {
-        //     //todo
-        //     return;
-        // }
         let last_order_user = self.battle_data.choice_orders[member_size - 1];
 
         //处理正在开始的战斗
@@ -918,10 +915,7 @@ impl Room {
         }
         let next_turn_user = next_turn_user.unwrap();
         let member_size = MEMBER_MAX as usize;
-        //只剩下一个人了就直接返回
-        if self.members.len() <= 1 {
-            return;
-        }
+
         //去掉地图块上的玩家id
         let cell = self.battle_data.tile_map.map.get_mut(index);
         if let Some(cell) = cell {
@@ -962,10 +956,6 @@ impl Room {
             return;
         }
         let next_turn_user = next_turn_user.unwrap();
-        //只剩下一个人了就直接返回
-        if self.members.len() <= 1 {
-            return;
-        }
         //移除顺位数据
         self.remove_turn_orders(index);
         //移除玩家战斗数据

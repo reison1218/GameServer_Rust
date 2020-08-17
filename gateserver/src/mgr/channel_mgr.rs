@@ -81,7 +81,7 @@ impl ChannelMgr {
         let gc = self.game_client_channel.as_mut().unwrap();
         let size = gc.write(&packet.build_server_bytes()[..]);
         match size {
-            Ok(s) => {
+            Ok(_) => {
                 let res = gc.flush();
                 if let Err(e) = res {
                     error!("flush has error!mess:{:?}", e);

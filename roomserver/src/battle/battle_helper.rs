@@ -187,7 +187,7 @@ impl BattleData {
             //未翻开的地图块
             TargetType::UnOpenCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, true, true)?;
+                    self.check_choice_index(*index as usize, true, true, true, false)?;
                 }
             } //未配对的地图块
             TargetType::UnPairCell => {

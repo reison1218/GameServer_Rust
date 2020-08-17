@@ -143,6 +143,6 @@ message S_MAP_REFRESH_NOTICE{
 
 //结算推送
 //cmd=10041
-message S_SETTLEMENT_NOTICE{
-    repeated SettleDataPt settle_datas = 1;//数据
+message S_SUMMARY_NOTICE{
+    repeated SummaryDataPt summary_datas = 1;//数据
 }

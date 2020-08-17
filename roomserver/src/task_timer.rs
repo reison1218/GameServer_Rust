@@ -259,7 +259,7 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room = room.unwrap();
 
     //判断房间状态
-    if room.get_state() != &RoomState::ChoiceIndex {
+    if room.state != RoomState::ChoiceIndex {
         return;
     }
     let next_user = room.get_turn_user(None);
@@ -303,7 +303,7 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room = room.unwrap();
 
     //判断房间状态
-    if room.get_state() != &RoomState::ChoiceTurn {
+    if room.state != RoomState::ChoiceTurn {
         return;
     }
 

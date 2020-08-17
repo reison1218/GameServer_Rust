@@ -7,7 +7,7 @@ use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_G_SETTLE,
+    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_G_SUMMARY,
 };
 use tools::util::packet::Packet;
 
@@ -323,9 +323,9 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///匹配房间
-pub fn settle(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
-    let mut rgs = R_G_SETTLE::new();
+///房间战斗结算
+pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let mut rgs = R_G_SUMMARY::new();
     let res = rgs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);

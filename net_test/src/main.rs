@@ -234,14 +234,6 @@ fn main() -> anyhow::Result<()> {
     let res = b+*&a;
     println!("{}",res);
 
-
-    let x = vec![0.0, 0.23, 0.46, 0.69, 0.92, 1.15, 1.38, 1.61];
-    for (pos, ele) in x.iter().enumerate() {
-        ele.abs();
-    }
-
-
-
     // let foo = Foo{x:1};
     // let mut rc = Rc::new(foo);
     //

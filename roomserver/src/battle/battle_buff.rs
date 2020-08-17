@@ -350,8 +350,8 @@ impl BattleData {
             energy += buff_temp.par2;
         }
         battle_cter.energy += energy;
-        if battle_cter.energy >= battle_cter.max_energy {
-            energy = battle_cter.energy - battle_cter.max_energy;
+        if battle_cter.energy > battle_cter.max_energy {
+            energy = 0;
             battle_cter.energy = battle_cter.max_energy;
         }
         target_pt.effect_type = EffectType::AddEnergy as u32;

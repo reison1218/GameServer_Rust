@@ -91,9 +91,17 @@ impl BattleData {
         let mut source_cell = self.tile_map.map.remove(source_index);
         let mut target_cell = self.tile_map.map.remove(target_index);
 
+        let source_cell_user = source_cell.user_id;
+
+        let target_cell_user = target_cell.user_id;
+
         //替换下标
         source_cell.index = target_index;
         target_cell.index = source_index;
+
+        //替换上面的玩家id
+        source_cell.user_id = target_cell_user;
+        target_cell.user_id = source_cell_user;
 
         self.tile_map.map.insert(source_cell.index, source_cell);
         self.tile_map.map.insert(target_cell.index, target_cell);

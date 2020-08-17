@@ -17,9 +17,9 @@ use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{
-    ActionUnitPt, BuffPt, CellBuffPt, SettleDataPt, TargetPt, TriggerEffectPt,
+    ActionUnitPt, BuffPt, CellBuffPt, SummaryDataPt, TargetPt, TriggerEffectPt,
 };
-use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SETTLEMENT_NOTICE};
+use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SUMMARY_NOTICE};
 use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
 
@@ -43,7 +43,7 @@ pub struct BattleData {
     pub next_turn_index: usize,                     //下个turn的下标
     pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
-    pub rank_map: HashMap<u32, Vec<u32>>,           //排名  user_id
+    pub rank_vec: Vec<Vec<u32>>,                    //排名  user_id
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub is_refreshed: bool,                         //是否刷新
     pub task_sender: crossbeam::Sender<Task>,       //任务sender
@@ -59,7 +59,7 @@ impl BattleData {
             next_turn_index: 0,
             turn_orders: [0; 4],
             battle_cter: HashMap::new(),
-            rank_map: HashMap::new(),
+            rank_vec: Vec::new(),
             turn_limit_time: 60000, //默认一分钟
             is_refreshed: false,
             task_sender,
@@ -95,15 +95,6 @@ impl BattleData {
     }
 
     pub fn add_next_turn_index(&mut self) {
-        let allive_count = self
-            .battle_cter
-            .values()
-            .filter(|x| x.state == BattleCterState::Alive as u8)
-            .count();
-        if allive_count <= 1 {
-            return;
-        }
-
         self.next_turn_index += 1;
         let index = self.next_turn_index;
         if index >= MEMBER_MAX as usize {
@@ -619,8 +610,6 @@ impl BattleData {
 
         target_pt.effect_type = EffectType::SkillDamage as u32;
 
-        let rank_max = self.rank_map.clone();
-        let rank_max = rank_max.keys().max();
         let target_cter = battle_data_ptr
             .as_mut()
             .unwrap()
@@ -663,24 +652,25 @@ impl BattleData {
         let is_die = target_cter.sub_hp(res);
 
         if is_die {
-            let mut rank = 0_u32;
-            if let Some(rank_max) = rank_max {
-                rank = *rank_max;
+            let mut rank_vec_size = self.rank_vec.len();
+            if rank_vec_size != 0 {
+                rank_vec_size -= 1;
             }
-            if rank_max.is_some() && !need_rank {
-                rank += 1;
+            if need_rank {
+                self.rank_vec.push(Vec::new());
             }
-            if !self.rank_map.contains_key(&rank) {
-                self.rank_map.insert(rank, Vec::new());
+            let v = self.rank_vec.get_mut(rank_vec_size);
+            if v.is_none() {
+                error!("rank_vec can not find data!rank_vec_size:{}", rank_vec_size);
+                return target_pt;
             }
-            let v = self.rank_map.get_mut(&rank).unwrap();
-            v.push(target);
+            v.unwrap().push(target);
         }
         target_pt
     }
 
     ///处理结算
-    pub unsafe fn handler_settle(&mut self) -> (bool, usize, Option<HashMap<u32, u32>>) {
+    pub unsafe fn handler_summary(&mut self) -> (bool, usize, Option<HashMap<u32, u32>>) {
         let allive_count = self
             .battle_cter
             .values()
@@ -691,29 +681,50 @@ impl BattleData {
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
             let mut first_map = HashMap::new();
-            //是否第一名
-            let mut is_first = false;
+            let mut member: Option<u32> = None;
+            for member_cter in self.battle_cter.values() {
+                member = Some(member_cter.user_id);
+            }
+            if let Some(member) = member {
+                self.rank_vec.push(vec![member]);
+            }
             //等级
             let mut grade = 0_u32;
-            let mut ssn = S_SETTLEMENT_NOTICE::new();
-            for (rank, members) in self.rank_map.iter() {
-                if *rank == 1 {
-                    is_first = true;
-                } else {
-                    is_first = false;
-                }
-                for member_id in members {
-                    let cter = battle_cters.get_mut(member_id).unwrap();
-                    grade = cter.grade;
-                    if is_first {
-                        grade += 1;
+            let mut ssn = S_SUMMARY_NOTICE::new();
+            let mut rank = 0_u32;
+
+            let mut index = self.rank_vec.len();
+            if index == 0 {
+                return (false, allive_count, None);
+            } else {
+                index -= 1;
+            }
+            loop {
+                for members in self.rank_vec.get(index) {
+                    for member_id in members.iter() {
+                        let cter = battle_cters.get_mut(member_id);
+                        if cter.is_none() {
+                            error!("handler_summary!cter is not find!user_id:{}", member_id);
+                            continue;
+                        }
+                        let cter = cter.unwrap();
+                        grade = cter.grade;
+                        if rank == 0 {
+                            grade += 1;
+                        }
+                        let mut smp = SummaryDataPt::new();
+                        smp.user_id = *member_id;
+                        smp.rank = rank;
+                        smp.grade = grade;
+                        ssn.summary_datas.push(smp);
+                        first_map.insert(*member_id, cter.cter_id);
                     }
-                    let mut smp = SettleDataPt::new();
-                    smp.user_id = *member_id;
-                    smp.rank = *rank;
-                    smp.grade = grade;
-                    ssn.settle_datas.push(smp);
-                    first_map.insert(*member_id, cter.cter_id);
+                    rank += 1;
+                }
+                if index > 0 {
+                    index -= 1;
+                } else {
+                    break;
                 }
             }
 
@@ -723,7 +734,7 @@ impl BattleData {
                 Ok(bytes) => {
                     let v = self.get_battle_cters_vec();
                     for member_id in v {
-                        self.send_2_client(ClientCode::SettlementNotice, member_id, bytes.clone());
+                        self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
                     }
                 }
                 Err(e) => {

@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::user::UserData;
-use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room, settle};
+use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room, summary};
 use crate::entity::EntityData;
 use chrono::Local;
 use protobuf::Message;
@@ -117,7 +117,7 @@ impl GameMgr {
         self.cmd_map.insert(CreateRoom as u32, create_room);
         self.cmd_map.insert(JoinRoom as u32, join_room);
         self.cmd_map.insert(SearchRoom as u32, search_room);
-        self.cmd_map.insert(Settle as u32, settle);
+        self.cmd_map.insert(Summary as u32, summary);
     }
 }
 
