@@ -53,9 +53,6 @@ pub mod buff_type {
     pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
     ///相临造成技能伤害
     pub static NEAR_SKILL_DAMAGE: [u32; 1] = [1];
-    ///相临造成技能伤害
-    /// 配对属性一样的地图块+hp
-    pub static WORLD_CELL_PAIR_ADD_HP: [u32; 1] = [9];
     /// 翻开属性一样的地图块+攻击
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力

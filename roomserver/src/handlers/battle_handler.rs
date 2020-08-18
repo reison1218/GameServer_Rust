@@ -95,8 +95,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //如果有问题就返回
-    if let Err(e) = res {
-        warn!("{:?}", e);
+    if let Err(_) = res {
         return Ok(());
     }
 
@@ -252,7 +251,8 @@ fn use_item(
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-    rm.battle_data.use_item(user_id, item_id, au)
+    let res = rm.battle_data.use_item(user_id, item_id, au);
+    Ok(res)
 }
 
 ///翻地图块
@@ -286,7 +286,8 @@ fn open_cell(
     }
 
     let battle_data = rm.battle_data.borrow_mut();
-    battle_data.open_cell(target_cell_index, au)
+    let res = battle_data.open_cell(target_cell_index, au);
+    Ok(res)
 }
 
 ///进行普通攻击
@@ -309,7 +310,10 @@ fn attack(
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-    unsafe { rm.battle_data.attack(user_id, target_array, au) }
+    unsafe {
+        rm.battle_data.attack(user_id, target_array, au);
+        Ok(None)
+    }
 }
 
 ///使用技能
@@ -324,7 +328,8 @@ fn use_skill(
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     let skill = battle_cter.skills.get(&skill_id);
     if skill.is_none() {
-        anyhow::bail!("this skill is none!skill_id:{}", user_id)
+        warn!("this skill is none!skill_id:{}", user_id);
+        anyhow::bail!("")
     }
     //校验技能可用状态
     let skill = skill.unwrap();
@@ -337,8 +342,10 @@ fn use_skill(
         anyhow::bail!("")
     }
     //使用技能，走正常逻辑
-    rm.battle_data
-        .use_skill(user_id, skill_id, target_array, au)
+    let res = rm
+        .battle_data
+        .use_skill(user_id, skill_id, target_array, au);
+    Ok(res)
 }
 
 ///跳过选择回合顺序
@@ -350,9 +357,8 @@ fn skip_turn(
     //判断是否是轮到自己操作
     let res = check_is_user_turn(rm, user_id);
     if !res {
-        let str = format!("is not your turn!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        warn!("is not your turn!user_id:{}", user_id);
+        anyhow::bail!("")
     }
 
     //校验现在能不能跳过
@@ -364,32 +370,30 @@ fn skip_turn(
     //如果不是下一个turn的，不让跳过
     let next_user = next_user.unwrap();
     if next_user != user_id {
-        let str = format!(
+        warn!(
             "skip_choice_turn next_user!=user_id! next_user:{},user_id:{}",
             next_user, user_id
         );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!("{:?}", str)
+        anyhow::bail!("")
     }
 
     //拿到战斗角色
     let battle_cter = rm.battle_data.battle_cter.get(&user_id);
     if battle_cter.is_none() {
-        let str = format!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!("{:?}", str)
+        warn!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
+        anyhow::bail!("")
     }
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
     if !battle_cter.is_opened_cell {
-        let str = format!("this player not open any cell yet!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        warn!("this player not open any cell yet!user_id:{}", user_id);
+        anyhow::bail!("")
     }
 
     //跳过当前这个人
-    rm.battle_data.skip_turn(_au)
+    rm.battle_data.skip_turn(_au);
+    Ok(None)
 }
 
 ///校验现在是不是该玩家回合

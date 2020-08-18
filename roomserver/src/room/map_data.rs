@@ -74,18 +74,6 @@ impl TileMap {
         }
     }
 
-    //给客户端显示用的
-    pub fn get_cells(&self) -> Vec<u32> {
-        let mut v = Vec::new();
-        for cell in self.map.iter() {
-            if cell.id <= 2 {
-                continue;
-            }
-            v.push(cell.id);
-        }
-        v
-    }
-
     pub fn get_able_cells(&self) -> Vec<u32> {
         let mut v = Vec::new();
         let tile_map_mgr = crate::TEMPLATES.get_tile_map_ref();

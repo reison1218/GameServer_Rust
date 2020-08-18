@@ -1,6 +1,6 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, NEAR_SKILL_DAMAGE_PAIR,
+    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, NEAR_SKILL_DAMAGE_PAIR,
     OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
 };
 use crate::battle::battle_enum::{ActionType, EffectType};
@@ -146,7 +146,7 @@ impl BattleData {
         user_id: u32,
         buff_id: u32,
         last_cell_user_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
+        _: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
@@ -155,31 +155,17 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let mut target_pt = TargetPt::new();
-        //配对恢复生命
-        target_pt.effect_type = EffectType::Cure as u32;
-        target_pt.effect_value = buff_temp.par1;
         if buff_temp.target == TargetType::CellPlayer as u32 {
-            let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
-            if let Some(last_cell_user) = last_cell_user {
-                target_pt
-                    .target_value
-                    .push(last_cell_user.cell_index as u32);
-                au.targets.push(target_pt.clone());
-                last_cell_user.add_hp(buff_temp.par1 as i32);
+            let target_pt = self.add_hp(last_cell_user_id, buff_temp.par1 as i32);
+            if let Some(target_pt) = target_pt {
+                au.targets.push(target_pt);
             }
         }
-        let battle_cter = battle_cters.get_mut(&user_id);
-        if let None = battle_cter {
-            error!("battle_cter is not find!user_id:{}", user_id);
-            return;
-        }
-        let battle_cter = battle_cter.unwrap();
-        target_pt.target_value.clear();
-        target_pt.target_value.push(battle_cter.cell_index as u32);
-        au.targets.push(target_pt.clone());
         //恢复生命值
-        battle_cter.add_hp(buff_temp.par1 as i32);
+        let target_pt = self.add_hp(user_id, buff_temp.par1 as i32);
+        if let Some(target_pt) = target_pt {
+            au.targets.push(target_pt);
+        }
     }
 
     ///获得buff
@@ -273,7 +259,7 @@ impl BattleData {
         user_id: u32,
         index: u32,
         buff_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
+        _: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
@@ -291,9 +277,7 @@ impl BattleData {
         let scope_temp = scope_temp.unwrap();
         let isize_index = index as isize;
         let target_type = TargetType::from(buff_temp.target);
-        let v = self
-            .cal_scope(user_id, isize_index, target_type, None, Some(scope_temp))
-            .unwrap();
+        let v = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
         let mut need_rank = true;
         unsafe {
             for target_user in v.iter() {
@@ -304,9 +288,16 @@ impl BattleData {
                     Some(buff_temp.par1 as i32),
                     need_rank,
                 );
-                au.targets.push(target_pt);
 
-                need_rank = false;
+                match target_pt {
+                    Ok(target_pt) => {
+                        au.targets.push(target_pt);
+                        need_rank = false;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
+                }
             }
         }
     }
@@ -330,13 +321,11 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let mut target_pt = TargetPt::new();
-        target_pt.effect_type = EffectType::Cure as u32;
-        target_pt.effect_value = buff_temp.par1;
-        target_pt.target_value.push(battle_cter.cell_index as u32);
-        au.targets.push(target_pt);
         //获得buff
-        battle_cter.add_hp(buff_temp.par1 as i32);
+        let target_pt = self.add_hp(user_id, buff_temp.par1 as i32);
+        if let Some(target_pt) = target_pt {
+            au.targets.push(target_pt);
+        }
     }
 
     ///打开块和匹配
@@ -463,15 +452,15 @@ impl BattleData {
         Ok(None)
     }
 
-    ///处理地图块额外其他buff
-    pub unsafe fn trigger_cell_extra_buff(&mut self, user_id: u32, index: usize) {
-        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-
-        let _battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-
-        let cell = self.tile_map.map.get_mut(index).unwrap();
-
-        for _buff in cell.buffs.iter() {}
+    ///受到普通攻击触发的buff
+    pub fn attacked_trigger_buffs(&mut self, user_id: u32, target_pt: &mut TargetPt) {
+        let cter = self.battle_cter.get_mut(&user_id).unwrap();
+        for buff_id in cter.buffs.clone().keys() {
+            if CHANGE_SKILL.contains(buff_id) {
+                cter.buffs.remove(buff_id);
+                target_pt.lost_buffs.push(*buff_id);
+            }
+        }
     }
 
     ///处理角色移动之后的事件
@@ -519,13 +508,18 @@ impl BattleData {
                         Some(buff.buff_temp.par1 as i32),
                         true,
                     );
-                    let mut other_aupt = ActionUnitPt::new();
-                    other_aupt.from_user = other_cter.user_id;
-                    other_aupt.action_type = ActionType::Buff as u32;
-                    other_aupt.action_value.push(buff.id);
-                    other_aupt.targets.push(target_pt);
-                    v.push(other_aupt);
-                    break;
+                    match target_pt {
+                        Ok(target_pt) => {
+                            let mut other_aupt = ActionUnitPt::new();
+                            other_aupt.from_user = other_cter.user_id;
+                            other_aupt.action_type = ActionType::Buff as u32;
+                            other_aupt.action_value.push(buff.id);
+                            other_aupt.targets.push(target_pt);
+                            v.push(other_aupt);
+                            break;
+                        }
+                        Err(e) => error!("{:?}", e),
+                    }
                 }
                 if battle_cter.is_died() {
                     break;
@@ -551,13 +545,18 @@ impl BattleData {
                         Some(buff.buff_temp.par1 as i32),
                         need_rank,
                     );
-                    let mut self_aupt = ActionUnitPt::new();
-                    self_aupt.from_user = user_id;
-                    self_aupt.action_type = ActionType::Buff as u32;
-                    self_aupt.action_value.push(buff.id);
-                    self_aupt.targets.push(target_pt);
-                    v.push(self_aupt);
-                    break;
+                    match target_pt {
+                        Ok(target_pt) => {
+                            let mut self_aupt = ActionUnitPt::new();
+                            self_aupt.from_user = user_id;
+                            self_aupt.action_type = ActionType::Buff as u32;
+                            self_aupt.action_value.push(buff.id);
+                            self_aupt.targets.push(target_pt);
+                            v.push(self_aupt);
+                            break;
+                        }
+                        Err(e) => error!("{:?}", e),
+                    }
                 }
                 need_rank = false;
             }

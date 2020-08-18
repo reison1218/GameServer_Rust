@@ -1,33 +1,18 @@
-use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK_AND_AOE, CHANGE_SKILL, RESET_MAP_ADD_ATTACK_BY_ALIVES,
-};
 use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
     SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
 };
-use crate::battle::battle_enum::{
-    BattleCterState, EffectType, SkillConsumeType, TargetType, TriggerEffectType,
-};
+
 use crate::battle::battle_skill::{
     add_buff, auto_pair_cell, change_index, move_user, show_index, single_skill_damage,
     skill_aoe_damage, skill_damage_and_cure, sub_cd,
 };
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, TileMap};
-use crate::room::room::MEMBER_MAX;
+use crate::room::map_data::TileMap;
 use crate::task_timer::Task;
-use crate::TEMPLATES;
-use log::{error, info, warn};
-use protobuf::Message;
-use std::borrow::{Borrow, BorrowMut};
-use std::collections::hash_map::RandomState;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::ops::Deref;
-use tools::cmd_code::ClientCode;
-use tools::protos::base::{
-    ActionUnitPt, BuffPt, CellBuffPt, SummaryDataPt, TargetPt, TriggerEffectPt,
-};
-use tools::protos::battle::{S_BATTLE_TURN_NOTICE, S_SUMMARY_NOTICE};
+use tools::protos::base::ActionUnitPt;
 use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
 
@@ -62,15 +47,14 @@ pub struct BattleData {
             skill_id: u32,
             target_array: Vec<u32>,
             au: &mut ActionUnitPt,
-        ) -> anyhow::Result<Option<Vec<ActionUnitPt>>>,
+        ) -> Option<Vec<ActionUnitPt>>,
     >, //技能函数指针map
-    pub buff_cmd_map:
-        HashMap<&'static [u32], fn(&mut BattleData, params: Vec<usize>, au: &mut ActionUnitPt)>, //buff函数指针map
-    pub task_sender: crossbeam::Sender<Task>, //任务sender
-    pub sender: TcpSender,                    //sender
+    pub task_sender: crossbeam::Sender<Task>,       //任务sender
+    pub sender: TcpSender,                          //sender
 }
 
 impl BattleData {
+    ///初始化战斗数据
     pub fn new(task_sender: crossbeam::Sender<Task>, sender: TcpSender) -> Self {
         let mut bd = BattleData {
             tile_map: TileMap::default(),
@@ -83,10 +67,10 @@ impl BattleData {
             turn_limit_time: 60000, //默认一分钟
             is_refreshed: false,
             skill_cmd_map: HashMap::new(),
-            buff_cmd_map: HashMap::new(),
             task_sender,
             sender,
         };
+        //初始化函数指针，封装到map里
         bd.skill_cmd_map.insert(&AUTO_PAIR_CELL[..], auto_pair_cell);
         bd.skill_cmd_map.insert(&ADD_BUFF[..], add_buff);
         bd.skill_cmd_map.insert(&CHANGE_INDEX[..], change_index);
@@ -102,26 +86,96 @@ impl BattleData {
         bd
     }
 
-    ///刷新地图
-    pub fn reset(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
-        let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
-        self.tile_map = res;
-        let cter_size = self.battle_cter.len();
-        unsafe {
-            //触发地图刷新的触发buff
-            for cter in self.battle_cter.values_mut() {
-                let cter = cter as *mut BattleCharacter;
-                for buff in cter.as_mut().unwrap().buffs.values_mut() {
-                    if RESET_MAP_ADD_ATTACK_BY_ALIVES.contains(&buff.id) {
-                        for _ in 0..cter_size {
-                            cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
-                        }
-                    }
-                }
-            }
+    ///得到当前turn玩家的id
+    /// 当找不到的时候就返回错误信息
+    /// 找的到到时候范围Ok(user_id)
+    pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
+        let index;
+        if let Some(_index) = _index {
+            index = _index;
+        } else {
+            index = self.next_turn_index;
         }
+        let res = self.turn_orders.get(index);
+        if res.is_none() {
+            let str = format!("get_next_turn_user is none for index:{} ", index);
+            anyhow::bail!(str)
+        }
+        let user_id = *res.unwrap();
+        Ok(user_id)
+    }
 
-        Ok(())
+    ///获得当前turn玩家的下标
+    pub fn get_turn_index(&self, user_id: u32) -> isize {
+        let mut index = 0_isize;
+        for member_id in self.turn_orders.iter() {
+            if member_id == &user_id {
+                return index;
+            }
+            index += 1;
+        }
+        return -1;
+    }
+
+    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
+        self.sender.borrow_mut()
+    }
+
+    ///获得战斗角色借用指针
+    pub fn get_battle_cter(&self, user_id: Option<u32>) -> anyhow::Result<&BattleCharacter> {
+        let _user_id;
+        if let Some(user_id) = user_id {
+            _user_id = user_id;
+        } else {
+            let res = self.get_turn_user(None);
+            if let Err(e) = res {
+                anyhow::bail!("{:?}", e)
+            }
+            _user_id = res.unwrap();
+        }
+        let cter = self.battle_cter.get(&_user_id);
+        if let None = cter {
+            let str = format!("there is no battle_cter!user_id:{}", _user_id);
+            anyhow::bail!("{:?}", str)
+        }
+        Ok(cter.unwrap())
+    }
+
+    pub fn get_battle_cter_by_cell_index(&self, index: usize) -> anyhow::Result<&BattleCharacter> {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no cell!index:{}", index)
+        }
+        let cell = res.unwrap();
+        let user_id = cell.user_id;
+        if user_id <= 0 {
+            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+        }
+        let cter = self.battle_cter.get(&user_id);
+        if cter.is_none() {
+            anyhow::bail!("cter not find!user_id:{}", user_id)
+        }
+        Ok(cter.unwrap())
+    }
+
+    pub fn get_battle_cter_mut_by_cell_index(
+        &mut self,
+        index: usize,
+    ) -> anyhow::Result<&mut BattleCharacter> {
+        let res = self.tile_map.map.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no cell!index:{}", index)
+        }
+        let cell = res.unwrap();
+        let user_id = cell.user_id;
+        if user_id <= 0 {
+            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+        }
+        let cter = self.battle_cter.get_mut(&user_id);
+        if cter.is_none() {
+            anyhow::bail!("cter not find!user_id:{}", user_id)
+        }
+        Ok(cter.unwrap())
     }
 
     pub fn get_battle_cters_vec(&self) -> Vec<u32> {
@@ -130,629 +184,5 @@ impl BattleData {
             v.push(*id);
         }
         v
-    }
-
-    ///下个turn
-    pub fn next_turn(&mut self) {
-        //计算下一个回合
-        self.add_next_turn_index();
-        //开始回合触发
-        self.turn_start_summary();
-        //给客户端推送战斗turn推送
-        self.send_battle_turn_notice();
-        //创建战斗turn定时器任务
-        self.build_battle_turn_task();
-    }
-
-    pub fn add_next_turn_index(&mut self) {
-        self.next_turn_index += 1;
-        let index = self.next_turn_index;
-        if index >= MEMBER_MAX as usize {
-            self.next_turn_index = 0;
-        }
-
-        let user_id = self.get_turn_user(None);
-        if let Ok(user_id) = user_id {
-            if user_id == 0 {
-                self.add_next_turn_index();
-                return;
-            }
-
-            let cter = self.battle_cter.get(&user_id);
-            match cter {
-                Some(cter) => {
-                    if cter.state == BattleCterState::Die as u8 {
-                        self.add_next_turn_index();
-                        return;
-                    }
-                }
-                None => {
-                    warn!("add_next_turn_index cter is none!user_id:{}", user_id);
-                }
-            }
-        } else {
-            warn!("{:?}", user_id.err().unwrap());
-        }
-    }
-
-    ///翻地图块
-    pub fn open_cell(
-        &mut self,
-        index: usize,
-        au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let user_id = self.get_turn_user(None);
-        if let Err(e) = user_id {
-            warn!("{:?}", e);
-            anyhow::bail!("")
-        }
-        let user_id = user_id.unwrap();
-        let is_pair;
-        unsafe {
-            let au_ptr = au as *mut ActionUnitPt;
-            let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-            let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
-            if let None = battle_cter {
-                error!("battle_cter is not find!user_id:{}", user_id);
-                anyhow::bail!("")
-            }
-            let battle_cter = battle_cter.unwrap();
-
-            //先移动
-            let v = self.handler_cter_move(user_id, index);
-            //判断玩家死了没
-            if battle_cter.is_died() {
-                return Ok(Some(v));
-            }
-            //再配对
-            is_pair = self.handler_cell_pair(user_id, au_ptr.as_mut().unwrap());
-
-            //处理翻地图块触发buff
-            let res = self.open_cell_trigger_buff(user_id, au_ptr.as_mut().unwrap(), is_pair);
-            if let Err(_) = res {
-                anyhow::bail!("")
-            }
-
-            //处理配对成功与否后的数据
-            if is_pair {
-                //状态改为可以进行攻击
-                battle_cter.is_can_attack = true;
-                //如果配对了，则清除上一次翻的地图块
-                battle_cter.set_recently_open_cell_index(None);
-                self.tile_map.un_pair_count -= 2;
-            } else {
-                //更新最近一次翻的下标
-                battle_cter.set_recently_open_cell_index(Some(index));
-            }
-
-            battle_cter.is_opened_cell = true;
-            //处理地图块额外其他的buff
-            self.trigger_cell_extra_buff(user_id, index);
-
-            //翻块次数-1
-            battle_cter.residue_open_times -= 1;
-
-            //玩家技能cd-1
-            battle_cter
-                .skills
-                .values_mut()
-                .for_each(|skill| skill.sub_cd(None));
-
-            Ok(Some(v))
-        }
-    }
-
-    ///处理地图块配对逻辑
-    pub unsafe fn handler_cell_pair(&mut self, user_id: u32, au: &mut ActionUnitPt) -> bool {
-        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-
-        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
-        if let None = battle_cter {
-            error!("cter is not find!user_id:{}", user_id);
-            return false;
-        }
-        let battle_cter = battle_cter.unwrap();
-
-        let index = battle_cter.cell_index;
-        let cell = self.tile_map.map.get_mut(index);
-        if let None = cell {
-            error!("cell is not find!cell_index:{}", index);
-            return false;
-        }
-        let cell_ptr = cell.unwrap() as *mut Cell;
-        let cell_mut = cell_ptr.as_mut().unwrap();
-        let mut is_pair = false;
-        let cell_id = cell_mut.id;
-        au.action_value.push(cell_id);
-        let recently_open_cell_index = battle_cter.recently_open_cell_index;
-        let mut recently_open_cell_id: Option<u32> = None;
-        if let Some(recently_open_cell_index) = recently_open_cell_index {
-            let res = self.tile_map.map.get_mut(recently_open_cell_index);
-            if let None = res {
-                error!("cell not find!cell_index:{}", recently_open_cell_index);
-                return false;
-            }
-            let last_cell = res.unwrap() as *mut Cell;
-            self.tile_map.map.get_mut(recently_open_cell_index as usize);
-            recently_open_cell_id = Some(last_cell.as_ref().unwrap().id);
-            let last_cell = &mut *last_cell;
-            //如果配对了，则修改地图块配对的下标
-            if let Some(id) = recently_open_cell_id {
-                if cell_id == id {
-                    cell_mut.pair_index = Some(recently_open_cell_index as usize);
-                    last_cell.pair_index = Some(index);
-                    is_pair = true;
-                }
-            } else {
-                is_pair = false;
-            }
-        }
-        //配对了就封装
-        if is_pair && recently_open_cell_index.is_some() {
-            info!(
-                "user:{} open cell pair! last_cell:{},now_cell:{}",
-                battle_cter.user_id,
-                recently_open_cell_index.unwrap() as u32,
-                index
-            );
-        }
-        is_pair
-    }
-
-    ///回合开始触发
-    pub fn turn_start_summary(&mut self) {
-        let user_id = self.get_turn_user(None);
-        if let Err(e) = user_id {
-            error!("{:?}", e);
-            return;
-        }
-        let user_id = user_id.unwrap();
-        let battle_cter = self.battle_cter.get_mut(&user_id);
-        if let None = battle_cter {
-            error!("battle_cter is None!user_id:{}", user_id);
-            return;
-        }
-        //结算玩家自己的
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.turn_reset();
-
-        //结算玩家加在别的玩家身上的
-        for cter in self.battle_cter.values_mut() {
-            if cter.user_id == user_id {
-                continue;
-            }
-            let mut delete = Vec::new();
-            for buff in cter.buffs.values_mut() {
-                if buff.user_id != user_id {
-                    continue;
-                }
-                buff.sub_keep_times();
-                if buff.keep_times > 0 {
-                    continue;
-                }
-                delete.push(buff.id);
-            }
-            for buff_id in delete {
-                cter.buffs.remove(&buff_id);
-            }
-        }
-
-        let mut delete = HashMap::new();
-        //结算该玩家加在地图块上的buff
-        for cell in self.tile_map.map.iter_mut() {
-            for buff_index in 0..cell.buffs.len() {
-                let buff = cell.buffs.get_mut(buff_index).unwrap();
-                if buff.user_id != user_id {
-                    continue;
-                }
-                buff.sub_keep_times();
-                if buff.keep_times > 0 {
-                    continue;
-                }
-                if !delete.contains_key(&cell.index) {
-                    delete.insert(cell.index, Vec::new());
-                }
-                delete.get_mut(&cell.index).unwrap().push(buff_index);
-            }
-        }
-
-        //删掉buff
-        for (cell_index, buff_indexs) in delete.iter() {
-            let cell = self.tile_map.map.get_mut(*cell_index).unwrap();
-            for buff_index in buff_indexs {
-                cell.buffs.remove(*buff_index);
-            }
-        }
-    }
-
-    ///发送战斗turn推送
-    pub fn send_battle_turn_notice(&mut self) {
-        let mut sbtn = S_BATTLE_TURN_NOTICE::new();
-        sbtn.set_user_id(self.get_turn_user(None).unwrap());
-        //角色身上的
-        for cter in self.battle_cter.values() {
-            let cter_pt = cter.convert_to_battle_cter();
-            sbtn.cters.push(cter_pt);
-        }
-
-        //地图块身上的
-        for cell in self.tile_map.map.iter() {
-            let mut cbp = CellBuffPt::new();
-            cbp.index = cell.index as u32;
-            for buff in cell.buffs.iter() {
-                let mut buff_pt = BuffPt::new();
-                buff_pt.buff_id = buff.id;
-                buff_pt.trigger_timesed = buff.trigger_timesed as u32;
-                buff_pt.keep_times = buff.keep_times as u32;
-                cbp.buffs.push(buff_pt);
-            }
-            sbtn.cell_buffs.push(cbp);
-        }
-
-        let bytes = sbtn.write_to_bytes().unwrap();
-        for user_id in self.battle_cter.clone().keys() {
-            self.send_2_client(ClientCode::BattleTurnNotice, *user_id, bytes.clone());
-        }
-    }
-
-    ///普通攻击
-    /// user_id:发动普通攻击的玩家
-    /// targets:被攻击目标
-    pub unsafe fn attack(
-        &mut self,
-        user_id: u32,
-        targets: Vec<u32>,
-        au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-        let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let mut aoe_buff: Option<u32> = None;
-
-        //塞选出ape的buff
-        cter.buffs
-            .values()
-            .filter(|buff| ADD_ATTACK_AND_AOE.contains(&buff.id))
-            .for_each(|buff| {
-                aoe_buff = Some(buff.id);
-            });
-
-        let index = targets.get(0).unwrap();
-        let target_cter = self.get_battle_cter_mut_by_cell_index(*index as usize);
-
-        if let Err(e) = target_cter {
-            warn!("{:?}", e);
-            anyhow::bail!("")
-        }
-
-        let target_cter = target_cter.unwrap();
-        let target_user_id = target_cter.user_id;
-        let target_user_index = target_cter.cell_index;
-        if target_user_id == user_id {
-            let str = format!("the attack target can not be Self!user_id:{}", user_id);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!(str)
-        }
-
-        //扣血
-        let mut target_pt = self.deduct_hp(user_id, target_user_id, None, true);
-
-        //目标被攻击，触发目标buff
-        self.attacked_trigger_buffs(target_user_id, &mut target_pt);
-
-        au.targets.push(target_pt.clone());
-        //检查aoebuff
-        if let Some(buff) = aoe_buff {
-            let buff = TEMPLATES.get_buff_ref().get_temp(&buff);
-            if let Err(e) = buff {
-                warn!("{:?}", e);
-                anyhow::bail!("")
-            }
-            let buff = buff.unwrap();
-            let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&buff.scope);
-            if let Err(e) = scope_temp {
-                warn!("{:?}", e);
-                anyhow::bail!("")
-            }
-            let scope_temp = scope_temp.unwrap();
-
-            let res = self.cal_scope(
-                user_id,
-                target_user_index as isize,
-                TargetType::OtherAnyPlayer,
-                None,
-                Some(scope_temp),
-            );
-            if let Err(e) = res {
-                error!("{:?}", e);
-                anyhow::bail!("")
-            }
-            let v = res.unwrap();
-
-            //目标周围的玩家
-            for target_user in v {
-                if target_user_id == target_user {
-                    continue;
-                }
-                //扣血
-                let mut target_pt = self.deduct_hp(user_id, target_user, None, false);
-                //目标被攻击，触发目标buff
-                self.attacked_trigger_buffs(target_user, &mut target_pt);
-                au.targets.push(target_pt);
-            }
-        }
-        cter.is_can_attack = false;
-        Ok(None)
-    }
-
-    ///受到普通攻击触发的buff
-    pub fn attacked_trigger_buffs(&mut self, user_id: u32, target_pt: &mut TargetPt) {
-        let cter = self.battle_cter.get_mut(&user_id).unwrap();
-        for buff_id in cter.buffs.clone().keys() {
-            if CHANGE_SKILL.contains(buff_id) {
-                cter.buffs.remove(buff_id);
-                target_pt.lost_buffs.push(*buff_id);
-            }
-        }
-    }
-
-    ///跳过回合
-    pub fn skip_turn(
-        &mut self,
-        _au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        //直接下一个turn
-        self.next_turn();
-        Ok(None)
-    }
-
-    ///使用道具,道具都是一次性的，用完了就删掉
-    /// user_id:使用道具的玩家
-    /// item_id:道具id
-    pub fn use_item(
-        &mut self,
-        user_id: u32,
-        item_id: u32,
-        au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
-        let item = battle_cter.items.get(&item_id).unwrap();
-        let skill_id = item.skill_temp.id;
-        let mut targets = Vec::new();
-        targets.push(user_id);
-        let res = self.use_skill(user_id, skill_id, targets, au);
-        let battle_cter = self.get_battle_cter_mut(Some(user_id)).unwrap();
-        //用完了就删除
-        battle_cter.items.remove(&item_id);
-        res
-    }
-
-    ///使用技能
-    /// user_id:使用技能的玩家id
-    /// target_array目标数组
-    pub fn use_skill(
-        &mut self,
-        user_id: u32,
-        skill_id: u32,
-        target_array: Vec<u32>,
-        au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let mut au_vec: anyhow::Result<Option<Vec<ActionUnitPt>>> = Ok(None);
-        unsafe {
-            //战斗角色
-            let battle_cter_ptr =
-                self.get_battle_cter_mut(Some(user_id)).unwrap() as *mut BattleCharacter;
-            let battle_cter = battle_cter_ptr.as_mut().unwrap();
-            //战斗角色身上的技能
-            let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
-            //校验cd
-            if skill.cd_times > 0 {
-                let str = format!(
-                    "can not use this skill!skill_id:{},cd:{}",
-                    skill_id, skill.cd_times
-                );
-                warn!("{:?}", str.as_str());
-                anyhow::bail!(str)
-            }
-            //技能判定
-            let skill_judge = skill.skill_temp.skill_judge;
-            if skill_judge != 0 {
-                let skill_judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&(skill_id as u32));
-                if let Ok(_skill_judge) = skill_judge_temp {
-                    // todo  目前没有判定条件，先留着
-                }
-            }
-
-            let target = skill.skill_temp.target;
-            let target_type = TargetType::from(target);
-
-            //校验目标类型
-            let res = self.check_target_array(user_id, target_type, &target_array);
-            if let Err(e) = res {
-                let str = format!("{:?}", e);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!(str)
-            }
-
-            //根据技能id去找函数指针里面的函数，然后进行执行
-            let self_ptr = self as *mut BattleData;
-            for skill_ids in self_ptr.as_ref().unwrap().skill_cmd_map.keys() {
-                if !skill_ids.deref().contains(&skill_id) {
-                    continue;
-                }
-                let fn_ptr = self.skill_cmd_map.get_mut(skill_ids.deref()).unwrap();
-                au_vec = fn_ptr(self, user_id, skill_id, target_array, au);
-                break;
-            }
-
-            //如果不是用能量的，则重制cd
-            if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 {
-                skill.reset_cd();
-            } else {
-                //减能量
-                if skill.skill_temp.consume_value > battle_cter.energy {
-                    battle_cter.energy = 0;
-                } else {
-                    battle_cter.energy -= skill.skill_temp.consume_value;
-                }
-            }
-
-            match au_vec {
-                Ok(v) => {
-                    return Ok(v);
-                }
-                Err(_) => Ok(None),
-            }
-        }
-    }
-
-    ///扣血
-    pub unsafe fn deduct_hp(
-        &mut self,
-        from: u32,
-        target: u32,
-        skill_damege: Option<i32>,
-        need_rank: bool,
-    ) -> TargetPt {
-        let battle_data_ptr = self as *mut BattleData;
-        let mut target_pt = TargetPt::new();
-
-        target_pt.effect_type = EffectType::SkillDamage as u32;
-
-        let target_cter = battle_data_ptr
-            .as_mut()
-            .unwrap()
-            .battle_cter
-            .get_mut(&target)
-            .unwrap();
-        target_pt.target_value.push(target_cter.cell_index as u32);
-        let mut res = 0;
-        //如果是普通攻击，要算上减伤
-        if skill_damege.is_none() {
-            let from_cter = battle_data_ptr
-                .as_mut()
-                .unwrap()
-                .battle_cter
-                .get_mut(&from)
-                .unwrap();
-            let attack_damage = from_cter.calc_damage();
-            let reduce_damage = target_cter.calc_reduce_damage();
-            target_pt.effect_type = EffectType::AttackDamage as u32;
-            res = attack_damage - reduce_damage;
-            if res < 0 {
-                res = 0;
-            }
-            let gd_buff = target_cter.trigger_attack_damge_gd();
-            if gd_buff.0 > 0 {
-                let mut te_pt = TriggerEffectPt::new();
-                te_pt.set_field_type(TriggerEffectType::Buff as u32);
-                te_pt.set_value(gd_buff.0);
-                target_pt.passiveEffect.push(te_pt);
-                if gd_buff.1 {
-                    target_pt.lost_buffs.push(gd_buff.0);
-                }
-                res = 0;
-            } else {
-                target_cter.is_attacked = true;
-            }
-        } else {
-            res = skill_damege.unwrap();
-        }
-        target_pt.effect_value = res as u32;
-        let is_die = target_cter.sub_hp(res);
-
-        if is_die {
-            let mut rank_vec_size = self.rank_vec.len();
-            if rank_vec_size != 0 {
-                rank_vec_size -= 1;
-            }
-            if need_rank {
-                self.rank_vec.push(Vec::new());
-            }
-            let v = self.rank_vec.get_mut(rank_vec_size);
-            if v.is_none() {
-                error!("rank_vec can not find data!rank_vec_size:{}", rank_vec_size);
-                return target_pt;
-            }
-            v.unwrap().push(target);
-        }
-        target_pt
-    }
-
-    ///处理结算
-    /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub unsafe fn handler_summary(&mut self) -> (bool, usize, Option<HashMap<u32, u32>>) {
-        let allive_count = self
-            .battle_cter
-            .values()
-            .filter(|x| x.state == BattleCterState::Alive as u8)
-            .count();
-        let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
-        let battle_cters = battle_cters_prt.as_mut().unwrap();
-        //如果达到结算条件，则进行结算
-        if allive_count <= 1 {
-            let mut first_map = HashMap::new();
-            let mut member: Option<u32> = None;
-            for member_cter in self.battle_cter.values() {
-                member = Some(member_cter.user_id);
-            }
-            if let Some(member) = member {
-                self.rank_vec.push(vec![member]);
-            }
-            //等级
-            let mut grade = 0_u32;
-            let mut ssn = S_SUMMARY_NOTICE::new();
-            let mut rank = 0_u32;
-
-            let mut index = self.rank_vec.len();
-            if index == 0 {
-                return (false, allive_count, None);
-            } else {
-                index -= 1;
-            }
-            loop {
-                for members in self.rank_vec.get(index) {
-                    for member_id in members.iter() {
-                        let cter = battle_cters.get_mut(member_id);
-                        if cter.is_none() {
-                            error!("handler_summary!cter is not find!user_id:{}", member_id);
-                            continue;
-                        }
-                        let cter = cter.unwrap();
-                        grade = cter.grade;
-                        if rank == 0 {
-                            grade += 1;
-                        }
-                        let mut smp = SummaryDataPt::new();
-                        smp.user_id = *member_id;
-                        smp.rank = rank;
-                        smp.grade = grade;
-                        ssn.summary_datas.push(smp);
-                        first_map.insert(*member_id, cter.cter_id);
-                    }
-                    rank += 1;
-                }
-                if index > 0 {
-                    index -= 1;
-                } else {
-                    break;
-                }
-            }
-
-            let res = ssn.write_to_bytes();
-
-            match res {
-                Ok(bytes) => {
-                    let v = self.get_battle_cters_vec();
-                    for member_id in v {
-                        self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
-                    }
-                }
-                Err(e) => {
-                    error!("{:?}", e);
-                }
-            }
-            return (true, allive_count, Some(first_map));
-        }
-        return (false, allive_count, None);
     }
 }

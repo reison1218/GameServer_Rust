@@ -65,10 +65,6 @@ impl RoomType {
         value.into()
     }
 
-    pub fn into_u8(value: RoomType) -> u8 {
-        value.into()
-    }
-
     pub fn get_custom() -> u8 {
         let res = RoomType::Custom as u8;
         res

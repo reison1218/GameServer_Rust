@@ -1,16 +1,192 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
+use crate::battle::battle_enum::{EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR};
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::CellType;
+use crate::room::map_data::{Cell, CellType};
 use crate::task_timer::{Task, TaskCmd};
-use log::{error, warn};
-use std::borrow::BorrowMut;
+use log::{error, info, warn};
+use protobuf::Message;
+use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::tcp::TcpSender;
+use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, TargetPt, TriggerEffectPt};
+use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
+    ///加血
+    pub fn add_hp(&mut self, target: u32, hp: i32) -> Option<TargetPt> {
+        let cter = self.get_battle_cter_mut(Some(target));
+        if let Err(e) = cter {
+            error!("{:?}", e);
+            return None;
+        }
+        let cter = cter.unwrap();
+        if cter.is_died() {
+            return None;
+        }
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(cter.cell_index as u32);
+        target_pt.effect_type = EffectType::Cure as u32;
+        target_pt.effect_value = hp as u32;
+        cter.add_hp(hp);
+        Some(target_pt)
+    }
+    ///扣血
+    pub unsafe fn deduct_hp(
+        &mut self,
+        from: u32,
+        target: u32,
+        skill_damege: Option<i32>,
+        need_rank: bool,
+    ) -> anyhow::Result<TargetPt> {
+        let battle_data_ptr = self as *mut BattleData;
+        let mut target_pt = TargetPt::new();
+
+        target_pt.effect_type = EffectType::SkillDamage as u32;
+
+        let target_cter = battle_data_ptr
+            .as_mut()
+            .unwrap()
+            .get_battle_cter_mut(Some(target))?;
+        target_pt.target_value.push(target_cter.cell_index as u32);
+        let mut res;
+        //如果是普通攻击，要算上减伤
+        if skill_damege.is_none() {
+            let from_cter = battle_data_ptr
+                .as_mut()
+                .unwrap()
+                .get_battle_cter_mut(Some(from))?;
+            let attack_damage = from_cter.calc_damage();
+            let reduce_damage = target_cter.calc_reduce_damage();
+            target_pt.effect_type = EffectType::AttackDamage as u32;
+            res = attack_damage - reduce_damage;
+            if res < 0 {
+                res = 0;
+            }
+            let gd_buff = target_cter.trigger_attack_damge_gd();
+            if gd_buff.0 > 0 {
+                let mut te_pt = TriggerEffectPt::new();
+                te_pt.set_field_type(TriggerEffectType::Buff as u32);
+                te_pt.set_value(gd_buff.0);
+                target_pt.passiveEffect.push(te_pt);
+                if gd_buff.1 {
+                    target_pt.lost_buffs.push(gd_buff.0);
+                }
+                res = 0;
+            } else {
+                target_cter.is_attacked = true;
+            }
+        } else {
+            res = skill_damege.unwrap();
+        }
+        target_pt.effect_value = res as u32;
+        let is_die = target_cter.sub_hp(res);
+
+        //判断目标角色是否死亡
+        if is_die {
+            let mut rank_vec_size = self.rank_vec.len();
+            if rank_vec_size != 0 {
+                rank_vec_size -= 1;
+            }
+            //判断是否需要排行
+            if need_rank {
+                self.rank_vec.push(Vec::new());
+            }
+            let v = self.rank_vec.get_mut(rank_vec_size);
+            if v.is_none() {
+                error!("rank_vec can not find data!rank_vec_size:{}", rank_vec_size);
+                return Ok(target_pt);
+            }
+            v.unwrap().push(target);
+        }
+        Ok(target_pt)
+    }
+
+    ///处理地图块配对逻辑
+    pub unsafe fn handler_cell_pair(&mut self, user_id: u32, au: &mut ActionUnitPt) -> bool {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
+        if let None = battle_cter {
+            error!("cter is not find!user_id:{}", user_id);
+            return false;
+        }
+        let battle_cter = battle_cter.unwrap();
+
+        let index = battle_cter.cell_index;
+        let cell = self.tile_map.map.get_mut(index);
+        if let None = cell {
+            error!("cell is not find!cell_index:{}", index);
+            return false;
+        }
+        let cell_ptr = cell.unwrap() as *mut Cell;
+        let cell_mut = cell_ptr.as_mut().unwrap();
+        let mut is_pair = false;
+        let cell_id = cell_mut.id;
+        au.action_value.push(cell_id);
+        let recently_open_cell_index = battle_cter.recently_open_cell_index;
+        let mut recently_open_cell_id: Option<u32> = None;
+        if let Some(recently_open_cell_index) = recently_open_cell_index {
+            let res = self.tile_map.map.get_mut(recently_open_cell_index);
+            if let None = res {
+                error!("cell not find!cell_index:{}", recently_open_cell_index);
+                return false;
+            }
+            let last_cell = res.unwrap() as *mut Cell;
+            self.tile_map.map.get_mut(recently_open_cell_index as usize);
+            recently_open_cell_id = Some(last_cell.as_ref().unwrap().id);
+            let last_cell = &mut *last_cell;
+            //如果配对了，则修改地图块配对的下标
+            if let Some(id) = recently_open_cell_id {
+                if cell_id == id {
+                    cell_mut.pair_index = Some(recently_open_cell_index as usize);
+                    last_cell.pair_index = Some(index);
+                    is_pair = true;
+                }
+            } else {
+                is_pair = false;
+            }
+        }
+        //配对了就封装
+        if is_pair && recently_open_cell_index.is_some() {
+            info!(
+                "user:{} open cell pair! last_cell:{},now_cell:{}",
+                battle_cter.user_id,
+                recently_open_cell_index.unwrap() as u32,
+                index
+            );
+        }
+        is_pair
+    }
+    ///发送战斗turn推送
+    pub fn send_battle_turn_notice(&mut self) {
+        let mut sbtn = S_BATTLE_TURN_NOTICE::new();
+        sbtn.set_user_id(self.get_turn_user(None).unwrap());
+        //角色身上的
+        for cter in self.battle_cter.values() {
+            let cter_pt = cter.convert_to_battle_cter();
+            sbtn.cters.push(cter_pt);
+        }
+
+        //地图块身上的
+        for cell in self.tile_map.map.iter() {
+            let mut cbp = CellBuffPt::new();
+            cbp.index = cell.index as u32;
+            for buff in cell.buffs.iter() {
+                let mut buff_pt = BuffPt::new();
+                buff_pt.buff_id = buff.id;
+                buff_pt.trigger_timesed = buff.trigger_timesed as u32;
+                buff_pt.keep_times = buff.keep_times as u32;
+                cbp.buffs.push(buff_pt);
+            }
+            sbtn.cell_buffs.push(cbp);
+        }
+
+        let bytes = sbtn.write_to_bytes().unwrap();
+        for user_id in self.battle_cter.clone().keys() {
+            self.send_2_client(ClientCode::BattleTurnNotice, *user_id, bytes.clone());
+        }
+    }
     ///获得战斗角色可变借用指针
     pub fn get_battle_cter_mut(
         &mut self,
@@ -28,104 +204,15 @@ impl BattleData {
         }
         let cter = self.battle_cter.get_mut(&_user_id);
         if let None = cter {
-            let str = format!("there is no battle_cter!user_id:{}", _user_id);
+            let str = format!("battle_cter not find!user_id:{}", _user_id);
             anyhow::bail!("{:?}", str)
         }
         Ok(cter.unwrap())
-    }
-
-    pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
-        let index;
-        if let Some(_index) = _index {
-            index = _index;
-        } else {
-            index = self.next_turn_index;
-        }
-        let res = self.turn_orders.get(index);
-        if res.is_none() {
-            let str = format!("get_next_turn_user is none for index:{} ", index);
-            anyhow::bail!(str)
-        }
-        let user_id = *res.unwrap();
-        Ok(user_id)
-    }
-
-    ///获得玩家回合下标
-    pub fn get_turn_index(&self, user_id: u32) -> isize {
-        let mut index = 0_isize;
-        for member_id in self.turn_orders.iter() {
-            if member_id == &user_id {
-                return index;
-            }
-            index += 1;
-        }
-        return -1;
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         self.get_sender_mut().write(bytes);
-    }
-
-    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
-        self.sender.borrow_mut()
-    }
-
-    ///获得战斗角色借用指针
-    pub fn get_battle_cter(&self, user_id: Option<u32>) -> anyhow::Result<&BattleCharacter> {
-        let _user_id;
-        if let Some(user_id) = user_id {
-            _user_id = user_id;
-        } else {
-            let res = self.get_turn_user(None);
-            if let Err(e) = res {
-                anyhow::bail!("{:?}", e)
-            }
-            _user_id = res.unwrap();
-        }
-        let cter = self.battle_cter.get(&_user_id);
-        if let None = cter {
-            let str = format!("there is no battle_cter!user_id:{}", _user_id);
-            anyhow::bail!("{:?}", str)
-        }
-        Ok(cter.unwrap())
-    }
-
-    pub fn get_battle_cter_by_cell_index(&self, index: usize) -> anyhow::Result<&BattleCharacter> {
-        let res = self.tile_map.map.get(index);
-        if res.is_none() {
-            anyhow::bail!("there is no cell!index:{}", index)
-        }
-        let cell = res.unwrap();
-        let user_id = cell.user_id;
-        if user_id <= 0 {
-            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
-        }
-        let cter = self.battle_cter.get(&user_id);
-        if cter.is_none() {
-            anyhow::bail!("cter not find!user_id:{}", user_id)
-        }
-        Ok(cter.unwrap())
-    }
-
-    pub fn get_battle_cter_mut_by_cell_index(
-        &mut self,
-        index: usize,
-    ) -> anyhow::Result<&mut BattleCharacter> {
-        let res = self.tile_map.map.get(index);
-        if res.is_none() {
-            anyhow::bail!("there is no cell!index:{}", index)
-        }
-        let cell = res.unwrap();
-        let user_id = cell.user_id;
-        if user_id <= 0 {
-            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
-        }
-        let cter = self.battle_cter.get_mut(&user_id);
-        if cter.is_none() {
-            anyhow::bail!("cter not find!user_id:{}", user_id)
-        }
-        Ok(cter.unwrap())
     }
 
     ///检查目标数组
@@ -314,7 +401,7 @@ impl BattleData {
         target_type: TargetType,
         targets: Option<Vec<u32>>,
         scope_temp: Option<&SkillScopeTemp>,
-    ) -> anyhow::Result<Vec<u32>> {
+    ) -> Vec<u32> {
         let mut v = Vec::new();
         //相邻，直接拿常量
         if targets.is_none() && scope_temp.is_none() {
@@ -418,6 +505,6 @@ impl BattleData {
                 }
             }
         }
-        Ok(v)
+        v
     }
 }

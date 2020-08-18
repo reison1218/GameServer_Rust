@@ -62,14 +62,13 @@ pub fn change_index(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     if target_array.len() < 2 {
-        let str = format!(
+        warn!(
             "target_array size is error!skill_id:{},user_id:{}",
             skill_id, user_id
         );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        return None;
     }
     let source_index = target_array.get(0).unwrap();
     let target_index = target_array.get(1).unwrap();
@@ -80,26 +79,25 @@ pub fn change_index(
     let map_size = battle_data.tile_map.map.len();
     //校验地图块
     if source_index > map_size || target_index > map_size {
-        let str = format!(
+        warn!(
             "index is error!source_index:{},target_index:{}",
             source_index, target_index
         );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        return None;
     }
 
     //校验原下标
     let res = battle_data.check_choice_index(source_index, true, true, true, false);
     if let Err(e) = res {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
 
     //校验目标下标
     let res = battle_data.check_choice_index(target_index, true, true, true, false);
     if let Err(e) = res {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
 
     //先删掉
@@ -131,7 +129,7 @@ pub fn change_index(
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(source_index as u32);
     au.targets.push(target_pt);
-    Ok(None)
+    None
 }
 
 ///展示地图块
@@ -141,23 +139,21 @@ pub fn show_index(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     //展示地图块
     if target_array.is_empty() {
-        let str = format!(
+        warn!(
             "target_array is empty!skill_id:{},user_id:{}",
             skill_id, user_id
         );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        return None;
     }
     let index = *target_array.get(0).unwrap() as usize;
     //校验index合法性
     let res = battle_data.check_choice_index(index, true, true, true, false);
     if let Err(e) = res {
-        let str = format!("show_index {:?}", e);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        warn!("show_index {:?}", e);
+        return None;
     }
 
     let cell = battle_data.tile_map.map.get(index).unwrap();
@@ -167,7 +163,7 @@ pub fn show_index(
     target_pt.target_value.push(cell_id);
     target_pt.target_value.push(cell.index as u32);
     au.targets.push(target_pt);
-    Ok(None)
+    None
 }
 
 ///上buff,121, 211, 221, 311, 322, 20002
@@ -177,11 +173,11 @@ pub unsafe fn add_buff(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     let cter = battle_data.get_battle_cter_mut(Some(user_id));
     if let Err(e) = cter {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let cter = cter.unwrap();
     let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
@@ -194,7 +190,6 @@ pub unsafe fn add_buff(
     match target_type {
         TargetType::PlayerSelf => {
             cter.add_buff(buff_id);
-
             target_pt.target_value.push(cter.cell_index as u32);
             target_pt.add_buffs.push(buff_id);
         }
@@ -202,20 +197,17 @@ pub unsafe fn add_buff(
             let index = *target_array.get(0).unwrap() as usize;
             let cell = battle_data.tile_map.map.get_mut(index);
             if cell.is_none() {
-                let str = format!("cell not find!index:{}", index);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!("{:?}", str)
+                warn!("cell not find!index:{}", index);
+                return None;
             }
             let cell = cell.unwrap();
             if cell.is_world {
-                let str = format!("world_cell can not be choice!index:{}", index);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!("{:?}", str)
+                warn!("world_cell can not be choice!index:{}", index);
+                return None;
             }
             if cell.pair_index.is_some() {
-                let str = format!("this cell is already paired!index:{}", index);
-                warn!("{:?}", str.as_str());
-                anyhow::bail!("{:?}", str)
+                warn!("this cell is already paired!index:{}", index);
+                return None;
             }
             let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
             let mut buff = Buff::from(buff_temp);
@@ -231,10 +223,12 @@ pub unsafe fn add_buff(
     //处理其他的
     if HURT_SELF_ADD_BUFF.contains(&skill_id) {
         let target_pt = battle_data.deduct_hp(user_id, user_id, Some(skill_temp.par1 as i32), true);
-        au.targets.push(target_pt);
+        match target_pt {
+            Ok(target_pt) => au.targets.push(target_pt),
+            Err(e) => error!("{:?}", e),
+        }
     }
-
-    Ok(None)
+    None
 }
 
 ///自动配对地图块
@@ -244,14 +238,14 @@ pub unsafe fn auto_pair_cell(
     _: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     //将1个地图块自动配对。本回合内不能攻击。
     let target_index = *target_array.get(0).unwrap() as usize;
     let res = battle_data.check_choice_index(target_index, true, true, true, false);
     if let Err(e) = res {
         let str = format!("{:?}", e);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        warn!("{:?}", str);
+        return None;
     }
 
     let map = &mut battle_data.tile_map.map as *mut Vec<Cell>;
@@ -262,7 +256,7 @@ pub unsafe fn auto_pair_cell(
     let battle_cter = battle_data.get_battle_cter_mut(Some(user_id));
     if let Err(e) = battle_cter {
         error!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let battle_cter = battle_cter.unwrap();
     let mut pair_cell: Option<&mut Cell> = None;
@@ -282,7 +276,7 @@ pub unsafe fn auto_pair_cell(
             "there is no cell pair for target_index:{},target_cell_id:{}",
             target_index, cell.id
         );
-        anyhow::bail!("")
+        return None;
     }
 
     let pair_cell = pair_cell.unwrap();
@@ -301,13 +295,13 @@ pub unsafe fn auto_pair_cell(
     let res = battle_data.open_cell_trigger_buff(user_id, au, true);
     if let Err(e) = res {
         warn!("{:?}", e);
-        return Ok(None);
+        return None;
     }
     let res = res.unwrap();
     if let Some(res) = res {
-        return Ok(Some(vec![res]));
+        return Some(vec![res]);
     }
-    Ok(None)
+    None
 }
 
 ///移动玩家
@@ -317,15 +311,14 @@ pub unsafe fn move_user(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     //选择一个玩家，将其移动到一个空地图块上。
     if target_array.len() < 2 {
-        let str = format!(
+        warn!(
             "move_user,the target_array size is error! skill_id:{},user_id:{}",
             skill_id, user_id
         );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        return None;
     }
     let target_user_index = *target_array.get(0).unwrap() as usize;
     let target_index = *target_array.get(1).unwrap() as usize;
@@ -333,12 +326,12 @@ pub unsafe fn move_user(
     let res = battle_data.check_choice_index(target_index, false, false, false, true);
     if let Err(e) = res {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let target_cter = battle_data.get_battle_cter_mut_by_cell_index(target_user_index);
     if let Err(e) = target_cter {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let target_cter = target_cter.unwrap();
     let target_cter_index = target_cter.cell_index;
@@ -348,9 +341,8 @@ pub unsafe fn move_user(
     target_cter.cell_index = target_index;
     let target_cell = battle_data.tile_map.map.get_mut(target_index);
     if let None = target_cell {
-        let str = format!("there is no cell!index:{}", target_index);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!("")
+        warn!("there is no cell!index:{}", target_index);
+        return None;
     }
     let target_cell = target_cell.unwrap();
     target_cell.user_id = target_user;
@@ -364,10 +356,8 @@ pub unsafe fn move_user(
     au.targets.push(target_pt);
 
     //处理移动后事件
-    unsafe {
-        let v = battle_data.handler_cter_move(target_user, target_index);
-        Ok(Some(v))
-    }
+    let v = battle_data.handler_cter_move(target_user, target_index);
+    Some(v)
 }
 
 ///对相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
@@ -377,7 +367,7 @@ pub unsafe fn skill_damage_and_cure(
     skill_id: u32,
     _: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     let battle_cters = &mut battle_data.battle_cter as *mut HashMap<u32, BattleCharacter>;
     let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
     let cter_index = battle_cter.cell_index;
@@ -387,21 +377,16 @@ pub unsafe fn skill_damage_and_cure(
         .get_temp(&skill.skill_temp.scope);
     if let Err(e) = res {
         error!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let scope_temp = res.unwrap();
     let cter_index = cter_index as isize;
     let target_type = TargetType::from(skill.skill_temp.target);
-    let res = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
-    if let Err(e) = res {
-        error!("{:?}", e);
-        anyhow::bail!("")
-    }
-    let v = res.unwrap();
+    let v = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
+
     let mut add_hp = 0_u32;
     let mut need_rank = true;
     for target_user in v {
-        add_hp += skill.skill_temp.par1;
         //扣血
         let target_pt = battle_data.deduct_hp(
             user_id,
@@ -409,18 +394,22 @@ pub unsafe fn skill_damage_and_cure(
             Some(skill.skill_temp.par1 as i32),
             need_rank,
         );
+        match target_pt {
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+                add_hp += skill.skill_temp.par1;
+            }
+            Err(e) => error!("{:?}", e),
+        }
         need_rank = false;
-        au.targets.push(target_pt);
     }
 
     //给自己加血
-    let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(battle_cter.cell_index as u32);
-    target_pt.effect_type = EffectType::Cure as u32;
-    target_pt.effect_value = add_hp as u32;
-    au.targets.push(target_pt);
-    battle_cter.add_hp(add_hp as i32);
-    Ok(None)
+    let target_pt = battle_data.add_hp(user_id, add_hp as i32);
+    if let Some(target_pt) = target_pt {
+        au.targets.push(target_pt);
+    }
+    None
 }
 
 ///技能aoe伤害
@@ -430,7 +419,7 @@ pub unsafe fn skill_aoe_damage(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     let battle_cter = battle_data.get_battle_cter(Some(user_id)).unwrap();
     let skill = battle_cter.skills.get(&skill_id).unwrap();
     let damage = skill.skill_temp.par1 as i32;
@@ -439,7 +428,7 @@ pub unsafe fn skill_aoe_damage(
     let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         error!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let scope_temp = scope_temp.unwrap();
 
@@ -447,9 +436,8 @@ pub unsafe fn skill_aoe_damage(
     for index in target_array.iter() {
         let cell = battle_data.tile_map.map.get(*index as usize);
         if let None = cell {
-            let str = format!("there is no cell!index:{}", index);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!("")
+            warn!("there is no cell!index:{}", index);
+            return None;
         }
     }
 
@@ -457,15 +445,13 @@ pub unsafe fn skill_aoe_damage(
     let target_type = TargetType::from(skill.skill_temp.target);
 
     //计算符合中心范围内的玩家
-    let v = battle_data
-        .cal_scope(
-            user_id,
-            center_index,
-            target_type,
-            Some(target_array),
-            Some(scope_temp),
-        )
-        .unwrap();
+    let v = battle_data.cal_scope(
+        user_id,
+        center_index,
+        target_type,
+        Some(target_array),
+        Some(scope_temp),
+    );
 
     let mut need_rank = true;
     for target_user in v {
@@ -477,14 +463,16 @@ pub unsafe fn skill_aoe_damage(
         } else {
             damage_res = damage;
         }
-        unsafe {
-            let target_pt =
-                battle_data.deduct_hp(user_id, target_user, Some(damage_res), need_rank);
-            au.targets.push(target_pt);
+        let target_pt = battle_data.deduct_hp(user_id, target_user, Some(damage_res), need_rank);
+        match target_pt {
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+                need_rank = false;
+            }
+            Err(e) => error!("{:?}", e),
         }
-        need_rank = false;
     }
-    Ok(None)
+    None
 }
 
 ///单体技能伤害
@@ -494,17 +482,21 @@ pub unsafe fn single_skill_damage(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     let target_user = *target_array.get(0).unwrap();
 
     let target_cter = battle_data.get_battle_cter_mut(Some(target_user));
     if let Err(e) = target_cter {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
     let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
     let target_pt = battle_data.deduct_hp(user_id, target_user, Some(skill.par1 as i32), true);
-    au.targets.push(target_pt);
+    if let Err(e) = target_pt {
+        error!("{:?}", e);
+        return None;
+    }
+    au.targets.push(target_pt.unwrap());
     //替换技能
     if skill.par2 > 0 {
         let user_id = au.from_user;
@@ -527,7 +519,7 @@ pub unsafe fn single_skill_damage(
             }
         }
     }
-    Ok(None)
+    None
 }
 
 ///减技能cd
@@ -537,13 +529,13 @@ pub unsafe fn sub_cd(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> Option<Vec<ActionUnitPt>> {
     let target_user = *target_array.get(0).unwrap();
     //目标的技能CD-2。
     let battle_cter = battle_data.get_battle_cter_mut(Some(target_user));
     if let Err(e) = battle_cter {
         warn!("{:?}", e);
-        anyhow::bail!("")
+        return None;
     }
 
     let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
@@ -559,5 +551,5 @@ pub unsafe fn sub_cd(
         .skills
         .values_mut()
         .for_each(|skill| skill.sub_cd(Some(skill_temp.par1 as i8)));
-    Ok(None)
+    None
 }
