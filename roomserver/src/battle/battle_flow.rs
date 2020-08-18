@@ -268,7 +268,7 @@ impl BattleData {
                     continue;
                 }
                 //扣血
-                let mut target_pt = self.deduct_hp(user_id, target_user, None, false);
+                let target_pt = self.deduct_hp(user_id, target_user, None, false);
                 match target_pt {
                     Ok(mut target_pt) => {
                         //目标被攻击，触发目标buff
