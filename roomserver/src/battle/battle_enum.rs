@@ -6,6 +6,11 @@ pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 
 ///技能类型
 pub mod skill_type {
+
+    //自残加buff
+    pub static HURT_SELF_ADD_BUFF: [u32; 1] = [311];
+    ///格挡伤害
+    pub static GD_ATTACK_DAMAGE: [u32; 1] = [2];
     ///自动配对地图块
     pub static AUTO_PAIR_CELL: [u32; 1] = [212];
     ///上buff
@@ -44,13 +49,17 @@ pub mod buff_type {
     pub static AWARD_BUFF: [u32; 1] = [30022];
     ///相临技能cd增加
     pub static NEAR_ADD_CD: [u32; 1] = [30032];
+    ///配对成功相临造成技能伤害
+    pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
     ///相临造成技能伤害
-    pub static NEAR_SKILL_DAMAGE: [u32; 1] = [30042];
+    pub static NEAR_SKILL_DAMAGE: [u32; 1] = [1];
     ///相临造成技能伤害
     /// 配对属性一样的地图块+hp
     pub static WORLD_CELL_PAIR_ADD_HP: [u32; 1] = [9];
     /// 翻开属性一样的地图块+攻击
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
+    ///当地图重制，每有一个存活单位，+攻击力
+    pub static RESET_MAP_ADD_ATTACK_BY_ALIVES: [u32; 1] = [1002];
     /// 翻开地图块干点啥，配对又干点啥
     pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
     ///配对与自己相同元素时恢复生命

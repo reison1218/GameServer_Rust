@@ -66,7 +66,7 @@ pub enum RoomState {
 }
 
 ///房间结构体，封装房间必要信息
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Room {
     id: u32,                              //房间id
     room_type: u8,                        //房间类型
@@ -139,7 +139,7 @@ impl Room {
     }
 
     ///处理结算
-    pub unsafe fn handler_settle(&mut self) -> bool {
+    pub unsafe fn handler_summary(&mut self) -> bool {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
@@ -173,7 +173,6 @@ impl Room {
     pub fn start_choice_index(&mut self) {
         //刷新地图
         self.state = RoomState::ChoiceIndex;
-        let s = self.state as u8;
         self.set_next_turn_index(0);
         //校验下一个是不是为0
         let next_turn_user = self.get_turn_user(None).unwrap();
@@ -997,7 +996,7 @@ impl Room {
 
         //处理结算
         unsafe {
-            self.handler_settle();
+            self.handler_summary();
         }
     }
 
@@ -1223,6 +1222,7 @@ impl Room {
         self.battle_data.build_battle_turn_task();
     }
 
+    ///创建选择下标定时任务
     pub fn build_choice_index_task(&self) {
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {

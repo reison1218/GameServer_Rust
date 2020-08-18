@@ -217,7 +217,7 @@ pub trait RoomModel {
 }
 
 ///好友房结构体
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct CustomRoom {
     pub rooms: HashMap<u32, Room>, //封装房间房间id->房间结构体实例
 }
@@ -280,7 +280,7 @@ impl RoomModel for CustomRoom {
 }
 
 ///匹配房数组结构封装体
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Clone)]
 pub struct MatchRooms {
     pub match_rooms: HashMap<u8, MatchRoom>,
 }
@@ -322,7 +322,7 @@ impl MatchRooms {
 }
 
 ///匹配房结构体
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Clone)]
 pub struct MatchRoom {
     pub battle_type: u8,            //战斗模式类型
     pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
@@ -510,8 +510,8 @@ impl MatchRoom {
                 map.insert("room_id".to_owned(), Value::from(room_id));
                 task.data = Value::from(map);
                 let res = task_sender.send(task);
-                if res.is_err() {
-                    error!("{:?}", res.err().unwrap());
+                if let Err(e) = res {
+                    error!("{:?}", e);
                 }
             }
             //重新排序

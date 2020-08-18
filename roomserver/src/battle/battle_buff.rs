@@ -1,7 +1,7 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, OPEN_CELL_AND_PAIR, PAIR_CURE,
-    PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
+    AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, NEAR_SKILL_DAMAGE_PAIR,
+    OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
 };
 use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -77,6 +77,7 @@ impl From<&'static BuffTemp> for Buff {
 }
 
 impl BattleData {
+    ///获得道具
     fn reward_item(
         &mut self,
         user_id: u32,
@@ -126,7 +127,12 @@ impl BattleData {
                 last_cell_user.items.insert(item_id, item.clone());
             }
         }
-        let battle_cter = battle_cters.get_mut(&user_id).unwrap();
+        let battle_cter = battle_cters.get_mut(&user_id);
+        if let None = battle_cter {
+            error!("battle_cter is not find!user_id:{}", user_id);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
         target_pt.target_value.clear();
         target_pt.target_value.push(battle_cter.cell_index as u32);
         au.targets.push(target_pt);
@@ -134,6 +140,7 @@ impl BattleData {
         battle_cter.items.insert(item_id, item);
     }
 
+    ///匹配获得治疗
     fn pair_cure(
         &mut self,
         user_id: u32,
@@ -162,7 +169,12 @@ impl BattleData {
                 last_cell_user.add_hp(buff_temp.par1 as i32);
             }
         }
-        let battle_cter = battle_cters.get_mut(&user_id).unwrap();
+        let battle_cter = battle_cters.get_mut(&user_id);
+        if let None = battle_cter {
+            error!("battle_cter is not find!user_id:{}", user_id);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
         target_pt.target_value.clear();
         target_pt.target_value.push(battle_cter.cell_index as u32);
         au.targets.push(target_pt.clone());
@@ -170,6 +182,7 @@ impl BattleData {
         battle_cter.add_hp(buff_temp.par1 as i32);
     }
 
+    ///获得buff
     fn award_buff(
         &mut self,
         user_id: u32,
@@ -215,6 +228,7 @@ impl BattleData {
         battle_cter.buffs.insert(buff.id, buff);
     }
 
+    ///给附近的人添加技能cd
     fn near_add_cd(
         &mut self,
         user_id: u32,
@@ -253,6 +267,7 @@ impl BattleData {
         }
     }
 
+    ///附近造成技能伤害
     fn near_skill_damage(
         &mut self,
         user_id: u32,
@@ -267,9 +282,7 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let mut target_pt = TargetPt::new();
-        target_pt.effect_type = EffectType::SkillDamage as u32;
-        target_pt.effect_value = buff_temp.par1;
+
         let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&buff_temp.scope);
         if let Err(e) = scope_temp {
             error!("{:?}", e);
@@ -282,25 +295,23 @@ impl BattleData {
             .cal_scope(user_id, isize_index, target_type, None, Some(scope_temp))
             .unwrap();
         let mut need_rank = true;
-        for target_user in v.iter() {
-            let target_cter = battle_cters.get_mut(target_user).unwrap();
-            target_pt.target_value.clear();
-            target_pt.target_value.push(target_cter.cell_index as u32);
-            au.targets.push(target_pt.clone());
-            //造成技能伤害
-            unsafe {
-                self.deduct_hp(
+        unsafe {
+            for target_user in v.iter() {
+                //造成技能伤害
+                let target_pt = self.deduct_hp(
                     user_id,
                     *target_user,
                     Some(buff_temp.par1 as i32),
                     need_rank,
                 );
-            }
+                au.targets.push(target_pt);
 
-            need_rank = false;
+                need_rank = false;
+            }
         }
     }
 
+    ///匹配同元素治疗
     fn pair_same_element_cure(
         &mut self,
         user_id: u32,
@@ -328,6 +339,7 @@ impl BattleData {
         battle_cter.add_hp(buff_temp.par1 as i32);
     }
 
+    ///打开块和匹配
     fn open_cell_and_pair(
         &mut self,
         user_id: u32,
@@ -359,6 +371,7 @@ impl BattleData {
         au.targets.push(target_pt);
     }
 
+    ///匹配buff
     unsafe fn match_buff(
         &mut self,
         user_id: u32,
@@ -400,7 +413,7 @@ impl BattleData {
                     self.near_add_cd(user_id, index, buff.id, cters, au);
 
                 //todo 通知客户端
-                } else if NEAR_SKILL_DAMAGE.contains(&buff.id) {
+                } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff.id) {
                     //相临都玩家造成技能伤害
                     self.near_skill_damage(user_id, index, buff.id, cters, au);
 
@@ -492,7 +505,7 @@ impl BattleData {
             let cter_index = other_cter.cell_index as isize;
 
             for buff in other_cter.buffs.values_mut() {
-                if buff.id != 1 {
+                if !NEAR_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
@@ -500,7 +513,7 @@ impl BattleData {
                     if index != res {
                         continue;
                     }
-                    self.deduct_hp(
+                    let target_pt = self.deduct_hp(
                         other_cter.user_id,
                         battle_cter.user_id,
                         Some(buff.buff_temp.par1 as i32),
@@ -510,10 +523,6 @@ impl BattleData {
                     other_aupt.from_user = other_cter.user_id;
                     other_aupt.action_type = ActionType::Buff as u32;
                     other_aupt.action_value.push(buff.id);
-                    let mut target_pt = TargetPt::new();
-                    target_pt.target_value.push(battle_cter.cell_index as u32);
-                    target_pt.effect_type = EffectType::SkillDamage as u32;
-                    target_pt.effect_value = buff.buff_temp.par1;
                     other_aupt.targets.push(target_pt);
                     v.push(other_aupt);
                     break;
@@ -527,7 +536,7 @@ impl BattleData {
                 continue;
             }
             for buff in battle_cter.buffs.values_mut() {
-                if buff.id != 1 {
+                if !NEAR_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
                 let mut need_rank = true;
@@ -536,7 +545,7 @@ impl BattleData {
                     if cter_index != res {
                         continue;
                     }
-                    self.deduct_hp(
+                    let target_pt = self.deduct_hp(
                         battle_cter.user_id,
                         other_cter.user_id,
                         Some(buff.buff_temp.par1 as i32),
@@ -546,10 +555,6 @@ impl BattleData {
                     self_aupt.from_user = user_id;
                     self_aupt.action_type = ActionType::Buff as u32;
                     self_aupt.action_value.push(buff.id);
-                    let mut target_pt = TargetPt::new();
-                    target_pt.target_value.push(other_cter.cell_index as u32);
-                    target_pt.effect_type = EffectType::SkillDamage as u32;
-                    target_pt.effect_value = buff.buff_temp.par1;
                     self_aupt.targets.push(target_pt);
                     v.push(self_aupt);
                     break;

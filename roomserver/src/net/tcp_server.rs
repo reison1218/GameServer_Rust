@@ -38,8 +38,8 @@ impl tools::tcp::Handler for TcpServerHandler {
     fn on_message(&mut self, mess: Vec<u8>) {
         let packet_array = Packet::build_array_from_server(mess);
 
-        if packet_array.is_err() {
-            error!("{:?}", packet_array.err().unwrap().to_string());
+        if let Err(e) = packet_array {
+            error!("{:?}", e);
             return;
         }
         let packet_array = packet_array.unwrap();
@@ -65,8 +65,8 @@ async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
 pub fn new(address: &str, rm: Arc<RwLock<RoomMgr>>) {
     let sh = TcpServerHandler { sender: None, rm };
     let res = tcp_server::new(address, sh);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap());
+    if let Err(e) = res {
+        error!("{:?}", e);
         std::process::abort();
     }
 }

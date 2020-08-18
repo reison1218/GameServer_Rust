@@ -235,6 +235,7 @@ impl TileMap {
             tmd.map.push(cell);
             index += 1;
         }
+        println!("{:?}", map);
         tmd.un_pair_count = un_pair_count;
         Ok(tmd)
     }

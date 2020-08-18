@@ -833,6 +833,7 @@ dependencies = [
  "net2",
  "ntapi",
  "num_cpus",
+ "piston-ai_behavior",
  "protobuf",
  "rand",
  "rayon",
@@ -964,6 +965,44 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "piston-ai_behavior"
+version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f1b100ad89a47b3953437ef36e856e4f7bb4722ff83eb65fafa79fa4844a20f"
+dependencies = [
+ "pistoncore-input",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "piston-float"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f900be47e312e126cc71d35548e8e31edd3901b92ab82d1c4c4757e6b5526564"
+
+[[package]]
+name = "piston-viewport"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01abb19b781051290d0837b9294c26d419cc4156907c21ffe86705e219446798"
+dependencies = [
+ "piston-float",
+]
+
+[[package]]
+name = "pistoncore-input"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44bb41e7bdd8213f06b2da31e67ae9469f83094d0e45122ead52158915d9af30"
+dependencies = [
+ "bitflags",
+ "piston-viewport",
+ "serde",
+ "serde_derive",
+]
 
 [[package]]
 name = "ppv-lite86"

@@ -38,8 +38,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //解析protobuf
     let mut ca = C_ACTION::new();
     let res = ca.merge_from_bytes(packet.get_data());
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return Ok(());
     }
     //客户端请求的actiontype
@@ -128,14 +128,14 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     unsafe {
         let rm_ptr = rm as *mut RoomMgr;
         let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        battle_settle(rm_ptr.as_mut().unwrap(), room);
+        battle_summary(rm_ptr.as_mut().unwrap(), room);
     }
     Ok(())
 }
 
 ///战斗结算
-pub unsafe fn battle_settle(rm: &mut RoomMgr, room: &mut Room) {
-    let is_settle = room.handler_settle();
+pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) {
+    let is_settle = room.handler_summary();
     let room_type = RoomType::from(room.get_room_type());
     let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
@@ -231,7 +231,13 @@ fn use_item(
     item_id: u32,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    let battle_cter = rm.battle_data.battle_cter.get(&user_id);
+    if let None = battle_cter {
+        let str = format!("battle_cter is not find!user_id:{}", user_id);
+        error!("{:?}", str);
+        anyhow::bail!(str)
+    }
+    let battle_cter = battle_cter.unwrap();
     if battle_cter.items.is_empty() {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
         error!("{:?}", str.as_str());

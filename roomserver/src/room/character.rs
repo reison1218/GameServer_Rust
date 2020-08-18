@@ -1,6 +1,7 @@
 use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{ADD_ATTACK, CHANGE_SKILL, SUB_ATTACK_DAMAGE};
+use crate::battle::battle_enum::skill_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::TEMPLATES;
@@ -290,7 +291,7 @@ impl BattleCharacter {
 
     ///触发抵挡攻击伤害
     pub fn trigger_attack_damge_gd(&mut self) -> (u32, bool) {
-        let gd_buff = self.buffs.get_mut(&2);
+        let gd_buff = self.buffs.get_mut(&GD_ATTACK_DAMAGE[0]);
         let mut buff_id = 0;
         let mut is_remove = false;
         if let Some(gd_buff) = gd_buff {

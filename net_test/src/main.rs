@@ -4,6 +4,7 @@ mod web_socket;
 mod mio_test;
 mod map;
 mod test_async;
+mod behavior_test;
 use serde_json::json;
 use std::time::{Duration, SystemTime};
 use protobuf::Message;
