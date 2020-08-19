@@ -1,6 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::{
-    EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR, TRIGGER_SCOPE_NEAR_TEMP_ID,
+    EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR_TEMP_ID,
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};

@@ -128,21 +128,22 @@ impl TileMap {
         tmd.map = Vec::with_capacity(30);
 
         let mut map = [(0, false); 30];
-        let mut index = 0;
-        for i in tile_map_temp.map.iter() {
+        tile_map_temp.map.iter().enumerate().for_each(|i| {
+            let index = i.0;
+            let value = i.1;
             let mut cell = Cell::default();
             cell.index = index;
-            map[index] = (*i, false);
-            index += 1;
-        }
+            map[index] = (*value, false);
+        });
+
         let mut empty_v = Vec::new();
+
         //填充空的格子占位下标
         for index in 0..tile_map_temp.map.len() {
             let res = tile_map_temp.map.get(index).unwrap();
             if *res != 2 {
                 continue;
             }
-
             empty_v.push(index);
         }
 

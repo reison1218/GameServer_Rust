@@ -21,7 +21,6 @@ use tools::protos::room::{
     S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
     S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
 };
-use tools::protos::server_protocol::R_G_SUMMARY;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 

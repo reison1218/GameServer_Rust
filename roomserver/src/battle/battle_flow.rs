@@ -48,14 +48,14 @@ impl BattleData {
             } else {
                 index -= 1;
             }
-            let mut max_grade = 2_u32;
+            let mut max_grade = 2_i32;
             let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
             match max_grade_temp {
                 Some(max_grade_temp) => {
                     let res = u32::from_str(max_grade_temp.value.as_str());
                     match res {
                         Ok(res) => {
-                            max_grade = res;
+                            max_grade = res as i32;
                         }
                         Err(e) => {
                             error!("{:?}", e);
@@ -76,21 +76,25 @@ impl BattleData {
                             continue;
                         }
                         let cter = cter.unwrap();
-                        grade = cter.grade;
+                        grade = cter.grade as i32;
 
+                        //处理grade升级和降级
+                        if rank == 0 {
+                            grade += 1;
+                        } else {
+                            grade -= 1;
+                        }
+                        //满足条件就初始化
+                        if grade > max_grade || grade <= 0 {
+                            grade = 1;
+                        }
                         let mut smp = SummaryDataPt::new();
                         smp.user_id = *member_id;
                         smp.cter_id = cter.cter_id;
                         smp.rank = rank;
-                        smp.grade = grade;
+                        smp.grade = grade as u32;
                         ssn.summary_datas.push(smp.clone());
                         rgs.summary_datas.push(smp);
-                        if rank == 0 {
-                            grade += 1;
-                        }
-                        if grade > max_grade {
-                            grade = 1;
-                        }
                     }
                     rank += 1;
                 }

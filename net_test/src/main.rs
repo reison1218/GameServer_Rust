@@ -40,7 +40,7 @@ use crate::web::test_http_client;
 use threadpool::ThreadPool;
 use std::any::Any;
 use envmnt::{ExpandOptions, ExpansionType};
-use std::ops::DerefMut;
+use std::ops::{DerefMut, Deref};
 use rand::prelude::*;
 use std::collections::BTreeMap;
 use std::alloc::System;
@@ -215,6 +215,22 @@ macro_rules! map{
 #[derive(Debug)]
 struct Foo {
     x: i32,
+    y:String,
+}
+
+impl  Foo{
+    pub fn get_x(&self)->i32{
+        self.x
+    }
+}
+
+impl Deref for Foo{
+
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.y
+    }
 }
 
 
@@ -234,6 +250,10 @@ fn main() -> anyhow::Result<()> {
     let b = 2;
     let res = b+*&a;
     println!("{}",res);
+    let mut k =&&&&&Foo{x:10,y:String::from("test")};
+    print!("{}",k.get_x());
+    println!("{:?}",k.bytes());
+
 
     // let foo = Foo{x:1};
     // let mut rc = Rc::new(foo);
