@@ -668,7 +668,7 @@ impl ::protobuf::reflect::ProtobufValue for G_R_SEARCH_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct R_G_SUMMARY {
     // message fields
-    pub winners: ::protobuf::RepeatedField<WinnerPt>,
+    pub summary_datas: ::protobuf::RepeatedField<super::base::SummaryDataPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -685,35 +685,35 @@ impl R_G_SUMMARY {
         ::std::default::Default::default()
     }
 
-    // repeated .protos.WinnerPt winners = 1;
+    // repeated .protos.SummaryDataPt summary_datas = 1;
 
 
-    pub fn get_winners(&self) -> &[WinnerPt] {
-        &self.winners
+    pub fn get_summary_datas(&self) -> &[super::base::SummaryDataPt] {
+        &self.summary_datas
     }
-    pub fn clear_winners(&mut self) {
-        self.winners.clear();
+    pub fn clear_summary_datas(&mut self) {
+        self.summary_datas.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_winners(&mut self, v: ::protobuf::RepeatedField<WinnerPt>) {
-        self.winners = v;
+    pub fn set_summary_datas(&mut self, v: ::protobuf::RepeatedField<super::base::SummaryDataPt>) {
+        self.summary_datas = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_winners(&mut self) -> &mut ::protobuf::RepeatedField<WinnerPt> {
-        &mut self.winners
+    pub fn mut_summary_datas(&mut self) -> &mut ::protobuf::RepeatedField<super::base::SummaryDataPt> {
+        &mut self.summary_datas
     }
 
     // Take field
-    pub fn take_winners(&mut self) -> ::protobuf::RepeatedField<WinnerPt> {
-        ::std::mem::replace(&mut self.winners, ::protobuf::RepeatedField::new())
+    pub fn take_summary_datas(&mut self) -> ::protobuf::RepeatedField<super::base::SummaryDataPt> {
+        ::std::mem::replace(&mut self.summary_datas, ::protobuf::RepeatedField::new())
     }
 }
 
 impl ::protobuf::Message for R_G_SUMMARY {
     fn is_initialized(&self) -> bool {
-        for v in &self.winners {
+        for v in &self.summary_datas {
             if !v.is_initialized() {
                 return false;
             }
@@ -726,7 +726,7 @@ impl ::protobuf::Message for R_G_SUMMARY {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.winners)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.summary_datas)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -740,7 +740,7 @@ impl ::protobuf::Message for R_G_SUMMARY {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.winners {
+        for value in &self.summary_datas {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -750,7 +750,7 @@ impl ::protobuf::Message for R_G_SUMMARY {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.winners {
+        for v in &self.summary_datas {
             os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -794,10 +794,10 @@ impl ::protobuf::Message for R_G_SUMMARY {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<WinnerPt>>(
-                    "winners",
-                    |m: &R_G_SUMMARY| { &m.winners },
-                    |m: &mut R_G_SUMMARY| { &mut m.winners },
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
+                    "summary_datas",
+                    |m: &R_G_SUMMARY| { &m.summary_datas },
+                    |m: &mut R_G_SUMMARY| { &mut m.summary_datas },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_SUMMARY>(
                     "R_G_SUMMARY",
@@ -818,7 +818,7 @@ impl ::protobuf::Message for R_G_SUMMARY {
 
 impl ::protobuf::Clear for R_G_SUMMARY {
     fn clear(&mut self) {
-        self.winners.clear();
+        self.summary_datas.clear();
         self.unknown_fields.clear();
     }
 }
@@ -830,197 +830,6 @@ impl ::std::fmt::Debug for R_G_SUMMARY {
 }
 
 impl ::protobuf::reflect::ProtobufValue for R_G_SUMMARY {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct WinnerPt {
-    // message fields
-    pub user_id: u32,
-    pub cter_id: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a WinnerPt {
-    fn default() -> &'a WinnerPt {
-        <WinnerPt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl WinnerPt {
-    pub fn new() -> WinnerPt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 user_id = 1;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // uint32 cter_id = 2;
-
-
-    pub fn get_cter_id(&self) -> u32 {
-        self.cter_id
-    }
-    pub fn clear_cter_id(&mut self) {
-        self.cter_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_cter_id(&mut self, v: u32) {
-        self.cter_id = v;
-    }
-}
-
-impl ::protobuf::Message for WinnerPt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.cter_id = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        if self.cter_id != 0 {
-            os.write_uint32(2, self.cter_id)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> WinnerPt {
-        WinnerPt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "user_id",
-                    |m: &WinnerPt| { &m.user_id },
-                    |m: &mut WinnerPt| { &mut m.user_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "cter_id",
-                    |m: &WinnerPt| { &m.cter_id },
-                    |m: &mut WinnerPt| { &mut m.cter_id },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new_pb_name::<WinnerPt>(
-                    "WinnerPt",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static WinnerPt {
-        static mut instance: ::protobuf::lazy::Lazy<WinnerPt> = ::protobuf::lazy::Lazy::INIT;
-        unsafe {
-            instance.get(WinnerPt::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for WinnerPt {
-    fn clear(&mut self) {
-        self.user_id = 0;
-        self.cter_id = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for WinnerPt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for WinnerPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1281,12 +1090,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\\\n\
     \x0fG_R_SEARCH_ROOM\x12\x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattle\
     Type\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03p\
-    bp\"9\n\x0bR_G_SUMMARY\x12*\n\x07winners\x18\x01\x20\x03(\x0b2\x10.proto\
-    s.WinnerPtR\x07winners\"<\n\x08WinnerPt\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"q\
-    \n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12)\n\x05cters\
-    \x18\x03\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ctersb\x06proto3\
+    bp\"I\n\x0bR_G_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.p\
+    rotos.SummaryDataPtR\x0csummaryDatas\"q\n\x0ePlayerBattlePt\x12\x17\n\
+    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\
+    \x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03(\x0b2\x13.proto\
+    s.CharacterPtR\x05ctersb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

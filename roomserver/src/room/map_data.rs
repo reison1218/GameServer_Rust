@@ -13,10 +13,11 @@ pub enum CellType {
 ///地图
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {
-    pub id: u32,                           //地图id
-    pub map: Vec<Cell>,                    //地图格子vec
-    pub world_cell_map: HashMap<u32, u32>, //世界块map，index，cellid
-    pub un_pair_count: i32,                //未配对地图块数量
+    pub id: u32,                                   //地图id
+    pub map: Vec<Cell>,                            //地图格子vec
+    pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
+    pub world_cell_map: HashMap<u32, u32>,         //世界块map，index，cellid
+    pub un_pair_count: i32,                        //未配对地图块数量
 }
 
 ///块的封装结构体
@@ -30,6 +31,8 @@ pub struct Cell {
     pub passive_buffs: Vec<Buff>,  //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
     pub pair_index: Option<usize>, //与之配对的下标
+    pub x: isize,                  //x轴坐标
+    pub y: isize,                  //y轴坐标
 }
 
 impl Cell {
@@ -139,6 +142,7 @@ impl TileMap {
             if *res != 2 {
                 continue;
             }
+
             empty_v.push(index);
         }
 
@@ -195,12 +199,28 @@ impl TileMap {
         }
         let mut index = 0;
         let mut un_pair_count = 0;
+        let mut x = 0_isize;
+        let mut y = 0_isize;
         for (cell_id, is_world) in map.iter() {
+            if x > 5 {
+                x = 0;
+                y += 1;
+            }
+
+            if y >= 5 {
+                y = 0;
+            }
             let mut cell = Cell::default();
             cell.id = *cell_id;
             cell.index = index;
             cell.is_world = *is_world;
+            cell.x = x;
+            cell.y = y;
+            print!("index:{},x:{},y:{}| ", index, x, y);
+            tmd.coord_map.insert((x, y), index);
+            x += 1;
             let mut buffs: Option<Iter<u32>> = None;
+            index += 1;
             if cell.is_world {
                 let world_cell = TEMPLATES.get_world_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(world_cell.buff.iter());
@@ -221,9 +241,7 @@ impl TileMap {
                 cell.passive_buffs = buff_array;
             }
             tmd.map.push(cell);
-            index += 1;
         }
-        println!("{:?}", map);
         tmd.un_pair_count = un_pair_count;
         Ok(tmd)
     }

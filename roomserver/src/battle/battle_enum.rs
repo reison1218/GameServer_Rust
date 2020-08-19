@@ -3,7 +3,8 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
-
+///触发范围一圈不包括中心
+pub static TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
 ///技能类型
 pub mod skill_type {
 
@@ -51,8 +52,8 @@ pub mod buff_type {
     pub static NEAR_ADD_CD: [u32; 1] = [30032];
     ///配对成功相临造成技能伤害
     pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
-    ///相临造成技能伤害
-    pub static NEAR_SKILL_DAMAGE: [u32; 1] = [1];
+    ///其他玩家移动到相临造成技能伤害
+    pub static NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     /// 翻开属性一样的地图块+攻击
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力

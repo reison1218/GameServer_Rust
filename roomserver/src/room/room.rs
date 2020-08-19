@@ -21,7 +21,7 @@ use tools::protos::room::{
     S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
     S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
 };
-use tools::protos::server_protocol::{WinnerPt, R_G_SUMMARY};
+use tools::protos::server_protocol::R_G_SUMMARY;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -143,16 +143,9 @@ impl Room {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
-        let (is_summary, allive_count, first_v) = self.battle_data.handler_summary();
+        let (is_summary, allive_count, summary_data) = self.battle_data.handler_summary();
         if is_summary {
-            let mut rgs = R_G_SUMMARY::new();
-            for member in first_v.unwrap() {
-                let mut winner_pt = WinnerPt::new();
-                winner_pt.user_id = member.0;
-                winner_pt.cter_id = member.1;
-                rgs.winners.push(winner_pt);
-            }
-            let bytes = rgs.write_to_bytes().unwrap();
+            let bytes = summary_data.unwrap().write_to_bytes().unwrap();
             //发给游戏服同步结算数据
             self.send_2_game(GameCode::Summary, bytes);
         } else if allive_count >= 2 && self.battle_data.tile_map.un_pair_count <= 2 {

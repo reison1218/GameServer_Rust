@@ -5,11 +5,22 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 pub struct SkillScopeTemp {
     pub id: u32,//技能id
     pub scope:Vec<DirectionTemp>,//范围
+    pub scope2d:Vec<Direction2dTemp>,//2d范围
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct DirectionTemp{
-    pub direction:Vec<i32>,
+    pub direction:Vec<isize>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct Direction2dTemp{
+    pub direction2d:Vec<CoordTemp>,
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct CoordTemp{
+    pub x:isize,
+    pub y:isize,
 }
 
 impl Template for SkillScopeTemp {}

@@ -331,23 +331,31 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", e);
         return Ok(());
     }
-    for winner in rgs.get_winners() {
-        let res = gm.users.get_mut(&winner.user_id);
+
+    for summary_data in rgs.get_summary_datas() {
+        let res = gm.users.get_mut(&summary_data.user_id);
         if let None = res {
-            error! {"settle!UserData is not find! user_id:{}",winner.user_id};
+            error! {"summary!UserData is not find! user_id:{}",summary_data.user_id};
             continue;
         }
         let user_data = res.unwrap();
         let res = user_data
             .get_characters_mut_ref()
             .cter_map
-            .get_mut(&winner.cter_id);
+            .get_mut(&summary_data.cter_id);
         if let None = res {
-            error! {"settle!Character is not find! user_id:{},cter_id:{}",winner.user_id,winner.cter_id};
+            error! {"summary!Character is not find! user_id:{},cter_id:{}",summary_data.user_id,summary_data.cter_id};
             continue;
         }
         let cter = res.unwrap();
-        let res = cter.add_grade();
+        let res;
+        //第一名就加grade
+        if summary_data.rank == 0 {
+            res = cter.add_grade();
+        } else {
+            //否则就减grade
+            res = cter.sub_grade();
+        }
         if let Err(e) = res {
             error!("{:?}", e);
         }

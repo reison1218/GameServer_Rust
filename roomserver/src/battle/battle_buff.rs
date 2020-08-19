@@ -1,7 +1,8 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, NEAR_ADD_CD, NEAR_SKILL_DAMAGE, NEAR_SKILL_DAMAGE_PAIR,
-    OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
+    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, NEAR_ADD_CD, NEAR_MOVE_SKILL_DAMAGE,
+    NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE,
+    SAME_CELL_ELEMENT_ADD_ATTACK,
 };
 use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -494,7 +495,7 @@ impl BattleData {
             let cter_index = other_cter.cell_index as isize;
 
             for buff in other_cter.buffs.values_mut() {
-                if !NEAR_SKILL_DAMAGE.contains(&buff.id) {
+                if !NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
@@ -530,7 +531,7 @@ impl BattleData {
                 continue;
             }
             for buff in battle_cter.buffs.values_mut() {
-                if !NEAR_SKILL_DAMAGE.contains(&buff.id) {
+                if !NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
                 let mut need_rank = true;

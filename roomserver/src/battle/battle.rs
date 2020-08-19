@@ -24,7 +24,7 @@ pub struct Item {
 
 #[derive(Debug, Clone)]
 pub struct Direction {
-    pub direction: &'static Vec<i32>,
+    pub direction: &'static Vec<isize>,
 }
 
 ///房间战斗数据封装

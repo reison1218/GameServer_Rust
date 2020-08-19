@@ -11,14 +11,16 @@ use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::ops::Deref;
+use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
+use tools::protos::server_protocol::R_G_SUMMARY;
 
 impl BattleData {
     ///处理结算
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub unsafe fn handler_summary(&mut self) -> (bool, usize, Option<HashMap<u32, u32>>) {
+    pub unsafe fn handler_summary(&mut self) -> (bool, usize, Option<R_G_SUMMARY>) {
         let allive_count = self
             .battle_cter
             .values()
@@ -28,7 +30,6 @@ impl BattleData {
         let battle_cters = battle_cters_prt.as_mut().unwrap();
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
-            let mut first_map = HashMap::new();
             let mut member: Option<u32> = None;
             for member_cter in self.battle_cter.values() {
                 member = Some(member_cter.user_id);
@@ -47,6 +48,25 @@ impl BattleData {
             } else {
                 index -= 1;
             }
+            let mut max_grade = 2_u32;
+            let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
+            match max_grade_temp {
+                Some(max_grade_temp) => {
+                    let res = u32::from_str(max_grade_temp.value.as_str());
+                    match res {
+                        Ok(res) => {
+                            max_grade = res;
+                        }
+                        Err(e) => {
+                            error!("{:?}", e);
+                        }
+                    }
+                }
+                None => {
+                    error!("max_grade is not find!");
+                }
+            }
+            let mut rgs = R_G_SUMMARY::new();
             loop {
                 for members in self.rank_vec.get(index) {
                     for member_id in members.iter() {
@@ -57,15 +77,20 @@ impl BattleData {
                         }
                         let cter = cter.unwrap();
                         grade = cter.grade;
+
+                        let mut smp = SummaryDataPt::new();
+                        smp.user_id = *member_id;
+                        smp.cter_id = cter.cter_id;
+                        smp.rank = rank;
+                        smp.grade = grade;
+                        ssn.summary_datas.push(smp.clone());
+                        rgs.summary_datas.push(smp);
                         if rank == 0 {
                             grade += 1;
                         }
-                        let mut smp = SummaryDataPt::new();
-                        smp.user_id = *member_id;
-                        smp.rank = rank;
-                        smp.grade = grade;
-                        ssn.summary_datas.push(smp);
-                        first_map.insert(*member_id, cter.cter_id);
+                        if grade > max_grade {
+                            grade = 1;
+                        }
                     }
                     rank += 1;
                 }
@@ -89,7 +114,7 @@ impl BattleData {
                     error!("{:?}", e);
                 }
             }
-            return (true, allive_count, Some(first_map));
+            return (true, allive_count, Some(rgs));
         }
         return (false, allive_count, None);
     }
@@ -246,20 +271,12 @@ impl BattleData {
                 warn!("{:?}", e);
                 return;
             }
-            let buff = buff.unwrap();
-            let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&buff.scope);
-            if let Err(e) = scope_temp {
-                warn!("{:?}", e);
-                return;
-            }
-            let scope_temp = scope_temp.unwrap();
-
             let v = self.cal_scope(
                 user_id,
                 target_user_index as isize,
                 TargetType::OtherAnyPlayer,
                 None,
-                Some(scope_temp),
+                None,
             );
 
             //目标周围的玩家

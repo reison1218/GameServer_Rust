@@ -3743,6 +3743,7 @@ impl ::protobuf::reflect::ProtobufValue for BuffPt {
 pub struct SummaryDataPt {
     // message fields
     pub user_id: u32,
+    pub cter_id: u32,
     pub grade: u32,
     pub rank: u32,
     // special fields
@@ -3776,7 +3777,22 @@ impl SummaryDataPt {
         self.user_id = v;
     }
 
-    // uint32 grade = 2;
+    // uint32 cter_id = 2;
+
+
+    pub fn get_cter_id(&self) -> u32 {
+        self.cter_id
+    }
+    pub fn clear_cter_id(&mut self) {
+        self.cter_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cter_id(&mut self, v: u32) {
+        self.cter_id = v;
+    }
+
+    // uint32 grade = 3;
 
 
     pub fn get_grade(&self) -> u32 {
@@ -3791,7 +3807,7 @@ impl SummaryDataPt {
         self.grade = v;
     }
 
-    // uint32 rank = 3;
+    // uint32 rank = 4;
 
 
     pub fn get_rank(&self) -> u32 {
@@ -3828,9 +3844,16 @@ impl ::protobuf::Message for SummaryDataPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.grade = tmp;
+                    self.cter_id = tmp;
                 },
                 3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.grade = tmp;
+                },
+                4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -3852,11 +3875,14 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.cter_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.grade != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.grade, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.rank != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.rank, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.rank, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -3867,11 +3893,14 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
+        if self.cter_id != 0 {
+            os.write_uint32(2, self.cter_id)?;
+        }
         if self.grade != 0 {
-            os.write_uint32(2, self.grade)?;
+            os.write_uint32(3, self.grade)?;
         }
         if self.rank != 0 {
-            os.write_uint32(3, self.rank)?;
+            os.write_uint32(4, self.rank)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -3918,6 +3947,11 @@ impl ::protobuf::Message for SummaryDataPt {
                     |m: &mut SummaryDataPt| { &mut m.user_id },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "cter_id",
+                    |m: &SummaryDataPt| { &m.cter_id },
+                    |m: &mut SummaryDataPt| { &mut m.cter_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "grade",
                     |m: &SummaryDataPt| { &m.grade },
                     |m: &mut SummaryDataPt| { &mut m.grade },
@@ -3947,6 +3981,7 @@ impl ::protobuf::Message for SummaryDataPt {
 impl ::protobuf::Clear for SummaryDataPt {
     fn clear(&mut self) {
         self.user_id = 0;
+        self.cter_id = 0;
         self.grade = 0;
         self.rank = 0;
         self.unknown_fields.clear();
@@ -4462,14 +4497,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\
     \rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\
     \x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTimes\
-    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"R\n\rSummaryDat\
-    aPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05grad\
-    e\x18\x02\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x03\x20\x01(\rR\x04\
-    rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06us\
-    erId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\
-    \x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\
-    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\
-    \x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"k\n\rSummaryDat\
+    aPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter\
+    _id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\
+    \x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\"e\n\x0cCterStat\
+    usPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06ski\
+    lls\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\
+    \x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\
+    \x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.B\
+    uffPtR\x05buffsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

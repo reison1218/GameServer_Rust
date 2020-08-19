@@ -129,8 +129,9 @@ message BuffPt{
 //结算玩家
 message SummaryDataPt{
     uint32 user_id = 1;//玩家id
-    uint32 grade = 2;//等级
-    uint32 rank = 3;//排名
+    uint32 cter_id = 2;//角色id
+    uint32 grade = 3;//等级
+    uint32 rank = 4;//排名
 }
 
 message CterStatusPt{

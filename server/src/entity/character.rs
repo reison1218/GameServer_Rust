@@ -196,7 +196,44 @@ impl Character {
         }
         let mut grade = res.unwrap() as usize;
         grade += 1;
+        let mut max_grade = 2_u32;
+        let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
+        match max_grade_temp {
+            Some(max_grade_temp) => {
+                let res = u32::from_str(max_grade_temp.value.as_str());
+                match res {
+                    Ok(res) => {
+                        max_grade = res;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
+                }
+            }
+            None => {
+                error!("max_grade is not find!");
+            }
+        }
+        if grade as u32 > max_grade {
+            grade = 1;
+        }
         self.set_usize(GRADE.to_string(), grade);
+        self.add_version();
+        Ok(grade as u32)
+    }
+
+    pub fn sub_grade(&mut self) -> anyhow::Result<u32> {
+        let res = self.get_grade();
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return Ok(0);
+        }
+        let mut grade = res.unwrap() as isize;
+        grade -= 1;
+        if grade <= 0 {
+            grade = 1;
+        }
+        self.set_usize(GRADE.to_string(), grade as usize);
         self.add_version();
         Ok(grade as u32)
     }

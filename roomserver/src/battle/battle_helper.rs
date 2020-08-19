@@ -1,8 +1,11 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::{EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR};
+use crate::battle::battle_enum::{
+    EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR, TRIGGER_SCOPE_NEAR_TEMP_ID,
+};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
 use crate::task_timer::{Task, TaskCmd};
+use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::HashMap;
@@ -403,42 +406,28 @@ impl BattleData {
         scope_temp: Option<&SkillScopeTemp>,
     ) -> Vec<u32> {
         let mut v = Vec::new();
+        let center_cell = self.tile_map.map.get(center_index as usize).unwrap();
         //相邻，直接拿常量
         if targets.is_none() && scope_temp.is_none() {
-            let ss = TRIGGER_SCOPE_NEAR;
-            for cell_index in ss.iter() {
-                let _cell_index = *cell_index;
-                let index = center_index + _cell_index;
-                if index < 0 {
-                    continue;
-                }
-                let index = index as usize;
-                let cell = self.tile_map.map.get(index);
-                if cell.is_none() {
-                    continue;
-                }
-                let cell = cell.unwrap();
-                if cell.user_id <= 0 {
-                    continue;
-                }
-                //不能选中自己
-                if cell.user_id == user_id {
-                    continue;
-                }
-                v.push(cell.user_id);
+            let scope_temp = TEMPLATES
+                .get_skill_scope_ref()
+                .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
+            if let Err(e) = scope_temp {
+                error!("{:?}", e);
+                return v;
             }
-        } else if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();
-            //否则校验选中的区域
-            for dir in scope_temp.scope.iter() {
-                for scope_index in dir.direction.iter() {
-                    let _scope_index = *scope_index as isize;
-                    let index = center_index + _scope_index;
-                    if index < 0 {
+
+            for direction_temp2d in scope_temp.scope2d.iter() {
+                for coord_temp in direction_temp2d.direction2d.iter() {
+                    let x = center_cell.x + coord_temp.x;
+                    let y = center_cell.y + coord_temp.y;
+                    let cell_index = self.tile_map.coord_map.get(&(x, y));
+                    if let None = cell_index {
                         continue;
                     }
-                    let index = index as usize;
-                    let cell = self.tile_map.map.get(index);
+                    let cell_index = cell_index.unwrap();
+                    let cell = self.tile_map.map.get(*cell_index);
                     if cell.is_none() {
                         continue;
                     }
@@ -446,7 +435,44 @@ impl BattleData {
                     if cell.user_id <= 0 {
                         continue;
                     }
+                    //不能选中自己
+                    if cell.user_id == user_id {
+                        continue;
+                    }
+                    let other_user = cell.user_id;
 
+                    //如果玩家id大于0
+                    if other_user == 0 {
+                        continue;
+                    }
+                    let cter = self.get_battle_cter(Some(other_user));
+                    if let Err(e) = cter {
+                        warn!("{:?}", e);
+                        continue;
+                    }
+                    v.push(other_user);
+                }
+            }
+        } else if targets.is_none() && scope_temp.is_some() {
+            let scope_temp = scope_temp.unwrap();
+
+            for direction_temp2d in scope_temp.scope2d.iter() {
+                for coord_temp in direction_temp2d.direction2d.iter() {
+                    let x = center_cell.x + coord_temp.x;
+                    let y = center_cell.y + coord_temp.y;
+                    let cell_index = self.tile_map.coord_map.get(&(x, y));
+                    if let None = cell_index {
+                        continue;
+                    }
+                    let cell_index = cell_index.unwrap();
+                    let cell = self.tile_map.map.get(*cell_index);
+                    if cell.is_none() {
+                        continue;
+                    }
+                    let cell = cell.unwrap();
+                    if cell.user_id <= 0 {
+                        continue;
+                    }
                     //如果目标不能是自己，就跳过
                     if (target_type == TargetType::OtherAllPlayer
                         || target_type == TargetType::OtherAnyPlayer)
@@ -454,32 +480,42 @@ impl BattleData {
                     {
                         continue;
                     }
-                    //不能选中自己
-                    // if cell.user_id == user_id {
-                    //     continue;
-                    // }
-                    v.push(cell.user_id);
+                    let other_user = cell.user_id;
+                    //如果玩家id大于0
+                    if other_user == 0 {
+                        continue;
+                    }
+
+                    let cter = self.get_battle_cter(Some(other_user));
+                    if let Err(e) = cter {
+                        warn!("{:?}", e);
+                        continue;
+                    }
+                    v.push(other_user);
                 }
             }
         } else {
             let targets = targets.unwrap();
             let scope_temp = scope_temp.unwrap();
             //否则校验选中的区域
-            for dir in scope_temp.scope.iter() {
-                for scope_index in dir.direction.iter() {
-                    let _scope_index = *scope_index;
-                    let res = center_index + _scope_index as isize;
+            for dir in scope_temp.scope2d.iter() {
+                for coord_temp in dir.direction2d.iter() {
+                    let x = center_cell.x + coord_temp.x;
+                    let y = center_cell.y + coord_temp.y;
+                    let cell_index = self.tile_map.coord_map.get(&(x, y));
+                    if let None = cell_index {
+                        continue;
+                    }
+                    let cell_index = cell_index.unwrap();
+                    let cell = self.tile_map.map.get(*cell_index);
+                    if let None = cell {
+                        continue;
+                    }
+                    let cell = cell.unwrap();
                     for index in targets.iter() {
-                        let _index = *index as isize;
-                        if res != _index {
+                        if cell.index as u32 != *index {
                             continue;
                         }
-                        let cell = self.tile_map.map.get(*index as usize);
-                        if cell.is_none() {
-                            warn!("there is no cell!index:{}", res);
-                            continue;
-                        }
-                        let cell = cell.unwrap();
                         let other_user = cell.user_id;
                         //如果目标不能是自己，就跳过
                         if (target_type == TargetType::OtherAllPlayer
@@ -488,19 +524,20 @@ impl BattleData {
                         {
                             continue;
                         }
-                        if other_user > 0 {
-                            let cter = self.get_battle_cter(Some(other_user));
-                            if let Err(e) = cter {
-                                warn!("{:?}", e);
-                                continue;
-                            }
-                            let cter = cter.unwrap();
-                            if v.contains(&cter.user_id) {
-                                continue;
-                            }
-                            v.push(cter.user_id);
-                            break;
+                        //如果玩家id大于0
+                        if other_user == 0 {
+                            continue;
                         }
+                        let cter = self.get_battle_cter(Some(other_user));
+                        if let Err(e) = cter {
+                            warn!("{:?}", e);
+                            continue;
+                        }
+                        let cter = cter.unwrap();
+                        if v.contains(&cter.user_id) {
+                            continue;
+                        }
+                        v.push(cter.user_id);
                     }
                 }
             }
