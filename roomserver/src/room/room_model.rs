@@ -4,12 +4,15 @@ use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rayon::slice::ParallelSliceMut;
 use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomSettingPt;
@@ -25,120 +28,89 @@ pub enum TeamId {
 }
 
 ///房间类型
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum RoomType {
+    None = 0,         //无效
     Custom = 1,       //自定义房间
     Match = 2,        //匹配房间
     SeasonPve = 3,    //赛季PVE房间
     WorldBossPve = 4, //世界boss房间
 }
 
-impl Into<u32> for RoomType {
-    fn into(self) -> u32 {
-        self as u32
-    }
-}
-
-impl Into<u8> for RoomType {
-    fn into(self) -> u8 {
-        self as u8
-    }
-}
-
-impl From<u8> for RoomType {
-    fn from(v: u8) -> Self {
-        if v == RoomType::get_match() {
-            return RoomType::Match;
-        } else if v == RoomType::get_custom() {
-            return RoomType::Custom;
-        } else if v == RoomType::get_season_pve() {
-            return RoomType::SeasonPve;
-        } else if v == RoomType::get_world_boss_pve() {
-            return RoomType::WorldBossPve;
-        }
-        RoomType::Custom
-    }
-}
-
 impl RoomType {
-    pub fn into_u32(value: RoomType) -> u32 {
-        value.into()
-    }
-
-    pub fn get_custom() -> u8 {
-        let res = RoomType::Custom as u8;
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
         res
     }
 
-    pub fn get_match() -> u8 {
-        let res = RoomType::Match as u8;
-        res
-    }
-
-    pub fn get_season_pve() -> u8 {
-        let res = RoomType::SeasonPve as u8;
-        res
-    }
-
-    pub fn get_world_boss_pve() -> u8 {
-        let res = RoomType::WorldBossPve as u8;
-        res
+    pub fn into_u32(self) -> u32 {
+        let res: u8 = self.into();
+        res as u32
     }
 }
 
 ///战斗模式类型
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum BattleType {
     None = 0,            //无效初始值
     OneVOneVOneVOne = 1, //1v1v1v1
     TwoVTwo = 2,         //2v2
     OneVOne = 3,         //1v1
 }
-
-impl Into<u32> for BattleType {
-    fn into(self) -> u32 {
-        self as u32
-    }
-}
-
-impl Into<u8> for BattleType {
-    fn into(self) -> u8 {
-        self as u8
-    }
-}
-
 impl BattleType {
-    pub fn get_one_v_one_v_one_v_one() -> u8 {
-        let res = BattleType::OneVOneVOneVOne as u8;
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
         res
     }
-    pub fn get_two_v_two() -> u8 {
-        let res = BattleType::TwoVTwo as u8;
-        res
-    }
-    pub fn get_one_v_one() -> u8 {
-        let res = BattleType::OneVOne as u8;
-        res
+
+    pub fn into_u32(self) -> u32 {
+        let res: u8 = self.into();
+        res as u32
     }
 }
 
 ///房间设置
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone)]
 pub struct RoomSetting {
-    pub battle_type: u8,        //战斗类型
-    pub turn_limit_time: u32,   //回合限制时间
-    pub is_world_tile: bool,    //是否开启中立块
-    pub ai_level: u32,          //ai难度级别
-    pub victory_condition: u32, //胜利条件
+    pub battle_type: BattleType, //战斗类型
+    pub turn_limit_time: u32,    //回合限制时间
+    pub is_world_tile: bool,     //是否开启中立块
+    pub ai_level: u32,           //ai难度级别
+    pub victory_condition: u32,  //胜利条件
+}
+
+impl RoomSetting {
+    pub fn default() -> Self {
+        let battle_type = BattleType::OneVOneVOneVOne;
+        let is_world_tile = false;
+        let victory_condition = 0;
+        let turn_limit_time = 0;
+        let rs = RoomSetting {
+            battle_type,
+            turn_limit_time,
+            is_world_tile,
+            ai_level: 0,
+            victory_condition,
+        };
+        rs
+    }
 }
 
 impl From<RoomSettingPt> for RoomSetting {
     fn from(rs_pt: RoomSettingPt) -> Self {
-        let mut rs = RoomSetting::default();
-        rs.battle_type = rs_pt.battle_type as u8;
-        rs.is_world_tile = rs_pt.is_open_world_tile;
-        rs.victory_condition = rs_pt.victory_condition;
-        rs.turn_limit_time = rs_pt.turn_limit_time;
+        let battle_type = BattleType::try_from(rs_pt.battle_type as u8).unwrap();
+        let is_world_tile = rs_pt.is_open_world_tile;
+        let victory_condition = rs_pt.victory_condition;
+        let turn_limit_time = rs_pt.turn_limit_time;
+        let rs = RoomSetting {
+            battle_type,
+            turn_limit_time,
+            is_world_tile,
+            ai_level: 0,
+            victory_condition,
+        };
         rs
     }
 }
@@ -180,7 +152,7 @@ pub trait RoomModel {
 
     fn create_room(
         &mut self,
-        battle_type: u8,
+        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::Sender<Task>,
@@ -231,13 +203,13 @@ impl RoomModel for CustomRoom {
     ///创建房间
     fn create_room(
         &mut self,
-        battle_type: u8,
+        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(owner.clone(), RoomType::get_custom(), sender, task_sender)?;
+        let mut room = Room::new(owner.clone(), RoomType::Custom, sender, task_sender)?;
         room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
@@ -293,10 +265,15 @@ impl MatchRooms {
     }
 
     ///离开房间，离线也好，主动离开也好
-    pub fn leave(&mut self, battle_type: &u8, room_id: u32, user_id: &u32) -> anyhow::Result<u32> {
-        let match_room = self.match_rooms.get_mut(battle_type);
+    pub fn leave(
+        &mut self,
+        battle_type: BattleType,
+        room_id: u32,
+        user_id: &u32,
+    ) -> anyhow::Result<u32> {
+        let match_room = self.match_rooms.get_mut(&battle_type.into_u8());
         if match_room.is_none() {
-            let str = format!("there is no battle_type:{}!", battle_type);
+            let str = format!("there is no battle_type:{:?}!", battle_type);
             warn!("{:?}", str.as_str());
             anyhow::bail!("{:?}", str)
         }
@@ -305,22 +282,25 @@ impl MatchRooms {
         res
     }
 
-    pub fn get_match_room_mut(&mut self, battle_type: &u8) -> &mut MatchRoom {
-        let res = self.match_rooms.get_mut(battle_type);
+    pub fn get_match_room_mut(&mut self, battle_type: BattleType) -> &mut MatchRoom {
+        let res = self.match_rooms.get_mut(&battle_type.into_u8());
         if res.is_none() {
-            let mut mr = MatchRoom::default();
-            mr.battle_type = BattleType::get_one_v_one_v_one_v_one();
-            self.match_rooms.insert(*battle_type, mr);
+            let mr = MatchRoom {
+                battle_type: BattleType::OneVOneVOneVOne,
+                rooms: HashMap::new(),
+                room_cache: Vec::new(),
+            };
+            self.match_rooms.insert(battle_type.into_u8(), mr);
         }
-        let res = self.match_rooms.get_mut(battle_type);
+        let res = self.match_rooms.get_mut(&battle_type.into_u8());
         res.unwrap()
     }
 }
 
 ///匹配房结构体
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct MatchRoom {
-    pub battle_type: u8,            //战斗模式类型
+    pub battle_type: BattleType,    //战斗模式类型
     pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
     pub room_cache: Vec<RoomCache>, //key:房间id    value:房间人数
 }
@@ -342,12 +322,12 @@ impl RoomModel for MatchRoom {
     ///创建房间
     fn create_room(
         &mut self,
-        battle_type: u8,
+        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
-        let mut room = Room::new(owner, RoomType::get_match(), sender, task_sender)?;
+        let mut room = Room::new(owner, RoomType::Match, sender, task_sender)?;
         room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
@@ -368,7 +348,7 @@ impl RoomModel for MatchRoom {
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
         //如果房间之前是满都，就给所有人取消准备
-        if room.get_state() == &RoomState::Await
+        if room.get_state() == RoomState::Await
             && member_count == MEMBER_MAX as usize
             && now_count < member_count
         {
@@ -376,7 +356,7 @@ impl RoomModel for MatchRoom {
             for id in map.keys() {
                 room.prepare_cancel(id, false);
             }
-            if room.get_state() == &RoomState::Await {
+            if room.get_state() == RoomState::Await {
                 need_add_cache = true;
             }
         }
@@ -459,12 +439,7 @@ impl MatchRoom {
                 anyhow::bail!(s)
             }
             //创建房间
-            room_id = self.create_room(
-                BattleType::get_one_v_one_v_one_v_one(),
-                member,
-                sender,
-                task_sender,
-            )?;
+            room_id = self.create_room(BattleType::OneVOneVOneVOne, member, sender, task_sender)?;
             info!("创建匹配房间,room_id:{},user_id:{}", room_id, user_id);
         } else {
             //如果有，则往房间里塞
@@ -502,7 +477,10 @@ impl MatchRoom {
 
                 task.cmd = TaskCmd::MatchRoomStart as u16;
                 let mut map = Map::new();
-                map.insert("battle_type".to_owned(), Value::from(self.battle_type));
+                map.insert(
+                    "battle_type".to_owned(),
+                    Value::from(self.battle_type.into_u8()),
+                );
                 map.insert("room_id".to_owned(), Value::from(room_id));
                 task.data = Value::from(map);
                 let res = task_sender.send(task);

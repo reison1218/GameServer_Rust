@@ -1,6 +1,6 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, NEAR_ADD_CD, NEAR_MOVE_SKILL_DAMAGE,
+    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD,
     NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE,
     SAME_CELL_ELEMENT_ADD_ATTACK,
 };
@@ -13,6 +13,7 @@ use crate::TEMPLATES;
 use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, TargetPt};
 use tools::templates::buff_temp::BuffTemp;
 use tools::templates::cell_temp::CellTemp;
@@ -30,7 +31,8 @@ pub struct Buff {
 
 impl Buff {
     pub fn get_target(&self) -> TargetType {
-        let target_type = TargetType::from(self.buff_temp.target);
+        let target_type = TargetType::try_from(self.buff_temp.target as u8).unwrap();
+        let target_type = TargetType::from(target_type);
         target_type
     }
 
@@ -193,7 +195,7 @@ impl BattleData {
         let new_buff_temp = new_buff_temp.unwrap();
         let buff = Buff::from(new_buff_temp);
         target_pt.add_buffs.push(new_buff_temp.id);
-        let target_type = TargetType::from(buff.buff_temp.target);
+        let target_type = TargetType::try_from(buff.buff_temp.target as u8).unwrap();
 
         //如果目标类型是地图块上的玩家
         if target_type == TargetType::CellPlayer {
@@ -277,7 +279,7 @@ impl BattleData {
         }
         let scope_temp = scope_temp.unwrap();
         let isize_index = index as isize;
-        let target_type = TargetType::from(buff_temp.target);
+        let target_type = TargetType::try_from(buff_temp.target as u8).unwrap();
         let v = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
         let mut need_rank = true;
         unsafe {
@@ -490,12 +492,11 @@ impl BattleData {
         let mut v = Vec::new();
         let index = index as isize;
 
-        //踩到别人到范围
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
             let cter_index = other_cter.cell_index as isize;
-
+            //踩到别人到范围
             for buff in other_cter.buffs.values_mut() {
-                if !NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
+                if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
@@ -527,40 +528,41 @@ impl BattleData {
                 }
             }
             //别人进入自己的范围触发
-            if battle_cter.user_id == other_cter.user_id {
-                continue;
-            }
-            for buff in battle_cter.buffs.values_mut() {
-                if !NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
-                    continue;
-                }
-                let mut need_rank = true;
-                for scope_index in TRIGGER_SCOPE_NEAR.iter() {
-                    let res = index + scope_index;
-                    if cter_index != res {
-                        continue;
-                    }
-                    let target_pt = self.deduct_hp(
-                        battle_cter.user_id,
-                        other_cter.user_id,
-                        Some(buff.buff_temp.par1 as i32),
-                        need_rank,
-                    );
-                    match target_pt {
-                        Ok(target_pt) => {
-                            let mut self_aupt = ActionUnitPt::new();
-                            self_aupt.from_user = user_id;
-                            self_aupt.action_type = ActionType::Buff as u32;
-                            self_aupt.action_value.push(buff.id);
-                            self_aupt.targets.push(target_pt);
-                            v.push(self_aupt);
-                            break;
-                        }
-                        Err(e) => error!("{:?}", e),
-                    }
-                }
-                need_rank = false;
-            }
+            //现在没有种buff，先注释代码
+            // if battle_cter.user_id == other_cter.user_id {
+            //     continue;
+            // }
+            // for buff in battle_cter.buffs.values_mut() {
+            //     if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
+            //         continue;
+            //     }
+            //     let mut need_rank = true;
+            //     for scope_index in TRIGGER_SCOPE_NEAR.iter() {
+            //         let res = index + scope_index;
+            //         if cter_index != res {
+            //             continue;
+            //         }
+            //         let target_pt = self.deduct_hp(
+            //             battle_cter.user_id,
+            //             other_cter.user_id,
+            //             Some(buff.buff_temp.par1 as i32),
+            //             need_rank,
+            //         );
+            //         match target_pt {
+            //             Ok(target_pt) => {
+            //                 let mut self_aupt = ActionUnitPt::new();
+            //                 self_aupt.from_user = user_id;
+            //                 self_aupt.action_type = ActionType::Buff as u32;
+            //                 self_aupt.action_value.push(buff.id);
+            //                 self_aupt.targets.push(target_pt);
+            //                 v.push(self_aupt);
+            //                 break;
+            //             }
+            //             Err(e) => error!("{:?}", e),
+            //         }
+            //     }
+            //     need_rank = false;
+            // }
         }
         v
     }

@@ -1,15 +1,19 @@
 use crate::room::character::Character;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
 use tools::protos::base::MemberPt;
 use tools::protos::server_protocol::PlayerBattlePt;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum UserType {
     Robot = 0,
     Real = 1,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum MemberState {
     NotReady = 0,
     Ready = 1,

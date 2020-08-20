@@ -10,6 +10,7 @@ use log::{error, warn};
 use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::ops::Deref;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
@@ -187,7 +188,7 @@ impl BattleData {
             }
 
             let target = skill.skill_temp.target;
-            let target_type = TargetType::from(target);
+            let target_type = TargetType::try_from(target as u8).unwrap();
 
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
@@ -320,7 +321,6 @@ impl BattleData {
                 }
             }
         }
-
         Ok(())
     }
     ///翻地图块

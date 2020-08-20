@@ -7,6 +7,8 @@ use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
 use log::{error, info, warn};
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
 use std::borrow::BorrowMut;
@@ -23,10 +25,11 @@ use tools::protos::room::{
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
-
 //最大成员数量
 pub const MEMBER_MAX: u8 = 4;
 
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum RoomSettingType {
     None = 0,
     AILevel = 1,
@@ -45,18 +48,23 @@ impl From<u32> for RoomSettingType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum RoomMemberNoticeType {
+    None = 0, //无效
     UpdateMember = 2,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum MemberLeaveNoticeType {
+    None = 0,   //无效
     Leave = 1,  //自己离开
     Kicked = 2, //被T
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum RoomState {
     Await = 0,         //等待
     ChoiceTurn = 1,    //选择回合
@@ -68,7 +76,7 @@ pub enum RoomState {
 #[derive(Clone)]
 pub struct Room {
     id: u32,                              //房间id
-    room_type: u8,                        //房间类型
+    room_type: RoomType,                  //房间类型
     owner_id: u32,                        //房主id
     pub state: RoomState,                 //房间状态
     pub members: HashMap<u32, Member>,    //玩家对应的队伍
@@ -84,7 +92,7 @@ impl Room {
     ///构建一个房间的结构体
     pub fn new(
         mut owner: Member,
-        room_type: u8,
+        room_type: RoomType,
         sender: TcpSender,
         task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<Room> {
@@ -107,7 +115,7 @@ impl Room {
             task_sender,
             time,
         };
-        if room.room_type == RoomType::Match as u8 {
+        if room.room_type == RoomType::Match {
             let limit_time = TEMPLATES
                 .get_constant_ref()
                 .temps
@@ -198,7 +206,7 @@ impl Room {
     ///刷新地图
     pub fn refresh_map(&mut self) {
         let is_world_cell;
-        if self.room_type == RoomType::Match as u8 {
+        if self.room_type == RoomType::Match {
             is_world_cell = None;
         } else {
             is_world_cell = Some(self.setting.is_world_tile);
@@ -500,10 +508,10 @@ impl Room {
             "choice choice_turn user_id:{},index:{},choice_order:{:?}",
             user_id, index, self.battle_data.choice_orders
         );
-        //index+1
+        let size = MEMBER_MAX as usize;
         self.add_next_choice_index();
         index = self.get_next_choice_index();
-        let size = MEMBER_MAX as usize;
+
         let is_all_choice = self.check_is_all_choice_turn();
         if is_all_choice {
             self.start_choice_index();
@@ -558,7 +566,7 @@ impl Room {
             *user_id,
             spc.write_to_bytes().unwrap(),
         );
-        if self.check_ready() && self.room_type == RoomType::Match as u8 {
+        if self.check_ready() && self.room_type == RoomType::Match {
             self.start();
         }
     }
@@ -712,8 +720,8 @@ impl Room {
         }
     }
 
-    pub fn get_state(&self) -> &RoomState {
-        &self.state
+    pub fn get_state(&self) -> RoomState {
+        self.state
     }
 
     ///检查准备状态
@@ -736,7 +744,7 @@ impl Room {
     }
 
     ///获得房间类型
-    pub fn get_room_type(&self) -> u8 {
+    pub fn get_room_type(&self) -> RoomType {
         self.room_type
     }
 
@@ -1103,6 +1111,7 @@ impl Room {
         }
     }
 
+    ///开始游戏
     pub fn start(&mut self) {
         //生成地图
         let res = self.generate_map();
@@ -1128,10 +1137,11 @@ impl Room {
         cter_v
     }
 
+    ///生成地图
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u32;
         let is_world_cell;
-        if self.room_type == RoomType::Match as u8 {
+        if self.room_type == RoomType::Match {
             is_world_cell = None;
         } else {
             is_world_cell = Some(self.setting.is_world_tile);
@@ -1142,8 +1152,7 @@ impl Room {
 
     pub fn build_choice_turn_task(&self) {
         let user_id = self.get_choice_user(None);
-        if let Err(e) = user_id {
-            error!("{:?}", e);
+        if let Err(_) = user_id {
             return;
         }
         let user_id = user_id.unwrap();

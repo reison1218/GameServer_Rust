@@ -158,6 +158,8 @@ impl BattleData {
         Ok(cter.unwrap())
     }
 
+    ///根据地图下标获得上面的战斗角色
+    ///如果找不到该下标的地图块或者该地图块上面的玩家id为0，则返回错误信息
     pub fn get_battle_cter_mut_by_cell_index(
         &mut self,
         index: usize,

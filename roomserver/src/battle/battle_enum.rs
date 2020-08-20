@@ -1,3 +1,6 @@
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
+
 ///默认每个turn翻地图块次数
 pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
@@ -53,7 +56,7 @@ pub mod buff_type {
     ///配对成功相临造成技能伤害
     pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
     ///其他玩家移动到相临造成技能伤害
-    pub static NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
+    pub static DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     /// 翻开属性一样的地图块+攻击
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力
@@ -65,14 +68,16 @@ pub mod buff_type {
 }
 
 ///pos操作类型
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum PosType {
     ChangePos = 1, //切换架势
     CancelPos = 2, //取消架势
 }
 
 ///效果类型
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum EffectType {
     ///技能伤害
     SkillDamage = 1,
@@ -95,25 +100,31 @@ pub enum EffectType {
 }
 
 ///被动触发效果类型
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum TriggerEffectType {
     ///触发buff
     Buff = 1,
 }
 
-//技能消耗类型
+///技能消耗类型
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum SkillConsumeType {
     Energy = 1, //能量
 }
 
 ///回合行为类型
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum BattleCterState {
     Alive = 0,
     Die = 1,
 }
 
 ///回合行为类型
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum ActionType {
     ///无效值
     None = 0,
@@ -131,21 +142,9 @@ pub enum ActionType {
     Buff = 6,
 }
 
-impl From<u32> for ActionType {
-    fn from(action_type: u32) -> Self {
-        match action_type {
-            1 => ActionType::Attack,
-            2 => ActionType::UseItem,
-            3 => ActionType::Skip,
-            4 => ActionType::Open,
-            5 => ActionType::Skill,
-            _ => ActionType::None,
-        }
-    }
-}
-
 ///目标类型枚举
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum TargetType {
     None = 0,            //无效目标
     Cell = 1,            //地图块
@@ -161,26 +160,9 @@ pub enum TargetType {
     CellPlayer = 11,     //地图块上的玩家
 }
 
-impl From<u32> for TargetType {
-    fn from(value: u32) -> Self {
-        match value {
-            1 => TargetType::Cell,
-            2 => TargetType::AnyPlayer,
-            3 => TargetType::PlayerSelf,
-            4 => TargetType::AllPlayer,
-            5 => TargetType::OtherAllPlayer,
-            6 => TargetType::OtherAnyPlayer,
-            7 => TargetType::UnOpenCell,
-            8 => TargetType::UnPairCell,
-            9 => TargetType::NullCell,
-            10 => TargetType::UnPairNullCell,
-            11 => TargetType::CellPlayer,
-            _ => TargetType::None,
-        }
-    }
-}
-
 ///元素类型
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum ElementType {
     Nature = 1, //生命元素
     Earth = 2,  //土元素

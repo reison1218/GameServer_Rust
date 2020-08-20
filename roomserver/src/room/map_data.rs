@@ -1,9 +1,13 @@
 use crate::battle::battle_buff::Buff;
 use crate::TEMPLATES;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::slice::Iter;
 
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum CellType {
     InValid = 0,
     UnUse = 1,
@@ -217,7 +221,6 @@ impl TileMap {
             cell.is_world = *is_world;
             cell.x = x;
             cell.y = y;
-            print!("index:{},x:{},y:{}| ", index, x, y);
             tmd.coord_map.insert((x, y), index);
             x += 1;
             let mut buffs: Option<Iter<u32>> = None;

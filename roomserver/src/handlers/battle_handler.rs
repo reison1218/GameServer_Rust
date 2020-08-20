@@ -7,6 +7,7 @@ use crate::room::room_model::{RoomModel, RoomType};
 use log::{error, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
+use std::convert::TryFrom;
 use std::fmt::Debug;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::ActionUnitPt;
@@ -22,7 +23,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = res.unwrap();
     //校验房间状态
-    if room.get_state() != &RoomState::BattleStarted {
+    if room.get_state() != RoomState::BattleStarted {
         warn!(
             "room state is not battle_started!room_id:{},state:{:?}",
             room.get_room_id(),
@@ -55,7 +56,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     au.from_user = user_id;
 
     let res;
-    let action_type = ActionType::from(action_type);
+    let action_type = ActionType::try_from(action_type as u8).unwrap();
     //行为分支
     match action_type {
         //无意义分支
@@ -135,7 +136,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 ///战斗结算
 pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) {
     let is_settle = room.handler_summary();
-    let room_type = RoomType::from(room.get_room_type());
+    let room_type = room.get_room_type();
     let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     //如果要结算,卸载数据
@@ -143,7 +144,7 @@ pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) {
         let v = room.get_member_vec();
         match room_type {
             RoomType::Match => {
-                let res = rm.match_rooms.get_match_room_mut(&battle_type);
+                let res = rm.match_rooms.get_match_room_mut(battle_type);
                 res.rm_room(&room_id);
             }
             RoomType::Custom => {
@@ -166,7 +167,7 @@ pub fn pos(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = res.unwrap();
     //校验房间状态
-    if room.get_state() != &RoomState::BattleStarted {
+    if room.get_state() != RoomState::BattleStarted {
         warn!(
             "room state is not battle_started!room_id:{}",
             room.get_room_id()

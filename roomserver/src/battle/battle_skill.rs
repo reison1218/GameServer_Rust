@@ -8,6 +8,7 @@ use crate::room::map_data::Cell;
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
@@ -184,7 +185,7 @@ pub unsafe fn add_buff(
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
 
-    let target_type = TargetType::from(skill_temp.target);
+    let target_type = TargetType::try_from(skill_temp.target as u8).unwrap();
 
     let mut target_pt = TargetPt::new();
     match target_type {
@@ -381,7 +382,7 @@ pub unsafe fn skill_damage_and_cure(
     }
     let scope_temp = res.unwrap();
     let cter_index = cter_index as isize;
-    let target_type = TargetType::from(skill.skill_temp.target);
+    let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
     let v = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
 
     let mut add_hp = 0_u32;
@@ -442,7 +443,7 @@ pub unsafe fn skill_aoe_damage(
     }
 
     let center_index = *target_array.get(0).unwrap() as isize;
-    let target_type = TargetType::from(skill.skill_temp.target);
+    let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
 
     //计算符合中心范围内的玩家
     let v = battle_data.cal_scope(

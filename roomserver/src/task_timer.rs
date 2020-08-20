@@ -1,10 +1,11 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::RoomModel;
+use crate::room::room_model::{BattleType, RoomModel};
 use chrono::Local;
 use log::{error, info, warn};
 use serde_json::Value as JsonValue;
+use std::convert::TryFrom;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -142,7 +143,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if battle_type.is_none() {
         return;
     }
-    let battle_type = battle_type.unwrap() as u8;
+    let battle_type = BattleType::try_from(battle_type.unwrap() as u8).unwrap();
 
     let room_id = map.get("room_id");
     if room_id.is_none() {
@@ -157,7 +158,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
 
     let mut write = rm.write().unwrap();
 
-    let match_room = write.match_rooms.get_match_room_mut(&battle_type);
+    let match_room = write.match_rooms.get_match_room_mut(battle_type);
 
     let room = match_room.get_room_mut(&room_id);
     if room.is_none() {
@@ -165,7 +166,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let room = room.unwrap();
     //如果房间已经不再等待阶段了，就什么都不执行
-    if room.get_state() != &RoomState::Await {
+    if room.get_state() != RoomState::Await {
         return;
     }
 

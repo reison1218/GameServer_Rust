@@ -8,6 +8,10 @@ mod behavior_test;
 use serde_json::json;
 use std::time::{Duration, SystemTime};
 use protobuf::Message;
+use num_enum::TryFromPrimitive;
+use num_enum::IntoPrimitive;
+use num_enum::FromPrimitive;
+
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
 // use tcp::util::bytebuf::ByteBuf;
@@ -68,7 +72,8 @@ use std::rc::Rc;
 use futures::join;
 use crate::test_async::async_main;
 use std::collections::btree_map::Range;
-
+use tools::templates::template::{init_temps_mgr, TemplatesMgr};
+use crate::map::generate_map;
 
 #[macro_use]
 extern crate lazy_static;
@@ -77,6 +82,15 @@ lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
         let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1001)));
         id
+    };
+
+    ///静态配置文件
+    static ref TEMPLATES: TemplatesMgr = {
+        let path = env::current_dir().unwrap();
+        let str = path.as_os_str().to_str().unwrap();
+        let res = str.to_string()+"/template";
+        let conf = init_temps_mgr(res.as_str());
+        conf
     };
 }
 
@@ -164,7 +178,8 @@ fn test_binary(){
 // },
 // "result":{"true":[1001,1002],"false":[1004]}
 // }
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive,IntoPrimitive)]
+#[repr(u8)]
 enum  HH{
     AA=1,
 }
@@ -233,11 +248,10 @@ impl Deref for Foo{
     }
 }
 
-
-
-
 fn main() -> anyhow::Result<()> {
 
+    let a:u8 = HH::AA.into();
+    println!("{}",a);
     // let words:[u32;5] = [1,2,3,4,5];
     //
     // let id = 2_u32;
@@ -246,15 +260,15 @@ fn main() -> anyhow::Result<()> {
     //
     //     }
     // }
-    let a = -1;
-    let b = 2;
-    let res = b+*&a;
-    println!("{}",res);
-    let mut k =&&&&&Foo{x:10,y:String::from("test")};
-    print!("{}",k.get_x());
-    println!("{:?}",k.bytes());
+    // let a = -1;
+    // let b = 2;
+    // let res = b+*&a;
+    // println!("{}",res);
+    // let mut k =&&&&&Foo{x:10,y:String::from("test")};
+    // print!("{}",k.get_x());
+    // println!("{:?}",k.bytes());
 
-
+    //generate_map();
     // let foo = Foo{x:1};
     // let mut rc = Rc::new(foo);
     //
