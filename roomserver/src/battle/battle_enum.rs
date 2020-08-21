@@ -8,10 +8,16 @@ pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
+
+pub mod skill_judge_type {
+    ///hp限定：大于
+    pub static HP_LIMIT_GT: [u32; 1] = [1];
+}
+
 ///技能类型
 pub mod skill_type {
 
-    //自残加buff
+    ///自残加buff
     pub static HURT_SELF_ADD_BUFF: [u32; 1] = [311];
     ///格挡伤害
     pub static GD_ATTACK_DAMAGE: [u32; 1] = [2];
@@ -57,12 +63,16 @@ pub mod buff_type {
     pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
     ///其他玩家移动到相临造成技能伤害
     pub static DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
+    ///被攻击时增加能量
+    pub static ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
     /// 翻开属性一样的地图块+攻击
     pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力
     pub static RESET_MAP_ADD_ATTACK_BY_ALIVES: [u32; 1] = [1002];
     /// 翻开地图块干点啥，配对又干点啥
     pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
+    /// 无法被移动
+    pub static CAN_NOT_MOVED: u32 = 10002;
     ///配对与自己相同元素时恢复生命
     pub static PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
 }
@@ -76,7 +86,7 @@ pub enum PosType {
 }
 
 ///效果类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum EffectType {
     ///技能伤害
@@ -97,6 +107,18 @@ pub enum EffectType {
     AddEnergy = 8,
     ///增加技能
     AddSkill = 9,
+}
+
+impl EffectType {
+    pub fn into_u32(self) -> u32 {
+        let res: u8 = self.into();
+        res as u32
+    }
+
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
+        res
+    }
 }
 
 ///被动触发效果类型

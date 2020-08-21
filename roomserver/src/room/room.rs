@@ -1129,14 +1129,6 @@ impl Room {
         self.build_choice_turn_task();
     }
 
-    pub fn get_choose_cters(&self) -> Vec<u32> {
-        let mut cter_v = Vec::new();
-        for member in self.members.values() {
-            cter_v.push(member.chose_cter.cter_id);
-        }
-        cter_v
-    }
-
     ///生成地图
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u32;

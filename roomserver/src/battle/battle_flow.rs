@@ -178,20 +178,15 @@ impl BattleData {
                 warn!("{:?}", str);
                 return None;
             }
-            //技能判定
-            let skill_judge = skill.skill_temp.skill_judge;
-            if skill_judge != 0 {
-                let skill_judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&(skill_id as u32));
-                if let Ok(_skill_judge) = skill_judge_temp {
-                    // todo  目前没有判定条件，先留着
-                }
-            }
 
             let target = skill.skill_temp.target;
             let target_type = TargetType::try_from(target as u8).unwrap();
 
+            //技能判定
+            let skill_judge = skill.skill_temp.skill_judge as u32;
+
             //校验目标类型
-            let res = self.check_target_array(user_id, target_type, &target_array);
+            let res = self.check_target_array(user_id, target_type, &target_array, skill_judge);
             if let Err(e) = res {
                 let str = format!("{:?}", e);
                 warn!("{:?}", str);
@@ -212,13 +207,10 @@ impl BattleData {
             //如果不是用能量的，则重制cd
             if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 {
                 skill.reset_cd();
+            } else if skill.skill_temp.consume_value > battle_cter.energy {
+                battle_cter.energy = 0;
             } else {
-                //减能量
-                if skill.skill_temp.consume_value > battle_cter.energy {
-                    battle_cter.energy = 0;
-                } else {
-                    battle_cter.energy -= skill.skill_temp.consume_value;
-                }
+                battle_cter.energy -= skill.skill_temp.consume_value;
             }
         }
         au_vec
@@ -303,6 +295,7 @@ impl BattleData {
         }
         cter.is_can_attack = false;
     }
+
     ///刷新地图
     pub fn reset(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
         let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
@@ -344,6 +337,11 @@ impl BattleData {
 
             //先移动
             let v = self.handler_cter_move(user_id, index);
+            if let Err(e) = v {
+                warn!("{:?}", e);
+                return None;
+            }
+            let v = v.unwrap();
             //判断玩家死了没
             if battle_cter.is_died() {
                 return Some(v);

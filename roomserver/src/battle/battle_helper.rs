@@ -1,4 +1,5 @@
 use crate::battle::battle::BattleData;
+use crate::battle::battle_enum::skill_judge_type::HP_LIMIT_GT;
 use crate::battle::battle_enum::{
     EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR_TEMP_ID,
 };
@@ -10,7 +11,7 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, TargetPt, TriggerEffectPt};
+use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
@@ -29,8 +30,10 @@ impl BattleData {
         }
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(cter.cell_index as u32);
-        target_pt.effect_type = EffectType::Cure as u32;
-        target_pt.effect_value = hp as u32;
+        let mut ep = EffectPt::new();
+        ep.effect_type = EffectType::Cure as u32;
+        ep.effect_value = hp as u32;
+        target_pt.effects.push(ep);
         cter.add_hp(hp);
         Some(target_pt)
     }
@@ -45,7 +48,8 @@ impl BattleData {
         let battle_data_ptr = self as *mut BattleData;
         let mut target_pt = TargetPt::new();
 
-        target_pt.effect_type = EffectType::SkillDamage as u32;
+        let mut ep = EffectPt::new();
+        ep.effect_type = EffectType::SkillDamage as u32;
 
         let target_cter = battle_data_ptr
             .as_mut()
@@ -61,7 +65,7 @@ impl BattleData {
                 .get_battle_cter_mut(Some(from))?;
             let attack_damage = from_cter.calc_damage();
             let reduce_damage = target_cter.calc_reduce_damage();
-            target_pt.effect_type = EffectType::AttackDamage as u32;
+            ep.effect_type = EffectType::AttackDamage as u32;
             res = attack_damage - reduce_damage;
             if res < 0 {
                 res = 0;
@@ -82,7 +86,8 @@ impl BattleData {
         } else {
             res = skill_damege.unwrap();
         }
-        target_pt.effect_value = res as u32;
+        ep.effect_value = res as u32;
+        target_pt.effects.push(ep);
         let is_die = target_cter.sub_hp(res);
 
         //判断目标角色是否死亡
@@ -224,6 +229,7 @@ impl BattleData {
         user_id: u32,
         target_type: TargetType,
         target_array: &[u32],
+        skill_judge: u32,
     ) -> anyhow::Result<()> {
         match target_type {
             //无效目标
@@ -237,18 +243,23 @@ impl BattleData {
                 for index in target_array {
                     let res = self.get_battle_cter_by_cell_index(*index as usize);
                     if let Ok(cter) = res {
+                        check_skill_judge(cter, skill_judge)?;
                         v.push(cter.user_id);
                     }
                 }
                 self.check_user_target(&v[..], None)? //不包括自己的其他玩家
             } //玩家自己
-            TargetType::PlayerSelf => {} //玩家自己
+            TargetType::PlayerSelf => {
+                let cter = self.get_battle_cter(Some(user_id)).unwrap();
+                check_skill_judge(cter, skill_judge)?;
+            } //玩家自己
             //全图玩家
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
                     let res = self.get_battle_cter_by_cell_index(*index as usize);
                     if let Ok(cter) = res {
+                        check_skill_judge(cter, skill_judge)?;
                         v.push(cter.user_id);
                     }
                 }
@@ -259,13 +270,25 @@ impl BattleData {
                 for index in target_array {
                     let res = self.get_battle_cter_by_cell_index(*index as usize);
                     if let Ok(cter) = res {
+                        check_skill_judge(cter, skill_judge)?;
                         v.push(cter.user_id);
                     }
                 }
                 //除自己所有玩家
                 self.check_user_target(&v[..], Some(user_id))?
             } //除自己外任意玩家
-            TargetType::OtherAnyPlayer => self.check_user_target(target_array, Some(user_id))?,
+            TargetType::OtherAnyPlayer => {
+                let mut v = Vec::new();
+                for index in target_array {
+                    let res = self.get_battle_cter_by_cell_index(*index as usize);
+                    if let Ok(cter) = res {
+                        check_skill_judge(cter, skill_judge)?;
+                        v.push(cter.user_id);
+                    }
+                }
+                //除自己所有玩家
+                self.check_user_target(&v[..], Some(user_id))?
+            }
             //地图块
             TargetType::Cell => {
                 //校验地图块下标有效性
@@ -312,7 +335,7 @@ impl BattleData {
             }
             //校验是不是自己
             if check_self_id.is_some() && member_id == check_self_id.unwrap() {
-                let str = format!("target_user_id=self!target_user_id:{}", member_id);
+                let str = format!("target_user_id==self!target_user_id:{}", member_id);
                 anyhow::bail!(str)
             }
         }
@@ -544,4 +567,20 @@ impl BattleData {
         }
         v
     }
+}
+
+///校验技能条件
+pub fn check_skill_judge(cter: &BattleCharacter, skill_judge: u32) -> anyhow::Result<()> {
+    if skill_judge == 0 {
+        return Ok(());
+    }
+    let judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&skill_judge)?;
+    if HP_LIMIT_GT.contains(&judge_temp.id) && cter.hp <= judge_temp.par1 as i32 {
+        anyhow::bail!(
+            "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
+            judge_temp.par1,
+            judge_temp.id
+        )
+    }
+    Ok(())
 }

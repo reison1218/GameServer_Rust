@@ -1,10 +1,10 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD,
-    NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR, PAIR_CURE, PAIR_SAME_ELEMENT_CURE,
-    SAME_CELL_ELEMENT_ADD_ATTACK,
+    ATTACKED_ADD_ENERGY, AWARD_BUFF, AWARD_ITEM, CAN_NOT_MOVED, CHANGE_SKILL,
+    DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR,
+    PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{ActionType, EffectType};
+use crate::battle::battle_enum::{ActionType, EffectType, TriggerEffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
@@ -14,7 +14,7 @@ use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use tools::protos::base::{ActionUnitPt, TargetPt};
+use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 use tools::templates::cell_temp::CellTemp;
 
@@ -117,8 +117,10 @@ impl BattleData {
             skill_temp,
         };
         let mut target_pt = TargetPt::new();
-        target_pt.effect_type = EffectType::RewardItem as u32;
-        target_pt.effect_value = item_id;
+        let mut ep = EffectPt::new();
+        ep.effect_type = EffectType::RewardItem as u32;
+        ep.effect_value = item_id;
+        target_pt.effects.push(ep);
         //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
         if buff_temp.target == TargetType::CellPlayer as u32 {
             let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
@@ -233,8 +235,10 @@ impl BattleData {
         }
         let buff_temp = buff_temp.unwrap();
         let mut target_pt = TargetPt::new();
-        target_pt.effect_type = EffectType::AddSkillCd as u32;
-        target_pt.effect_value = buff_temp.par1;
+        let mut ep = EffectPt::new();
+        ep.effect_type = EffectType::AddSkillCd as u32;
+        ep.effect_value = buff_temp.par1;
+        target_pt.effects.push(ep);
         let isize_index = index as isize;
         for cter in battle_cters.values_mut() {
             if cter.user_id == user_id {
@@ -358,8 +362,10 @@ impl BattleData {
             energy = 0;
             battle_cter.energy = battle_cter.max_energy;
         }
-        target_pt.effect_type = EffectType::AddEnergy as u32;
-        target_pt.effect_value = energy;
+        let mut ep = EffectPt::new();
+        ep.effect_type = EffectType::AddEnergy as u32;
+        ep.effect_value = energy;
+        target_pt.effects.push(ep);
         au.targets.push(target_pt);
     }
 
@@ -458,24 +464,58 @@ impl BattleData {
     ///受到普通攻击触发的buff
     pub fn attacked_trigger_buffs(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let cter = self.battle_cter.get_mut(&user_id).unwrap();
-        for buff_id in cter.buffs.clone().keys() {
-            if CHANGE_SKILL.contains(buff_id) {
-                cter.buffs.remove(buff_id);
-                target_pt.lost_buffs.push(*buff_id);
+        for buff in cter.buffs.clone().values() {
+            let buff_id = buff.id;
+            //被攻击打断技能
+            if CHANGE_SKILL.contains(&buff_id) {
+                cter.buffs.remove(&buff_id);
+                target_pt.lost_buffs.push(buff_id);
+            }
+
+            //被攻击增加能量
+            if ATTACKED_ADD_ENERGY.contains(&buff_id) && cter.max_energy > 0 {
+                let mut tep = TriggerEffectPt::new();
+                tep.set_field_type(TriggerEffectType::Buff as u32);
+                tep.set_value(buff_id);
+                let mut res = buff.buff_temp.par1;
+                cter.energy += res;
+                if cter.energy > cter.max_energy {
+                    cter.energy = cter.max_energy;
+                    res = cter.max_energy - cter.energy;
+                }
+                let mut ep = EffectPt::new();
+                ep.effect_type = EffectType::AddEnergy.into_u32();
+                ep.effect_value = buff.buff_temp.par1;
+                target_pt.effects.push(ep);
             }
         }
     }
 
     ///处理角色移动之后的事件
-    pub unsafe fn handler_cter_move(&mut self, user_id: u32, index: usize) -> Vec<ActionUnitPt> {
+    pub unsafe fn handler_cter_move(
+        &mut self,
+        user_id: u32,
+        index: usize,
+    ) -> anyhow::Result<Vec<ActionUnitPt>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
         let last_index = battle_cter.cell_index;
+        let mut v = Vec::new();
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
         if cell.user_id > 0 {
+            //先判断目标位置的角色是否有不动泰山被动技能
             let target_cter = self.battle_cter.get_mut(&cell.user_id).unwrap();
+
+            if target_cter.buffs.contains_key(&CAN_NOT_MOVED) {
+                anyhow::bail!(
+                    "this cter can not be move!cter_id:{},buff_id:{}",
+                    target_cter.cter_id,
+                    CAN_NOT_MOVED
+                )
+            }
+
             target_cter.cell_index = battle_cter.cell_index;
 
             let source_cell = self.tile_map.map.get_mut(last_index).unwrap();
@@ -489,7 +529,6 @@ impl BattleData {
         battle_cter.cell_index = index;
         cell.user_id = battle_cter.user_id;
 
-        let mut v = Vec::new();
         let index = index as isize;
 
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
@@ -564,7 +603,7 @@ impl BattleData {
             //     need_rank = false;
             // }
         }
-        v
+        Ok(v)
     }
 }
 impl Find<Buff> for Vec<Buff> {

@@ -7,9 +7,10 @@ use crate::room::character::BattleCharacter;
 use crate::room::map_data::Cell;
 use crate::TEMPLATES;
 use log::{error, warn};
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use tools::protos::base::{ActionUnitPt, TargetPt};
+use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
 #[derive(Clone, Debug)]
@@ -57,7 +58,7 @@ impl From<&'static SkillTemp> for Skill {
 }
 
 ///地图块换位置
-pub fn change_index(
+pub unsafe fn change_index(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
@@ -101,12 +102,10 @@ pub fn change_index(
         return None;
     }
 
-    //先删掉
-    let mut source_cell = battle_data.tile_map.map.remove(source_index);
-    let mut target_cell = battle_data.tile_map.map.remove(target_index);
-
+    let map_ptr = battle_data.tile_map.map.borrow_mut() as *mut Vec<Cell>;
+    let source_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
+    let target_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
     let source_cell_user = source_cell.user_id;
-
     let target_cell_user = target_cell.user_id;
 
     //替换下标
@@ -116,15 +115,6 @@ pub fn change_index(
     //替换上面的玩家id
     source_cell.user_id = target_cell_user;
     target_cell.user_id = source_cell_user;
-
-    battle_data
-        .tile_map
-        .map
-        .insert(source_cell.index, source_cell);
-    battle_data
-        .tile_map
-        .map
-        .insert(target_cell.index, target_cell);
 
     //通知客户端
     let mut target_pt = TargetPt::new();
@@ -335,29 +325,18 @@ pub unsafe fn move_user(
         return None;
     }
     let target_cter = target_cter.unwrap();
-    let target_cter_index = target_cter.cell_index;
     let target_user = target_cter.user_id;
-    //更新目标玩家的下标
-    let last_index = target_cter_index;
-    target_cter.cell_index = target_index;
-    let target_cell = battle_data.tile_map.map.get_mut(target_index);
-    if let None = target_cell {
-        warn!("there is no cell!index:{}", target_index);
+    //处理移动后事件
+    let v = battle_data.handler_cter_move(target_user, target_index);
+    if let Err(e) = v {
+        warn!("{:?}", e);
         return None;
     }
-    let target_cell = target_cell.unwrap();
-    target_cell.user_id = target_user;
-
-    //重制之前地图块上的玩家id
-    let last_cell = battle_data.tile_map.map.get_mut(last_index).unwrap();
-    last_cell.user_id = 0;
+    let v = v.unwrap();
 
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(target_index as u32);
     au.targets.push(target_pt);
-
-    //处理移动后事件
-    let v = battle_data.handler_cter_move(target_user, target_index);
     Some(v)
 }
 
@@ -510,8 +489,10 @@ pub unsafe fn single_skill_damage(
                 let mut target_pt = TargetPt::new();
                 target_pt.target_value.push(user_id);
                 target_pt.lost_buffs.push(skill_id);
-                target_pt.effect_type = AddSkill as u32;
-                target_pt.effect_value = st.id;
+                let mut ep = EffectPt::new();
+                ep.effect_type = AddSkill as u32;
+                ep.effect_value = st.id;
+                target_pt.effects.push(ep);
                 let skill = Skill::from(st);
                 cter.skills.insert(skill.id, skill);
             }
@@ -545,8 +526,10 @@ pub unsafe fn sub_cd(
 
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(battle_cter.cell_index as u32);
-    target_pt.effect_type = EffectType::SubSkillCd as u32;
-    target_pt.effect_value = skill_temp.par1;
+    let mut ep = EffectPt::new();
+    ep.effect_type = EffectType::SubSkillCd as u32;
+    ep.effect_value = skill_temp.par1;
+    target_pt.effects.push(ep);
     au.targets.push(target_pt);
     battle_cter
         .skills

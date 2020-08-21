@@ -70,6 +70,7 @@ impl BattleData {
             task_sender,
             sender,
         };
+
         //初始化函数指针，封装到map里
         bd.skill_cmd_map.insert(&AUTO_PAIR_CELL[..], auto_pair_cell);
         bd.skill_cmd_map.insert(&ADD_BUFF[..], add_buff);
