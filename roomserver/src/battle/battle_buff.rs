@@ -477,11 +477,9 @@ impl BattleData {
                 let mut tep = TriggerEffectPt::new();
                 tep.set_field_type(TriggerEffectType::Buff as u32);
                 tep.set_value(buff_id);
-                let mut res = buff.buff_temp.par1;
-                cter.energy += res;
+                cter.energy += buff.buff_temp.par1;
                 if cter.energy > cter.max_energy {
                     cter.energy = cter.max_energy;
-                    res = cter.max_energy - cter.energy;
                 }
                 let mut ep = EffectPt::new();
                 ep.effect_type = EffectType::AddEnergy.into_u32();

@@ -107,9 +107,11 @@ impl TileMap {
         let res = res.unwrap();
         let mut rand = rand::thread_rng();
         let open_world_cell;
+        //如果开启世界块，则直接拿到有世界块的状态
         if let Some(res) = is_open_world_cell {
             open_world_cell = res;
         } else {
+            //否则进行随机，0-1，0代表不开启世界块
             let res = rand.gen_range(0, 2);
             open_world_cell = res > 0;
         }
@@ -123,13 +125,13 @@ impl TileMap {
             anyhow::bail!(str)
         }
 
-        let res = res.unwrap();
+        let tile_map_temp_v = res.unwrap();
 
-        let map_random_index = rand.gen_range(0, res.len());
-        let tile_map_temp = res.get(map_random_index).unwrap();
-        let mut tmd = TileMap::default();
-        tmd.id = tile_map_temp.id;
-        tmd.map = Vec::with_capacity(30);
+        let map_random_index = rand.gen_range(0, tile_map_temp_v.len());
+        let tile_map_temp = tile_map_temp_v.get(map_random_index).unwrap();
+        let mut tmp = TileMap::default();
+        tmp.id = tile_map_temp.id;
+        tmp.map = Vec::with_capacity(30);
 
         let mut map = [(0, false); 30];
         tile_map_temp.map.iter().enumerate().for_each(|i| {
@@ -159,7 +161,7 @@ impl TileMap {
 
             map[index_value] = (tile_map_temp.world_cell, true);
             empty_v.remove(index);
-            tmd.world_cell_map
+            tmp.world_cell_map
                 .insert(index_value as u32, tile_map_temp.world_cell);
         }
         //这里是为了去重，进行拷贝
@@ -221,7 +223,7 @@ impl TileMap {
             cell.is_world = *is_world;
             cell.x = x;
             cell.y = y;
-            tmd.coord_map.insert((x, y), index);
+            tmp.coord_map.insert((x, y), index);
             x += 1;
             let mut buffs: Option<Iter<u32>> = None;
             index += 1;
@@ -244,10 +246,10 @@ impl TileMap {
                 cell.buffs = buff_array.clone();
                 cell.passive_buffs = buff_array;
             }
-            tmd.map.push(cell);
+            tmp.map.push(cell);
         }
-        tmd.un_pair_count = un_pair_count;
-        Ok(tmd)
+        tmp.un_pair_count = un_pair_count;
+        Ok(tmp)
     }
 }
 

@@ -85,6 +85,15 @@ impl BattleCharacter {
         None
     }
 
+    ///重制角色数据
+    pub fn reset(&mut self) {
+        self.is_attacked = false;
+        self.is_can_attack = false;
+        self.cell_index = 0_usize;
+        self.recently_open_cell_index = None;
+        self.is_opened_cell = false;
+    }
+
     ///计算攻击力
     pub fn calc_damage(&self) -> i32 {
         let mut damage = self.atk;

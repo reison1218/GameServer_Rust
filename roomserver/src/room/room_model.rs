@@ -22,6 +22,8 @@ use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
 
 ///teamID枚举
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum TeamId {
     Min = 1, //最小teamid
     Max = 4, //最大teamid
