@@ -306,11 +306,10 @@ impl BattleData {
             for cter in self.battle_cter.values_mut() {
                 cter.reset();
                 let cter = cter as *mut BattleCharacter;
-                for buff in cter.as_mut().unwrap().buffs.values() {
-                    let buff_id = buff.id;
-                    if RESET_MAP_ADD_ATTACK_BY_ALIVES.contains(&buff_id) {
+                for buff in cter.as_mut().unwrap().buffs.values_mut() {
+                    if RESET_MAP_ADD_ATTACK_BY_ALIVES.contains(&buff.id) {
                         for _ in 0..cter_size {
-                            cter.as_mut().unwrap().trigger_add_damage_buff(buff_id);
+                            cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
                         }
                     }
                 }
