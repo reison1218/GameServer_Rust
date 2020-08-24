@@ -3173,6 +3173,7 @@ impl ::protobuf::reflect::ProtobufValue for TargetPt {
 #[derive(PartialEq,Clone,Default)]
 pub struct TriggerEffectPt {
     // message fields
+    pub buff_id: u32,
     pub field_type: u32,
     pub value: u32,
     // special fields
@@ -3191,7 +3192,22 @@ impl TriggerEffectPt {
         ::std::default::Default::default()
     }
 
-    // uint32 type = 1;
+    // uint32 buff_id = 1;
+
+
+    pub fn get_buff_id(&self) -> u32 {
+        self.buff_id
+    }
+    pub fn clear_buff_id(&mut self) {
+        self.buff_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_buff_id(&mut self, v: u32) {
+        self.buff_id = v;
+    }
+
+    // uint32 type = 2;
 
 
     pub fn get_field_type(&self) -> u32 {
@@ -3206,7 +3222,7 @@ impl TriggerEffectPt {
         self.field_type = v;
     }
 
-    // uint32 value = 2;
+    // uint32 value = 3;
 
 
     pub fn get_value(&self) -> u32 {
@@ -3236,9 +3252,16 @@ impl ::protobuf::Message for TriggerEffectPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.field_type = tmp;
+                    self.buff_id = tmp;
                 },
                 2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.field_type = tmp;
+                },
+                3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -3257,11 +3280,14 @@ impl ::protobuf::Message for TriggerEffectPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.buff_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.buff_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.field_type != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.value != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.value, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -3269,11 +3295,14 @@ impl ::protobuf::Message for TriggerEffectPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.buff_id != 0 {
+            os.write_uint32(1, self.buff_id)?;
+        }
         if self.field_type != 0 {
-            os.write_uint32(1, self.field_type)?;
+            os.write_uint32(2, self.field_type)?;
         }
         if self.value != 0 {
-            os.write_uint32(2, self.value)?;
+            os.write_uint32(3, self.value)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -3315,6 +3344,11 @@ impl ::protobuf::Message for TriggerEffectPt {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "buff_id",
+                    |m: &TriggerEffectPt| { &m.buff_id },
+                    |m: &mut TriggerEffectPt| { &mut m.buff_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "type",
                     |m: &TriggerEffectPt| { &m.field_type },
                     |m: &mut TriggerEffectPt| { &mut m.field_type },
@@ -3343,6 +3377,7 @@ impl ::protobuf::Message for TriggerEffectPt {
 
 impl ::protobuf::Clear for TriggerEffectPt {
     fn clear(&mut self) {
+        self.buff_id = 0;
         self.field_type = 0;
         self.value = 0;
         self.unknown_fields.clear();
@@ -4660,23 +4695,24 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x03(\x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_buffs\x18\x03\
     \x20\x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\x03(\x0b2\x17\
     .protos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_buffs\x18\x05\
-    \x20\x03(\rR\tlostBuffs\";\n\x0fTriggerEffectPt\x12\x12\n\x04type\x18\
-    \x01\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\
-    \"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\
-    \x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactionType\
-    \x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07tar\
-    gets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlo\
-    st_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff\
-    _id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\
-    \x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tke\
-    epTimes\"k\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06\
-    userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05g\
-    rade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\
-    \x04rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05b\
-    uffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\
-    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\
-    \x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    \x20\x03(\rR\tlostBuffs\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_id\x18\
+    \x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\
+    \x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUn\
+    itPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0ba\
+    ction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\
+    \x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\
+    \x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\
+    \rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\
+    \x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTimes\
+    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"k\n\rSummaryDat\
+    aPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter\
+    _id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\
+    \x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\"e\n\x0cCterStat\
+    usPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06ski\
+    lls\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\
+    \x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\
+    \x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.B\
+    uffPtR\x05buffsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

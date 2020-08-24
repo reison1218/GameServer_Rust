@@ -385,9 +385,14 @@ pub unsafe fn skill_damage_and_cure(
     }
 
     //给自己加血
-    let target_pt = battle_data.add_hp(user_id, add_hp as i32);
-    if let Some(target_pt) = target_pt {
-        au.targets.push(target_pt);
+    let target_pt = battle_data.add_hp(Some(user_id), user_id, add_hp as i32, None);
+    match target_pt {
+        Ok(target_pt) => {
+            au.targets.push(target_pt);
+        }
+        Err(e) => {
+            warn!("{:?}", e);
+        }
     }
     None
 }

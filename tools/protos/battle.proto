@@ -30,7 +30,7 @@ import "base.proto";
 // ///被动触发效果类型
 // pub enum TriggerEffectType {
 //     ///触发buff
-//     Buff = 1,
+//     此处等同于EffectType
 // }
 //
 // //技能消耗类型

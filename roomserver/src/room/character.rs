@@ -55,7 +55,7 @@ pub struct BattleCharacter {
     pub passive_buffs: HashMap<u32, Buff>,       //被动技能id
     pub target_id: u32,                          //玩家目标
     pub buffs: HashMap<u32, Buff>,               //角色身上的buff
-    pub state: u8,                               //角色状态
+    pub state: BattleCterState,                  //角色状态
     pub residue_open_times: u8,                  //剩余翻地图块次数
     pub turn_times: u32,                         //轮到自己的次数
     pub is_can_attack: bool,                     //是否可以攻击
@@ -313,7 +313,7 @@ impl BattleCharacter {
 
     ///校验角色是否死亡
     pub fn is_died(&self) -> bool {
-        self.state == BattleCterState::Die as u8
+        self.state == BattleCterState::Die
     }
 
     ///扣血
@@ -321,9 +321,9 @@ impl BattleCharacter {
         self.hp -= hp;
         if self.hp <= 0 {
             self.hp = 0;
-            self.state = BattleCterState::Die as u8;
+            self.state = BattleCterState::Die;
         }
-        self.state == BattleCterState::Die as u8
+        self.state == BattleCterState::Die
     }
 
     ///加血

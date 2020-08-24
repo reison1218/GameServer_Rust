@@ -1,8 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::skill_judge_type::HP_LIMIT_GT;
-use crate::battle::battle_enum::{
-    EffectType, TargetType, TriggerEffectType, TRIGGER_SCOPE_NEAR_TEMP_ID,
-};
+use crate::battle::battle_enum::{EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType};
 use crate::task_timer::{Task, TaskCmd};
@@ -18,24 +16,26 @@ use tools::util::packet::Packet;
 
 impl BattleData {
     ///加血
-    pub fn add_hp(&mut self, target: u32, hp: i32) -> Option<TargetPt> {
-        let cter = self.get_battle_cter_mut(Some(target));
-        if let Err(e) = cter {
-            error!("{:?}", e);
-            return None;
-        }
-        let cter = cter.unwrap();
+    pub fn add_hp(
+        &mut self,
+        from_user: Option<u32>,
+        target: u32,
+        hp: i32,
+        buff_id: Option<u32>,
+    ) -> anyhow::Result<TargetPt> {
+        let cter = self.get_battle_cter_mut(Some(target))?;
+
         if cter.is_died() {
-            return None;
+            anyhow::bail!(
+                "this cter is died! user_id:{},cter_id:{}",
+                target,
+                cter.cter_id
+            )
         }
-        let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(cter.cell_index as u32);
-        let mut ep = EffectPt::new();
-        ep.effect_type = EffectType::Cure as u32;
-        ep.effect_value = hp as u32;
-        target_pt.effects.push(ep);
         cter.add_hp(hp);
-        Some(target_pt)
+        let target_pt =
+            self.build_target_pt(from_user, target, EffectType::Cure, hp as u32, buff_id)?;
+        Ok(target_pt)
     }
     ///扣血
     pub unsafe fn deduct_hp(
@@ -73,8 +73,7 @@ impl BattleData {
             let gd_buff = target_cter.trigger_attack_damge_gd();
             if gd_buff.0 > 0 {
                 let mut te_pt = TriggerEffectPt::new();
-                te_pt.set_field_type(TriggerEffectType::Buff as u32);
-                te_pt.set_value(gd_buff.0);
+                te_pt.set_buff_id(gd_buff.0);
                 target_pt.passiveEffect.push(te_pt);
                 if gd_buff.1 {
                     target_pt.lost_buffs.push(gd_buff.0);
@@ -106,6 +105,11 @@ impl BattleData {
                 return Ok(target_pt);
             }
             v.unwrap().push(target);
+
+            let cell = self.tile_map.get_cell_mut_by_user_id(target);
+            if let Some(cell) = cell {
+                cell.user_id = 0;
+            }
         }
         Ok(target_pt)
     }
@@ -414,6 +418,33 @@ impl BattleData {
         if res.is_err() {
             error!("{:?}", res.err().unwrap());
         }
+    }
+
+    ///构建targetpt
+    pub fn build_target_pt(
+        &self,
+        from_user: Option<u32>,
+        target_user: u32,
+        effect_type: EffectType,
+        effect_value: u32,
+        buff_id: Option<u32>,
+    ) -> anyhow::Result<TargetPt> {
+        let target_cter = self.get_battle_cter(Some(target_user))?;
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(target_cter.cell_index as u32);
+        if from_user.is_some() && from_user.unwrap() == target_user && buff_id.is_some() {
+            let mut tep = TriggerEffectPt::new();
+            tep.set_field_type(effect_type.into_u32());
+            tep.set_value(effect_value);
+            tep.buff_id = buff_id.unwrap();
+            target_pt.passiveEffect.push(tep);
+        } else {
+            let mut ep = EffectPt::new();
+            ep.effect_type = effect_type.into_u32();
+            ep.effect_value = effect_value;
+            target_pt.effects.push(ep);
+        }
+        Ok(target_pt)
     }
 
     ///计算范围

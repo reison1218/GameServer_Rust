@@ -110,8 +110,9 @@ message TargetPt{
 
 //触发效果
 message TriggerEffectPt{
-    uint32 type = 1;					//效果类型
-    uint32 value = 2;					//效果值
+    uint32 buff_id = 1;                 //触发的buff_id
+    uint32 type = 2;					//效果类型
+    uint32 value = 3;					//效果值
 }
 
 //行动单元封装

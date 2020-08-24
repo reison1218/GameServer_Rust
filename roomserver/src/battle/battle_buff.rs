@@ -4,19 +4,18 @@ use crate::battle::battle_enum::buff_type::{
     DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR,
     PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{ActionType, EffectType, TriggerEffectType};
+use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::TEMPLATES;
-use log::error;
+use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
-use tools::templates::cell_temp::CellTemp;
 
 #[derive(Clone, Debug)]
 pub struct Buff {
@@ -83,6 +82,7 @@ impl BattleData {
     ///获得道具
     fn reward_item(
         &mut self,
+        from_user: Option<u32>,
         user_id: u32,
         buff_id: u32,
         last_cell_user_id: u32,
@@ -116,38 +116,58 @@ impl BattleData {
             id: item_id,
             skill_temp,
         };
-        let mut target_pt = TargetPt::new();
-        let mut ep = EffectPt::new();
-        ep.effect_type = EffectType::RewardItem as u32;
-        ep.effect_value = item_id;
-        target_pt.effects.push(ep);
-        //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
-        if buff_temp.target == TargetType::CellPlayer as u32 {
-            let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
-            if let Some(last_cell_user) = last_cell_user {
-                target_pt
-                    .target_value
-                    .push(last_cell_user.cell_index as u32);
-                au.targets.push(target_pt.clone());
-                last_cell_user.items.insert(item_id, item.clone());
-            }
-        }
         let battle_cter = battle_cters.get_mut(&user_id);
         if let None = battle_cter {
             error!("battle_cter is not find!user_id:{}", user_id);
             return;
         }
         let battle_cter = battle_cter.unwrap();
-        target_pt.target_value.clear();
-        target_pt.target_value.push(battle_cter.cell_index as u32);
-        au.targets.push(target_pt);
+        let target_pt = self.build_target_pt(
+            from_user,
+            user_id,
+            EffectType::RewardItem,
+            item_id,
+            Some(buff_id),
+        );
+        match target_pt {
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+                return;
+            }
+        }
+        battle_cter.items.insert(item_id, item.clone());
 
-        battle_cter.items.insert(item_id, item);
+        //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
+        if buff_temp.target == TargetType::CellPlayer as u32 {
+            let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
+            if let Some(last_cell_user) = last_cell_user {
+                let target_pt = self.build_target_pt(
+                    from_user,
+                    last_cell_user.user_id,
+                    EffectType::RewardItem,
+                    item_id,
+                    Some(buff_id),
+                );
+                match target_pt {
+                    Ok(target_pt) => {
+                        au.targets.push(target_pt);
+                        last_cell_user.items.insert(item_id, item.clone());
+                    }
+                    Err(e) => {
+                        warn!("{:?}", e);
+                    }
+                }
+            }
+        }
     }
 
     ///匹配获得治疗
     fn pair_cure(
         &mut self,
+        from_user: Option<u32>,
         user_id: u32,
         buff_id: u32,
         last_cell_user_id: u32,
@@ -161,15 +181,27 @@ impl BattleData {
         }
         let buff_temp = buff_temp.unwrap();
         if buff_temp.target == TargetType::CellPlayer as u32 {
-            let target_pt = self.add_hp(last_cell_user_id, buff_temp.par1 as i32);
-            if let Some(target_pt) = target_pt {
-                au.targets.push(target_pt);
+            let target_pt = self.add_hp(
+                from_user,
+                last_cell_user_id,
+                buff_temp.par1 as i32,
+                Some(buff_id),
+            );
+
+            match target_pt {
+                Ok(target_pt) => {
+                    au.targets.push(target_pt);
+                }
+                Err(e) => warn!("{:?}", e),
             }
         }
         //恢复生命值
-        let target_pt = self.add_hp(user_id, buff_temp.par1 as i32);
-        if let Some(target_pt) = target_pt {
-            au.targets.push(target_pt);
+        let target_pt = self.add_hp(from_user, user_id, buff_temp.par1 as i32, Some(buff_id));
+        match target_pt {
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+            }
+            Err(e) => warn!("{:?}", e),
         }
     }
 
@@ -312,14 +344,15 @@ impl BattleData {
     ///匹配同元素治疗
     fn pair_same_element_cure(
         &mut self,
-        user_id: u32,
-        cell_temp: &CellTemp,
+        from_user: Option<u32>,
+        target_user: u32,
+        cell_element: u8,
         buff_id: u32,
         battle_cters: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
-        let battle_cter = battle_cters.get_mut(&user_id).unwrap();
-        if cell_temp.element != battle_cter.element {
+        let battle_cter = battle_cters.get_mut(&target_user).unwrap();
+        if cell_element != battle_cter.element {
             return;
         }
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
@@ -329,18 +362,24 @@ impl BattleData {
         }
         let buff_temp = buff_temp.unwrap();
         //获得buff
-        let target_pt = self.add_hp(user_id, buff_temp.par1 as i32);
-        if let Some(target_pt) = target_pt {
-            au.targets.push(target_pt);
+        let target_pt = self.add_hp(from_user, target_user, buff_temp.par1 as i32, Some(buff_id));
+        match target_pt {
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+            }
         }
     }
 
     ///打开块和匹配
     fn open_cell_and_pair(
         &mut self,
-        user_id: u32,
+        from_user: Option<u32>,
+        target_user: u32,
+        target_battle: &mut BattleCharacter,
         buff_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
         is_pair: bool,
         au: &mut ActionUnitPt,
     ) {
@@ -350,28 +389,38 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let battle_cter = battle_cters.get_mut(&user_id).unwrap();
-        let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(battle_cter.cell_index as u32);
         let mut energy = buff_temp.par1;
         if is_pair {
             energy += buff_temp.par2;
         }
-        battle_cter.energy += energy;
-        if battle_cter.energy > battle_cter.max_energy {
+        target_battle.energy += energy;
+        if target_battle.energy > target_battle.max_energy {
             energy = 0;
-            battle_cter.energy = battle_cter.max_energy;
+            target_battle.energy = target_battle.max_energy;
         }
-        let mut ep = EffectPt::new();
-        ep.effect_type = EffectType::AddEnergy as u32;
-        ep.effect_value = energy;
-        target_pt.effects.push(ep);
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(target_battle.cell_index as u32);
+
+        if from_user.is_some() && from_user.unwrap() == target_user {
+            let mut tep = TriggerEffectPt::new();
+            tep.buff_id = buff_id;
+            tep.set_field_type(EffectType::AddEnergy.into_u32());
+            tep.set_value(energy);
+            target_pt.passiveEffect.push(tep);
+        } else {
+            let mut ep = EffectPt::new();
+            ep.set_effect_type(EffectType::AddEnergy.into_u32());
+            ep.set_effect_value(energy);
+            target_pt.effects.push(ep);
+        }
+
         au.targets.push(target_pt);
     }
 
     ///匹配buff
     unsafe fn match_buff(
         &mut self,
+        from_user: Option<u32>,
         user_id: u32,
         battle_cters: *mut HashMap<u32, BattleCharacter>,
         buffs: &Vec<Buff>,
@@ -384,7 +433,6 @@ impl BattleData {
         let cell = self.tile_map.map.get(index as usize);
         let cell = cell.unwrap();
         let cell_element = cell.element;
-        let cell_temp = TEMPLATES.get_cell_ref().get_temp(&cell.id).unwrap();
 
         let cters = battle_cters.as_mut().unwrap();
         for buff in buffs.iter() {
@@ -394,9 +442,9 @@ impl BattleData {
                 let last_cell_user_id = last_cell.user_id;
                 //获得道具
                 if AWARD_ITEM.contains(&buff.id) {
-                    self.reward_item(user_id, buff.id, last_cell_user_id, cters, au);
+                    self.reward_item(from_user, user_id, buff.id, last_cell_user_id, cters, au);
                 } else if PAIR_CURE.contains(&buff.id) {
-                    self.pair_cure(user_id, buff.id, last_cell_user_id, cters, au);
+                    self.pair_cure(from_user, user_id, buff.id, last_cell_user_id, cters, au);
                 } else if AWARD_BUFF.contains(&buff.id) {
                     //获得一个buff
                     self.award_buff(
@@ -409,18 +457,21 @@ impl BattleData {
                 } else if NEAR_ADD_CD.contains(&buff.id) {
                     //相临的玩家技能cd增加
                     self.near_add_cd(user_id, index, buff.id, cters, au);
-
-                //todo 通知客户端
                 } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff.id) {
                     //相临都玩家造成技能伤害
                     self.near_skill_damage(user_id, index, buff.id, cters, au);
-
-                //todo 通知客户端
                 } else if PAIR_SAME_ELEMENT_CURE.contains(&buff.id) {
                     //处理世界块的逻辑
                     //配对属性一样的地图块+hp
                     //查看配对的cell的属性是否与角色属性匹配
-                    self.pair_same_element_cure(user_id, cell_temp, buff.id, cters, au);
+                    self.pair_same_element_cure(
+                        from_user,
+                        user_id,
+                        cell_element,
+                        buff.id,
+                        cters,
+                        au,
+                    );
                 }
             }
 
@@ -434,7 +485,7 @@ impl BattleData {
             }
             //翻开地图块加能量，配对加能量
             if OPEN_CELL_AND_PAIR.contains(&buff.id) {
-                self.open_cell_and_pair(user_id, buff.id, cters, is_pair, au);
+                self.open_cell_and_pair(from_user, user_id, battle_cter, buff.id, is_pair, au);
             }
         }
     }
@@ -451,13 +502,13 @@ impl BattleData {
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let cell = tile_map.as_mut().unwrap().map.get(index).unwrap();
         //匹配地图块的
-        self.match_buff(user_id, battle_cters, &cell.buffs, au, is_pair);
+        self.match_buff(None, user_id, battle_cters, &cell.buffs, au, is_pair);
         //匹配玩家身上的
         let mut buff_v = Vec::new();
         for v in battle_cter.buffs.values() {
             buff_v.push(v.clone());
         }
-        self.match_buff(user_id, battle_cters, &buff_v, au, is_pair);
+        self.match_buff(Some(user_id), user_id, battle_cters, &buff_v, au, is_pair);
         Ok(None)
     }
 
@@ -475,16 +526,14 @@ impl BattleData {
             //被攻击增加能量
             if ATTACKED_ADD_ENERGY.contains(&buff_id) && cter.max_energy > 0 {
                 let mut tep = TriggerEffectPt::new();
-                tep.set_field_type(TriggerEffectType::Buff as u32);
-                tep.set_value(buff_id);
+                tep.set_field_type(EffectType::AddEnergy.into_u32());
+                tep.set_buff_id(buff_id);
+                tep.set_value(buff.buff_temp.par1);
                 cter.energy += buff.buff_temp.par1;
                 if cter.energy > cter.max_energy {
                     cter.energy = cter.max_energy;
                 }
-                let mut ep = EffectPt::new();
-                ep.effect_type = EffectType::AddEnergy.into_u32();
-                ep.effect_value = buff.buff_temp.par1;
-                target_pt.effects.push(ep);
+                target_pt.passiveEffect.push(tep);
             }
         }
     }
@@ -506,7 +555,7 @@ impl BattleData {
             //先判断目标位置的角色是否有不动泰山被动技能
             let target_cter = self.battle_cter.get_mut(&cell.user_id).unwrap();
 
-            if target_cter.buffs.contains_key(&CAN_NOT_MOVED) {
+            if target_cter.buffs.contains_key(&CAN_NOT_MOVED) && user_id != target_cter.user_id {
                 anyhow::bail!(
                     "this cter can not be move!cter_id:{},buff_id:{}",
                     target_cter.cter_id,

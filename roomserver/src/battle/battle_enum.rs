@@ -121,14 +121,6 @@ impl EffectType {
     }
 }
 
-///被动触发效果类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-#[repr(u8)]
-pub enum TriggerEffectType {
-    ///触发buff
-    Buff = 1,
-}
-
 ///技能消耗类型
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -137,11 +129,25 @@ pub enum SkillConsumeType {
 }
 
 ///回合行为类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum BattleCterState {
     Alive = 0,
     Die = 1,
+    OffLine = 2, //离线
+}
+
+impl Default for BattleCterState {
+    fn default() -> Self {
+        BattleCterState::Alive
+    }
+}
+
+impl BattleCterState {
+    pub fn into_u8(self) -> u8 {
+        let value: u8 = self.into();
+        value
+    }
 }
 
 ///回合行为类型

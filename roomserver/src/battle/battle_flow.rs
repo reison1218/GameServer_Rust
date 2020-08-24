@@ -25,7 +25,7 @@ impl BattleData {
         let allive_count = self
             .battle_cter
             .values()
-            .filter(|x| x.state == BattleCterState::Alive as u8)
+            .filter(|x| x.state == BattleCterState::Alive)
             .count();
         let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cters = battle_cters_prt.as_mut().unwrap();
@@ -381,6 +381,7 @@ impl BattleData {
             Some(v)
         }
     }
+
     ///下个turn
     pub fn next_turn(&mut self) {
         //计算下一个回合
@@ -477,7 +478,7 @@ impl BattleData {
             let cter = self.battle_cter.get(&user_id);
             match cter {
                 Some(cter) => {
-                    if cter.state == BattleCterState::Die as u8 {
+                    if cter.state == BattleCterState::Die {
                         self.add_next_turn_index();
                         return;
                     }

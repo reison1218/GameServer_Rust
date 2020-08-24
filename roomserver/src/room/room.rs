@@ -1,4 +1,5 @@
 use crate::battle::battle::BattleData;
+use crate::battle::battle_enum::BattleCterState;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::member::{Member, MemberState};
@@ -25,6 +26,7 @@ use tools::protos::room::{
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+
 //最大成员数量
 pub const MEMBER_MAX: u8 = 4;
 
