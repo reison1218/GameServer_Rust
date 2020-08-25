@@ -108,6 +108,10 @@ impl BattleData {
             if need_rank {
                 self.rank_vec.push(Vec::new());
             }
+            //此处做一个容错处理
+            if self.rank_vec.is_empty() {
+                self.rank_vec.push(Vec::new());
+            }
             let v = self.rank_vec.get_mut(rank_vec_size);
             if v.is_none() {
                 error!("rank_vec can not find data!rank_vec_size:{}", rank_vec_size);
@@ -144,22 +148,22 @@ impl BattleData {
         let cell_mut = cell_ptr.as_mut().unwrap();
         let mut is_pair = false;
         let cell_id = cell_mut.id;
-        let recently_open_cell_index = battle_cter.recently_open_cell_index;
-        let mut recently_open_cell_id: Option<u32> = None;
-        if let Some(recently_open_cell_index) = recently_open_cell_index {
-            let res = self.tile_map.map.get_mut(recently_open_cell_index);
+        let last_cell_index = battle_cter.last_cell_index;
+        let mut last_cell_id: Option<u32> = None;
+        if let Some(last_cell_index) = last_cell_index {
+            let res = self.tile_map.map.get_mut(last_cell_index);
             if let None = res {
-                error!("cell not find!cell_index:{}", recently_open_cell_index);
+                error!("cell not find!cell_index:{}", last_cell_index);
                 return false;
             }
             let last_cell = res.unwrap() as *mut Cell;
-            self.tile_map.map.get_mut(recently_open_cell_index as usize);
-            recently_open_cell_id = Some(last_cell.as_ref().unwrap().id);
+            self.tile_map.map.get_mut(last_cell_index);
+            last_cell_id = Some(last_cell.as_ref().unwrap().id);
             let last_cell = &mut *last_cell;
             //如果配对了，则修改地图块配对的下标
-            if let Some(id) = recently_open_cell_id {
+            if let Some(id) = last_cell_id {
                 if cell_id == id {
-                    cell_mut.pair_index = Some(recently_open_cell_index as usize);
+                    cell_mut.pair_index = Some(last_cell_index);
                     last_cell.pair_index = Some(index);
                     is_pair = true;
                 }
@@ -168,11 +172,11 @@ impl BattleData {
             }
         }
         //配对了就封装
-        if is_pair && recently_open_cell_index.is_some() {
+        if is_pair && last_cell_index.is_some() {
             info!(
                 "user:{} open cell pair! last_cell:{},now_cell:{}",
                 battle_cter.user_id,
-                recently_open_cell_index.unwrap() as u32,
+                last_cell_index.unwrap(),
                 index
             );
         }

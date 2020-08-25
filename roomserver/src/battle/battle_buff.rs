@@ -439,7 +439,7 @@ impl BattleData {
     ) {
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let index = battle_cter.cell_index as u32;
-        let last_index = battle_cter.recently_open_cell_index;
+        let last_index = battle_cter.last_cell_index;
         let cell = self.tile_map.map.get(index as usize);
         let cell = cell.unwrap();
         let cell_element = cell.element;
@@ -575,8 +575,7 @@ impl BattleData {
                 )
             }
 
-            target_cter.last_cell_index = target_cter.cell_index;
-            target_cter.cell_index = battle_cter.cell_index;
+            target_cter.move_index(battle_cter.cell_index);
 
             let source_cell = self.tile_map.map.get_mut(last_index).unwrap();
             source_cell.user_id = target_cter.user_id;
@@ -587,8 +586,7 @@ impl BattleData {
             last_cell.user_id = 0;
         }
         //改变角色位置
-        battle_cter.last_cell_index = battle_cter.cell_index;
-        battle_cter.cell_index = index;
+        battle_cter.move_index(index);
         cell.user_id = battle_cter.user_id;
 
         let index = index as isize;

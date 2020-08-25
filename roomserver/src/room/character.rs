@@ -43,35 +43,39 @@ impl Into<CharacterPt> for Character {
 
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
-    pub user_id: u32,                            //玩家id
-    pub cter_id: u32,                            //角色的配置id
-    pub grade: u32,                              //等级
-    pub atk: u32,                                //攻击力
-    pub hp: i32,                                 //角色血量
-    pub defence: u32,                            //角色防御
-    pub energy: u32,                             //角色能量
-    pub max_energy: u32,                         //能量上限
-    pub element: u8,                             //角色元素
-    pub cell_index: usize,                       //角色所在位置
-    pub skills: HashMap<u32, Skill>,             //玩家选择的主动技能id
-    pub passive_buffs: HashMap<u32, Buff>,       //被动技能id
-    pub target_id: u32,                          //玩家目标
-    pub buffs: HashMap<u32, Buff>,               //角色身上的buff
-    pub state: BattleCterState,                  //角色状态
-    pub residue_open_times: u8,                  //剩余翻地图块次数
-    pub turn_times: u32,                         //轮到自己的次数
-    pub is_can_attack: bool,                     //是否可以攻击
-    pub items: HashMap<u32, Item>,               //角色身上的道具
-    pub recently_open_cell_index: Option<usize>, //最近一次翻开的地图块
-    pub last_cell_index: usize,                  //上一次所在地图块位置
-    pub hp_max: i32,                             //血上限
-    pub is_opened_cell: bool,                    //是否本回合翻过地图块
-    pub add_damage_buffs: HashMap<u32, u32>,     //伤害加深buff key:buffid value:叠加次数
-    pub sub_damage_buffs: HashMap<u32, u32>,     //减伤buff  key:buffid value:叠加次数
-    pub is_attacked: bool,                       //一轮有没有受到攻击伤害
+    pub user_id: u32,                        //玩家id
+    pub cter_id: u32,                        //角色的配置id
+    pub grade: u32,                          //等级
+    pub atk: u32,                            //攻击力
+    pub hp: i32,                             //角色血量
+    pub defence: u32,                        //角色防御
+    pub energy: u32,                         //角色能量
+    pub max_energy: u32,                     //能量上限
+    pub element: u8,                         //角色元素
+    pub cell_index: usize,                   //角色所在位置
+    pub skills: HashMap<u32, Skill>,         //玩家选择的主动技能id
+    pub passive_buffs: HashMap<u32, Buff>,   //被动技能id
+    pub target_id: u32,                      //玩家目标
+    pub buffs: HashMap<u32, Buff>,           //角色身上的buff
+    pub state: BattleCterState,              //角色状态
+    pub residue_open_times: u8,              //剩余翻地图块次数
+    pub turn_times: u32,                     //轮到自己的次数
+    pub is_can_attack: bool,                 //是否可以攻击
+    pub items: HashMap<u32, Item>,           //角色身上的道具
+    pub open_cell_vec: Vec<usize>,           //最近一次turn翻过的地图块
+    pub last_cell_index: Option<usize>,      //上一次所在地图块位置
+    pub hp_max: i32,                         //血上限
+    pub add_damage_buffs: HashMap<u32, u32>, //伤害加深buff key:buffid value:叠加次数
+    pub sub_damage_buffs: HashMap<u32, u32>, //减伤buff  key:buffid value:叠加次数
+    pub is_attacked: bool,                   //一轮有没有受到攻击伤害
 }
 
 impl BattleCharacter {
+    pub fn move_index(&mut self, index: usize) {
+        self.last_cell_index = Some(self.cell_index);
+        self.cell_index = index;
+    }
+
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
     pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) -> Option<u32> {
         let buff = self.buffs.get_mut(&buff_id).unwrap();
@@ -93,8 +97,8 @@ impl BattleCharacter {
         self.is_attacked = false;
         self.is_can_attack = false;
         self.cell_index = 0_usize;
-        self.recently_open_cell_index = None;
-        self.is_opened_cell = false;
+        self.open_cell_vec.clear();
+        self.last_cell_index = None;
     }
 
     ///计算攻击力
@@ -193,7 +197,6 @@ impl BattleCharacter {
     ///初始化战斗角色数据
     pub fn init(cter: &Character) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
-        battle_cter.recently_open_cell_index = None;
         let cter_id = cter.cter_id;
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
@@ -241,11 +244,6 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
-    ///最近一次翻开的地图块下标
-    pub fn set_recently_open_cell_index(&mut self, index: Option<usize>) {
-        self.recently_open_cell_index = index;
-    }
-
     ///重制翻块次数
     pub fn reset_residue_open_times(&mut self) {
         self.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
@@ -284,9 +282,7 @@ impl BattleCharacter {
         //重制是否可以攻击
         self.is_can_attack = false;
         //重制是否翻过地图块
-        self.is_opened_cell = false;
-        //重制最近一次翻地图块的下标
-        self.set_recently_open_cell_index(None);
+        self.open_cell_vec.clear();
     }
 
     ///触发抵挡攻击伤害

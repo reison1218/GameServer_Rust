@@ -152,12 +152,24 @@ impl Room {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
+        let un_open_count =
+            self.battle_data.tile_map.map.len() as i32 - self.battle_data.tile_map.un_pair_count;
+        let mut need_reflash_map = false;
+        let battle_cter = self.battle_data.get_battle_cter_mut(None);
+        if un_open_count <= 2 {
+            need_reflash_map = true;
+        } else if let Ok(battle_cter) = battle_cter {
+            if un_open_count - battle_cter.open_cell_vec.len() as i32 <= 2 {
+                need_reflash_map = true;
+            }
+        }
+
         let (is_summary, allive_count, summary_data) = self.battle_data.handler_summary();
         if is_summary {
             let bytes = summary_data.unwrap().write_to_bytes().unwrap();
             //发给游戏服同步结算数据
             self.send_2_game(GameCode::Summary, bytes);
-        } else if allive_count >= 2 && self.battle_data.tile_map.un_pair_count <= 2 {
+        } else if allive_count >= 2 && need_reflash_map {
             //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
             //校验是否要刷新地图
             self.battle_data.is_refreshed = true;

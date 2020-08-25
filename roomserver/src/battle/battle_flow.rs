@@ -367,16 +367,10 @@ impl BattleData {
             if is_pair {
                 //状态改为可以进行攻击
                 battle_cter.is_can_attack = true;
-                //如果配对了，则清除上一次翻的地图块
-                battle_cter.set_recently_open_cell_index(None);
                 self.tile_map.un_pair_count -= 2;
-            } else {
-                //更新最近一次翻的下标
-                battle_cter.set_recently_open_cell_index(Some(index));
             }
-
-            battle_cter.is_opened_cell = true;
-
+            //更新翻的地图块下标
+            battle_cter.open_cell_vec.push(index);
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
 

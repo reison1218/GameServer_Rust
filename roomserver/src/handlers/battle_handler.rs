@@ -405,7 +405,7 @@ fn skip_turn(
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
-    if !battle_cter.is_opened_cell {
+    if !battle_cter.open_cell_vec.is_empty() {
         warn!("this player not open any cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
