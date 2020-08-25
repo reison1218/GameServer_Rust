@@ -9,7 +9,7 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
+use tools::protos::base::{BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
@@ -37,6 +37,15 @@ impl BattleData {
             self.build_target_pt(from_user, target, EffectType::Cure, hp as u32, buff_id)?;
         Ok(target_pt)
     }
+
+    pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i32 {
+        let target_user = target_cter.user_id;
+        let target_index = target_cter.cell_index as isize;
+        let user_v = self.cal_scope(target_user, target_index, TargetType::None, None, None);
+        let res = user_v.contains(&from_user);
+        target_cter.calc_reduce_damage(res)
+    }
+
     ///扣血
     pub unsafe fn deduct_hp(
         &mut self,
@@ -64,7 +73,7 @@ impl BattleData {
                 .unwrap()
                 .get_battle_cter_mut(Some(from))?;
             let attack_damage = from_cter.calc_damage();
-            let reduce_damage = target_cter.calc_reduce_damage();
+            let reduce_damage = self.calc_reduce_damage(from_cter.user_id, target_cter);
             ep.effect_type = EffectType::AttackDamage as u32;
             res = attack_damage - reduce_damage;
             if res < 0 {
@@ -115,7 +124,7 @@ impl BattleData {
     }
 
     ///处理地图块配对逻辑
-    pub unsafe fn handler_cell_pair(&mut self, user_id: u32, au: &mut ActionUnitPt) -> bool {
+    pub unsafe fn handler_cell_pair(&mut self, user_id: u32) -> bool {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
@@ -135,7 +144,6 @@ impl BattleData {
         let cell_mut = cell_ptr.as_mut().unwrap();
         let mut is_pair = false;
         let cell_id = cell_mut.id;
-        au.action_value.push(cell_id);
         let recently_open_cell_index = battle_cter.recently_open_cell_index;
         let mut recently_open_cell_id: Option<u32> = None;
         if let Some(recently_open_cell_index) = recently_open_cell_index {
@@ -185,6 +193,9 @@ impl BattleData {
             let mut cbp = CellBuffPt::new();
             cbp.index = cell.index as u32;
             for buff in cell.buffs.iter() {
+                if cell.passive_buffs.contains(&buff.id) {
+                    continue;
+                }
                 let mut buff_pt = BuffPt::new();
                 buff_pt.buff_id = buff.id;
                 buff_pt.trigger_timesed = buff.trigger_timesed as u32;

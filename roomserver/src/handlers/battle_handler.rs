@@ -16,6 +16,7 @@ use tools::util::packet::Packet;
 
 ///行动请求
 pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let rm_ptr = rm as *mut RoomMgr;
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
     if let None = res {
@@ -72,7 +73,9 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //跳过
         ActionType::Skip => {
             au.action_type = ActionType::Skip as u32;
-            res = skip_turn(room, user_id, &mut au);
+            unsafe {
+                res = skip_turn(rm_ptr.as_mut().unwrap(), user_id, &mut au);
+            }
         }
         //翻地图块
         ActionType::Open => {
@@ -124,17 +127,27 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
     }
 
-    //处理结算
-    unsafe {
-        let rm_ptr = rm as *mut RoomMgr;
-        let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        battle_summary(rm_ptr.as_mut().unwrap(), room);
+    //判断当前这个角色死了没,死了就直接下一个
+    let cter = room.battle_data.get_battle_cter(None);
+    if let Ok(cter) = cter {
+        if cter.is_died() {
+            //判断是否进行结算
+            unsafe {
+                let rm_ptr = rm as *mut RoomMgr;
+                let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
+                let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
+                if !is_summary {
+                    room.battle_data.next_turn();
+                }
+            }
+        }
     }
+
     Ok(())
 }
 
 ///战斗结算
-pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) {
+pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
     let is_settle = room.handler_summary();
     let room_type = room.get_room_type();
     let battle_type = room.setting.battle_type;
@@ -156,6 +169,7 @@ pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) {
             rm.player_room.remove(&user_id);
         }
     }
+    is_settle
 }
 
 ///处理pos
@@ -288,7 +302,10 @@ fn open_cell(
 
     let battle_data = rm.battle_data.borrow_mut();
     let res = battle_data.open_cell(target_cell_index, au);
-    Ok(res)
+    match res {
+        Ok(res) => Ok(res),
+        Err(e) => anyhow::bail!(e),
+    }
 }
 
 ///进行普通攻击
@@ -351,10 +368,11 @@ fn use_skill(
 
 ///跳过选择回合顺序
 fn skip_turn(
-    rm: &mut Room,
+    rmgr: &mut RoomMgr,
     user_id: u32,
     _au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+    let rm = rmgr.get_room_mut(&user_id).unwrap();
     //判断是否是轮到自己操作
     let res = check_is_user_turn(rm, user_id);
     if !res {
@@ -392,8 +410,15 @@ fn skip_turn(
         anyhow::bail!("")
     }
 
-    //跳过当前这个人
-    rm.battle_data.skip_turn(_au);
+    unsafe {
+        let rm_ptr = rmgr as *mut RoomMgr;
+        let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
+        let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
+        if !is_summary {
+            //跳过当前这个人
+            room.battle_data.skip_turn(_au);
+        }
+    }
     Ok(None)
 }
 

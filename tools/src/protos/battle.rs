@@ -1272,8 +1272,8 @@ impl ::protobuf::reflect::ProtobufValue for S_POS_NOTICE {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_MAP_REFRESH_NOTICE {
     // message fields
+    pub room_status: u32,
     pub tile_map_id: u32,
-    pub cells: ::std::vec::Vec<u32>,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1291,7 +1291,22 @@ impl S_MAP_REFRESH_NOTICE {
         ::std::default::Default::default()
     }
 
-    // uint32 tile_map_id = 1;
+    // uint32 room_status = 1;
+
+
+    pub fn get_room_status(&self) -> u32 {
+        self.room_status
+    }
+    pub fn clear_room_status(&mut self) {
+        self.room_status = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_status(&mut self, v: u32) {
+        self.room_status = v;
+    }
+
+    // uint32 tile_map_id = 2;
 
 
     pub fn get_tile_map_id(&self) -> u32 {
@@ -1304,31 +1319,6 @@ impl S_MAP_REFRESH_NOTICE {
     // Param is passed by value, moved
     pub fn set_tile_map_id(&mut self, v: u32) {
         self.tile_map_id = v;
-    }
-
-    // repeated uint32 cells = 2;
-
-
-    pub fn get_cells(&self) -> &[u32] {
-        &self.cells
-    }
-    pub fn clear_cells(&mut self) {
-        self.cells.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_cells(&mut self, v: ::std::vec::Vec<u32>) {
-        self.cells = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_cells(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.cells
-    }
-
-    // Take field
-    pub fn take_cells(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.cells, ::std::vec::Vec::new())
     }
 
     // repeated .protos.WorldCellPt world_cell = 3;
@@ -1376,10 +1366,14 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.tile_map_id = tmp;
+                    self.room_status = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.cells)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.tile_map_id = tmp;
                 },
                 3 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.world_cell)?;
@@ -1396,12 +1390,12 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.tile_map_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.tile_map_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.room_status != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_status, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.cells {
-            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
+        if self.tile_map_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.tile_map_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         for value in &self.world_cell {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -1412,12 +1406,12 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.tile_map_id != 0 {
-            os.write_uint32(1, self.tile_map_id)?;
+        if self.room_status != 0 {
+            os.write_uint32(1, self.room_status)?;
         }
-        for v in &self.cells {
-            os.write_uint32(2, *v)?;
-        };
+        if self.tile_map_id != 0 {
+            os.write_uint32(2, self.tile_map_id)?;
+        }
         for v in &self.world_cell {
             os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
@@ -1463,14 +1457,14 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "room_status",
+                    |m: &S_MAP_REFRESH_NOTICE| { &m.room_status },
+                    |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.room_status },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                     "tile_map_id",
                     |m: &S_MAP_REFRESH_NOTICE| { &m.tile_map_id },
                     |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.tile_map_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "cells",
-                    |m: &S_MAP_REFRESH_NOTICE| { &m.cells },
-                    |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.cells },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::WorldCellPt>>(
                     "world_cell",
@@ -1496,8 +1490,8 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
 
 impl ::protobuf::Clear for S_MAP_REFRESH_NOTICE {
     fn clear(&mut self) {
+        self.room_status = 0;
         self.tile_map_id = 0;
-        self.cells.clear();
         self.world_cell.clear();
         self.unknown_fields.clear();
     }
@@ -1699,12 +1693,12 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\
     \x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\
     \x01\x20\x01(\rR\x06userId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\
-    \x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\x80\x01\n\x14S_M\
-    AP_REFRESH_NOTICE\x12\x1e\n\x0btile_map_id\x18\x01\x20\x01(\rR\ttileMapI\
-    d\x12\x14\n\x05cells\x18\x02\x20\x03(\rR\x05cells\x122\n\nworld_cell\x18\
-    \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x10S_SUMMARY_\
-    NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDat\
-    aPtR\x0csummaryDatasb\x06proto3\
+    \x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\x8b\x01\n\x14S_M\
+    AP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStat\
+    us\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld\
+    _cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x10S\
+    _SUMMARY_NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.S\
+    ummaryDataPtR\x0csummaryDatasb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

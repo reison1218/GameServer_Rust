@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
-use tools::protos::battle::S_BATTLE_START_NOTICE;
+use tools::protos::battle::{S_BATTLE_START_NOTICE, S_MAP_REFRESH_NOTICE};
 use tools::protos::room::{
     S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE, S_EMOJI,
     S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM,
@@ -218,6 +218,27 @@ impl Room {
             error!("{:?}", e);
             return;
         }
+        let mut smrn = S_MAP_REFRESH_NOTICE::new();
+        smrn.room_status = self.state as u32;
+        smrn.tile_map_id = self.battle_data.tile_map.id;
+        for (world_index, world_id) in self.battle_data.tile_map.world_cell_map.iter() {
+            let mut wcp = WorldCellPt::new();
+            wcp.index = *world_index;
+            wcp.world_cell_id = *world_id;
+            smrn.world_cell.push(wcp);
+        }
+        let bytes = smrn.write_to_bytes().unwrap();
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::MapRefreshNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+
         self.start_choice_index();
     }
 
@@ -1193,7 +1214,7 @@ impl Room {
                 let world_cell_temp = world_cell_temp.unwrap();
                 for buff_id in world_cell_temp.buff.iter() {
                     for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.add_buff(*buff_id);
+                        battle_cter.add_buff(*buff_id, Some(self.battle_data.next_turn_index));
                     }
                 }
             }

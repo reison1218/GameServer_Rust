@@ -2,7 +2,7 @@ use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, AWARD_BUFF, AWARD_ITEM, CAN_NOT_MOVED, CHANGE_SKILL,
     DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR,
-    PAIR_CURE, PAIR_SAME_ELEMENT_CURE, SAME_CELL_ELEMENT_ADD_ATTACK,
+    PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
 };
 use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -21,14 +21,21 @@ use tools::templates::buff_temp::BuffTemp;
 pub struct Buff {
     pub id: u32,
     pub buff_temp: &'static BuffTemp,
-    pub trigger_timesed: i8,   //已经触发过的次数
-    pub keep_times: i8,        //剩余持续轮数
-    pub scope: Vec<Direction>, //buff的作用范围
-    pub permanent: bool,       //是否永久
-    pub user_id: u32,          //来源的玩家id
+    pub trigger_timesed: i8,       //已经触发过的次数
+    pub keep_times: i8,            //剩余持续轮数
+    pub scope: Vec<Direction>,     //buff的作用范围
+    pub permanent: bool,           //是否永久
+    pub user_id: u32,              //来源的玩家id
+    pub turn_index: Option<usize>, //生效于turn_index
 }
 
 impl Buff {
+    pub fn new(temp: &'static BuffTemp, index: Option<usize>) -> Self {
+        let mut buff = Buff::from(temp);
+        buff.turn_index = index;
+        buff
+    }
+
     pub fn get_target(&self) -> TargetType {
         let target_type = TargetType::try_from(self.buff_temp.target as u8).unwrap();
         let target_type = TargetType::from(target_type);
@@ -43,7 +50,9 @@ impl Buff {
     }
 
     pub(crate) fn sub_keep_times(&mut self) {
-        self.keep_times -= 1;
+        if self.buff_temp.keep_time > 0 {
+            self.keep_times -= 1;
+        }
         if self.keep_times < 0 {
             self.keep_times = 0;
         }
@@ -60,6 +69,7 @@ impl From<&'static BuffTemp> for Buff {
             scope: Vec::new(),
             permanent: bt.keep_time == 0 && bt.trigger_times == 0,
             user_id: 0,
+            turn_index: None,
         };
         let mut v = Vec::new();
         let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
@@ -227,7 +237,7 @@ impl BattleData {
             return;
         }
         let new_buff_temp = new_buff_temp.unwrap();
-        let buff = Buff::from(new_buff_temp);
+        let buff = Buff::new(new_buff_temp, Some(self.next_turn_index));
         target_pt.add_buffs.push(new_buff_temp.id);
         let target_type = TargetType::try_from(buff.buff_temp.target as u8).unwrap();
 
@@ -472,17 +482,16 @@ impl BattleData {
                         cters,
                         au,
                     );
+                } else if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
+                    //此处触发加攻击不用通知客户端
+                    if buff.buff_temp.par1 as u8 == battle_cter.element
+                        && battle_cter.element == cell_element
+                    {
+                        battle_cter.trigger_add_damage_buff(buff.id);
+                    }
                 }
             }
 
-            //此处触发加攻击不用通知客户端
-            if SAME_CELL_ELEMENT_ADD_ATTACK.contains(&buff.id) {
-                if buff.buff_temp.par1 as u8 == battle_cter.element
-                    && battle_cter.element == cell_element
-                {
-                    battle_cter.trigger_add_damage_buff(buff.id);
-                }
-            }
             //翻开地图块加能量，配对加能量
             if OPEN_CELL_AND_PAIR.contains(&buff.id) {
                 self.open_cell_and_pair(from_user, user_id, battle_cter, buff.id, is_pair, au);
@@ -543,13 +552,16 @@ impl BattleData {
         &mut self,
         user_id: u32,
         index: usize,
+        au: &mut ActionUnitPt,
     ) -> anyhow::Result<Vec<ActionUnitPt>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
+        au.action_value.push(cell.id);
         let last_index = battle_cter.cell_index;
         let mut v = Vec::new();
+        let mut is_change_index_both = false;
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
         if cell.user_id > 0 {
             //先判断目标位置的角色是否有不动泰山被动技能
@@ -563,16 +575,19 @@ impl BattleData {
                 )
             }
 
+            target_cter.last_cell_index = target_cter.cell_index;
             target_cter.cell_index = battle_cter.cell_index;
 
             let source_cell = self.tile_map.map.get_mut(last_index).unwrap();
             source_cell.user_id = target_cter.user_id;
+            is_change_index_both = true;
         } else {
             //重制之前地图块上的玩家id
             let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
             last_cell.user_id = 0;
         }
         //改变角色位置
+        battle_cter.last_cell_index = battle_cter.cell_index;
         battle_cter.cell_index = index;
         cell.user_id = battle_cter.user_id;
 
@@ -580,11 +595,16 @@ impl BattleData {
 
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
             let cter_index = other_cter.cell_index as isize;
+
             //踩到别人到范围
             for buff in other_cter.buffs.values_mut() {
                 if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
+                if is_change_index_both {
+                    continue;
+                }
+
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                     let res = cter_index + scope_index;
                     if index != res {

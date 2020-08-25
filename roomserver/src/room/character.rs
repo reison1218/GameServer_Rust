@@ -1,6 +1,8 @@
 use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
-use crate::battle::battle_enum::buff_type::{ADD_ATTACK, CHANGE_SKILL, SUB_ATTACK_DAMAGE};
+use crate::battle::battle_enum::buff_type::{
+    ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
+};
 use crate::battle::battle_enum::skill_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
@@ -61,6 +63,7 @@ pub struct BattleCharacter {
     pub is_can_attack: bool,                     //是否可以攻击
     pub items: HashMap<u32, Item>,               //角色身上的道具
     pub recently_open_cell_index: Option<usize>, //最近一次翻开的地图块
+    pub last_cell_index: usize,                  //上一次所在地图块位置
     pub hp_max: i32,                             //血上限
     pub is_opened_cell: bool,                    //是否本回合翻过地图块
     pub add_damage_buffs: HashMap<u32, u32>,     //伤害加深buff key:buffid value:叠加次数
@@ -116,7 +119,7 @@ impl BattleCharacter {
     }
 
     ///计算减伤
-    pub fn calc_reduce_damage(&self) -> i32 {
+    pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i32 {
         let mut value = self.defence;
 
         for (buff_id, times) in self.sub_damage_buffs.iter() {
@@ -125,6 +128,9 @@ impl BattleCharacter {
                 continue;
             }
             let buff = buff.unwrap();
+            if buff.id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
+                continue;
+            }
             for _ in 0..*times {
                 value += buff.buff_temp.par1;
             }
@@ -133,14 +139,15 @@ impl BattleCharacter {
     }
 
     ///添加buff
-    pub fn add_buff(&mut self, buff_id: u32) {
+    pub fn add_buff(&mut self, buff_id: u32, turn_index: Option<usize>) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let buff = Buff::from(buff_temp);
+
+        let buff = Buff::new(buff_temp, turn_index);
 
         //增伤
         if ADD_ATTACK.contains(&buff_id) {
@@ -226,7 +233,7 @@ impl BattleCharacter {
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.add_buff(buff.id);
+            battle_cter.add_buff(buff.id, None);
             battle_cter.passive_buffs.insert(*buff_id, buff);
         });
 
@@ -280,22 +287,6 @@ impl BattleCharacter {
         self.is_opened_cell = false;
         //重制最近一次翻地图块的下标
         self.set_recently_open_cell_index(None);
-
-        //玩家身上所有buff持续轮次-1
-        let mut need_remove = Vec::new();
-        self.buffs.values_mut().for_each(|buff| {
-            buff.sub_keep_times();
-            if buff.keep_times <= 0 && !buff.permanent {
-                need_remove.push(buff.id);
-            }
-        });
-
-        //删除buff
-        for buff_id in need_remove {
-            self.buffs.remove(&buff_id);
-            self.add_damage_buffs.remove(&buff_id);
-            self.sub_damage_buffs.remove(&buff_id);
-        }
     }
 
     ///触发抵挡攻击伤害

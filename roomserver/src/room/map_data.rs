@@ -1,4 +1,5 @@
 use crate::battle::battle_buff::Buff;
+use crate::battle::battle_enum::buff_type::LOCKED;
 use crate::TEMPLATES;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -18,7 +19,7 @@ pub enum CellType {
 #[derive(Debug, Default, Clone)]
 pub struct TileMap {
     pub id: u32,                                   //地图id
-    pub map: Vec<Cell>,                            //地图格子vec
+    pub map: [Cell; 30],                           //地图格子vec
     pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
     pub world_cell_map: HashMap<u32, u32>,         //世界块map，index，cellid
     pub un_pair_count: i32,                        //未配对地图块数量
@@ -32,7 +33,7 @@ pub struct Cell {
     pub buffs: Vec<Buff>,          //块的效果
     pub is_world: bool,            //是否世界块
     pub element: u8,               //地图块的属性
-    pub passive_buffs: Vec<Buff>,  //额外玩家对其添加的buff
+    pub passive_buffs: Vec<u32>,   //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
     pub pair_index: Option<usize>, //与之配对的下标
     pub x: isize,                  //x轴坐标
@@ -42,7 +43,7 @@ pub struct Cell {
 impl Cell {
     pub fn check_is_locked(&self) -> bool {
         for buff in self.buffs.iter() {
-            if buff.id == 321 {
+            if buff.id == LOCKED {
                 return true;
             }
         }
@@ -131,7 +132,6 @@ impl TileMap {
         let tile_map_temp = tile_map_temp_v.get(map_random_index).unwrap();
         let mut tmp = TileMap::default();
         tmp.id = tile_map_temp.id;
-        tmp.map = Vec::with_capacity(30);
 
         let mut map = [(0, false); 30];
         tile_map_temp.map.iter().enumerate().for_each(|i| {
@@ -226,7 +226,6 @@ impl TileMap {
             tmp.coord_map.insert((x, y), index);
             x += 1;
             let mut buffs: Option<Iter<u32>> = None;
-            index += 1;
             if cell.is_world {
                 let world_cell = TEMPLATES.get_world_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(world_cell.buff.iter());
@@ -242,11 +241,12 @@ impl TileMap {
                     let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
                     buff_array.push(buff);
+                    cell.passive_buffs.push(*buff_id);
                 }
-                cell.buffs = buff_array.clone();
-                cell.passive_buffs = buff_array;
+                cell.buffs = buff_array;
             }
-            tmp.map.push(cell);
+            tmp.map[index] = cell;
+            index += 1;
         }
         tmp.un_pair_count = un_pair_count;
         Ok(tmp)

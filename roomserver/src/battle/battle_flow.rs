@@ -318,42 +318,49 @@ impl BattleData {
         Ok(())
     }
     ///翻地图块
-    pub fn open_cell(&mut self, index: usize, au: &mut ActionUnitPt) -> Option<Vec<ActionUnitPt>> {
+    pub fn open_cell(
+        &mut self,
+        index: usize,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             warn!("{:?}", e);
-            return None;
+            anyhow::bail!("open_cell fail!")
         }
         let user_id = user_id.unwrap();
+        let str = format!(
+            "open_cell fail!user_id:{},index:{}",
+            user_id, self.next_turn_index
+        );
         let is_pair;
         unsafe {
-            let au_ptr = au as *mut ActionUnitPt;
             let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
             let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
             if let None = battle_cter {
                 error!("battle_cter is not find!user_id:{}", user_id);
-                return None;
+                anyhow::bail!("{:?}", str.as_str())
             }
             let battle_cter = battle_cter.unwrap();
 
             //先移动
-            let v = self.handler_cter_move(user_id, index);
+            let v = self.handler_cter_move(user_id, index, au);
             if let Err(e) = v {
                 warn!("{:?}", e);
-                return None;
+                anyhow::bail!("{:?}", str.as_str())
             }
             let v = v.unwrap();
             //判断玩家死了没
             if battle_cter.is_died() {
-                return Some(v);
+                return Ok(Some(v));
             }
             //再配对
-            is_pair = self.handler_cell_pair(user_id, au_ptr.as_mut().unwrap());
+            is_pair = self.handler_cell_pair(user_id);
 
             //处理翻地图块触发buff
-            let res = self.open_cell_trigger_buff(user_id, au_ptr.as_mut().unwrap(), is_pair);
-            if let Err(_) = res {
-                return None;
+            let res = self.open_cell_trigger_buff(user_id, au, is_pair);
+            if let Err(e) = res {
+                anyhow::bail!("{:?}", e)
             }
 
             //处理配对成功与否后的数据
@@ -378,7 +385,7 @@ impl BattleData {
                 .skills
                 .values_mut()
                 .for_each(|skill| skill.sub_cd(None));
-            Some(v)
+            Ok(Some(v))
         }
     }
 
@@ -386,8 +393,6 @@ impl BattleData {
     pub fn next_turn(&mut self) {
         //计算下一个回合
         self.add_next_turn_index();
-        //开始回合触发
-        self.turn_start_summary();
         //给客户端推送战斗turn推送
         self.send_battle_turn_notice();
         //创建战斗turn定时器任务
@@ -396,6 +401,7 @@ impl BattleData {
 
     ///回合开始触发
     pub fn turn_start_summary(&mut self) {
+        let turn_index = self.next_turn_index;
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             error!("{:?}", e);
@@ -403,22 +409,22 @@ impl BattleData {
         }
         let user_id = user_id.unwrap();
         let battle_cter = self.battle_cter.get_mut(&user_id);
-        if let None = battle_cter {
-            error!("battle_cter is None!user_id:{}", user_id);
-            return;
-        }
-        //结算玩家自己的
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.turn_reset();
-
-        //结算玩家加在别的玩家身上的
-        for cter in self.battle_cter.values_mut() {
-            if cter.user_id == user_id {
-                continue;
+        if let Some(battle_cter) = battle_cter {
+            if !battle_cter.is_died() {
+                //结算玩家自己的状态
+                battle_cter.turn_reset();
             }
+        }
+
+        //结算玩家身上的buff
+        for cter in self.battle_cter.values_mut() {
             let mut delete = Vec::new();
             for buff in cter.buffs.values_mut() {
-                if buff.user_id != user_id {
+                let res = buff.turn_index.is_none();
+                if res || buff.turn_index.unwrap() != turn_index {
+                    continue;
+                }
+                if buff.buff_temp.keep_time == 0 {
                     continue;
                 }
                 buff.sub_keep_times();
@@ -437,7 +443,11 @@ impl BattleData {
         for cell in self.tile_map.map.iter_mut() {
             for buff_index in 0..cell.buffs.len() {
                 let buff = cell.buffs.get_mut(buff_index).unwrap();
-                if buff.user_id != user_id {
+                let res = buff.turn_index.is_none();
+                if res || buff.turn_index.unwrap() != turn_index {
+                    continue;
+                }
+                if buff.buff_temp.keep_time == 0 {
                     continue;
                 }
                 buff.sub_keep_times();
@@ -467,6 +477,8 @@ impl BattleData {
         if index >= MEMBER_MAX as usize {
             self.next_turn_index = 0;
         }
+        //开始回合触发
+        self.turn_start_summary();
 
         let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {

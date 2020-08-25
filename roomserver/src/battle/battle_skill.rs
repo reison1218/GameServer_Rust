@@ -102,9 +102,10 @@ pub unsafe fn change_index(
         return None;
     }
 
-    let map_ptr = battle_data.tile_map.map.borrow_mut() as *mut Vec<Cell>;
-    let source_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
-    let target_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
+    let map_ptr = battle_data.tile_map.map.borrow_mut() as *mut [Cell; 30];
+    let mut source_cell = map_ptr.as_ref().unwrap().get(source_index).unwrap().clone();
+    let mut target_cell = map_ptr.as_ref().unwrap().get(target_index).unwrap().clone();
+
     let source_cell_user = source_cell.user_id;
     let target_cell_user = target_cell.user_id;
 
@@ -115,6 +116,9 @@ pub unsafe fn change_index(
     //替换上面的玩家id
     source_cell.user_id = target_cell_user;
     target_cell.user_id = source_cell_user;
+
+    map_ptr.as_mut().unwrap()[target_index] = source_cell;
+    map_ptr.as_mut().unwrap()[source_index] = target_cell;
 
     //通知客户端
     let mut target_pt = TargetPt::new();
@@ -165,6 +169,8 @@ pub unsafe fn add_buff(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
+    let turn_index = battle_data.next_turn_index;
+
     let cter = battle_data.get_battle_cter_mut(Some(user_id));
     if let Err(e) = cter {
         warn!("{:?}", e);
@@ -180,7 +186,7 @@ pub unsafe fn add_buff(
     let mut target_pt = TargetPt::new();
     match target_type {
         TargetType::PlayerSelf => {
-            cter.add_buff(buff_id);
+            cter.add_buff(buff_id, Some(turn_index));
             target_pt.target_value.push(cter.cell_index as u32);
             target_pt.add_buffs.push(buff_id);
         }
@@ -201,7 +207,7 @@ pub unsafe fn add_buff(
                 return None;
             }
             let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
-            let mut buff = Buff::from(buff_temp);
+            let mut buff = Buff::new(buff_temp, Some(battle_data.next_turn_index));
             buff.user_id = user_id;
             cell.buffs.push(buff);
             target_pt.target_value.push(index as u32);
@@ -239,7 +245,7 @@ pub unsafe fn auto_pair_cell(
         return None;
     }
 
-    let map = &mut battle_data.tile_map.map as *mut Vec<Cell>;
+    let map = &mut battle_data.tile_map.map as *mut [Cell; 30];
 
     //校验目标下标的地图块
     let cell = map.as_mut().unwrap().get_mut(target_index).unwrap();
@@ -319,6 +325,9 @@ pub unsafe fn move_user(
         warn!("{:?}", e);
         return None;
     }
+    let mut target_pt = TargetPt::new();
+    target_pt.target_value.push(target_index as u32);
+    au.targets.push(target_pt);
     let target_cter = battle_data.get_battle_cter_mut_by_cell_index(target_user_index);
     if let Err(e) = target_cter {
         warn!("{:?}", e);
@@ -327,16 +336,13 @@ pub unsafe fn move_user(
     let target_cter = target_cter.unwrap();
     let target_user = target_cter.user_id;
     //处理移动后事件
-    let v = battle_data.handler_cter_move(target_user, target_index);
+    let v = battle_data.handler_cter_move(target_user, target_index, au);
     if let Err(e) = v {
         warn!("{:?}", e);
         return None;
     }
     let v = v.unwrap();
 
-    let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(target_index as u32);
-    au.targets.push(target_pt);
     Some(v)
 }
 

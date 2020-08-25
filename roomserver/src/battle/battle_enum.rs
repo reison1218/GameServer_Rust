@@ -66,15 +66,21 @@ pub mod buff_type {
     ///被攻击时增加能量
     pub static ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
     /// 翻开属性一样的地图块+攻击
-    pub static SAME_CELL_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
+    pub static PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力
     pub static RESET_MAP_ADD_ATTACK_BY_ALIVES: [u32; 1] = [1002];
     /// 翻开地图块干点啥，配对又干点啥
     pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
     /// 无法被移动
     pub static CAN_NOT_MOVED: u32 = 10002;
+    ///锁buff
+    pub static LOCKED: u32 = 321;
     ///配对与自己相同元素时恢复生命
     pub static PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
+
+    ///---------------------------以下为了方便单独定义出来
+    /// 受到相临攻击时候减伤
+    pub static NEAR_SUB_ATTACK_DAMAGE: u32 = 10001;
 }
 
 ///pos操作类型

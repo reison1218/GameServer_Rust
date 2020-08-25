@@ -136,8 +136,8 @@ message S_POS_NOTICE{
 //地图刷新推送
 //cmd = 10040
 message S_MAP_REFRESH_NOTICE{
-    uint32 tile_map_id = 1;//地图配置id
-    repeated uint32 cells = 2;//包含的块
+    uint32 room_status = 1;//房间状态
+    uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
 }
 
