@@ -63,6 +63,7 @@ pub struct BattleCharacter {
     pub is_can_attack: bool,                 //是否可以攻击
     pub items: HashMap<u32, Item>,           //角色身上的道具
     pub open_cell_vec: Vec<usize>,           //最近一次turn翻过的地图块
+    pub is_pair: bool,                       //最近一次翻块是否匹配
     pub last_cell_index: Option<usize>,      //上一次所在地图块位置
     pub hp_max: i32,                         //血上限
     pub add_damage_buffs: HashMap<u32, u32>, //伤害加深buff key:buffid value:叠加次数
@@ -143,7 +144,13 @@ impl BattleCharacter {
     }
 
     ///添加buff
-    pub fn add_buff(&mut self, buff_id: u32, turn_index: Option<usize>) {
+    pub fn add_buff(
+        &mut self,
+        from_user: Option<u32>,
+        from_skill: Option<u32>,
+        buff_id: u32,
+        turn_index: Option<usize>,
+    ) {
         let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
@@ -151,7 +158,7 @@ impl BattleCharacter {
         }
         let buff_temp = buff_temp.unwrap();
 
-        let buff = Buff::new(buff_temp, turn_index);
+        let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
 
         //增伤
         if ADD_ATTACK.contains(&buff_id) {
@@ -236,7 +243,7 @@ impl BattleCharacter {
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.add_buff(buff.id, None);
+            battle_cter.add_buff(Some(battle_cter.user_id), None, buff.id, None);
             battle_cter.passive_buffs.insert(*buff_id, buff);
         });
 
@@ -281,6 +288,8 @@ impl BattleCharacter {
         self.reset_residue_open_times();
         //重制是否可以攻击
         self.is_can_attack = false;
+        //重制匹配状态
+        self.is_pair = false;
         //重制是否翻过地图块
         self.open_cell_vec.clear();
     }

@@ -30,7 +30,7 @@ pub struct TileMap {
 pub struct Cell {
     pub id: u32,                   //块的配置id
     pub index: usize,              //块的下标
-    pub buffs: Vec<Buff>,          //块的效果
+    pub buffs: HashMap<u32, Buff>, //块的效果
     pub is_world: bool,            //是否世界块
     pub element: u8,               //地图块的属性
     pub passive_buffs: Vec<u32>,   //额外玩家对其添加的buff
@@ -42,7 +42,7 @@ pub struct Cell {
 
 impl Cell {
     pub fn check_is_locked(&self) -> bool {
-        for buff in self.buffs.iter() {
+        for buff in self.buffs.values() {
             if buff.id == LOCKED {
                 return true;
             }
@@ -208,6 +208,7 @@ impl TileMap {
         let mut un_pair_count = 0;
         let mut x = 0_isize;
         let mut y = 0_isize;
+        let mut v_v = Vec::new();
         for (cell_id, is_world) in map.iter() {
             if x > 5 {
                 x = 0;
@@ -236,18 +237,20 @@ impl TileMap {
                 un_pair_count += 1;
             }
             if let Some(buffs) = buffs {
-                let mut buff_array = Vec::new();
+                let mut buff_map = HashMap::new();
                 for buff_id in buffs {
                     let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
-                    buff_array.push(buff);
+                    buff_map.insert(buff.id, buff);
                     cell.passive_buffs.push(*buff_id);
                 }
-                cell.buffs = buff_array;
+                cell.buffs = buff_map;
             }
             tmp.map[index] = cell;
+            v_v.push((index, *cell_id));
             index += 1;
         }
+        println!("{:?}", v_v);
         tmp.un_pair_count = un_pair_count;
         Ok(tmp)
     }

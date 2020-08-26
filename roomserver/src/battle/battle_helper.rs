@@ -15,6 +15,74 @@ use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
+    pub unsafe fn remove_buff(
+        &mut self,
+        buff_id: u32,
+        user_id: Option<u32>,
+        cell_index: Option<usize>,
+    ) {
+        if user_id.is_some() {
+            let user_id = user_id.unwrap();
+            let cter = self.battle_cter.get_mut(&user_id);
+            if cter.is_none() {
+                return;
+            }
+            let cter = cter.unwrap() as *mut BattleCharacter;
+            let buff = cter.as_mut().unwrap().buffs.get(&buff_id);
+            if buff.is_none() {
+                return;
+            }
+            let buff = buff.unwrap();
+            cter.as_mut().unwrap().remove_buff(buff_id);
+            if buff.from_user.is_some() {
+                let from_user = buff.from_user.unwrap();
+                let from_cter = self.battle_cter.get_mut(&from_user);
+                if from_cter.is_none() {
+                    return;
+                }
+                let from_cter = from_cter.unwrap();
+                if buff.from_skill.is_none() {
+                    return;
+                }
+                let from_skill = buff.from_skill.unwrap();
+                let skill = from_cter.skills.get_mut(&from_skill);
+                if skill.is_none() {
+                    return;
+                }
+                let skill = skill.unwrap();
+                skill.is_active = false;
+            }
+        } else if cell_index.is_some() {
+            let cell_index = cell_index.unwrap();
+            let cell = self.tile_map.map.get_mut(cell_index);
+            if cell.is_none() {
+                return;
+            }
+            let cell = cell.unwrap();
+            if cell.buffs.contains_key(&buff_id) {
+                let buff = cell.buffs.remove(&buff_id).unwrap();
+                if buff.from_user.is_some() {
+                    let from_user = buff.from_user.unwrap();
+                    let from_cter = self.battle_cter.get_mut(&from_user);
+                    if from_cter.is_none() {
+                        return;
+                    }
+                    let from_cter = from_cter.unwrap();
+                    if buff.from_skill.is_none() {
+                        return;
+                    }
+                    let from_skill = buff.from_skill.unwrap();
+                    let skill = from_cter.skills.get_mut(&from_skill);
+                    if skill.is_none() {
+                        return;
+                    }
+                    let skill = skill.unwrap();
+                    skill.is_active = false;
+                }
+            }
+        }
+    }
+
     ///加血
     pub fn add_hp(
         &mut self,
@@ -148,36 +216,37 @@ impl BattleData {
         let cell_mut = cell_ptr.as_mut().unwrap();
         let mut is_pair = false;
         let cell_id = cell_mut.id;
-        let last_cell_index = battle_cter.last_cell_index;
+        if battle_cter.open_cell_vec.is_empty() || battle_cter.is_pair {
+            return is_pair;
+        }
+        let size = battle_cter.open_cell_vec.len();
+        let last_open_cell_index = *battle_cter.open_cell_vec.get(size - 1).unwrap();
         let mut last_cell_id: Option<u32> = None;
-        if let Some(last_cell_index) = last_cell_index {
-            let res = self.tile_map.map.get_mut(last_cell_index);
-            if let None = res {
-                error!("cell not find!cell_index:{}", last_cell_index);
-                return false;
+        let res = self.tile_map.map.get_mut(last_open_cell_index);
+        if let None = res {
+            error!("cell not find!cell_index:{}", last_open_cell_index);
+            return false;
+        }
+        let last_cell = res.unwrap() as *mut Cell;
+        self.tile_map.map.get_mut(last_open_cell_index);
+        last_cell_id = Some(last_cell.as_ref().unwrap().id);
+        let last_cell = &mut *last_cell;
+        //如果配对了，则修改地图块配对的下标
+        if let Some(id) = last_cell_id {
+            if cell_id == id {
+                cell_mut.pair_index = Some(last_open_cell_index);
+                last_cell.pair_index = Some(index);
+                is_pair = true;
+                battle_cter.is_pair = true;
             }
-            let last_cell = res.unwrap() as *mut Cell;
-            self.tile_map.map.get_mut(last_cell_index);
-            last_cell_id = Some(last_cell.as_ref().unwrap().id);
-            let last_cell = &mut *last_cell;
-            //如果配对了，则修改地图块配对的下标
-            if let Some(id) = last_cell_id {
-                if cell_id == id {
-                    cell_mut.pair_index = Some(last_cell_index);
-                    last_cell.pair_index = Some(index);
-                    is_pair = true;
-                }
-            } else {
-                is_pair = false;
-            }
+        } else {
+            is_pair = false;
         }
         //配对了就封装
-        if is_pair && last_cell_index.is_some() {
+        if is_pair {
             info!(
                 "user:{} open cell pair! last_cell:{},now_cell:{}",
-                battle_cter.user_id,
-                last_cell_index.unwrap(),
-                index
+                battle_cter.user_id, last_open_cell_index, index
             );
         }
         is_pair
@@ -196,7 +265,7 @@ impl BattleData {
         for cell in self.tile_map.map.iter() {
             let mut cbp = CellBuffPt::new();
             cbp.index = cell.index as u32;
-            for buff in cell.buffs.iter() {
+            for buff in cell.buffs.values() {
                 if cell.passive_buffs.contains(&buff.id) {
                     continue;
                 }
@@ -378,19 +447,13 @@ impl BattleData {
         let cell = res.unwrap();
 
         if cell.id < CellType::Valid as u32 {
-            let str = format!(
-                "auto_pair_cell, this is cell can not be choice!index:{}",
-                cell.index
-            );
+            let str = format!("this is cell can not be choice!index:{}", cell.index);
             anyhow::bail!(str)
         }
 
         let cell = res.unwrap();
         if is_check_pair && cell.pair_index.is_some() {
-            let str = format!(
-                "auto_pair_cell, this cell already pair!index:{}",
-                cell.index
-            );
+            let str = format!("this cell already pair!index:{}", cell.index);
             anyhow::bail!(str)
         }
 

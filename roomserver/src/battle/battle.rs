@@ -35,10 +35,10 @@ pub struct BattleData {
     pub next_choice_index: usize,                   //下一个选择的下标
     pub next_turn_index: usize,                     //下个turn的下标
     pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
+    pub reflash_map_turn: Option<usize>,            //刷新地图时的turn下标
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<u32>>,                    //排名  user_id
     pub turn_limit_time: u64,                       //战斗turn时间限制
-    pub is_refreshed: bool,                         //是否刷新
     pub skill_cmd_map: HashMap<
         &'static [u32],
         unsafe fn(
@@ -62,10 +62,10 @@ impl BattleData {
             next_choice_index: 0,
             next_turn_index: 0,
             turn_orders: [0; 4],
+            reflash_map_turn: None,
             battle_cter: HashMap::new(),
             rank_vec: Vec::new(),
             turn_limit_time: 60000, //默认一分钟
-            is_refreshed: false,
             skill_cmd_map: HashMap::new(),
             task_sender,
             sender,

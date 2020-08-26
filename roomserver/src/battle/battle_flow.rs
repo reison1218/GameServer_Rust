@@ -297,9 +297,10 @@ impl BattleData {
     }
 
     ///刷新地图
-    pub fn reset(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
+    pub fn reset_map(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
         let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
         self.tile_map = res;
+        self.reflash_map_turn = Some(self.next_turn_index);
         let cter_size = self.battle_cter.len();
         unsafe {
             //刷新角色状态和触发地图刷新的触发buff
@@ -375,10 +376,11 @@ impl BattleData {
             battle_cter.residue_open_times -= 1;
 
             //玩家技能cd-1
-            battle_cter
-                .skills
-                .values_mut()
-                .for_each(|skill| skill.sub_cd(None));
+            battle_cter.skills.values_mut().for_each(|skill| {
+                if !skill.is_active {
+                    skill.sub_cd(None)
+                }
+            });
             Ok(Some(v))
         }
     }
@@ -401,6 +403,7 @@ impl BattleData {
             error!("{:?}", e);
             return;
         }
+        let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
         let battle_cter = self.battle_cter.get_mut(&user_id);
         if let Some(battle_cter) = battle_cter {
@@ -427,16 +430,21 @@ impl BattleData {
                 }
                 delete.push(buff.id);
             }
-            for buff_id in delete {
-                cter.buffs.remove(&buff_id);
+            unsafe {
+                for buff_id in delete {
+                    battle_data
+                        .as_mut()
+                        .unwrap()
+                        .remove_buff(buff_id, Some(cter.user_id), None);
+                }
             }
         }
 
         let mut delete = HashMap::new();
         //结算该玩家加在地图块上的buff
         for cell in self.tile_map.map.iter_mut() {
-            for buff_index in 0..cell.buffs.len() {
-                let buff = cell.buffs.get_mut(buff_index).unwrap();
+            for buff_id in cell.buffs.clone().keys() {
+                let buff = cell.buffs.get_mut(buff_id).unwrap();
                 let res = buff.turn_index.is_none();
                 if res || buff.turn_index.unwrap() != turn_index {
                     continue;
@@ -451,15 +459,20 @@ impl BattleData {
                 if !delete.contains_key(&cell.index) {
                     delete.insert(cell.index, Vec::new());
                 }
-                delete.get_mut(&cell.index).unwrap().push(buff_index);
+                delete.get_mut(&cell.index).unwrap().push(*buff_id);
             }
         }
 
         //删掉buff
-        for (cell_index, buff_indexs) in delete.iter() {
-            let cell = self.tile_map.map.get_mut(*cell_index).unwrap();
-            for buff_index in buff_indexs {
-                cell.buffs.remove(*buff_index);
+        unsafe {
+            for (cell_index, buff_ids) in delete.iter() {
+                let cell = self.tile_map.map.get_mut(*cell_index).unwrap();
+                for buff_id in buff_ids {
+                    battle_data
+                        .as_mut()
+                        .unwrap()
+                        .remove_buff(*buff_id, None, Some(cell.index));
+                }
             }
         }
     }

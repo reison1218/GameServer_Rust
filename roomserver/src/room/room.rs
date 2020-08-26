@@ -1,5 +1,4 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::BattleCterState;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::member::{Member, MemberState};
@@ -148,12 +147,12 @@ impl Room {
     }
 
     ///处理结算
-    pub unsafe fn handler_summary(&mut self) -> bool {
+    /// 返回是否结算，是否刷新地图
+    pub unsafe fn handler_summary(&mut self) -> (bool, bool) {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
-            return false;
+            return (false, false);
         }
-        let un_open_count =
-            self.battle_data.tile_map.map.len() as i32 - self.battle_data.tile_map.un_pair_count;
+        let un_open_count = self.battle_data.tile_map.un_pair_count;
         let mut need_reflash_map = false;
         let battle_cter = self.battle_data.get_battle_cter_mut(None);
         if un_open_count <= 2 {
@@ -164,6 +163,7 @@ impl Room {
             }
         }
 
+        let mut is_reflash_map = false;
         let (is_summary, allive_count, summary_data) = self.battle_data.handler_summary();
         if is_summary {
             let bytes = summary_data.unwrap().write_to_bytes().unwrap();
@@ -172,10 +172,10 @@ impl Room {
         } else if allive_count >= 2 && need_reflash_map {
             //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
             //校验是否要刷新地图
-            self.battle_data.is_refreshed = true;
             self.refresh_map();
+            is_reflash_map = true;
         }
-        is_summary
+        (is_summary, is_reflash_map)
     }
 
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
@@ -187,19 +187,13 @@ impl Room {
     pub fn start_choice_index(&mut self) {
         //刷新地图
         self.state = RoomState::ChoiceIndex;
-        self.set_next_turn_index(0);
-        //校验下一个是不是为0
-        let next_turn_user = self.get_turn_user(None).unwrap();
-        if next_turn_user == 0 {
-            self.add_next_turn_index();
-        }
         info!(
             "choice_turn finish!turn_order:{:?}",
             self.battle_data.turn_orders
         );
         let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
         //如果不是刷新，则需要把cter转换成battle_cter
-        if !self.battle_data.is_refreshed {
+        if !self.battle_data.reflash_map_turn.is_some() {
             self.cter_2_battle_cter();
         }
         let bytes = sbs.write_to_bytes().unwrap();
@@ -225,7 +219,7 @@ impl Room {
         } else {
             is_world_cell = Some(self.setting.is_world_tile);
         }
-        let res = self.battle_data.reset(is_world_cell);
+        let res = self.battle_data.reset_map(is_world_cell);
         if let Err(e) = res {
             error!("{:?}", e);
             return;
@@ -549,6 +543,12 @@ impl Room {
 
         let is_all_choice = self.check_is_all_choice_turn();
         if is_all_choice {
+            self.set_next_turn_index(0);
+            //校验下一个是不是为0
+            let next_turn_user = self.get_turn_user(None).unwrap();
+            if next_turn_user == 0 {
+                self.add_next_turn_index();
+            }
             self.start_choice_index();
         } else if !is_all_choice && index >= size && need_random {
             self.random_choice_turn();
@@ -1216,7 +1216,9 @@ impl Room {
     ///战斗开始
     pub fn battle_start(&mut self) {
         //判断是否有世界块,有的话，
-        if !self.battle_data.tile_map.world_cell_map.is_empty() && !self.battle_data.is_refreshed {
+        if !self.battle_data.tile_map.world_cell_map.is_empty()
+            && !self.battle_data.reflash_map_turn.is_some()
+        {
             for world_cell_id in self.battle_data.tile_map.world_cell_map.values() {
                 let world_cell_temp = TEMPLATES.get_world_cell_ref().temps.get(world_cell_id);
                 if world_cell_temp.is_none() {
@@ -1226,7 +1228,12 @@ impl Room {
                 let world_cell_temp = world_cell_temp.unwrap();
                 for buff_id in world_cell_temp.buff.iter() {
                     for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.add_buff(*buff_id, Some(self.battle_data.next_turn_index));
+                        battle_cter.add_buff(
+                            None,
+                            None,
+                            *buff_id,
+                            Some(self.battle_data.next_turn_index),
+                        );
                     }
                 }
             }

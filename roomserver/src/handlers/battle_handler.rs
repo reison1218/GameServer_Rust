@@ -135,8 +135,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             unsafe {
                 let rm_ptr = rm as *mut RoomMgr;
                 let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-                let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
-                if !is_summary {
+                let (is_summary, is_reflash_map) = battle_summary(rm_ptr.as_mut().unwrap(), room);
+                if !is_summary && is_reflash_map {
                     room.battle_data.next_turn();
                 }
             }
@@ -147,13 +147,13 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///战斗结算
-pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
-    let is_settle = room.handler_summary();
+pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> (bool, bool) {
+    let (is_summary, is_reflash_map) = room.handler_summary();
     let room_type = room.get_room_type();
     let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     //如果要结算,卸载数据
-    if is_settle {
+    if is_summary {
         let v = room.get_member_vec();
         match room_type {
             RoomType::Match => {
@@ -169,7 +169,7 @@ pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
             rm.player_room.remove(&user_id);
         }
     }
-    is_settle
+    (is_summary, is_reflash_map)
 }
 
 ///处理pos
@@ -405,7 +405,7 @@ fn skip_turn(
 
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
-    if !battle_cter.open_cell_vec.is_empty() {
+    if battle_cter.open_cell_vec.is_empty() {
         warn!("this player not open any cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
@@ -413,11 +413,9 @@ fn skip_turn(
     unsafe {
         let rm_ptr = rmgr as *mut RoomMgr;
         let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
-        if !is_summary {
-            //跳过当前这个人
-            room.battle_data.skip_turn(_au);
-        }
+        battle_summary(rm_ptr.as_mut().unwrap(), room);
+        //跳过当前这个人
+        room.battle_data.skip_turn(_au);
     }
     Ok(None)
 }

@@ -65,7 +65,7 @@ pub mod buff_type {
     pub static DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     ///被攻击时增加能量
     pub static ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
-    /// 翻开属性一样的地图块+攻击
+    /// 匹配属性一样的地图块+攻击
     pub static PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，每有一个存活单位，+攻击力
     pub static RESET_MAP_ADD_ATTACK_BY_ALIVES: [u32; 1] = [1002];

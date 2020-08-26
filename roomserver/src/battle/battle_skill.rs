@@ -17,7 +17,8 @@ use tools::templates::skill_temp::SkillTemp;
 pub struct Skill {
     pub id: u32,
     pub skill_temp: &'static SkillTemp,
-    pub cd_times: i8, //剩余cd,如果是消耗能量则无视这个值
+    pub cd_times: i8,    //剩余cd,如果是消耗能量则无视这个值
+    pub is_active: bool, //是否激活
 }
 impl Skill {
     ///减去技能cd
@@ -53,6 +54,7 @@ impl From<&'static SkillTemp> for Skill {
             id: skill_temp.id,
             cd_times: 0,
             skill_temp: skill_temp,
+            is_active: false,
         }
     }
 }
@@ -177,6 +179,7 @@ pub unsafe fn add_buff(
         return None;
     }
     let cter = cter.unwrap();
+    let cter = cter as *mut BattleCharacter;
     let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
@@ -186,8 +189,15 @@ pub unsafe fn add_buff(
     let mut target_pt = TargetPt::new();
     match target_type {
         TargetType::PlayerSelf => {
-            cter.add_buff(buff_id, Some(turn_index));
-            target_pt.target_value.push(cter.cell_index as u32);
+            cter.as_mut().unwrap().add_buff(
+                Some(user_id),
+                Some(skill_id),
+                buff_id,
+                Some(turn_index),
+            );
+            target_pt
+                .target_value
+                .push(cter.as_mut().unwrap().cell_index as u32);
             target_pt.add_buffs.push(buff_id);
         }
         TargetType::UnPairNullCell => {
@@ -207,13 +217,22 @@ pub unsafe fn add_buff(
                 return None;
             }
             let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id).unwrap();
-            let mut buff = Buff::new(buff_temp, Some(battle_data.next_turn_index));
-            buff.user_id = user_id;
-            cell.buffs.push(buff);
+            let buff = Buff::new(
+                buff_temp,
+                Some(battle_data.next_turn_index),
+                Some(user_id),
+                Some(skill_id),
+            );
+            cell.buffs.insert(buff.id, buff);
             target_pt.target_value.push(index as u32);
             target_pt.add_buffs.push(buff_id);
         }
         _ => {}
+    }
+    //处理技能激活状态
+    let skill = cter.as_mut().unwrap().skills.get_mut(&skill_id);
+    if let Some(skill) = skill {
+        skill.is_active = true;
     }
     au.targets.push(target_pt);
 
