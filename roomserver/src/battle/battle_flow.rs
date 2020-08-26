@@ -1,5 +1,7 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::buff_type::{ADD_ATTACK_AND_AOE, RESET_MAP_ADD_ATTACK_BY_ALIVES};
+use crate::battle::battle_enum::buff_type::{
+    ADD_ATTACK_AND_AOE, LOCKED, RESET_MAP_ADD_ATTACK_BY_ALIVES,
+};
 use crate::battle::battle_enum::TargetType;
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
 use crate::room::character::BattleCharacter;
@@ -19,9 +21,58 @@ use tools::protos::battle::S_SUMMARY_NOTICE;
 use tools::protos::server_protocol::R_G_SUMMARY;
 
 impl BattleData {
-    ///处理结算
+    ///刷新地图
+    pub fn refresh_map(&mut self) -> bool {
+        let allive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.state == BattleCterState::Alive)
+            .count();
+
+        let un_open_count = self.tile_map.un_pair_count;
+        let mut need_reflash_map = false;
+        let battle_cter = self.get_battle_cter_mut(None);
+        if un_open_count <= 2 {
+            need_reflash_map = true;
+        } else if let Ok(battle_cter) = battle_cter {
+            if un_open_count - battle_cter.open_cell_vec.len() as i32 <= 2 {
+                need_reflash_map = true;
+            }
+        }
+        if allive_count >= 2 && need_reflash_map {
+            //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
+            for cell in self.tile_map.map.iter() {
+                let buff = cell.buffs.get(&LOCKED);
+                if buff.is_none() {
+                    continue;
+                }
+                let buff = buff.unwrap();
+                let from_user = buff.from_user;
+                if from_user.is_none() {
+                    continue;
+                }
+                let from_user = from_user.unwrap();
+                let from_skill = buff.from_skill.unwrap();
+                let cter = self.battle_cter.get_mut(&from_user);
+                if cter.is_none() {
+                    continue;
+                }
+                let cter = cter.unwrap();
+                let skill = cter.skills.get_mut(&from_skill);
+                if skill.is_none() {
+                    continue;
+                }
+                let skill = skill.unwrap();
+                skill.is_active = false;
+            }
+            return true;
+        }
+        false
+    }
+
+    ///处理战斗结算，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub unsafe fn handler_summary(&mut self) -> (bool, usize, Option<R_G_SUMMARY>) {
+    pub unsafe fn battle_summary(&mut self) -> Option<R_G_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
@@ -45,7 +96,7 @@ impl BattleData {
 
             let mut index = self.rank_vec.len();
             if index == 0 {
-                return (false, allive_count, None);
+                return None;
             } else {
                 index -= 1;
             }
@@ -119,9 +170,9 @@ impl BattleData {
                     error!("{:?}", e);
                 }
             }
-            return (true, allive_count, Some(rgs));
+            return Some(rgs);
         }
-        return (false, allive_count, None);
+        None
     }
 
     ///使用道具,道具都是一次性的，用完了就删掉
@@ -405,8 +456,8 @@ impl BattleData {
         }
         let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
-        let battle_cter = self.battle_cter.get_mut(&user_id);
-        if let Some(battle_cter) = battle_cter {
+        let battle_cter = self.get_battle_cter_mut(Some(user_id));
+        if let Ok(battle_cter) = battle_cter {
             if !battle_cter.is_died() {
                 //结算玩家自己的状态
                 battle_cter.turn_reset();

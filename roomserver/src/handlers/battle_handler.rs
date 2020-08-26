@@ -135,8 +135,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             unsafe {
                 let rm_ptr = rm as *mut RoomMgr;
                 let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-                let (is_summary, is_reflash_map) = battle_summary(rm_ptr.as_mut().unwrap(), room);
-                if !is_summary && is_reflash_map {
+                let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
+                if !is_summary {
                     room.battle_data.next_turn();
                 }
             }
@@ -146,30 +146,31 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///战斗结算
-pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> (bool, bool) {
-    let (is_summary, is_reflash_map) = room.handler_summary();
+///处理战斗结算
+pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
+    let is_summary = room.battle_summary();
     let room_type = room.get_room_type();
     let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     //如果要结算,卸载数据
-    if is_summary {
-        let v = room.get_member_vec();
-        match room_type {
-            RoomType::Match => {
-                let res = rm.match_rooms.get_match_room_mut(battle_type);
-                res.rm_room(&room_id);
-            }
-            RoomType::Custom => {
-                rm.custom_room.rm_room(&room_id);
-            }
-            _ => {}
-        }
-        for user_id in v {
-            rm.player_room.remove(&user_id);
-        }
+    if !is_summary {
+        return false;
     }
-    (is_summary, is_reflash_map)
+    let v = room.get_member_vec();
+    match room_type {
+        RoomType::Match => {
+            let res = rm.match_rooms.get_match_room_mut(battle_type);
+            res.rm_room(&room_id);
+        }
+        RoomType::Custom => {
+            rm.custom_room.rm_room(&room_id);
+        }
+        _ => {}
+    }
+    for user_id in v {
+        rm.player_room.remove(&user_id);
+    }
+    true
 }
 
 ///处理pos
@@ -413,9 +414,9 @@ fn skip_turn(
     unsafe {
         let rm_ptr = rmgr as *mut RoomMgr;
         let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        battle_summary(rm_ptr.as_mut().unwrap(), room);
         //跳过当前这个人
         room.battle_data.skip_turn(_au);
+        room.refresh_map();
     }
     Ok(None)
 }

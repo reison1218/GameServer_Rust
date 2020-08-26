@@ -23,8 +23,9 @@ impl BattleData {
     ) {
         if user_id.is_some() {
             let user_id = user_id.unwrap();
-            let cter = self.battle_cter.get_mut(&user_id);
-            if cter.is_none() {
+            let cter = self.get_battle_cter_mut(Some(user_id));
+            if let Err(e) = cter {
+                error!("{:?}", e);
                 return;
             }
             let cter = cter.unwrap() as *mut BattleCharacter;
@@ -36,8 +37,8 @@ impl BattleData {
             cter.as_mut().unwrap().remove_buff(buff_id);
             if buff.from_user.is_some() {
                 let from_user = buff.from_user.unwrap();
-                let from_cter = self.battle_cter.get_mut(&from_user);
-                if from_cter.is_none() {
+                let from_cter = self.get_battle_cter_mut(Some(from_user));
+                if from_cter.is_err() {
                     return;
                 }
                 let from_cter = from_cter.unwrap();
@@ -63,8 +64,8 @@ impl BattleData {
                 let buff = cell.buffs.remove(&buff_id).unwrap();
                 if buff.from_user.is_some() {
                     let from_user = buff.from_user.unwrap();
-                    let from_cter = self.battle_cter.get_mut(&from_user);
-                    if from_cter.is_none() {
+                    let from_cter = self.get_battle_cter_mut(Some(from_user));
+                    if from_cter.is_err() {
                         return;
                     }
                     let from_cter = from_cter.unwrap();

@@ -146,36 +146,64 @@ impl Room {
         Ok(room)
     }
 
-    ///处理结算
+    ///处理战斗结算
     /// 返回是否结算，是否刷新地图
-    pub unsafe fn handler_summary(&mut self) -> (bool, bool) {
+    pub unsafe fn battle_summary(&mut self) -> bool {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
-            return (false, false);
+            return false;
         }
-        let un_open_count = self.battle_data.tile_map.un_pair_count;
-        let mut need_reflash_map = false;
-        let battle_cter = self.battle_data.get_battle_cter_mut(None);
-        if un_open_count <= 2 {
-            need_reflash_map = true;
-        } else if let Ok(battle_cter) = battle_cter {
-            if un_open_count - battle_cter.open_cell_vec.len() as i32 <= 2 {
-                need_reflash_map = true;
-            }
-        }
-
-        let mut is_reflash_map = false;
-        let (is_summary, allive_count, summary_data) = self.battle_data.handler_summary();
-        if is_summary {
-            let bytes = summary_data.unwrap().write_to_bytes().unwrap();
+        let is_summary;
+        let summary_proto = self.battle_data.battle_summary();
+        if let Some(summary_proto) = summary_proto {
+            let bytes = summary_proto.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
             self.send_2_game(GameCode::Summary, bytes);
-        } else if allive_count >= 2 && need_reflash_map {
-            //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
-            //校验是否要刷新地图
-            self.refresh_map();
-            is_reflash_map = true;
+            is_summary = true;
+        } else {
+            is_summary = false;
         }
-        (is_summary, is_reflash_map)
+        is_summary
+    }
+
+    ///刷新地图
+    pub fn refresh_map(&mut self) -> bool {
+        let need_refresh = self.battle_data.refresh_map();
+        if !need_refresh {
+            return false;
+        }
+        let is_world_cell;
+        if self.room_type == RoomType::Match {
+            is_world_cell = None;
+        } else {
+            is_world_cell = Some(self.setting.is_world_tile);
+        }
+        let res = self.battle_data.reset_map(is_world_cell);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return false;
+        }
+        let mut smrn = S_MAP_REFRESH_NOTICE::new();
+        smrn.room_status = self.state as u32;
+        smrn.tile_map_id = self.battle_data.tile_map.id;
+        for (world_index, world_id) in self.battle_data.tile_map.world_cell_map.iter() {
+            let mut wcp = WorldCellPt::new();
+            wcp.index = *world_index;
+            wcp.world_cell_id = *world_id;
+            smrn.world_cell.push(wcp);
+        }
+        let bytes = smrn.write_to_bytes().unwrap();
+        for id in self.members.keys() {
+            let res = Packet::build_packet_bytes(
+                ClientCode::MapRefreshNotice as u32,
+                *id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.sender.write(res);
+        }
+        self.start_choice_index();
+        true
     }
 
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
@@ -209,43 +237,6 @@ impl Room {
         }
         //开始执行占位逻辑
         self.build_choice_index_task();
-    }
-
-    ///刷新地图
-    pub fn refresh_map(&mut self) {
-        let is_world_cell;
-        if self.room_type == RoomType::Match {
-            is_world_cell = None;
-        } else {
-            is_world_cell = Some(self.setting.is_world_tile);
-        }
-        let res = self.battle_data.reset_map(is_world_cell);
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return;
-        }
-        let mut smrn = S_MAP_REFRESH_NOTICE::new();
-        smrn.room_status = self.state as u32;
-        smrn.tile_map_id = self.battle_data.tile_map.id;
-        for (world_index, world_id) in self.battle_data.tile_map.world_cell_map.iter() {
-            let mut wcp = WorldCellPt::new();
-            wcp.index = *world_index;
-            wcp.world_cell_id = *world_id;
-            smrn.world_cell.push(wcp);
-        }
-        let bytes = smrn.write_to_bytes().unwrap();
-        for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::MapRefreshNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
-        }
-
-        self.start_choice_index();
     }
 
     pub fn get_member_vec(&self) -> Vec<u32> {
@@ -1028,10 +1019,9 @@ impl Room {
         } else if self.state == RoomState::BattleStarted {
             self.handler_leave_battle_turn(user_id, turn_index);
         }
-
         //处理结算
         unsafe {
-            self.handler_summary();
+            self.battle_summary();
         }
     }
 
@@ -1119,7 +1109,10 @@ impl Room {
             );
             anyhow::bail!(s)
         }
-        let battle_cter = self.battle_data.battle_cter.get_mut(user_id).unwrap();
+        let battle_cter = self
+            .battle_data
+            .get_battle_cter_mut(Some(*user_id))
+            .unwrap();
         battle_cter.target_id = *target_id;
         Ok(())
     }

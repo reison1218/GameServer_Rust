@@ -510,7 +510,7 @@ pub unsafe fn single_skill_damage(
     //替换技能
     if skill.par2 > 0 {
         let user_id = au.from_user;
-        let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+        let cter = battle_data.get_battle_cter_mut(Some(user_id)).unwrap();
         cter.skills.remove(&skill_id);
 
         let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
