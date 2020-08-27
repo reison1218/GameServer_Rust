@@ -31,13 +31,8 @@ impl BattleData {
 
         let un_open_count = self.tile_map.un_pair_count;
         let mut need_reflash_map = false;
-        let battle_cter = self.get_battle_cter_mut(None);
         if un_open_count <= 2 {
             need_reflash_map = true;
-        } else if let Ok(battle_cter) = battle_cter {
-            if un_open_count - battle_cter.open_cell_vec.len() as i32 <= 2 {
-                need_reflash_map = true;
-            }
         }
         if allive_count >= 2 && need_reflash_map {
             //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
@@ -293,7 +288,7 @@ impl BattleData {
 
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.user_id;
-        let target_user_index = target_cter.cell_index;
+        let target_user_index = target_cter.cell_index.unwrap();
         if target_user_id == user_id {
             let str = format!("the attack target can not be Self!user_id:{}", user_id);
             warn!("{:?}", str);

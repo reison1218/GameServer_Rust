@@ -233,15 +233,16 @@ impl RoomModel for CustomRoom {
             slr.write_to_bytes().unwrap(),
         );
         let room_id = room.get_room_id();
-        //如果房间空了，则直接移除房间
-        if room.is_empty() {
-            self.rooms.remove(&room_id);
-        }
         Ok(room_id)
     }
 
     fn rm_room(&mut self, room_id: &u32) {
         self.rooms.remove(room_id);
+        info!(
+            "删除房间，释放内存！room_type:{:?},room_id:{}",
+            self.get_room_type(),
+            room_id
+        );
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
@@ -264,6 +265,13 @@ impl MatchRooms {
             }
         }
         None
+    }
+
+    pub fn rm_room(&mut self, battle_type: u8, room_id: u32) {
+        let match_room = self.match_rooms.get_mut(&battle_type);
+        if let Some(match_room) = match_room {
+            match_room.rm_room(&room_id);
+        }
     }
 
     ///离开房间，离线也好，主动离开也好
@@ -364,7 +372,7 @@ impl RoomModel for MatchRoom {
         }
 
         if need_remove {
-            self.rm_room(&room_id);
+            return Ok(room_id);
         }
 
         let room_cache = self.get_room_cache_mut(&room_id);
@@ -392,6 +400,11 @@ impl RoomModel for MatchRoom {
     fn rm_room(&mut self, room_id: &u32) {
         self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
+        info!(
+            "删除房间，释放内存！room_type:{:?},room_id:{}",
+            self.get_room_type(),
+            room_id
+        );
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {

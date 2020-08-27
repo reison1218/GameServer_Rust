@@ -142,7 +142,6 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             }
         }
     }
-
     Ok(())
 }
 

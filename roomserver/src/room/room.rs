@@ -71,6 +71,7 @@ pub enum RoomState {
     ChoiceTurn = 1,    //选择回合
     ChoiceIndex = 2,   //选择占位
     BattleStarted = 3, //战斗开始
+    BattleOvered = 4,  //战斗结束
 }
 
 ///房间结构体，封装房间必要信息
@@ -158,6 +159,7 @@ impl Room {
             let bytes = summary_proto.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
             self.send_2_game(GameCode::Summary, bytes);
+            self.state = RoomState::BattleOvered;
             is_summary = true;
         } else {
             is_summary = false;
@@ -296,7 +298,17 @@ impl Room {
 
     pub fn add_next_turn_index(&mut self) {
         self.battle_data.add_next_turn_index();
-        if self.battle_data.next_turn_index == 0 && self.state != RoomState::BattleStarted {
+        if self.state == RoomState::BattleStarted {
+            return;
+        }
+        let mut res = true;
+        //判断是否都选完了
+        for battle_cter in self.battle_data.battle_cter.values() {
+            if battle_cter.cell_index.is_none() {
+                res = false;
+            }
+        }
+        if res {
             self.state = RoomState::BattleStarted;
         }
     }
@@ -407,7 +419,7 @@ impl Room {
         );
 
         //更新角色下标和地图块上面的角色id
-        member.cell_index = index as usize;
+        member.cell_index = Some(index as usize);
         let cell = self
             .battle_data
             .tile_map

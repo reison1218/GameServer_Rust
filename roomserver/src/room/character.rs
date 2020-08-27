@@ -52,7 +52,7 @@ pub struct BattleCharacter {
     pub energy: u32,                         //角色能量
     pub max_energy: u32,                     //能量上限
     pub element: u8,                         //角色元素
-    pub cell_index: usize,                   //角色所在位置
+    pub cell_index: Option<usize>,           //角色所在位置
     pub skills: HashMap<u32, Skill>,         //玩家选择的主动技能id
     pub passive_buffs: HashMap<u32, Buff>,   //被动技能id
     pub target_id: u32,                      //玩家目标
@@ -73,8 +73,8 @@ pub struct BattleCharacter {
 
 impl BattleCharacter {
     pub fn move_index(&mut self, index: usize) {
-        self.last_cell_index = Some(self.cell_index);
-        self.cell_index = index;
+        self.last_cell_index = Some(self.cell_index.unwrap());
+        self.cell_index = Some(index);
     }
 
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
@@ -97,7 +97,7 @@ impl BattleCharacter {
     pub fn reset(&mut self) {
         self.is_attacked = false;
         self.is_can_attack = false;
-        self.cell_index = 0_usize;
+        self.cell_index = None;
         self.open_cell_vec.clear();
         self.last_cell_index = None;
     }
@@ -222,7 +222,6 @@ impl BattleCharacter {
             let skill = Skill::from(skill_temp);
             battle_cter.skills.insert(*skill_id, skill);
         }
-        battle_cter.cell_index = 0;
         let cter_temp: Option<&CharacterTemp> =
             TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
         if cter_temp.is_none() {

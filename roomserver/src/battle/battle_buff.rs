@@ -1,8 +1,8 @@
 use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, AWARD_BUFF, AWARD_ITEM, CAN_NOT_MOVED, CHANGE_SKILL,
-    DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR,
-    PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
+    DEFENSE_NEAR_MOVE_SKILL_DAMAGE, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR,
+    OPEN_CELL_AND_PAIR_ADD_ENERGY, PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
 };
 use crate::battle::battle_enum::{ActionType, EffectType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -265,14 +265,16 @@ impl BattleData {
                 last_cell_user.buffs.insert(buff.id, buff.clone());
                 target_pt
                     .target_value
-                    .push(last_cell_user.cell_index as u32);
+                    .push(last_cell_user.cell_index.unwrap() as u32);
                 au.targets.push(target_pt.clone());
             }
         }
         let battle_cter = battle_cters.get_mut(&target_user).unwrap();
         //给自己加
         target_pt.target_value.clear();
-        target_pt.target_value.push(battle_cter.cell_index as u32);
+        target_pt
+            .target_value
+            .push(battle_cter.cell_index.unwrap() as u32);
         au.targets.push(target_pt);
 
         battle_cter.buffs.insert(buff.id, buff);
@@ -303,7 +305,7 @@ impl BattleData {
             if cter.user_id == user_id {
                 continue;
             }
-            let cter_index = cter.cell_index as isize;
+            let cter_index = cter.cell_index.unwrap() as isize;
             for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                 let res = isize_index + *scope_index;
                 if res != cter_index {
@@ -314,7 +316,7 @@ impl BattleData {
                     .for_each(|skill| skill.add_cd(Some(buff_temp.par1 as i8)));
             }
             target_pt.target_value.clear();
-            target_pt.target_value.push(cter.cell_index as u32);
+            target_pt.target_value.push(cter.cell_index.unwrap() as u32);
             au.targets.push(target_pt.clone());
         }
     }
@@ -426,7 +428,9 @@ impl BattleData {
             target_battle.energy = target_battle.max_energy;
         }
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(target_battle.cell_index as u32);
+        target_pt
+            .target_value
+            .push(target_battle.cell_index.unwrap() as u32);
 
         if from_user.is_some() && from_user.unwrap() == target_user {
             let mut tep = TriggerEffectPt::new();
@@ -444,43 +448,75 @@ impl BattleData {
         au.targets.push(target_pt);
     }
 
+    ///匹配打开地图块触发buff
+    ///from_user: buff的来源玩家id
+    ///buffs: Values<u32, Buff>, buff列表
+    ///match_user: u32,匹配的玩家id
+    ///open_user: u32,打开地图块的玩家id
+    ///battle_cters: *mut HashMap<u32, BattleCharacter>,裸指针
+    ///au: &mut ActionUnitPt,proto
+    ///is_pair: bool,是否配对了
     unsafe fn match_open_cell_buff(
         &mut self,
-        buffs: Values<u32, Buff>,
         from_user: Option<u32>,
-        user_id: u32,
+        buffs: Values<u32, Buff>,
+        match_user: u32,
+        open_user: u32,
         battle_cters: *mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
+        let cter = battle_cters.as_mut().unwrap().get_mut(&match_user);
         if let None = cter {
-            error!("battle_cter not find!user_id:{}", user_id);
+            error!("battle_cter not find!user_id:{}", match_user);
             return;
         }
         let cter = cter.unwrap();
-        let last_index = cter.last_cell_index;
+
+        let open_cter = battle_cters.as_mut().unwrap().get_mut(&open_user);
+        if let None = open_cter {
+            error!("battle_cter not find!user_id:{}", open_user);
+            return;
+        }
+        let open_cter = open_cter.unwrap();
+
+        let last_index = open_cter.last_cell_index;
         let cters = battle_cters.as_mut().unwrap();
-        let index = cter.cell_index as u32;
-        let cell = self.tile_map.map.get(cter.cell_index).unwrap();
+        let index = open_cter.cell_index.unwrap() as u32;
+        let cell = self.tile_map.map.get(index as usize).unwrap();
         let cell_element = cell.element;
         for buff in buffs {
-            if is_pair {
-                if cter.user_id == user_id {
-                    let last_index = last_index.unwrap();
-                    let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
-                    let last_cell_user_id = last_cell.user_id;
+            //如果匹配的人和开地图块的人是同一个人
+            if open_user == match_user {
+                let last_index = last_index.unwrap();
+                let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
+                let last_cell_user_id = last_cell.user_id;
+                if is_pair {
                     //获得道具
                     if AWARD_ITEM.contains(&buff.id) {
-                        self.reward_item(from_user, user_id, buff.id, last_cell_user_id, cters, au);
+                        self.reward_item(
+                            from_user,
+                            match_user,
+                            buff.id,
+                            last_cell_user_id,
+                            cters,
+                            au,
+                        );
                     } else if PAIR_CURE.contains(&buff.id) {
-                        self.pair_cure(from_user, user_id, buff.id, last_cell_user_id, cters, au);
+                        self.pair_cure(
+                            from_user,
+                            match_user,
+                            buff.id,
+                            last_cell_user_id,
+                            cters,
+                            au,
+                        );
                     } else if AWARD_BUFF.contains(&buff.id) {
                         //获得一个buff
                         self.award_buff(
                             from_user,
                             None,
-                            user_id,
+                            match_user,
                             buff.id,
                             last_cell_user_id,
                             battle_cters.as_mut().unwrap(),
@@ -488,28 +524,31 @@ impl BattleData {
                         );
                     } else if NEAR_ADD_CD.contains(&buff.id) {
                         //相临的玩家技能cd增加
-                        self.near_add_cd(user_id, index, buff.id, cters, au);
+                        self.near_add_cd(match_user, index, buff.id, cters, au);
                     } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff.id) {
                         //相临都玩家造成技能伤害
-                        self.near_skill_damage(user_id, index, buff.id, cters, au);
+                        self.near_skill_damage(match_user, index, buff.id, cters, au);
                     } else if PAIR_SAME_ELEMENT_CURE.contains(&buff.id) {
                         //处理世界块的逻辑
                         //配对属性一样的地图块+hp
                         //查看配对的cell的属性是否与角色属性匹配
                         self.pair_same_element_cure(
                             from_user,
-                            user_id,
+                            match_user,
                             cell_element,
                             buff.id,
                             cters,
                             au,
                         );
                     }
-                    //翻开地图块加能量，配对加能量
-                    if OPEN_CELL_AND_PAIR.contains(&buff.id) {
-                        self.open_cell_and_pair(from_user, user_id, cter, buff.id, is_pair, au);
-                    }
                 }
+                //翻开地图块加能量，配对加能量
+                if OPEN_CELL_AND_PAIR_ADD_ENERGY.contains(&buff.id) {
+                    self.open_cell_and_pair(from_user, match_user, cter, buff.id, is_pair, au);
+                }
+            }
+
+            if is_pair {
                 //匹配属性一样的地图块+攻击
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
                     //此处触发加攻击不用通知客户端
@@ -527,7 +566,6 @@ impl BattleData {
     unsafe fn trigger_open_cell_buff(
         &mut self,
         cell_index: Option<usize>,
-        from_user: Option<u32>,
         user_id: u32,
         battle_cters: *mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
@@ -538,8 +576,9 @@ impl BattleData {
             //匹配其他玩家身上的
             for cter in cters.values_mut() {
                 self.match_open_cell_buff(
+                    Some(cter.user_id),
                     cter.buffs.values(),
-                    from_user,
+                    cter.user_id,
                     user_id,
                     battle_cters,
                     au,
@@ -554,14 +593,17 @@ impl BattleData {
                 .map
                 .get(cell_index.unwrap())
                 .unwrap();
-            self.match_open_cell_buff(
-                cell.buffs.values(),
-                from_user,
-                user_id,
-                battle_cters,
-                au,
-                is_pair,
-            );
+            for cter in cters.values_mut() {
+                self.match_open_cell_buff(
+                    None,
+                    cell.buffs.values(),
+                    cter.user_id,
+                    user_id,
+                    battle_cters,
+                    au,
+                    is_pair,
+                );
+            }
         }
     }
 
@@ -573,12 +615,12 @@ impl BattleData {
     ) -> anyhow::Result<Option<ActionUnitPt>> {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let index = battle_cter.cell_index;
+        let index = battle_cter.cell_index.unwrap();
 
         //匹配玩家身上的
-        self.trigger_open_cell_buff(None, Some(user_id), user_id, battle_cters, au, is_pair);
+        self.trigger_open_cell_buff(None, user_id, battle_cters, au, is_pair);
         //匹配地图块的
-        self.trigger_open_cell_buff(Some(index), None, user_id, battle_cters, au, is_pair);
+        self.trigger_open_cell_buff(Some(index), user_id, battle_cters, au, is_pair);
         Ok(None)
     }
 
@@ -627,7 +669,7 @@ impl BattleData {
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
         au.action_value.push(cell.id);
-        let last_index = battle_cter.cell_index;
+        let last_index = battle_cter.cell_index.unwrap();
         let mut v = Vec::new();
         let mut is_change_index_both = false;
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
@@ -644,7 +686,7 @@ impl BattleData {
                 )
             }
 
-            target_cter.move_index(battle_cter.cell_index);
+            target_cter.move_index(battle_cter.cell_index.unwrap());
 
             let source_cell = tile_map_ptr
                 .as_mut()
@@ -671,7 +713,7 @@ impl BattleData {
         let index = index as isize;
 
         for other_cter in battle_cters.as_mut().unwrap().values_mut() {
-            let cter_index = other_cter.cell_index as isize;
+            let cter_index = other_cter.cell_index.unwrap() as isize;
 
             //踩到别人到范围
             for buff in other_cter.buffs.values_mut() {

@@ -70,7 +70,7 @@ pub mod buff_type {
     ///当地图重制，每有一个存活单位，+攻击力
     pub static RESET_MAP_ADD_ATTACK_BY_ALIVES: [u32; 1] = [1002];
     /// 翻开地图块干点啥，配对又干点啥
-    pub static OPEN_CELL_AND_PAIR: [u32; 1] = [1004];
+    pub static OPEN_CELL_AND_PAIR_ADD_ENERGY: [u32; 1] = [1004];
     /// 无法被移动
     pub static CAN_NOT_MOVED: u32 = 10002;
     ///锁buff

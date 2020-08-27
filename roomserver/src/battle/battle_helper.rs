@@ -109,7 +109,7 @@ impl BattleData {
 
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i32 {
         let target_user = target_cter.user_id;
-        let target_index = target_cter.cell_index as isize;
+        let target_index = target_cter.cell_index.unwrap() as isize;
         let user_v = self.cal_scope(target_user, target_index, TargetType::None, None, None);
         let res = user_v.contains(&from_user);
         target_cter.calc_reduce_damage(res)
@@ -133,7 +133,9 @@ impl BattleData {
             .as_mut()
             .unwrap()
             .get_battle_cter_mut(Some(target))?;
-        target_pt.target_value.push(target_cter.cell_index as u32);
+        target_pt
+            .target_value
+            .push(target_cter.cell_index.unwrap() as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -207,7 +209,7 @@ impl BattleData {
         }
         let battle_cter = battle_cter.unwrap();
 
-        let index = battle_cter.cell_index;
+        let index = battle_cter.cell_index.unwrap();
         let cell = self.tile_map.map.get_mut(index);
         if let None = cell {
             error!("cell is not find!cell_index:{}", index);
@@ -510,7 +512,9 @@ impl BattleData {
     ) -> anyhow::Result<TargetPt> {
         let target_cter = self.get_battle_cter(Some(target_user))?;
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(target_cter.cell_index as u32);
+        target_pt
+            .target_value
+            .push(target_cter.cell_index.unwrap() as u32);
         if from_user.is_some() && from_user.unwrap() == target_user && buff_id.is_some() {
             let mut tep = TriggerEffectPt::new();
             tep.set_field_type(effect_type.into_u32());

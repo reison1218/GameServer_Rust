@@ -197,7 +197,7 @@ pub unsafe fn add_buff(
             );
             target_pt
                 .target_value
-                .push(cter.as_mut().unwrap().cell_index as u32);
+                .push(cter.as_mut().unwrap().cell_index.unwrap() as u32);
             target_pt.add_buffs.push(buff_id);
         }
         TargetType::UnPairNullCell => {
@@ -375,7 +375,7 @@ pub unsafe fn skill_damage_and_cure(
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_cters = &mut battle_data.battle_cter as *mut HashMap<u32, BattleCharacter>;
     let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-    let cter_index = battle_cter.cell_index;
+    let cter_index = battle_cter.cell_index.unwrap();
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let res = TEMPLATES
         .get_skill_scope_ref()
@@ -468,7 +468,7 @@ pub unsafe fn skill_aoe_damage(
         let cter = battle_data.get_battle_cter_mut(Some(target_user)).unwrap();
         let damage_res;
         //判断是否中心位置
-        if cter.cell_index == center_index as usize && damage_deep > 0 {
+        if cter.cell_index.unwrap() == center_index as usize && damage_deep > 0 {
             damage_res = damage_deep;
         } else {
             damage_res = damage;
@@ -555,7 +555,9 @@ pub unsafe fn sub_cd(
     let battle_cter = battle_cter.unwrap();
 
     let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(battle_cter.cell_index as u32);
+    target_pt
+        .target_value
+        .push(battle_cter.cell_index.unwrap() as u32);
     let mut ep = EffectPt::new();
     ep.effect_type = EffectType::SubSkillCd as u32;
     ep.effect_value = skill_temp.par1;
