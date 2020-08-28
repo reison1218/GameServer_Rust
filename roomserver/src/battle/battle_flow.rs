@@ -1,9 +1,10 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK_AND_AOE, LOCKED, RESET_MAP_ADD_ATTACK_BY_ALIVES,
+    ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK_BY_ALIVES,
 };
 use crate::battle::battle_enum::TargetType;
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
+use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::room::MEMBER_MAX;
@@ -22,7 +23,7 @@ use tools::protos::server_protocol::R_G_SUMMARY;
 
 impl BattleData {
     ///刷新地图
-    pub fn refresh_map(&mut self) -> bool {
+    pub fn check_refresh_map(&mut self) -> bool {
         let allive_count = self
             .battle_cter
             .values()
@@ -35,31 +36,6 @@ impl BattleData {
             need_reflash_map = true;
         }
         if allive_count >= 2 && need_reflash_map {
-            //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
-            for cell in self.tile_map.map.iter() {
-                let buff = cell.buffs.get(&LOCKED);
-                if buff.is_none() {
-                    continue;
-                }
-                let buff = buff.unwrap();
-                let from_user = buff.from_user;
-                if from_user.is_none() {
-                    continue;
-                }
-                let from_user = from_user.unwrap();
-                let from_skill = buff.from_skill.unwrap();
-                let cter = self.battle_cter.get_mut(&from_user);
-                if cter.is_none() {
-                    continue;
-                }
-                let cter = cter.unwrap();
-                let skill = cter.skills.get_mut(&from_skill);
-                if skill.is_none() {
-                    continue;
-                }
-                let skill = skill.unwrap();
-                skill.is_active = false;
-            }
             return true;
         }
         false
@@ -259,6 +235,8 @@ impl BattleData {
                 battle_cter.energy -= skill.skill_temp.consume_value;
             }
         }
+        //使用技能后触发
+        self.after_use_skill_trigger(user_id, skill_id, au);
         au_vec
     }
 
@@ -294,6 +272,11 @@ impl BattleData {
             warn!("{:?}", str);
             return;
         }
+        if target_cter.is_died() {
+            let str = format!("the target is died!user_id:{}", target_cter.user_id);
+            warn!("{:?}", str);
+            return;
+        }
 
         //扣血
         let target_pt = self.deduct_hp(user_id, target_user_id, None, true);
@@ -304,8 +287,9 @@ impl BattleData {
         }
         let mut target_pt = target_pt.unwrap();
         //目标被攻击，触发目标buff
-        self.attacked_trigger_buffs(target_user_id, &mut target_pt);
-
+        if target_pt.effects.get(0).unwrap().effect_value > 0 {
+            self.attacked_buffs_trigger(target_user_id, &mut target_pt);
+        }
         au.targets.push(target_pt);
         //检查aoebuff
         if let Some(buff) = aoe_buff {
@@ -332,7 +316,7 @@ impl BattleData {
                 match target_pt {
                     Ok(mut target_pt) => {
                         //目标被攻击，触发目标buff
-                        self.attacked_trigger_buffs(target_user, &mut target_pt);
+                        self.attacked_buffs_trigger(target_user, &mut target_pt);
                         au.targets.push(target_pt);
                     }
                     Err(e) => error!("{:?}", e),
@@ -344,20 +328,35 @@ impl BattleData {
 
     ///刷新地图
     pub fn reset_map(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
-        let res = TileMap::init(self.battle_cter.len() as u32, is_world_cell)?;
+        //地图刷新前触发buff
+        self.before_map_refresh_buff_trigger();
+        let allive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.state == BattleCterState::Alive)
+            .count();
+        let res = TileMap::init(allive_count as u32, is_world_cell)?;
+
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
-        let cter_size = self.battle_cter.len();
         unsafe {
             //刷新角色状态和触发地图刷新的触发buff
             for cter in self.battle_cter.values_mut() {
+                if cter.is_died() {
+                    continue;
+                }
                 cter.reset();
                 let cter = cter as *mut BattleCharacter;
                 for buff in cter.as_mut().unwrap().buffs.values_mut() {
+                    //根据场上存活玩家数量加攻击力，自己不算
                     if RESET_MAP_ADD_ATTACK_BY_ALIVES.contains(&buff.id) {
-                        for _ in 0..cter_size {
+                        for _ in 0..(allive_count - 1) {
                             cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
                         }
+                    }
+                    //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
+                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
+                        cter.as_mut().unwrap().add_damage_buffs.remove(&buff.id);
                     }
                 }
             }
@@ -405,7 +404,7 @@ impl BattleData {
             is_pair = self.handler_cell_pair(user_id);
 
             //处理翻地图块触发buff
-            let res = self.open_cell_trigger_buff(user_id, au, is_pair);
+            let res = self.open_cell_buff_trigger(user_id, au, is_pair);
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }

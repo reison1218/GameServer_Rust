@@ -127,19 +127,13 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
     }
 
-    //判断当前这个角色死了没,死了就直接下一个
-    let cter = room.battle_data.get_battle_cter(None);
-    if let Ok(cter) = cter {
-        if cter.is_died() {
-            //判断是否进行结算
-            unsafe {
-                let rm_ptr = rm as *mut RoomMgr;
-                let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-                let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
-                if !is_summary {
-                    room.battle_data.next_turn();
-                }
-            }
+    unsafe {
+        let cter = room.battle_data.get_battle_cter(None).unwrap();
+        let current_cter_is_died = cter.is_died();
+        //判断是否进行结算
+        let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
+        if !is_summary && current_cter_is_died {
+            room.battle_data.next_turn();
         }
     }
     Ok(())

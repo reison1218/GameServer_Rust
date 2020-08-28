@@ -39,6 +39,9 @@ pub mod skill_type {
     pub static SKILL_AOE: [u32; 2] = [411, 421];
     ///减技能cd
     pub static RED_SKILL_CD: [u32; 1] = [20003];
+    ///---------------------------以下为了方便单独定义出来
+    ///水炮
+    pub static WATER_TURRET: u32 = 323;
 }
 
 ///buff类型

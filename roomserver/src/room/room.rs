@@ -169,7 +169,7 @@ impl Room {
 
     ///刷新地图
     pub fn refresh_map(&mut self) -> bool {
-        let need_refresh = self.battle_data.refresh_map();
+        let need_refresh = self.battle_data.check_refresh_map();
         if !need_refresh {
             return false;
         }
@@ -304,6 +304,9 @@ impl Room {
         let mut res = true;
         //判断是否都选完了
         for battle_cter in self.battle_data.battle_cter.values() {
+            if battle_cter.is_died() {
+                continue;
+            }
             if battle_cter.cell_index.is_none() {
                 res = false;
             }

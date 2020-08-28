@@ -208,7 +208,6 @@ impl TileMap {
         let mut un_pair_count = 0;
         let mut x = 0_isize;
         let mut y = 0_isize;
-        let mut v_v = Vec::new();
         for (cell_id, is_world) in map.iter() {
             if x > 5 {
                 x = 0;
@@ -247,10 +246,8 @@ impl TileMap {
                 cell.buffs = buff_map;
             }
             tmp.map[index] = cell;
-            v_v.push((index, *cell_id));
             index += 1;
         }
-        println!("{:?}", v_v);
         tmp.un_pair_count = un_pair_count;
         Ok(tmp)
     }

@@ -1,20 +1,78 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::skill_judge_type::HP_LIMIT_GT;
 use crate::battle::battle_enum::{EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
+use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, CellType};
+use crate::room::map_data::{Cell, CellType, TileMap};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::cmd_code::ClientCode;
-use tools::protos::base::{BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
+use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
+    ///处理角色移动之后的事件
+    pub unsafe fn handler_cter_move(
+        &mut self,
+        user_id: u32,
+        index: usize,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<Vec<ActionUnitPt>> {
+        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
+        let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
+        au.action_value.push(cell.id);
+        let last_index = battle_cter.cell_index.unwrap();
+        let mut is_change_index_both = false;
+        let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
+        //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
+        if cell.user_id > 0 {
+            let target_user = cell.user_id;
+            //先判断目标位置的角色是否有不动泰山被动技能
+            self.before_moved_trigger(user_id, target_user)?;
+            let target_cter = self.get_battle_cter_mut(Some(target_user)).unwrap();
+            target_cter.move_index(battle_cter.cell_index.unwrap());
+
+            let source_cell = tile_map_ptr
+                .as_mut()
+                .unwrap()
+                .map
+                .get_mut(last_index)
+                .unwrap();
+            source_cell.user_id = target_cter.user_id;
+            is_change_index_both = true;
+        } else {
+            //重制之前地图块上的玩家id
+            let last_cell = tile_map_ptr
+                .as_mut()
+                .unwrap()
+                .map
+                .get_mut(last_index)
+                .unwrap();
+            last_cell.user_id = 0;
+        }
+        //改变角色位置
+        battle_cter.move_index(index);
+        cell.user_id = battle_cter.user_id;
+
+        let index = index as isize;
+        //移动位置后触发事件
+        let v = self.after_move_trigger(
+            battle_cter,
+            index,
+            is_change_index_both,
+            battle_cters.as_mut().unwrap(),
+        );
+        Ok(v)
+    }
+
     pub unsafe fn remove_buff(
         &mut self,
         buff_id: u32,
@@ -107,6 +165,7 @@ impl BattleData {
         Ok(target_pt)
     }
 
+    ///计算减伤
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i32 {
         let target_user = target_cter.user_id;
         let target_index = target_cter.cell_index.unwrap() as isize;
@@ -587,6 +646,10 @@ impl BattleData {
                         warn!("{:?}", e);
                         continue;
                     }
+                    let cter = cter.unwrap();
+                    if cter.is_died() {
+                        continue;
+                    }
                     v.push(other_user);
                 }
             }
@@ -626,6 +689,10 @@ impl BattleData {
                     let cter = self.get_battle_cter(Some(other_user));
                     if let Err(e) = cter {
                         warn!("{:?}", e);
+                        continue;
+                    }
+                    let cter = cter.unwrap();
+                    if cter.is_died() {
                         continue;
                     }
                     v.push(other_user);
@@ -672,6 +739,9 @@ impl BattleData {
                         }
                         let cter = cter.unwrap();
                         if v.contains(&cter.user_id) {
+                            continue;
+                        }
+                        if cter.is_died() {
                             continue;
                         }
                         v.push(cter.user_id);

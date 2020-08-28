@@ -227,7 +227,7 @@ macro_rules! map{
     };
 }
 
-#[derive(Debug)]
+#[derive(Debug,Default)]
 struct Foo {
     x: i32,
     y:String,
@@ -249,9 +249,8 @@ impl Deref for Foo{
 }
 
 fn main() -> anyhow::Result<()> {
-
-    let a:u8 = HH::AA.into();
-    println!("{}",a);
+    // let a:u8 = HH::AA.into();
+    // println!("{}",a);
     // let words:[u32;5] = [1,2,3,4,5];
     //
     // let id = 2_u32;

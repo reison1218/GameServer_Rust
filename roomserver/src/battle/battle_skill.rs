@@ -1,8 +1,8 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::skill_type::HURT_SELF_ADD_BUFF;
-use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{EffectType, TargetType};
+use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::Cell;
 use crate::TEMPLATES;
@@ -308,7 +308,7 @@ pub unsafe fn auto_pair_cell(
     au.targets.push(target_pt.clone());
 
     //处理配对触发逻辑
-    let res = battle_data.open_cell_trigger_buff(user_id, au, true);
+    let res = battle_data.open_cell_buff_trigger(user_id, au, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -493,11 +493,16 @@ pub unsafe fn single_skill_damage(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    let target_user = *target_array.get(0).unwrap();
-
-    let target_cter = battle_data.get_battle_cter_mut(Some(target_user));
+    let target_index = *target_array.get(0).unwrap();
+    let target_cter = battle_data.get_battle_cter_mut_by_cell_index(target_index as usize);
     if let Err(e) = target_cter {
         warn!("{:?}", e);
+        return None;
+    }
+    let target_cter = target_cter.unwrap();
+    let target_user = target_cter.user_id;
+    if target_cter.is_died() {
+        warn!("this target is died!user_id:{}", target_cter.user_id);
         return None;
     }
     let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
@@ -507,30 +512,6 @@ pub unsafe fn single_skill_damage(
         return None;
     }
     au.targets.push(target_pt.unwrap());
-    //替换技能
-    if skill.par2 > 0 {
-        let user_id = au.from_user;
-        let cter = battle_data.get_battle_cter_mut(Some(user_id)).unwrap();
-        cter.skills.remove(&skill_id);
-
-        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
-        match skill_temp {
-            Ok(st) => {
-                let mut target_pt = TargetPt::new();
-                target_pt.target_value.push(user_id);
-                target_pt.lost_buffs.push(skill_id);
-                let mut ep = EffectPt::new();
-                ep.effect_type = AddSkill as u32;
-                ep.effect_value = st.id;
-                target_pt.effects.push(ep);
-                let skill = Skill::from(st);
-                cter.skills.insert(skill.id, skill);
-            }
-            Err(e) => {
-                error!("{:?}", e);
-            }
-        }
-    }
     None
 }
 
