@@ -9,8 +9,7 @@ use crate::TEMPLATES;
 use std::slice::Iter;
 
 pub fn generate_map(){
-    let tmd = TileMap::init(4,Some(true)).unwrap();
-    println!("{:?}",tmd);
+    TileMap::init(4,Some(false)).unwrap();
 }
 
 ///目标类型枚举

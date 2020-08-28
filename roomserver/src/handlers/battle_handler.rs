@@ -15,6 +15,7 @@ use tools::protos::battle::{C_ACTION, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
 use tools::util::packet::Packet;
 
 ///行动请求
+#[track_caller]
 pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let rm_ptr = rm as *mut RoomMgr;
     let user_id = packet.get_user_id();

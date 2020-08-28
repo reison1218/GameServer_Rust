@@ -59,6 +59,7 @@ impl From<&'static SkillTemp> for Skill {
     }
 }
 
+//todo 换位置有bug
 ///地图块换位置
 pub unsafe fn change_index(
     battle_data: &mut BattleData,
