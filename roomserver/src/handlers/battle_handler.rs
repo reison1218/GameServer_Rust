@@ -349,7 +349,7 @@ fn use_skill(
     let res = check_skill_useable(battle_cter, skill);
     if !res {
         warn!(
-            "skill useable check fail!user_id:{},skill_id:{}",
+            "skill useable check fail!cd or energy is not ready now!user_id:{},skill_id:{}",
             user_id, skill_id
         );
         anyhow::bail!("")

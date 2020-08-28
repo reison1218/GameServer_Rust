@@ -2,6 +2,7 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{BattleType, RoomModel};
+use crate::SCHEDULED_MGR;
 use chrono::Local;
 use log::{error, info, warn};
 use serde_json::Value as JsonValue;
@@ -56,66 +57,35 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                 continue;
             }
             let task = res.unwrap();
+            let delay = task.delay;
             let task_cmd = TaskCmd::from(task.cmd);
             let rm_clone = rm.clone();
             match task_cmd {
                 TaskCmd::MatchRoomStart => {
                     let m = || {
-                        std::thread::sleep(Duration::from_millis(task.delay));
                         match_room_start(rm_clone, task);
                     };
-                    //设置线程名字和堆栈大小
-                    let thread_builder = std::thread::Builder::new()
-                        .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(128 * 1024);
-                    let res = thread_builder.spawn(m);
-                    if res.is_err() {
-                        error!("{:?}", res.err().unwrap());
-                    }
+                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
                 TaskCmd::ChoiceIndex => {
                     let m = || {
-                        std::thread::sleep(Duration::from_millis(task.delay));
                         choice_index(rm_clone, task);
                     };
-                    //设置线程名字和堆栈大小
-                    let thread_builder = std::thread::Builder::new()
-                        .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(128 * 1024);
-                    let res = thread_builder.spawn(m);
-                    if res.is_err() {
-                        error!("{:?}", res.err().unwrap());
-                    }
+                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
                 TaskCmd::ChoiceTurnOrder => {
                     let m = || {
-                        std::thread::sleep(Duration::from_millis(task.delay));
                         choice_turn(rm_clone, task);
                     };
-                    //设置线程名字和堆栈大小
-                    let thread_builder = std::thread::Builder::new()
-                        .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(128 * 1024);
-                    let res = thread_builder.spawn(m);
-                    if res.is_err() {
-                        error!("{:?}", res.err().unwrap());
-                    }
+                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
                 TaskCmd::BattleTurnTime => {
                     let m = || {
-                        std::thread::sleep(Duration::from_millis(task.delay));
                         battle_turn_time(rm_clone, task);
                     };
-                    //设置线程名字和堆栈大小
-                    let thread_builder = std::thread::Builder::new()
-                        .name("TIMER_THREAD_TASK".to_owned())
-                        .stack_size(128 * 1024);
-                    let res = thread_builder.spawn(m);
-                    if res.is_err() {
-                        error!("{:?}", res.err().unwrap());
-                    }
+                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
-            }
+            };
         }
     };
     let timer_thread = std::thread::Builder::new().name("TIMER_THREAD".to_owned());

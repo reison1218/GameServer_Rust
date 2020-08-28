@@ -249,7 +249,25 @@ impl Deref for Foo{
 }
 
 fn main() -> anyhow::Result<()> {
-    map::generate_map();
+    //map::generate_map();
+    let stp = scheduled_thread_pool::ScheduledThreadPool::new(5);
+    let time = std::time::SystemTime::now();
+    for i in 0..20{
+        let m = move||{
+          println!("{}",i);
+        };
+        stp.execute_after(Duration::from_millis(2000),m);
+    }
+    println!("------------------------------");
+    for i in 0..20{
+        let m = move||{
+            std::thread::sleep(Duration::from_millis(2000));
+            println!("{}",i);
+        };
+        std::thread::spawn(m);
+    }
+    std::thread::sleep(Duration::from_millis(99999999));
+
     // let a:u8 = HH::AA.into();
     // println!("{}",a);
     // let words:[u32;5] = [1,2,3,4,5];

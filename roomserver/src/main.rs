@@ -11,6 +11,7 @@ extern crate lazy_static;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
 use crate::task_timer::init_timer;
+use scheduled_thread_pool::ScheduledThreadPool;
 use std::env;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -21,7 +22,7 @@ use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 //初始化全局线程池
 lazy_static! {
 
-    static ref CONF_MAP: Conf = {
+    static ref CONF_MAP : Conf = {
         let path = env::current_dir().unwrap();
         let str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/config/config.conf";
@@ -29,12 +30,18 @@ lazy_static! {
         conf
     };
     ///静态配置文件
-    static ref TEMPLATES: TemplatesMgr = {
+    static ref TEMPLATES : TemplatesMgr = {
         let path = env::current_dir().unwrap();
         let str = path.as_os_str().to_str().unwrap();
         let res = str.to_string()+"/template";
         let conf = init_temps_mgr(res.as_str());
         conf
+    };
+
+    ///定时器任务队列
+    static ref SCHEDULED_MGR : ScheduledThreadPool = {
+        let stp = ScheduledThreadPool::with_name("TASK_TIMER",8);
+        stp
     };
 }
 

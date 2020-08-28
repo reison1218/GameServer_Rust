@@ -1,9 +1,12 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::skill_judge_type::HP_LIMIT_GT;
-use crate::battle::battle_enum::{EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
+use crate::battle::battle_enum::{
+    BattleCterState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID,
+};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::{Cell, CellType, TileMap};
+use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
@@ -17,6 +20,59 @@ use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
 impl BattleData {
+    ///检测地图刷新
+    pub fn check_refresh_map(&mut self) -> bool {
+        let allive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.state == BattleCterState::Alive)
+            .count();
+
+        let un_open_count = self.tile_map.un_pair_count;
+        let mut need_reflash_map = false;
+        if un_open_count <= 2 {
+            need_reflash_map = true;
+        }
+        if allive_count >= 2 && need_reflash_map {
+            return true;
+        }
+        false
+    }
+
+    ///下一个
+    pub fn add_next_turn_index(&mut self) {
+        self.next_turn_index += 1;
+        let index = self.next_turn_index;
+        if index >= MEMBER_MAX as usize {
+            self.next_turn_index = 0;
+        }
+        //开始回合触发
+        self.turn_start_summary();
+
+        let user_id = self.get_turn_user(None);
+        if let Ok(user_id) = user_id {
+            if user_id == 0 {
+                self.add_next_turn_index();
+                return;
+            }
+
+            let cter = self.battle_cter.get(&user_id);
+            match cter {
+                Some(cter) => {
+                    if cter.state == BattleCterState::Die {
+                        self.add_next_turn_index();
+                        return;
+                    }
+                }
+                None => {
+                    warn!("add_next_turn_index cter is none!user_id:{}", user_id);
+                }
+            }
+        } else {
+            warn!("{:?}", user_id.err().unwrap());
+        }
+    }
+
     ///处理角色移动之后的事件
     pub unsafe fn handler_cter_move(
         &mut self,

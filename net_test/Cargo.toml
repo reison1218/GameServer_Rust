@@ -40,5 +40,6 @@ generic-array = "0.14.2"
 crossbeam ="0.7.3"
 piston-ai_behavior = "0.32.0"
 num_enum = "0.5.1"
+scheduled-thread-pool = "0.2.5"
 #crossterm
 tools = { path = "../tools" }

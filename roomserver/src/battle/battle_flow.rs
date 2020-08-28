@@ -7,7 +7,6 @@ use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
-use crate::room::room::MEMBER_MAX;
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
@@ -22,25 +21,6 @@ use tools::protos::battle::S_SUMMARY_NOTICE;
 use tools::protos::server_protocol::R_G_SUMMARY;
 
 impl BattleData {
-    ///刷新地图
-    pub fn check_refresh_map(&mut self) -> bool {
-        let allive_count = self
-            .battle_cter
-            .values()
-            .filter(|x| x.state == BattleCterState::Alive)
-            .count();
-
-        let un_open_count = self.tile_map.un_pair_count;
-        let mut need_reflash_map = false;
-        if un_open_count <= 2 {
-            need_reflash_map = true;
-        }
-        if allive_count >= 2 && need_reflash_map {
-            return true;
-        }
-        false
-    }
-
     ///处理战斗结算，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
     pub unsafe fn battle_summary(&mut self) -> Option<R_G_SUMMARY> {
@@ -519,40 +499,6 @@ impl BattleData {
                         .remove_buff(*buff_id, None, Some(cell.index));
                 }
             }
-        }
-    }
-
-    ///下一个
-    pub fn add_next_turn_index(&mut self) {
-        self.next_turn_index += 1;
-        let index = self.next_turn_index;
-        if index >= MEMBER_MAX as usize {
-            self.next_turn_index = 0;
-        }
-        //开始回合触发
-        self.turn_start_summary();
-
-        let user_id = self.get_turn_user(None);
-        if let Ok(user_id) = user_id {
-            if user_id == 0 {
-                self.add_next_turn_index();
-                return;
-            }
-
-            let cter = self.battle_cter.get(&user_id);
-            match cter {
-                Some(cter) => {
-                    if cter.state == BattleCterState::Die {
-                        self.add_next_turn_index();
-                        return;
-                    }
-                }
-                None => {
-                    warn!("add_next_turn_index cter is none!user_id:{}", user_id);
-                }
-            }
-        } else {
-            warn!("{:?}", user_id.err().unwrap());
         }
     }
 }

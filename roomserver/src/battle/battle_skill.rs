@@ -59,7 +59,6 @@ impl From<&'static SkillTemp> for Skill {
     }
 }
 
-//todo 换位置有bug
 ///地图块换位置
 pub unsafe fn change_index(
     battle_data: &mut BattleData,
@@ -112,9 +111,16 @@ pub unsafe fn change_index(
     let source_cell_user = source_cell.user_id;
     let target_cell_user = target_cell.user_id;
 
+    let (source_cell_2d_x, source_cell_2d_y) = (source_cell.x, source_cell.y);
+    let (target_cell_2d_x, target_cell_2d_y) = (target_cell.x, source_cell.y);
+
     //替换下标
     source_cell.index = target_index;
+    source_cell.x = target_cell_2d_x;
+    source_cell.y = target_cell_2d_y;
     target_cell.index = source_index;
+    target_cell.x = source_cell_2d_x;
+    target_cell.y = source_cell_2d_y;
 
     //替换上面的玩家id
     source_cell.user_id = target_cell_user;
@@ -156,7 +162,6 @@ pub fn show_index(
 
     let cell = battle_data.tile_map.map.get(index).unwrap();
     let cell_id = cell.id;
-    //todo 下发给客户端
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(cell_id);
     target_pt.target_value.push(cell.index as u32);
