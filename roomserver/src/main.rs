@@ -30,12 +30,8 @@ lazy_static! {
         conf
     };
     ///静态配置文件
-    static ref TEMPLATES : TemplatesMgr = {
-        let path = env::current_dir().unwrap();
-        let str = path.as_os_str().to_str().unwrap();
-        let res = str.to_string()+"/template";
-        let conf = init_temps_mgr(res.as_str());
-        conf
+    static ref TEMPLATES: TemplatesMgr = {
+        init_templates_mgr()
     };
 
     ///定时器任务队列
@@ -43,6 +39,14 @@ lazy_static! {
         let stp = ScheduledThreadPool::with_name("TASK_TIMER",8);
         stp
     };
+}
+
+fn init_templates_mgr() -> TemplatesMgr {
+    let path = env::current_dir().unwrap();
+    let str = path.as_os_str().to_str().unwrap();
+    let res = str.to_string() + "/template";
+    let conf = init_temps_mgr(res.as_str());
+    conf
 }
 
 fn main() {
@@ -61,7 +65,10 @@ fn main() {
 }
 
 fn init_temps() {
-    TEMPLATES.execute_init();
+    let time = std::time::SystemTime::now();
+    lazy_static::initialize(&TEMPLATES);
+    let spend_time = time.elapsed().unwrap().as_millis();
+    info!("初始化templates成功!耗时:{}ms", spend_time);
 }
 
 ///初始化tcp服务端
