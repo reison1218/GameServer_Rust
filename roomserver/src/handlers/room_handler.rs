@@ -8,6 +8,10 @@ use tools::protos::room::{
     S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_START,
 };
 
+pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
+    Ok(())
+}
+
 ///创建房间
 pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //解析gameserver过来的protobuf

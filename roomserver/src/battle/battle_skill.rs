@@ -311,7 +311,7 @@ pub unsafe fn auto_pair_cell(
     au.targets.push(target_pt.clone());
     target_pt.target_value.push(pair_cell.id);
     target_pt.target_value.push(pair_cell.index as u32);
-    au.targets.push(target_pt.clone());
+    au.targets.push(target_pt);
 
     //处理配对触发逻辑
     let res = battle_data.open_cell_buff_trigger(user_id, au, true);

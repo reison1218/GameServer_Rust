@@ -111,6 +111,7 @@ impl GameMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
+        self.cmd_map.insert(ReloadTemps as u32, reload_temps);
         self.cmd_map.insert(SyncData as u32, sync);
         self.cmd_map.insert(LineOff as u32, off_line);
         self.cmd_map.insert(ModifyNickName as u32, modify_nick_name);
@@ -119,6 +120,10 @@ impl GameMgr {
         self.cmd_map.insert(SearchRoom as u32, search_room);
         self.cmd_map.insert(Summary as u32, summary);
     }
+}
+
+pub fn reload_temps(_: &mut GameMgr, _: Packet) -> anyhow::Result<()> {
+    Ok(())
 }
 
 ///同步数据

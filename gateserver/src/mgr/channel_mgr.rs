@@ -1,5 +1,6 @@
 use super::*;
 
+use std::borrow::BorrowMut;
 use std::io::Write;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
@@ -182,5 +183,15 @@ impl ChannelMgr {
         for (token, user_id) in res.iter() {
             self.notice_off_line(*user_id, token);
         }
+    }
+
+    ///通知热更静态配置
+    pub fn notice_reload_temps(&mut self) {
+        let mut packet = Packet::new(GameCode::ReloadTemps as u32, 0, 0);
+        packet.set_is_client(false);
+        packet.set_is_broad(false);
+        self.write_to_game(packet.clone());
+        packet.set_cmd(RoomCode::ReloadTemps as u32);
+        self.write_to_room(packet);
     }
 }
