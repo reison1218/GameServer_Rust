@@ -197,18 +197,6 @@ pub enum TargetType {
     CellPlayer = 11,     //地图块上的玩家
 }
 
-impl TargetType {
-    pub fn into_u8(self) -> u8 {
-        let res: u8 = self.into();
-        res
-    }
-
-    pub fn into_u32(self) -> u32 {
-        let res = self.into_u8() as u32;
-        res
-    }
-}
-
 ///元素类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]

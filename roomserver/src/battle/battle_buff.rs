@@ -1,4 +1,4 @@
-use crate::battle::battle::{BattleData, Direction};
+use crate::battle::battle::{BattleData, Direction, Item};
 use crate::battle::battle_enum::buff_type::{
     AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR_ADD_ENERGY,
     PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
@@ -115,18 +115,32 @@ impl BattleData {
         }
         let buff_temp = buff_temp.unwrap();
         let item_id = buff_temp.par1;
+        let item_temp = TEMPLATES.get_item_ref().get_temp(&item_id);
 
+        if let Err(e) = item_temp {
+            error!("{:?}", e);
+            return;
+        }
+        let item_temp = item_temp.unwrap();
+
+        let skill_id = item_temp.trigger_skill;
+        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+        if let Err(e) = skill_temp {
+            error!("{:?}", e);
+            return;
+        }
+        let skill_temp = skill_temp.unwrap();
+
+        let item = Item {
+            id: item_id,
+            skill_temp,
+        };
         let battle_cter = battle_cters.get_mut(&user_id);
         if let None = battle_cter {
             error!("battle_cter is not find!user_id:{}", user_id);
             return;
         }
         let battle_cter = battle_cter.unwrap();
-        let res = battle_cter.add_item(item_id);
-        if let Err(e) = res {
-            warn!("{:?}", e);
-            return;
-        }
         let target_pt = self.build_target_pt(
             from_user,
             user_id,
@@ -143,15 +157,12 @@ impl BattleData {
                 return;
             }
         }
+        battle_cter.items.insert(item_id, item.clone());
+
         //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
-        if buff_temp.target == TargetType::CellPlayer.into_u32() {
+        if buff_temp.target == TargetType::CellPlayer as u32 {
             let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
             if let Some(last_cell_user) = last_cell_user {
-                let res = last_cell_user.add_item(item_id);
-                if let Err(e) = res {
-                    warn!("{:?}", e);
-                    return;
-                }
                 let target_pt = self.build_target_pt(
                     from_user,
                     last_cell_user.user_id,
@@ -159,11 +170,15 @@ impl BattleData {
                     item_id,
                     Some(buff_id),
                 );
-                if let Err(e) = target_pt {
-                    warn!("{:?}", e);
-                    return;
+                match target_pt {
+                    Ok(target_pt) => {
+                        au.targets.push(target_pt);
+                        last_cell_user.items.insert(item_id, item.clone());
+                    }
+                    Err(e) => {
+                        warn!("{:?}", e);
+                    }
                 }
-                au.targets.push(target_pt.unwrap());
             }
         }
     }
@@ -414,6 +429,7 @@ impl BattleData {
         }
         target_battle.energy += energy;
         if target_battle.energy > target_battle.max_energy {
+            energy = 0;
             target_battle.energy = target_battle.max_energy;
         }
         let mut target_pt = TargetPt::new();
@@ -433,6 +449,7 @@ impl BattleData {
             ep.set_effect_value(energy);
             target_pt.effects.push(ep);
         }
+
         au.targets.push(target_pt);
     }
 

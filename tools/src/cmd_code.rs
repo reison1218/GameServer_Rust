@@ -21,8 +21,6 @@ pub enum GameCode{
     SearchRoom = 1008,
     //战斗结算
     Summary = 1009,
-    //热更新静态配置
-    ReloadTemps = 9999,
     //范围最大值
     Max = 10000,
 }
@@ -69,9 +67,6 @@ pub enum RoomCode{
     Action = 20031,
     //架势请求
     Pos = 20032,
-//---------------------------------------战斗结束
-    //热更新静态配置
-    ReloadTemps = 29999,
     //返回最大值
     Max = 30000,
 }
@@ -148,7 +143,6 @@ pub enum ClientCode{
     MapRefreshNotice = 10040,
     //结算推送
     SummaryNotice = 10041,
-    //-------------------------------------战斗结束---------------------------
     //最大命令号
     Max = 20000,
 }

@@ -32,32 +32,6 @@ impl HttpServerHandler for KickPlayerHttpHandler {
     }
 }
 
-pub struct ReloadTempsHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
-}
-
-impl ReloadTempsHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
-        ReloadTempsHandler { gm }
-    }
-}
-
-impl HttpServerHandler for ReloadTempsHandler {
-    fn get_path(&self) -> &str {
-        "reload_temps"
-    }
-
-    fn execute(
-        &mut self,
-        _: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut write = self.gm.write().unwrap();
-        write.notice_reload_temps();
-        let value = json!({ "status":"OK" });
-        Ok(value)
-    }
-}
-
 ///异步通知用户中心
 pub async fn notice_user_center(user_id: u32, _type: &str) {
     let mut login = false;

@@ -66,29 +66,12 @@ pub struct BattleCharacter {
     pub is_pair: bool,                       //最近一次翻块是否匹配
     pub last_cell_index: Option<usize>,      //上一次所在地图块位置
     pub hp_max: i32,                         //血上限
-    pub item_max: u8,                        //道具数量上限
     pub add_damage_buffs: HashMap<u32, u32>, //伤害加深buff key:buffid value:叠加次数
     pub sub_damage_buffs: HashMap<u32, u32>, //减伤buff  key:buffid value:叠加次数
     pub is_attacked: bool,                   //一轮有没有受到攻击伤害
 }
 
 impl BattleCharacter {
-    ///添加道具
-    pub fn add_item(&mut self, item_id: u32) -> anyhow::Result<()> {
-        let item_temp = TEMPLATES.get_item_ref().get_temp(&item_id)?;
-        let skill_id = item_temp.trigger_skill;
-        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id)?;
-        let item = Item {
-            id: item_id,
-            skill_temp,
-        };
-        if self.items.len() as u8 >= self.item_max {
-            anyhow::bail!("this cter's item is full!item_max:{}", self.item_max)
-        }
-        self.items.insert(item.id, item);
-        Ok(())
-    }
-
     pub fn move_index(&mut self, index: usize) {
         self.last_cell_index = Some(self.cell_index.unwrap());
         self.cell_index = Some(index);
@@ -255,7 +238,7 @@ impl BattleCharacter {
         battle_cter.energy = cter_temp.start_energy;
         battle_cter.max_energy = cter_temp.max_energy;
         battle_cter.hp_max = cter_temp.hp as i32;
-        battle_cter.item_max = cter_temp.usable_item_count;
+
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);

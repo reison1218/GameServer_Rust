@@ -286,6 +286,10 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
+            let mut rank_vec_size = self.rank_vec.len();
+            if rank_vec_size != 0 {
+                rank_vec_size -= 1;
+            }
             //判断是否需要排行
             if need_rank {
                 self.rank_vec.push(Vec::new());
@@ -293,10 +297,6 @@ impl BattleData {
             //此处做一个容错处理
             if self.rank_vec.is_empty() {
                 self.rank_vec.push(Vec::new());
-            }
-            let mut rank_vec_size = self.rank_vec.len();
-            if rank_vec_size != 0 {
-                rank_vec_size -= 1;
             }
             let v = self.rank_vec.get_mut(rank_vec_size);
             if v.is_none() {
@@ -339,6 +339,7 @@ impl BattleData {
         }
         let size = battle_cter.open_cell_vec.len();
         let last_open_cell_index = *battle_cter.open_cell_vec.get(size - 1).unwrap();
+        let mut last_cell_id: Option<u32> = None;
         let res = self.tile_map.map.get_mut(last_open_cell_index);
         if let None = res {
             error!("cell not find!cell_index:{}", last_open_cell_index);
@@ -346,7 +347,7 @@ impl BattleData {
         }
         let last_cell = res.unwrap() as *mut Cell;
         self.tile_map.map.get_mut(last_open_cell_index);
-        let last_cell_id: Option<u32> = Some(last_cell.as_ref().unwrap().id);
+        last_cell_id = Some(last_cell.as_ref().unwrap().id);
         let last_cell = &mut *last_cell;
         //如果配对了，则修改地图块配对的下标
         if let Some(id) = last_cell_id {

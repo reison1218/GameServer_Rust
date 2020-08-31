@@ -11,8 +11,7 @@ use tools::thread_pool::MyThreadPool;
 
 use std::sync::{Arc, RwLock};
 
-use crate::mgr::timer_mgr::init_timer;
-use log::info;
+use crate::mgr::timer_mgr;
 use std::env;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
@@ -83,7 +82,7 @@ fn main() {
     init_temps();
 
     //初始化定时器任务管理
-    init_timer(game_mgr.clone());
+    timer_mgr::init(game_mgr.clone());
 
     //初始化http服务端
     init_http_server(game_mgr.clone());
@@ -93,10 +92,7 @@ fn main() {
 }
 
 fn init_temps() {
-    let time = std::time::SystemTime::now();
-    lazy_static::initialize(&TEMPLATES);
-    let spend_time = time.elapsed().unwrap().as_millis();
-    info!("初始化templates成功!耗时:{}ms", spend_time);
+    TEMPLATES.execute_init();
 }
 
 ///初始化http服务端

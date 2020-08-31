@@ -72,9 +72,6 @@ impl BattleData {
             let mut rgs = R_G_SUMMARY::new();
             loop {
                 for members in self.rank_vec.get(index) {
-                    if members.is_empty() {
-                        continue;
-                    }
                     for member_id in members.iter() {
                         let cter = battle_cters.get_mut(member_id);
                         if cter.is_none() {

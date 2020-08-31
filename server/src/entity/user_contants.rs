@@ -1,4 +1,7 @@
 ///玩家本身数据的常量
+//玩家id
+#[warn(dead_code)]
+pub const USER_ID: &str = "user_id";
 //玩家是否在线
 #[warn(dead_code)]
 pub const USER_OL: &str = "ol";
@@ -26,6 +29,9 @@ pub const TOTLA_ONLINE_TIME: &str = "totime";
 //离线时间
 #[warn(dead_code)]
 pub const OFF_TIME: &str = "off_line_time";
+//重置时间
+#[warn(dead_code)]
+pub const RESET_TIME: &str = "rtime";
 //dlc
 #[warn(dead_code)]
 pub const DLC: &str = "dlc";
