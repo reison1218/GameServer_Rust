@@ -174,15 +174,6 @@ impl BattleData {
             let battle_cter = battle_cter_ptr.as_mut().unwrap();
             //战斗角色身上的技能
             let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
-            //校验cd
-            if skill.cd_times > 0 {
-                let str = format!(
-                    "can not use this skill!skill_id:{},cd:{}",
-                    skill_id, skill.cd_times
-                );
-                warn!("{:?}", str);
-                return None;
-            }
 
             let target = skill.skill_temp.target;
             let target_type = TargetType::try_from(target as u8).unwrap();

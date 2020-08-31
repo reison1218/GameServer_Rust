@@ -131,10 +131,21 @@ impl EffectType {
 }
 
 ///技能消耗类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum SkillConsumeType {
     Energy = 1, //能量
+}
+
+impl SkillConsumeType {
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
+        res
+    }
+    pub fn into_u32(self) -> u32 {
+        let res = self.into_u8();
+        res as u32
+    }
 }
 
 ///回合行为类型

@@ -347,11 +347,8 @@ fn use_skill(
     //校验技能可用状态
     let skill = skill.unwrap();
     let res = check_skill_useable(battle_cter, skill);
-    if !res {
-        warn!(
-            "skill useable check fail!cd or energy is not ready now!user_id:{},skill_id:{}",
-            user_id, skill_id
-        );
+    if let Err(e) = res {
+        warn!("{:?}", e);
         anyhow::bail!("")
     }
     //使用技能，走正常逻辑
@@ -434,16 +431,27 @@ fn check_is_user_turn(rm: &Room, user_id: u32) -> bool {
 }
 
 ///校验技能可用状态
-fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> bool {
+fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> anyhow::Result<()> {
     //校验cd
-    if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 && skill.cd_times > 0 {
-        return false;
-    } else if skill.skill_temp.consume_type == SkillConsumeType::Energy as u8
-        && cter.energy < skill.skill_temp.consume_value as u32
+    if skill.skill_temp.consume_type != SkillConsumeType::Energy.into_u8() && skill.cd_times > 0 {
+        anyhow::bail!(
+            "this skill cd is not ready!cter_id:{},skill_id:{},cd:{}",
+            cter.cter_id,
+            skill.id,
+            skill.cd_times
+        )
+    } else if skill.skill_temp.consume_type == SkillConsumeType::Energy.into_u8()
+        && cter.energy < skill.skill_temp.consume_value
     {
-        return false;
+        anyhow::bail!(
+            "this cter's energy is not enough!cter_id:{},skill_id:{},energy:{},cost_energy:{}",
+            cter.cter_id,
+            skill.id,
+            cter.energy,
+            skill.skill_temp.consume_value
+        )
     }
-    true
+    Ok(())
 }
 
 pub trait Find<T: Clone + Debug> {
