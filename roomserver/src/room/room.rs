@@ -491,17 +491,19 @@ impl Room {
             index_v.push(index);
         }
         let mut rand = rand::thread_rng();
+
         //如果是最后一个，直接给所有未选的玩家进行随机
         for member_id in self.members.clone().keys() {
+            let member_id = *member_id;
             //选过了就跳过
-            if self.turn_order_contains(member_id) {
+            if self.turn_order_contains(&member_id) {
                 continue;
             }
             //系统帮忙选
             let remove_index = rand.gen_range(0, index_v.len());
             let index = index_v.get(remove_index).unwrap();
             let turn_order = *index as usize;
-            self.choice_turn(*member_id, turn_order, false);
+            self.choice_turn(member_id, turn_order, false);
             index_v.remove(remove_index);
         }
         self.state = RoomState::ChoiceIndex;

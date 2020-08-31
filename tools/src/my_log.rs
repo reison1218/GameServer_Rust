@@ -28,7 +28,7 @@ pub fn init_log(info_path: &str, error_path: &str) {
     ])
     .unwrap();
     info!(
-        "日志模块初始化完成！耗时{}ms",
+        "日志模块初始化完成！耗时:{}ms",
         log_time.elapsed().unwrap().as_millis()
     );
 }

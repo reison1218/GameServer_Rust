@@ -6,7 +6,7 @@ use std::time::Duration;
 use std::time::SystemTime;
 
 ///初始化定时器任务函数
-pub fn init(gm: Arc<RwLock<GameMgr>>) {
+pub fn init_timer(gm: Arc<RwLock<GameMgr>>) {
     let time = SystemTime::now();
     //每日零点任务
     zero_day(gm.clone());
