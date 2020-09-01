@@ -11,9 +11,9 @@ pub struct CellTemp {
     ///元素
     pub element: u8,
     ///稀有度
-    pub rare:u32,
+    pub rare:u16,
     ///是否角色块
-    pub is_cter:u32,
+    pub is_cter:u8,
 }
 
 impl Template for CellTemp {}
@@ -22,8 +22,8 @@ impl Template for CellTemp {}
 #[derive(Debug, Default, Clone)]
 pub struct CellTempMgr {
     pub temps: HashMap<u32, CellTemp>,//key:id value:celltemp
-    pub rare_map:HashMap<u32,HashSet<u32>>,//key:rare value:type list
-    pub type_vec:HashMap<u32,HashSet<u32>>,//key:type value:id list
+    pub rare_map:HashMap<u16,HashSet<u8>>,//key:rare value:type list
+    pub type_vec:HashMap<u8,HashSet<u32>>,//key:type value:id list
 }
 
 impl CellTempMgr {
@@ -42,7 +42,7 @@ impl CellTempMgr {
             let id = tt.id;
             let rare = tt.rare;
             let is_cter = if tt.is_cter == 1{true}else{false};
-            let element = tt.element as u32;
+            let element = tt.element;
             self.temps.insert(tt.id, tt);
             if !self.rare_map.contains_key(&rare){
                 self.rare_map.insert(rare,HashSet::new());

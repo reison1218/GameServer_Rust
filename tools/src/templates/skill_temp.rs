@@ -5,15 +5,15 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 pub struct SkillTemp {
     pub id: u32,//技能id
     pub skill_judge: u16,//判定条件
-    pub target:u32,//目标类型
+    pub target:u8,//目标类型
     pub par1:u32,   //参数1
     pub par2:u32,//参数2
     pub par3:u32,//参数3
     pub consume_type:u8,//消耗类型
-    pub consume_value:u32,//消耗值
+    pub consume_value:u8,//消耗值
     pub cd:u8,//cd
     pub scope:u32,//范围
-    pub buff:u16,//能够触发的buff
+    pub buff:u32,//能够触发的buff
 }
 
 impl Template for SkillTemp {}

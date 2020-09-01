@@ -208,8 +208,9 @@ impl Room {
         true
     }
 
+    ///回客户端消息
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
-        let bytes = Packet::build_packet_bytes(cmd as u32, 0, bytes, true, false);
+        let bytes = Packet::build_packet_bytes(cmd.into(), 0, bytes, true, false);
         self.get_sender_mut().write(bytes);
     }
 
@@ -226,6 +227,7 @@ impl Room {
         if !self.battle_data.reflash_map_turn.is_some() {
             self.cter_2_battle_cter();
         }
+        //推送开始选下标给客户端
         let bytes = sbs.write_to_bytes().unwrap();
         for id in self.members.keys() {
             let res = Packet::build_packet_bytes(
@@ -307,7 +309,7 @@ impl Room {
             if battle_cter.is_died() {
                 continue;
             }
-            if battle_cter.cell_index.is_none() {
+            if !battle_cter.cell_index_is_choiced() {
                 res = false;
             }
         }
@@ -422,7 +424,7 @@ impl Room {
         );
 
         //更新角色下标和地图块上面的角色id
-        member.cell_index = Some(index as usize);
+        member.set_cell_index(index as usize);
         let cell = self
             .battle_data
             .tile_map
@@ -1176,7 +1178,7 @@ impl Room {
 
     ///生成地图
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
-        let member_count = self.members.len() as u32;
+        let member_count = self.members.len() as u8;
         let is_world_cell;
         if self.room_type == RoomType::Match {
             is_world_cell = None;

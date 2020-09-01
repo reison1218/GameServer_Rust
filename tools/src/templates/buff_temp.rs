@@ -4,9 +4,9 @@ use crate::templates::template::{Template, TemplateMgrTrait};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct BuffTemp {
     pub id: u32,//技能id
-    pub target:u32,//目标类型
+    pub target:u8,//目标类型
     pub keep_time:u8,//持续时间
-    pub trigger_times:u32,//触发次数
+    pub trigger_times:u8,//触发次数
     pub scope:u32,//范围
     pub par1:u32,   //参数1
     pub par2:u32,   //参数2

@@ -1290,6 +1290,7 @@ dependencies = [
  "mio 0.7.0",
  "net2",
  "num_cpus",
+ "num_enum",
  "protobuf",
  "protobuf-codegen",
  "protoc-rust",

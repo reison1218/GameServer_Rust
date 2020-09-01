@@ -203,7 +203,7 @@ pub unsafe fn add_buff(
             );
             target_pt
                 .target_value
-                .push(cter.as_mut().unwrap().cell_index.unwrap() as u32);
+                .push(cter.as_mut().unwrap().get_cell_index() as u32);
             target_pt.add_buffs.push(buff_id);
         }
         TargetType::UnPairNullCell => {
@@ -244,7 +244,7 @@ pub unsafe fn add_buff(
 
     //处理其他的
     if HURT_SELF_ADD_BUFF.contains(&skill_id) {
-        let target_pt = battle_data.deduct_hp(user_id, user_id, Some(skill_temp.par1 as i32), true);
+        let target_pt = battle_data.deduct_hp(user_id, user_id, Some(skill_temp.par1 as i16), true);
         match target_pt {
             Ok(target_pt) => au.targets.push(target_pt),
             Err(e) => error!("{:?}", e),
@@ -284,6 +284,10 @@ pub unsafe fn auto_pair_cell(
     let mut pair_cell: Option<&mut Cell> = None;
     //找到与之匹配的地图块自动配对
     for _cell in map.as_mut().unwrap().iter_mut() {
+        //排除自己
+        if _cell.id == cell.id && _cell.index == cell.index {
+            continue;
+        }
         if _cell.id != cell.id {
             continue;
         }
@@ -309,6 +313,7 @@ pub unsafe fn auto_pair_cell(
     target_pt.target_value.push(cell.id);
     target_pt.target_value.push(target_index as u32);
     au.targets.push(target_pt.clone());
+    target_pt.target_value.clear();
     target_pt.target_value.push(pair_cell.id);
     target_pt.target_value.push(pair_cell.index as u32);
     au.targets.push(target_pt);
@@ -381,7 +386,7 @@ pub unsafe fn skill_damage_and_cure(
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_cters = &mut battle_data.battle_cter as *mut HashMap<u32, BattleCharacter>;
     let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-    let cter_index = battle_cter.cell_index.unwrap();
+    let cter_index = battle_cter.get_cell_index();
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let res = TEMPLATES
         .get_skill_scope_ref()
@@ -402,7 +407,7 @@ pub unsafe fn skill_damage_and_cure(
         let target_pt = battle_data.deduct_hp(
             user_id,
             target_user,
-            Some(skill.skill_temp.par1 as i32),
+            Some(skill.skill_temp.par1 as i16),
             need_rank,
         );
         match target_pt {
@@ -416,7 +421,7 @@ pub unsafe fn skill_damage_and_cure(
     }
 
     //给自己加血
-    let target_pt = battle_data.add_hp(Some(user_id), user_id, add_hp as i32, None);
+    let target_pt = battle_data.add_hp(Some(user_id), user_id, add_hp as i16, None);
     match target_pt {
         Ok(target_pt) => {
             au.targets.push(target_pt);
@@ -438,8 +443,8 @@ pub unsafe fn skill_aoe_damage(
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_cter = battle_data.get_battle_cter(Some(user_id)).unwrap();
     let skill = battle_cter.skills.get(&skill_id).unwrap();
-    let damage = skill.skill_temp.par1 as i32;
-    let damage_deep = skill.skill_temp.par2 as i32;
+    let damage = skill.skill_temp.par1 as i16;
+    let damage_deep = skill.skill_temp.par2 as i16;
     let scope_id = skill.skill_temp.scope;
     let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&scope_id);
     if let Err(e) = scope_temp {
@@ -474,7 +479,7 @@ pub unsafe fn skill_aoe_damage(
         let cter = battle_data.get_battle_cter_mut(Some(target_user)).unwrap();
         let damage_res;
         //判断是否中心位置
-        if cter.cell_index.unwrap() == center_index as usize && damage_deep > 0 {
+        if cter.get_cell_index() == center_index as usize && damage_deep > 0 {
             damage_res = damage_deep;
         } else {
             damage_res = damage;
@@ -512,7 +517,7 @@ pub unsafe fn single_skill_damage(
         return None;
     }
     let skill = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
-    let target_pt = battle_data.deduct_hp(user_id, target_user, Some(skill.par1 as i32), true);
+    let target_pt = battle_data.deduct_hp(user_id, target_user, Some(skill.par1 as i16), true);
     if let Err(e) = target_pt {
         error!("{:?}", e);
         return None;
@@ -544,7 +549,7 @@ pub unsafe fn sub_cd(
     let mut target_pt = TargetPt::new();
     target_pt
         .target_value
-        .push(battle_cter.cell_index.unwrap() as u32);
+        .push(battle_cter.get_cell_index() as u32);
     let mut ep = EffectPt::new();
     ep.effect_type = EffectType::SubSkillCd as u32;
     ep.effect_value = skill_temp.par1;

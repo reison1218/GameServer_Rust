@@ -1,6 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK_BY_ALIVES,
+    ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
 use crate::battle::battle_enum::TargetType;
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
@@ -35,6 +35,9 @@ impl BattleData {
         if allive_count <= 1 {
             let mut member: Option<u32> = None;
             for member_cter in self.battle_cter.values() {
+                if member_cter.is_died() {
+                    continue;
+                }
                 member = Some(member_cter.user_id);
             }
             if let Some(member) = member {
@@ -240,7 +243,7 @@ impl BattleData {
 
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.user_id;
-        let target_user_index = target_cter.cell_index.unwrap();
+        let target_user_index = target_cter.get_cell_index();
         if target_user_id == user_id {
             let str = format!("the attack target can not be Self!user_id:{}", user_id);
             warn!("{:?}", str);
@@ -309,7 +312,7 @@ impl BattleData {
             .values()
             .filter(|x| x.state == BattleCterState::Alive)
             .count();
-        let res = TileMap::init(allive_count as u32, is_world_cell)?;
+        let res = TileMap::init(allive_count as u8, is_world_cell)?;
 
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
@@ -322,11 +325,9 @@ impl BattleData {
                 cter.reset();
                 let cter = cter as *mut BattleCharacter;
                 for buff in cter.as_mut().unwrap().buffs.values_mut() {
-                    //根据场上存活玩家数量加攻击力，自己不算
-                    if RESET_MAP_ADD_ATTACK_BY_ALIVES.contains(&buff.id) {
-                        for _ in 0..(allive_count - 1) {
-                            cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
-                        }
+                    //刷新地图增加攻击力
+                    if RESET_MAP_ADD_ATTACK.contains(&buff.id) {
+                        cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
                     if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {

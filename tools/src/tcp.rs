@@ -144,14 +144,14 @@ pub mod tcp_server {
                         // Accept an connection.
                         let result: std::io::Result<(MioTcpStream, SocketAddr)> = server.accept();
                         // if is error,print it and continue;
-                        if result.is_err() {
-                            error!("{:?}", result.err().unwrap());
+                        if let Err(e) = result{
+                            error!("{:?}", e);
                             continue;
                         }
                         let (mut connection, client_address) = result.unwrap();
                         let res = connection.set_nodelay(true);
-                        if res.is_err(){
-                            error!("{:?}",res.err().unwrap());
+                        if let Err(e) = res{
+                            error!("{:?}",e);
                             continue;
                         }
                         let token = next(&mut unique_token);
@@ -172,8 +172,8 @@ pub mod tcp_server {
                             token,
                             Interest::READABLE.add(Interest::WRITABLE),
                         );
-                        if res.is_err(){
-                            error!("{:?}",res.err().unwrap());
+                        if let Err(e) = res{
+                            error!("{:?}",e);
                             continue;
                         }
                         conn_map.write().unwrap().insert(token.0, connection);
@@ -188,8 +188,8 @@ pub mod tcp_server {
                             match hd {
                                 Some(hd) => {
                                     let res = handle_connection_event(poll.registry(), connection, event, hd);
-                                    if res.is_err(){
-                                        error!("{:?}",res.err().unwrap());
+                                    if let Err(e) = res{
+                                        error!("{:?}",e);
                                         continue;
                                     }
                                     res.unwrap()
@@ -332,7 +332,6 @@ pub mod tcp_server {
                         }
                         close_connect(connection,handler,Some(err));
                         return Ok(true);
-                        //break;
                     }
                     Err(ref err) if interrupted(err) => {
                         warn!("{:?}",err);
@@ -346,7 +345,6 @@ pub mod tcp_server {
                     Err(err) => {
                         warn!("err:{:?}",err);
                         close_connect(connection,handler,Some(&err));
-                        //return Err(err)
                         return Ok(true);
                     },
                 }
@@ -371,8 +369,8 @@ pub mod tcp_server {
             },
         }
         let res = connect.shutdown(Shutdown::Both);
-        if res.is_err(){
-            //error!("shutdown TcpStream has error:{:?}",res.err().unwrap().to_string());
+        if let Err(_) =  res{
+            //error!("shutdown TcpStream has error:{:?}",e);
         }
         handler.on_close();
     }

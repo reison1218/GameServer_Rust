@@ -751,7 +751,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     let mut sccn = S_CHOOSE_CHARACTER_NOTICE::new();
     sccn.user_id = user_id;
     sccn.cter_id = cter_id;
-    sccn.cter_grade = grade;
+    sccn.cter_grade = grade as u32;
     let bytes = sccn.write_to_bytes().unwrap();
     let members = room.members.clone();
     for member_id in members.keys() {
@@ -976,7 +976,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
-    if member.cell_index.is_some() {
+    if member.cell_index_is_choiced() {
         let str = format!("this player is already choice index!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());

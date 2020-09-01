@@ -6,11 +6,11 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CharacterTemp {
     pub id: u32,
-    pub hp: u32,
-    pub attack: u32,
-    pub defence:u32,
-    pub start_energy: u32,
-    pub max_energy: u32,
+    pub hp: i16,
+    pub attack: u8,
+    pub defence:u8,
+    pub start_energy: u8,
+    pub max_energy: u8,
     pub element:u8,
     pub skills: Vec<Group>,
     pub passive_buff: Vec<u32>,

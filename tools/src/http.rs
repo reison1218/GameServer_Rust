@@ -35,7 +35,7 @@ pub async fn http_server(
         let h_c = handler_vec_arc.clone();
         task::spawn(async move {
             if let Err(err) = accept(addr, stream, h_c).await {
-                eprintln!("{}", err);
+                error!("{:?}", err);
             }
         });
     }

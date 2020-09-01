@@ -16,7 +16,7 @@ use tools::templates::character_temp::CharacterTemp;
 pub struct Character {
     pub user_id: u32, //玩家id
     pub cter_id: u32, //角色的配置id
-    pub grade: u32,
+    pub grade: u8,
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
     pub last_use_skills: Vec<u32>, //上次使用的技能
 }
@@ -25,7 +25,7 @@ impl From<CharacterPt> for Character {
     fn from(cter_pt: CharacterPt) -> Self {
         let mut c = Character::default();
         c.cter_id = cter_pt.cter_id;
-        c.grade = cter_pt.grade;
+        c.grade = cter_pt.grade as u8;
         c.skills = cter_pt.skills;
         c.last_use_skills = cter_pt.last_use_skills;
         c
@@ -36,43 +36,64 @@ impl Into<CharacterPt> for Character {
     fn into(self) -> CharacterPt {
         let mut cter_pt = CharacterPt::new();
         cter_pt.set_cter_id(self.cter_id);
-        cter_pt.set_grade(self.grade);
+        cter_pt.set_grade(self.grade as u32);
         cter_pt
     }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
-    pub user_id: u32,                        //玩家id
-    pub cter_id: u32,                        //角色的配置id
-    pub grade: u32,                          //等级
-    pub atk: u32,                            //攻击力
-    pub hp: i32,                             //角色血量
-    pub defence: u32,                        //角色防御
-    pub energy: u32,                         //角色能量
-    pub max_energy: u32,                     //能量上限
-    pub element: u8,                         //角色元素
-    pub cell_index: Option<usize>,           //角色所在位置
-    pub skills: HashMap<u32, Skill>,         //玩家选择的主动技能id
-    pub passive_buffs: HashMap<u32, Buff>,   //被动技能id
-    pub target_id: u32,                      //玩家目标
-    pub buffs: HashMap<u32, Buff>,           //角色身上的buff
-    pub state: BattleCterState,              //角色状态
-    pub residue_open_times: u8,              //剩余翻地图块次数
-    pub turn_times: u32,                     //轮到自己的次数
-    pub is_can_attack: bool,                 //是否可以攻击
-    pub items: HashMap<u32, Item>,           //角色身上的道具
-    pub open_cell_vec: Vec<usize>,           //最近一次turn翻过的地图块
-    pub is_pair: bool,                       //最近一次翻块是否匹配
-    pub last_cell_index: Option<usize>,      //上一次所在地图块位置
-    pub hp_max: i32,                         //血上限
-    pub item_max: u8,                        //道具数量上限
-    pub add_damage_buffs: HashMap<u32, u32>, //伤害加深buff key:buffid value:叠加次数
-    pub sub_damage_buffs: HashMap<u32, u32>, //减伤buff  key:buffid value:叠加次数
-    pub is_attacked: bool,                   //一轮有没有受到攻击伤害
+    pub user_id: u32,                       //玩家id
+    pub cter_id: u32,                       //角色的配置id
+    pub grade: u8,                          //等级
+    pub atk: u8,                            //攻击力
+    pub hp: i16,                            //角色血量
+    pub defence: u8,                        //角色防御
+    pub energy: u8,                         //角色能量
+    pub max_energy: u8,                     //能量上限
+    pub element: u8,                        //角色元素
+    cell_index: Option<usize>,              //角色所在位置
+    pub skills: HashMap<u32, Skill>,        //玩家选择的主动技能id
+    pub passive_buffs: HashMap<u32, Buff>,  //被动技能id
+    pub target_id: u32,                     //玩家目标
+    pub buffs: HashMap<u32, Buff>,          //角色身上的buff
+    pub state: BattleCterState,             //角色状态
+    pub residue_open_times: u8,             //剩余翻地图块次数
+    pub is_can_attack: bool,                //是否可以攻击
+    pub items: HashMap<u32, Item>,          //角色身上的道具
+    pub open_cell_vec: Vec<usize>,          //最近一次turn翻过的地图块
+    pub is_pair: bool,                      //最近一次翻块是否匹配
+    pub last_cell_index: Option<usize>,     //上一次所在地图块位置
+    pub hp_max: i16,                        //血上限
+    pub item_max: u8,                       //道具数量上限
+    pub add_damage_buffs: HashMap<u32, u8>, //伤害加深buff key:buffid value:叠加次数
+    pub sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
+    pub is_attacked: bool,                  //一轮有没有受到攻击伤害
 }
 
 impl BattleCharacter {
+    ///角色地图块下标是否有效
+    pub fn cell_index_is_choiced(&self) -> bool {
+        self.cell_index.is_some()
+    }
+
+    ///设置角色地图块位置
+    pub fn set_cell_index(&mut self, index: usize) {
+        self.cell_index = Some(index);
+    }
+
+    ///获得角色地图块位置
+    pub fn get_cell_index(&self) -> usize {
+        if self.cell_index.is_none() {
+            error!(
+                "this cter's cell_index is None!user_id:{},cter_id:{}",
+                self.user_id, self.cter_id
+            );
+            return 100;
+        }
+        self.cell_index.unwrap()
+    }
+
     ///添加道具
     pub fn add_item(&mut self, item_id: u32) -> anyhow::Result<()> {
         let item_temp = TEMPLATES.get_item_ref().get_temp(&item_id)?;
@@ -120,7 +141,7 @@ impl BattleCharacter {
     }
 
     ///计算攻击力
-    pub fn calc_damage(&self) -> i32 {
+    pub fn calc_damage(&self) -> i16 {
         let mut damage = self.atk;
 
         for (buff_id, times) in self.add_damage_buffs.iter() {
@@ -131,17 +152,17 @@ impl BattleCharacter {
             let buff = buff.unwrap();
             for _ in 0..*times {
                 if buff_id == &1001 {
-                    damage += buff.buff_temp.par2;
+                    damage += buff.buff_temp.par2 as u8;
                 } else {
-                    damage += buff.buff_temp.par1;
+                    damage += buff.buff_temp.par1 as u8;
                 }
             }
         }
-        damage as i32
+        damage as i16
     }
 
     ///计算减伤
-    pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i32 {
+    pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i16 {
         let mut value = self.defence;
 
         for (buff_id, times) in self.sub_damage_buffs.iter() {
@@ -154,10 +175,10 @@ impl BattleCharacter {
                 continue;
             }
             for _ in 0..*times {
-                value += buff.buff_temp.par1;
+                value += buff.buff_temp.par1 as u8;
             }
         }
-        value as i32
+        value as i16
     }
 
     ///添加buff
@@ -248,13 +269,13 @@ impl BattleCharacter {
         }
         let cter_temp = cter_temp.unwrap();
         //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
-        battle_cter.hp = cter_temp.hp as i32;
+        battle_cter.hp = cter_temp.hp;
         battle_cter.atk = cter_temp.attack;
         battle_cter.defence = cter_temp.defence;
         battle_cter.element = cter_temp.element;
         battle_cter.energy = cter_temp.start_energy;
         battle_cter.max_energy = cter_temp.max_energy;
-        battle_cter.hp_max = cter_temp.hp as i32;
+        battle_cter.hp_max = cter_temp.hp;
         battle_cter.item_max = cter_temp.usable_item_count;
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
@@ -329,7 +350,7 @@ impl BattleCharacter {
     }
 
     ///扣血
-    pub fn sub_hp(&mut self, hp: i32) -> bool {
+    pub fn sub_hp(&mut self, hp: i16) -> bool {
         self.hp -= hp;
         if self.hp <= 0 {
             self.hp = 0;
@@ -339,7 +360,7 @@ impl BattleCharacter {
     }
 
     ///加血
-    pub fn add_hp(&mut self, hp: i32) {
+    pub fn add_hp(&mut self, hp: i16) {
         self.hp += hp;
         if self.hp > self.hp_max {
             self.hp = self.hp_max;
@@ -352,8 +373,8 @@ impl BattleCharacter {
         battle_cter_pt.user_id = self.user_id;
         battle_cter_pt.cter_id = self.cter_id;
         battle_cter_pt.hp = self.hp as u32;
-        battle_cter_pt.defence = self.defence;
-        battle_cter_pt.atk = self.atk;
+        battle_cter_pt.defence = self.defence.into();
+        battle_cter_pt.atk = self.atk as u32;
         self.buffs
             .values()
             .for_each(|buff| battle_cter_pt.buffs.push(buff.id));

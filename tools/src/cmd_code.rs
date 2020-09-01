@@ -1,5 +1,9 @@
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
+
 ///游戏服务专用命令号段枚举
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
 pub enum GameCode{
     //最小值
     Min = 1000,
@@ -28,7 +32,8 @@ pub enum GameCode{
 }
 
 ///房间服专属命令号段枚举
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
 pub enum RoomCode{
     //范围最小值
     Min = 20001,
@@ -77,7 +82,8 @@ pub enum RoomCode{
 }
 
 ///客户端专属命令号段枚举
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
 pub enum ClientCode{
     //最小命令号
     Min = 10001,

@@ -98,7 +98,7 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(member_count: u32, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
+    pub fn init(member_count: u8, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
         let tile_map_mgr = TEMPLATES.get_tile_map_ref();
         let res = tile_map_mgr.member_temps.get(&member_count);
         if let None = res {

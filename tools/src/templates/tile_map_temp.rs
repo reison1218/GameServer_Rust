@@ -9,14 +9,14 @@ pub struct TileMapTemp {
     pub cell_rare: Vec<CellRare>,
     pub world_cell: u32,
     pub map_type: u8,
-    pub member_count:u32,
+    pub member_count:u8,
 }
 
 impl Template for TileMapTemp {}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct CellRare {
-    pub rare: u32,
+    pub rare: u16,
     pub count: u32,
 }
 
@@ -24,7 +24,7 @@ pub struct CellRare {
 pub struct TileMapTempMgr {
     pub temps: HashMap<u32, TileMapTemp>,
     ///key:member_count key:is_has_world_cell
-    pub member_temps:HashMap<u32,HashMap<bool,Vec<TileMapTemp>>>,
+    pub member_temps:HashMap<u8,HashMap<bool,Vec<TileMapTemp>>>,
 }
 
 impl TileMapTempMgr {

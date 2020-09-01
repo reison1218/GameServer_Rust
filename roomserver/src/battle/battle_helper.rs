@@ -85,7 +85,7 @@ impl BattleData {
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
         au.action_value.push(cell.id);
-        let last_index = battle_cter.cell_index.unwrap();
+        let last_index = battle_cter.get_cell_index();
         let mut is_change_index_both = false;
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
@@ -94,7 +94,7 @@ impl BattleData {
             //先判断目标位置的角色是否有不动泰山被动技能
             self.before_moved_trigger(user_id, target_user)?;
             let target_cter = self.get_battle_cter_mut(Some(target_user)).unwrap();
-            target_cter.move_index(battle_cter.cell_index.unwrap());
+            target_cter.move_index(battle_cter.get_cell_index());
 
             let source_cell = tile_map_ptr
                 .as_mut()
@@ -203,7 +203,7 @@ impl BattleData {
         &mut self,
         from_user: Option<u32>,
         target: u32,
-        hp: i32,
+        hp: i16,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
         let cter = self.get_battle_cter_mut(Some(target))?;
@@ -222,9 +222,9 @@ impl BattleData {
     }
 
     ///计算减伤
-    pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i32 {
+    pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i16 {
         let target_user = target_cter.user_id;
-        let target_index = target_cter.cell_index.unwrap() as isize;
+        let target_index = target_cter.get_cell_index() as isize;
         let user_v = self.cal_scope(target_user, target_index, TargetType::None, None, None);
         let res = user_v.contains(&from_user);
         target_cter.calc_reduce_damage(res)
@@ -235,7 +235,7 @@ impl BattleData {
         &mut self,
         from: u32,
         target: u32,
-        skill_damege: Option<i32>,
+        skill_damege: Option<i16>,
         need_rank: bool,
     ) -> anyhow::Result<TargetPt> {
         let battle_data_ptr = self as *mut BattleData;
@@ -250,7 +250,7 @@ impl BattleData {
             .get_battle_cter_mut(Some(target))?;
         target_pt
             .target_value
-            .push(target_cter.cell_index.unwrap() as u32);
+            .push(target_cter.get_cell_index() as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -324,7 +324,7 @@ impl BattleData {
         }
         let battle_cter = battle_cter.unwrap();
 
-        let index = battle_cter.cell_index.unwrap();
+        let index = battle_cter.get_cell_index();
         let cell = self.tile_map.map.get_mut(index);
         if let None = cell {
             error!("cell is not find!cell_index:{}", index);
@@ -628,7 +628,7 @@ impl BattleData {
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
-            .push(target_cter.cell_index.unwrap() as u32);
+            .push(target_cter.get_cell_index() as u32);
         if from_user.is_some() && from_user.unwrap() == target_user && buff_id.is_some() {
             let mut tep = TriggerEffectPt::new();
             tep.set_field_type(effect_type.into_u32());
@@ -814,7 +814,7 @@ pub fn check_skill_judge(cter: &BattleCharacter, skill_judge: u32) -> anyhow::Re
         return Ok(());
     }
     let judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&skill_judge)?;
-    if HP_LIMIT_GT.contains(&judge_temp.id) && cter.hp <= judge_temp.par1 as i32 {
+    if HP_LIMIT_GT.contains(&judge_temp.id) && cter.hp <= judge_temp.par1 as i16 {
         anyhow::bail!(
             "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
             judge_temp.par1,

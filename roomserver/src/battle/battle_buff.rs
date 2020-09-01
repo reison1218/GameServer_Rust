@@ -144,7 +144,7 @@ impl BattleData {
             }
         }
         //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
-        if buff_temp.target == TargetType::CellPlayer.into_u32() {
+        if buff_temp.target == TargetType::CellPlayer.into_u8() {
             let last_cell_user = battle_cters.get_mut(&last_cell_user_id);
             if let Some(last_cell_user) = last_cell_user {
                 let res = last_cell_user.add_item(item_id);
@@ -184,11 +184,11 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        if buff_temp.target == TargetType::CellPlayer as u32 {
+        if buff_temp.target == TargetType::CellPlayer.into_u8() {
             let target_pt = self.add_hp(
                 from_user,
                 last_cell_user_id,
-                buff_temp.par1 as i32,
+                buff_temp.par1 as i16,
                 Some(buff_id),
             );
 
@@ -200,7 +200,7 @@ impl BattleData {
             }
         }
         //恢复生命值
-        let target_pt = self.add_hp(from_user, user_id, buff_temp.par1 as i32, Some(buff_id));
+        let target_pt = self.add_hp(from_user, user_id, buff_temp.par1 as i16, Some(buff_id));
         match target_pt {
             Ok(target_pt) => {
                 au.targets.push(target_pt);
@@ -249,7 +249,7 @@ impl BattleData {
                 last_cell_user.buffs.insert(buff.id, buff.clone());
                 target_pt
                     .target_value
-                    .push(last_cell_user.cell_index.unwrap() as u32);
+                    .push(last_cell_user.get_cell_index() as u32);
                 au.targets.push(target_pt.clone());
             }
         }
@@ -258,7 +258,7 @@ impl BattleData {
         target_pt.target_value.clear();
         target_pt
             .target_value
-            .push(battle_cter.cell_index.unwrap() as u32);
+            .push(battle_cter.get_cell_index() as u32);
         au.targets.push(target_pt);
 
         battle_cter.buffs.insert(buff.id, buff);
@@ -292,7 +292,7 @@ impl BattleData {
             if cter.is_died() {
                 continue;
             }
-            let cter_index = cter.cell_index.unwrap() as isize;
+            let cter_index = cter.get_cell_index() as isize;
             for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                 let res = isize_index + *scope_index;
                 if res != cter_index {
@@ -306,7 +306,7 @@ impl BattleData {
                     .for_each(|skill| skill.add_cd(Some(buff_temp.par1 as i8)));
             }
             target_pt.target_value.clear();
-            target_pt.target_value.push(cter.cell_index.unwrap() as u32);
+            target_pt.target_value.push(cter.get_cell_index() as u32);
             au.targets.push(target_pt.clone());
         }
     }
@@ -343,7 +343,7 @@ impl BattleData {
                 let target_pt = self.deduct_hp(
                     user_id,
                     *target_user,
-                    Some(buff_temp.par1 as i32),
+                    Some(buff_temp.par1 as i16),
                     need_rank,
                 );
 
@@ -381,7 +381,7 @@ impl BattleData {
         }
         let buff_temp = buff_temp.unwrap();
         //获得buff
-        let target_pt = self.add_hp(from_user, target_user, buff_temp.par1 as i32, Some(buff_id));
+        let target_pt = self.add_hp(from_user, target_user, buff_temp.par1 as i16, Some(buff_id));
         match target_pt {
             Ok(target_pt) => {
                 au.targets.push(target_pt);
@@ -408,9 +408,9 @@ impl BattleData {
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let mut energy = buff_temp.par1;
+        let mut energy = buff_temp.par1 as u8;
         if is_pair {
-            energy += buff_temp.par2;
+            energy += buff_temp.par2 as u8;
         }
         target_battle.energy += energy;
         if target_battle.energy > target_battle.max_energy {
@@ -419,18 +419,18 @@ impl BattleData {
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
-            .push(target_battle.cell_index.unwrap() as u32);
+            .push(target_battle.get_cell_index() as u32);
 
         if from_user.is_some() && from_user.unwrap() == target_user {
             let mut tep = TriggerEffectPt::new();
             tep.buff_id = buff_id;
             tep.set_field_type(EffectType::AddEnergy.into_u32());
-            tep.set_value(energy);
+            tep.set_value(energy as u32);
             target_pt.passiveEffect.push(tep);
         } else {
             let mut ep = EffectPt::new();
             ep.set_effect_type(EffectType::AddEnergy.into_u32());
-            ep.set_effect_value(energy);
+            ep.set_effect_value(energy as u32);
             target_pt.effects.push(ep);
         }
         au.targets.push(target_pt);
@@ -470,15 +470,24 @@ impl BattleData {
 
         let last_index = open_cter.last_cell_index;
         let cters = battle_cters.as_mut().unwrap();
-        let index = open_cter.cell_index.unwrap() as u32;
+        let index = open_cter.get_cell_index() as u32;
         let cell = self.tile_map.map.get(index as usize).unwrap();
         let cell_element = cell.element;
         for buff in buffs {
             //如果匹配的人和开地图块的人是同一个人
             if open_user == match_user {
-                let last_index = last_index.unwrap();
-                let last_cell = self.tile_map.map.get_mut(last_index).unwrap();
-                let last_cell_user_id = last_cell.user_id;
+                let last_cell_user_id;
+                if let Some(last_index) = last_index {
+                    let last_cell = self.tile_map.map.get_mut(last_index);
+                    if let Some(last_cell) = last_cell {
+                        last_cell_user_id = last_cell.user_id;
+                    } else {
+                        last_cell_user_id = 0;
+                    }
+                } else {
+                    last_cell_user_id = 0;
+                }
+
                 if is_pair {
                     //获得道具
                     if AWARD_ITEM.contains(&buff.id) {

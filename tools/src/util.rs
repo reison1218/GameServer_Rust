@@ -221,8 +221,6 @@ pub mod packet {
             }
         }
 
-
-
         pub fn get_user_id(&self) -> u32 {
             self.packet_des.user_id
         }
@@ -239,6 +237,7 @@ pub mod packet {
             self.packet_des.is_client = is_client;
         }
 
+        ///解析tcp流数据，可能饱含多个数据包，循环解析
         pub fn build_array_from_server(bytes:Vec<u8>)->Result<Vec<Packet>, String>{
             let mut bb = ByteBuf::form_vec(bytes);
             let mut v = Vec::new();

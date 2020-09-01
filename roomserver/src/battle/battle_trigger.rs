@@ -54,7 +54,7 @@ impl TriggerEvent for BattleData {
     ) -> anyhow::Result<Option<ActionUnitPt>> {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let index = battle_cter.cell_index.unwrap();
+        let index = battle_cter.get_cell_index();
 
         //匹配玩家身上的
         self.trigger_open_cell_buff(None, user_id, battle_cters, au, is_pair);
@@ -89,7 +89,7 @@ impl TriggerEvent for BattleData {
             if other_cter.is_died() {
                 continue;
             }
-            let cter_index = other_cter.cell_index.unwrap() as isize;
+            let cter_index = other_cter.get_cell_index() as isize;
 
             //踩到别人到范围
             for buff in other_cter.buffs.values_mut() {
@@ -108,7 +108,7 @@ impl TriggerEvent for BattleData {
                     let target_pt = self.deduct_hp(
                         other_cter.user_id,
                         battle_cter.user_id,
-                        Some(buff.buff_temp.par1 as i32),
+                        Some(buff.buff_temp.par1 as i16),
                         true,
                     );
                     match target_pt {
@@ -188,7 +188,7 @@ impl TriggerEvent for BattleData {
 
             let mut target_pt = TargetPt::new();
             //封装角色位置
-            target_pt.target_value.push(cter.cell_index.unwrap() as u32);
+            target_pt.target_value.push(cter.get_cell_index() as u32);
             //封装丢失技能
             target_pt.lost_buffs.push(skill_id);
             //封装增加的技能
@@ -228,7 +228,7 @@ impl TriggerEvent for BattleData {
                 tep.set_field_type(EffectType::AddEnergy.into_u32());
                 tep.set_buff_id(buff_id);
                 tep.set_value(buff.buff_temp.par1);
-                cter.energy += buff.buff_temp.par1;
+                cter.energy += buff.buff_temp.par1 as u8;
                 if cter.energy > cter.max_energy {
                     cter.energy = cter.max_energy;
                 }
