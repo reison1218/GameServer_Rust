@@ -108,6 +108,9 @@ pub trait Entity: Send + Sync {
     ///更新登陆时间
     fn update_login_time(&mut self);
 
+    ///更新下线时间
+    fn update_off_time(&mut self);
+
     ///每日重制（由time_mgr中的定时器调用）
     fn day_reset(&mut self);
     ///添加版本号

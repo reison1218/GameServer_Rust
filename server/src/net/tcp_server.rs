@@ -120,7 +120,7 @@ fn login(gm: Arc<RwLock<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
     let user_data = user_data.unwrap();
 
     let user = user_data.get_user_info_mut_ref();
-    user.update_login_time();
+    user.update_login();
 
     //返回客户端
     let lr = user2proto(user_data);

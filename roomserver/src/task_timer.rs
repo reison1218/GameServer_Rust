@@ -1,37 +1,30 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{BattleType, RoomModel};
+use crate::room::room_model::{BattleType, RoomModel, RoomType};
 use crate::SCHEDULED_MGR;
 use chrono::Local;
 use log::{error, info, warn};
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
 use std::convert::TryFrom;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u16)]
 pub enum TaskCmd {
-    MatchRoomStart = 101,  //匹配房间开始任务
-    ChoiceIndex = 102,     //选择占位
-    ChoiceTurnOrder = 103, //选择回合顺序
-    BattleTurnTime = 104,  //战斗时间回合限制
+    MatchRoomStart = 101,     //匹配房间开始任务
+    ChoiceIndex = 102,        //选择占位
+    ChoiceTurnOrder = 103,    //选择回合顺序
+    BattleTurnTime = 104,     //战斗时间回合限制
+    MaxBattleTurnTimes = 105, //战斗turn达到最大
 }
 
-impl From<u16> for TaskCmd {
-    fn from(v: u16) -> Self {
-        if v == TaskCmd::MatchRoomStart as u16 {
-            return TaskCmd::MatchRoomStart;
-        }
-        if v == TaskCmd::ChoiceIndex as u16 {
-            return TaskCmd::ChoiceIndex;
-        }
-        if v == TaskCmd::ChoiceTurnOrder as u16 {
-            return TaskCmd::ChoiceTurnOrder;
-        }
-        if v == TaskCmd::BattleTurnTime as u16 {
-            return TaskCmd::BattleTurnTime;
-        }
-        TaskCmd::MatchRoomStart
+impl TaskCmd {
+    pub fn from(value: u16) -> Self {
+        TaskCmd::try_from(value).unwrap()
     }
 }
 
@@ -58,6 +51,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
             }
             let task = res.unwrap();
             let delay = task.delay;
+
             let task_cmd = TaskCmd::from(task.cmd);
             let rm_clone = rm.clone();
             match task_cmd {
@@ -85,6 +79,7 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     };
                     SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
+                TaskCmd::MaxBattleTurnTimes => {}
             };
         }
     };
@@ -352,5 +347,48 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     //如果玩家啥都没做，就T出房间
     if battle_cter.open_cell_vec.is_empty() {
         room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    }
+}
+
+pub fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id");
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap().as_u64();
+    if user_id.is_none() {
+        return;
+    }
+    let user_id = user_id.unwrap() as u32;
+
+    let mut write = rm.write().unwrap();
+
+    let room = write.get_room_mut(&user_id);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    let room_type = room.get_room_type();
+    let battle_type = room.setting.battle_type;
+    let room_id = room.get_room_id();
+    let v = room.get_member_vec();
+    match room_type {
+        RoomType::Match => {
+            let res = write.match_rooms.get_match_room_mut(battle_type);
+            res.rm_room(&room_id);
+        }
+        RoomType::Custom => {
+            write.custom_room.rm_room(&room_id);
+        }
+        _ => {}
+    }
+    for user_id in v {
+        write.player_room.remove(&user_id);
     }
 }

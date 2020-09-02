@@ -29,8 +29,8 @@ pub enum TargetType {
     CellPlayer = 11,     //地图块上的玩家
 }
 
-impl From<u32> for TargetType {
-    fn from(value: u32) -> Self {
+impl From<u8> for TargetType {
+    fn from(value: u8) -> Self {
         match value {
             1 => TargetType::Cell,
             2 => TargetType::AnyPlayer,
@@ -69,6 +69,7 @@ impl Buff {
         let target_type = TargetType::from(self.buff_temp.target);
         target_type
     }
+    
 
     pub(crate) fn sub_trigger_timesed(&mut self) {
         self.trigger_timesed -= 1;
@@ -202,7 +203,7 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(member_count: u32, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
+    pub fn init(member_count: u8, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
         let tile_map_mgr = TEMPLATES.get_tile_map_ref();
         let res = tile_map_mgr.member_temps.get(&member_count);
         if let None = res {

@@ -6,6 +6,7 @@ use tools::tcp::tcp_server;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
+///处理客户端所有请求,每个客户端单独分配一个handler
 pub struct TcpServerHandler {
     pub sender: Option<TcpSender>,
     pub rm: Arc<RwLock<RoomMgr>>,
@@ -27,14 +28,17 @@ impl tools::tcp::Handler for TcpServerHandler {
         }
     }
 
+    ///客户端tcp链接激活事件
     fn on_open(&mut self, sender: TcpSender) {
         self.rm.write().unwrap().set_sender(sender);
     }
 
+    ///客户端tcp链接关闭事件
     fn on_close(&mut self) {
         info!("与tcp客户端断开连接");
     }
 
+    ///客户端读取事件
     fn on_message(&mut self, mess: Vec<u8>) {
         let packet_array = Packet::build_array_from_server(mess);
 
@@ -56,6 +60,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
+///处理客户端消息
 async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
     let mut write = rm.write().unwrap();
     write.invok(packet);

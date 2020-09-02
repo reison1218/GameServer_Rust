@@ -248,10 +248,15 @@ impl Deref for Foo{
     }
 }
 
+#[derive(Default)]
+struct BaseFoo{
+    foo:Foo
+}
+
+
+
 fn main() -> anyhow::Result<()> {
     //map::generate_map();
-
-
     // let a:u8 = HH::AA.into();
     // println!("{}",a);
     // let words:[u32;5] = [1,2,3,4,5];

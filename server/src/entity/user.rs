@@ -16,6 +16,18 @@ pub struct UserData {
 
 ///为userdata结构体实现一些基础函数
 impl UserData {
+    pub fn update_login(&mut self) {
+        self.user_info.update_login();
+        self.add_version();
+        self.update();
+    }
+
+    pub fn update_off(&mut self) {
+        self.user_info.update_off();
+        self.add_version();
+        self.update();
+    }
+
     ///构造函数，创建一个新的userdata结构体
     pub fn new(user_info: User, character: Characters) -> UserData {
         UserData {

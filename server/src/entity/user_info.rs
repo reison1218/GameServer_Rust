@@ -44,6 +44,14 @@ impl Entity for User {
         self.add_version();
     }
 
+    fn update_off_time(&mut self) {
+        let map = self.get_mut_json_value();
+        let time = Local::now();
+        let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
+        map.unwrap().insert("last_off_time".to_owned(), jv);
+        self.add_version();
+    }
+
     fn day_reset(&mut self) {}
     fn add_version(&mut self) {
         self.version += 1;
@@ -99,6 +107,38 @@ impl Dao for User {
 }
 
 impl User {
+    ///增加在线时间
+    pub fn add_online_time(&mut self) {
+        let login_time = self.get_time("last_login_time");
+        let res = login_time.unwrap().timestamp() - Local::now().timestamp();
+        let res = (res / 1000) as usize;
+        let total_time = self.get_usize(TOTLA_ONLINE_TIME);
+        let tmp;
+        match total_time {
+            Some(total_time) => {
+                tmp = total_time + res;
+            }
+            None => {
+                tmp = res;
+            }
+        }
+        self.set_usize(TOTLA_ONLINE_TIME.to_string(), tmp);
+        self.add_version();
+    }
+
+    pub fn update_login(&mut self) {
+        self.update_login_time();
+        self.set_usize(USER_OL.to_string(), 1);
+        self.add_version();
+    }
+
+    pub fn update_off(&mut self) {
+        self.update_off_time();
+        self.set_usize(USER_OL.to_string(), 0);
+        self.add_online_time();
+        self.add_version();
+    }
+
     pub fn set_last_character(&mut self, cter_id: u32) {
         let map = self.get_mut_json_value().unwrap();
         map.insert(LAST_CHARACTER.to_owned(), serde_json::Value::from(cter_id));

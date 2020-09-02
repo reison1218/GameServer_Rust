@@ -3,13 +3,15 @@ use crate::battle::battle_enum::skill_type::{
     SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE,
 };
 
+use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
     add_buff, auto_pair_cell, change_index, move_user, show_index, single_skill_damage,
     skill_aoe_damage, skill_damage_and_cure, sub_cd,
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
-use crate::task_timer::Task;
+use crate::task_timer::{Task, TaskCmd};
+use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::ActionUnitPt;
@@ -49,11 +51,34 @@ pub struct BattleData {
             au: &mut ActionUnitPt,
         ) -> Option<Vec<ActionUnitPt>>,
     >, //技能函数指针map
+    pub total_turn_times: u16,                      //总的turn次数
     pub task_sender: crossbeam::Sender<Task>,       //任务sender
     pub sender: TcpSender,                          //sender
 }
 
 impl BattleData {
+    ///添加总turn的次数
+    pub fn add_total_turn_times(&mut self) {
+        self.total_turn_times += 1;
+        if self.total_turn_times < LIMIT_TOTAL_TURN_TIMES {
+            return;
+        }
+        let mut task = Task::default();
+        task.cmd = TaskCmd::MaxBattleTurnTimes.into();
+        let mut map = serde_json::Map::new();
+        let mut user_id = 0;
+        for cter in self.battle_cter.values() {
+            user_id = cter.user_id;
+            break;
+        }
+        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
+        task.data = serde_json::Value::from(map);
+        let res = self.task_sender.send(task);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
+    }
+
     ///初始化战斗数据
     pub fn new(task_sender: crossbeam::Sender<Task>, sender: TcpSender) -> Self {
         let mut bd = BattleData {
@@ -67,6 +92,7 @@ impl BattleData {
             rank_vec: Vec::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),
+            total_turn_times: 0,
             task_sender,
             sender,
         };

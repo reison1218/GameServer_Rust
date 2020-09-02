@@ -4,6 +4,9 @@ use num_enum::TryFromPrimitive;
 ///默认每个turn翻地图块次数
 pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
+///最大turn次数限制
+pub static LIMIT_TOTAL_TURN_TIMES: u16 = 999;
+
 ///触发范围一圈不包括中心
 pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 ///触发范围一圈不包括中心

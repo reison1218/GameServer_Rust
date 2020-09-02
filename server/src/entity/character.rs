@@ -282,6 +282,10 @@ impl Entity for Character {
         unimplemented!()
     }
 
+    fn update_off_time(&mut self) {
+        unimplemented!()
+    }
+
     fn day_reset(&mut self) {
         unimplemented!()
     }

@@ -176,7 +176,7 @@ fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let user = gm.users.remove(&user_id);
     if let Some(mut user_data) = user {
-        user_data.update();
+        user_data.update_off();
         info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
     }
     Ok(())

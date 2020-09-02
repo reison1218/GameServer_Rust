@@ -42,6 +42,7 @@ impl BattleData {
     ///下一个
     pub fn add_next_turn_index(&mut self) {
         self.next_turn_index += 1;
+        self.add_total_turn_times();
         let index = self.next_turn_index;
         if index >= MEMBER_MAX as usize {
             self.next_turn_index = 0;
