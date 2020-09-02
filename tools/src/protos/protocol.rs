@@ -643,7 +643,7 @@ impl ::protobuf::reflect::ProtobufValue for S_USER_LOGIN {
 #[derive(PartialEq,Clone,Default)]
 pub struct HEART_BEAT {
     // message fields
-    pub sys_time: u32,
+    pub sys_time: u64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -660,10 +660,10 @@ impl HEART_BEAT {
         ::std::default::Default::default()
     }
 
-    // uint32 sys_time = 1;
+    // uint64 sys_time = 1;
 
 
-    pub fn get_sys_time(&self) -> u32 {
+    pub fn get_sys_time(&self) -> u64 {
         self.sys_time
     }
     pub fn clear_sys_time(&mut self) {
@@ -671,7 +671,7 @@ impl HEART_BEAT {
     }
 
     // Param is passed by value, moved
-    pub fn set_sys_time(&mut self, v: u32) {
+    pub fn set_sys_time(&mut self, v: u64) {
         self.sys_time = v;
     }
 }
@@ -689,7 +689,7 @@ impl ::protobuf::Message for HEART_BEAT {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_uint64()?;
                     self.sys_time = tmp;
                 },
                 _ => {
@@ -714,7 +714,7 @@ impl ::protobuf::Message for HEART_BEAT {
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
         if self.sys_time != 0 {
-            os.write_uint32(1, self.sys_time)?;
+            os.write_uint64(1, self.sys_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -755,7 +755,7 @@ impl ::protobuf::Message for HEART_BEAT {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                     "sys_time",
                     |m: &HEART_BEAT| { &m.sys_time },
                     |m: &mut HEART_BEAT| { &mut m.sys_time },
@@ -1627,15 +1627,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ffTime\x12-\n\tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08p\
     layerPt\x12'\n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04\
     resp\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ct\
-    ers\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\x20\x01(\rR\x07sysTim\
-    e\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\x20\x01(\x0b2\x10.protos\
-    .PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\x20\x03(\x0b2\x13.protos.R\
-    esourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08syncTime\"1\n\x12C_MODIFY_\
-    NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickName\"H\n\x12S\
-    _MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
-    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMessb\x06proto3\
+    ers\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\x20\x01(\x04R\x07sysT\
+    ime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\x20\x01(\x0b2\x10.prot\
+    os.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\x20\x03(\x0b2\x13.protos\
+    .ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\x17\n\x07is_succ\x18\x01\
+    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
+    rMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08syncTime\"1\n\x12C_MOD\
+    IFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickName\"H\n\
+    \x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
+    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMessb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

@@ -31,6 +31,13 @@ pub enum GameCode{
     Max = 10000,
 }
 
+impl GameCode{
+    pub  fn into_u32(self)->u32{
+        let res:u32 = self.into();
+        res
+    }
+}
+
 ///房间服专属命令号段枚举
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
@@ -79,6 +86,13 @@ pub enum RoomCode{
     ReloadTemps = 29999,
     //返回最大值
     Max = 30000,
+}
+
+impl RoomCode{
+    pub  fn into_u32(self)->u32{
+        let res:u32 = self.into();
+        res
+    }
 }
 
 ///客户端专属命令号段枚举
@@ -157,4 +171,11 @@ pub enum ClientCode{
     //-------------------------------------战斗结束---------------------------
     //最大命令号
     Max = 20000,
+}
+
+impl ClientCode{
+    pub  fn into_u32(self)->u32{
+        let res:u32 = self.into();
+        res
+    }
 }

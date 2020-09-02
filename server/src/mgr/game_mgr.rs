@@ -72,8 +72,6 @@ impl GameMgr {
             if ud.get_version() <= 0 {
                 continue;
             };
-            //由于这里是深拷贝，所以在这里提前清空版本号，不然在接收方那边执行update，清空的版本号也是clone的
-            ud.clear_version();
             //装玩家
             v.push(ud.get_user_info_ref().try_clone());
             //装角色
@@ -81,6 +79,8 @@ impl GameMgr {
             for i in c_v {
                 v.push(i);
             }
+            //由于这里是深拷贝，所以在这里提前清空版本号，不然在接收方那边执行update，清空的版本号也是clone的
+            ud.clear_version();
         }
         let count = v.len();
         if count > 0 {

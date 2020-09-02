@@ -1,6 +1,5 @@
 use super::*;
 
-use std::borrow::BorrowMut;
 use std::io::Write;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
@@ -105,14 +104,14 @@ impl ChannelMgr {
         let rc = self.room_client_channel.as_mut().unwrap();
         let size = rc.write(&packet.build_server_bytes()[..]);
         match size {
-            Ok(s) => {
+            Ok(_) => {
                 let res = rc.flush();
                 if let Err(e) = res {
                     error!("{:?}", e);
                 }
             }
             Err(e) => {
-                error!("{:?}", e.to_string());
+                error!("{:?}", e);
                 return;
             }
         }

@@ -1,6 +1,8 @@
 use super::*;
 use crate::net::http::notice_user_center;
+use chrono::Local;
 use tools::cmd_code::{ClientCode, RoomCode};
+use tools::protos::protocol::HEART_BEAT;
 use tools::tcp::TcpSender;
 
 struct TcpServerHandler {
@@ -85,7 +87,7 @@ impl TcpServerHandler {
         let user_id = write.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
-        if user_id.is_none() && packet.get_cmd() != GameCode::Login as u32 {
+        if user_id.is_none() && packet.get_cmd() != GameCode::Login.into_u32() {
             let str = format!(
                 "this player is not login!cmd:{},token:{}",
                 packet.get_cmd(),
@@ -96,7 +98,7 @@ impl TcpServerHandler {
 
         let u_id;
         //执行登录
-        if packet.get_cmd() == GameCode::Login as u32 {
+        if packet.get_cmd() == GameCode::Login.into_u32() {
             let mut c_u_l = C_USER_LOGIN::new();
             let res = c_u_l.merge_from_bytes(packet.get_data());
             if res.is_err() {
@@ -127,6 +129,28 @@ impl TcpServerHandler {
             u_id = *user_id.unwrap();
         }
         packet.set_user_id(u_id);
+        //std::mem::drop(write);
+
+        if packet.get_cmd() == ClientCode::HeartBeat.into_u32() {
+            let mut hb = HEART_BEAT::new();
+            let time_stamp = Local::now().timestamp() as u64;
+            hb.set_sys_time(time_stamp);
+            let bytes = hb.write_to_bytes().unwrap();
+
+            let res =
+                Packet::build_packet_bytes(ClientCode::HeartBeat.into(), u_id, bytes, false, true);
+            let gate_user = write.user_channel.get_mut(&u_id);
+            if let None = gate_user {
+                return;
+            }
+            let gate_user = gate_user.unwrap();
+            gate_user.get_tcp_mut_ref().write(res);
+            info!(
+                "回给客户端消息,user_id:{},cmd:{}",
+                packet.get_user_id(),
+                packet.get_cmd(),
+            );
+        }
         std::mem::drop(write);
         //转发函数
         self.arrange_packet(packet);

@@ -5,10 +5,11 @@ use std::collections::hash_map::RandomState;
 use crate::entity::NetClient::NetClient;
 use tools::util::packet::Packet;
 
+///注册服务器mgr
 pub struct RegisterMgr {
-    //gateid->roomid绑定map
+    //gateserverid->roomserverid绑定map
     pub g2r: HashMap<u32, u32>,
-    //userid->gateid绑定map
+    //userid->gateserverid绑定map
     pub u2g: HashMap<u32, u32>,
     //gateserver客户端
     pub gate_channel: HashMap<u32, NetClient>,

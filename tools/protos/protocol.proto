@@ -24,7 +24,7 @@ message S_USER_LOGIN {
 //心跳包请求，返回同一个，请求需要带参数
 //cmd:10002
 message HEART_BEAT{
-  uint32 sys_time = 1;//服务器当前时间
+  uint64 sys_time = 1;//服务器当前时间
 }
 
 //同步数据请求
