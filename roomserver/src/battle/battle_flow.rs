@@ -4,6 +4,7 @@ use crate::battle::battle_enum::buff_type::{
 };
 use crate::battle::battle_enum::TargetType;
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
+use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -94,7 +95,10 @@ impl BattleData {
                             grade -= 1;
                         }
                         //满足条件就初始化
-                        if grade > max_grade || grade <= 0 {
+                        if grade > max_grade {
+                            grade = max_grade;
+                        }
+                        if grade <= 0 {
                             grade = 1;
                         }
                         let mut smp = SummaryDataPt::new();
@@ -139,18 +143,17 @@ impl BattleData {
         &mut self,
         user_id: u32,
         item_id: u32,
+        targets: Vec<u32>,
         au: &mut ActionUnitPt,
-    ) -> Option<Vec<ActionUnitPt>> {
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
         let item = battle_cter.items.get(&item_id).unwrap();
         let skill_id = item.skill_temp.id;
-        let mut targets = Vec::new();
-        targets.push(user_id);
-        let res = self.use_skill(user_id, skill_id, targets, au);
+        let res = self.use_skill(user_id, skill_id, true, targets, au)?;
         let battle_cter = self.get_battle_cter_mut(Some(user_id)).unwrap();
         //用完了就删除
         battle_cter.items.remove(&item_id);
-        res
+        Ok(res)
     }
 
     ///跳过回合
@@ -166,9 +169,10 @@ impl BattleData {
         &mut self,
         user_id: u32,
         skill_id: u32,
+        is_item: bool,
         target_array: Vec<u32>,
         au: &mut ActionUnitPt,
-    ) -> Option<Vec<ActionUnitPt>> {
+    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
         let mut au_vec: Option<Vec<ActionUnitPt>> = None;
         unsafe {
             //战斗角色
@@ -176,7 +180,20 @@ impl BattleData {
                 self.get_battle_cter_mut(Some(user_id)).unwrap() as *mut BattleCharacter;
             let battle_cter = battle_cter_ptr.as_mut().unwrap();
             //战斗角色身上的技能
-            let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
+            let mut skill_s;
+            let skill;
+            if is_item {
+                let res = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+                if let Err(e) = res {
+                    error!("{:?}", e);
+                    anyhow::bail!("")
+                }
+                let skill_temp = res.unwrap();
+                skill_s = Some(Skill::from(skill_temp));
+                skill = skill_s.as_mut().unwrap();
+            } else {
+                skill = battle_cter.skills.get_mut(&skill_id).unwrap();
+            }
 
             let target = skill.skill_temp.target;
             let target_type = TargetType::try_from(target as u8).unwrap();
@@ -189,7 +206,7 @@ impl BattleData {
             if let Err(e) = res {
                 let str = format!("{:?}", e);
                 warn!("{:?}", str);
-                return None;
+                anyhow::bail!("")
             }
 
             //根据技能id去找函数指针里面的函数，然后进行执行
@@ -211,16 +228,21 @@ impl BattleData {
             } else {
                 battle_cter.energy -= skill.skill_temp.consume_value;
             }
+            //使用技能后触发
+            self.after_use_skill_trigger(user_id, skill_id, is_item, au);
         }
-        //使用技能后触发
-        self.after_use_skill_trigger(user_id, skill_id, au);
-        au_vec
+        Ok(au_vec)
     }
 
     ///普通攻击
     /// user_id:发动普通攻击的玩家
     /// targets:被攻击目标
-    pub unsafe fn attack(&mut self, user_id: u32, targets: Vec<u32>, au: &mut ActionUnitPt) {
+    pub unsafe fn attack(
+        &mut self,
+        user_id: u32,
+        targets: Vec<u32>,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<()> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let mut aoe_buff: Option<u32> = None;
@@ -238,7 +260,7 @@ impl BattleData {
 
         if let Err(e) = target_cter {
             warn!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
 
         let target_cter = target_cter.unwrap();
@@ -247,12 +269,12 @@ impl BattleData {
         if target_user_id == user_id {
             let str = format!("the attack target can not be Self!user_id:{}", user_id);
             warn!("{:?}", str);
-            return;
+            anyhow::bail!("")
         }
         if target_cter.is_died() {
             let str = format!("the target is died!user_id:{}", target_cter.user_id);
             warn!("{:?}", str);
-            return;
+            anyhow::bail!("")
         }
 
         //扣血
@@ -260,7 +282,7 @@ impl BattleData {
 
         if let Err(e) = target_pt {
             error!("{:?}", e);
-            return;
+            anyhow::bail!("")
         }
         let mut target_pt = target_pt.unwrap();
         //目标被攻击，触发目标buff
@@ -273,7 +295,7 @@ impl BattleData {
             let buff = TEMPLATES.get_buff_ref().get_temp(&buff);
             if let Err(e) = buff {
                 warn!("{:?}", e);
-                return;
+                anyhow::bail!("")
             }
             let v = self.cal_scope(
                 user_id,
@@ -301,6 +323,7 @@ impl BattleData {
             }
         }
         cter.is_can_attack = false;
+        Ok(())
     }
 
     ///刷新地图

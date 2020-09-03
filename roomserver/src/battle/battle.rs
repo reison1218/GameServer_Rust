@@ -10,6 +10,7 @@ use crate::battle::battle_skill::{
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
+use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
 use log::error;
 use std::borrow::BorrowMut;
@@ -33,10 +34,10 @@ pub struct Direction {
 #[derive(Clone)]
 pub struct BattleData {
     pub tile_map: TileMap,                          //地图数据
-    pub choice_orders: [u32; 4],                    //选择顺序里面放玩家id
+    pub choice_orders: [u32; MEMBER_MAX as usize],  //选择顺序里面放玩家id
     pub next_choice_index: usize,                   //下一个选择的下标
     pub next_turn_index: usize,                     //下个turn的下标
-    pub turn_orders: [u32; 4],                      //turn行动队列，里面放玩家id
+    pub turn_orders: [u32; MEMBER_MAX as usize],    //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,            //刷新地图时的turn下标
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<u32>>,                    //排名  user_id
@@ -83,10 +84,10 @@ impl BattleData {
     pub fn new(task_sender: crossbeam::Sender<Task>, sender: TcpSender) -> Self {
         let mut bd = BattleData {
             tile_map: TileMap::default(),
-            choice_orders: [0; 4],
+            choice_orders: [0; MEMBER_MAX as usize],
             next_choice_index: 0,
             next_turn_index: 0,
-            turn_orders: [0; 4],
+            turn_orders: [0; MEMBER_MAX as usize],
             reflash_map_turn: None,
             battle_cter: HashMap::new(),
             rank_vec: Vec::new(),

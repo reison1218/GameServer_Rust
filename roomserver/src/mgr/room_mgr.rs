@@ -7,7 +7,7 @@ use crate::handlers::room_handler::{
     skip_choice_turn, start,
 };
 use crate::room::room::Room;
-use crate::room::room_model::{CustomRoom, MatchRooms, RoomModel, RoomType};
+use crate::room::room_model::{BattleType, CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::task_timer::Task;
 use log::warn;
 use tools::cmd_code::ClientCode;
@@ -109,6 +109,29 @@ impl RoomMgr {
             return None;
         }
         None
+    }
+
+    ///删除房间
+    pub fn rm_room(
+        &mut self,
+        room_id: u32,
+        room_type: RoomType,
+        battle_type: BattleType,
+        member_v: Vec<u32>,
+    ) {
+        match room_type {
+            RoomType::Match => {
+                let res = self.match_rooms.get_match_room_mut(battle_type);
+                res.rm_room(&room_id);
+            }
+            RoomType::Custom => {
+                self.custom_room.rm_room(&room_id);
+            }
+            _ => {}
+        }
+        for user_id in member_v {
+            self.player_room.remove(&user_id);
+        }
     }
 
     ///命令初始化

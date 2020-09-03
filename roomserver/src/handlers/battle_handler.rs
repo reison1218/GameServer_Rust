@@ -69,7 +69,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //使用道具
         ActionType::UseItem => {
             au.action_type = ActionType::UseItem as u32;
-            res = use_item(room, user_id, value, &mut au);
+            res = use_item(room, user_id, value, target_index, &mut au);
         }
         //跳过
         ActionType::Skip => {
@@ -238,6 +238,7 @@ fn use_item(
     rm: &mut Room,
     user_id: u32,
     item_id: u32,
+    targets: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let battle_cter = rm.battle_data.battle_cter.get(&user_id);
@@ -261,7 +262,7 @@ fn use_item(
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-    let res = rm.battle_data.use_item(user_id, item_id, au);
+    let res = rm.battle_data.use_item(user_id, item_id, targets, au)?;
     Ok(res)
 }
 
@@ -324,7 +325,7 @@ fn attack(
         anyhow::bail!(str)
     }
     unsafe {
-        rm.battle_data.attack(user_id, target_array, au);
+        rm.battle_data.attack(user_id, target_array, au)?;
         Ok(None)
     }
 }
@@ -354,7 +355,7 @@ fn use_skill(
     //使用技能，走正常逻辑
     let res = rm
         .battle_data
-        .use_skill(user_id, skill_id, target_array, au);
+        .use_skill(user_id, skill_id, false, target_array, au)?;
     Ok(res)
 }
 

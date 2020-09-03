@@ -26,9 +26,9 @@ extern crate lazy_static;
 lazy_static! {
     //初始化线程池
     static ref THREAD_POOL: MyThreadPool = {
-        let game_name = "game_name".to_string();
-        let user_name = "user_name".to_string();
-        let sys_name = "sys_name".to_string();
+        let game_name = "GAME_POOL".to_string();
+        let user_name = "USER_POOL".to_string();
+        let sys_name = "SYS_POOL".to_string();
         let mtp = MyThreadPool::init(game_name, 8, user_name, 8, sys_name, 4);
         mtp
     };
@@ -48,16 +48,6 @@ lazy_static! {
         let redis:Arc<RwLock<RedisPoolTool>> = Arc::new(RwLock::new(redis));
         redis
     };
-
-    static ref ID:Arc<RwLock<Test>> ={
-        let t = Test{id:1011000000};
-        let arc: Arc<RwLock<Test>> = Arc::new(RwLock::new(t));
-        arc
-    };
-}
-
-struct Test {
-    pub id: u32,
 }
 
 fn main() {

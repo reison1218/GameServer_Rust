@@ -2,15 +2,15 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
 ///默认每个turn翻地图块次数
-pub static TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
+pub const TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
 
 ///最大turn次数限制
-pub static LIMIT_TOTAL_TURN_TIMES: u16 = 999;
+pub const LIMIT_TOTAL_TURN_TIMES: u16 = 999;
 
 ///触发范围一圈不包括中心
-pub static TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
+pub const TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 ///触发范围一圈不包括中心
-pub static TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
+pub const TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
 
 pub mod skill_judge_type {
     ///hp限定：大于
@@ -21,72 +21,72 @@ pub mod skill_judge_type {
 pub mod skill_type {
 
     ///自残加buff
-    pub static HURT_SELF_ADD_BUFF: [u32; 1] = [311];
+    pub const HURT_SELF_ADD_BUFF: [u32; 1] = [311];
     ///格挡伤害
-    pub static GD_ATTACK_DAMAGE: [u32; 1] = [2];
+    pub const GD_ATTACK_DAMAGE: [u32; 1] = [2];
     ///自动配对地图块
-    pub static AUTO_PAIR_CELL: [u32; 1] = [212];
+    pub const AUTO_PAIR_CELL: [u32; 1] = [212];
     ///上buff
-    pub static ADD_BUFF: [u32; 6] = [121, 211, 221, 311, 322, 20002];
+    pub const ADD_BUFF: [u32; 6] = [121, 211, 221, 311, 322, 20002];
     ///地图块换位置
-    pub static CHANGE_INDEX: [u32; 1] = [111];
+    pub const CHANGE_INDEX: [u32; 1] = [111];
     ///展示地图块
-    pub static SHOW_INDEX: [u32; 2] = [112, 20001];
+    pub const SHOW_INDEX: [u32; 2] = [112, 20001];
     ///移动玩家
-    pub static MOVE_USER: [u32; 1] = [222];
+    pub const MOVE_USER: [u32; 1] = [222];
     ///相临玩家造成技能伤害并恢复生命
-    pub static NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
+    pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub static SKILL_DAMAGE: [u32; 3] = [20004, 20005, 323];
+    pub const SKILL_DAMAGE: [u32; 3] = [20004, 20005, 323];
     ///技能aoe
-    pub static SKILL_AOE: [u32; 2] = [411, 421];
+    pub const SKILL_AOE: [u32; 2] = [411, 421];
     ///减技能cd
-    pub static RED_SKILL_CD: [u32; 1] = [20003];
+    pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///---------------------------以下为了方便单独定义出来
     ///水炮
-    pub static WATER_TURRET: u32 = 323;
+    pub const WATER_TURRET: u32 = 323;
 }
 
 ///buff类型
 pub mod buff_type {
     ///变成技能
-    pub static CHANGE_SKILL: [u32; 1] = [3];
+    pub const CHANGE_SKILL: [u32; 1] = [3];
     ///增加攻击力并变成AOE
-    pub static ADD_ATTACK_AND_AOE: [u32; 1] = [4];
+    pub const ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
-    pub static ADD_ATTACK: [u32; 2] = [4, 7];
+    pub const ADD_ATTACK: [u32; 2] = [4, 7];
     ///减伤buff
-    pub static SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
+    pub const SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
     ///获得道具
-    pub static AWARD_ITEM: [u32; 5] = [10003, 30011, 30021, 30031, 30041];
+    pub const AWARD_ITEM: [u32; 5] = [10003, 30011, 30021, 30031, 30041];
     ///配对恢复生命
-    pub static PAIR_CURE: [u32; 1] = [30012];
+    pub const PAIR_CURE: [u32; 1] = [30012];
     ///获得buff
-    pub static AWARD_BUFF: [u32; 1] = [30022];
+    pub const AWARD_BUFF: [u32; 1] = [30022];
     ///相临技能cd增加
-    pub static NEAR_ADD_CD: [u32; 1] = [30032];
+    pub const NEAR_ADD_CD: [u32; 1] = [30032];
     ///配对成功相临造成技能伤害
-    pub static NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
+    pub const NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
     ///其他玩家移动到相临造成技能伤害
-    pub static DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
+    pub const DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     ///被攻击时增加能量
-    pub static ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
+    pub const ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
     /// 匹配属性一样的地图块+攻击
-    pub static PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
+    pub const PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，+攻击力
-    pub static RESET_MAP_ADD_ATTACK: [u32; 1] = [1002];
+    pub const RESET_MAP_ADD_ATTACK: [u32; 1] = [1002];
     /// 翻开地图块干点啥，配对又干点啥
-    pub static OPEN_CELL_AND_PAIR_ADD_ENERGY: [u32; 1] = [1004];
+    pub const OPEN_CELL_AND_PAIR_ADD_ENERGY: [u32; 1] = [1004];
     /// 无法被移动
-    pub static CAN_NOT_MOVED: u32 = 10002;
+    pub const CAN_NOT_MOVED: u32 = 10002;
     ///锁buff
-    pub static LOCKED: u32 = 321;
+    pub const LOCKED: u32 = 321;
     ///配对与自己相同元素时恢复生命
-    pub static PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
+    pub const PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
 
     ///---------------------------以下为了方便单独定义出来
     /// 受到相临攻击时候减伤
-    pub static NEAR_SUB_ATTACK_DAMAGE: u32 = 10001;
+    pub const NEAR_SUB_ATTACK_DAMAGE: u32 = 10001;
 }
 
 ///pos操作类型

@@ -1,7 +1,7 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{BattleType, RoomModel, RoomType};
+use crate::room::room_model::{BattleType, RoomModel};
 use crate::SCHEDULED_MGR;
 use chrono::Local;
 use log::{error, info, warn};
@@ -79,7 +79,12 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
                     };
                     SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
                 }
-                TaskCmd::MaxBattleTurnTimes => {}
+                TaskCmd::MaxBattleTurnTimes => {
+                    let m = || {
+                        max_battle_turn_limit(rm_clone, task);
+                    };
+                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
+                }
             };
         }
     };
@@ -237,8 +242,22 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     if next_user != user_id {
         return;
     }
+
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
-    room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    let need_rm_room;
+    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id);
+    if room.state == RoomState::BattleOvered {
+        need_rm_room = true
+    } else {
+        need_rm_room = false;
+    }
+    if need_rm_room {
+        let room_type = room.get_room_type();
+        let battle_type = room.setting.battle_type;
+        let room_id = room.get_room_id();
+        let v = room.get_member_vec();
+        write.rm_room(room_id, room_type, battle_type, v);
+    }
     write.player_room.remove(&user_id);
 }
 
@@ -378,17 +397,6 @@ pub fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     let v = room.get_member_vec();
-    match room_type {
-        RoomType::Match => {
-            let res = write.match_rooms.get_match_room_mut(battle_type);
-            res.rm_room(&room_id);
-        }
-        RoomType::Custom => {
-            write.custom_room.rm_room(&room_id);
-        }
-        _ => {}
-    }
-    for user_id in v {
-        write.player_room.remove(&user_id);
-    }
+
+    write.rm_room(room_id, room_type, battle_type, v);
 }

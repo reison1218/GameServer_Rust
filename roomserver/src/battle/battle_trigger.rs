@@ -36,7 +36,13 @@ pub trait TriggerEvent {
     ) -> Vec<ActionUnitPt>;
 
     ///使用技能后触发
-    fn after_use_skill_trigger(&mut self, user_id: u32, skill_id: u32, au: &mut ActionUnitPt);
+    fn after_use_skill_trigger(
+        &mut self,
+        user_id: u32,
+        skill_id: u32,
+        is_item: bool,
+        au: &mut ActionUnitPt,
+    );
 
     ///受到攻击后触发
     fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
@@ -168,14 +174,34 @@ impl TriggerEvent for BattleData {
         v
     }
 
-    fn after_use_skill_trigger(&mut self, user_id: u32, skill_id: u32, au: &mut ActionUnitPt) {
+    fn after_use_skill_trigger(
+        &mut self,
+        user_id: u32,
+        skill_id: u32,
+        is_item: bool,
+        au: &mut ActionUnitPt,
+    ) {
         let cter = self.get_battle_cter_mut(Some(user_id));
         if let Err(e) = cter {
             error!("{:?}", e);
             return;
         }
         let cter = cter.unwrap();
-        let skill = cter.skills.get(&skill_id).unwrap();
+        //战斗角色身上的技能
+        let mut skill_s;
+        let skill;
+        if is_item {
+            let res = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return;
+            }
+            let skill_temp = res.unwrap();
+            skill_s = Some(Skill::from(skill_temp));
+            skill = skill_s.as_mut().unwrap();
+        } else {
+            skill = cter.skills.get_mut(&skill_id).unwrap();
+        }
         //替换技能,水炮
         if skill.id == WATER_TURRET {
             let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill.skill_temp.par2);

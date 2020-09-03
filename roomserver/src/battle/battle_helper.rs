@@ -447,13 +447,12 @@ impl BattleData {
             TargetType::AnyPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let res = self.get_battle_cter_by_cell_index(*index as usize);
-                    if let Ok(cter) = res {
-                        check_skill_judge(cter, skill_judge)?;
-                        v.push(cter.user_id);
-                    }
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    check_skill_judge(cter, skill_judge)?;
+                    v.push(cter.user_id);
+                    break;
                 }
-                self.check_user_target(&v[..], None)? //不包括自己的其他玩家
+                self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             } //玩家自己
             TargetType::PlayerSelf => {
                 let cter = self.get_battle_cter(Some(user_id)).unwrap();
@@ -463,22 +462,18 @@ impl BattleData {
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let res = self.get_battle_cter_by_cell_index(*index as usize);
-                    if let Ok(cter) = res {
-                        check_skill_judge(cter, skill_judge)?;
-                        v.push(cter.user_id);
-                    }
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    check_skill_judge(cter, skill_judge)?;
+                    v.push(cter.user_id);
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             }
             TargetType::OtherAllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let res = self.get_battle_cter_by_cell_index(*index as usize);
-                    if let Ok(cter) = res {
-                        check_skill_judge(cter, skill_judge)?;
-                        v.push(cter.user_id);
-                    }
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    check_skill_judge(cter, skill_judge)?;
+                    v.push(cter.user_id);
                 }
                 //除自己所有玩家
                 self.check_user_target(&v[..], Some(user_id))?
@@ -486,11 +481,10 @@ impl BattleData {
             TargetType::OtherAnyPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let res = self.get_battle_cter_by_cell_index(*index as usize);
-                    if let Ok(cter) = res {
-                        check_skill_judge(cter, skill_judge)?;
-                        v.push(cter.user_id);
-                    }
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    check_skill_judge(cter, skill_judge)?;
+                    v.push(cter.user_id);
+                    break;
                 }
                 //除自己所有玩家
                 self.check_user_target(&v[..], Some(user_id))?
@@ -500,7 +494,7 @@ impl BattleData {
                 //校验地图块下标有效性
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, false, false, false)?
+                    self.check_choice_index(index, false, false, false, false)?;
                 }
             }
             //未翻开的地图块
@@ -511,18 +505,18 @@ impl BattleData {
             } //未配对的地图块
             TargetType::UnPairCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, true, true)?
+                    self.check_choice_index(*index as usize, true, true, true, false)?;
                 }
             } //空的地图块
             TargetType::NullCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, false, true)?
+                    self.check_choice_index(*index as usize, true, true, false, true)?;
                 }
             } //空的地图块，上面没人
             TargetType::UnPairNullCell => {
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, false, false, true)?
+                    self.check_choice_index(index, false, false, false, true)?;
                 }
             } //地图块上的玩家
             TargetType::CellPlayer => {}

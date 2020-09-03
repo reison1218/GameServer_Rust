@@ -26,7 +26,7 @@ use tools::protos::room::{
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
-//最大成员数量
+///最大成员数量
 pub const MEMBER_MAX: u8 = 4;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -52,8 +52,8 @@ impl From<u32> for RoomSettingType {
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomMemberNoticeType {
-    None = 0, //无效
-    UpdateMember = 2,
+    None = 0,         //无效
+    UpdateMember = 2, //更新成员
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -77,17 +77,17 @@ pub enum RoomState {
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
-    id: u32,                              //房间id
-    room_type: RoomType,                  //房间类型
-    owner_id: u32,                        //房主id
-    pub state: RoomState,                 //房间状态
-    pub members: HashMap<u32, Member>,    //玩家对应的队伍
-    pub member_index: [u32; 4],           //玩家对应的位置
-    pub setting: RoomSetting,             //房间设置
-    pub battle_data: BattleData,          //战斗相关数据封装
-    pub sender: TcpSender,                //sender
-    task_sender: crossbeam::Sender<Task>, //任务sender
-    time: DateTime<Utc>,                  //房间创建时间
+    id: u32,                                      //房间id
+    room_type: RoomType,                          //房间类型
+    owner_id: u32,                                //房主id
+    pub state: RoomState,                         //房间状态
+    pub members: HashMap<u32, Member>,            //玩家对应的队伍
+    pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
+    pub setting: RoomSetting,                     //房间设置
+    pub battle_data: BattleData,                  //战斗相关数据封装
+    pub sender: TcpSender,                        //sender
+    task_sender: crossbeam::Sender<Task>,         //任务sender
+    time: DateTime<Utc>,                          //房间创建时间
 }
 
 impl Room {
@@ -108,7 +108,7 @@ impl Room {
             id,
             owner_id: user_id,
             members: HashMap::new(),
-            member_index: [0; 4],
+            member_index: [0; MEMBER_MAX as usize],
             state: RoomState::Await,
             setting: RoomSetting::default(),
             battle_data: BattleData::new(task_sender.clone(), sender.clone()),
@@ -366,7 +366,7 @@ impl Room {
         self.battle_data.battle_cter.get_mut(key)
     }
 
-    fn check_index_over(&mut self) -> bool {
+    pub fn check_index_over(&mut self) -> bool {
         self.state != RoomState::Await
             && self.state != RoomState::ChoiceTurn
             && self.state != RoomState::ChoiceIndex
@@ -542,14 +542,9 @@ impl Room {
             );
             self.sender.write(res);
         }
-        let mut index = self.get_next_choice_index();
-        info!(
-            "choice choice_turn user_id:{},index:{},choice_order:{:?}",
-            user_id, index, self.battle_data.choice_orders
-        );
         let size = MEMBER_MAX as usize;
         self.add_next_choice_index();
-        index = self.get_next_choice_index();
+        let index = self.get_next_choice_index();
 
         let is_all_choice = self.check_is_all_choice_turn();
         if is_all_choice {
@@ -1034,7 +1029,7 @@ impl Room {
         if self.state == RoomState::ChoiceTurn {
             self.handler_leave_choice_turn(user_id, chocie_index);
         } else if self.state == RoomState::ChoiceIndex {
-            self.handler_leave_choice_index(user_id, chocie_index);
+            self.handler_leave_choice_index(user_id, turn_index);
         } else if self.state == RoomState::BattleStarted {
             self.handler_leave_battle_turn(user_id, turn_index);
         }
