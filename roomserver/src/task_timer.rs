@@ -1,7 +1,7 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{BattleType, RoomModel};
+use crate::room::room_model::{BattleType, MatchRoom, RoomModel};
 use crate::SCHEDULED_MGR;
 use chrono::Local;
 use log::{error, info, warn};
@@ -129,7 +129,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let mut write = rm.write().unwrap();
 
     let match_room = write.match_rooms.get_match_room_mut(battle_type);
-
+    let match_room_ptr = match_room as *mut MatchRoom;
     let room = match_room.get_room_mut(&room_id);
     if room.is_none() {
         return;
@@ -193,8 +193,22 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
                     }
                 }
             }
+
             for member_id in rm_v {
                 write.player_room.remove(&member_id);
+            }
+            unsafe {
+                let room = match_room_ptr.as_mut().unwrap().get_room_mut(&room_id);
+                if let Some(room) = room {
+                    if !room.is_empty() {
+                        return;
+                    }
+                    let room_type = room.get_room_type();
+                    let battle_type = room.setting.battle_type;
+                    let room_id = room.get_room_id();
+                    let v = room.get_member_vec();
+                    write.rm_room(room_id, room_type, battle_type, v);
+                }
             }
             return;
         }
@@ -366,6 +380,14 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     //如果玩家啥都没做，就T出房间
     if battle_cter.open_cell_vec.is_empty() {
         room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    }
+    let is_empty = room.is_empty();
+    if is_empty {
+        let room_type = room.get_room_type();
+        let battle_type = room.setting.battle_type;
+        let room_id = room.get_room_id();
+        let v = room.get_member_vec();
+        write.rm_room(room_id, room_type, battle_type, v);
     }
 }
 

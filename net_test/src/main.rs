@@ -80,7 +80,7 @@ extern crate lazy_static;
 
 lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
-        let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1001)));
+        let id:Arc<RwLock<AtomicU32>> = Arc::new(RwLock::new(AtomicU32::new(1011000025)));
         id
     };
 
@@ -256,6 +256,7 @@ struct BaseFoo{
 
 
 fn main() -> anyhow::Result<()> {
+    tcp_client::test_tcp_clients();
     //map::generate_map();
     // let a:u8 = HH::AA.into();
     // println!("{}",a);

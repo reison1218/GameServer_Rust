@@ -13,6 +13,10 @@ use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
 use tools::protos::room::{S_ROOM, C_CREATE_ROOM, C_SEARCH_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, S_PREPARE_CANCEL, C_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER, S_ROOM_ADD_MEMBER_NOTICE};
 use tools::protos::base::{PlayerPt, CharacterPt};
+use tools::http::send_http_request;
+use serde_json::Value;
+use std::str::FromStr;
+use futures::executor::block_on;
 
 pub fn test_tcp_client(pid:&str){
         let uid = async_std::task::block_on(crate::test_http_client(pid));
@@ -27,15 +31,15 @@ pub fn test_tcp_client(pid:&str){
 }
 
 pub fn test_tcp_clients(){
-    for i in 1..=2000{
+    for i in 1..=3000{
         let sr = i.to_string();
         let uid = async_std::task::block_on(crate::test_http_client(sr.as_str()));
         let uid = uid.unwrap();
 
         let m = move || {
             let mut tcp_client = TcpClientHandler::new();
-            //tcp_client.on_read("192.168.1.100:16801".to_string());
-            tcp_client.on_read("localhost:16801".to_string());
+            tcp_client.on_read("192.168.1.100:16801".to_string());
+            //tcp_client.on_read("localhost:16801".to_string());
         };
 
         std::thread::spawn(m);
@@ -43,8 +47,9 @@ pub fn test_tcp_clients(){
         println!("client:{}",i);
     }
 
-    // let mut tcp_client = TcpClientHandler::new();
-    // tcp_client.on_read("127.0.0.1:16801".to_string());
+    let mut tcp_client = TcpClientHandler::new();
+    //tcp_client.on_read("127.0.0.1:16801".to_string());
+    tcp_client.on_read("192.168.1.100:16801".to_string());
 }
 pub struct TcpClientHandler {
     ts: Option<TcpStream>,
@@ -64,10 +69,25 @@ impl ClientHandler for TcpClientHandler {
         let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
         let mut packet = Packet::default();
         packet.set_cmd(GameCode::Login as u32);
-        // let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
-        // write.fetch_add(1, Ordering::Relaxed);
-        // let id = write.load(Ordering::Relaxed);
-        s_l.set_user_id(self.user_id);
+        let mut write:RwLockWriteGuard<AtomicU32> = ID.write().unwrap();
+        write.fetch_add(1, Ordering::Relaxed);
+        let id = write.load(Ordering::Relaxed);
+        std::mem::drop(write);
+        // let id = id.to_string();
+        //
+        // let str = r#"{"platform_id":"test","game_id":101,"register_platform":"test","nick_name":"test","phone_no":"123131231"}"#;
+        // let mut value = Value::from_str(str).unwrap();
+        // let map = value.as_object_mut().unwrap();
+        // map.insert("platform_id".to_string(),Value::from(id.to_string()));
+        // map.insert("test".to_string(),Value::from(id.to_string()));
+        // let res = send_http_request("192.168.1.100:8888","/center/user_id","post",Some(value));
+        // let res = block_on(res);
+        // let mut res = res.unwrap();
+        // let res_map = res.as_object_mut().unwrap();
+        // let user_id = res_map.get("user_id").unwrap();
+        // let user_id = user_id.as_u64().unwrap() as u32;
+        s_l.set_user_id(id);
+        //s_l.set_user_id(self.user_id);
         packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
         packet.set_len(16+packet.get_data().len() as u32);
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
@@ -81,33 +101,30 @@ impl ClientHandler for TcpClientHandler {
         let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
+        //std::thread::sleep(Duration::from_secs(2));
 
-        std::thread::sleep(Duration::from_secs(2));
+        // let mut ccc = C_CHOOSE_CHARACTER::new();
+        // let mut write = ID.write().unwrap();
+        // write.fetch_add(1,Ordering::SeqCst);
+        // let cter_id = write.load(Ordering::SeqCst);
+        // let mut v = Vec::new();
+        // v.push(1001_u32);
+        // v.push(1002_u32);
+        // ccc.set_cter_id(cter_id);
+        // packet.set_cmd(RoomCode::ChoiceCharacter as u32);
+        // packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
+        //std::thread::sleep(Duration::from_secs(2));
 
-        let mut ccc = C_CHOOSE_CHARACTER::new();
-        let mut write = ID.write().unwrap();
-        write.fetch_add(1,Ordering::SeqCst);
-        let cter_id = write.load(Ordering::SeqCst);
-        let mut v = Vec::new();
-        v.push(1001_u32);
-        v.push(1002_u32);
-        ccc.set_cter_id(cter_id);
-
-        packet.set_cmd(RoomCode::ChoiceCharacter as u32);
-        packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
-        packet.set_len(16+packet.get_data().len() as u32);
-        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
-
-        std::thread::sleep(Duration::from_secs(2));
-
-        let mut cpc = C_PREPARE_CANCEL::new();
-        cpc.prepare = true;
-        packet.set_cmd(RoomCode::PrepareCancel as u32);
-        packet.set_data(&cpc.write_to_bytes().unwrap()[..]);
-        packet.set_len(16+packet.get_data().len() as u32);
-        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        self.ts.as_mut().unwrap().flush().unwrap();
+        // let mut cpc = C_PREPARE_CANCEL::new();
+        // cpc.prepare = true;
+        // packet.set_cmd(RoomCode::PrepareCancel as u32);
+        // packet.set_data(&cpc.write_to_bytes().unwrap()[..]);
+        // packet.set_len(16+packet.get_data().len() as u32);
+        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        // self.ts.as_mut().unwrap().flush().unwrap();
 
         // std::thread::sleep(Duration::from_secs(2));
         //

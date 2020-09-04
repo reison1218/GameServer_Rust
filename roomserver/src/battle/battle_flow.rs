@@ -146,8 +146,21 @@ impl BattleData {
         targets: Vec<u32>,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let battle_cter = self.get_battle_cter(Some(user_id)).unwrap();
-        let item = battle_cter.items.get(&item_id).unwrap();
+        let battle_cter = self.get_battle_cter(Some(user_id));
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            anyhow::bail!("")
+        }
+        let battle_cter = battle_cter.unwrap();
+        let item = battle_cter.items.get(&item_id);
+        if let None = item {
+            error!(
+                "item is None!user_id:{},item_id:{}",
+                battle_cter.user_id, item_id
+            );
+            anyhow::bail!("")
+        }
+        let item = item.unwrap();
         let skill_id = item.skill_temp.id;
         let res = self.use_skill(user_id, skill_id, true, targets, au)?;
         let battle_cter = self.get_battle_cter_mut(Some(user_id)).unwrap();

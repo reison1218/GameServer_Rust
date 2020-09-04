@@ -133,7 +133,7 @@ impl From<RoomSetting> for RoomSettingPt {
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomCache {
     room_id: u32,
-    count: u32,
+    count: u8,
 }
 
 pub trait RoomModel {
@@ -384,7 +384,7 @@ impl RoomModel for MatchRoom {
         } else if room_cache.is_none() && need_add_cache {
             let mut rc = RoomCache::default();
             rc.room_id = room_id;
-            rc.count = now_count as u32;
+            rc.count = now_count as u8;
             self.room_cache.push(rc);
             //重新排序
             self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
@@ -441,8 +441,6 @@ impl MatchRoom {
         sender: TcpSender,
         task_sender: crossbeam::Sender<Task>,
     ) -> anyhow::Result<u32> {
-        //此处缺少房间随机规则，暂时硬编码
-        let map_id = 1002 as u32;
         let room_id: u32;
         let user_id = member.user_id;
         //如果房间缓存里没有，则创建新房间
@@ -450,8 +448,7 @@ impl MatchRoom {
             //校验地图配置
             let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
             if room_tmp_ref.is_empty() {
-                let s = format!("this map config is None,map_id:{}", map_id);
-                anyhow::bail!(s)
+                anyhow::bail!("TileMapTempMgr is None")
             }
             //创建房间
             room_id = self.create_room(BattleType::OneVOneVOneVOne, member, sender, task_sender)?;
@@ -462,18 +459,17 @@ impl MatchRoom {
             //将成员加进房间
             let room_mut = self.get_mut_room_by_room_id(&room_id)?;
             if room_mut.get_member_count() >= MEMBER_MAX as usize {
-                let s = format!("this map config is None,map_id:{}", map_id);
-                anyhow::bail!(s)
+                anyhow::bail!("room is None,room_id:{}", room_id)
             }
-
+            //将成员加入到房间中
             room_mut.add_member(member)?;
-            info!("加入匹配房间,room_id:{}，user_id:{}", room_id, user_id);
+            //解决房间队列缓存
             let room_cache_array: &mut Vec<RoomCache> = self.room_cache.as_mut();
             let room_cache = room_cache_array.last_mut().unwrap();
             //cache人数加1
             room_cache.count += 1;
             //如果人满里，则从缓存房间列表中弹出
-            if room_cache.count >= MEMBER_MAX as u32 {
+            if room_cache.count >= MEMBER_MAX {
                 room_cache_array.pop();
                 info!("匹配房人满,将房间从匹配队列移除！room_id:{}", room_id);
                 //创建延迟任务，并发送给定时器接收方执行
