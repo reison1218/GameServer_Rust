@@ -256,10 +256,15 @@ struct BaseFoo{
 
 
 fn main() -> anyhow::Result<()> {
-    tcp_client::test_tcp_clients();
+    let mut v = Vec::new();
+    v.push(1);
+    v.push(1);
+    v.push(1);
+    v.push(1);
+    //tcp_client::test_tcp_clients();
     //map::generate_map();
     // let a:u8 = HH::AA.into();
-    // println!("{}",a);
+    // println!("{}",a)
     // let words:[u32;5] = [1,2,3,4,5];
     //
     // let id = 2_u32;

@@ -12,14 +12,21 @@ pub const TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 ///触发范围一圈不包括中心
 pub const TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
 
+///技能限制类型
 pub mod skill_judge_type {
     ///hp限定：大于
-    pub static HP_LIMIT_GT: [u32; 1] = [1];
+    pub static HP_LIMIT_GT: u32 = 1;
+    ///回合限制
+    pub static LIMIT_ROUND_TIMES: u32 = 2;
+    ///turn限制
+    pub static LIMIT_TURN_TIMES: u32 = 3;
 }
 
 ///技能类型
 pub mod skill_type {
 
+    ///技能翻开地图块
+    pub const SKILL_OPEN_CELL: [u32; 1] = [223];
     ///自残加buff
     pub const HURT_SELF_ADD_BUFF: [u32; 1] = [311];
     ///格挡伤害
@@ -31,20 +38,28 @@ pub mod skill_type {
     ///地图块换位置
     pub const CHANGE_INDEX: [u32; 1] = [111];
     ///展示地图块
-    pub const SHOW_INDEX: [u32; 2] = [112, 20001];
+    pub const SHOW_INDEX: [u32; 4] = [112, 113, 421, 20001];
     ///移动玩家
     pub const MOVE_USER: [u32; 1] = [222];
     ///相临玩家造成技能伤害并恢复生命
     pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 3] = [20004, 20005, 323];
+    pub const SKILL_DAMAGE: [u32; 6] = [122, 123, 20004, 20005, 323, 433];
     ///技能aoe
-    pub const SKILL_AOE: [u32; 2] = [411, 421];
+    pub const SKILL_AOE: [u32; 3] = [411, 412, 432];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///---------------------------以下为了方便单独定义出来
     ///水炮
     pub const WATER_TURRET: u32 = 323;
+    ///翻开附近地图块
+    pub const SKILL_OPEN_NEAR_CELL: u32 = 223;
+    ///向所有玩家展示一个随机地图块，优先展示生命元素的
+    pub const SHOW_ALL_USERS_CELL: u32 = 113;
+    ///技能伤害，若目标在附近，则伤害加深
+    pub const SKILL_DAMAGE_NEAR_DEEP: u32 = 122;
+    ///技能伤害，若配对马上清空cd               
+    pub const SKILL_DAMAGE_PAIR_CLEAN_CD: u32 = 123;
 }
 
 ///buff类型
@@ -197,18 +212,23 @@ pub enum ActionType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum TargetType {
-    None = 0,            //无效目标
-    Cell = 1,            //地图块
-    AnyPlayer = 2,       //任意玩家
-    PlayerSelf = 3,      //玩家自己
-    AllPlayer = 4,       //所有玩家
-    OtherAllPlayer = 5,  //除自己外所有玩家
-    OtherAnyPlayer = 6,  //除自己外任意玩家
-    UnOpenCell = 7,      //未翻开的地图块
-    UnPairCell = 8,      //未配对的地图块
-    NullCell = 9,        //空的地图块，上面没人
-    UnPairNullCell = 10, //未配对的地图块
-    CellPlayer = 11,     //地图块上的玩家
+    None = 0,                //无效目标
+    Cell = 1,                //地图块
+    AnyPlayer = 2,           //任意玩家
+    PlayerSelf = 3,          //玩家自己
+    AllPlayer = 4,           //所有玩家
+    OtherAllPlayer = 5,      //除自己外所有玩家
+    OtherAnyPlayer = 6,      //除自己外任意玩家
+    UnOpenCell = 7,          //未翻开的地图块
+    UnPairCell = 8,          //未配对的地图块
+    NullCell = 9,            //空的地图块，上面没人
+    UnPairNullCell = 10,     //未配对的地图块
+    CellPlayer = 11,         //地图块上的玩家
+    SelfScopeOthers = 12,    //以自己为中心某个范围内的所有其他玩家
+    SelfScopeAnyOthers = 13, //以自己为中心某个范围内的任意其他玩家
+    SelfScopeAll = 14,       //以自己为中心某个范围内的所有玩家（包括自己）
+    SelfScopeAny = 15,       //以自己为中心某个范围内的任意玩家（包括自己）
+    OpenedCell = 16,         //已翻开的地图块
 }
 
 impl TargetType {
@@ -231,4 +251,11 @@ pub enum ElementType {
     Earth = 2,  //土元素
     Water = 3,  //水元素
     Fire = 4,   //火元素
+}
+
+impl ElementType {
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
+        res
+    }
 }

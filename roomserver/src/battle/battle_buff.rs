@@ -335,7 +335,7 @@ impl BattleData {
         let scope_temp = scope_temp.unwrap();
         let isize_index = index as isize;
         let target_type = TargetType::try_from(buff_temp.target as u8).unwrap();
-        let v = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
+        let (_, v) = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
         let mut need_rank = true;
         unsafe {
             for target_user in v.iter() {

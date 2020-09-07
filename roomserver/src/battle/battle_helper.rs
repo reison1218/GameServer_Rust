@@ -1,5 +1,7 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::skill_judge_type::HP_LIMIT_GT;
+use crate::battle::battle_enum::skill_judge_type::{
+    HP_LIMIT_GT, LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES,
+};
 use crate::battle::battle_enum::{
     BattleCterState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID,
 };
@@ -10,9 +12,11 @@ use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
+use protobuf::descriptor::FileOptions_OptimizeMode::LITE_RUNTIME;
 use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_BATTLE_TURN_NOTICE;
@@ -28,7 +32,7 @@ impl BattleData {
             .filter(|x| x.state == BattleCterState::Alive)
             .count();
 
-        let un_open_count = self.tile_map.un_pair_count;
+        let un_open_count = self.tile_map.un_pair_map.len();
         let mut need_reflash_map = false;
         if un_open_count <= 2 {
             need_reflash_map = true;
@@ -226,7 +230,20 @@ impl BattleData {
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i16 {
         let target_user = target_cter.user_id;
         let target_index = target_cter.get_cell_index() as isize;
-        let user_v = self.cal_scope(target_user, target_index, TargetType::None, None, None);
+        let scope_temp = TEMPLATES
+            .get_skill_scope_ref()
+            .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
+        if let Err(e) = scope_temp {
+            return target_cter.defence as i16;
+        }
+        let scope_temp = scope_temp.unwrap();
+        let (_, user_v) = self.cal_scope(
+            target_user,
+            target_index,
+            TargetType::None,
+            None,
+            Some(scope_temp),
+        );
         let res = user_v.contains(&from_user);
         target_cter.calc_reduce_damage(res)
     }
@@ -356,6 +373,10 @@ impl BattleData {
                 last_cell.pair_index = Some(index);
                 is_pair = true;
                 battle_cter.is_pair = true;
+                //状态改为可以进行攻击
+                battle_cter.is_can_attack = true;
+                self.tile_map.un_pair_map.remove(&last_cell.index);
+                self.tile_map.un_pair_map.remove(&cell_mut.index);
             }
         } else {
             is_pair = false;
@@ -435,7 +456,6 @@ impl BattleData {
         user_id: u32,
         target_type: TargetType,
         target_array: &[u32],
-        skill_judge: u32,
     ) -> anyhow::Result<()> {
         match target_type {
             //无效目标
@@ -448,7 +468,6 @@ impl BattleData {
                 let mut v = Vec::new();
                 for index in target_array {
                     let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
-                    check_skill_judge(cter, skill_judge)?;
                     v.push(cter.user_id);
                     break;
                 }
@@ -456,14 +475,12 @@ impl BattleData {
             } //玩家自己
             TargetType::PlayerSelf => {
                 let cter = self.get_battle_cter(Some(user_id)).unwrap();
-                check_skill_judge(cter, skill_judge)?;
             } //玩家自己
             //全图玩家
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
                     let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
-                    check_skill_judge(cter, skill_judge)?;
                     v.push(cter.user_id);
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
@@ -472,7 +489,6 @@ impl BattleData {
                 let mut v = Vec::new();
                 for index in target_array {
                     let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
-                    check_skill_judge(cter, skill_judge)?;
                     v.push(cter.user_id);
                 }
                 //除自己所有玩家
@@ -482,7 +498,16 @@ impl BattleData {
                 let mut v = Vec::new();
                 for index in target_array {
                     let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
-                    check_skill_judge(cter, skill_judge)?;
+                    v.push(cter.user_id);
+                    break;
+                }
+                //除自己所有玩家
+                self.check_user_target(&v[..], Some(user_id))?
+            }
+            TargetType::SelfScopeOthers => {
+                let mut v = Vec::new();
+                for index in target_array {
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                     break;
                 }
@@ -518,8 +543,9 @@ impl BattleData {
                     let index = *index as usize;
                     self.check_choice_index(index, false, false, false, true)?;
                 }
-            } //地图块上的玩家
-            TargetType::CellPlayer => {}
+            }
+            //其他目标类型
+            _ => {}
         }
         Ok(())
     }
@@ -639,7 +665,7 @@ impl BattleData {
         Ok(target_pt)
     }
 
-    ///计算范围
+    ///计算范围,返回一个元组类型，前面一个是范围，后面一个是范围内的合法玩家
     /// 当targets和scope_temp为None时,以⭕️为校验范围有没有人
     /// 当targets为None,scope_temp为Some则校验scope_temp范围内有没有人
     /// 当targets和scope_temp都不为None时，校验targets是否在scope_temp范围内
@@ -650,18 +676,12 @@ impl BattleData {
         target_type: TargetType,
         targets: Option<Vec<u32>>,
         scope_temp: Option<&SkillScopeTemp>,
-    ) -> Vec<u32> {
+    ) -> (Vec<usize>, Vec<u32>) {
+        let mut v_u = Vec::new();
         let mut v = Vec::new();
         let center_cell = self.tile_map.map.get(center_index as usize).unwrap();
-        //相邻，直接拿常量
-        if targets.is_none() && scope_temp.is_none() {
-            let scope_temp = TEMPLATES
-                .get_skill_scope_ref()
-                .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
-            if let Err(e) = scope_temp {
-                error!("{:?}", e);
-                return v;
-            }
+        //没有目标，只有范围
+        if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();
 
             for direction_temp2d in scope_temp.scope2d.iter() {
@@ -677,54 +697,15 @@ impl BattleData {
                     if cell.is_none() {
                         continue;
                     }
-                    let cell = cell.unwrap();
-                    if cell.user_id <= 0 {
-                        continue;
-                    }
-                    //不能选中自己
-                    if cell.user_id == user_id {
-                        continue;
-                    }
-                    let other_user = cell.user_id;
-
-                    //如果玩家id大于0
-                    if other_user == 0 {
-                        continue;
-                    }
-                    let cter = self.get_battle_cter(Some(other_user));
-                    if let Err(e) = cter {
-                        warn!("{:?}", e);
-                        continue;
-                    }
-                    let cter = cter.unwrap();
-                    if cter.is_died() {
-                        continue;
-                    }
-                    v.push(other_user);
-                }
-            }
-        } else if targets.is_none() && scope_temp.is_some() {
-            let scope_temp = scope_temp.unwrap();
-
-            for direction_temp2d in scope_temp.scope2d.iter() {
-                for coord_temp in direction_temp2d.direction2d.iter() {
-                    let x = center_cell.x + coord_temp.x;
-                    let y = center_cell.y + coord_temp.y;
-                    let cell_index = self.tile_map.coord_map.get(&(x, y));
-                    if let None = cell_index {
-                        continue;
-                    }
-                    let cell_index = cell_index.unwrap();
-                    let cell = self.tile_map.map.get(*cell_index);
-                    if cell.is_none() {
-                        continue;
-                    }
+                    v.push(*cell_index);
                     let cell = cell.unwrap();
                     if cell.user_id <= 0 {
                         continue;
                     }
                     //如果目标不能是自己，就跳过
                     if (target_type == TargetType::OtherAllPlayer
+                        || target_type == TargetType::SelfScopeOthers
+                        || target_type == TargetType::SelfScopeAnyOthers
                         || target_type == TargetType::OtherAnyPlayer)
                         && cell.user_id == user_id
                     {
@@ -745,10 +726,11 @@ impl BattleData {
                     if cter.is_died() {
                         continue;
                     }
-                    v.push(other_user);
+                    v_u.push(other_user);
                 }
             }
         } else {
+            //两者都有
             let targets = targets.unwrap();
             let scope_temp = scope_temp.unwrap();
             //否则校验选中的区域
@@ -765,6 +747,7 @@ impl BattleData {
                     if let None = cell {
                         continue;
                     }
+                    v.push(*cell_index);
                     let cell = cell.unwrap();
                     for index in targets.iter() {
                         if cell.index as u32 != *index {
@@ -773,8 +756,10 @@ impl BattleData {
                         let other_user = cell.user_id;
                         //如果目标不能是自己，就跳过
                         if (target_type == TargetType::OtherAllPlayer
+                            || target_type == TargetType::SelfScopeOthers
+                            || target_type == TargetType::SelfScopeAnyOthers
                             || target_type == TargetType::OtherAnyPlayer)
-                            && other_user == user_id
+                            && cell.user_id == user_id
                         {
                             continue;
                         }
@@ -788,33 +773,69 @@ impl BattleData {
                             continue;
                         }
                         let cter = cter.unwrap();
-                        if v.contains(&cter.user_id) {
+                        if v_u.contains(&cter.user_id) {
                             continue;
                         }
                         if cter.is_died() {
                             continue;
                         }
-                        v.push(cter.user_id);
+                        v_u.push(cter.user_id);
                     }
                 }
             }
         }
-        v
+        (v, v_u)
     }
-}
 
-///校验技能条件
-pub fn check_skill_judge(cter: &BattleCharacter, skill_judge: u32) -> anyhow::Result<()> {
-    if skill_judge == 0 {
-        return Ok(());
+    ///校验技能条件
+    pub fn check_skill_judge(
+        &self,
+        user_id: u32,
+        skill_judge: u32,
+        skill_id: Option<u32>,
+        _: Option<Vec<u32>>,
+    ) -> anyhow::Result<()> {
+        if skill_judge == 0 {
+            return Ok(());
+        }
+        let judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&skill_judge)?;
+        let target_type = TargetType::try_from(judge_temp.target);
+        if let Err(e) = target_type {
+            anyhow::bail!("{:?}", e)
+        }
+        let cter = self.get_battle_cter(Some(user_id)).unwrap();
+        let target_type = target_type.unwrap();
+
+        match target_type {
+            TargetType::PlayerSelf => {
+                if HP_LIMIT_GT == judge_temp.id && cter.hp <= judge_temp.par1 as i16 {
+                    anyhow::bail!(
+                        "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
+                        judge_temp.par1,
+                        judge_temp.id
+                    )
+                } else if LIMIT_TURN_TIMES == judge_temp.id
+                    && cter.turn_limit_skills.contains(&skill_id.unwrap())
+                {
+                    anyhow::bail!(
+                        "this turn already used this skill!cter_id:{},skill_id:{},skill_judge_id:{}",
+                        cter.cter_id,
+                        skill_id.unwrap(),
+                        skill_judge,
+                    )
+                } else if LIMIT_ROUND_TIMES == judge_temp.id
+                    && cter.round_limit_skills.contains(&skill_id.unwrap())
+                {
+                    anyhow::bail!(
+                        "this round already used this skill!cter_id:{},skill_id:{},skill_judge_id:{}",
+                        cter.cter_id,
+                        skill_id.unwrap(),
+                        skill_judge,
+                    )
+                }
+            }
+            _ => {}
+        }
+        Ok(())
     }
-    let judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&skill_judge)?;
-    if HP_LIMIT_GT.contains(&judge_temp.id) && cter.hp <= judge_temp.par1 as i16 {
-        anyhow::bail!(
-            "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
-            judge_temp.par1,
-            judge_temp.id
-        )
-    }
-    Ok(())
 }

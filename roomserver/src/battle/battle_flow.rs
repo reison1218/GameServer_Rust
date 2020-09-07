@@ -2,8 +2,8 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
-use crate::battle::battle_enum::TargetType;
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
+use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
@@ -215,11 +215,16 @@ impl BattleData {
             let skill_judge = skill.skill_temp.skill_judge as u32;
 
             //校验目标类型
-            let res = self.check_target_array(user_id, target_type, &target_array, skill_judge);
+            let res = self.check_target_array(user_id, target_type, &target_array);
             if let Err(e) = res {
                 let str = format!("{:?}", e);
                 warn!("{:?}", str);
                 anyhow::bail!("")
+            }
+
+            //校验技能可用判定条件
+            if skill_judge > 0 {
+                self.check_skill_judge(user_id, skill_judge, Some(skill_id), None)?;
             }
 
             //根据技能id去找函数指针里面的函数，然后进行执行
@@ -310,12 +315,20 @@ impl BattleData {
                 warn!("{:?}", e);
                 anyhow::bail!("")
             }
-            let v = self.cal_scope(
+            let scope_temp = TEMPLATES
+                .get_skill_scope_ref()
+                .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
+            if let Err(e) = scope_temp {
+                warn!("{:?}", e);
+                anyhow::bail!("")
+            }
+            let scope_temp = scope_temp.unwrap();
+            let (_, v) = self.cal_scope(
                 user_id,
                 target_user_index as isize,
                 TargetType::OtherAnyPlayer,
                 None,
-                None,
+                Some(scope_temp),
             );
 
             //目标周围的玩家
@@ -420,12 +433,6 @@ impl BattleData {
                 anyhow::bail!("{:?}", e)
             }
 
-            //处理配对成功与否后的数据
-            if is_pair {
-                //状态改为可以进行攻击
-                battle_cter.is_can_attack = true;
-                self.tile_map.un_pair_count -= 2;
-            }
             //更新翻的地图块下标
             battle_cter.open_cell_vec.push(index);
             //翻块次数-1
