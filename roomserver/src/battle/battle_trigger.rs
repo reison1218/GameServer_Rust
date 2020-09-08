@@ -258,6 +258,7 @@ impl TriggerEvent for BattleData {
         v
     }
 
+    ///使用技能后触发
     fn after_use_skill_trigger(
         &mut self,
         user_id: u32,
