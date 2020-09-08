@@ -49,6 +49,21 @@ impl Cell {
         }
         false
     }
+
+    ///移除buff
+    pub fn remove_buff(&mut self, buff_id: u32) {
+        self.buffs.remove(&buff_id);
+    }
+
+    ///消耗buff,如果有buff被删除了，则返回some，否则范围none
+    pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) {
+        let buff = self.buffs.get_mut(&buff_id).unwrap();
+        if is_turn_start {
+            buff.sub_keep_times();
+        } else {
+            buff.sub_trigger_timesed();
+        }
+    }
 }
 
 impl TileMap {

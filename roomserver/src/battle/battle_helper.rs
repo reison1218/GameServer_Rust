@@ -12,7 +12,6 @@ use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
-use protobuf::descriptor::FileOptions_OptimizeMode::LITE_RUNTIME;
 use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
@@ -134,73 +133,102 @@ impl BattleData {
         Ok(v)
     }
 
-    pub unsafe fn remove_buff(
+    ///消耗buff
+    pub unsafe fn consume_buff(
         &mut self,
         buff_id: u32,
         user_id: Option<u32>,
         cell_index: Option<usize>,
-    ) {
+        is_turn_index: bool,
+    ) -> Vec<TargetPt> {
+        let mut v = Vec::new();
+        let next_turn_index = self.next_turn_index;
+        let mut cter_res: Option<&mut BattleCharacter> = None;
+        let mut cell_res: Option<&mut Cell> = None;
+        let cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         if user_id.is_some() {
             let user_id = user_id.unwrap();
             let cter = self.get_battle_cter_mut(Some(user_id));
             if let Err(e) = cter {
                 error!("{:?}", e);
-                return;
+                return v;
             }
-            let cter = cter.unwrap() as *mut BattleCharacter;
-            let buff = cter.as_mut().unwrap().buffs.get(&buff_id);
+            let cter = cter.unwrap();
+            let buff = cter.buffs.get_mut(&buff_id);
             if buff.is_none() {
-                return;
+                return v;
             }
-            let buff = buff.unwrap();
-            cter.as_mut().unwrap().remove_buff(buff_id);
-            if buff.from_user.is_some() {
-                let from_user = buff.from_user.unwrap();
-                let from_cter = self.get_battle_cter_mut(Some(from_user));
-                if from_cter.is_err() {
-                    return;
-                }
-                let from_cter = from_cter.unwrap();
-                if buff.from_skill.is_none() {
-                    return;
-                }
-                let from_skill = buff.from_skill.unwrap();
-                let skill = from_cter.skills.get_mut(&from_skill);
-                if skill.is_none() {
-                    return;
-                }
-                let skill = skill.unwrap();
-                skill.is_active = false;
-            }
+            cter_res = Some(cter);
         } else if cell_index.is_some() {
             let cell_index = cell_index.unwrap();
             let cell = self.tile_map.map.get_mut(cell_index);
             if cell.is_none() {
-                return;
+                return v;
             }
             let cell = cell.unwrap();
-            if cell.buffs.contains_key(&buff_id) {
-                let buff = cell.buffs.remove(&buff_id).unwrap();
-                if buff.from_user.is_some() {
-                    let from_user = buff.from_user.unwrap();
-                    let from_cter = self.get_battle_cter_mut(Some(from_user));
-                    if from_cter.is_err() {
-                        return;
-                    }
-                    let from_cter = from_cter.unwrap();
-                    if buff.from_skill.is_none() {
-                        return;
-                    }
-                    let from_skill = buff.from_skill.unwrap();
-                    let skill = from_cter.skills.get_mut(&from_skill);
-                    if skill.is_none() {
-                        return;
-                    }
-                    let skill = skill.unwrap();
-                    skill.is_active = false;
+            let buff = cell.buffs.get_mut(&buff_id);
+            if buff.is_none() {
+                return v;
+            }
+            cell_res = Some(cell);
+        }
+
+        let buff;
+        if cter_res.is_some() {
+            buff = cter_res.as_mut().unwrap().buffs.get_mut(&buff_id);
+        } else if cell_res.is_some() {
+            buff = cell_res.as_mut().unwrap().buffs.get_mut(&buff_id);
+        } else {
+            return v;
+        }
+        let buff = buff.unwrap();
+
+        let need_remove;
+        if is_turn_index && buff.turn_index.is_some() && buff.turn_index.unwrap() == next_turn_index
+        {
+            buff.sub_keep_times();
+        } else {
+            buff.sub_trigger_timesed()
+        }
+        if buff.keep_times <= 0 || buff.trigger_timesed <= 0 {
+            need_remove = true;
+        } else {
+            need_remove = false;
+        }
+
+        if need_remove {
+            if buff.from_user.is_some() {
+                let from_user = buff.from_user.unwrap();
+                let from_cter = cters.as_mut().unwrap().get_mut(&from_user);
+                if from_cter.is_none() {
+                    error!("can not find battle_cter!user_id:{}", from_user);
+                    return v;
                 }
+                let from_cter = from_cter.unwrap();
+                if buff.from_skill.is_none() {
+                    return v;
+                }
+                let from_skill = buff.from_skill.unwrap();
+                let skill = from_cter.skills.get_mut(&from_skill);
+                if skill.is_none() {
+                    return v;
+                }
+                let skill = skill.unwrap();
+                skill.is_active = false;
+            }
+
+            if let Some(cter) = cter_res {
+                cter.remove_buff(buff_id);
+                let mut tp = TargetPt::new();
+                tp.lost_buffs.push(buff_id);
+                tp.target_value.push(cter.get_cell_index() as u32);
+                v.push(tp);
+            }
+            if let Some(cell) = cell_res {
+                cell.remove_buff(buff_id);
             }
         }
+        v
     }
 
     ///加血
@@ -233,7 +261,7 @@ impl BattleData {
         let scope_temp = TEMPLATES
             .get_skill_scope_ref()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
-        if let Err(e) = scope_temp {
+        if let Err(_) = scope_temp {
             return target_cter.defence as i16;
         }
         let scope_temp = scope_temp.unwrap();
@@ -289,6 +317,7 @@ impl BattleData {
                 te_pt.set_buff_id(gd_buff.0);
                 target_pt.passiveEffect.push(te_pt);
                 if gd_buff.1 {
+                    self.consume_buff(gd_buff.0, Some(target_cter.user_id), None, false);
                     target_pt.lost_buffs.push(gd_buff.0);
                 }
                 res = 0;
@@ -474,7 +503,18 @@ impl BattleData {
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             } //玩家自己
             TargetType::PlayerSelf => {
-                let cter = self.get_battle_cter(Some(user_id)).unwrap();
+                if target_array.len() > 1 {
+                    let str = format!("this target_type is invaild!target_type:{:?}", target_type);
+                    anyhow::bail!(str)
+                }
+                for index in target_array {
+                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    if cter.user_id != user_id {
+                        let str =
+                            format!("this target_type is invaild!target_type:{:?}", target_type);
+                        anyhow::bail!(str)
+                    }
+                }
             } //玩家自己
             //全图玩家
             TargetType::AllPlayer => {
@@ -542,6 +582,12 @@ impl BattleData {
                 for index in target_array {
                     let index = *index as usize;
                     self.check_choice_index(index, false, false, false, true)?;
+                }
+            }
+            TargetType::OpenedCell => {
+                for index in target_array {
+                    let index = *index as usize;
+                    self.check_choice_index(index, false, true, false, false)?;
                 }
             }
             //其他目标类型

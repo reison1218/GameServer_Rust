@@ -339,7 +339,7 @@ fn use_skill(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验技能id有效性
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
     let skill = battle_cter.skills.get(&skill_id);
     if skill.is_none() {
         warn!("this skill is none!skill_id:{}", user_id);
@@ -356,6 +356,7 @@ fn use_skill(
     let res = rm
         .battle_data
         .use_skill(user_id, skill_id, false, target_array, au)?;
+
     Ok(res)
 }
 

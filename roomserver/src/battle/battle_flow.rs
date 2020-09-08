@@ -206,6 +206,11 @@ impl BattleData {
                 skill = skill_s.as_mut().unwrap();
             } else {
                 skill = battle_cter.skills.get_mut(&skill_id).unwrap();
+                let res = self.before_use_skill_trigger(user_id);
+                if let Err(e) = res {
+                    warn!("{:?}", e);
+                    anyhow::bail!("")
+                }
             }
 
             let target = skill.skill_temp.target;
@@ -371,7 +376,7 @@ impl BattleData {
                 if cter.is_died() {
                     continue;
                 }
-                cter.reset();
+                cter.round_reset();
                 let cter = cter as *mut BattleCharacter;
                 for buff in cter.as_mut().unwrap().buffs.values_mut() {
                     //刷新地图增加攻击力
@@ -460,7 +465,6 @@ impl BattleData {
 
     ///回合开始触发
     pub fn turn_start_summary(&mut self) {
-        let turn_index = self.next_turn_index;
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             error!("{:?}", e);
@@ -478,63 +482,30 @@ impl BattleData {
 
         //结算玩家身上的buff
         for cter in self.battle_cter.values_mut() {
-            let mut delete = Vec::new();
-            for buff in cter.buffs.values_mut() {
-                let res = buff.turn_index.is_none();
-                if res || buff.turn_index.unwrap() != turn_index {
-                    continue;
-                }
-                if buff.buff_temp.keep_time == 0 {
-                    continue;
-                }
-                buff.sub_keep_times();
-                if buff.keep_times > 0 {
-                    continue;
-                }
-                delete.push(buff.id);
-            }
-            unsafe {
-                for buff_id in delete {
-                    battle_data
-                        .as_mut()
-                        .unwrap()
-                        .remove_buff(buff_id, Some(cter.user_id), None);
+            for buff in cter.buffs.clone().values() {
+                let buff_id = buff.id;
+                unsafe {
+                    battle_data.as_mut().unwrap().consume_buff(
+                        buff_id,
+                        Some(cter.user_id),
+                        None,
+                        true,
+                    );
                 }
             }
         }
 
-        let mut delete = HashMap::new();
         //结算该玩家加在地图块上的buff
         for cell in self.tile_map.map.iter_mut() {
             for buff_id in cell.buffs.clone().keys() {
-                let buff = cell.buffs.get_mut(buff_id).unwrap();
-                let res = buff.turn_index.is_none();
-                if res || buff.turn_index.unwrap() != turn_index {
-                    continue;
-                }
-                if buff.buff_temp.keep_time == 0 {
-                    continue;
-                }
-                buff.sub_keep_times();
-                if buff.keep_times > 0 {
-                    continue;
-                }
-                if !delete.contains_key(&cell.index) {
-                    delete.insert(cell.index, Vec::new());
-                }
-                delete.get_mut(&cell.index).unwrap().push(*buff_id);
-            }
-        }
-
-        //删掉buff
-        unsafe {
-            for (cell_index, buff_ids) in delete.iter() {
-                let cell = self.tile_map.map.get_mut(*cell_index).unwrap();
-                for buff_id in buff_ids {
-                    battle_data
-                        .as_mut()
-                        .unwrap()
-                        .remove_buff(*buff_id, None, Some(cell.index));
+                let buff_id = *buff_id;
+                unsafe {
+                    battle_data.as_mut().unwrap().consume_buff(
+                        buff_id,
+                        None,
+                        Some(cell.index),
+                        true,
+                    );
                 }
             }
         }

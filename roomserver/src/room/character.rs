@@ -118,28 +118,23 @@ impl BattleCharacter {
     }
 
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
-    pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) -> Option<u32> {
+    pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) {
         let buff = self.buffs.get_mut(&buff_id).unwrap();
         if is_turn_start {
             buff.sub_keep_times();
         } else {
             buff.sub_trigger_timesed();
         }
-        //判断是否需要删除buff
-        if buff.keep_times <= 0 || buff.trigger_timesed <= 0 {
-            self.remove_buff(buff_id);
-            return Some(buff_id);
-        }
-        None
     }
 
     ///重制角色数据
-    pub fn reset(&mut self) {
+    pub fn round_reset(&mut self) {
         self.is_attacked = false;
         self.is_can_attack = false;
         self.cell_index = None;
         self.open_cell_vec.clear();
         self.last_cell_index = None;
+        self.round_limit_skills.clear();
     }
 
     ///计算攻击力
@@ -331,6 +326,8 @@ impl BattleCharacter {
         self.is_pair = false;
         //重制是否翻过地图块
         self.open_cell_vec.clear();
+        //清空turn限制
+        self.turn_limit_skills.clear();
     }
 
     ///触发抵挡攻击伤害
@@ -338,10 +335,16 @@ impl BattleCharacter {
         let gd_buff = self.buffs.get_mut(&GD_ATTACK_DAMAGE[0]);
         let mut buff_id = 0;
         let mut is_remove = false;
-        if let Some(gd_buff) = gd_buff {
-            buff_id = gd_buff.id;
-            let res = self.consume_buff(buff_id, false);
-            is_remove = res.is_some();
+        if gd_buff.is_none() {
+            return (buff_id, is_remove);
+        }
+        let gd_buff = gd_buff.unwrap();
+
+        buff_id = gd_buff.id;
+        self.consume_buff(buff_id, false);
+        let gd_buff = self.buffs.get_mut(&buff_id).unwrap();
+        if gd_buff.trigger_timesed <= 0 || gd_buff.keep_times <= 0 {
+            is_remove = true;
         }
         (buff_id, is_remove)
     }

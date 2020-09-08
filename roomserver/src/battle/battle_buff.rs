@@ -1,7 +1,7 @@
 use crate::battle::battle::{BattleData, Direction};
 use crate::battle::battle_enum::buff_type::{
     AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR_ADD_ENERGY,
-    PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
+    PAIR_CLEAN_SKILL_CD, PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
 };
 use crate::battle::battle_enum::EffectType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -33,12 +33,12 @@ pub struct Buff {
 impl Buff {
     pub fn new(
         temp: &'static BuffTemp,
-        index: Option<usize>,
+        turn_index: Option<usize>,
         from_user: Option<u32>,
         from_skill: Option<u32>,
     ) -> Self {
         let mut buff = Buff::from(temp);
-        buff.turn_index = index;
+        buff.turn_index = turn_index;
         buff.from_user = from_user;
         buff.from_skill = from_skill;
         buff
@@ -360,6 +360,35 @@ impl BattleData {
         }
     }
 
+    ///匹配清空指定技能cd
+    fn pair_clean_skill_cd(
+        &mut self,
+        user_id: u32,
+        buff_id: u32,
+        skill_id: u32,
+        au: &mut ActionUnitPt,
+    ) {
+        let cter = self.get_battle_cter_mut(Some(user_id));
+        if let Err(e) = cter {
+            error!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
+        let skill = cter.skills.get_mut(&skill_id);
+        if let None = skill {
+            warn!("this cter has no this skill!skill_id:{}", skill_id);
+            return;
+        }
+        let skill = skill.unwrap();
+        skill.cd_times = 0;
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(cter.get_cell_index() as u32);
+        let mut tep = TriggerEffectPt::new();
+        tep.buff_id = buff_id;
+        target_pt.passiveEffect.push(tep);
+        au.targets.push(target_pt);
+    }
+
     ///匹配同元素治疗
     fn pair_same_element_cure(
         &mut self,
@@ -537,6 +566,10 @@ impl BattleData {
                             cters,
                             au,
                         );
+                    } else if PAIR_CLEAN_SKILL_CD.contains(&buff.id) {
+                        //匹配了刷新指定技能cd
+                        let skill_id = buff.buff_temp.par1;
+                        self.pair_clean_skill_cd(open_user, buff.id, skill_id, au);
                     }
                 }
                 //翻开地图块加能量，配对加能量

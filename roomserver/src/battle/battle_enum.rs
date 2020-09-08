@@ -34,11 +34,11 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 6] = [121, 211, 221, 311, 322, 20002];
+    pub const ADD_BUFF: [u32; 7] = [121, 211, 221, 311, 312, 322, 20002];
     ///地图块换位置
     pub const CHANGE_INDEX: [u32; 1] = [111];
     ///展示地图块
-    pub const SHOW_INDEX: [u32; 4] = [112, 113, 421, 20001];
+    pub const SHOW_INDEX: [u32; 6] = [112, 113, 421, 422, 423, 20001];
     ///移动玩家
     pub const MOVE_USER: [u32; 1] = [222];
     ///相临玩家造成技能伤害并恢复生命
@@ -49,6 +49,11 @@ pub mod skill_type {
     pub const SKILL_AOE: [u32; 3] = [411, 412, 432];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
+    ///对已所有翻开元素块上对玩家造成技能伤害
+    pub const SKILL_DAMAGE_OPENED_ELEMENT: [u32; 1] = [213];
+    ///范围治疗
+    pub const SCOPE_CURE: [u32; 1] = [313];
+
     ///---------------------------以下为了方便单独定义出来
     ///水炮
     pub const WATER_TURRET: u32 = 323;
@@ -58,8 +63,10 @@ pub mod skill_type {
     pub const SHOW_ALL_USERS_CELL: u32 = 113;
     ///技能伤害，若目标在附近，则伤害加深
     pub const SKILL_DAMAGE_NEAR_DEEP: u32 = 122;
-    ///技能伤害，若配对马上清空cd               
-    pub const SKILL_DAMAGE_PAIR_CLEAN_CD: u32 = 123;
+    ///展示所有相同元素的地图块给所有玩家
+    pub const SHOW_SAME_ELMENT_CELL_ALL: u32 = 422;
+    ///展示所有相同元素的地图块给所有玩家并治疗
+    pub const SHOW_SAME_ELMENT_CELL_ALL_AND_CURE: u32 = 423;
 }
 
 ///buff类型
@@ -99,9 +106,24 @@ pub mod buff_type {
     ///配对与自己相同元素时恢复生命
     pub const PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
 
+    ///配对成功刷新技能cd
+    pub const PAIR_CLEAN_SKILL_CD: [u32; 1] = [13];
+
+    ///陷阱类buff
+    pub const TRAPS: [u32; 2] = [10, 12];
+
     ///---------------------------以下为了方便单独定义出来
     /// 受到相临攻击时候减伤
     pub const NEAR_SUB_ATTACK_DAMAGE: u32 = 10001;
+
+    ///对移动到此地图块上的玩家施加一个buff
+    pub const TRAP_ADD_BUFF: [u32; 1] = [10];
+
+    ///陷阱造成技能伤害
+    pub const TRAP_SKILL_DAMAGE: [u32; 1] = [12];
+
+    ///锁定技能
+    pub const LOCK_SKILLS: [u32; 1] = [11];
 }
 
 ///pos操作类型
@@ -222,7 +244,7 @@ pub enum TargetType {
     UnOpenCell = 7,          //未翻开的地图块
     UnPairCell = 8,          //未配对的地图块
     NullCell = 9,            //空的地图块，上面没人
-    UnPairNullCell = 10,     //未配对的地图块
+    UnPairNullCell = 10,     //未配对的空地图块
     CellPlayer = 11,         //地图块上的玩家
     SelfScopeOthers = 12,    //以自己为中心某个范围内的所有其他玩家
     SelfScopeAnyOthers = 13, //以自己为中心某个范围内的任意其他玩家
