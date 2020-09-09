@@ -1,12 +1,14 @@
 use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
     SCOPE_CURE, SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE, SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_CELL,
+    TRANSFORM,
 };
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
     add_buff, auto_pair_cell, change_index, move_user, scope_cure, show_index, single_skill_damage,
     skill_aoe_damage, skill_damage_and_cure, skill_damage_opened_element, skill_open_cell, sub_cd,
+    transform,
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -117,6 +119,7 @@ impl BattleData {
             skill_damage_opened_element,
         );
         bd.skill_cmd_map.insert(&SCOPE_CURE[..], scope_cure);
+        bd.skill_cmd_map.insert(&TRANSFORM[..], transform);
         bd
     }
 

@@ -106,6 +106,7 @@ message TargetPt{
     repeated uint32 add_buffs = 3;//对目标增加对buff
     repeated TriggerEffectPt passiveEffect = 4;	//被动效果
     repeated uint32 lost_buffs = 5;//目标失效的buff
+    BattleCharacterPt transform_cter = 6;//变身之后的角色
 }
 
 //触发效果

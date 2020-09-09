@@ -2836,6 +2836,7 @@ pub struct TargetPt {
     pub add_buffs: ::std::vec::Vec<u32>,
     pub passiveEffect: ::protobuf::RepeatedField<TriggerEffectPt>,
     pub lost_buffs: ::std::vec::Vec<u32>,
+    pub transform_cter: ::protobuf::SingularPtrField<BattleCharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2976,6 +2977,39 @@ impl TargetPt {
     pub fn take_lost_buffs(&mut self) -> ::std::vec::Vec<u32> {
         ::std::mem::replace(&mut self.lost_buffs, ::std::vec::Vec::new())
     }
+
+    // .protos.BattleCharacterPt transform_cter = 6;
+
+
+    pub fn get_transform_cter(&self) -> &BattleCharacterPt {
+        self.transform_cter.as_ref().unwrap_or_else(|| BattleCharacterPt::default_instance())
+    }
+    pub fn clear_transform_cter(&mut self) {
+        self.transform_cter.clear();
+    }
+
+    pub fn has_transform_cter(&self) -> bool {
+        self.transform_cter.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_transform_cter(&mut self, v: BattleCharacterPt) {
+        self.transform_cter = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_transform_cter(&mut self) -> &mut BattleCharacterPt {
+        if self.transform_cter.is_none() {
+            self.transform_cter.set_default();
+        }
+        self.transform_cter.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_transform_cter(&mut self) -> BattleCharacterPt {
+        self.transform_cter.take().unwrap_or_else(|| BattleCharacterPt::new())
+    }
 }
 
 impl ::protobuf::Message for TargetPt {
@@ -2986,6 +3020,11 @@ impl ::protobuf::Message for TargetPt {
             }
         };
         for v in &self.passiveEffect {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.transform_cter {
             if !v.is_initialized() {
                 return false;
             }
@@ -3011,6 +3050,9 @@ impl ::protobuf::Message for TargetPt {
                 },
                 5 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.lost_buffs)?;
+                },
+                6 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.transform_cter)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -3041,6 +3083,10 @@ impl ::protobuf::Message for TargetPt {
         for value in &self.lost_buffs {
             my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
         };
+        if let Some(ref v) = self.transform_cter.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -3066,6 +3112,11 @@ impl ::protobuf::Message for TargetPt {
         for v in &self.lost_buffs {
             os.write_uint32(5, *v)?;
         };
+        if let Some(ref v) = self.transform_cter.as_ref() {
+            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -3130,6 +3181,11 @@ impl ::protobuf::Message for TargetPt {
                     |m: &TargetPt| { &m.lost_buffs },
                     |m: &mut TargetPt| { &mut m.lost_buffs },
                 ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<BattleCharacterPt>>(
+                    "transform_cter",
+                    |m: &TargetPt| { &m.transform_cter },
+                    |m: &mut TargetPt| { &mut m.transform_cter },
+                ));
                 ::protobuf::reflect::MessageDescriptor::new_pb_name::<TargetPt>(
                     "TargetPt",
                     fields,
@@ -3154,6 +3210,7 @@ impl ::protobuf::Clear for TargetPt {
         self.add_buffs.clear();
         self.passiveEffect.clear();
         self.lost_buffs.clear();
+        self.transform_cter.clear();
         self.unknown_fields.clear();
     }
 }
@@ -4690,29 +4747,30 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     (\rR\x05buffs\x12\x16\n\x06skills\x18\x07\x20\x03(\rR\x06skills\x12\x14\
     \n\x05items\x18\x08\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\x1f\n\x0be\
     ffect_type\x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\
-    \x03\x20\x01(\rR\x0beffectValue\"\xd4\x01\n\x08TargetPt\x12!\n\x0ctarget\
+    \x03\x20\x01(\rR\x0beffectValue\"\x96\x02\n\x08TargetPt\x12!\n\x0ctarget\
     _value\x18\x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\x18\x02\x20\
     \x03(\x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_buffs\x18\x03\
     \x20\x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\x03(\x0b2\x17\
     .protos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_buffs\x18\x05\
-    \x20\x03(\rR\tlostBuffs\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_id\x18\
-    \x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\
-    \x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUn\
-    itPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0ba\
-    ction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\
-    \x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\
-    \x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\
-    \rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\
-    \x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTimes\
-    ed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"k\n\rSummaryDat\
-    aPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter\
-    _id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\
-    \x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\"e\n\x0cCterStat\
-    usPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06ski\
-    lls\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\
-    \x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\
-    \x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.B\
-    uffPtR\x05buffsb\x06proto3\
+    \x20\x03(\rR\tlostBuffs\x12@\n\x0etransform_cter\x18\x06\x20\x01(\x0b2\
+    \x19.protos.BattleCharacterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\
+    \x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\
+    \x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05v\
+    alue\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\r\
+    R\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactionType\
+    \x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07tar\
+    gets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlo\
+    st_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff\
+    _id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\
+    \x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tke\
+    epTimes\"k\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06\
+    userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05g\
+    rade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\
+    \x04rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05b\
+    uffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\
+    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\
+    \x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy::INIT;

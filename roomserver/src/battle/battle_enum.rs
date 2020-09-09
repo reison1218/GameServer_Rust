@@ -53,6 +53,8 @@ pub mod skill_type {
     pub const SKILL_DAMAGE_OPENED_ELEMENT: [u32; 1] = [213];
     ///范围治疗
     pub const SCOPE_CURE: [u32; 1] = [313];
+    ///变身
+    pub const TRANSFORM: [u32; 1] = [431];
 
     ///---------------------------以下为了方便单独定义出来
     ///水炮
@@ -67,6 +69,8 @@ pub mod skill_type {
     pub const SHOW_SAME_ELMENT_CELL_ALL: u32 = 422;
     ///展示所有相同元素的地图块给所有玩家并治疗
     pub const SHOW_SAME_ELMENT_CELL_ALL_AND_CURE: u32 = 423;
+    ///移动到一个空到地图块并变身，对周围造成技能伤害
+    pub const MOVE_TO_NULL_CELL_AND_TRANSFORM: u32 = 431;
 }
 
 ///buff类型

@@ -1,8 +1,9 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::skill_type::{
-    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_SAME_ELMENT_CELL_ALL,
-    SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
+    HURT_SELF_ADD_BUFF, MOVE_TO_NULL_CELL_AND_TRANSFORM, SHOW_ALL_USERS_CELL,
+    SHOW_SAME_ELMENT_CELL_ALL, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_DAMAGE_NEAR_DEEP,
+    SKILL_OPEN_NEAR_CELL,
 };
 use crate::battle::battle_enum::{EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
@@ -872,6 +873,91 @@ pub unsafe fn scope_cure(
         }
         let target_pt = target_pt.unwrap();
         au.targets.push(target_pt);
+    }
+    None
+}
+
+///变身系列技能
+pub unsafe fn transform(
+    battle_data: &mut BattleData,
+    user_id: u32,
+    skill_id: u32,
+    targets: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> Option<Vec<ActionUnitPt>> {
+    let mut battle_data = battle_data.borrow_mut() as *mut BattleData;
+    let cter = battle_data
+        .as_mut()
+        .unwrap()
+        .get_battle_cter_mut(Some(user_id))
+        .unwrap();
+    let skill = cter.skills.get(&skill_id).unwrap();
+    let target_type = TargetType::try_from(skill.skill_temp.target);
+    if let Err(e) = target_type {
+        warn!("{:?}", e);
+        return None;
+    }
+    let target_type = target_type.unwrap();
+    //处理移动到空地图块并变身技能
+    if MOVE_TO_NULL_CELL_AND_TRANSFORM == skill_id {
+        let index = targets.get(0);
+        if let None = index {
+            warn!("transform!targets is empty!");
+            return None;
+        }
+        let index = *index.unwrap() as usize;
+        //检查选择对位置
+        let res = battle_data
+            .as_ref()
+            .unwrap()
+            .check_choice_index(index, true, true, true, true);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return None;
+        }
+
+        //计算范围
+        let scope_id = skill.skill_temp.scope;
+        let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&scope_id);
+        if let Err(e) = scope_temp {
+            warn!("{:?}", e);
+            return None;
+        }
+        let skill_damage = skill.skill_temp.par1 as i16;
+        let scope_temp = scope_temp.unwrap();
+        let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
+            user_id,
+            cter.get_cell_index() as isize,
+            target_type,
+            None,
+            Some(scope_temp),
+        );
+        let mut need_rank = true;
+        for user in other_users {
+            let target_pt = battle_data.as_mut().unwrap().deduct_hp(
+                user_id,
+                user,
+                Some(skill_damage),
+                need_rank,
+            );
+            if let Err(e) = target_pt {
+                warn!("{:?}", e);
+                continue;
+            }
+            au.targets.push(target_pt.unwrap());
+            need_rank = false;
+        }
+        //处理变身
+        let res = cter.transform(user_id, skill.skill_temp.par2);
+        match res {
+            Err(e) => {
+                error!("{:?}", e);
+                return None;
+            }
+            Ok(target_pt) => {
+                au.targets.push(target_pt);
+            }
+        }
     }
     None
 }

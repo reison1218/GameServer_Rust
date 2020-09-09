@@ -30,8 +30,9 @@ impl BattleData {
             .values()
             .filter(|x| x.state == BattleCterState::Alive)
             .count();
-        let battle_cters_prt = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
-        let battle_cters = battle_cters_prt.as_mut().unwrap();
+        let battle_members_ptr =
+            self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+        let battle_cters = battle_members_ptr.as_mut().unwrap();
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
             let mut member: Option<u32> = None;

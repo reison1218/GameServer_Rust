@@ -60,16 +60,17 @@ impl BattleData {
                 return;
             }
 
-            let cter = self.battle_cter.get(&user_id);
+            let cter = self.get_battle_cter(Some(user_id));
+
             match cter {
-                Some(cter) => {
+                Ok(cter) => {
                     if cter.state == BattleCterState::Die {
                         self.add_next_turn_index();
                         return;
                     }
                 }
-                None => {
-                    warn!("add_next_turn_index cter is none!user_id:{}", user_id);
+                Err(e) => {
+                    warn!("{:?}", e);
                 }
             }
         } else {
