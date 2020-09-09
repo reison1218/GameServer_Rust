@@ -114,8 +114,40 @@ impl BattleCharacter {
     }
 
     pub fn transform_back(&mut self) -> anyhow::Result<TargetPt> {
-        if self.self_transform_cter.is_some() {}
-        let target_pt = TargetPt::new();
+        //先重制数据
+        self.clean_all();
+        let cter;
+
+        if self.self_transform_cter.is_some() {
+            cter = self.self_transform_cter.as_mut().unwrap();
+        } else {
+            cter = self.self_cter.as_mut().unwrap();
+        }
+        let cter = self.self_transform_cter.as_mut().unwrap();
+        //然后复制数据
+        self.user_id = cter.user_id;
+        self.cter_id = cter.cter_id;
+        self.element = cter.element;
+        self.grade = cter.grade;
+        self.hp = cter.hp;
+        self.hp_max = cter.hp_max;
+        self.energy = cter.energy;
+        self.max_energy = cter.max_energy;
+        self.item_max = cter.item_max;
+        self.defence = cter.defence;
+        self.atk = cter.atk;
+        self.state = cter.state;
+        self.turn_limit_skills = cter.turn_limit_skills.clone();
+        self.round_limit_skills = cter.round_limit_skills.clone();
+        self.is_can_attack = cter.is_can_attack;
+        self.is_attacked = cter.is_attacked;
+        self.is_pair = cter.is_pair;
+        self.skills = cter.skills.clone();
+        self.buffs = cter.buffs.clone();
+        self.passive_buffs = cter.passive_buffs.clone();
+        let mut target_pt = TargetPt::new();
+        let cter_pt = self.convert_to_battle_cter();
+        target_pt.set_transform_cter(cter_pt);
         Ok(target_pt)
     }
 
@@ -141,11 +173,11 @@ impl BattleCharacter {
             //初始化数据成另外一个角色
             self.init_from_temp(cter_temp);
             if self.user_id == from_user {
-                self.self_transform_cter = Some(cter_clone.clone());
+                self.self_transform_cter = Some(Box::new(cter_clone.clone()));
             }
             //保存原本角色
             if self.self_cter.is_none() {
-                self.self_cter = Some(cter_clone);
+                self.self_cter = Some(Box::new(cter_clone));
             }
             //将继承属性给当前角色
             self.residue_open_times = residue_open_times;

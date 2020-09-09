@@ -892,6 +892,7 @@ pub unsafe fn transform(
         .get_battle_cter_mut(Some(user_id))
         .unwrap();
     let skill = cter.skills.get(&skill_id).unwrap();
+    let transform_cter_id = skill.skill_temp.par2;
     let target_type = TargetType::try_from(skill.skill_temp.target);
     if let Err(e) = target_type {
         warn!("{:?}", e);
@@ -948,7 +949,7 @@ pub unsafe fn transform(
             need_rank = false;
         }
         //处理变身
-        let res = cter.transform(user_id, skill.skill_temp.par2);
+        let res = cter.transform(user_id, transform_cter_id);
         match res {
             Err(e) => {
                 error!("{:?}", e);

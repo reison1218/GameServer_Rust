@@ -248,19 +248,31 @@ impl Deref for Foo{
     }
 }
 
-#[derive(Default)]
-struct BaseFoo{
-    foo:Foo
+impl Drop for Foo{
+    fn drop(&mut self) {
+        println!("delete foo");
+    }
 }
 
+#[derive(Default)]
+struct BaseFoo{
+    foo:Option<Foo>
+}
 
+impl Drop for BaseFoo{
+    fn drop(&mut self) {
+        println!("delete basefoo");
+    }
+}
 
 fn main() -> anyhow::Result<()> {
-    let mut v = Vec::new();
-    v.push(1);
-    v.push(1);
-    v.push(1);
-    v.push(1);
+    let f = Foo::default();
+    let mut bf = BaseFoo::default();
+    bf.foo = Some(f);
+    bf.foo = None;
+    std::thread::sleep(Duration::from_secs(10));
+    // println!("{:?}",v);
+    // println!("{:?}",res);
     //tcp_client::test_tcp_clients();
     //map::generate_map();
     // let a:u8 = HH::AA.into();
