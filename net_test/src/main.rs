@@ -271,6 +271,7 @@ fn main() -> anyhow::Result<()> {
     bf.foo = Some(f);
     bf.foo = None;
     let m = move ||{};
+    let a:Option<u32> = None; 
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();
