@@ -60,18 +60,17 @@ impl BattleData {
                 return;
             }
 
-            let cter = self.get_battle_cter(Some(user_id));
+            let cter_res = self.get_battle_cter(Some(user_id));
 
-            match cter {
-                Ok(cter) => {
-                    if cter.state == BattleCterState::Die {
-                        self.add_next_turn_index();
-                        return;
-                    }
+            match cter_res {
+                Ok(cter) if cter.state == BattleCterState::Die => {
+                    self.add_next_turn_index();
+                    return;
                 }
                 Err(e) => {
                     warn!("{:?}", e);
                 }
+                _ => {}
             }
         } else {
             warn!("{:?}", user_id.err().unwrap());
@@ -224,8 +223,9 @@ impl BattleData {
                 tp.lost_buffs.push(buff_id);
                 tp.target_value.push(cter.get_cell_index() as u32);
                 v.push(tp);
-            }
-            if let Some(cell) = cell_res {
+                let user_id = cter.user_id;
+                self.buff_lost_trigger(user_id, buff_id);
+            } else if let Some(cell) = cell_res {
                 cell.remove_buff(buff_id);
             }
         }

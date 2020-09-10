@@ -1103,34 +1103,6 @@ impl Room {
         rp
     }
 
-    ///更换目标
-    pub fn change_target(&mut self, user_id: &u32, target_id: &u32) -> anyhow::Result<()> {
-        let target = self.members.contains_key(target_id);
-        if !target {
-            let s = format!(
-                "this target player is not in this room!user_id:{},room_id:{}",
-                target_id,
-                self.get_room_id()
-            );
-            anyhow::bail!(s)
-        }
-        let member = self.members.get_mut(user_id);
-        if member.is_none() {
-            let s = format!(
-                "this player is not in this room!user_id:{},room_id:{}",
-                user_id,
-                self.get_room_id()
-            );
-            anyhow::bail!(s)
-        }
-        let battle_cter = self
-            .battle_data
-            .get_battle_cter_mut(Some(*user_id))
-            .unwrap();
-        battle_cter.target_id = *target_id;
-        Ok(())
-    }
-
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
             let battle_cter = BattleCharacter::init(&member.chose_cter);

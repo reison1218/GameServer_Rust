@@ -44,12 +44,6 @@ impl Buff {
         buff
     }
 
-    pub fn get_target(&self) -> TargetType {
-        let target_type = TargetType::try_from(self.buff_temp.target as u8).unwrap();
-        let target_type = TargetType::from(target_type);
-        target_type
-    }
-
     pub(crate) fn sub_trigger_timesed(&mut self) {
         self.trigger_timesed -= 1;
         if self.trigger_timesed < 0 {

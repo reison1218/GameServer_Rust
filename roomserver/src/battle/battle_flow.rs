@@ -60,14 +60,9 @@ impl BattleData {
             let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
             match max_grade_temp {
                 Some(max_grade_temp) => {
-                    let res = u32::from_str(max_grade_temp.value.as_str());
-                    match res {
-                        Ok(res) => {
-                            max_grade = res as i32;
-                        }
-                        Err(e) => {
-                            error!("{:?}", e);
-                        }
+                    if u32::from_str(max_grade_temp.value.as_str()).is_ok() {
+                        let res = u32::from_str(max_grade_temp.value.as_str()).unwrap();
+                        max_grade = res as i32;
                     }
                 }
                 None => {

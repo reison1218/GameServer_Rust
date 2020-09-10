@@ -54,29 +54,9 @@ impl Cell {
     pub fn remove_buff(&mut self, buff_id: u32) {
         self.buffs.remove(&buff_id);
     }
-
-    ///消耗buff,如果有buff被删除了，则返回some，否则范围none
-    pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) {
-        let buff = self.buffs.get_mut(&buff_id).unwrap();
-        if is_turn_start {
-            buff.sub_keep_times();
-        } else {
-            buff.sub_trigger_timesed();
-        }
-    }
 }
 
 impl TileMap {
-    pub fn get_cell_by_user_id(&self, user_id: u32) -> Option<&Cell> {
-        for cell in self.map.iter() {
-            if cell.user_id != user_id {
-                continue;
-            }
-            return Some(cell);
-        }
-        None
-    }
-
     pub fn get_cell_mut_by_user_id(&mut self, user_id: u32) -> Option<&mut Cell> {
         for cell in self.map.iter_mut() {
             if cell.user_id != user_id {
@@ -95,21 +75,6 @@ impl TileMap {
             cell.user_id = 0;
             break;
         }
-    }
-
-    pub fn get_able_cells(&self) -> Vec<u32> {
-        let mut v = Vec::new();
-        let tile_map_mgr = crate::TEMPLATES.get_tile_map_ref();
-        let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
-        //填充空的格子占位下标
-        for index in 0..tile_map_temp.map.len() {
-            let res = tile_map_temp.map.get(index).unwrap();
-            if *res != 2 {
-                continue;
-            }
-            v.push(index as u32);
-        }
-        v
     }
 
     ///初始化战斗地图数据

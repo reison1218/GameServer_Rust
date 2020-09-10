@@ -885,13 +885,14 @@ pub unsafe fn transform(
     targets: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    let mut battle_data = battle_data.borrow_mut() as *mut BattleData;
+    let battle_data = battle_data.borrow_mut() as *mut BattleData;
     let cter = battle_data
         .as_mut()
         .unwrap()
         .get_battle_cter_mut(Some(user_id))
         .unwrap();
     let skill = cter.skills.get(&skill_id).unwrap();
+    let buff_id = skill.skill_temp.buff;
     let transform_cter_id = skill.skill_temp.par2;
     let target_type = TargetType::try_from(skill.skill_temp.target);
     if let Err(e) = target_type {
@@ -926,6 +927,7 @@ pub unsafe fn transform(
         }
         let skill_damage = skill.skill_temp.par1 as i16;
         let scope_temp = scope_temp.unwrap();
+        //对周围对人造成伤害
         let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
             user_id,
             cter.get_cell_index() as isize,
@@ -948,16 +950,16 @@ pub unsafe fn transform(
             au.targets.push(target_pt.unwrap());
             need_rank = false;
         }
-        //处理变身
-        let res = cter.transform(user_id, transform_cter_id);
-        match res {
-            Err(e) => {
-                error!("{:?}", e);
-                return None;
-            }
-            Ok(target_pt) => {
-                au.targets.push(target_pt);
-            }
+    }
+    //处理变身
+    let res = cter.transform(user_id, transform_cter_id, buff_id);
+    match res {
+        Err(e) => {
+            error!("{:?}", e);
+            return None;
+        }
+        Ok(target_pt) => {
+            au.targets.push(target_pt);
         }
     }
     None

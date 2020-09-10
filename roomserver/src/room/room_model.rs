@@ -139,17 +139,6 @@ pub struct RoomCache {
 pub trait RoomModel {
     fn get_room_type(&self) -> RoomType;
 
-    fn change_target(
-        &mut self,
-        room_id: &u32,
-        user_id: &u32,
-        target_id: &u32,
-    ) -> anyhow::Result<()> {
-        let room = self.get_mut_room_by_room_id(room_id)?;
-        room.change_target(user_id, target_id)?;
-        Ok(())
-    }
-
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room>;
 
     fn create_room(

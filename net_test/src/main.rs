@@ -270,7 +270,7 @@ fn main() -> anyhow::Result<()> {
     let mut bf = BaseFoo::default();
     bf.foo = Some(f);
     bf.foo = None;
-    std::thread::sleep(Duration::from_secs(10));
+    let m = move ||{};
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();

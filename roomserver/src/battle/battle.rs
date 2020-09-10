@@ -142,18 +142,6 @@ impl BattleData {
         Ok(user_id)
     }
 
-    ///获得当前turn玩家的下标
-    pub fn get_turn_index(&self, user_id: u32) -> isize {
-        let mut index = 0_isize;
-        for member_id in self.turn_orders.iter() {
-            if member_id == &user_id {
-                return index;
-            }
-            index += 1;
-        }
-        return -1;
-    }
-
     pub fn get_sender_mut(&mut self) -> &mut TcpSender {
         self.sender.borrow_mut()
     }

@@ -109,12 +109,12 @@ pub mod buff_type {
     pub const LOCKED: u32 = 321;
     ///配对与自己相同元素时恢复生命
     pub const PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
-
-    ///配对成功刷新技能cd
-    pub const PAIR_CLEAN_SKILL_CD: [u32; 1] = [13];
-
     ///陷阱类buff
     pub const TRAPS: [u32; 2] = [10, 12];
+    ///配对成功刷新技能cd
+    pub const PAIR_CLEAN_SKILL_CD: [u32; 1] = [13];
+    ///变身buff
+    pub const TRANSFORM_BUFF: [u32; 1] = [14];
 
     ///---------------------------以下为了方便单独定义出来
     /// 受到相临攻击时候减伤

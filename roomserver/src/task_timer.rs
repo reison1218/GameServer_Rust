@@ -54,38 +54,15 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
 
             let task_cmd = TaskCmd::from(task.cmd);
             let rm_clone = rm.clone();
-            match task_cmd {
-                TaskCmd::MatchRoomStart => {
-                    let m = || {
-                        match_room_start(rm_clone, task);
-                    };
-                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
-                }
-                TaskCmd::ChoiceIndex => {
-                    let m = || {
-                        choice_index(rm_clone, task);
-                    };
-                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
-                }
-                TaskCmd::ChoiceTurnOrder => {
-                    let m = || {
-                        choice_turn(rm_clone, task);
-                    };
-                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
-                }
-                TaskCmd::BattleTurnTime => {
-                    let m = || {
-                        battle_turn_time(rm_clone, task);
-                    };
-                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
-                }
-                TaskCmd::MaxBattleTurnTimes => {
-                    let m = || {
-                        max_battle_turn_limit(rm_clone, task);
-                    };
-                    SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
-                }
+            let f = match task_cmd {
+                TaskCmd::MatchRoomStart => match_room_start,
+                TaskCmd::ChoiceIndex => choice_index,
+                TaskCmd::ChoiceTurnOrder => choice_turn,
+                TaskCmd::BattleTurnTime => battle_turn_time,
+                TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
             };
+            let m = move || f(rm_clone, task);
+            SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
         }
     };
     let timer_thread = std::thread::Builder::new().name("TIMER_THREAD".to_owned());

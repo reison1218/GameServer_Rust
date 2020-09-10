@@ -40,10 +40,6 @@ impl TcpSender {
             }
         }
     }
-
-    fn get_token(&self) -> usize {
-        self.token
-    }
 }
 
 /// for TCP hanler end channel to transfer data
@@ -335,6 +331,10 @@ pub mod tcp_server {
                     }
                     Err(ref err) if interrupted(err) => {
                         warn!("{:?}",err);
+                        continue;
+                    },
+                    Err(ref err) if time_out(err) => {
+                        //warn!("{:?}",err);
                         continue;
                     },
                     Err(ref err) if other(err) => {

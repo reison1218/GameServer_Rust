@@ -2,7 +2,7 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
-    LOCK_SKILLS, TRAPS, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
+    LOCK_SKILLS, TRANSFORM_BUFF, TRAPS, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
 use crate::battle::battle_enum::skill_type::WATER_TURRET;
@@ -54,9 +54,13 @@ pub trait TriggerEvent {
 
     ///地图刷新时候触发buff
     fn before_map_refresh_buff_trigger(&mut self);
+
+    ///buff失效时候触发
+    fn buff_lost_trigger(&mut self, user_id: u32, buff_id: u32);
 }
 
 impl BattleData {
+    ///触发陷阱
     pub fn trigger_trap(
         &mut self,
         battle_cter: &mut BattleCharacter,
@@ -109,6 +113,7 @@ impl BattleData {
                     target_pt = Some(target_pt_tmp);
                 }
             }
+
             if target_pt.is_none() {
                 continue;
             }
@@ -141,7 +146,6 @@ impl TriggerEvent for BattleData {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let index = battle_cter.get_cell_index();
-
         //匹配玩家身上的
         self.trigger_open_cell_buff(None, user_id, battle_cters, au, is_pair);
         //匹配地图块的
@@ -395,6 +399,20 @@ impl TriggerEvent for BattleData {
             }
             let skill = skill.unwrap();
             skill.is_active = false;
+        }
+    }
+
+    ///buff失效时候触发
+    fn buff_lost_trigger(&mut self, user_id: u32, buff_id: u32) {
+        let cter = self.get_battle_cter_mut(Some(user_id));
+        if let Err(e) = cter {
+            error!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
+        //如果是变身buff,那就变回来
+        if TRANSFORM_BUFF.contains(&buff_id) {
+            cter.transform_back();
         }
     }
 }

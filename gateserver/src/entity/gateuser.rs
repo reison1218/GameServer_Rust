@@ -50,10 +50,6 @@ impl GateUser {
         self.ws.as_mut().unwrap()
     }
 
-    pub fn get_tcp_ref(&self) -> &TcpSender {
-        self.tcp.as_ref().unwrap()
-    }
-
     pub fn get_tcp_mut_ref(&mut self) -> &mut TcpSender {
         self.tcp.as_mut().unwrap()
     }

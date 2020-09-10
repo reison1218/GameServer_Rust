@@ -41,6 +41,7 @@ impl Into<CharacterPt> for Character {
     }
 }
 
+///角色战斗数据
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
     pub user_id: u32,                                      //玩家id
@@ -55,7 +56,6 @@ pub struct BattleCharacter {
     cell_index: Option<usize>,                             //角色所在位置
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub passive_buffs: HashMap<u32, Buff>,                 //被动技能id
-    pub target_id: u32,                                    //玩家目标
     pub buffs: HashMap<u32, Buff>,                         //角色身上的buff
     pub state: BattleCterState,                            //角色状态
     pub residue_open_times: u8,                            //剩余翻地图块次数
@@ -113,46 +113,53 @@ impl BattleCharacter {
         });
     }
 
-    pub fn transform_back(&mut self) -> anyhow::Result<TargetPt> {
-        //先重制数据
-        self.clean_all();
+    ///变回来
+    pub fn transform_back(&mut self) -> TargetPt {
         let cter;
-
+        let is_self_transform;
         if self.self_transform_cter.is_some() {
             cter = self.self_transform_cter.as_mut().unwrap();
+            is_self_transform = true;
         } else {
             cter = self.self_cter.as_mut().unwrap();
+            is_self_transform = false;
         }
-        let cter = self.self_transform_cter.as_mut().unwrap();
         //然后复制数据
         self.user_id = cter.user_id;
         self.cter_id = cter.cter_id;
         self.element = cter.element;
         self.grade = cter.grade;
-        self.hp = cter.hp;
         self.hp_max = cter.hp_max;
-        self.energy = cter.energy;
         self.max_energy = cter.max_energy;
         self.item_max = cter.item_max;
         self.defence = cter.defence;
         self.atk = cter.atk;
         self.state = cter.state;
-        self.turn_limit_skills = cter.turn_limit_skills.clone();
-        self.round_limit_skills = cter.round_limit_skills.clone();
-        self.is_can_attack = cter.is_can_attack;
         self.is_attacked = cter.is_attacked;
-        self.is_pair = cter.is_pair;
         self.skills = cter.skills.clone();
         self.buffs = cter.buffs.clone();
         self.passive_buffs = cter.passive_buffs.clone();
+
+        //如果是从自己变身的角色变回去，则清空自己变身角色
+        if is_self_transform {
+            self.self_transform_cter = None;
+        } else {
+            self.self_cter = None;
+        }
+
         let mut target_pt = TargetPt::new();
         let cter_pt = self.convert_to_battle_cter();
         target_pt.set_transform_cter(cter_pt);
-        Ok(target_pt)
+        target_pt
     }
 
     ///变身
-    pub fn transform(&mut self, from_user: u32, cter_id: u32) -> anyhow::Result<TargetPt> {
+    pub fn transform(
+        &mut self,
+        from_user: u32,
+        cter_id: u32,
+        buff_id: u32,
+    ) -> anyhow::Result<TargetPt> {
         let cter_temp = TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
         if cter_temp.is_none() {
             anyhow::bail!("cter_temp can not find!cter_id:{}", cter_id)
@@ -170,21 +177,32 @@ impl BattleCharacter {
         unsafe {
             //先克隆一份
             let cter_clone = self_ptr.as_ref().unwrap().clone();
-            //初始化数据成另外一个角色
-            self.init_from_temp(cter_temp);
-            if self.user_id == from_user {
-                self.self_transform_cter = Some(Box::new(cter_clone.clone()));
-            }
             //保存原本角色
             if self.self_cter.is_none() {
                 self.self_cter = Some(Box::new(cter_clone));
             }
+            //初始化数据成另外一个角色
+            self.init_from_temp(cter_temp);
             //将继承属性给当前角色
             self.residue_open_times = residue_open_times;
             self.hp = hp;
             self.is_can_attack = is_can_attack;
             self.cell_index = cell_index;
             self.energy = energy;
+
+            //给新变身加变身buff
+            let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
+            if let Err(e) = buff_temp {
+                warn!("{:?}", e);
+                anyhow::bail!("")
+            }
+            let buff_temp = buff_temp.unwrap();
+            let buff = Buff::from(buff_temp);
+            self.buffs.insert(buff.id, buff);
+            //保存自己变身的角色
+            if self.user_id == from_user {
+                self.self_transform_cter = Some(Box::new(self_ptr.as_ref().unwrap().clone()));
+            }
         }
         let mut target_pt = TargetPt::new();
         let battle_cter_pt = self.convert_to_battle_cter();
@@ -381,7 +399,6 @@ impl BattleCharacter {
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
         battle_cter.grade = cter.grade;
-        battle_cter.target_id = 0;
         let skill_ref = TEMPLATES.get_skill_ref();
         let buff_ref = TEMPLATES.get_buff_ref();
         for skill_id in cter.skills.iter() {
