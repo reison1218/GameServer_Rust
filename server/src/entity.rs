@@ -12,7 +12,7 @@ use mysql::prelude::ToValue;
 use mysql::{Error, QueryResult, Value};
 use serde_json::{Map, Value as JsonValue};
 use std::any::Any;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 ///关于结构体转换的trait
 pub trait Entity: Send + Sync {
@@ -197,8 +197,8 @@ pub trait EntityData: Dao + Any {
 }
 
 ///提供给http保存玩家数据的函数
-pub fn save_player_http(gm: Arc<RwLock<GameMgr>>) {
+pub fn save_player_http(gm: Arc<Mutex<GameMgr>>) {
     let gm = gm.clone();
-    let mut gm = gm.write().unwrap();
+    let mut gm = gm.lock().unwrap();
     gm.save_user_http();
 }

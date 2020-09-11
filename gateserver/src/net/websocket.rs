@@ -1,4 +1,5 @@
 use super::*;
+use std::sync::Mutex;
 use tools::cmd_code::RoomCode;
 
 pub struct ClientSender {
@@ -9,9 +10,9 @@ pub struct ClientSender {
 ///websockethandler
 /// 监听websocket网络事件
 pub struct WebSocketHandler {
-    pub ws: Arc<WsSender>,           //相当于channel
-    pub add: Option<String>,         //客户端地址
-    pub cm: Arc<RwLock<ChannelMgr>>, //channel管理结构体指针
+    pub ws: Arc<WsSender>,          //相当于channel
+    pub add: Option<String>,        //客户端地址
+    pub cm: Arc<Mutex<ChannelMgr>>, //channel管理结构体指针
 }
 
 ///实现相应的handler函数
@@ -24,13 +25,13 @@ impl Handler for WebSocketHandler {
             return;
         }
         let token = self.ws.token().0;
-        let mut write = self.cm.write().unwrap();
-        write.close_remove(&token);
-        let user_id = write.get_channels_user_id(&token);
+        let mut lock = self.cm.lock().unwrap();
+        lock.close_remove(&token);
+        let user_id = lock.get_channels_user_id(&token);
         let mut mess = Packet::default();
         mess.set_cmd(tools::cmd_code::GameCode::LineOff as u32);
         mess.set_user_id(*user_id.unwrap());
-        write.write_to_game(mess);
+        lock.write_to_game(mess);
     }
 
     ///当有连接建立并open的时候调用
@@ -83,8 +84,8 @@ impl Handler for WebSocketHandler {
             self.add.as_ref().unwrap()
         );
         let token = self.ws.token().0;
-        let mut write = self.cm.write().unwrap();
-        let user_id = write.get_channels_user_id(&token);
+        let mut lock = self.cm.lock().unwrap();
+        let user_id = lock.get_channels_user_id(&token);
         if user_id.is_none() {
             return;
         }
@@ -92,11 +93,11 @@ impl Handler for WebSocketHandler {
         packet.set_user_id(*user_id.unwrap());
 
         packet.set_cmd(tools::cmd_code::GameCode::LineOff as u32);
-        write.write_to_game(packet.clone());
+        lock.write_to_game(packet.clone());
 
         packet.set_cmd(tools::cmd_code::RoomCode::LineOff as u32);
-        write.write_to_room(packet);
-        write.close_remove(&token);
+        lock.write_to_room(packet);
+        lock.close_remove(&token);
     }
 
     ///发送错误的时候调用
@@ -111,12 +112,12 @@ impl Handler for WebSocketHandler {
 impl WebSocketHandler {
     fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.ws.token().0;
-        let write = self.cm.write();
-        if write.is_err() {
-            anyhow::bail!("{:?}", write.err().unwrap().to_string())
+        let lock = self.cm.lock();
+        if lock.is_err() {
+            anyhow::bail!("{:?}", lock.err().unwrap().to_string())
         }
-        let mut write = write.unwrap();
-        let user_id = write.get_channels_user_id(&token);
+        let mut lock = lock.unwrap();
+        let user_id = lock.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
         if user_id.is_none() && packet.get_cmd() != GameCode::Login as u32 {
@@ -137,14 +138,14 @@ impl WebSocketHandler {
             let res = check_uc_online(&c_login.get_user_id())?;
             if res {
                 //校验内存
-                let res = check_mem_online(&c_login.get_user_id(), &mut write);
+                let res = check_mem_online(&c_login.get_user_id(), &mut lock);
                 if !res {
                     modify_redis_user(c_login.get_user_id(), false);
                 } else {
                     let mut res = S_USER_LOGIN::new();
                     res.set_is_succ(false);
                     res.set_err_mess("this account already login!".to_owned());
-                    std::mem::drop(write);
+                    std::mem::drop(lock);
                     let res = self.ws.send(res.write_to_bytes().unwrap());
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap().to_string());
@@ -159,15 +160,15 @@ impl WebSocketHandler {
             }
 
             //校验内存是否已经登陆了(单一校验内存是否在线先保留在这)
-            //check_mem_online(&c_login.get_userId(), &mut write);
+            //check_mem_online(&c_login.get_userId(), &mut lock);
 
             //添加到内存
-            write.add_gate_user(c_login.get_user_id(), Some(self.ws.clone()), None);
+            lock.add_gate_user(c_login.get_user_id(), Some(self.ws.clone()), None);
         }
         //封装packet转发到其他服
-        let user_id = write.get_channels_user_id(&token);
+        let user_id = lock.get_channels_user_id(&token);
         packet.set_user_id(*user_id.unwrap());
-        std::mem::drop(write);
+        std::mem::drop(lock);
         //转发函数
         self.arrange_packet(packet);
         Ok(())
@@ -175,14 +176,14 @@ impl WebSocketHandler {
 
     ///数据包转发
     fn arrange_packet(&mut self, packet: Packet) {
-        let mut write = self.cm.write().unwrap();
+        let mut lock = self.cm.lock().unwrap();
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            write.write_to_game(packet.clone());
+            lock.write_to_game(packet.clone());
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            write.write_to_room(packet);
+            lock.write_to_room(packet);
         }
     }
 }

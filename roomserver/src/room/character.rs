@@ -4,7 +4,7 @@ use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
 };
 use crate::battle::battle_enum::skill_type::GD_ATTACK_DAMAGE;
-use crate::battle::battle_enum::{BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
+use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::TEMPLATES;
 use log::{error, warn};
@@ -59,7 +59,7 @@ pub struct BattleCharacter {
     pub buffs: HashMap<u32, Buff>,                         //角色身上的buff
     pub state: BattleCterState,                            //角色状态
     pub residue_open_times: u8,                            //剩余翻地图块次数
-    pub is_can_attack: bool,                               //是否可以攻击
+    pub attack_state: AttackState,                         //是否可以攻击
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub open_cell_vec: Vec<usize>,                         //最近一次turn翻过的地图块
     pub is_pair: bool,                                     //最近一次翻块是否匹配
@@ -76,6 +76,10 @@ pub struct BattleCharacter {
 }
 
 impl BattleCharacter {
+    pub fn is_can_attack(&self) -> bool {
+        self.attack_state == AttackState::Able
+    }
+
     ///从静态配置中初始化
     fn init_from_temp(&mut self, cter_temp: &CharacterTemp) {
         //先重制数据
@@ -106,10 +110,12 @@ impl BattleCharacter {
             }
         }
         cter_temp.passive_buff.iter().for_each(|buff_id| {
-            let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
-            let buff = Buff::from(buff_temp);
-            self.add_buff(Some(self.user_id), None, buff.id, None);
-            self.passive_buffs.insert(*buff_id, buff);
+            let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id);
+            if let Some(buff_temp) = buff_temp {
+                let buff = Buff::from(buff_temp);
+                self.add_buff(Some(self.user_id), None, buff.id, None);
+                self.passive_buffs.insert(*buff_id, buff);
+            }
         });
     }
 
@@ -168,7 +174,7 @@ impl BattleCharacter {
         //需要继承的属性
         let residue_open_times = self.residue_open_times;
         let hp = self.hp;
-        let is_can_attack = self.is_can_attack;
+        let attack_state = self.attack_state;
         let cell_index = self.cell_index;
         let energy = self.energy;
 
@@ -186,7 +192,7 @@ impl BattleCharacter {
             //将继承属性给当前角色
             self.residue_open_times = residue_open_times;
             self.hp = hp;
-            self.is_can_attack = is_can_attack;
+            self.attack_state = attack_state;
             self.cell_index = cell_index;
             self.energy = energy;
 
@@ -255,18 +261,20 @@ impl BattleCharacter {
 
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
     pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) {
-        let buff = self.buffs.get_mut(&buff_id).unwrap();
-        if is_turn_start {
-            buff.sub_keep_times();
-        } else {
-            buff.sub_trigger_timesed();
+        let buff = self.buffs.get_mut(&buff_id);
+        if let Some(buff) = buff {
+            if is_turn_start {
+                buff.sub_keep_times();
+            } else {
+                buff.sub_trigger_timesed();
+            }
         }
     }
 
     ///重制角色数据
     pub fn round_reset(&mut self) {
         self.is_attacked = false;
-        self.is_can_attack = false;
+        self.attack_state = AttackState::None;
         self.cell_index = None;
         self.open_cell_vec.clear();
         self.last_cell_index = None;
@@ -476,7 +484,7 @@ impl BattleCharacter {
         //重制剩余翻块地处
         self.reset_residue_open_times();
         //重制是否可以攻击
-        self.is_can_attack = false;
+        self.attack_state = AttackState::None;
         //重制匹配状态
         self.is_pair = false;
         //重制是否翻过地图块

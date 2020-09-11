@@ -9,12 +9,13 @@ use crate::entity::user_contants::*;
 use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
 use protobuf::Message;
+use std::sync::Mutex;
 use tools::cmd_code::{ClientCode, GameCode};
 
 #[derive(Clone)]
 struct TcpServerHandler {
     sender: Option<TcpSender>,
-    gm: Arc<RwLock<GameMgr>>,
+    gm: Arc<Mutex<GameMgr>>,
 }
 
 unsafe impl Send for TcpServerHandler {}
@@ -34,7 +35,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     fn on_open(&mut self, sender: TcpSender) {
-        self.gm.write().unwrap().set_sender(sender);
+        self.gm.lock().unwrap().set_sender(sender);
     }
 
     fn on_close(&mut self) {
@@ -62,7 +63,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
+async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login as u32
         && packet.get_cmd() != GameCode::LineOff as u32
@@ -88,7 +89,7 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
         }
     } else {
         //不登录就执行其他命令
-        let res = gm.write().unwrap().invok(packet);
+        let res = gm.lock().unwrap().invok(packet);
         match res {
             Ok(_) => {}
             Err(e) => {
@@ -99,12 +100,12 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
 }
 
 //登录函数，执行登录
-fn login(gm: Arc<RwLock<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
+fn login(gm: Arc<Mutex<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
-    let user_data = gm.read().unwrap().users.contains_key(&user_id);
+    let user_data = gm.lock().unwrap().users.contains_key(&user_id);
     //走登录流程
-    let mut gm_lock = gm.write().unwrap();
+    let mut gm_lock = gm.lock().unwrap();
     //如果内存没有数据，则从数据库里面找
     if !user_data {
         //初始化玩家数据
@@ -234,7 +235,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
     lr
 }
 
-pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
+pub fn new(address: &str, gm: Arc<Mutex<GameMgr>>) {
     let sh = TcpServerHandler {
         sender: None,
         gm: gm,

@@ -2,7 +2,7 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
+use crate::battle::battle_enum::{AttackState, BattleCterState, SkillConsumeType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
@@ -349,7 +349,7 @@ impl BattleData {
                 }
             }
         }
-        cter.is_can_attack = false;
+        cter.attack_state = AttackState::None;
         Ok(())
     }
 

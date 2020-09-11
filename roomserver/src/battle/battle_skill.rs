@@ -5,7 +5,7 @@ use crate::battle::battle_enum::skill_type::{
     SHOW_SAME_ELMENT_CELL_ALL, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_DAMAGE_NEAR_DEEP,
     SKILL_OPEN_NEAR_CELL,
 };
-use crate::battle::battle_enum::{EffectType, ElementType, TargetType};
+use crate::battle::battle_enum::{AttackState, EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::Cell;
@@ -538,7 +538,7 @@ pub unsafe fn auto_pair_cell(
 
     let pair_cell = pair_cell.unwrap();
     //处理本turn不能攻击
-    battle_cter.is_can_attack = false;
+    battle_cter.attack_state = AttackState::Locked;
 
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(cell.id);

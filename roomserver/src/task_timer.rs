@@ -9,7 +9,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
 use std::convert::TryFrom;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -36,17 +36,17 @@ pub struct Task {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
+pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
     let m = move || {
         let (sender, rec) = crossbeam::crossbeam_channel::bounded(1024);
-        let mut write = rm.write().unwrap();
-        write.task_sender = Some(sender);
-        std::mem::drop(write);
+        let mut lock = rm.lock().unwrap();
+        lock.task_sender = Some(sender);
+        std::mem::drop(lock);
 
         loop {
             let res = rec.recv();
-            if res.is_err() {
-                error!("{:?}", res.err().unwrap());
+            if let Err(e) = res {
+                error!("{:?}", e);
                 continue;
             }
             let task = res.unwrap();
@@ -67,15 +67,15 @@ pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
     };
     let timer_thread = std::thread::Builder::new().name("TIMER_THREAD".to_owned());
     let res = timer_thread.spawn(m);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap());
+    if let Err(e) = res {
+        error!("{:?}", e);
         std::process::abort();
     }
     info!("初始化定时器任务执行器成功!");
 }
 
 ///执行匹配房间任务
-fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -103,9 +103,9 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let room_id = room_id.unwrap() as u32;
 
-    let mut write = rm.write().unwrap();
+    let mut lock = rm.lock().unwrap();
 
-    let match_room = write.match_rooms.get_match_room_mut(battle_type);
+    let match_room = lock.match_rooms.get_match_room_mut(battle_type);
     let match_room_ptr = match_room as *mut MatchRoom;
     let room = match_room.get_room_mut(&room_id);
     if room.is_none() {
@@ -172,7 +172,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
             }
 
             for member_id in rm_v {
-                write.player_room.remove(&member_id);
+                lock.player_room.remove(&member_id);
             }
             unsafe {
                 let room = match_room_ptr.as_mut().unwrap().get_room_mut(&room_id);
@@ -184,7 +184,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
                     let battle_type = room.setting.battle_type;
                     let room_id = room.get_room_id();
                     let v = room.get_member_vec();
-                    write.rm_room(room_id, room_type, battle_type, v);
+                    lock.rm_room(room_id, room_type, battle_type, v);
                 }
             }
             return;
@@ -195,7 +195,7 @@ fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
 }
 
 ///占位任务，没选的直接t出房间
-fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -212,9 +212,9 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut write = rm.write().unwrap();
+    let mut lock = rm.lock().unwrap();
 
-    let room = write.get_room_mut(&user_id);
+    let room = lock.get_room_mut(&user_id);
     if room.is_none() {
         return;
     }
@@ -247,13 +247,13 @@ fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         let battle_type = room.setting.battle_type;
         let room_id = room.get_room_id();
         let v = room.get_member_vec();
-        write.rm_room(room_id, room_type, battle_type, v);
+        lock.rm_room(room_id, room_type, battle_type, v);
     }
-    write.player_room.remove(&user_id);
+    lock.player_room.remove(&user_id);
 }
 
 ///选择占位,超时了就跳过，如果是最后一个人超时，则系统帮忙给未选择的人随机分配
-fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn choice_turn(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -270,9 +270,9 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut write = rm.write().unwrap();
+    let mut lock = rm.lock().unwrap();
 
-    let room = write.get_room_mut(&user_id);
+    let room = lock.get_room_mut(&user_id);
     if room.is_none() {
         return;
     }
@@ -302,7 +302,7 @@ fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     room.skip_choice_turn(user_id);
 }
 
-fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -319,9 +319,9 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut write = rm.write().unwrap();
+    let mut lock = rm.lock().unwrap();
 
-    let room = write.get_room_mut(&user_id);
+    let room = lock.get_room_mut(&user_id);
     if room.is_none() {
         return;
     }
@@ -364,11 +364,11 @@ fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
         let battle_type = room.setting.battle_type;
         let room_id = room.get_room_id();
         let v = room.get_member_vec();
-        write.rm_room(room_id, room_type, battle_type, v);
+        lock.rm_room(room_id, room_type, battle_type, v);
     }
 }
 
-pub fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
+pub fn max_battle_turn_limit(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -385,9 +385,9 @@ pub fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut write = rm.write().unwrap();
+    let mut lock = rm.lock().unwrap();
 
-    let room = write.get_room_mut(&user_id);
+    let room = lock.get_room_mut(&user_id);
     if room.is_none() {
         return;
     }
@@ -397,5 +397,5 @@ pub fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let room_id = room.get_room_id();
     let v = room.get_member_vec();
 
-    write.rm_room(room_id, room_type, battle_type, v);
+    lock.rm_room(room_id, room_type, battle_type, v);
 }

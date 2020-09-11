@@ -1,4 +1,5 @@
 use super::*;
+use std::sync::Mutex;
 use tools::cmd_code::RoomCode;
 
 pub enum TcpClientType {
@@ -9,11 +10,11 @@ pub enum TcpClientType {
 pub struct TcpClientHandler {
     client_type: TcpClientType,
     ts: Option<TcpStream>,
-    cp: Arc<RwLock<ChannelMgr>>,
+    cp: Arc<Mutex<ChannelMgr>>,
 }
 
 impl TcpClientHandler {
-    pub fn new(cp: Arc<RwLock<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
+    pub fn new(cp: Arc<Mutex<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
         let tch = TcpClientHandler {
             ts: None,
             cp,
@@ -26,14 +27,14 @@ impl TcpClientHandler {
     fn arrange_packet(&mut self, packet: Packet) {
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            let mut write = self.cp.write().unwrap();
-            write.write_to_game(packet);
+            let mut lock = self.cp.lock().unwrap();
+            lock.write_to_game(packet);
             return;
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            let mut write = self.cp.write().unwrap();
-            write.write_to_room(packet);
+            let mut lock = self.cp.lock().unwrap();
+            lock.write_to_room(packet);
             return;
         }
     }
@@ -44,13 +45,13 @@ impl ClientHandler for TcpClientHandler {
         match self.client_type {
             TcpClientType::GameServer => {
                 self.cp
-                    .write()
+                    .lock()
                     .unwrap()
                     .set_game_client_channel(ts.try_clone().unwrap());
             }
             TcpClientType::RoomServer => {
                 self.cp
-                    .write()
+                    .lock()
                     .unwrap()
                     .set_room_client_channel(ts.try_clone().unwrap());
             }
@@ -83,8 +84,8 @@ impl ClientHandler for TcpClientHandler {
         for mut packet in packet_array {
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
-                let mut write = self.cp.write().unwrap();
-                let gate_user = write.get_mut_user_channel_channel(&packet.get_user_id());
+                let mut lock = self.cp.lock().unwrap();
+                let gate_user = lock.get_mut_user_channel_channel(&packet.get_user_id());
                 match gate_user {
                     Some(user) => {
                         user.get_tcp_mut_ref().write(packet.build_client_bytes());

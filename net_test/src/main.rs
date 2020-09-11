@@ -52,7 +52,7 @@ use std::cell::{Cell, RefCell, RefMut};
 use serde_json::Value;
 use serde::private::de::IdentifierDeserializer;
 use std::str::FromStr;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, RwLock, Mutex, Condvar};
 use std::sync::atomic::AtomicU32;
 use tools::redis_pool::RedisPoolTool;
 use tools::util::bytebuf::ByteBuf;
@@ -63,7 +63,7 @@ use chrono::Local;
 use std::fmt::Display;
 use std::mem::Discriminant;
 use futures::executor::block_on;
-use std::thread::Thread;
+use std::thread::{Thread, JoinHandle};
 use rayon::prelude::ParallelSliceMut;
 use futures::SinkExt;
 use std::borrow::{Borrow, BorrowMut};
@@ -248,30 +248,37 @@ impl Deref for Foo{
     }
 }
 
-impl Drop for Foo{
-    fn drop(&mut self) {
-        println!("delete foo");
-    }
-}
 
 #[derive(Default)]
 struct BaseFoo{
     foo:Option<Foo>
 }
 
-impl Drop for BaseFoo{
-    fn drop(&mut self) {
-        println!("delete basefoo");
-    }
-}
 
 fn main() -> anyhow::Result<()> {
     let f = Foo::default();
-    let mut bf = BaseFoo::default();
-    bf.foo = Some(f);
-    bf.foo = None;
-    let m = move ||{};
-    let a:Option<u32> = None; 
+    // let lock = Arc::new(Mutex::new(f));
+    let lock = Arc::new(RwLock::new(f));
+
+    let time = std::time::SystemTime::now();
+    let m = move ||{
+        for _ in 0..1000{
+            let lock_clone = lock.clone();
+            let m = move ||{
+                // let mut res = lock_clone.lock().unwrap();
+                 let mut res = lock_clone.write().unwrap();
+                res.x =res.x+1;
+                std::thread::sleep(Duration::from_millis(1000));
+            };
+            std::thread::spawn(m);
+        }
+    };
+    let handler = std::thread::spawn(m);
+    handler.join();
+
+    dbg!("{}",time.elapsed().unwrap());
+
+
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();

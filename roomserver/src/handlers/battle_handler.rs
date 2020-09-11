@@ -313,7 +313,7 @@ fn attack(
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
-    if !battle_cter.is_can_attack {
+    if !battle_cter.is_can_attack() {
         let str = format!("now can not attack!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

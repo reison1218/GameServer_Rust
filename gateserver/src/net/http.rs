@@ -4,14 +4,15 @@ use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
+use std::sync::Mutex;
 use tools::http::HttpServerHandler;
 
 pub struct KickPlayerHttpHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
+    gm: Arc<Mutex<ChannelMgr>>,
 }
 
 impl KickPlayerHttpHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
         KickPlayerHttpHandler { gm }
     }
 }
@@ -25,19 +26,19 @@ impl HttpServerHandler for KickPlayerHttpHandler {
         &mut self,
         _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut write = self.gm.write().unwrap();
-        write.kick_all();
+        let mut lock = self.gm.lock().unwrap();
+        lock.kick_all();
         let value = json!({ "status":"OK" });
         Ok(value)
     }
 }
 
 pub struct ReloadTempsHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
+    gm: Arc<Mutex<ChannelMgr>>,
 }
 
 impl ReloadTempsHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
         ReloadTempsHandler { gm }
     }
 }
@@ -51,8 +52,8 @@ impl HttpServerHandler for ReloadTempsHandler {
         &mut self,
         _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut write = self.gm.write().unwrap();
-        write.notice_reload_temps();
+        let mut lock = self.gm.lock().unwrap();
+        lock.notice_reload_temps();
         let value = json!({ "status":"OK" });
         Ok(value)
     }

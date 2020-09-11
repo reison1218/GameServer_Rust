@@ -3,7 +3,7 @@ use crate::battle::battle_enum::skill_judge_type::{
     HP_LIMIT_GT, LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES,
 };
 use crate::battle::battle_enum::{
-    BattleCterState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID,
+    AttackState, BattleCterState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID,
 };
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
@@ -217,6 +217,7 @@ impl BattleData {
                 skill.is_active = false;
             }
 
+            //如果是玩家身上的
             if let Some(cter) = cter_res {
                 cter.remove_buff(buff_id);
                 let mut tp = TargetPt::new();
@@ -226,6 +227,7 @@ impl BattleData {
                 let user_id = cter.user_id;
                 self.buff_lost_trigger(user_id, buff_id);
             } else if let Some(cell) = cell_res {
+                //如果是地图块上面的
                 cell.remove_buff(buff_id);
             }
         }
@@ -404,7 +406,9 @@ impl BattleData {
                 is_pair = true;
                 battle_cter.is_pair = true;
                 //状态改为可以进行攻击
-                battle_cter.is_can_attack = true;
+                if battle_cter.attack_state != AttackState::Locked {
+                    battle_cter.attack_state = AttackState::Able;
+                }
                 self.tile_map.un_pair_map.remove(&last_cell.index);
                 self.tile_map.un_pair_map.remove(&cell_mut.index);
             }

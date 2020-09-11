@@ -47,7 +47,7 @@ impl RoomMgr {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
+        let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
         self.get_sender_mut().write(bytes);
     }
 

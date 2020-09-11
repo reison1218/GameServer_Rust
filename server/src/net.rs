@@ -9,5 +9,4 @@ use tools::protos::protocol::{
 };
 use tools::util::packet::Packet;
 
-use std::sync::RwLock;
 use tools::protos::base::PlayerPt;

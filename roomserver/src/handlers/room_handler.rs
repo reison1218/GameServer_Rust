@@ -105,6 +105,11 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let room_id = room.get_room_id();
         if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
             let member = room.get_member_mut(&user_id);
+            if let None = member {
+                let str = format!("leave_room:this player is none!user_id:{}", user_id);
+                warn!("{:?}", str.as_str());
+                return Ok(());
+            }
             let member = member.unwrap();
             if member.state == MemberState::Ready as u8 {
                 let str = format!(
@@ -272,7 +277,18 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         anyhow::bail!(str)
     }
     //校验玩家是否选了角色
-    let member = room.members.get(&user_id).unwrap();
+    let member = room.members.get(&user_id);
+    if let None = member {
+        let str = format!("prepare_cancel: this player is None!user_id:{}", user_id);
+        err_back(
+            ClientCode::PrepareCancel,
+            user_id,
+            str,
+            room.get_sender_mut(),
+        );
+        return Ok(());
+    }
+    let member = member.unwrap();
     let cter_id = member.chose_cter.cter_id;
     if cter_id == 0 {
         let str = format!(

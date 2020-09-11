@@ -1,14 +1,15 @@
 use super::*;
 use crate::net::http::notice_user_center;
 use chrono::Local;
+use std::sync::{Mutex, MutexGuard};
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::HEART_BEAT;
 use tools::tcp::TcpSender;
 
 struct TcpServerHandler {
-    pub tcp: Option<TcpSender>,  //相当于channel
-    pub add: Option<String>,     //客户端地址
-    cm: Arc<RwLock<ChannelMgr>>, //channel管理器
+    pub tcp: Option<TcpSender>, //相当于channel
+    pub add: Option<String>,    //客户端地址
+    cm: Arc<Mutex<ChannelMgr>>, //channel管理器
 }
 
 unsafe impl Send for TcpServerHandler {}
@@ -40,8 +41,8 @@ impl tools::tcp::Handler for TcpServerHandler {
         );
 
         let token = self.tcp.as_ref().unwrap().token;
-        let mut write = self.cm.write().unwrap();
-        write.off_line(token);
+        let mut lock = self.cm.lock().unwrap();
+        lock.off_line(token);
     }
 
     fn on_message(&mut self, mess: Vec<u8>) {
@@ -83,8 +84,8 @@ impl TcpServerHandler {
     ///处理二进制数据
     fn handle_binary(&mut self, mut packet: Packet) {
         let token = self.tcp.as_ref().unwrap().token;
-        let mut write = self.cm.write().unwrap();
-        let user_id = write.get_channels_user_id(&token);
+        let mut lock = self.cm.lock().unwrap();
+        let user_id = lock.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
         if user_id.is_none() && packet.get_cmd() != GameCode::Login.into_u32() {
@@ -106,7 +107,7 @@ impl TcpServerHandler {
                 return;
             }
             u_id = c_u_l.get_user_id();
-            let res = handle_login(packet.get_data(), &mut write);
+            let res = handle_login(packet.get_data(), &mut lock);
             if let Err(e) = res {
                 let str = e.to_string();
                 let mut sul = S_USER_LOGIN::new();
@@ -114,11 +115,11 @@ impl TcpServerHandler {
                 sul.set_err_mess(str.clone());
                 packet.set_cmd(ClientCode::Login as u32);
                 packet.set_data_from_vec(sul.write_to_bytes().unwrap());
-                std::mem::drop(write);
+                std::mem::drop(lock);
                 self.write_to_client(packet.build_client_bytes());
                 return;
             }
-            write.add_gate_user(u_id, None, self.tcp.clone());
+            lock.add_gate_user(u_id, None, self.tcp.clone());
             //通知用户中心
             async_std::task::spawn(notice_user_center(u_id, "login"));
         } else if user_id.is_none() {
@@ -139,7 +140,7 @@ impl TcpServerHandler {
 
             let res =
                 Packet::build_packet_bytes(ClientCode::HeartBeat.into(), u_id, bytes, false, true);
-            let gate_user = write.user_channel.get_mut(&u_id);
+            let gate_user = lock.user_channel.get_mut(&u_id);
             if let None = gate_user {
                 return;
             }
@@ -151,32 +152,32 @@ impl TcpServerHandler {
                 packet.get_cmd(),
             );
         }
-        std::mem::drop(write);
+        std::mem::drop(lock);
         //转发函数
         self.arrange_packet(packet);
     }
 
     ///数据包转发
     fn arrange_packet(&mut self, packet: Packet) {
-        let mut write = self.cm.write().unwrap();
+        let mut lock = self.cm.lock().unwrap();
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            write.write_to_game(packet);
+            lock.write_to_game(packet);
             return;
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            write.write_to_room(packet);
+            lock.write_to_room(packet);
             return;
         }
     }
 }
 
 ///创建新的tcpserver并开始监听
-pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
+pub fn new(address: &str, cm: Arc<Mutex<ChannelMgr>>) {
     let sh = TcpServerHandler {
         tcp: None,
-        cm: cm,
+        cm,
         add: Some(address.to_string()),
     };
     let res = tools::tcp::tcp_server::new(address, sh);
@@ -187,13 +188,13 @@ pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
 }
 
 ///处理登陆逻辑
-fn handle_login(bytes: &[u8], write: &mut RwLockWriteGuard<ChannelMgr>) -> anyhow::Result<()> {
+fn handle_login(bytes: &[u8], lock: &mut MutexGuard<ChannelMgr>) -> anyhow::Result<()> {
     let mut c_login = C_USER_LOGIN::new();
     c_login.merge_from_bytes(bytes)?;
     //校验用户中心账号是否已经登陆了
     let uc_res = check_uc_online(&c_login.get_user_id())?;
     //校验内存
-    let mem_res = check_mem_online(&c_login.get_user_id(), write);
+    let mem_res = check_mem_online(&c_login.get_user_id(), lock);
     //如果用户中心登陆了或者本地内存登陆了，直接错误返回
     if uc_res || mem_res {
         // modify_redis_user(c_login.get_user_id(), false);

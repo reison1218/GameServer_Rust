@@ -6,15 +6,16 @@ use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
+use std::sync::Mutex;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 
 pub struct SavePlayerHttpHandler {
-    gm: Arc<RwLock<GameMgr>>,
+    gm: Arc<Mutex<GameMgr>>,
 }
 
 impl SavePlayerHttpHandler {
-    pub fn new(gm: Arc<RwLock<GameMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
         SavePlayerHttpHandler { gm }
     }
 }
@@ -35,11 +36,11 @@ impl HttpServerHandler for SavePlayerHttpHandler {
 }
 
 pub struct StopPlayerHttpHandler {
-    gm: Arc<RwLock<GameMgr>>,
+    gm: Arc<Mutex<GameMgr>>,
 }
 
 impl StopPlayerHttpHandler {
-    pub fn new(gm: Arc<RwLock<GameMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
         StopPlayerHttpHandler { gm }
     }
 }
