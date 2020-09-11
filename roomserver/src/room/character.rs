@@ -111,7 +111,7 @@ impl BattleCharacter {
         }
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id);
-            if let Some(buff_temp) = buff_temp {
+            if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
                 self.add_buff(Some(self.user_id), None, buff.id, None);
                 self.passive_buffs.insert(*buff_id, buff);

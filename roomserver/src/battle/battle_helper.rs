@@ -635,7 +635,7 @@ impl BattleData {
         }
         let cell = res.unwrap();
 
-        if cell.id < CellType::Valid as u32 {
+        if cell.id < CellType::Valid.into_u32() {
             let str = format!("this is cell can not be choice!index:{}", cell.index);
             anyhow::bail!(str)
         }

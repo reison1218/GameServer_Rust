@@ -7,12 +7,24 @@ use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::slice::Iter;
 
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum CellType {
     InValid = 0,
     UnUse = 1,
     Valid = 2,
+}
+
+impl CellType {
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
+        res
+    }
+
+    pub fn into_u32(self) -> u32 {
+        let res = self.into_u8();
+        res as u32
+    }
 }
 
 ///地图
@@ -57,6 +69,7 @@ impl Cell {
 }
 
 impl TileMap {
+    ///通过user_id获得地图块
     pub fn get_cell_mut_by_user_id(&mut self, user_id: u32) -> Option<&mut Cell> {
         for cell in self.map.iter_mut() {
             if cell.user_id != user_id {
@@ -67,6 +80,7 @@ impl TileMap {
         None
     }
 
+    ///删除玩家
     pub fn remove_user(&mut self, user_id: u32) {
         for cell in self.map.iter_mut() {
             if cell.user_id != user_id {
@@ -127,7 +141,7 @@ impl TileMap {
         //填充空的格子占位下标
         for index in 0..tile_map_temp.map.len() {
             let res = tile_map_temp.map.get(index).unwrap();
-            if *res != 2 {
+            if *res != CellType::Valid.into_u32() {
                 continue;
             }
             empty_v.push(index);
@@ -208,7 +222,7 @@ impl TileMap {
             if cell.is_world {
                 let world_cell = TEMPLATES.get_world_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(world_cell.buff.iter());
-            } else if cell_id > &(CellType::Valid as u32) {
+            } else if cell_id > &CellType::Valid.into_u32() {
                 let cell_temp = TEMPLATES.get_cell_ref().temps.get(cell_id).unwrap();
                 buffs = Some(cell_temp.buff.iter());
                 cell.element = cell_temp.element;
