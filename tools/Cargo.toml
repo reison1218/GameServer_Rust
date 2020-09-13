@@ -5,6 +5,10 @@ authors = ["reison <tijay830@163.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.release]
+opt-level = 3 #release
+lto = "fat"
+codegen-units = 1
 
 [dependencies]
 num_cpus="1.10.1"

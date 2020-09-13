@@ -22,6 +22,7 @@ use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 //初始化全局线程池
 lazy_static! {
 
+    ///配置文件
     static ref CONF_MAP : Conf = {
         let path = env::current_dir().unwrap();
         let str = path.as_os_str().to_str().unwrap();
