@@ -60,9 +60,14 @@ impl BattleData {
             let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
             match max_grade_temp {
                 Some(max_grade_temp) => {
-                    if u32::from_str(max_grade_temp.value.as_str()).is_ok() {
-                        let res = u32::from_str(max_grade_temp.value.as_str()).unwrap();
-                        max_grade = res as i32;
+                    let res = u32::from_str(max_grade_temp.value.as_str());
+                    match res {
+                        Ok(grade) => {
+                            max_grade = grade as i32;
+                        }
+                        Err(e) => {
+                            warn!("{:?}", e);
+                        }
                     }
                 }
                 None => {
@@ -159,7 +164,12 @@ impl BattleData {
         let item = item.unwrap();
         let skill_id = item.skill_temp.id;
         let res = self.use_skill(user_id, skill_id, true, targets, au)?;
-        let battle_cter = self.get_battle_cter_mut(Some(user_id)).unwrap();
+        let battle_cter = self.get_battle_cter_mut(Some(user_id));
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            anyhow::bail!("")
+        }
+        let battle_cter = battle_cter.unwrap();
         //用完了就删除
         battle_cter.items.remove(&item_id);
         Ok(res)
@@ -185,8 +195,14 @@ impl BattleData {
         let mut au_vec: Option<Vec<ActionUnitPt>> = None;
         unsafe {
             //战斗角色
-            let battle_cter_ptr =
-                self.get_battle_cter_mut(Some(user_id)).unwrap() as *mut BattleCharacter;
+
+            let res = self.get_battle_cter_mut(Some(user_id));
+            if let Err(e) = res {
+                error!("{:?}", e);
+                anyhow::bail!("")
+            }
+            let res = res.unwrap();
+            let battle_cter_ptr = res as *mut BattleCharacter;
             let battle_cter = battle_cter_ptr.as_mut().unwrap();
             //战斗角色身上的技能
             let mut skill_s;

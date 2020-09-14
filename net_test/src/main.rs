@@ -11,6 +11,7 @@ use protobuf::Message;
 use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::FromPrimitive;
+use log::info;
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -255,28 +256,11 @@ struct BaseFoo{
     foo:Option<Foo>
 }
 
-
-struct ActorTest;
-impl actix::Actor for ActorTest{
-    type Context = ();
-}
-
-struct ActorTest2;
-impl actix::Actor for ActorTest2{
-    type Context = ();
+fn test_err()->anyhow::Result<()>{
+    anyhow::bail!("test");
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut actor = ActorTest;
-    actor.start();
-
-    let mut actor2 = ActorTest2;
-    actor2.start();
-
-    let s = SyncArbiter::start(1,|| actor);
-    let s = s.send("test");
-
-
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();

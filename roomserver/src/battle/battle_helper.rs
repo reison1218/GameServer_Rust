@@ -475,7 +475,8 @@ impl BattleData {
         if let None = cter {
             anyhow::bail!("battle_cter not find!user_id:{}", _user_id)
         }
-        Ok(cter.unwrap())
+        let cter = cter.unwrap();
+        Ok(cter)
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {

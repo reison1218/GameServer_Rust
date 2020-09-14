@@ -148,8 +148,8 @@ impl BattleData {
     ///获得战斗角色借用指针
     pub fn get_battle_cter(&self, user_id: Option<u32>) -> anyhow::Result<&BattleCharacter> {
         let _user_id;
-        if let Some(user_id) = user_id {
-            _user_id = user_id;
+        if let Some(id) = user_id {
+            _user_id = id;
         } else {
             let res = self.get_turn_user(None);
             if let Err(e) = res {
@@ -161,7 +161,8 @@ impl BattleData {
         if let None = cter {
             anyhow::bail!("there is no battle_cter!user_id:{}", _user_id)
         }
-        Ok(cter.unwrap())
+        let cter = cter.unwrap();
+        Ok(cter)
     }
 
     pub fn get_battle_cter_by_cell_index(&self, index: usize) -> anyhow::Result<&BattleCharacter> {
