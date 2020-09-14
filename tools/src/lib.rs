@@ -17,5 +17,4 @@ pub mod tcp;
 pub mod templates;
 pub mod thread_pool;
 pub mod util;
-pub mod actor;
 use log::{error, info, warn};

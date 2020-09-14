@@ -168,8 +168,7 @@ pub trait RoomModel {
     fn get_ref_room_by_room_id(&mut self, room_id: &u32) -> anyhow::Result<&Room> {
         let res = self.get_rooms_mut().get(room_id);
         if res.is_none() {
-            let s = format!("this room is not exit,room_id:{}", room_id);
-            anyhow::bail!(s)
+            anyhow::bail!("this room is not exit,room_id:{}", room_id)
         }
         Ok(res.unwrap())
     }

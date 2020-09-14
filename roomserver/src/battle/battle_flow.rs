@@ -218,8 +218,7 @@ impl BattleData {
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
             if let Err(e) = res {
-                let str = format!("{:?}", e);
-                warn!("{:?}", str);
+                warn!("{:?}", e);
                 anyhow::bail!("")
             }
 
@@ -286,13 +285,11 @@ impl BattleData {
         let target_user_id = target_cter.user_id;
         let target_user_index = target_cter.get_cell_index();
         if target_user_id == user_id {
-            let str = format!("the attack target can not be Self!user_id:{}", user_id);
-            warn!("{:?}", str);
+            warn!("the attack target can not be Self!user_id:{}", user_id);
             anyhow::bail!("")
         }
         if target_cter.is_died() {
-            let str = format!("the target is died!user_id:{}", target_cter.user_id);
-            warn!("{:?}", str);
+            warn!("the target is died!user_id:{}", target_cter.user_id);
             anyhow::bail!("")
         }
 

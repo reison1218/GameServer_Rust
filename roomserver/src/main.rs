@@ -1,5 +1,4 @@
 mod battle;
-mod error_return;
 mod handlers;
 mod mgr;
 mod net;

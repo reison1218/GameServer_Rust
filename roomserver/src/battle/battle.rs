@@ -135,8 +135,7 @@ impl BattleData {
         }
         let res = self.turn_orders.get(index);
         if res.is_none() {
-            let str = format!("get_next_turn_user is none for index:{} ", index);
-            anyhow::bail!(str)
+            anyhow::bail!("get_next_turn_user is none for index:{} ", index)
         }
         let user_id = *res.unwrap();
         Ok(user_id)
@@ -160,8 +159,7 @@ impl BattleData {
         }
         let cter = self.battle_cter.get(&_user_id);
         if let None = cter {
-            let str = format!("there is no battle_cter!user_id:{}", _user_id);
-            anyhow::bail!("{:?}", str)
+            anyhow::bail!("there is no battle_cter!user_id:{}", _user_id)
         }
         Ok(cter.unwrap())
     }

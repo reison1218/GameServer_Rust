@@ -1,5 +1,4 @@
 use super::*;
-use crate::error_return::err_back;
 use crate::room::character::Character;
 use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use std::convert::TryFrom;
@@ -31,31 +30,21 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             //校验这个用户在不在房间内
             let res = rm.get_room_id(&packet.get_user_id());
             if let Some(room_id) = res {
-                let str = format!(
-                    "this user already in the custom room,can not create room! user_id:{},room_id:{}",
-                    user_id, room_id
-                );
-                warn!("{:?}", str.as_str());
-                err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+                warn!("this user already in the custom room,can not create room! user_id:{},room_id:{}",
+                      user_id, room_id);
                 return Ok(());
             }
         }
         RoomType::SeasonPve => {
-            let str = "this function is not open yet!".to_owned();
-            warn!("{:?}", str.as_str());
-            err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+            warn!("this function is not open yet!");
             return Ok(());
         }
         RoomType::WorldBossPve => {
-            let str = "this function is not open yet!".to_owned();
-            warn!("{:?}", str.as_str());
-            err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+            warn!("this function is not open yet!");
             return Ok(());
         }
         _ => {
-            let str = "could not create room,the room_type is invalid!".to_owned();
-            warn!("{:?}", str.as_str());
-            err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+            warn!("could not create room,the room_type is invalid!");
             return Ok(());
         }
     }
@@ -106,18 +95,15 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
             let member = room.get_member_mut(&user_id);
             if let None = member {
-                let str = format!("leave_room:this player is none!user_id:{}", user_id);
-                warn!("{:?}", str.as_str());
+                warn!("leave_room:this player is none!user_id:{}", user_id);
                 return Ok(());
             }
             let member = member.unwrap();
             if member.state == MemberState::Ready as u8 {
-                let str = format!(
+                warn!(
                     "leave_room:this player is already ready!user_id:{}",
                     user_id
                 );
-                warn!("{:?}", str.as_str());
-                err_back(ClientCode::LeaveRoom, user_id, str, room.get_sender_mut());
                 return Ok(());
             }
         }
@@ -210,22 +196,19 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if battle_type.into_u8() < BattleType::OneVOneVOneVOne.into_u8()
         || battle_type.into_u8() > BattleType::OneVOne.into_u8()
     {
-        let s = format!(
+        warn!(
             "search_room:this model is not exist!model_type:{:?}",
             battle_type
         );
-        err_back(ClientCode::Room, user_id, s, rm.get_sender_mut());
         return Ok(());
     }
 
     //校验玩家是否已经在房间里
     if rm.check_player(&user_id) {
-        let str = format!(
+        warn!(
             "search_room:this player already in the room!user_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     //执行正常流程
@@ -236,8 +219,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let res = match_room.quickly_start(member, sender, rm.task_sender.clone().unwrap());
     //返回错误信息
     if let Err(e) = res {
-        let str = e.to_string();
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+        warn!("{:?}", e);
         return Ok(());
     };
     let room_id = res.unwrap();
@@ -259,47 +241,33 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = rm.get_room_mut(&packet.get_user_id());
     //校验玩家房间
     if let None = room {
-        let str = format!(
+        warn!(
             "prepare_cancel:this player not in the room!user_id:{}",
             user_id
         );
-        err_back(ClientCode::PrepareCancel, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     let room = room.unwrap();
     //校验房间是否已经开始游戏
     if room.get_state() != RoomState::Await {
-        let str = format!(
+        anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        );
-        anyhow::bail!(str)
+        )
     }
     //校验玩家是否选了角色
     let member = room.members.get(&user_id);
     if let None = member {
-        let str = format!("prepare_cancel: this player is None!user_id:{}", user_id);
-        err_back(
-            ClientCode::PrepareCancel,
-            user_id,
-            str,
-            room.get_sender_mut(),
-        );
+        error!("prepare_cancel: this player is None!user_id:{}", user_id);
         return Ok(());
     }
     let member = member.unwrap();
     let cter_id = member.chose_cter.cter_id;
     if cter_id == 0 {
-        let str = format!(
+        warn!(
             "prepare_cancel: this player has not choose character yet!user_id:{}",
             user_id
-        );
-        err_back(
-            ClientCode::PrepareCancel,
-            user_id,
-            str,
-            room.get_sender_mut(),
         );
         return Ok(());
     }
@@ -312,15 +280,9 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验玩家是否选了技能
     if prepare && member.chose_cter.skills.len() < cter.usable_skill_count as usize {
-        let str = format!(
+        warn!(
             "prepare_cancel: this player has not choose character'skill yet!user_id:{}",
             user_id
-        );
-        err_back(
-            ClientCode::PrepareCancel,
-            user_id,
-            str,
-            room.get_sender_mut(),
         );
         return Ok(());
     }
@@ -335,27 +297,22 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验房间
     let room = rm.get_room_mut(&user_id);
     if let None = room {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        let str = format!(
+        anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        );
-        anyhow::bail!(str)
+        )
     }
 
     //校验准备状态
     if !room.check_ready() {
-        let str = format!("there is player not ready,can not start game!");
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Start, user_id, str, rm.get_sender_mut());
+        warn!("there is player not ready,can not start game!");
         return Ok(());
     }
 
@@ -380,21 +337,18 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let team_id = cct.get_target_team_id();
     if team_id < TeamId::Min as u32 || team_id > TeamId::Max as u32 {
-        let str = format!("target_team_id:{} is invaild!", team_id);
-        warn!("{:?}", str.as_str());
+        warn!("target_team_id:{} is invaild!", team_id);
         return Ok(());
     }
     let room_id = rm.get_room_id(user_id);
     if let None = room_id {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room_id = room_id.unwrap();
     let room = rm.custom_room.rooms.get_mut(&room_id);
     if let None = room {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
 
@@ -402,11 +356,10 @@ pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        let str = format!(
+        anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        );
-        anyhow::bail!(str)
+        )
     }
     room.change_team(user_id, &(team_id as u8));
     Ok(())
@@ -426,11 +379,10 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验房间
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        let str = format!(
+        warn!(
             "kick_member:this player is not in the room!user_id:{}",
             user_id
         );
-        err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -439,35 +391,31 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        let str = format!(
+        anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        );
-        anyhow::bail!(str)
+        )
     }
 
     if room.get_room_type() != RoomType::Custom {
-        let str = format!(
+        warn!(
             "kick_member:this room is not custom room,can not kick member!room_id:{}",
             room.get_room_id()
         );
-        err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     if room.get_owner_id() != user_id {
-        let str = format!("kick_member:this player is not host!user_id:{}", user_id);
-        err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
+        warn!("kick_member:this player is not host!user_id:{}", user_id);
         return Ok(());
     }
 
     //校验房间是否存在target_id这个成员
     if !room.is_exist_member(&target_id) {
-        let str = format!(
+        warn!(
             "kick_member:this target player is not in the room!target_user_id:{}",
             target_id
         );
-        err_back(ClientCode::KickMember, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -491,54 +439,45 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut srs = S_ROOM_SETTING::new();
     srs.is_succ = true;
     if room.is_none() {
-        let str = format!(
+        warn!(
             "room_setting:this player is not in the room,room_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::RoomSetting, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.get_state() != RoomState::Await {
-        let str = format!(
+        anyhow::bail!(
             "can not setting room!room_id:{},room_state:{:?}",
             room.get_room_id(),
             room.get_state()
-        );
-        anyhow::bail!(str)
+        )
     }
 
     //校验房间是否存在这个玩家
     if !room.is_exist_member(&user_id) {
-        let str = format!(
+        warn!(
             "room_setting:this player is not in the room,room_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::RoomSetting, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     //校验玩家是否是房主
     if room.get_owner_id() != user_id {
-        let str = format!(
+        warn!(
             "this player is not master:{},room_id:{}",
             user_id,
             room.get_room_id()
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::RoomSetting, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     let member = room.get_member_ref(&user_id).unwrap();
     if member.state == MemberState::Ready as u8 {
-        let str = format!("this owner is ready!,user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::RoomSetting, user_id, str, rm.get_sender_mut());
+        warn!("this owner is ready!,user_id:{}", user_id);
         return Ok(());
     }
 
@@ -590,17 +529,14 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验玩家是否在房间内
     let res = rm.check_player(&user_id);
     if res {
-        let str = format!("this player already in the room!user_id:{}", user_id);
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+        warn!("this player already in the room!user_id:{}", user_id);
         return Ok(());
     }
 
     //校验改房间是否存在
     let room = rm.custom_room.get_mut_room_by_room_id(&room_id);
     if let Err(e) = room {
-        let str = e.to_string();
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+        warn!("{:?}", e);
         return Ok(());
     }
 
@@ -608,11 +544,10 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        let str = format!(
+        anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        );
-        anyhow::bail!(str)
+        )
     }
 
     let room_type = room.get_room_type();
@@ -628,22 +563,18 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间人数
     if room.members.len() >= MEMBER_MAX as usize {
-        let str = format!("this room already have max player num!,room_id:{}", room_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
+        warn!("this room already have max player num!,room_id:{}", room_id);
         return Ok(());
     }
 
     // 校验玩家是否在房间里
     let res = room.is_exist_member(&packet.get_user_id());
     if res {
-        let str = format!(
+        warn!(
             "this player already in the room!user_id:{},room_id:{}",
             packet.get_user_id(),
             room_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Room, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     let member = Member::from(grj.take_pbp());
@@ -666,27 +597,13 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
 
     //校验玩家在不在房间
     if res.is_none() {
-        let str = format!("this player is not in room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceCharacter,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        warn!("this player is not in room!user_id:{}", user_id);
         return Ok(());
     }
     let room = res.unwrap();
     //校验房间状态
     if room.is_started() {
-        let str = format!("this room already started!room_id:{}", room.get_room_id());
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceCharacter,
-            user_id,
-            str,
-            room.get_sender_mut(),
-        );
+        warn!("this room already started!room_id:{}", room.get_room_id());
         return Ok(());
     }
 
@@ -702,44 +619,23 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     //校验角色
     let res = room.check_character(cter_id);
     if let Err(e) = res {
-        let str = e.to_string();
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceCharacter,
-            user_id,
-            str,
-            room.get_sender_mut(),
-        );
+        warn!("{:?}", e);
         return Ok(());
     }
 
     let member = room.get_member_mut(&user_id).unwrap();
     //校验玩家状态
     if member.state == MemberState::Ready as u8 {
-        let str = format!("this player is already prepare!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceCharacter,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        warn!("this player is already prepare!user_id:{}", user_id);
         return Ok(());
     }
 
     let cter = member.cters.get(&cter_id);
     //校验角色
     if cter_id > 0 && cter.is_none() {
-        let str = format!(
+        warn!(
             "this player do not have this character!user_id:{},cter_id:{}",
             user_id, cter_id
-        );
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceCharacter,
-            user_id,
-            str,
-            rm.get_sender_mut(),
         );
         return Ok(());
     }
@@ -796,9 +692,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        let str = format!("this player is not in room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        warn!("this player is not in room!user_id:{}", user_id);
         return Ok(());
     }
 
@@ -806,12 +700,10 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_state = room.get_state();
     let member = room.get_member_mut(&user_id).unwrap();
     if member.chose_cter.cter_id == 0 {
-        let str = format!(
+        warn!(
             "this player not choice cter yet!can not choice skill of cter!user_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -821,20 +713,16 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间壮体啊
     if room_state != RoomState::Await {
-        let str = format!("can not choice skill now!");
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        warn!("can not choice skill now!");
         return Ok(());
     }
 
     //校验成员状态
     if member.state == MemberState::Ready as u8 {
-        let str = format!(
+        warn!(
             "this player already ready,can not choice skill now!user_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
@@ -844,20 +732,16 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         .unwrap();
     //校验技能数量
     if skills.len() > cter_temp.usable_skill_count as usize {
-        let str = format!("this cter's skill count is error! cter_id:{}", cter_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+        warn!("this cter's skill count is error! cter_id:{}", cter_id);
         return Ok(());
     }
     //校验技能有效性
     for skill in skills.iter() {
         if !cter.skills.contains(skill) {
-            let str = format!(
+            warn!(
                 "this cter do not have this skill!user_id:{},cter_id:{},skill_id:{}",
                 user_id, cter_id, *skill
             );
-            warn!("{:?}", str.as_str());
-            err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
             return Ok(());
         }
     }
@@ -871,9 +755,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             }
             count += 1;
             if count >= 2 {
-                let str = format!("the skill group is error!user_id:{}", user_id);
-                warn!("{:?}", str.as_str());
-                err_back(ClientCode::ChoiceSkill, user_id, str, rm.get_sender_mut());
+                warn!("the skill group is error!user_id:{}", user_id);
                 return Ok(());
             }
         }
@@ -930,20 +812,16 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验表情是否需要解锁和角色表情
     let emoji = res.unwrap();
     if emoji.condition != 0 {
-        let str = format!("this emoji need unlock!emoji_id:{}", emoji_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Emoji, user_id, str, rm.get_sender_mut());
+        warn!("this emoji need unlock!emoji_id:{}", emoji_id);
         return Ok(());
     } else if emoji.condition == 0
         && emoji.cter_id > 0
         && emoji.cter_id != member.chose_cter.cter_id
     {
-        let str = format!(
+        warn!(
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
             member.chose_cter.cter_id, emoji_id
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::Emoji, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
     //走正常逻辑
@@ -960,9 +838,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
@@ -972,30 +848,25 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         .check_choice_index(index as usize, false, true, false, false);
     //校验参数
     if let Err(e) = res {
-        let str = format!("{:?}", e);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
+        warn!("{:?}", e);
         return Ok(());
     }
 
     //校验是否轮到他了
     if !room.is_can_choice_index_now(user_id) {
-        let str =
-            format!(
+        warn!(
             "this player is not the next choice index player!user_id:{},index:{},choice_order:{:?}",
-            user_id,room.get_next_turn_index(),room.battle_data.turn_orders
+            user_id,
+            room.get_next_turn_index(),
+            room.battle_data.turn_orders
         );
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
         return Ok(());
     }
 
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
     if member.cell_index_is_choiced() {
-        let str = format!("this player is already choice index!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(ClientCode::ChoiceIndex, user_id, str, rm.get_sender_mut());
+        warn!("this player is already choice index!user_id:{}", user_id);
         return Ok(());
     }
     room.choice_index(user_id, index);
@@ -1011,59 +882,31 @@ pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceRoundOrder,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
 
     //校验参数
     if order > (MEMBER_MAX - 1) as u32 {
-        let str = format!("the order's value is error!!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceRoundOrder,
-            user_id,
-            str,
-            rm.get_sender_mut(),
-        );
+        warn!("the order's value is error!!user_id:{}", user_id);
         return Ok(());
     }
 
     //判断能不能选
     if !room.is_can_choice_turn_now(user_id) {
-        let str = format!(
+        warn!(
             "this player is not the next choice turn player!user_id:{},order:{:?}",
             user_id, room.battle_data.choice_orders
-        );
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceRoundOrder,
-            user_id,
-            str,
-            rm.get_sender_mut(),
         );
         return Ok(());
     }
 
     //校验他选过没有
     if room.turn_order_contains(&user_id) {
-        let str = format!(
+        warn!(
             "this player is already choice round order!user_id:{}",
             user_id
-        );
-        warn!("{:?}", str.as_str());
-        err_back(
-            ClientCode::ChoiceRoundOrder,
-            user_id,
-            str,
-            rm.get_sender_mut(),
         );
         return Ok(());
     }
@@ -1076,18 +919,16 @@ pub fn skip_choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     let user_id = packet.get_user_id();
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
-        let str = format!("this player is not in the room!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
     //判断能不能选
     if !room.is_can_choice_turn_now(user_id) {
-        let str = format!(
+        warn!(
             "this player is not the next choice turn player!user_id:{}",
             user_id
         );
-        warn!("{:?}", str.as_str());
         return Ok(());
     }
     room.skip_choice_turn(user_id);

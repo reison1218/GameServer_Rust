@@ -496,8 +496,7 @@ pub unsafe fn auto_pair_cell(
     let target_index = *target_array.get(0).unwrap() as usize;
     let res = battle_data.check_choice_index(target_index, true, true, true, false);
     if let Err(e) = res {
-        let str = format!("{:?}", e);
-        warn!("{:?}", str);
+        warn!("{:?}", e);
         return None;
     }
 

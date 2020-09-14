@@ -473,8 +473,7 @@ impl BattleData {
         }
         let cter = self.battle_cter.get_mut(&_user_id);
         if let None = cter {
-            let str = format!("battle_cter not find!user_id:{}", _user_id);
-            anyhow::bail!("{:?}", str)
+            anyhow::bail!("battle_cter not find!user_id:{}", _user_id)
         }
         Ok(cter.unwrap())
     }
@@ -494,8 +493,7 @@ impl BattleData {
         match target_type {
             //无效目标
             TargetType::None => {
-                let str = format!("this target_type is invaild!target_type:{:?}", target_type);
-                anyhow::bail!(str)
+                anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
             }
             //任意玩家
             TargetType::AnyPlayer => {
@@ -509,15 +507,12 @@ impl BattleData {
             } //玩家自己
             TargetType::PlayerSelf => {
                 if target_array.len() > 1 {
-                    let str = format!("this target_type is invaild!target_type:{:?}", target_type);
-                    anyhow::bail!(str)
+                    anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                 }
                 for index in target_array {
                     let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
                     if cter.user_id != user_id {
-                        let str =
-                            format!("this target_type is invaild!target_type:{:?}", target_type);
-                        anyhow::bail!(str)
+                        anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                     }
                 }
             } //玩家自己
@@ -607,13 +602,11 @@ impl BattleData {
             let member_id = *member_id;
             //校验有没有
             if !self.battle_cter.contains_key(&member_id) {
-                let str = format!("battle_cter is not find!user_id:{}", member_id);
-                anyhow::bail!(str)
+                anyhow::bail!("battle_cter is not find!user_id:{}", member_id)
             }
             //校验是不是自己
             if check_self_id.is_some() && member_id == check_self_id.unwrap() {
-                let str = format!("target_user_id==self!target_user_id:{}", member_id);
-                anyhow::bail!(str)
+                anyhow::bail!("target_user_id==self!target_user_id:{}", member_id)
             }
         }
         Ok(())
@@ -630,33 +623,26 @@ impl BattleData {
     ) -> anyhow::Result<()> {
         let res = self.tile_map.map.get(index);
         if res.is_none() {
-            let str = format!("this cell is not find!index:{}", index);
-            anyhow::bail!(str)
+            anyhow::bail!("this cell is not find!index:{}", index)
         }
         let cell = res.unwrap();
 
         if cell.id < CellType::Valid.into_u32() {
-            let str = format!("this is cell can not be choice!index:{}", cell.index);
-            anyhow::bail!(str)
+            anyhow::bail!("this is cell can not be choice!index:{}", cell.index)
         }
 
         let cell = res.unwrap();
         if is_check_pair && cell.pair_index.is_some() {
-            let str = format!("this cell already pair!index:{}", cell.index);
-            anyhow::bail!(str)
+            anyhow::bail!("this cell already pair!index:{}", cell.index)
         }
-
         if is_check_world && cell.is_world {
-            let str = format!("world_cell can not be choice!index:{}", cell.index);
-            anyhow::bail!(str)
+            anyhow::bail!("world_cell can not be choice!index:{}", cell.index)
         }
         if is_check_locked && cell.check_is_locked() {
-            let str = format!("this cell is locked!index:{}", cell.index);
-            anyhow::bail!(str)
+            anyhow::bail!("this cell is locked!index:{}", cell.index)
         }
         if is_check_has_user && cell.user_id > 0 {
-            let str = format!("this cell has user!index:{}", cell.index);
-            anyhow::bail!(str)
+            anyhow::bail!("this cell has user!index:{}", cell.index)
         }
         Ok(())
     }

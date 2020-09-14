@@ -96,8 +96,7 @@ impl TileMap {
         let tile_map_mgr = TEMPLATES.get_tile_map_ref();
         let res = tile_map_mgr.member_temps.get(&member_count);
         if let None = res {
-            let str = format!("there is no map config for member_count:{}", member_count);
-            anyhow::bail!(str)
+            anyhow::bail!("there is no map config for member_count:{}", member_count)
         }
         let res = res.unwrap();
         let mut rand = rand::thread_rng();
@@ -113,11 +112,11 @@ impl TileMap {
 
         let res = res.get(&open_world_cell);
         if let None = res {
-            let str = format!(
+            anyhow::bail!(
                 "there is no map config for member_count:{},is_open_world_cell:{}",
-                member_count, open_world_cell
-            );
-            anyhow::bail!(str)
+                member_count,
+                open_world_cell
+            )
         }
 
         let tile_map_temp_v = res.unwrap();
