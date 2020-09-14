@@ -74,6 +74,7 @@ use crate::test_async::async_main;
 use std::collections::btree_map::Range;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use crate::map::generate_map;
+use actix::{Actor, SyncArbiter};
 
 #[macro_use]
 extern crate lazy_static;
@@ -255,28 +256,25 @@ struct BaseFoo{
 }
 
 
+struct ActorTest;
+impl actix::Actor for ActorTest{
+    type Context = ();
+}
+
+struct ActorTest2;
+impl actix::Actor for ActorTest2{
+    type Context = ();
+}
+
 fn main() -> anyhow::Result<()> {
-    let f = Foo::default();
-    // let lock = Arc::new(Mutex::new(f));
-    let lock = Arc::new(RwLock::new(f));
+    let mut actor = ActorTest;
+    actor.start();
 
-    let time = std::time::SystemTime::now();
-    let m = move ||{
-        for _ in 0..1000{
-            let lock_clone = lock.clone();
-            let m = move ||{
-                // let mut res = lock_clone.lock().unwrap();
-                 let mut res = lock_clone.write().unwrap();
-                res.x =res.x+1;
-                std::thread::sleep(Duration::from_millis(1000));
-            };
-            std::thread::spawn(m);
-        }
-    };
-    let handler = std::thread::spawn(m);
-    handler.join();
+    let mut actor2 = ActorTest2;
+    actor2.start();
 
-    dbg!("{}",time.elapsed().unwrap());
+    let s = SyncArbiter::start(1,|| actor);
+    let s = s.send("test");
 
 
     // println!("{:?}",v);

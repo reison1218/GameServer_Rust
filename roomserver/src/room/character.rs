@@ -1,9 +1,9 @@
 use crate::battle::battle::Item;
 use crate::battle::battle_buff::Buff;
+use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
 };
-use crate::battle::battle_enum::skill_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::TEMPLATES;

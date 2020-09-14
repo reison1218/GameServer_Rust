@@ -29,8 +29,6 @@ pub mod skill_type {
     pub const SKILL_OPEN_CELL: [u32; 1] = [223];
     ///自残加buff
     pub const HURT_SELF_ADD_BUFF: [u32; 1] = [311];
-    ///格挡伤害
-    pub const GD_ATTACK_DAMAGE: [u32; 1] = [2];
     ///自动配对地图块
     pub const AUTO_PAIR_CELL: [u32; 1] = [212];
     ///上buff
@@ -75,6 +73,8 @@ pub mod skill_type {
 
 ///buff类型
 pub mod buff_type {
+    ///格挡伤害
+    pub const GD_ATTACK_DAMAGE: [u32; 1] = [2];
     ///变成技能
     pub const CHANGE_SKILL: [u32; 1] = [3];
     ///增加攻击力并变成AOE
