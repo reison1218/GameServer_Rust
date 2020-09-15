@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+///conf of struct
 pub struct Conf {
     conf: HashMap<String, Value>,
 }

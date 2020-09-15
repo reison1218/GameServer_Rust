@@ -60,10 +60,9 @@ impl BattleData {
                 return;
             }
 
-            let cter_res = self.get_battle_cter(Some(user_id));
-
+            let cter_res = self.get_battle_cter(Some(user_id), false);
             match cter_res {
-                Ok(cter) if cter.state == BattleCterState::Die => {
+                Ok(cter) if cter.is_died() => {
                     self.add_next_turn_index();
                     return;
                 }
@@ -97,7 +96,7 @@ impl BattleData {
             let target_user = cell.user_id;
             //先判断目标位置的角色是否有不动泰山被动技能
             self.before_moved_trigger(user_id, target_user)?;
-            let target_cter = self.get_battle_cter_mut(Some(target_user)).unwrap();
+            let target_cter = self.get_battle_cter_mut(Some(target_user), true).unwrap();
             target_cter.move_index(battle_cter.get_cell_index());
 
             let source_cell = tile_map_ptr
@@ -148,7 +147,7 @@ impl BattleData {
         let cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         if user_id.is_some() {
             let user_id = user_id.unwrap();
-            let cter = self.get_battle_cter_mut(Some(user_id));
+            let cter = self.get_battle_cter_mut(Some(user_id), true);
             if let Err(e) = cter {
                 error!("{:?}", e);
                 return v;
@@ -242,7 +241,7 @@ impl BattleData {
         hp: i16,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
-        let cter = self.get_battle_cter_mut(Some(target))?;
+        let cter = self.get_battle_cter_mut(Some(target), true)?;
 
         if cter.is_died() {
             anyhow::bail!(
@@ -296,7 +295,7 @@ impl BattleData {
         let target_cter = battle_data_ptr
             .as_mut()
             .unwrap()
-            .get_battle_cter_mut(Some(target))?;
+            .get_battle_cter_mut(Some(target), true)?;
         target_pt
             .target_value
             .push(target_cter.get_cell_index() as u32);
@@ -306,7 +305,7 @@ impl BattleData {
             let from_cter = battle_data_ptr
                 .as_mut()
                 .unwrap()
-                .get_battle_cter_mut(Some(from))?;
+                .get_battle_cter_mut(Some(from), true)?;
             let attack_damage = from_cter.calc_damage();
             let reduce_damage = self.calc_reduce_damage(from_cter.user_id, target_cter);
             ep.effect_type = EffectType::AttackDamage as u32;
@@ -460,6 +459,7 @@ impl BattleData {
     pub fn get_battle_cter_mut(
         &mut self,
         user_id: Option<u32>,
+        is_alive: bool,
     ) -> anyhow::Result<&mut BattleCharacter> {
         let _user_id;
         if let Some(user_id) = user_id {
@@ -476,6 +476,13 @@ impl BattleData {
             anyhow::bail!("battle_cter not find!user_id:{}", _user_id)
         }
         let cter = cter.unwrap();
+        if is_alive && cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                _user_id,
+                cter.cter_id
+            )
+        }
         Ok(cter)
     }
 
@@ -683,7 +690,7 @@ impl BattleData {
         effect_value: u32,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
-        let target_cter = self.get_battle_cter(Some(target_user))?;
+        let target_cter = self.get_battle_cter(Some(target_user), true)?;
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
@@ -755,13 +762,9 @@ impl BattleData {
                         continue;
                     }
 
-                    let cter = self.get_battle_cter(Some(other_user));
+                    let cter = self.get_battle_cter(Some(other_user), true);
                     if let Err(e) = cter {
                         warn!("{:?}", e);
-                        continue;
-                    }
-                    let cter = cter.unwrap();
-                    if cter.is_died() {
                         continue;
                     }
                     v_u.push(other_user);
@@ -805,16 +808,13 @@ impl BattleData {
                         if other_user == 0 {
                             continue;
                         }
-                        let cter = self.get_battle_cter(Some(other_user));
+                        let cter = self.get_battle_cter(Some(other_user), true);
                         if let Err(e) = cter {
                             warn!("{:?}", e);
                             continue;
                         }
                         let cter = cter.unwrap();
                         if v_u.contains(&cter.user_id) {
-                            continue;
-                        }
-                        if cter.is_died() {
                             continue;
                         }
                         v_u.push(cter.user_id);
@@ -841,7 +841,7 @@ impl BattleData {
         if let Err(e) = target_type {
             anyhow::bail!("{:?}", e)
         }
-        let cter = self.get_battle_cter(Some(user_id)).unwrap();
+        let cter = self.get_battle_cter(Some(user_id), true).unwrap();
         let target_type = target_type.unwrap();
 
         match target_type {

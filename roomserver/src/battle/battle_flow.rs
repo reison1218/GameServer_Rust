@@ -147,7 +147,7 @@ impl BattleData {
         targets: Vec<u32>,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let battle_cter = self.get_battle_cter(Some(user_id));
+        let battle_cter = self.get_battle_cter(Some(user_id), true);
         if let Err(e) = battle_cter {
             error!("{:?}", e);
             anyhow::bail!("")
@@ -164,7 +164,7 @@ impl BattleData {
         let item = item.unwrap();
         let skill_id = item.skill_temp.id;
         let res = self.use_skill(user_id, skill_id, true, targets, au)?;
-        let battle_cter = self.get_battle_cter_mut(Some(user_id));
+        let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = battle_cter {
             error!("{:?}", e);
             anyhow::bail!("")
@@ -195,8 +195,7 @@ impl BattleData {
         let mut au_vec: Option<Vec<ActionUnitPt>> = None;
         unsafe {
             //战斗角色
-
-            let res = self.get_battle_cter_mut(Some(user_id));
+            let res = self.get_battle_cter_mut(Some(user_id), true);
             if let Err(e) = res {
                 error!("{:?}", e);
                 anyhow::bail!("")
@@ -481,7 +480,7 @@ impl BattleData {
         }
         let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
-        let battle_cter = self.get_battle_cter_mut(Some(user_id));
+        let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Ok(battle_cter) = battle_cter {
             if !battle_cter.is_died() {
                 //结算玩家自己的状态

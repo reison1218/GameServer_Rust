@@ -146,7 +146,11 @@ impl BattleData {
     }
 
     ///获得战斗角色借用指针
-    pub fn get_battle_cter(&self, user_id: Option<u32>) -> anyhow::Result<&BattleCharacter> {
+    pub fn get_battle_cter(
+        &self,
+        user_id: Option<u32>,
+        is_alive: bool,
+    ) -> anyhow::Result<&BattleCharacter> {
         let _user_id;
         if let Some(id) = user_id {
             _user_id = id;
@@ -162,6 +166,13 @@ impl BattleData {
             anyhow::bail!("there is no battle_cter!user_id:{}", _user_id)
         }
         let cter = cter.unwrap();
+        if is_alive && cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                _user_id,
+                cter.cter_id
+            )
+        }
         Ok(cter)
     }
 
@@ -179,7 +190,15 @@ impl BattleData {
         if cter.is_none() {
             anyhow::bail!("cter not find!user_id:{}", user_id)
         }
-        Ok(cter.unwrap())
+        let cter = cter.unwrap();
+        if cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                user_id,
+                cter.cter_id
+            )
+        }
+        Ok(cter)
     }
 
     ///根据地图下标获得上面的战斗角色
@@ -201,7 +220,15 @@ impl BattleData {
         if cter.is_none() {
             anyhow::bail!("cter not find!user_id:{}", user_id)
         }
-        Ok(cter.unwrap())
+        let cter = cter.unwrap();
+        if cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                user_id,
+                cter.cter_id
+            )
+        }
+        Ok(cter)
     }
 
     pub fn get_battle_cters_vec(&self) -> Vec<u32> {

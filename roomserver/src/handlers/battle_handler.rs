@@ -129,7 +129,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     unsafe {
-        let cter = room.battle_data.get_battle_cter(None).unwrap();
+        let cter = room.battle_data.get_battle_cter(None, false).unwrap();
         let current_cter_is_died = cter.is_died();
         //判断是否进行结算
         let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);

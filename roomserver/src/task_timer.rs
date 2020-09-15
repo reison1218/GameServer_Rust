@@ -347,7 +347,7 @@ fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
         return;
     }
 
-    let battle_cter = room.battle_data.get_battle_cter(Some(user_id));
+    let battle_cter = room.battle_data.get_battle_cter(Some(user_id), true);
     if let Err(e) = battle_cter {
         warn!("{:?}", e);
         return;

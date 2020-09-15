@@ -21,22 +21,22 @@ pub trait Handler: Send + Sync {
 }
 
 ///tcp server sender
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct TcpSender {
-    pub sender : crossbeam::crossbeam_channel::Sender<Data>,
+    pub sender: crossbeam::crossbeam_channel::Sender<Data>,
     pub token: usize,
 }
 
 impl TcpSender {
-    pub fn write(&mut self, bytes: Vec<u8>){
+    pub fn write(&mut self, bytes: Vec<u8>) {
         let res = self.sender.send(Data {
             bytes,
             token: self.token,
         });
         match res {
-            Ok(_)=>{}
-            Err(e)=>{
-                error!("{:?}",e);
+            Ok(_) => {}
+            Err(e) => {
+                error!("{:?}", e);
             }
         }
     }
@@ -86,11 +86,15 @@ pub mod tcp_server {
     use mio::net::{TcpListener as MioTcpListener, TcpStream as MioTcpStream};
     use mio::{Events, Interest, Poll, Registry, Token};
     use std::collections::hash_map::HashMap;
+    use std::error::Error;
     use std::io::{self, Read, Write};
     use std::net::SocketAddr;
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
-    use std::error::Error;
+
+    const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
+
+    const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);
@@ -114,11 +118,10 @@ pub mod tcp_server {
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
         let (sender, rec) = crossbeam::crossbeam_channel::bounded(102400);
-        //let (sender, rec) = std::sync::mpsc::sync_channel(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
 
-        //读取sender的数据
+        //read data from sender
         read_sender_mess(rec, conn_map_cp);
         info!("TCP-SERVER listening on:{:?}", addr);
         // Register the server with poll we can receive events for it.
@@ -126,28 +129,25 @@ pub mod tcp_server {
             .register(&mut server, SERVER, Interest::READABLE)?;
         loop {
             let res = poll.poll(&mut events, None);
-            match res {
-                Ok(_)=>{},
-                Err(e)=>{
-                    warn!("{:?}",e);
-                    continue;
-                }
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                continue;
             }
-            for event in events.iter(){
+            for event in events.iter() {
                 match event.token() {
                     SERVER => {
                         // Received an event for the TCP server socket.
                         // Accept an connection.
                         let result: std::io::Result<(MioTcpStream, SocketAddr)> = server.accept();
                         // if is error,print it and continue;
-                        if let Err(e) = result{
+                        if let Err(e) = result {
                             error!("{:?}", e);
                             continue;
                         }
                         let (mut connection, client_address) = result.unwrap();
                         let res = connection.set_nodelay(true);
-                        if let Err(e) = res{
-                            error!("{:?}",e);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
                             continue;
                         }
                         let token = next(&mut unique_token);
@@ -168,8 +168,8 @@ pub mod tcp_server {
                             token,
                             Interest::READABLE.add(Interest::WRITABLE),
                         );
-                        if let Err(e) = res{
-                            error!("{:?}",e);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
                             continue;
                         }
                         conn_map.write().unwrap().insert(token.0, connection);
@@ -177,28 +177,32 @@ pub mod tcp_server {
                     }
                     token => {
                         // (maybe) received an event for a TCP connection.
-                        let done = if let Some(connection) =
-                            conn_map.write().unwrap().get_mut(&token.0)
-                        {
-                            let hd = handler_map.get_mut(&token.0);
-                            match hd {
-                                Some(hd) => {
-                                    let res = handle_connection_event(poll.registry(), connection, event, hd);
-                                    if let Err(e) = res{
-                                        error!("{:?}",e);
-                                        continue;
+                        let done =
+                            if let Some(connection) = conn_map.write().unwrap().get_mut(&token.0) {
+                                let hd = handler_map.get_mut(&token.0);
+                                match hd {
+                                    Some(hd) => {
+                                        let res = handle_connection_event(
+                                            poll.registry(),
+                                            connection,
+                                            event,
+                                            hd,
+                                        );
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                            continue;
+                                        }
+                                        res.unwrap()
                                     }
-                                    res.unwrap()
+                                    None => {
+                                        error!("handler_map has no handler for token:{}", token.0);
+                                        false
+                                    }
                                 }
-                                None => {
-                                    error!("handler_map has no handler for token:{}", token.0);
-                                    false
-                                }
-                            }
-                        } else {
-                            // Sporadic events happen.
-                            false
-                        };
+                            } else {
+                                // Sporadic events happen.
+                                false
+                            };
                         if done {
                             conn_map.write().unwrap().remove(&token.0);
                             handler_map.remove(&token.0);
@@ -222,8 +226,8 @@ pub mod tcp_server {
                         let token = data.token;
                         let bytes = data.bytes;
                         let write = connections.write();
-                        if let Err(e) = write{
-                            error!("{:?}",e);
+                        if let Err(e) = write {
+                            error!("{:?}", e);
                             continue;
                         }
                         let mut write = write.unwrap();
@@ -233,20 +237,20 @@ pub mod tcp_server {
                             Some(ts) => {
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
-                                if let Err(e) = res{
-                                    error!("{:?}",e);
+                                if let Err(e) = res {
+                                    error!("{:?}", e);
                                     continue;
                                 }
                                 let res = ts.flush();
-                                if let Err(e) = res{
-                                    error!("{:?}",e);
+                                if let Err(e) = res {
+                                    error!("{:?}", e);
                                 }
                             }
                             None => {
                                 warn!("connections has no value for token:{}", token);
                             }
                         }
-                    },
+                    }
                     Err(e) => {
                         error!("{:?}", e);
                     }
@@ -270,31 +274,6 @@ pub mod tcp_server {
         event: &Event,
         handler: &mut T,
     ) -> io::Result<bool> {
-        // if event.is_writable() {
-        //
-        //     // We can (maybe) write to the connection.
-        //     match connection.write(DATA) {
-        //         // We want to write the entire `DATA` buffer in a single go. If we
-        //         // write less we'll return a short write error (same as
-        //         // `io::Write::write_all` does).
-        //         Ok(n) if n < DATA.len() => return Err(io::ErrorKind::WriteZero.into()),
-        //         Ok(_) => {
-        //             // After we've written something we'll reregister the connection
-        //             // to only respond to readable events.
-        //             registry.reregister(connection, event.token(), Interest::READABLE)?
-        //         }
-        //         // Would block "errors" are the OS's way of saying that the
-        //         // connection is not actually ready to perform this I/O operation.
-        //         Err(ref err) if would_block(err) => {}
-        //         // Got interrupted (how rude!), we'll try again.
-        //         Err(ref err) if interrupted(err) => {
-        //             return handle_connection_event(registry, connection, event,handler)
-        //         }
-        //         // Other errors we'll consider fatal.
-        //         Err(err) => return Err(err),
-        //     }
-        // }
-
         // We can (maybe) read from the connection.
         if event.is_readable() {
             loop {
@@ -303,7 +282,7 @@ pub mod tcp_server {
                     Ok(0) => {
                         // Reading 0 bytes means the other side has closed the
                         // connection or is done writing, then so are we.
-                        close_connect(connection,handler,None);
+                        close_connect(connection, handler, None);
                         return Ok(true);
                     }
                     Ok(n) => {
@@ -316,62 +295,70 @@ pub mod tcp_server {
                     Err(ref err) if would_block(err) => {
                         let status = err.raw_os_error();
                         let mut res = 0;
-                        if status.is_some(){
+                        if status.is_some() {
                             res = status.unwrap();
                         }
                         //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
                         //直接跳出token读取事件，待下次actually再进行读取
-                        if res == 35 || res == 11{
+                        if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                            || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                        {
+                            //just break,wait for next time ready when the os socket is actually
                             break;
-                        }else{
-                            warn!("{:?}",err.to_string());
+                        } else {
+                            warn!("{:?}", err.to_string());
                         }
-                        close_connect(connection,handler,Some(err));
+                        close_connect(connection, handler, Some(err));
                         return Ok(true);
                     }
                     Err(ref err) if interrupted(err) => {
-                        warn!("{:?}",err);
+                        warn!("{:?}", err);
                         continue;
-                    },
+                    }
                     Err(ref err) if time_out(err) => {
                         //warn!("{:?}",err);
                         continue;
-                    },
+                    }
                     Err(ref err) if other(err) => {
-                        warn!("{:?}",err);
+                        warn!("{:?}", err);
                         continue;
-                    },
+                    }
                     // Other errors we'll consider fatal.
                     Err(err) => {
-                        warn!("err:{:?}",err);
-                        close_connect(connection,handler,Some(&err));
+                        warn!("err:{:?}", err);
+                        close_connect(connection, handler, Some(&err));
                         return Ok(true);
-                    },
+                    }
                 }
             }
         }
         Ok(false)
     }
 
-    fn close_connect<T:Handler>(connect:&mut MioTcpStream,handler: &mut T,err:Option<&dyn Error>){
+    ///socket close event
+    fn close_connect<T: Handler>(
+        connect: &mut MioTcpStream,
+        handler: &mut T,
+        err: Option<&dyn Error>,
+    ) {
         let addr = connect.peer_addr();
         let err_str;
         match err {
-            Some(e)=>{err_str = e.to_string()},
-            _=>{err_str = "".to_owned()}
+            Some(e) => err_str = e.to_string(),
+            _ => err_str = "".to_owned(),
         }
         match addr {
             Ok(add) => {
-                info!("{:?} client disconnect!so remove client peer:{:?}",err_str, add);
+                info!(
+                    "{:?} client disconnect!so remove client peer:{:?}",
+                    err_str, add
+                );
             }
             Err(_) => {
                 info!("{:?},then remove client", err_str);
-            },
+            }
         }
-        let res = connect.shutdown(Shutdown::Both);
-        if let Err(_) =  res{
-            //error!("shutdown TcpStream has error:{:?}",e);
-        }
+        let _ = connect.shutdown(Shutdown::Both);
         handler.on_close();
     }
 
@@ -405,23 +392,25 @@ pub trait ClientHandler: Send + Sync {
     ///start read mess from server
     fn on_read(&mut self, address: String) {
         let read = new_tcp_client(address.as_str());
-        if let Err(e) = read{
-            error!("{:?}",e);
+        if let Err(e) = read {
+            error!("{:?}", e);
             return;
         }
         let mut read = read.unwrap();
         let write = read.try_clone();
-        if let Err(e) = write{
-            error!("{:?}",e);
+        if let Err(e) = write {
+            error!("{:?}", e);
             return;
         }
         let write = write.unwrap();
 
+        //trigger socket open event
         self.on_open(write);
+        //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
         loop {
-            //读取从tcp服务端发过来的数据
+            //start read
             let size = read.read(&mut read_bytes);
             if let Err(e) = size {
                 error!("TCP-CLIENT:{:?}", e);
@@ -436,7 +425,7 @@ pub trait ClientHandler: Send + Sync {
                 break;
             }
             //如果读取到的字节数大于0则交给handler
-            if size > 0 as usize {
+            if size > 0 {
                 //读取到字节交给handler处理来处理
                 let mut v = read_bytes.to_vec();
                 v.resize(size, 0);
@@ -448,15 +437,15 @@ pub trait ClientHandler: Send + Sync {
 
 ///new tcp client
 #[warn(unused_assignments)]
-pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream>{
+pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
     let mut ts: Option<std::io::Result<TcpStream>>;
     let result: Option<TcpStream>;
     let dur = Duration::from_secs(5);
     loop {
         ts = Some(connect(address));
         let res = ts.unwrap();
-        if let Err(e) = res{
-            error!("连接服务器失败！{:?},{}", address,e.to_string());
+        if let Err(e) = res {
+            error!("连接服务器失败！{:?},{}", address, e.to_string());
             //睡5s
             std::thread::sleep(dur);
             continue;
@@ -473,7 +462,7 @@ pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream>{
 }
 
 ///set tcp params
-fn set_tream_param(ts: &TcpStream)->anyhow::Result<()> {
+fn set_tream_param(ts: &TcpStream) -> anyhow::Result<()> {
     //No package, direct send
     ts.set_nodelay(true)?;
     //ts.set_read_timeout(Some(Duration::from_millis(50)))

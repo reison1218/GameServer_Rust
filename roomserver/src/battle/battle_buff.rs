@@ -362,7 +362,7 @@ impl BattleData {
         skill_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let cter = self.get_battle_cter_mut(Some(user_id));
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
             error!("{:?}", e);
             return;

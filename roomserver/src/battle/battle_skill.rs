@@ -225,7 +225,9 @@ pub fn show_index(
             return None;
         }
         let skill_temp = skill_temp.unwrap();
-        let cter = battle_data.get_battle_cter_mut(Some(user_id)).unwrap();
+        let cter = battle_data
+            .get_battle_cter_mut(Some(user_id), true)
+            .unwrap();
         if skill_temp.par1 as u8 == element {
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(cter.get_cell_index() as u32);
@@ -273,7 +275,7 @@ pub unsafe fn add_buff(
 ) -> Option<Vec<ActionUnitPt>> {
     let turn_index = battle_data.next_turn_index;
 
-    let cter = battle_data.get_battle_cter_mut(Some(user_id));
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
     if let Err(e) = cter {
         warn!("{:?}", e);
         return None;
@@ -352,7 +354,7 @@ pub unsafe fn skill_damage_opened_element(
     let cter = battle_data
         .as_mut()
         .unwrap()
-        .get_battle_cter_mut(Some(user_id))
+        .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
     let skill = cter.skills.get(&skill_id);
     if skill.is_none() {
@@ -373,7 +375,7 @@ pub unsafe fn skill_damage_opened_element(
         let target_cter = battle_data
             .as_mut()
             .unwrap()
-            .get_battle_cter_mut(Some(target_user));
+            .get_battle_cter_mut(Some(target_user), true);
         if let Err(e) = target_cter {
             error!("{:?}", e);
             continue;
@@ -440,7 +442,7 @@ pub unsafe fn skill_open_cell(
             error!("{:?}", e);
             return None;
         }
-        let cter = battle_data.get_battle_cter(Some(user_id)).unwrap();
+        let cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
         let scope_temp = scope_temp.unwrap();
         let (cells, _) = battle_data.cal_scope(
             user_id,
@@ -505,7 +507,7 @@ pub unsafe fn auto_pair_cell(
     //校验目标下标的地图块
     let cell = map.as_mut().unwrap().get_mut(target_index).unwrap();
 
-    let battle_cter = battle_data.get_battle_cter_mut(Some(user_id));
+    let battle_cter = battle_data.get_battle_cter_mut(Some(user_id), true);
     if let Err(e) = battle_cter {
         error!("{:?}", e);
         return None;
@@ -671,7 +673,7 @@ pub unsafe fn skill_aoe_damage(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    let battle_cter = battle_data.get_battle_cter(Some(user_id)).unwrap();
+    let battle_cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
     let skill = battle_cter.skills.get(&skill_id).unwrap();
     let damage = skill.skill_temp.par1 as i16;
     let damage_deep = skill.skill_temp.par2 as i16;
@@ -706,7 +708,9 @@ pub unsafe fn skill_aoe_damage(
 
     let mut need_rank = true;
     for target_user in v {
-        let cter = battle_data.get_battle_cter_mut(Some(target_user)).unwrap();
+        let cter = battle_data
+            .get_battle_cter_mut(Some(target_user), true)
+            .unwrap();
         let damage_res;
         //判断是否中心位置
         if cter.get_cell_index() == center_index as usize && damage_deep > 0 {
@@ -785,7 +789,7 @@ pub unsafe fn sub_cd(
 ) -> Option<Vec<ActionUnitPt>> {
     let target_user = *target_array.get(0).unwrap();
     //目标的技能CD-2。
-    let battle_cter = battle_data.get_battle_cter_mut(Some(target_user));
+    let battle_cter = battle_data.get_battle_cter_mut(Some(target_user), true);
     if let Err(e) = battle_cter {
         warn!("{:?}", e);
         return None;
@@ -823,7 +827,7 @@ pub unsafe fn scope_cure(
     let cter = battle_data
         .as_mut()
         .unwrap()
-        .get_battle_cter_mut(Some(user_id))
+        .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
     let skill = cter.skills.get(&skill_id).unwrap();
     let self_cure = skill.skill_temp.par1 as i16;
@@ -888,7 +892,7 @@ pub unsafe fn transform(
     let cter = battle_data
         .as_mut()
         .unwrap()
-        .get_battle_cter_mut(Some(user_id))
+        .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
     let skill = cter.skills.get(&skill_id).unwrap();
     let buff_id = skill.skill_temp.buff;

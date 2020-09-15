@@ -155,7 +155,7 @@ impl TriggerEvent for BattleData {
 
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()> {
         //先判断目标位置的角色是否有不动泰山被动技能
-        let target_cter = self.get_battle_cter(Some(target_user)).unwrap();
+        let target_cter = self.get_battle_cter(Some(target_user), true).unwrap();
         if target_cter.buffs.contains_key(&CAN_NOT_MOVED) && from_user != target_user {
             anyhow::bail!(
                 "this cter can not be move!cter_id:{},buff_id:{}",
@@ -270,7 +270,7 @@ impl TriggerEvent for BattleData {
         is_item: bool,
         au: &mut ActionUnitPt,
     ) {
-        let cter = self.get_battle_cter_mut(Some(user_id));
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
             error!("{:?}", e);
             return;
@@ -328,7 +328,7 @@ impl TriggerEvent for BattleData {
     }
 
     fn before_use_skill_trigger(&mut self, user_id: u32) -> anyhow::Result<()> {
-        let cter = self.get_battle_cter_mut(Some(user_id));
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
             anyhow::bail!("{:?}", e)
         }
@@ -344,7 +344,7 @@ impl TriggerEvent for BattleData {
     ///受到普通攻击触发的buff
     fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let battle_data = self as *mut BattleData;
-        let cter = self.get_battle_cter_mut(Some(user_id)).unwrap();
+        let cter = self.get_battle_cter_mut(Some(user_id), true).unwrap();
         let max_energy = cter.max_energy;
         for buff in cter.buffs.clone().values() {
             let buff_id = buff.id;
@@ -404,7 +404,7 @@ impl TriggerEvent for BattleData {
 
     ///buff失效时候触发
     fn buff_lost_trigger(&mut self, user_id: u32, buff_id: u32) {
-        let cter = self.get_battle_cter_mut(Some(user_id));
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
             error!("{:?}", e);
             return;
