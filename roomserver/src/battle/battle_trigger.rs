@@ -120,16 +120,18 @@ impl BattleData {
             if buff.from_user.is_none() {
                 continue;
             }
-
-            unsafe {
-                self.consume_buff(buff_id, None, Some(index), false);
-            }
-
+            let mut target_pt = target_pt.unwrap();
             let mut aup = ActionUnitPt::new();
+            unsafe {
+                let lost_buff = self.consume_buff(buff_id, None, Some(index), false);
+                if let Some(lost_buff) = lost_buff {
+                    target_pt.lost_buffs.push(lost_buff);
+                }
+            }
             aup.from_user = buff.from_user.unwrap();
             aup.action_type = ActionType::Buff as u32;
             aup.action_value.push(buff.id);
-            aup.targets.push(target_pt.unwrap());
+            aup.targets.push(target_pt);
             au_v.push(aup);
         }
         Some(au_v)

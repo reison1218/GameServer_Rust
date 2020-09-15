@@ -12,6 +12,21 @@ pub mod bytebuf {
         index: usize,   //读写指针
     }
 
+    impl From<Vec<u8>> for ByteBuf {
+        fn from(v: Vec<u8>) -> Self {
+            let bb = ByteBuf { bytes: v, index: 0 };
+            bb
+        }
+    }
+
+    impl From<&[u8]> for ByteBuf {
+        fn from(v: &[u8]) -> Self {
+            let mut bb = ByteBuf::default();
+            bb.bytes.extend_from_slice(v);
+            bb
+        }
+    }
+
     impl ByteBuf {
         ///创建一个空到bytebuf结构体
         pub fn new() -> ByteBuf {
@@ -23,24 +38,6 @@ pub mod bytebuf {
 
         pub fn get_len(&self) -> usize {
             self.bytes.len()
-        }
-
-        ///通过bytes数组创建bytebuf结构体
-        pub fn from(bytes: &[u8]) -> ByteBuf {
-            let mut bb = ByteBuf {
-                bytes: Vec::new(),
-                index: 0,
-            };
-            bb.push_array(bytes);
-            bb
-        }
-
-        pub fn form_vec(bytes: Vec<u8>) -> ByteBuf {
-            let bb = ByteBuf {
-                bytes: bytes,
-                index: 0,
-            };
-            bb
         }
 
         pub fn to_string(&self) -> anyhow::Result<String> {
@@ -122,6 +119,7 @@ pub mod bytebuf {
             Ok(u32::from_ne_bytes(bytes))
         }
 
+        ///读取两个字节并拼成一个u16
         pub fn read_u16(&mut self) -> anyhow::Result<u16> {
             if self.bytes.len() - self.index < 2 {
                 anyhow::bail!("could not read u16,the readable u8 array is notEnough!")
@@ -133,6 +131,7 @@ pub mod bytebuf {
             Ok(u16::from_ne_bytes(bytes))
         }
 
+        ///读取8个字节并拼成一个u64
         pub fn read_u64(&mut self) -> anyhow::Result<u64> {
             if self.bytes.len() - self.index < 8 {
                 anyhow::bail!("could not read u64,the readable u8 array is notEnough!")
@@ -144,6 +143,7 @@ pub mod bytebuf {
             Ok(u64::from_ne_bytes(bytes))
         }
 
+        ///读取1个字节并拼成一个u8
         pub fn read_u8(&mut self) -> anyhow::Result<u8> {
             if self.bytes.len() - self.index < 1 {
                 anyhow::bail!("could not read u8,the readable u8 array is notEnough!")
@@ -153,12 +153,14 @@ pub mod bytebuf {
             Ok(*b)
         }
 
+        ///读取所有字节
         pub fn read_bytes(&mut self) -> &[u8] {
             let v = &self.bytes[self.index..];
             self.index = self.bytes.len() - 1;
             v
         }
 
+        ///获得所有字节
         pub fn into_bytes(self) -> Vec<u8> {
             self.bytes
         }
@@ -186,9 +188,9 @@ pub mod packet {
     impl PacketDes {
         pub fn new(cmd: u32, len: u32, user_id: u32) -> PacketDes {
             PacketDes {
-                cmd: cmd,
-                len: len,
-                user_id: user_id,
+                cmd,
+                len,
+                user_id,
                 is_broad: false,
                 is_client: true,
             }
@@ -227,7 +229,7 @@ pub mod packet {
 
         ///解析tcp流数据，可能饱含多个数据包，循环解析
         pub fn build_array_from_server(bytes: Vec<u8>) -> anyhow::Result<Vec<Packet>> {
-            let mut bb = ByteBuf::form_vec(bytes);
+            let mut bb = ByteBuf::from(bytes);
             let mut v = Vec::new();
             loop {
                 if bb.index() == bb.get_len() {
@@ -252,7 +254,7 @@ pub mod packet {
         }
 
         pub fn build_array_from_client(bytes: Vec<u8>) -> anyhow::Result<Vec<Packet>> {
-            let mut bb = ByteBuf::form_vec(bytes);
+            let mut bb = ByteBuf::from(bytes);
             let mut v = Vec::new();
             loop {
                 if bb.index() == bb.get_len() {
@@ -275,7 +277,7 @@ pub mod packet {
 
         ///bytebuf转换成packet,只能用于服务端进程内部通信！
         pub fn from_only_server(bytes: Vec<u8>) -> anyhow::Result<Packet> {
-            let mut bb = ByteBuf::form_vec(bytes);
+            let mut bb = ByteBuf::from(bytes);
             let cmd = bb.read_u32()?;
             let len = bb.read_u32()?;
             let user_id = bb.read_u32()?;
@@ -290,7 +292,7 @@ pub mod packet {
 
         ///bytebuf转换成packet,只能用于服务端进程内部通信！
         pub fn from_only_client(bytes: Vec<u8>) -> anyhow::Result<Packet> {
-            let mut bb = ByteBuf::form_vec(bytes);
+            let mut bb = ByteBuf::from(bytes);
             let cmd = bb.read_u32()?;
             let len = bb.read_u32()?;
             bb.read_u32()?;

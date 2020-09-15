@@ -32,7 +32,7 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 7] = [121, 211, 221, 311, 312, 322, 20002];
+    pub const ADD_BUFF: [u32; 8] = [121, 211, 221, 311, 312, 322, 324, 20002];
     ///地图块换位置
     pub const CHANGE_INDEX: [u32; 1] = [111];
     ///展示地图块

@@ -139,35 +139,35 @@ impl BattleData {
         user_id: Option<u32>,
         cell_index: Option<usize>,
         is_turn_index: bool,
-    ) -> Vec<TargetPt> {
-        let mut v = Vec::new();
+    ) -> Option<u32> {
         let next_turn_index = self.next_turn_index;
         let mut cter_res: Option<&mut BattleCharacter> = None;
         let mut cell_res: Option<&mut Cell> = None;
+        let mut lost_buff = None;
         let cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         if user_id.is_some() {
             let user_id = user_id.unwrap();
             let cter = self.get_battle_cter_mut(Some(user_id), true);
             if let Err(e) = cter {
                 error!("{:?}", e);
-                return v;
+                return lost_buff;
             }
             let cter = cter.unwrap();
             let buff = cter.buffs.get_mut(&buff_id);
             if buff.is_none() {
-                return v;
+                return lost_buff;
             }
             cter_res = Some(cter);
         } else if cell_index.is_some() {
             let cell_index = cell_index.unwrap();
             let cell = self.tile_map.map.get_mut(cell_index);
             if cell.is_none() {
-                return v;
+                return lost_buff;
             }
             let cell = cell.unwrap();
             let buff = cell.buffs.get_mut(&buff_id);
             if buff.is_none() {
-                return v;
+                return lost_buff;
             }
             cell_res = Some(cell);
         }
@@ -178,7 +178,7 @@ impl BattleData {
         } else if cell_res.is_some() {
             buff = cell_res.as_mut().unwrap().buffs.get_mut(&buff_id);
         } else {
-            return v;
+            return lost_buff;
         }
         let buff = buff.unwrap();
 
@@ -201,16 +201,16 @@ impl BattleData {
                 let from_cter = cters.as_mut().unwrap().get_mut(&from_user);
                 if from_cter.is_none() {
                     error!("can not find battle_cter!user_id:{}", from_user);
-                    return v;
+                    return lost_buff;
                 }
                 let from_cter = from_cter.unwrap();
                 if buff.from_skill.is_none() {
-                    return v;
+                    return lost_buff;
                 }
                 let from_skill = buff.from_skill.unwrap();
                 let skill = from_cter.skills.get_mut(&from_skill);
                 if skill.is_none() {
-                    return v;
+                    return lost_buff;
                 }
                 let skill = skill.unwrap();
                 skill.is_active = false;
@@ -219,10 +219,7 @@ impl BattleData {
             //如果是玩家身上的
             if let Some(cter) = cter_res {
                 cter.remove_buff(buff_id);
-                let mut tp = TargetPt::new();
-                tp.lost_buffs.push(buff_id);
-                tp.target_value.push(cter.get_cell_index() as u32);
-                v.push(tp);
+                lost_buff = Some(buff_id);
                 let user_id = cter.user_id;
                 self.buff_lost_trigger(user_id, buff_id);
             } else if let Some(cell) = cell_res {
@@ -230,7 +227,7 @@ impl BattleData {
                 cell.remove_buff(buff_id);
             }
         }
-        v
+        lost_buff
     }
 
     ///加血
@@ -319,8 +316,11 @@ impl BattleData {
                 te_pt.set_buff_id(gd_buff.0);
                 target_pt.passiveEffect.push(te_pt);
                 if gd_buff.1 {
-                    self.consume_buff(gd_buff.0, Some(target_cter.user_id), None, false);
-                    target_pt.lost_buffs.push(gd_buff.0);
+                    let lost_buff =
+                        self.consume_buff(gd_buff.0, Some(target_cter.user_id), None, false);
+                    if let Some(lost_buff) = lost_buff {
+                        target_pt.lost_buffs.push(lost_buff);
+                    }
                 }
                 res = 0;
             } else {

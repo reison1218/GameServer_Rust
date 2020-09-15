@@ -52,7 +52,7 @@ async fn accept(
         "there is new connection from {}",
         stream.peer_addr().unwrap()
     );
-    async_h1::accept(addr.as_str(),stream.clone(), |mut _req| async {
+    async_h1::accept(addr.as_str(), stream.clone(), |mut _req| async {
         let mut _req = _req;
         let mut _req_mut = &mut _req;
         _req_mut
@@ -114,24 +114,19 @@ async fn accept(
                 "result is none!",
             ));
         }
-        if result.as_mut().unwrap().is_err() {
-            error!("{:?}", result.as_mut().unwrap().as_mut().err().unwrap());
-            return Err(result.unwrap().err().unwrap());
+        let result = result.unwrap();
+        if let Err(e) = result {
+            error!("{:?}", e);
+            return Err(e);
         }
-        if result.as_mut().unwrap().as_mut().is_err() {
-            error!("{:?}", result.as_mut().unwrap().as_mut().err().unwrap());
-            return Err(http_types::Error::from_str(
-                StatusCode::NoContent,
-                "unwrap has err!",
-            ));
-        }
+        let value = result.unwrap();
 
         //设置返回参数
         let mut res = Response::new(StatusCode::Ok);
         //res.insert_header("Content-Type", "text/plain")?;
         res.insert_header("Content-Type", "application/json")
             .unwrap();
-        res.set_body(result.unwrap().unwrap().to_string());
+        res.set_body(value.to_string());
         Ok(res)
     })
     .await?;
@@ -173,7 +168,7 @@ pub async fn send_http_request(
         return Err(HttpTypesError::from_str(status, error_str));
     }
     let mut body = res.take_body();
-    let  result: Option<Value>;
+    let result: Option<Value>;
     match body.len() {
         Some(len) => {
             if len <= 0 {

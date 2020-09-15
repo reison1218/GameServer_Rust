@@ -261,17 +261,6 @@ fn test_err()->anyhow::Result<()>{
 }
 
 fn main() -> anyhow::Result<()> {
-    let array:[i32;999999]=[1;999999];
-
-    let mut v = Vec::new();
-    let time = std::time::SystemTime::now();
-    // for i in &array[..]{
-    //     v.push(*i);
-    // }
-    // let v = Vec::from(array.as_ref());
-    v.extend(array.it);
-    println!("{:?},{}",time.elapsed().unwrap(),v.len());
-
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();
