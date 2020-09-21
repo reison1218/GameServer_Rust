@@ -260,7 +260,19 @@ fn test_err()->anyhow::Result<()>{
     anyhow::bail!("test");
 }
 
+#[derive(Debug)]
+pub struct Form<T>{p: T}
+
+impl<T> Form<T> {
+    /// Deconstruct to an inner value
+    pub fn into_inner(self) -> T {
+        self.p
+    }
+}
+
 fn main() -> anyhow::Result<()> {
+    let f = Form {p:1 };
+    println!("{:?}",f);
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();
