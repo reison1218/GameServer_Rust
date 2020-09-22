@@ -457,6 +457,7 @@ impl BattleData {
                     skill.sub_cd(None)
                 }
             });
+            battle_cter.set_is_can_end_turn(true);
             Ok(Some(v))
         }
     }
@@ -482,10 +483,8 @@ impl BattleData {
         let user_id = user_id.unwrap();
         let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Ok(battle_cter) = battle_cter {
-            if !battle_cter.is_died() {
-                //结算玩家自己的状态
-                battle_cter.turn_reset();
-            }
+            //结算玩家自己的状态
+            battle_cter.turn_reset();
         }
 
         //结算玩家身上的buff
@@ -517,5 +516,27 @@ impl BattleData {
                 }
             }
         }
+
+        //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
+        let mut is_can_skip_turn: bool = true;
+        for index in self.tile_map.un_pair_map.keys() {
+            let cell = self.tile_map.map.get(*index);
+            if let None = cell {
+                continue;
+            }
+            let cell = cell.unwrap();
+            if cell.check_is_locked() {
+                continue;
+            }
+            is_can_skip_turn = false;
+            break;
+        }
+        let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
+        battle_cter.set_is_can_end_turn(is_can_skip_turn);
     }
 }

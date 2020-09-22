@@ -69,6 +69,7 @@ pub struct BattleCharacter {
     pub add_damage_buffs: HashMap<u32, u8>,                //伤害加深buff key:buffid value:叠加次数
     pub sub_damage_buffs: HashMap<u32, u8>,                //减伤buff  key:buffid value:叠加次数
     pub is_attacked: bool,                                 //一轮有没有受到攻击伤害
+    is_can_end_turn: bool,                                 //是否可以结束turn
     pub turn_limit_skills: Vec<u32>,                       //turn限制技能
     pub round_limit_skills: Vec<u32>,                      //round限制技能
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
@@ -76,6 +77,14 @@ pub struct BattleCharacter {
 }
 
 impl BattleCharacter {
+    pub fn set_is_can_end_turn(&mut self, value: bool) {
+        self.is_can_end_turn = value;
+    }
+
+    pub fn get_is_can_end_turn(&self) -> bool {
+        self.is_can_end_turn
+    }
+
     pub fn is_can_attack(&self) -> bool {
         self.attack_state == AttackState::Able
     }
@@ -491,6 +500,8 @@ impl BattleCharacter {
         self.open_cell_vec.clear();
         //清空turn限制
         self.turn_limit_skills.clear();
+        //重制可结束turn状态
+        self.set_is_can_end_turn(false);
     }
 
     ///触发抵挡攻击伤害
