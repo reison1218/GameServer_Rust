@@ -1,0 +1,37 @@
+{% extends "_layouts/index.html" -%}
+
+{% block search -%}
+    {{search::input(name="name", title="名称", value=name)}}
+    {{search::input(name="remark", title="备注", value=remark)}}
+{% endblock search -%}
+
+{% block options -%}
+    {{option::delete_all()}} {{option::add(height=400)}} 
+{% endblock options -%}
+
+{% block content -%}
+<table class="layui-table layui-form">
+<thead>
+    <tr>
+        <th style="width: 40px"> <input type="checkbox" name=""  lay-skin="primary"> </th>
+        <th class="row-id">编号</th>
+        <th>名称</th>
+        <th>备注</th>
+        <th>排序</th>
+        <th>操作</th>
+    </tr>
+    <tbody>
+    {% for r in records -%}
+    <tr>
+        <td> <input type="checkbox" name=""  lay-skin="primary"> </td>
+        <td>{{r.id }}</td>
+        <td>{{r.name }}</td>
+        <td>{{r.remark}}</td>
+        <td>{{r.seq}}</td>
+        <td class="td-manage"> {{option::update(id=r.id, height=300)}} | {{option::delete(id=r.id)}} </td>
+    </tr>
+    {% endfor -%}
+    </tbody>
+</thead>
+</table>
+{% endblock content -%}

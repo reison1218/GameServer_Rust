@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        {% include "_elements/head.html" -%}
+    </head>
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <blockquote class="layui-elem-quote">欢迎管理员：
+                                <span class="x-red">test</span>！当前时间:2018-04-25 20:50:53
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">数据统计</div>
+                        <div class="layui-card-body ">
+                            <ul class="layui-row layui-col-space10 layui-this x-admin-carousel x-admin-backlog">
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>会员数量</h3>
+                                        <p> <cite>66</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>视频总数</h3>
+                                        <p> <cite>12</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>评论总数</h3>
+                                        <p> <cite>99</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>标签总数</h3>
+                                        <p> <cite>67</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>广告总数</h3>
+                                        <p> <cite>67</cite></p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">注册会员
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">本月</span></div>
+                        <div class="layui-card-body  ">
+                            <p class="layuiadmin-big-font">33,555</p>
+                            <p>今日新增 <span class="layuiadmin-span-color">10% <i class="layui-inline layui-icon layui-icon-face-smile-b"></i></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">活跃用户
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">本月</span></div>
+                        <div class="layui-card-body ">
+                            <p class="layuiadmin-big-font">33,555</p>
+                            <p>今日登录 <span class="layuiadmin-span-color">10% <i class="layui-inline layui-icon layui-icon-face-smile-b"></i></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">新增视频
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">本月</span></div>
+                        <div class="layui-card-body ">
+                            <p class="layuiadmin-big-font">33,555</p>
+                            <p>今日新增 <span class="layuiadmin-span-color">10% <i class="layui-inline layui-icon layui-icon-face-smile-b"></i></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">新增评论
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">本月</span></div>
+                        <div class="layui-card-body ">
+                            <p class="layuiadmin-big-font">33,555</p>
+                            <p>今日新增 <span class="layuiadmin-span-color">10% <i class="layui-inline layui-icon layui-icon-face-smile-b"></i></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">系统信息</div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table">
+                                <tbody>
+                                    <tr> <th>软件版本</th> <td>{{my_version}}</td></tr>
+                                    <tr> <th>操作系统</th> <td>{{os_type}} - {{os_version}}</td></tr>
+                                    <tr> <th>主机地址</th> <td>{{host_name}}</td></tr>
+                                    <tr> <th>当前目录</th> <td>{{current_dir}}</td></tr>
+                                    <tr> <th>CPU</th> <td>{{cpu_num}} 核 / {{cpu_speed}} MHz</td></tr>
+                                    <tr> <th>内存</th> <td>总计 {{mem_info_total}} GB, 空闲 {{mem_info_free}} GB, 可用 {{mem_info_avail}} GB</td></tr>
+                                    <tr> <th>磁盘信息</th> <td>总计 {{disk_info_total}} GB, 可用 {{disk_info_free}} GB</td></tr>
+                                    <tr> <th>进程数量</th> <td>{{process_count}}</td></tr>
+                                    <tr> <th>运行时间</th> <td>{{boot_time}}</td></tr>
+                                    <tr> <th>系统负载</th> <td>{{avg_1}} / 分钟,  {{avg_2}} / 5分钟, {{avg_3}} / 15分钟</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">开发团队</div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table">
+                                <tbody>
+                                    <tr>
+                                        <th>版权所有</th>
+                                        <td>
+                                            rust-admin <br />
+                                            <a href="https://gitee.com/houhanting/rust-admin" target="_blank">访问官网</a>  <br />
+                                            下载地址: <a href="https://gitee.com/houhanting/rust-admin" target="_blank">https://gitee.com/houhanting/rust-admin</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>开发者</th>
+                                        <td>侯雨森(字汉廷, Email: hanting.hou@gmail.com)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <style id="welcome_style"></style>
+                <div class="layui-col-md12">
+                    <blockquote class="layui-elem-quote layui-quote-nm">本系统基于x-Admin、layui开发，由rust-admin提供技术支持。</blockquote></div>
+            </div>
+        </div>
+        </div>
+    </body>
+</html>

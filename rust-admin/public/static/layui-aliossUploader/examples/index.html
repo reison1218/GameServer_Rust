@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>自定义模块 - layui</title>
+
+		<link rel="stylesheet" href="../src/css/layui.css">
+
+		<style>
+
+		</style>
+	</head>
+	<body>
+		<a class="layui-btn layui-btn-sm" id="uploadOne">
+			上传单个文件
+		</a>
+		<a class="layui-btn layui-btn-sm" id="uploadMore">
+			上传多个文件
+		</a>
+
+		<script src="../src/layui.js"></script>
+		<script>
+			layui.config({
+				base: './js/'
+			}).extend({
+				aliossUploader: 'aliossUploader'
+			}).use(['aliossUploader'], function() {
+				var aliossUploader = layui.aliossUploader;
+				aliossUploader.render({
+					elm:'#uploadOne',
+					region:'oss-cn-shanghai',
+					bucket: 'XXXXXX',
+					layerTitle:'上传数据文件',
+					accessidFiled : 'accessid',
+					policyFiled : 'policy',
+					signatureFiled : 'signature',
+					policyData:{},
+					policyHeader:{
+						Authorization:layui.data('XXXXXX').Authorization
+					},
+					policyUrl:'https://www.XXXXXX.cn/pop/api/alioss/policy',
+					prefixPath:'coordtrans/',
+					fileType:'images',
+					multiple:false,
+					httpStr:'http',
+					allUploaded:function(res){
+						layer.msg(JSON.stringify(res));
+					},
+					policyFailed:function(res){
+						layer.msg(JSON.stringify(res));
+					}
+				});
+				aliossUploader.render({
+					elm:'#uploadMore',
+					region:'oss-cn-shanghai',
+					bucket: 'XXXXXX',
+					layerTitle:'上传文件到阿里云OSS',
+					accessidFiled : 'accessid',
+					policyFiled : 'policy',
+					signatureFiled : 'signature',
+					codeFiled:'code',
+					codeStatus:0,
+					policyMethod:'GET',
+					policyData:{},
+					policyHeader:{
+						Authorization:layui.data('XXXXXX').Authorization
+					},
+					policyUrl:'https://www.XXXXXX.cn/pop/api/alioss/policy',
+					httpStr:'https',
+					layerArea:['800px','500px'],
+					prefixPath:'coordtrans/',
+					fileType:'images',
+					multiple:true,
+					allUploaded:function(res){
+						layer.msg(JSON.stringify(res));
+					},
+					policyFailed:function(res){
+						layer.msg(JSON.stringify(res));
+					},
+					uploadRenderData:{
+						size:100
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

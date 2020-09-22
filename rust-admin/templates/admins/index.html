@@ -1,0 +1,52 @@
+{% extends "_layouts/index.html" -%}
+
+{% block search -%}
+{{ search::input(name=name, title="用户名称", value=name) }}
+{{ search::input(name=last_ip, title="最后登录IP", value=last_ip) }}
+{{ search::state(value=state) }}
+{{ search::list(name="role_id", title="角色", data=roles, value=role_id) }}
+{{ search::range_date(name="last_login", title="登录时间", value_start=last_login_start, value_end=last_login_end) }}
+{{ search::range_date(name="created", title="注册时间", value_start=created_start, value_end=created_end) }}
+{{ search::range_date(name="updated", title="修改时间", value_start=updated_start, value_end=updated_end) }}
+{% endblock search -%}
+
+{% block options %}
+{{option::delete_all()}} {{option::add(height=450)}} 
+{% endblock options -%}
+
+{% block content -%}
+<table class="layui-table layui-form">
+<thead>
+    <tr>
+        <th style="width: 40px"> <input type="checkbox" name=""  lay-skin="primary"> </th>
+        <th class="row-id">编号</th>
+        <th>用户名称</th>
+        <th>上次登录IP</th>
+        <th>状态</th>
+        <th>角色</th>
+        <th>登录次数</th>
+        <th>最后登录时间</th>
+        <th>加入时间</th>
+        <th>最后更新</th>
+        <th>操作</th>
+    </tr>
+    <tbody>
+    {% for r in records -%}
+    <tr>
+        <td> <input type="checkbox" name=""  lay-skin="primary"> </td>
+        <td>{{r.id}}</td>
+        <td>{{r.name}}</td>
+        <td>{{r.last_ip}}</td>
+        <td>{{r.state|state_name}}</td>
+        <td>{{r.role_id|admin_role}}</td>
+        <td>{{r.login_count }}</td>
+        <td>{{r.last_login|date(format="%Y-%m-%d %H:%M")}}</td>
+        <td>{{r.created|date(format="%Y-%m-%d %H:%M")}}</td>
+        <td>{{r.updated|date(format="%Y-%m-%d %H:%M")}}</td>
+        <td class="td-manage"> {{option::update(id=r.id, height=450)}} | {{option::delete(id=r.id)}} </td>
+    </tr>
+    {% endfor -%}
+    </tbody>
+</thead>
+</table>
+{% endblock content -%}

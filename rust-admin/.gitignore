@@ -1,0 +1,7 @@
+/target
+/Cargo.lock
+/.vscode/
+/.idea/
+
+/setting.toml
+/nginx.conf

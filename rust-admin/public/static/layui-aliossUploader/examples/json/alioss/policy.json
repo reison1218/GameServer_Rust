@@ -1,0 +1,13 @@
+{
+	"code": 0,
+	"success": true,
+	"msg": "签名成功",
+	"data": {
+		"accessid": "XXXXX",
+		"host": "http://XXXXX.oss-cn-shanghai.aliyuncs.com",
+		"policy": "XXXX==",
+		"signature": "XXXX=",
+		"expire": 1554851252
+	}
+}
+//以上返回格式为请求policy签名的格式,结构为code在最外层,其它的信息在data中,如果不想用这种格式,大家就只好改下自己的源码了...

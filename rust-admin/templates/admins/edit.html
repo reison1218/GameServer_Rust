@@ -1,0 +1,9 @@
+{% extends "_layouts/edit.html" -%}
+{% block body %}
+{{ form::input(name="name", title="用户名称", value=row.name) }}
+{{ form::password(name="password", title="登录密码") }}
+{{ form::password(name="re_password", title="重复密码") }}
+{{ form::state(value=row.state) }}
+{{ form::list(name="role_id", title="角色", data=roles, value=row.role_id) }}
+{{ form::seq(value=row.seq)}}
+{% endblock body -%}

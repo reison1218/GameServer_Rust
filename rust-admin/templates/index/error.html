@@ -1,0 +1,18 @@
+{% extends "_layouts/default.html" -%}
+{% block body -%}
+<div class="layui-container">
+    <div class="fly-panel"> 
+        <div class="fly-none" style="min-height: auto; padding-top: 5px;"> 
+            <h2><i class="layui-icon layui-icon-404"></i></h2> 
+            <p>页面未找到, 或者你没有权限查看这个页面 ......</p> 
+        </div>
+    </div>
+</div>
+{% if duration > 0 %}
+<script>
+setTimeout(function() { 
+    top.location.href = "/";
+}, {{duration*1000}})
+</script>
+{% endif %}
+{% endblock body -%}

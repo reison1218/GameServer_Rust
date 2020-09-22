@@ -1,0 +1,72 @@
+{% macro list(name, title, data, value) -%}
+<div class="layui-inline">
+    <label for="{{name}}"> {{title}}: </label>
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <select name="{{name}}">
+            <option value="">请选择{{title}}</option>
+            {% for k,val in data -%}
+            <option value="{{k}}" {% if k == value %}selected="selected"{% endif %}>{{val}}</option>
+            {% endfor -%}
+        </select>
+    </div>
+</div>
+{% endmacro list -%}
+
+{% macro input(name, title, value="") -%}
+<div class="layui-inline">
+    <label for="{{name}}"> {{title}}: </label>
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <input type="text" name="{{name}}"  placeholder="请输入{{title}}" autocomplete="off" class="layui-input" value="{{value}}" />
+    </div>
+</div>
+{% endmacro input -%}
+
+{% macro range_date(name, title, value_start, value_end) -%}
+<div class="layui-inline">
+    <label  for="{{name}}"> {{title}}: </label>
+    <div class="layui-inline layui-show-xs-block">
+        <input class="layui-input date-range" style="width: 100px;"  autocomplete="off" placeholder="开始时间" name="{{name}}_start" id="{{name}}_start" value="{{value_start}}" readonly="readonly" />
+    </div> - 
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <input class="layui-input date-range" style="width: 100px"  autocomplete="off" placeholder="结束时间" name="{{name}}_end" id="{{name}}_end" value="{{value_end}}" readonly="readonly" />
+    </div>
+</div>
+{% endmacro range_date -%}
+
+{% macro range_number(name, title, value_start, value_end) -%}
+<div class="layui-inline">
+    <label  for="{{name}}"> {{title}}: </label>
+    <div class="layui-inline layui-show-xs-block">
+        <input class="layui-input" style="width: 80px;"  autocomplete="off" placeholder="区间开始" name="{{name}}_start" id="{{name}}_start" value="{{value_start}}" />
+    </div> - 
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <input class="layui-input" style="width: 80px"  autocomplete="off" placeholder="区间结束" name="{{name}}_end" id="{{name}}_end" value="{{value_end}}" />
+    </div>
+</div>
+{% endmacro range_number -%}
+
+{% macro yes_no(name, title, value="0") -%}
+<div class="layui-inline">
+    <label for="{{name}}"> {{title}}: </label>
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <select name="{{name}}">
+            <option value="">请选择{{title}}</option>
+            <option value="0" {% if value == "0" %}selected="selected"{% endif %}>否</option>
+            <option value="1" {% if value == "1" %}selected="selected"{% endif %}>是</option>
+        </select>
+    </div>
+</div>
+{% endmacro yes_no -%}
+
+{% macro state(value=0) -%}
+<div class="layui-inline">
+    <label for="state"> 状态: </label>
+    <div class="layui-inline layui-show-xs-block" style="padding-right: 10px;">
+        <select name="state">
+            <option value="">请选择状态</option>
+            <option value="0" {% if value == "0" %}selected="selected"{% endif %}>禁用</option>
+            <option value="1" {% if value == "1" %}selected="selected"{% endif %}>启用</option>
+        </select>
+    </div>
+</div>
+{% endmacro state -%}

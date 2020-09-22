@@ -1,0 +1,15 @@
+{% extends "_layouts/edit.html" -%}
+{% block body %}
+{{ form::input(name="name", title="分类名称", value=row.name) }}
+{{ form::remark(value=row.remark) }}
+{{ form::seq(value=row.seq) }}
+<script>
+layui.validators = { 
+    name: function(value) { 
+        if (value.length < 5) { 
+            return '昵称至少5个字符';
+        }
+    }
+};
+</script>
+{% endblock body -%}

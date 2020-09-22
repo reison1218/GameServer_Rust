@@ -1,0 +1,117 @@
+{% import "_macros/options.html" as option -%}
+{% import "_macros/search.html" as search -%}
+{% import "_macros/options.html" as option -%}
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        {% include "_elements/head.html" -%}
+        <style type="text/css">
+            .layui-table td, .layui-table th{ min-width: 40px; }
+            .row-id { width: 60px; }
+            .td-manage { width: 60px; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+                <a href="#">首页</a>
+                {{bread_path|safe}}
+                <!--<a href="">演示</a>
+                <a> <cite>导航元素</cite></a>-->
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+                <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+            </a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <form class="layui-form layui-col-space5">
+                                {% block search -%}{% endblock search -%}{{option::search()}}
+                            </form>
+                        </div>
+                        <div class="layui-card-header">{% block options %}{% endblock options -%} </div>
+                        <div class="layui-card-body ">
+                            {% block content -%} {% endblock content -%}
+                        </div>
+                        <div class="layui-card-body "> <div class="page" id="pager"></div> </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </body>
+</html>
+<script>
+    layui.use(['laydate','form', 'laypage', 'jquery'], function(){
+        var laydate = layui.laydate, form = layui.form, laypage = layui.laypage, $ = layui.jquery;
+    
+        // 绑定日期控件
+        $(".date-range").each(function() { laydate.render({elem: "#" + $(this).attr("id")}); });
+        
+        // 分页信息
+        laypage.render({
+            elem: 'pager',
+            count: {{ pager.rows_total }},
+            limit: {{ pager.limit }},
+            curr: {{ pager.current }},
+            jump: function(obj, first) { 
+                if (first) { 
+                    return; 
+                }
+                var uArr = location.search.substring(1).split('&');
+                var query_string = '?page=' + obj.curr;
+                for (var i = 0; i < uArr.length; i++) { 
+                    var param = uArr[i];
+                    var sArr = param.split('=');
+                    if (sArr.length !== 2 || sArr[0] == 'page' || sArr[1] == '') { 
+                        continue;
+                    }
+                    query_string += '&' + param;
+                }
+                location.href = query_string;
+            }
+        });
+
+        // 添加记录
+        $(".record-add").click(function() { 
+            var that = $(this);
+            xadmin.open('添加数据', '/{{controller_name}}/edit/0', that.attr("w_width"), that.attr("w_height"));
+        });
+    
+        // 修改记录
+        $(".record-update").click(function() { 
+            var that = $(this);
+            xadmin.open('修改数据', '/{{controller_name}}/edit/' + that.attr("rid"), that.attr("w_width"), that.attr("w_height"));
+        });
+
+        // 删除记录
+        $(".record-delete").click(function() { 
+            var that = $(this);
+            var id = that.attr("rid");
+            layer.confirm('确认要删除这条记录吗？',function(){
+                //发异步删除数据
+                var url = "/{{controller_name}}/delete/" + id;
+                $.get(url, function(res) { 
+                    if (res.code !== 0) { 
+                        layer.msg("删除失败", {icon: 1, time: 500});
+                        return;
+                    }
+                    $(that).parents("tr").remove();
+                    layer.msg('删除成功!',{icon:1,time:1000});
+                });
+            });
+        });
+    });
+
+    function delAll (argument) {
+        var data = tableCheck.getData();
+        layer.confirm('确认要删除吗？'+data,function(index){
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+            $(".layui-form-checked").not('.header').parents('tr').remove();
+        });
+    }
+</script>
+

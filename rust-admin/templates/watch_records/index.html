@@ -1,0 +1,41 @@
+{% extends "_layouts/index.html" -%}
+
+{% block search -%}
+{{search::input(name="user_id", title="用户编号", value=user_id)}}
+{{search::input(name="user_name", title="用户名称", value=user_name)}}
+{{search::input(name="video_id", title="视频ID", value=video_id)}}
+{{ search::range_date(name="created", title="添加时间", value_start=created_start, value_end=created_end)}}
+{% endblock search -%}
+
+{% block options -%}
+{{option::delete_all()}}
+{% endblock options -%}
+
+{% block content -%}
+<table class="layui-table layui-form">
+<thead>
+    <tr>
+        <th style="width: 40px"> <input type="checkbox" name=""  lay-skin="primary"> </th>
+        <th class="row-id">编号</th>
+        <th>用户编号</th>
+        <th>用户名称</th>
+        <th>视频编号</th>
+        <th>观看时间</th>
+        <th>操作</th>
+    </tr>
+    <tbody>
+    {% for r in records -%}
+    <tr>
+        <td> <input type="checkbox" name=""  lay-skin="primary"> </td>
+        <td>{{r.id}}</td>
+        <td>{{r.user_id}}</td>
+        <td>{{r.user_name}}</td>
+        <td>{{r.video_id}}</td>
+        <td>{{r.created}}</td>
+        <td class="td-manage"> {{option::delete(id=r.id)}} </td>
+    </tr>
+    {% endfor -%}
+    </tbody>
+</thead>
+</table>
+{% endblock content -%}

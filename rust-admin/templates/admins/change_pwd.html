@@ -1,0 +1,73 @@
+{% extends "_layouts/default.html" -%}
+{% block body %}
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form" id="edit_form">
+            {{ form::password(name="old_password", title="旧的密码") }}
+            {{ form::password(name="password", title="新的密码") }}
+            {{ form::password(name="re_password", title="重复密码") }}
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label"> </label>
+                <button  class="layui-btn" lay-filter="edit" lay-submit=""> 修改密码 </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+layui.use(['jquery', 'layer', 'form'], function() { 
+    var $ = layui.jquery, layer = layui.layer, form = layui.form;
+
+    form.verify({
+        old_password: function(value) { 
+            if (value.length < 6 || value.length > 20) { 
+                return '旧的密码长度应为6-20之间';
+            }
+        },
+        password: function(value) { 
+            if (value.length < 6 || value.length > 20) { 
+                return '新的密码长度应为6-20之间';
+            }
+        },
+        re_password: function(value) { 
+            if (value.length < 6 || value.length > 20) { 
+                return '重复密码长度应为6-20之间';
+            }
+            var password = $("input[name=password]:first").val();
+            if (value != password) { 
+                return '两次输入的密码必须一致';
+            }
+        }
+    });
+
+    //监听提交
+    form.on('submit(edit)', function() {
+        $.ajax({
+			url: "/index/change_pwd_save",
+			type: "post",
+			dataType: "json",
+            data: $("#edit_form").serializeArray(),
+            headers: {"content-type": "application/x-www-form-urlencoded"},
+			success: function(res) {
+                console.log(res);
+				if (res.code === 0) {
+					layer.alert('密码修改成功, 请重新登录', function() {
+                        $.get("/index/logout", function() { 
+                            xadmin.close(); //关闭当前frame
+                            //xadmin.father_reload(); //刷新父窗口
+                            location.href = "/";
+                        });
+					});
+                } else { 
+				    layer.alert(res.message, { icon: 7 });
+                }
+			},
+			error: function(res) {
+				layer.alert(res.message, { icon: 7 });
+			}
+		});
+
+        return false;
+    });
+});
+</script>
+{% endblock body -%}

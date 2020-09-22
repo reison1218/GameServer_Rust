@@ -1,0 +1,51 @@
+<!doctype html>
+<html  class="x-admin-sm">
+<head>
+    <title>后台管理系统</title>
+    {% include "_elements/head.html" -%}
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body class="login-bg">
+    <div class="login layui-anim layui-anim-up">
+        <div class="message">RustAdmin后台管理系统</div>
+        <div id="darkbannerwrap"></div>
+        <form method="post" class="layui-form" >
+            <input name="username" placeholder="请输入用户名称"  type="text" lay-verify="required" class="layui-input"  /> <hr class="hr15" />
+            <input name="password" lay-verify="required" placeholder="请输入登录密码"  type="password" class="layui-input" /> <hr class="hr15" />
+            <input value="登录" lay-submit lay-filter="login" style="width:100%;" type="submit" /> <hr class="hr20" >
+        </form>
+    </div>
+</body>
+</html>
+<script>
+layui.use(['form','jquery'] , function(){
+    var form = layui.form, $ = layui.jquery;
+    // layer.msg('玩命卖萌中', function(){
+    //   //关闭后的操作
+    //   });
+    //监听提交
+    form.on('submit(login)', function(data){
+        var username = $("input[name=username]").val();
+        if (username.length < 5 || username.length > 20) { 
+            layer.msg("用户名称长度应在5-20之间!");
+            return false;
+        }
+        var password = $("input[name=password]").val();
+        if (password.length < 6 || password.length > 20) { 
+            layer.msg("密码长度应在6-20之间!");
+            return false;
+        }
+        $.post("/index/login", {"username": username, "password": password}, function(res) {
+            if (res.code !== 0) { 
+                layer.alert(res.message);
+            } else { 
+                location.href = '/index/manage';
+            }
+        });
+        //layer.msg(JSON.stringify(data.field),function(){
+        //    location.href='index.html'
+        //});
+        return false;
+    });
+});
+</script>

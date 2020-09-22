@@ -1,0 +1,45 @@
+{% extends "_layouts/edit.html" -%}
+
+{% block body %}
+<script type="text/javascript" src="/static/js/aliyun-oss-sdk.min.js"></script>
+{{ form::input(name="title", title="标题/名称", value=row.title) }}
+{{ form::remark(name="remark", title="备注/副标", value=row.remark) }}
+{{ form::list(name="author_id", title="视频作者", data=authors, value=row.author_id) }}
+{{ form::list(name="category_id", title="视频分类", data=categories, value=row.category_id) }}
+{{ form::checkboxes(name="tag_ids", title="视频标签", data=tags, value=row.tag_ids) }}
+{{ form::file(name="cover_image", title="封面图片", value=row.cover_image, length=380) }}
+{{ form::input(name="duration", title="时长(秒)", value=row.duration, length=95) }}
+{{ form::seq(value=row.seq) }}
+{{ form::state(name="state", title="状态", value=row.state) }}
+{{ form::yes_no(name="is_recommended", title="推荐", value=row.is_recommended) }}
+{{ form::input(name="url", title="播放地址", value=row.url, length=380) }}
+<script>
+layui.validators = { 
+    title: function(value) { 
+        if (value.length < 2 || value.length > 50) { 
+            return '标题长度必须2-50之间: ' + value.length;
+        }
+    },
+    remark: function(value) { 
+        if (value.length < 2 || value.length > 100) { 
+            return '备注长度必须在2-100之间';
+        }
+    },
+    cover_imge: function(value) { 
+        if (value.length > 100) { 
+            return '封面图片长度过长';
+        }
+    },
+    duration: function(value) { 
+        if (isNaN(value)) { 
+            return '时长必须是数字';
+        }
+    },
+    seq: function(value) { 
+        if (isNaN(value)) { 
+            return '排序必须是有效的数字';
+        }
+    }
+};
+</script>
+{% endblock body -%}
