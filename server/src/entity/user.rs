@@ -2,6 +2,7 @@ use super::*;
 use crate::db::table_contants::{CHARACTER, USER};
 use crate::entity::character::{Character, Characters};
 use std::borrow::{Borrow, BorrowMut};
+use std::cell::Cell;
 
 ///玩家数据封装结构体
 #[derive(Debug, Clone, Default)]
@@ -11,7 +12,7 @@ pub struct UserData {
     ///玩家角色
     character: Characters,
     ///版本号（大于0代表有修改，需要update到db）
-    version: u32,
+    version: Cell<u32>,
 }
 
 ///为userdata结构体实现一些基础函数
@@ -33,7 +34,7 @@ impl UserData {
         UserData {
             user_info,
             character: character,
-            version: 0,
+            version: Cell::new(0),
         }
     }
 
@@ -55,7 +56,7 @@ impl UserData {
     pub fn init(&mut self, user_info: User, character: Characters) {
         self.user_info = user_info;
         self.character = character;
-        self.version = 0 as u32;
+        self.version = Cell::new(0);
     }
 
     ///获得玩家id
@@ -64,24 +65,34 @@ impl UserData {
     }
     ///获得数据版本号
     pub fn get_version(&self) -> u32 {
-        self.version
+        self.version.get()
     }
     ///清空版本号
-    pub fn clear_version(&mut self) {
-        self.version = 0;
+    pub fn clear_version(&self) {
+        self.version.set(0);
     }
 
     ///更新函数，update到db
     pub fn update(&mut self) {
-        if self.user_info.version > 0 {
-            let res = self.user_info.update();
-            match res {
-                Ok(_) => {
-                    self.clear_version();
-                }
-                Err(_) => {}
+        if self.version.get() == 0 {
+            return;
+        }
+
+        let res = self.user_info.update();
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
+
+        for cter in self.character.cter_map.values() {
+            if cter.get_version() == 0 {
+                continue;
+            }
+            let res = cter.update();
+            if let Err(e) = res {
+                error!("{:?}", e);
             }
         }
+        self.clear_version();
     }
 
     ///获得userinfo结构体的只读指针
@@ -112,8 +123,9 @@ impl UserData {
     }
 
     ///添加数据版本号
-    pub fn add_version(&mut self) {
-        self.version += 1;
+    pub fn add_version(&self) {
+        let v = self.version.get() + 1;
+        self.version.set(v);
     }
 }
 

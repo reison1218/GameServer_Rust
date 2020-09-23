@@ -1,6 +1,7 @@
 use super::*;
 use crate::entity::character_contants::{GRADE, LAST_USE_SKILLS, SKILLS};
 use crate::TEMPLATES;
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::protos::base::CharacterPt;
@@ -11,7 +12,7 @@ use tools::templates::template::TemplateMgrTrait;
 pub struct Characters {
     pub user_id: u32,                      //玩家id
     pub cter_map: HashMap<u32, Character>, //玩家角色
-    pub version: u32,                      //版本号
+    pub version: Cell<u32>,                //版本号
 }
 
 impl Characters {
@@ -29,7 +30,7 @@ impl Characters {
         let mut cters = Characters {
             user_id,
             cter_map,
-            version: 0,
+            version: Cell::new(0),
         };
         let res = get_init_characters(user_id);
         if res.is_ok() {
@@ -41,11 +42,11 @@ impl Characters {
         cters
     }
 
-    pub fn get_need_update_array(&mut self) -> Vec<Box<dyn EntityData>> {
+    pub fn get_need_update_array(&self) -> Vec<Box<dyn EntityData>> {
         let mut v: Vec<Box<dyn EntityData>> = Vec::new();
-        for (_, cter) in self.cter_map.iter_mut() {
-            if cter.version > 0 {
-                cter.version = 0;
+        for (_, cter) in self.cter_map.iter() {
+            if cter.version.get() > 0 {
+                cter.version.set(0);
                 v.push(cter.try_clone());
             }
         }
@@ -79,17 +80,17 @@ impl Characters {
         let mut c = Characters::default();
         c.user_id = user_id;
         c.cter_map = map;
-        c.version = 0;
+        c.version = Cell::new(0);
         Some(c)
     }
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Character {
-    pub user_id: u32,      //玩家id
-    pub character_id: u32, //角色id
-    pub data: JsonValue,   //数据
-    pub version: u32,      //数据版本号
+    pub user_id: u32,       //玩家id
+    pub character_id: u32,  //角色id
+    pub data: JsonValue,    //数据
+    pub version: Cell<u32>, //数据版本号
 }
 
 impl Into<CharacterPt> for Character {
@@ -290,16 +291,17 @@ impl Entity for Character {
         unimplemented!()
     }
 
-    fn add_version(&mut self) {
-        self.version += 1;
+    fn add_version(&self) {
+        let v = self.version.get() + 1;
+        self.version.set(v);
     }
 
-    fn clear_version(&mut self) {
-        self.version = 0;
+    fn clear_version(&self) {
+        self.version.set(0);
     }
 
     fn get_version(&self) -> u32 {
-        self.version
+        self.version.get()
     }
 
     fn get_tem_id(&self) -> Option<u32> {
@@ -326,7 +328,7 @@ impl Entity for Character {
             user_id,
             character_id: tem_id.unwrap(),
             data: js,
-            version: 0 as u32,
+            version: Cell::new(0),
         };
         c
     }
@@ -344,7 +346,7 @@ impl EntityData for Character {
 }
 
 impl Dao for Character {
-    fn get_table_name(&mut self) -> &str {
+    fn get_table_name(&self) -> &str {
         "t_u_character"
     }
 }

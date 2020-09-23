@@ -282,8 +282,10 @@ fn main() -> anyhow::Result<()> {
     // let res = map.get_mut(&1).unwrap();
     // let mut re = Cell::new(Form{p:String::new()});
     let ct = CellTest::default();
-    let s = ct.c.borrow_mut();
     unsafe {
+    let s = ct.c.borrow_mut();
+    let s1 = ct.c.borrow_mut();
+        s1.checked_add(1);
         s.checked_add(1);
     }
     // println!("{:?}",v);

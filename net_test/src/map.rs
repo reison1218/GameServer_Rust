@@ -98,7 +98,7 @@ impl From<&'static BuffTemp> for Buff {
             user_id: 0,
         };
         let mut v = Vec::new();
-        let scope_temp = TEMPLATES.get_skill_scope_ref().get_temp(&bt.scope);
+        let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&bt.scope);
         if let Ok(scope_temp) = scope_temp {
             if !scope_temp.scope.is_empty() {
                 for direction in scope_temp.scope.iter() {
@@ -189,7 +189,7 @@ impl TileMap {
 
     pub fn get_able_cells(&self) -> Vec<u32> {
         let mut v = Vec::new();
-        let tile_map_mgr = crate::TEMPLATES.get_tile_map_ref();
+        let tile_map_mgr = crate::TEMPLATES.get_tile_map_temp_mgr_ref();
         let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
         //填充空的格子占位下标
         for index in 0..tile_map_temp.map.len() {
@@ -204,7 +204,7 @@ impl TileMap {
 
     ///初始化战斗地图数据
     pub fn init(member_count: u8, is_open_world_cell: Option<bool>) -> anyhow::Result<Self> {
-        let tile_map_mgr = TEMPLATES.get_tile_map_ref();
+        let tile_map_mgr = TEMPLATES.get_tile_map_temp_mgr_ref();
         let res = tile_map_mgr.member_temps.get(&member_count);
         if let None = res {
             let str = format!("there is no map config for member_count:{}", member_count);
@@ -269,11 +269,11 @@ impl TileMap {
                 .insert(index_value as u32, tile_map_temp.world_cell);
         }
         //这里是为了去重，进行拷贝
-        let mut random_vec = TEMPLATES.get_cell_ref().type_vec.clone();
+        let mut random_vec = TEMPLATES.get_cell_temp_mgr_ref().type_vec.clone();
         //然后就是rare_cell
         for cell_rare in tile_map_temp.cell_rare.iter() {
             let type_vec = TEMPLATES
-                .get_cell_ref()
+                .get_cell_temp_mgr_ref()
                 .rare_map
                 .get(&cell_rare.rare)
                 .unwrap()
@@ -332,10 +332,10 @@ impl TileMap {
             let mut buffs: Option<Iter<u32>> = None;
             index += 1;
             if cell.is_world {
-                let world_cell = TEMPLATES.get_world_cell_ref().temps.get(cell_id).unwrap();
+                let world_cell = TEMPLATES.get_world_cell_temp_mgr_ref().temps.get(cell_id).unwrap();
                 buffs = Some(world_cell.buff.iter());
             } else if cell_id > &(CellType::Valid as u32) {
-                let cell_temp = TEMPLATES.get_cell_ref().temps.get(cell_id).unwrap();
+                let cell_temp = TEMPLATES.get_cell_temp_mgr_ref().temps.get(cell_id).unwrap();
                 buffs = Some(cell_temp.buff.iter());
                 cell.element = cell_temp.element;
                 un_pair_count += 1;
@@ -343,7 +343,7 @@ impl TileMap {
             if let Some(buffs) = buffs {
                 let mut buff_array = Vec::new();
                 for buff_id in buffs {
-                    let buff_temp = crate::TEMPLATES.get_buff_ref().get_temp(buff_id).unwrap();
+                    let buff_temp = crate::TEMPLATES.get_buff_temp_mgr_ref().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
                     buff_array.push(buff);
                 }

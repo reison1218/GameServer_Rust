@@ -3,6 +3,7 @@ use crate::entity::user_contants::*;
 use crate::helper::redis_helper::modify_redis_user;
 use chrono::Local;
 use protobuf::Message;
+use std::cell::Cell;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
@@ -17,9 +18,9 @@ use tools::util::packet::Packet;
 /// version：数据版本号，大于0则代表有改动，需要update到db
 #[derive(Debug, Clone, Default)]
 pub struct User {
-    pub user_id: u32,    //玩家id
-    pub data: JsonValue, //数据
-    pub version: u32,    //数据版本号
+    pub user_id: u32,       //玩家id
+    pub data: JsonValue,    //数据
+    pub version: Cell<u32>, //数据版本号
 }
 
 ///为User实现Entiry
@@ -53,14 +54,15 @@ impl Entity for User {
     }
 
     fn day_reset(&mut self) {}
-    fn add_version(&mut self) {
-        self.version += 1;
+    fn add_version(&self) {
+        let v = self.version.get() + 1;
+        self.version.set(v);
     }
-    fn clear_version(&mut self) {
-        self.version = 0;
+    fn clear_version(&self) {
+        self.version.get();
     }
     fn get_version(&self) -> u32 {
-        self.version
+        self.version.get()
     }
 
     fn get_tem_id(&self) -> Option<u32> {
@@ -84,9 +86,9 @@ impl Entity for User {
         Self: Sized,
     {
         let u = User {
-            user_id: user_id,
+            user_id,
             data: js,
-            version: 0,
+            version: Cell::new(0),
         };
         u
     }
@@ -101,7 +103,7 @@ impl EntityData for User {
 
 impl Dao for User {
     //获得表名
-    fn get_table_name(&mut self) -> &str {
+    fn get_table_name(&self) -> &str {
         "t_u_player"
     }
 }
@@ -142,13 +144,13 @@ impl User {
     pub fn set_last_character(&mut self, cter_id: u32) {
         let map = self.get_mut_json_value().unwrap();
         map.insert(LAST_CHARACTER.to_owned(), serde_json::Value::from(cter_id));
-        self.version += 1;
+        self.add_version();
     }
 
     pub fn set_nick_name(&mut self, name: &str) {
         let map = self.get_mut_json_value().unwrap();
         map.insert(NICK_NAME.to_owned(), serde_json::Value::from(name));
-        self.version += 1;
+        self.add_version();
         //修改redis
         modify_redis_user(self.user_id, NICK_NAME.to_string(), JsonValue::from(name));
     }
@@ -167,7 +169,7 @@ impl User {
         }
         let map = self.get_mut_json_value().unwrap();
         map.insert(DLC.to_owned(), serde_json::Value::from(v));
-        self.version += 1;
+        self.add_version();
     }
 
     pub fn new(user_id: u32, nick_name: &str) -> Self {

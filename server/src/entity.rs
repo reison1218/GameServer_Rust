@@ -15,7 +15,7 @@ use std::any::Any;
 use std::sync::{Arc, Mutex};
 
 ///关于结构体转换的trait
-pub trait Entity: Send + Sync {
+pub trait Entity: Send {
     ///将自身转换成mysql到value，用于进行mysql的数据库操作
     fn to_insert_vec_value(&self) -> Vec<Value> {
         let mut v: Vec<Value> = Vec::new();
@@ -114,9 +114,9 @@ pub trait Entity: Send + Sync {
     ///每日重制（由time_mgr中的定时器调用）
     fn day_reset(&mut self);
     ///添加版本号
-    fn add_version(&mut self);
+    fn add_version(&self);
     ///清空版本号
-    fn clear_version(&mut self);
+    fn clear_version(&self);
     ///获得版本号
     fn get_version(&self) -> u32;
     ///获得配置id（静态表的）
@@ -138,10 +138,10 @@ pub trait Entity: Send + Sync {
 ///关于结构体DB操作的trait
 pub trait Dao: Entity {
     ///获得表名
-    fn get_table_name(&mut self) -> &str;
+    fn get_table_name(&self) -> &str;
 
     ///更新函数（trait默认函数，不必重写）
-    fn update(&mut self) -> Result<u32, String> {
+    fn update(&self) -> Result<u32, String> {
         let v: Vec<Value> = self.to_update_vec_value();
         let mut sql = String::new();
         sql.push_str("update ");

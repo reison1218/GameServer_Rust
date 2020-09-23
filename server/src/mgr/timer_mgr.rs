@@ -74,13 +74,15 @@ fn save_timer(gm: Arc<Mutex<GameMgr>>) {
             }
             Ok(vec) => {
                 let time = std::time::SystemTime::now();
-                for mut v in vec {
+                for v in vec {
                     let rs = v.update();
                     match rs {
                         Ok(_) => {
                             count += 1;
                         }
-                        Err(_) => {}
+                        Err(e) => {
+                            error!("{:?}", e);
+                        }
                     }
                 }
                 info!(
