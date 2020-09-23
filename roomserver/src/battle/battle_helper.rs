@@ -7,7 +7,7 @@ use crate::battle::battle_enum::{
 };
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
-use crate::room::map_data::{Cell, CellType, TileMap};
+use crate::room::map_data::{MapCell, MapCellType, TileMap};
 use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
@@ -86,40 +86,40 @@ impl BattleData {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
-        let cell = tile_map.as_mut().unwrap().map.get_mut(index).unwrap();
-        au.action_value.push(cell.id);
-        let last_index = battle_cter.get_cell_index();
+        let map_cell = tile_map.as_mut().unwrap().map_cells.get_mut(index).unwrap();
+        au.action_value.push(map_cell.id);
+        let last_index = battle_cter.get_map_cell_index();
         let mut is_change_index_both = false;
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
-        if cell.user_id > 0 {
-            let target_user = cell.user_id;
+        if map_cell.user_id > 0 {
+            let target_user = map_cell.user_id;
             //先判断目标位置的角色是否有不动泰山被动技能
             self.before_moved_trigger(user_id, target_user)?;
             let target_cter = self.get_battle_cter_mut(Some(target_user), true).unwrap();
-            target_cter.move_index(battle_cter.get_cell_index());
+            target_cter.move_index(battle_cter.get_map_cell_index());
 
-            let source_cell = tile_map_ptr
+            let source_map_cell = tile_map_ptr
                 .as_mut()
                 .unwrap()
-                .map
+                .map_cells
                 .get_mut(last_index)
                 .unwrap();
-            source_cell.user_id = target_cter.user_id;
+            source_map_cell.user_id = target_cter.user_id;
             is_change_index_both = true;
         } else {
             //重制之前地图块上的玩家id
-            let last_cell = tile_map_ptr
+            let last_map_cell = tile_map_ptr
                 .as_mut()
                 .unwrap()
-                .map
+                .map_cells
                 .get_mut(last_index)
                 .unwrap();
-            last_cell.user_id = 0;
+            last_map_cell.user_id = 0;
         }
         //改变角色位置
         battle_cter.move_index(index);
-        cell.user_id = battle_cter.user_id;
+        map_cell.user_id = battle_cter.user_id;
 
         let index = index as isize;
         //移动位置后触发事件
@@ -137,12 +137,12 @@ impl BattleData {
         &mut self,
         buff_id: u32,
         user_id: Option<u32>,
-        cell_index: Option<usize>,
+        map_cell_index: Option<usize>,
         is_turn_index: bool,
     ) -> Option<u32> {
         let next_turn_index = self.next_turn_index;
         let mut cter_res: Option<&mut BattleCharacter> = None;
-        let mut cell_res: Option<&mut Cell> = None;
+        let mut map_cell_res: Option<&mut MapCell> = None;
         let mut lost_buff = None;
         let cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         if user_id.is_some() {
@@ -158,25 +158,25 @@ impl BattleData {
                 return lost_buff;
             }
             cter_res = Some(cter);
-        } else if cell_index.is_some() {
-            let cell_index = cell_index.unwrap();
-            let cell = self.tile_map.map.get_mut(cell_index);
-            if cell.is_none() {
+        } else if map_cell_index.is_some() {
+            let map_cell_index = map_cell_index.unwrap();
+            let map_cell = self.tile_map.map_cells.get_mut(map_cell_index);
+            if map_cell.is_none() {
                 return lost_buff;
             }
-            let cell = cell.unwrap();
-            let buff = cell.buffs.get_mut(&buff_id);
+            let map_cell = map_cell.unwrap();
+            let buff = map_cell.buffs.get_mut(&buff_id);
             if buff.is_none() {
                 return lost_buff;
             }
-            cell_res = Some(cell);
+            map_cell_res = Some(map_cell);
         }
 
         let buff;
         if cter_res.is_some() {
             buff = cter_res.as_mut().unwrap().buffs.get_mut(&buff_id);
-        } else if cell_res.is_some() {
-            buff = cell_res.as_mut().unwrap().buffs.get_mut(&buff_id);
+        } else if map_cell_res.is_some() {
+            buff = map_cell_res.as_mut().unwrap().buffs.get_mut(&buff_id);
         } else {
             return lost_buff;
         }
@@ -222,9 +222,9 @@ impl BattleData {
                 lost_buff = Some(buff_id);
                 let user_id = cter.user_id;
                 self.buff_lost_trigger(user_id, buff_id);
-            } else if let Some(cell) = cell_res {
+            } else if let Some(map_cell) = map_cell_res {
                 //如果是地图块上面的
-                cell.remove_buff(buff_id);
+                map_cell.remove_buff(buff_id);
             }
         }
         lost_buff
@@ -256,9 +256,9 @@ impl BattleData {
     ///计算减伤
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i16 {
         let target_user = target_cter.user_id;
-        let target_index = target_cter.get_cell_index() as isize;
+        let target_index = target_cter.get_map_cell_index() as isize;
         let scope_temp = TEMPLATES
-            .get_skill_scope_ref()
+            .get_skill_scope_temp_mgr_ref()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
         if let Err(_) = scope_temp {
             return target_cter.defence as i16;
@@ -295,7 +295,7 @@ impl BattleData {
             .get_battle_cter_mut(Some(target), true)?;
         target_pt
             .target_value
-            .push(target_cter.get_cell_index() as u32);
+            .push(target_cter.get_map_cell_index() as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -354,16 +354,16 @@ impl BattleData {
             }
             v.unwrap().push(target);
 
-            let cell = self.tile_map.get_cell_mut_by_user_id(target);
-            if let Some(cell) = cell {
-                cell.user_id = 0;
+            let map_cell = self.tile_map.get_map_cell_mut_by_user_id(target);
+            if let Some(map_cell) = map_cell {
+                map_cell.user_id = 0;
             }
         }
         Ok(target_pt)
     }
 
     ///处理地图块配对逻辑
-    pub unsafe fn handler_cell_pair(&mut self, user_id: u32) -> bool {
+    pub unsafe fn handler_map_cell_pair(&mut self, user_id: u32) -> bool {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
@@ -373,43 +373,46 @@ impl BattleData {
         }
         let battle_cter = battle_cter.unwrap();
 
-        let index = battle_cter.get_cell_index();
-        let cell = self.tile_map.map.get_mut(index);
-        if let None = cell {
-            error!("cell is not find!cell_index:{}", index);
+        let index = battle_cter.get_map_cell_index();
+        let map_cell = self.tile_map.map_cells.get_mut(index);
+        if let None = map_cell {
+            error!("map_cell is not find!map_cell_index:{}", index);
             return false;
         }
-        let cell_ptr = cell.unwrap() as *mut Cell;
-        let cell_mut = cell_ptr.as_mut().unwrap();
+        let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
+        let map_cell_mut = map_cell_ptr.as_mut().unwrap();
         let mut is_pair = false;
-        let cell_id = cell_mut.id;
-        if battle_cter.open_cell_vec.is_empty() || battle_cter.is_pair {
+        let map_cell_id = map_cell_mut.id;
+        if battle_cter.open_map_cell_vec.is_empty() || battle_cter.is_pair {
             return is_pair;
         }
-        let size = battle_cter.open_cell_vec.len();
-        let last_open_cell_index = *battle_cter.open_cell_vec.get(size - 1).unwrap();
-        let res = self.tile_map.map.get_mut(last_open_cell_index);
+        let size = battle_cter.open_map_cell_vec.len();
+        let last_open_map_cell_index = *battle_cter.open_map_cell_vec.get(size - 1).unwrap();
+        let res = self.tile_map.map_cells.get_mut(last_open_map_cell_index);
         if let None = res {
-            error!("cell not find!cell_index:{}", last_open_cell_index);
+            error!(
+                "map_cell not find!map_cell_index:{}",
+                last_open_map_cell_index
+            );
             return false;
         }
-        let last_cell = res.unwrap() as *mut Cell;
-        self.tile_map.map.get_mut(last_open_cell_index);
-        let last_cell_id: Option<u32> = Some(last_cell.as_ref().unwrap().id);
-        let last_cell = &mut *last_cell;
+        let last_map_cell = res.unwrap() as *mut MapCell;
+        self.tile_map.map_cells.get_mut(last_open_map_cell_index);
+        let last_map_cell_id: Option<u32> = Some(last_map_cell.as_ref().unwrap().id);
+        let last_map_cell = &mut *last_map_cell;
         //如果配对了，则修改地图块配对的下标
-        if let Some(id) = last_cell_id {
-            if cell_id == id {
-                cell_mut.pair_index = Some(last_open_cell_index);
-                last_cell.pair_index = Some(index);
+        if let Some(id) = last_map_cell_id {
+            if map_cell_id == id {
+                map_cell_mut.pair_index = Some(last_open_map_cell_index);
+                last_map_cell.pair_index = Some(index);
                 is_pair = true;
                 battle_cter.is_pair = true;
                 //状态改为可以进行攻击
                 if battle_cter.attack_state != AttackState::Locked {
                     battle_cter.attack_state = AttackState::Able;
                 }
-                self.tile_map.un_pair_map.remove(&last_cell.index);
-                self.tile_map.un_pair_map.remove(&cell_mut.index);
+                self.tile_map.un_pair_map.remove(&last_map_cell.index);
+                self.tile_map.un_pair_map.remove(&map_cell_mut.index);
             }
         } else {
             is_pair = false;
@@ -417,8 +420,8 @@ impl BattleData {
         //配对了就封装
         if is_pair {
             info!(
-                "user:{} open cell pair! last_cell:{},now_cell:{}",
-                battle_cter.user_id, last_open_cell_index, index
+                "user:{} open map_cell pair! last_map_cell:{},now_map_cell:{}",
+                battle_cter.user_id, last_open_map_cell_index, index
             );
         }
         is_pair
@@ -434,11 +437,11 @@ impl BattleData {
         }
 
         //地图块身上的
-        for cell in self.tile_map.map.iter() {
+        for map_cell in self.tile_map.map_cells.iter() {
             let mut cbp = CellBuffPt::new();
-            cbp.index = cell.index as u32;
-            for buff in cell.buffs.values() {
-                if cell.passive_buffs.contains(&buff.id) {
+            cbp.index = map_cell.index as u32;
+            for buff in map_cell.buffs.values() {
+                if map_cell.passive_buffs.contains(&buff.id) {
                     continue;
                 }
                 let mut buff_pt = BuffPt::new();
@@ -507,7 +510,7 @@ impl BattleData {
             TargetType::AnyPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                     break;
                 }
@@ -518,7 +521,7 @@ impl BattleData {
                     anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                 }
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     if cter.user_id != user_id {
                         anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                     }
@@ -528,7 +531,7 @@ impl BattleData {
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
@@ -536,7 +539,7 @@ impl BattleData {
             TargetType::OtherAllPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                 }
                 //除自己所有玩家
@@ -545,7 +548,7 @@ impl BattleData {
             TargetType::OtherAnyPlayer => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                     break;
                 }
@@ -555,7 +558,7 @@ impl BattleData {
             TargetType::SelfScopeOthers => {
                 let mut v = Vec::new();
                 for index in target_array {
-                    let cter = self.get_battle_cter_by_cell_index(*index as usize)?;
+                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
                     v.push(cter.user_id);
                     break;
                 }
@@ -563,7 +566,7 @@ impl BattleData {
                 self.check_user_target(&v[..], Some(user_id))?
             }
             //地图块
-            TargetType::Cell => {
+            TargetType::MapCell => {
                 //校验地图块下标有效性
                 for index in target_array {
                     let index = *index as usize;
@@ -571,28 +574,28 @@ impl BattleData {
                 }
             }
             //未翻开的地图块
-            TargetType::UnOpenCell => {
+            TargetType::UnOpenMapCell => {
                 for index in target_array {
                     self.check_choice_index(*index as usize, true, true, true, false)?;
                 }
             } //未配对的地图块
-            TargetType::UnPairCell => {
+            TargetType::UnPairMapCell => {
                 for index in target_array {
                     self.check_choice_index(*index as usize, true, true, true, false)?;
                 }
             } //空的地图块
-            TargetType::NullCell => {
+            TargetType::NullMapCell => {
                 for index in target_array {
                     self.check_choice_index(*index as usize, true, true, false, true)?;
                 }
             } //空的地图块，上面没人
-            TargetType::UnPairNullCell => {
+            TargetType::UnPairNullMapCell => {
                 for index in target_array {
                     let index = *index as usize;
                     self.check_choice_index(index, false, false, false, true)?;
                 }
             }
-            TargetType::OpenedCell => {
+            TargetType::OpenedMapCell => {
                 for index in target_array {
                     let index = *index as usize;
                     self.check_choice_index(index, false, true, false, false)?;
@@ -629,28 +632,31 @@ impl BattleData {
         is_check_locked: bool,
         is_check_has_user: bool,
     ) -> anyhow::Result<()> {
-        let res = self.tile_map.map.get(index);
+        let res = self.tile_map.map_cells.get(index);
         if res.is_none() {
-            anyhow::bail!("this cell is not find!index:{}", index)
+            anyhow::bail!("this map_cell is not find!index:{}", index)
         }
-        let cell = res.unwrap();
+        let map_cell = res.unwrap();
 
-        if cell.id < CellType::Valid.into_u32() {
-            anyhow::bail!("this is cell can not be choice!index:{}", cell.index)
+        if map_cell.id < MapCellType::Valid.into_u32() {
+            anyhow::bail!(
+                "this is map_cell can not be choice!index:{}",
+                map_cell.index
+            )
         }
 
-        let cell = res.unwrap();
-        if is_check_pair && cell.pair_index.is_some() {
-            anyhow::bail!("this cell already pair!index:{}", cell.index)
+        let map_cell = res.unwrap();
+        if is_check_pair && map_cell.pair_index.is_some() {
+            anyhow::bail!("this map_cell already pair!index:{}", map_cell.index)
         }
-        if is_check_world && cell.is_world {
-            anyhow::bail!("world_cell can not be choice!index:{}", cell.index)
+        if is_check_world && map_cell.is_world {
+            anyhow::bail!("world_map_cell can not be choice!index:{}", map_cell.index)
         }
-        if is_check_locked && cell.check_is_locked() {
-            anyhow::bail!("this cell is locked!index:{}", cell.index)
+        if is_check_locked && map_cell.check_is_locked() {
+            anyhow::bail!("this map_cell is locked!index:{}", map_cell.index)
         }
-        if is_check_has_user && cell.user_id > 0 {
-            anyhow::bail!("this cell has user!index:{}", cell.index)
+        if is_check_has_user && map_cell.user_id > 0 {
+            anyhow::bail!("this map_cell has user!index:{}", map_cell.index)
         }
         Ok(())
     }
@@ -694,7 +700,7 @@ impl BattleData {
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
-            .push(target_cter.get_cell_index() as u32);
+            .push(target_cter.get_map_cell_index() as u32);
         if from_user.is_some() && from_user.unwrap() == target_user && buff_id.is_some() {
             let mut tep = TriggerEffectPt::new();
             tep.set_field_type(effect_type.into_u32());
@@ -724,27 +730,27 @@ impl BattleData {
     ) -> (Vec<usize>, Vec<u32>) {
         let mut v_u = Vec::new();
         let mut v = Vec::new();
-        let center_cell = self.tile_map.map.get(center_index as usize).unwrap();
+        let center_map_cell = self.tile_map.map_cells.get(center_index as usize).unwrap();
         //没有目标，只有范围
         if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();
 
             for direction_temp2d in scope_temp.scope2d.iter() {
                 for coord_temp in direction_temp2d.direction2d.iter() {
-                    let x = center_cell.x + coord_temp.x;
-                    let y = center_cell.y + coord_temp.y;
-                    let cell_index = self.tile_map.coord_map.get(&(x, y));
-                    if let None = cell_index {
+                    let x = center_map_cell.x + coord_temp.x;
+                    let y = center_map_cell.y + coord_temp.y;
+                    let map_cell_index = self.tile_map.coord_map.get(&(x, y));
+                    if let None = map_cell_index {
                         continue;
                     }
-                    let cell_index = cell_index.unwrap();
-                    let cell = self.tile_map.map.get(*cell_index);
-                    if cell.is_none() {
+                    let map_cell_index = map_cell_index.unwrap();
+                    let map_cell = self.tile_map.map_cells.get(*map_cell_index);
+                    if map_cell.is_none() {
                         continue;
                     }
-                    v.push(*cell_index);
-                    let cell = cell.unwrap();
-                    if cell.user_id <= 0 {
+                    v.push(*map_cell_index);
+                    let map_cell = map_cell.unwrap();
+                    if map_cell.user_id <= 0 {
                         continue;
                     }
                     //如果目标不能是自己，就跳过
@@ -752,11 +758,11 @@ impl BattleData {
                         || target_type == TargetType::SelfScopeOthers
                         || target_type == TargetType::SelfScopeAnyOthers
                         || target_type == TargetType::OtherAnyPlayer)
-                        && cell.user_id == user_id
+                        && map_cell.user_id == user_id
                     {
                         continue;
                     }
-                    let other_user = cell.user_id;
+                    let other_user = map_cell.user_id;
                     //如果玩家id大于0
                     if other_user == 0 {
                         continue;
@@ -777,30 +783,30 @@ impl BattleData {
             //否则校验选中的区域
             for dir in scope_temp.scope2d.iter() {
                 for coord_temp in dir.direction2d.iter() {
-                    let x = center_cell.x + coord_temp.x;
-                    let y = center_cell.y + coord_temp.y;
-                    let cell_index = self.tile_map.coord_map.get(&(x, y));
-                    if let None = cell_index {
+                    let x = center_map_cell.x + coord_temp.x;
+                    let y = center_map_cell.y + coord_temp.y;
+                    let map_cell_index = self.tile_map.coord_map.get(&(x, y));
+                    if let None = map_cell_index {
                         continue;
                     }
-                    let cell_index = cell_index.unwrap();
-                    let cell = self.tile_map.map.get(*cell_index);
-                    if let None = cell {
+                    let map_cell_index = map_cell_index.unwrap();
+                    let map_cell = self.tile_map.map_cells.get(*map_cell_index);
+                    if let None = map_cell {
                         continue;
                     }
-                    v.push(*cell_index);
-                    let cell = cell.unwrap();
+                    v.push(*map_cell_index);
+                    let map_cell = map_cell.unwrap();
                     for index in targets.iter() {
-                        if cell.index as u32 != *index {
+                        if map_cell.index as u32 != *index {
                             continue;
                         }
-                        let other_user = cell.user_id;
+                        let other_user = map_cell.user_id;
                         //如果目标不能是自己，就跳过
                         if (target_type == TargetType::OtherAllPlayer
                             || target_type == TargetType::SelfScopeOthers
                             || target_type == TargetType::SelfScopeAnyOthers
                             || target_type == TargetType::OtherAnyPlayer)
-                            && cell.user_id == user_id
+                            && map_cell.user_id == user_id
                         {
                             continue;
                         }
@@ -836,7 +842,9 @@ impl BattleData {
         if skill_judge == 0 {
             return Ok(());
         }
-        let judge_temp = TEMPLATES.get_skill_judge_ref().get_temp(&skill_judge)?;
+        let judge_temp = TEMPLATES
+            .get_skill_judge_temp_mgr_ref()
+            .get_temp(&skill_judge)?;
         let target_type = TargetType::try_from(judge_temp.target);
         if let Err(e) = target_type {
             anyhow::bail!("{:?}", e)

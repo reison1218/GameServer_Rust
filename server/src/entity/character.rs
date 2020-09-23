@@ -123,7 +123,7 @@ impl Character {
     pub fn new(user_id: u32, character_id: u32, js: JsonValue) -> Self {
         let mut cter = Character::init(user_id, Some(character_id), js);
         let res = TEMPLATES
-            .get_constant_ref()
+            .get_constant_temp_mgr_ref()
             .temps
             .get("character_init_grade");
         let grade;
@@ -197,7 +197,7 @@ impl Character {
         let mut grade = res.unwrap() as usize;
         grade += 1;
         let mut max_grade = 2_u32;
-        let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
+        let max_grade_temp = TEMPLATES.get_constant_temp_mgr_ref().temps.get("max_grade");
         match max_grade_temp {
             Some(max_grade_temp) => {
                 let res = u32::from_str(max_grade_temp.value.as_str());
@@ -351,7 +351,7 @@ impl Dao for Character {
 
 fn get_init_characters(user_id: u32) -> Result<Vec<Character>, String> {
     let mut v: Vec<Character> = Vec::new();
-    let cter_temp: &CharacterTempMgr = TEMPLATES.get_character_ref();
+    let cter_temp: &CharacterTempMgr = TEMPLATES.get_character_temp_mgr_ref();
     if cter_temp.is_empty() {
         error!("there are no Character templates!");
         return Err("there are no Character templates!".to_string());

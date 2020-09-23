@@ -76,6 +76,7 @@ use std::collections::btree_map::Range;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use crate::map::generate_map;
 use actix::{Actor, SyncArbiter};
+use std::convert::TryInto;
 
 #[macro_use]
 extern crate lazy_static;
@@ -270,9 +271,21 @@ impl<T> Form<T> {
     }
 }
 
+#[derive(Default)]
+struct CellTest{
+    c:RefCell<i32>,
+}
+
 fn main() -> anyhow::Result<()> {
-    let f = Form {p:1 };
-    println!("{:?}",f);
+    // let mut map= HashMap::new();
+    // map.insert(1,Rc::new(RefCell::new(Form{p:String::new()})));
+    // let res = map.get_mut(&1).unwrap();
+    // let mut re = Cell::new(Form{p:String::new()});
+    let ct = CellTest::default();
+    let s = ct.c.borrow_mut();
+    unsafe {
+        s.checked_add(1);
+    }
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();

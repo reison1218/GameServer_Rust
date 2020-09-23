@@ -434,7 +434,7 @@ impl MatchRoom {
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
-            let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_ref();
+            let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_temp_mgr_ref();
             if room_tmp_ref.is_empty() {
                 anyhow::bail!("TileMapTempMgr is None")
             }
@@ -463,7 +463,7 @@ impl MatchRoom {
                 //创建延迟任务，并发送给定时器接收方执行
                 let mut task = Task::default();
                 let time_limit = TEMPLATES
-                    .get_constant_ref()
+                    .get_constant_temp_mgr_ref()
                     .temps
                     .get("kick_not_prepare_time");
                 if let Some(time) = time_limit {

@@ -81,7 +81,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //翻地图块
         ActionType::Open => {
             au.action_type = ActionType::Open as u32;
-            res = open_cell(room, user_id, value as usize, &mut au);
+            res = open_map_cell(room, user_id, value as usize, &mut au);
         }
         //使用技能
         ActionType::Skill => {
@@ -267,10 +267,10 @@ fn use_item(
 }
 
 ///翻地图块
-fn open_cell(
+fn open_map_cell(
     rm: &mut Room,
     user_id: u32,
-    target_cell_index: usize,
+    target_map_cell_index: usize,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验是否轮到自己
@@ -283,7 +283,7 @@ fn open_cell(
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
 
     //校验地图块
-    let res = battle_data.check_choice_index(target_cell_index, true, true, true, false);
+    let res = battle_data.check_choice_index(target_map_cell_index, true, true, true, false);
     if let Err(e) = res {
         let str = format!("{:?}", e);
         warn!("{:?}", str.as_str());
@@ -297,7 +297,7 @@ fn open_cell(
     }
 
     let battle_data = rm.battle_data.borrow_mut();
-    let res = battle_data.open_cell(target_cell_index, au);
+    let res = battle_data.open_map_cell(target_map_cell_index, au);
     match res {
         Ok(res) => Ok(res),
         Err(e) => anyhow::bail!(e),
@@ -400,7 +400,7 @@ fn skip_turn(
     //没有翻过地图块，则跳过
     let battle_cter = battle_cter.unwrap();
     if !battle_cter.get_is_can_end_turn() {
-        warn!("this player not open any cell yet!user_id:{}", user_id);
+        warn!("this player not open any map_cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
 

@@ -34,7 +34,7 @@ pub const MEMBER_MAX: u8 = 4;
 pub enum RoomSettingType {
     None = 0,
     AILevel = 1,
-    IsOpenWorldCell = 2,
+    IsOpenWorldMapCell = 2,
     TurnLimitTime = 3,
 }
 
@@ -42,7 +42,7 @@ impl From<u32> for RoomSettingType {
     fn from(value: u32) -> Self {
         match value {
             1 => RoomSettingType::AILevel,
-            2 => RoomSettingType::IsOpenWorldCell,
+            2 => RoomSettingType::IsOpenWorldMapCell,
             3 => RoomSettingType::TurnLimitTime,
             _ => RoomSettingType::None,
         }
@@ -119,7 +119,7 @@ impl Room {
         };
         if room.room_type == RoomType::Match {
             let limit_time = TEMPLATES
-                .get_constant_ref()
+                .get_constant_temp_mgr_ref()
                 .temps
                 .get("battle_turn_limit_time");
             if let Some(limit_time) = limit_time {
@@ -173,13 +173,13 @@ impl Room {
         if !need_refresh {
             return false;
         }
-        let is_world_cell;
+        let is_world_map_cell;
         if self.room_type == RoomType::Match {
-            is_world_cell = None;
+            is_world_map_cell = None;
         } else {
-            is_world_cell = Some(self.setting.is_world_tile);
+            is_world_map_cell = Some(self.setting.is_world_tile);
         }
-        let res = self.battle_data.reset_map(is_world_cell);
+        let res = self.battle_data.reset_map(is_world_map_cell);
         if let Err(e) = res {
             error!("{:?}", e);
             return false;
@@ -309,7 +309,7 @@ impl Room {
             if battle_cter.is_died() {
                 continue;
             }
-            if !battle_cter.cell_index_is_choiced() {
+            if !battle_cter.map_cell_index_is_choiced() {
                 res = false;
             }
         }
@@ -424,14 +424,14 @@ impl Room {
         );
 
         //更新角色下标和地图块上面的角色id
-        member.set_cell_index(index as usize);
-        let cell = self
+        member.set_map_cell_index(index as usize);
+        let map_cell = self
             .battle_data
             .tile_map
-            .map
+            .map_cells
             .get_mut(index as usize)
             .unwrap();
-        cell.user_id = user_id;
+        map_cell.user_id = user_id;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
         scln.set_user_id(user_id);
         scln.index = index;
@@ -956,9 +956,9 @@ impl Room {
         let member_size = MEMBER_MAX as usize;
 
         //去掉地图块上的玩家id
-        let cell = self.battle_data.tile_map.map.get_mut(index);
-        if let Some(cell) = cell {
-            cell.user_id = 0;
+        let map_cell = self.battle_data.tile_map.map_cells.get_mut(index);
+        if let Some(map_cell) = map_cell {
+            map_cell.user_id = 0;
         }
 
         let last_order_user = self.battle_data.turn_orders[member_size - 1];
@@ -1146,13 +1146,13 @@ impl Room {
     ///生成地图
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u8;
-        let is_world_cell;
+        let is_world_map_cell;
         if self.room_type == RoomType::Match {
-            is_world_cell = None;
+            is_world_map_cell = None;
         } else {
-            is_world_cell = Some(self.setting.is_world_tile);
+            is_world_map_cell = Some(self.setting.is_world_tile);
         }
-        let tmd = TileMap::init(member_count, is_world_cell)?;
+        let tmd = TileMap::init(member_count, is_world_map_cell)?;
         Ok(tmd)
     }
 
@@ -1164,7 +1164,10 @@ impl Room {
         let user_id = user_id.unwrap();
 
         //没选择完，继续选
-        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_turn_time");
+        let time_limit = TEMPLATES
+            .get_constant_temp_mgr_ref()
+            .temps
+            .get("choice_turn_time");
         let mut task = Task::default();
         if let Some(time) = time_limit {
             let time = u64::from_str(time.value.as_str());
@@ -1199,9 +1202,15 @@ impl Room {
             && !self.battle_data.reflash_map_turn.is_some()
         {
             for world_cell_id in self.battle_data.tile_map.world_cell_map.values() {
-                let world_cell_temp = TEMPLATES.get_world_cell_ref().temps.get(world_cell_id);
+                let world_cell_temp = TEMPLATES
+                    .get_world_cell_temp_mgr_ref()
+                    .temps
+                    .get(world_cell_id);
                 if world_cell_temp.is_none() {
-                    error!("world_cell_temp is None! world_cell_id:{}", world_cell_id);
+                    error!(
+                        "world_cell_temp is None! world_map_cell_id:{}",
+                        world_cell_id
+                    );
                     continue;
                 }
                 let world_cell_temp = world_cell_temp.unwrap();
@@ -1244,7 +1253,10 @@ impl Room {
             return;
         }
         let user_id = user_id.unwrap();
-        let time_limit = TEMPLATES.get_constant_ref().temps.get("choice_index_time");
+        let time_limit = TEMPLATES
+            .get_constant_temp_mgr_ref()
+            .temps
+            .get("choice_index_time");
         let mut task = Task::default();
         if let Some(time) = time_limit {
             let time = u64::from_str(time.value.as_str());

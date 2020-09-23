@@ -6,9 +6,9 @@ use crate::battle::battle_enum::skill_type::{
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
-    add_buff, auto_pair_cell, change_index, move_user, scope_cure, show_index, single_skill_damage,
-    skill_aoe_damage, skill_damage_and_cure, skill_damage_opened_element, skill_open_cell, sub_cd,
-    transform,
+    add_buff, auto_pair_map_cell, change_index, move_user, scope_cure, show_index,
+    single_skill_damage, skill_aoe_damage, skill_damage_and_cure, skill_damage_opened_element,
+    skill_open_map_cell, sub_cd, transform,
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -101,7 +101,8 @@ impl BattleData {
         };
 
         //初始化函数指针，封装到map里
-        bd.skill_cmd_map.insert(&AUTO_PAIR_CELL[..], auto_pair_cell);
+        bd.skill_cmd_map
+            .insert(&AUTO_PAIR_CELL[..], auto_pair_map_cell);
         bd.skill_cmd_map.insert(&ADD_BUFF[..], add_buff);
         bd.skill_cmd_map.insert(&CHANGE_INDEX[..], change_index);
         bd.skill_cmd_map.insert(&SHOW_INDEX[..], show_index);
@@ -113,7 +114,7 @@ impl BattleData {
         bd.skill_cmd_map.insert(&SKILL_AOE[..], skill_aoe_damage);
         bd.skill_cmd_map.insert(&RED_SKILL_CD[..], sub_cd);
         bd.skill_cmd_map
-            .insert(&SKILL_OPEN_CELL[..], skill_open_cell);
+            .insert(&SKILL_OPEN_CELL[..], skill_open_map_cell);
         bd.skill_cmd_map.insert(
             &SKILL_DAMAGE_OPENED_ELEMENT[..],
             skill_damage_opened_element,
@@ -176,15 +177,18 @@ impl BattleData {
         Ok(cter)
     }
 
-    pub fn get_battle_cter_by_cell_index(&self, index: usize) -> anyhow::Result<&BattleCharacter> {
-        let res = self.tile_map.map.get(index);
+    pub fn get_battle_cter_by_map_cell_index(
+        &self,
+        index: usize,
+    ) -> anyhow::Result<&BattleCharacter> {
+        let res = self.tile_map.map_cells.get(index);
         if res.is_none() {
-            anyhow::bail!("there is no cell!index:{}", index)
+            anyhow::bail!("there is no map_cell!index:{}", index)
         }
-        let cell = res.unwrap();
-        let user_id = cell.user_id;
+        let map_cell = res.unwrap();
+        let user_id = map_cell.user_id;
         if user_id <= 0 {
-            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+            anyhow::bail!("this map_cell's user_id is 0!map_cell_index:{}", index)
         }
         let cter = self.battle_cter.get(&user_id);
         if cter.is_none() {
@@ -203,18 +207,18 @@ impl BattleData {
 
     ///根据地图下标获得上面的战斗角色
     ///如果找不到该下标的地图块或者该地图块上面的玩家id为0，则返回错误信息
-    pub fn get_battle_cter_mut_by_cell_index(
+    pub fn get_battle_cter_mut_by_map_cell_index(
         &mut self,
         index: usize,
     ) -> anyhow::Result<&mut BattleCharacter> {
-        let res = self.tile_map.map.get(index);
+        let res = self.tile_map.map_cells.get(index);
         if res.is_none() {
-            anyhow::bail!("there is no cell!index:{}", index)
+            anyhow::bail!("there is no map_cell!index:{}", index)
         }
-        let cell = res.unwrap();
-        let user_id = cell.user_id;
+        let map_cell = res.unwrap();
+        let user_id = map_cell.user_id;
         if user_id <= 0 {
-            anyhow::bail!("this cell's user_id is 0!cell_index:{}", index)
+            anyhow::bail!("this map_cell's user_id is 0!map_cell_index:{}", index)
         }
         let cter = self.battle_cter.get_mut(&user_id);
         if cter.is_none() {

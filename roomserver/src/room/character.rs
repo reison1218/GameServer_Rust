@@ -53,7 +53,7 @@ pub struct BattleCharacter {
     pub energy: u8,                                        //角色能量
     pub max_energy: u8,                                    //能量上限
     pub element: u8,                                       //角色元素
-    cell_index: Option<usize>,                             //角色所在位置
+    map_cell_index: Option<usize>,                         //角色所在位置
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub passive_buffs: HashMap<u32, Buff>,                 //被动技能id
     pub buffs: HashMap<u32, Buff>,                         //角色身上的buff
@@ -61,9 +61,9 @@ pub struct BattleCharacter {
     pub residue_open_times: u8,                            //剩余翻地图块次数
     pub attack_state: AttackState,                         //是否可以攻击
     pub items: HashMap<u32, Item>,                         //角色身上的道具
-    pub open_cell_vec: Vec<usize>,                         //最近一次turn翻过的地图块
+    pub open_map_cell_vec: Vec<usize>,                     //最近一次turn翻过的地图块
     pub is_pair: bool,                                     //最近一次翻块是否匹配
-    pub last_cell_index: Option<usize>,                    //上一次所在地图块位置
+    pub last_map_cell_index: Option<usize>,                //上一次所在地图块位置
     pub hp_max: i16,                                       //血上限
     pub item_max: u8,                                      //道具数量上限
     pub add_damage_buffs: HashMap<u32, u8>,                //伤害加深buff key:buffid value:叠加次数
@@ -108,7 +108,7 @@ impl BattleCharacter {
 
         for skill_group in cter_temp.skills.iter() {
             for skill_id in skill_group.group.iter() {
-                let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+                let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
                 if let Err(e) = skill_temp {
                     warn!("{:?}", e);
                     continue;
@@ -119,7 +119,7 @@ impl BattleCharacter {
             }
         }
         cter_temp.passive_buff.iter().for_each(|buff_id| {
-            let buff_temp = TEMPLATES.get_buff_ref().get_temp(buff_id);
+            let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(buff_id);
             if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
                 self.add_buff(Some(self.user_id), None, buff.id, None);
@@ -175,7 +175,9 @@ impl BattleCharacter {
         cter_id: u32,
         buff_id: u32,
     ) -> anyhow::Result<TargetPt> {
-        let cter_temp = TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
+        let cter_temp = TEMPLATES
+            .get_character_temp_mgr_ref()
+            .get_temp_ref(&cter_id);
         if cter_temp.is_none() {
             anyhow::bail!("cter_temp can not find!cter_id:{}", cter_id)
         }
@@ -184,7 +186,7 @@ impl BattleCharacter {
         let residue_open_times = self.residue_open_times;
         let hp = self.hp;
         let attack_state = self.attack_state;
-        let cell_index = self.cell_index;
+        let map_cell_index = self.map_cell_index;
         let energy = self.energy;
 
         //生命原始指针
@@ -202,11 +204,11 @@ impl BattleCharacter {
             self.residue_open_times = residue_open_times;
             self.hp = hp;
             self.attack_state = attack_state;
-            self.cell_index = cell_index;
+            self.map_cell_index = map_cell_index;
             self.energy = energy;
 
             //给新变身加变身buff
-            let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
+            let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
             if let Err(e) = buff_temp {
                 warn!("{:?}", e);
                 anyhow::bail!("")
@@ -226,32 +228,32 @@ impl BattleCharacter {
     }
 
     ///角色地图块下标是否有效
-    pub fn cell_index_is_choiced(&self) -> bool {
-        self.cell_index.is_some()
+    pub fn map_cell_index_is_choiced(&self) -> bool {
+        self.map_cell_index.is_some()
     }
 
     ///设置角色地图块位置
-    pub fn set_cell_index(&mut self, index: usize) {
-        self.cell_index = Some(index);
+    pub fn set_map_cell_index(&mut self, index: usize) {
+        self.map_cell_index = Some(index);
     }
 
     ///获得角色地图块位置
-    pub fn get_cell_index(&self) -> usize {
-        if self.cell_index.is_none() {
+    pub fn get_map_cell_index(&self) -> usize {
+        if self.map_cell_index.is_none() {
             error!(
-                "this cter's cell_index is None!user_id:{},cter_id:{}",
+                "this cter's map_cell_index is None!user_id:{},cter_id:{}",
                 self.user_id, self.cter_id
             );
             return 100;
         }
-        self.cell_index.unwrap()
+        self.map_cell_index.unwrap()
     }
 
     ///添加道具
     pub fn add_item(&mut self, item_id: u32) -> anyhow::Result<()> {
-        let item_temp = TEMPLATES.get_item_ref().get_temp(&item_id)?;
+        let item_temp = TEMPLATES.get_item_temp_mgr_ref().get_temp(&item_id)?;
         let skill_id = item_temp.trigger_skill;
-        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id)?;
+        let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id)?;
         let item = Item {
             id: item_id,
             skill_temp,
@@ -264,8 +266,8 @@ impl BattleCharacter {
     }
 
     pub fn move_index(&mut self, index: usize) {
-        self.last_cell_index = Some(self.cell_index.unwrap());
-        self.cell_index = Some(index);
+        self.last_map_cell_index = Some(self.map_cell_index.unwrap());
+        self.map_cell_index = Some(index);
     }
 
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
@@ -284,9 +286,9 @@ impl BattleCharacter {
     pub fn round_reset(&mut self) {
         self.is_attacked = false;
         self.attack_state = AttackState::None;
-        self.cell_index = None;
-        self.open_cell_vec.clear();
-        self.last_cell_index = None;
+        self.map_cell_index = None;
+        self.open_map_cell_vec.clear();
+        self.last_map_cell_index = None;
         self.round_limit_skills.clear();
     }
 
@@ -297,7 +299,7 @@ impl BattleCharacter {
         self.buffs.clear();
         self.passive_buffs.clear();
         self.items.clear();
-        self.cell_index = None;
+        self.map_cell_index = None;
         self.element = 0;
         self.sub_damage_buffs.clear();
         self.add_damage_buffs.clear();
@@ -359,7 +361,7 @@ impl BattleCharacter {
         buff_id: u32,
         turn_index: Option<usize>,
     ) {
-        let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -416,8 +418,8 @@ impl BattleCharacter {
         battle_cter.user_id = cter.user_id;
         battle_cter.cter_id = cter_id;
         battle_cter.grade = cter.grade;
-        let skill_ref = TEMPLATES.get_skill_ref();
-        let buff_ref = TEMPLATES.get_buff_ref();
+        let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
+        let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
         for skill_id in cter.skills.iter() {
             let res = skill_ref.temps.get(skill_id);
             if res.is_none() {
@@ -429,10 +431,11 @@ impl BattleCharacter {
             let skill = Skill::from(skill_temp);
             battle_cter.skills.insert(*skill_id, skill);
         }
-        let cter_temp: Option<&CharacterTemp> =
-            TEMPLATES.get_character_ref().get_temp_ref(&cter_id);
+        let cter_temp: Option<&CharacterTemp> = TEMPLATES
+            .get_character_temp_mgr_ref()
+            .get_temp_ref(&cter_id);
         if cter_temp.is_none() {
-            let str = format!("cter temp is none for cter_id:{}!", cter_id);
+            let str = format!("cter_temp is none for cter_id:{}!", cter_id);
             warn!("{:?}", str.as_str());
             anyhow::bail!(str)
         }
@@ -468,7 +471,7 @@ impl BattleCharacter {
             if CHANGE_SKILL.contains(&buff.id) {
                 let skill_id = buff.buff_temp.par1;
 
-                let skill_temp = TEMPLATES.get_skill_ref().temps.get(&skill_id);
+                let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().temps.get(&skill_id);
                 match skill_temp {
                     None => {
                         error!(
@@ -497,7 +500,7 @@ impl BattleCharacter {
         //重制匹配状态
         self.is_pair = false;
         //重制是否翻过地图块
-        self.open_cell_vec.clear();
+        self.open_map_cell_vec.clear();
         //清空turn限制
         self.turn_limit_skills.clear();
         //重制可结束turn状态

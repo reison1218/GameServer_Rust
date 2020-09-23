@@ -57,7 +57,7 @@ impl BattleData {
                 index -= 1;
             }
             let mut max_grade = 2_i32;
-            let max_grade_temp = TEMPLATES.get_constant_ref().temps.get("max_grade");
+            let max_grade_temp = TEMPLATES.get_constant_temp_mgr_ref().temps.get("max_grade");
             match max_grade_temp {
                 Some(max_grade_temp) => {
                     let res = u32::from_str(max_grade_temp.value.as_str());
@@ -207,7 +207,7 @@ impl BattleData {
             let mut skill_s;
             let skill;
             if is_item {
-                let res = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+                let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
                 if let Err(e) = res {
                     error!("{:?}", e);
                     anyhow::bail!("")
@@ -289,7 +289,7 @@ impl BattleData {
             });
 
         let index = targets.get(0).unwrap();
-        let target_cter = self.get_battle_cter_mut_by_cell_index(*index as usize);
+        let target_cter = self.get_battle_cter_mut_by_map_cell_index(*index as usize);
 
         if let Err(e) = target_cter {
             warn!("{:?}", e);
@@ -298,7 +298,7 @@ impl BattleData {
 
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.user_id;
-        let target_user_index = target_cter.get_cell_index();
+        let target_user_index = target_cter.get_map_cell_index();
         if target_user_id == user_id {
             warn!("the attack target can not be Self!user_id:{}", user_id);
             anyhow::bail!("")
@@ -323,13 +323,13 @@ impl BattleData {
         au.targets.push(target_pt);
         //检查aoebuff
         if let Some(buff) = aoe_buff {
-            let buff = TEMPLATES.get_buff_ref().get_temp(&buff);
+            let buff = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff);
             if let Err(e) = buff {
                 warn!("{:?}", e);
                 anyhow::bail!("")
             }
             let scope_temp = TEMPLATES
-                .get_skill_scope_ref()
+                .get_skill_scope_temp_mgr_ref()
                 .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
             if let Err(e) = scope_temp {
                 warn!("{:?}", e);
@@ -366,7 +366,7 @@ impl BattleData {
     }
 
     ///刷新地图
-    pub fn reset_map(&mut self, is_world_cell: Option<bool>) -> anyhow::Result<()> {
+    pub fn reset_map(&mut self, is_world_map_cell: Option<bool>) -> anyhow::Result<()> {
         //地图刷新前触发buff
         self.before_map_refresh_buff_trigger();
         let allive_count = self
@@ -374,7 +374,7 @@ impl BattleData {
             .values()
             .filter(|x| x.state == BattleCterState::Alive)
             .count();
-        let res = TileMap::init(allive_count as u8, is_world_cell)?;
+        let res = TileMap::init(allive_count as u8, is_world_map_cell)?;
 
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
@@ -401,7 +401,7 @@ impl BattleData {
         Ok(())
     }
     ///翻地图块
-    pub fn open_cell(
+    pub fn open_map_cell(
         &mut self,
         index: usize,
         au: &mut ActionUnitPt,
@@ -409,11 +409,11 @@ impl BattleData {
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             warn!("{:?}", e);
-            anyhow::bail!("open_cell fail!")
+            anyhow::bail!("open_map_cell fail!")
         }
         let user_id = user_id.unwrap();
         let str = format!(
-            "open_cell fail!user_id:{},index:{}",
+            "open_map_cell fail!user_id:{},index:{}",
             user_id, self.next_turn_index
         );
         let is_pair;
@@ -438,16 +438,16 @@ impl BattleData {
                 return Ok(Some(v));
             }
             //再配对
-            is_pair = self.handler_cell_pair(user_id);
+            is_pair = self.handler_map_cell_pair(user_id);
 
             //处理翻地图块触发buff
-            let res = self.open_cell_buff_trigger(user_id, au, is_pair);
+            let res = self.open_map_cell_buff_trigger(user_id, au, is_pair);
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }
 
             //更新翻的地图块下标
-            battle_cter.open_cell_vec.push(index);
+            battle_cter.open_map_cell_vec.push(index);
             //翻块次数-1
             battle_cter.residue_open_times -= 1;
 
@@ -503,14 +503,14 @@ impl BattleData {
         }
 
         //结算该玩家加在地图块上的buff
-        for cell in self.tile_map.map.iter_mut() {
-            for buff_id in cell.buffs.clone().keys() {
+        for map_cell in self.tile_map.map_cells.iter_mut() {
+            for buff_id in map_cell.buffs.clone().keys() {
                 let buff_id = *buff_id;
                 unsafe {
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         None,
-                        Some(cell.index),
+                        Some(map_cell.index),
                         true,
                     );
                 }
@@ -520,12 +520,12 @@ impl BattleData {
         //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
         let mut is_can_skip_turn: bool = true;
         for index in self.tile_map.un_pair_map.keys() {
-            let cell = self.tile_map.map.get(*index);
-            if let None = cell {
+            let map_cell = self.tile_map.map_cells.get(*index);
+            if let None = map_cell {
                 continue;
             }
-            let cell = cell.unwrap();
-            if cell.check_is_locked() {
+            let map_cell = map_cell.unwrap();
+            if map_cell.check_is_locked() {
                 continue;
             }
             is_can_skip_turn = false;

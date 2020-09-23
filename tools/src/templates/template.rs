@@ -40,48 +40,48 @@ pub struct TemplatesMgr {
 
 impl TemplatesMgr {
     pub fn execute_init(&self){
-        self.get_constant_ref();
+        self.get_constant_temp_mgr_ref();
     }
 
-    pub fn get_character_ref(&self) -> &CharacterTempMgr {
+    pub fn get_character_temp_mgr_ref(&self) -> &CharacterTempMgr {
         self.character_temp_mgr.borrow()
     }
 
-    pub fn get_tile_map_ref(&self) -> &TileMapTempMgr {
+    pub fn get_tile_map_temp_mgr_ref(&self) -> &TileMapTempMgr {
         self.tile_map_temp_mgr.borrow()
     }
 
-    pub fn get_emoji_ref(&self) -> &EmojiTempMgr {
+    pub fn get_emoji_temp_mgr_ref(&self) -> &EmojiTempMgr {
         self.emoji_temp_mgr.borrow()
     }
 
-    pub fn get_constant_ref(&self) -> &ConstantTempMgr {
+    pub fn get_constant_temp_mgr_ref(&self) -> &ConstantTempMgr {
         self.constant_temp_mgr.borrow()
     }
 
-    pub fn get_world_cell_ref(&self) -> &WorldCellTempMgr {
+    pub fn get_world_cell_temp_mgr_ref(&self) -> &WorldCellTempMgr {
         self.world_cell_temp_mgr.borrow()
     }
 
-    pub fn get_cell_ref(&self) -> &CellTempMgr {
+    pub fn get_cell_temp_mgr_ref(&self) -> &CellTempMgr {
         self.cell_temp_mgr.borrow()
     }
 
-    pub fn get_skill_ref(&self) -> &SkillTempMgr {
+    pub fn get_skill_temp_mgr_ref(&self) -> &SkillTempMgr {
         self.skill_temp_mgr.borrow()
     }
 
-    pub fn get_skill_scope_ref(&self) -> &SkillScopeTempMgr { self.skill_scope_temp_mgr.borrow() }
+    pub fn get_skill_scope_temp_mgr_ref(&self) -> &SkillScopeTempMgr { self.skill_scope_temp_mgr.borrow() }
 
-    pub fn get_item_ref(&self) -> &ItemTempMgr {
+    pub fn get_item_temp_mgr_ref(&self) -> &ItemTempMgr {
         self.item_temp_mgr.borrow()
     }
 
-    pub fn get_buff_ref(&self) -> &BuffTempMgr {
+    pub fn get_buff_temp_mgr_ref(&self) -> &BuffTempMgr {
         self.buff_temp_mgr.borrow()
     }
 
-    pub fn get_skill_judge_ref(&self) -> &SkillJudgeTempMgr {
+    pub fn get_skill_judge_temp_mgr_ref(&self) -> &SkillJudgeTempMgr {
         self.skill_judge_temp_mgr.borrow()
     }
 }

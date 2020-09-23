@@ -19,7 +19,7 @@ use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 ///触发事件trait
 pub trait TriggerEvent {
     ///翻开地图块时候触发
-    unsafe fn open_cell_buff_trigger(
+    unsafe fn open_map_cell_buff_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
@@ -66,16 +66,16 @@ impl BattleData {
         battle_cter: &mut BattleCharacter,
         index: usize,
     ) -> Option<Vec<ActionUnitPt>> {
-        let cell = self.tile_map.map.get_mut(index);
-        if let None = cell {
-            warn!("map do not has this cell!index:{}", index);
+        let map_cell = self.tile_map.map_cells.get_mut(index);
+        if let None = map_cell {
+            warn!("map do not has this map_cell!index:{}", index);
             return None;
         }
         let mut au_v = Vec::new();
         let turn_index = self.next_turn_index;
         let user_id = battle_cter.user_id;
-        let cell = cell.unwrap();
-        for buff in cell.buffs.clone().values() {
+        let map_cell = map_cell.unwrap();
+        for buff in map_cell.buffs.clone().values() {
             let buff_id = buff.id;
             //先判断是否是陷阱类buff
             if !TRAPS.contains(&buff.id) {
@@ -85,7 +85,7 @@ impl BattleData {
             //判断是否是上buff的陷阱
             if TRAP_ADD_BUFF.contains(&buff.id) {
                 let buff_id = buff.buff_temp.par1;
-                let buff_temp = TEMPLATES.get_buff_ref().get_temp(&buff_id);
+                let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
                 if let Err(e) = buff_temp {
                     warn!("{:?}", e);
                     continue;
@@ -97,7 +97,7 @@ impl BattleData {
                 let mut target_pt_tmp = TargetPt::new();
                 target_pt_tmp
                     .target_value
-                    .push(battle_cter.get_cell_index() as u32);
+                    .push(battle_cter.get_map_cell_index() as u32);
                 target_pt_tmp.add_buffs.push(buff_id);
                 target_pt = Some(target_pt_tmp);
             } else if TRAP_SKILL_DAMAGE.contains(&buff.id) {
@@ -139,7 +139,7 @@ impl BattleData {
 }
 
 impl TriggerEvent for BattleData {
-    unsafe fn open_cell_buff_trigger(
+    unsafe fn open_map_cell_buff_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
@@ -147,11 +147,11 @@ impl TriggerEvent for BattleData {
     ) -> anyhow::Result<Option<ActionUnitPt>> {
         let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let index = battle_cter.get_cell_index();
+        let index = battle_cter.get_map_cell_index();
         //匹配玩家身上的
-        self.trigger_open_cell_buff(None, user_id, battle_cters, au, is_pair);
+        self.trigger_open_map_cell_buff(None, user_id, battle_cters, au, is_pair);
         //匹配地图块的
-        self.trigger_open_cell_buff(Some(index), user_id, battle_cters, au, is_pair);
+        self.trigger_open_map_cell_buff(Some(index), user_id, battle_cters, au, is_pair);
         Ok(None)
     }
 
@@ -185,7 +185,7 @@ impl TriggerEvent for BattleData {
             if other_cter.is_died() {
                 continue;
             }
-            let cter_index = other_cter.get_cell_index() as isize;
+            let cter_index = other_cter.get_map_cell_index() as isize;
 
             //踩到别人到范围
             for buff in other_cter.buffs.values_mut() {
@@ -282,7 +282,7 @@ impl TriggerEvent for BattleData {
         let mut skill_s;
         let skill;
         if is_item {
-            let res = TEMPLATES.get_skill_ref().get_temp(&skill_id);
+            let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
             if let Err(e) = res {
                 error!("{:?}", e);
                 return;
@@ -295,7 +295,9 @@ impl TriggerEvent for BattleData {
         }
         //替换技能,水炮
         if skill.id == WATER_TURRET {
-            let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill.skill_temp.par2);
+            let skill_temp = TEMPLATES
+                .get_skill_temp_mgr_ref()
+                .get_temp(&skill.skill_temp.par2);
             cter.skills.remove(&skill_id);
             if let Err(e) = skill_temp {
                 error!("{:?}", e);
@@ -305,7 +307,9 @@ impl TriggerEvent for BattleData {
 
             let mut target_pt = TargetPt::new();
             //封装角色位置
-            target_pt.target_value.push(cter.get_cell_index() as u32);
+            target_pt
+                .target_value
+                .push(cter.get_map_cell_index() as u32);
             //封装丢失技能
             target_pt.lost_buffs.push(skill_id);
             //封装增加的技能
@@ -321,7 +325,10 @@ impl TriggerEvent for BattleData {
         }
 
         //添加技能限制条件
-        let skill_temp = TEMPLATES.get_skill_ref().get_temp(&skill_id).unwrap();
+        let skill_temp = TEMPLATES
+            .get_skill_temp_mgr_ref()
+            .get_temp(&skill_id)
+            .unwrap();
         if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
             cter.turn_limit_skills.push(skill_id);
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
@@ -378,8 +385,8 @@ impl TriggerEvent for BattleData {
 
     fn before_map_refresh_buff_trigger(&mut self) {
         //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
-        for cell in self.tile_map.map.iter() {
-            let buff = cell.buffs.get(&LOCKED);
+        for map_cell in self.tile_map.map_cells.iter() {
+            let buff = map_cell.buffs.get(&LOCKED);
             if buff.is_none() {
                 continue;
             }

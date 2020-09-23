@@ -272,14 +272,14 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let cter = crate::TEMPLATES
-        .get_character_ref()
+    let cter_temp = crate::TEMPLATES
+        .get_character_temp_mgr_ref()
         .temps
         .get(&cter_id)
         .unwrap();
 
     //校验玩家是否选了技能
-    if prepare && member.chose_cter.skills.len() < cter.usable_skill_count as usize {
+    if prepare && member.chose_cter.skills.len() < cter_temp.usable_skill_count as usize {
         warn!(
             "prepare_cancel: this player has not choose character'skill yet!user_id:{}",
             user_id
@@ -495,7 +495,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             RoomSettingType::AILevel => {
                 room.setting.ai_level = rs.get_value();
             }
-            RoomSettingType::IsOpenWorldCell => {
+            RoomSettingType::IsOpenWorldMapCell => {
                 room.setting.is_world_tile = rs.get_value() == 1;
             }
             RoomSettingType::TurnLimitTime => {
@@ -727,7 +727,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let cter_temp = crate::TEMPLATES
-        .get_character_ref()
+        .get_character_temp_mgr_ref()
         .get_temp_ref(&cter_id)
         .unwrap();
     //校验技能数量
@@ -804,7 +804,10 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let emoji_id = ce.emoji_id;
-    let res: Option<&EmojiTemp> = crate::TEMPLATES.get_emoji_ref().temps.get(&emoji_id);
+    let res: Option<&EmojiTemp> = crate::TEMPLATES
+        .get_emoji_temp_mgr_ref()
+        .temps
+        .get(&emoji_id);
     if res.is_none() {
         error!("there is no temp for emoji_id:{}", emoji_id);
         return Ok(());
@@ -865,7 +868,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
-    if member.cell_index_is_choiced() {
+    if member.map_cell_index_is_choiced() {
         warn!("this player is already choice index!user_id:{}", user_id);
         return Ok(());
     }
