@@ -53,23 +53,23 @@ pub struct BattleCharacter {
     pub energy: u8,                                        //角色能量
     pub max_energy: u8,                                    //能量上限
     pub element: u8,                                       //角色元素
+    pub hp_max: i16,                                       //血上限
+    pub item_max: u8,                                      //道具数量上限
+    pub is_pair: bool,                                     //最近一次翻块是否匹配
+    pub is_attacked: bool,                                 //一轮有没有受到攻击伤害
+    is_can_end_turn: bool,                                 //是否可以结束turn
+    pub residue_open_times: u8,                            //剩余翻地图块次数
+    pub state: BattleCterState,                            //角色状态
+    pub attack_state: AttackState,                         //是否可以攻击
     map_cell_index: Option<usize>,                         //角色所在位置
+    pub last_map_cell_index: Option<usize>,                //上一次所在地图块位置
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub passive_buffs: HashMap<u32, Buff>,                 //被动技能id
     pub buffs: HashMap<u32, Buff>,                         //角色身上的buff
-    pub state: BattleCterState,                            //角色状态
-    pub residue_open_times: u8,                            //剩余翻地图块次数
-    pub attack_state: AttackState,                         //是否可以攻击
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub open_map_cell_vec: Vec<usize>,                     //最近一次turn翻过的地图块
-    pub is_pair: bool,                                     //最近一次翻块是否匹配
-    pub last_map_cell_index: Option<usize>,                //上一次所在地图块位置
-    pub hp_max: i16,                                       //血上限
-    pub item_max: u8,                                      //道具数量上限
     pub add_damage_buffs: HashMap<u32, u8>,                //伤害加深buff key:buffid value:叠加次数
     pub sub_damage_buffs: HashMap<u32, u8>,                //减伤buff  key:buffid value:叠加次数
-    pub is_attacked: bool,                                 //一轮有没有受到攻击伤害
-    is_can_end_turn: bool,                                 //是否可以结束turn
     pub turn_limit_skills: Vec<u32>,                       //turn限制技能
     pub round_limit_skills: Vec<u32>,                      //round限制技能
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
@@ -77,6 +77,18 @@ pub struct BattleCharacter {
 }
 
 impl BattleCharacter {
+    pub fn add_energy(&mut self, value: i8) {
+        let v = self.energy as i8;
+        let res = v + value;
+        if res < 0 {
+            self.energy = 0;
+        } else if res > self.max_energy as i8 {
+            self.energy = self.max_energy;
+        } else {
+            self.energy = res as u8;
+        }
+    }
+
     pub fn set_is_can_end_turn(&mut self, value: bool) {
         self.is_can_end_turn = value;
     }

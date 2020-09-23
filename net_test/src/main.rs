@@ -262,7 +262,7 @@ fn test_err()->anyhow::Result<()>{
 }
 
 #[derive(Debug)]
-pub struct Form<T>{p: T}
+pub struct Form<T:Sized>{p: T}
 
 impl<T> Form<T> {
     /// Deconstruct to an inner value
@@ -271,23 +271,18 @@ impl<T> Form<T> {
     }
 }
 
-#[derive(Default)]
-struct CellTest{
-    c:RefCell<i32>,
-}
 
 fn main() -> anyhow::Result<()> {
+
+    let mut v = Vec::new();
+    v.push(1);
+    println!("{:?}",f);
+
     // let mut map= HashMap::new();
     // map.insert(1,Rc::new(RefCell::new(Form{p:String::new()})));
     // let res = map.get_mut(&1).unwrap();
     // let mut re = Cell::new(Form{p:String::new()});
-    let ct = CellTest::default();
-    unsafe {
-    let s = ct.c.borrow_mut();
-    let s1 = ct.c.borrow_mut();
-        s1.checked_add(1);
-        s.checked_add(1);
-    }
+
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();

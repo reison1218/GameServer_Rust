@@ -441,10 +441,7 @@ impl BattleData {
         if is_pair {
             energy += buff_temp.par2 as u8;
         }
-        target_battle.energy += energy;
-        if target_battle.energy > target_battle.max_energy {
-            target_battle.energy = target_battle.max_energy;
-        }
+        target_battle.add_energy(energy as i8);
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value

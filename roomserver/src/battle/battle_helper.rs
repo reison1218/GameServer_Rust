@@ -310,14 +310,14 @@ impl BattleData {
             if res < 0 {
                 res = 0;
             }
-            let gd_buff = target_cter.trigger_attack_damge_gd();
-            if gd_buff.0 > 0 {
+            let (gd_buff_id, gd_is_remove) = target_cter.trigger_attack_damge_gd();
+            if gd_buff_id > 0 {
                 let mut te_pt = TriggerEffectPt::new();
-                te_pt.set_buff_id(gd_buff.0);
+                te_pt.set_buff_id(gd_buff_id);
                 target_pt.passiveEffect.push(te_pt);
-                if gd_buff.1 {
+                if gd_is_remove {
                     let lost_buff =
-                        self.consume_buff(gd_buff.0, Some(target_cter.user_id), None, false);
+                        self.consume_buff(gd_buff_id, Some(target_cter.user_id), None, false);
                     if let Some(lost_buff) = lost_buff {
                         target_pt.lost_buffs.push(lost_buff);
                     }

@@ -256,10 +256,10 @@ impl BattleData {
             //如果不是用能量的，则重制cd
             if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 {
                 skill.reset_cd();
-            } else if skill.skill_temp.consume_value > battle_cter.energy {
-                battle_cter.energy = 0;
             } else {
-                battle_cter.energy -= skill.skill_temp.consume_value;
+                let mut v = skill.skill_temp.consume_value as i8;
+                v = v * -1;
+                battle_cter.add_energy(v);
             }
             //使用技能后触发
             self.after_use_skill_trigger(user_id, skill_id, is_item, au);

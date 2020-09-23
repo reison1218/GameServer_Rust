@@ -238,10 +238,7 @@ pub fn show_index(
             ep.set_effect_value(skill_temp.par2);
             target_pt.effects.push(ep);
             au.targets.push(target_pt);
-            cter.energy += skill_temp.par2 as u8;
-            if cter.energy > cter.max_energy {
-                cter.energy = cter.max_energy;
-            }
+            cter.add_energy(skill_temp.par2 as i8);
         }
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell_id);

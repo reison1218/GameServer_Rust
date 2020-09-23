@@ -374,10 +374,7 @@ impl TriggerEvent for BattleData {
                 tep.set_field_type(EffectType::AddEnergy.into_u32());
                 tep.set_buff_id(buff_id);
                 tep.set_value(buff.buff_temp.par1);
-                cter.energy += buff.buff_temp.par1 as u8;
-                if cter.energy > cter.max_energy {
-                    cter.energy = cter.max_energy;
-                }
+                cter.add_energy(buff.buff_temp.par1 as i8);
                 target_pt.passiveEffect.push(tep);
             }
         }

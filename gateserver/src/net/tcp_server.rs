@@ -130,7 +130,6 @@ impl TcpServerHandler {
             u_id = *user_id.unwrap();
         }
         packet.set_user_id(u_id);
-        //std::mem::drop(write);
 
         if packet.get_cmd() == ClientCode::HeartBeat.into_u32() {
             let mut hb = HEART_BEAT::new();
