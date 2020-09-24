@@ -60,7 +60,7 @@ use tools::util::bytebuf::ByteBuf;
 use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
-use chrono::Local;
+use chrono::{Local, Datelike, Timelike};
 use std::fmt::Display;
 use std::mem::Discriminant;
 use futures::executor::block_on;
@@ -273,11 +273,17 @@ impl<T> Form<T> {
 
 
 fn main() -> anyhow::Result<()> {
-
-    let mut v = Vec::new();
-    v.push(1);
-    println!("{:?}",f);
-
+    let date = chrono::Local::now();
+    let week_day = date.weekday();
+    let day = week_day.num_days_from_sunday();
+    let add_day= 7-day;
+    let now_days = date.day();
+    let res = date.with_day(now_days+add_day+1);
+    let res = res.unwrap();
+    let res = res.with_hour(0).unwrap().with_minute(0).unwrap().with_second(0).unwrap();
+    println!("{:?}",res);
+    let sleep_time = res.timestamp() - date.timestamp();
+    println!("{}",sleep_time);
     // let mut map= HashMap::new();
     // map.insert(1,Rc::new(RefCell::new(Form{p:String::new()})));
     // let res = map.get_mut(&1).unwrap();

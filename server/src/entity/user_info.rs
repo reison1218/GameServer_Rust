@@ -38,11 +38,11 @@ impl Entity for User {
     }
 
     fn update_login_time(&mut self) {
-        let map = self.get_mut_json_value();
-        let time = Local::now();
-        let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
-        map.unwrap().insert("last_login_time".to_owned(), jv);
-        self.add_version();
+        // let map = self.get_mut_json_value();
+        // let time = Local::now();
+        // let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
+        // map.unwrap().insert("last_login_time".to_owned(), jv);
+        // self.add_version();
     }
 
     fn update_off_time(&mut self) {
