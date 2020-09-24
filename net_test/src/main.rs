@@ -80,6 +80,8 @@ use std::convert::TryInto;
 
 #[macro_use]
 extern crate lazy_static;
+extern crate proc_macro;
+
 
 lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
@@ -271,19 +273,45 @@ impl<T> Form<T> {
     }
 }
 
+trait Layoutable {
+    fn position(&self) -> (f32,f32);
+    fn size(&self) -> (f32,f32);
+    fn set_position(&mut self, x: f32, y: f32);
+    fn set_size(&mut self, width: f32, height: f32);
+}
+macro_rules! impl_layoutable {
+    ($e: ty) => {
+        impl Layoutable for $e {
+            fn position(&self) -> (f32,f32) { self.pos }
+            fn size(&self) -> (f32,f32) { self.size }
+            fn set_position(&mut self, x: f32, y: f32) { self.pos = (x, y); }
+            fn set_size(&mut self, width: f32, height: f32) { self.size = (width, height); }
+        }
+    };
+}
+
+#[derive(Default)]
+struct TestMacro{
+pos: (f32, f32),
+size: (f32, f32)
+}
+
+impl_layoutable!(TestMacro);
+
 
 fn main() -> anyhow::Result<()> {
-    let date = chrono::Local::now();
-    let week_day = date.weekday();
-    let day = week_day.num_days_from_sunday();
-    let add_day= 7-day;
-    let now_days = date.day();
-    let res = date.with_day(now_days+add_day+1);
-    let res = res.unwrap();
-    let res = res.with_hour(0).unwrap().with_minute(0).unwrap().with_second(0).unwrap();
-    println!("{:?}",res);
-    let sleep_time = res.timestamp() - date.timestamp();
-    println!("{}",sleep_time);
+    // let date = chrono::Local::now();
+    // let week_day = date.weekday();
+    // let day = week_day.num_days_from_sunday();
+    // let add_day= 7-day;
+    // let now_days = date.day();
+    // let res = date.with_day(now_days+add_day+1);
+    // let res = res.unwrap();
+    // let res = res.with_hour(0).unwrap().with_minute(0).unwrap().with_second(0).unwrap();
+    // println!("{:?}",res);
+    // let sleep_time = res.timestamp() - date.timestamp();
+    // println!("{}",sleep_time);
+    let test = TestMacro::default();
     // let mut map= HashMap::new();
     // map.insert(1,Rc::new(RefCell::new(Form{p:String::new()})));
     // let res = map.get_mut(&1).unwrap();
