@@ -59,6 +59,32 @@ impl HttpServerHandler for ReloadTempsHandler {
     }
 }
 
+pub struct UpdateSeasonHandler {
+    gm: Arc<Mutex<ChannelMgr>>,
+}
+
+impl UpdateSeasonHandler {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
+        UpdateSeasonHandler { gm }
+    }
+}
+
+impl HttpServerHandler for UpdateSeasonHandler {
+    fn get_path(&self) -> &str {
+        "reload_temps"
+    }
+
+    fn execute(
+        &mut self,
+        _: Option<Value>,
+    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+        let mut lock = self.gm.lock().unwrap();
+        lock.notice_update_season();
+        let value = json!({ "status":"OK" });
+        Ok(value)
+    }
+}
+
 ///异步通知用户中心
 pub async fn notice_user_center(user_id: u32, _type: &str) {
     let mut login = false;

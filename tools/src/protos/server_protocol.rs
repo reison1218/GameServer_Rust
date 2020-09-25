@@ -836,6 +836,246 @@ impl ::protobuf::reflect::ProtobufValue for R_G_SUMMARY {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct UPDATE_SEASON_NOTICE {
+    // message fields
+    pub season_id: u32,
+    pub last_update_time: ::std::string::String,
+    pub next_update_time: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a UPDATE_SEASON_NOTICE {
+    fn default() -> &'a UPDATE_SEASON_NOTICE {
+        <UPDATE_SEASON_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl UPDATE_SEASON_NOTICE {
+    pub fn new() -> UPDATE_SEASON_NOTICE {
+        ::std::default::Default::default()
+    }
+
+    // uint32 season_id = 1;
+
+
+    pub fn get_season_id(&self) -> u32 {
+        self.season_id
+    }
+    pub fn clear_season_id(&mut self) {
+        self.season_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_season_id(&mut self, v: u32) {
+        self.season_id = v;
+    }
+
+    // string last_update_time = 2;
+
+
+    pub fn get_last_update_time(&self) -> &str {
+        &self.last_update_time
+    }
+    pub fn clear_last_update_time(&mut self) {
+        self.last_update_time.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_last_update_time(&mut self, v: ::std::string::String) {
+        self.last_update_time = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_last_update_time(&mut self) -> &mut ::std::string::String {
+        &mut self.last_update_time
+    }
+
+    // Take field
+    pub fn take_last_update_time(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.last_update_time, ::std::string::String::new())
+    }
+
+    // string next_update_time = 3;
+
+
+    pub fn get_next_update_time(&self) -> &str {
+        &self.next_update_time
+    }
+    pub fn clear_next_update_time(&mut self) {
+        self.next_update_time.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_next_update_time(&mut self, v: ::std::string::String) {
+        self.next_update_time = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_next_update_time(&mut self) -> &mut ::std::string::String {
+        &mut self.next_update_time
+    }
+
+    // Take field
+    pub fn take_next_update_time(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.next_update_time, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.season_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.last_update_time)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.next_update_time)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.season_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.season_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if !self.last_update_time.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.last_update_time);
+        }
+        if !self.next_update_time.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.next_update_time);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.season_id != 0 {
+            os.write_uint32(1, self.season_id)?;
+        }
+        if !self.last_update_time.is_empty() {
+            os.write_string(2, &self.last_update_time)?;
+        }
+        if !self.next_update_time.is_empty() {
+            os.write_string(3, &self.next_update_time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> UPDATE_SEASON_NOTICE {
+        UPDATE_SEASON_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "season_id",
+                    |m: &UPDATE_SEASON_NOTICE| { &m.season_id },
+                    |m: &mut UPDATE_SEASON_NOTICE| { &mut m.season_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                    "last_update_time",
+                    |m: &UPDATE_SEASON_NOTICE| { &m.last_update_time },
+                    |m: &mut UPDATE_SEASON_NOTICE| { &mut m.last_update_time },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                    "next_update_time",
+                    |m: &UPDATE_SEASON_NOTICE| { &m.next_update_time },
+                    |m: &mut UPDATE_SEASON_NOTICE| { &mut m.next_update_time },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new_pb_name::<UPDATE_SEASON_NOTICE>(
+                    "UPDATE_SEASON_NOTICE",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static UPDATE_SEASON_NOTICE {
+        static mut instance: ::protobuf::lazy::Lazy<UPDATE_SEASON_NOTICE> = ::protobuf::lazy::Lazy::INIT;
+        unsafe {
+            instance.get(UPDATE_SEASON_NOTICE::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for UPDATE_SEASON_NOTICE {
+    fn clear(&mut self) {
+        self.season_id = 0;
+        self.last_update_time.clear();
+        self.next_update_time.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for UPDATE_SEASON_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for UPDATE_SEASON_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct PlayerBattlePt {
     // message fields
     pub user_id: u32,
@@ -1091,7 +1331,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0fG_R_SEARCH_ROOM\x12\x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattle\
     Type\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03p\
     bp\"I\n\x0bR_G_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.p\
-    rotos.SummaryDataPtR\x0csummaryDatas\"q\n\x0ePlayerBattlePt\x12\x17\n\
+    rotos.SummaryDataPtR\x0csummaryDatas\"\x87\x01\n\x14UPDATE_SEASON_NOTICE\
+    \x12\x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10last_upd\
+    ate_time\x18\x02\x20\x01(\tR\x0elastUpdateTime\x12(\n\x10next_update_tim\
+    e\x18\x03\x20\x01(\tR\x0enextUpdateTime\"q\n\x0ePlayerBattlePt\x12\x17\n\
     \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\
     \x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03(\x0b2\x13.proto\
     s.CharacterPtR\x05ctersb\x06proto3\

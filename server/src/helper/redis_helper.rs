@@ -4,14 +4,14 @@ use std::str::FromStr;
 
 ///修改玩家redis状态
 pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
-    let mut redis_write = REDIS_POOL.write().unwrap();
-    let res: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
+    let mut redis_lock = REDIS_POOL.lock().unwrap();
+    let res: Option<String> = redis_lock.hget(1, "uid_2_pid", user_id.to_string().as_str());
     if res.is_none() {
         return;
     }
     let pid = res.unwrap();
 
-    let res: Option<String> = redis_write.hget(0, "users", &pid.to_string().as_str());
+    let res: Option<String> = redis_lock.hget(0, "users", &pid.to_string().as_str());
     if res.is_none() {
         return;
     }
@@ -24,7 +24,7 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
             if json_res.is_some() {
                 json_res.unwrap().insert(key.to_owned(), value);
 
-                let _: Option<u32> = redis_write.hset(
+                let _: Option<u32> = redis_lock.hset(
                     0,
                     "users",
                     pid.to_string().as_str(),
@@ -40,14 +40,14 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
 
 ///从redis获得玩家数据
 pub fn get_user_from_redis(user_id: u32) -> Option<Value> {
-    let mut redis_write = REDIS_POOL.write().unwrap();
-    let value: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().trim());
+    let mut redis_lock = REDIS_POOL.lock().unwrap();
+    let value: Option<String> = redis_lock.hget(1, "uid_2_pid", user_id.to_string().trim());
     if value.is_none() {
         return None;
     }
     let pid = value.unwrap();
 
-    let res: Option<String> = redis_write.hget(0, "users", &pid.to_string().as_str());
+    let res: Option<String> = redis_lock.hget(0, "users", &pid.to_string().as_str());
     if res.is_none() {
         return None;
     }

@@ -25,6 +25,13 @@ message R_G_SUMMARY{
     repeated SummaryDataPt summary_datas = 1;//结算数据
 }
 
+///游戏服务器发给房间服务器，快速开始
+message UPDATE_SEASON_NOTICE{
+    uint32 season_id = 1;//赛季信息
+    string last_update_time = 2;//最近更新时间
+    string next_update_time = 3;//下次更新时间
+}
+
 //玩家战斗数据封装proto
 message PlayerBattlePt{
     uint32 user_id = 1;//玩家id

@@ -1,8 +1,12 @@
 use super::*;
 
+use protobuf::Message;
+use serde_json::Value;
 use std::io::Write;
+use std::str::FromStr;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
+use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 
 ///channel管理结构体
@@ -191,6 +195,43 @@ impl ChannelMgr {
         packet.set_is_broad(false);
         self.write_to_game(packet.clone());
         packet.set_cmd(RoomCode::ReloadTemps as u32);
+        self.write_to_room(packet);
+    }
+
+    ///通知更新服务器更新赛季
+    pub fn notice_update_season(&mut self, value: Value) {
+        let mut packet = Packet::new(GameCode::UpdateSeason as u32, 0, 0);
+        packet.set_is_client(false);
+        packet.set_is_broad(true);
+        let map = value.as_object();
+        if let None = map {
+            return;
+        }
+        let map = map.unwrap();
+        let season_id = map.get("season_id");
+        if season_id.is_none() {
+            return;
+        }
+        let season_id = season_id.unwrap();
+        let last_update_time = map.get("last_update_time");
+        if last_update_time.is_none() {
+            return;
+        }
+        let last_update_time = last_update_time.unwrap();
+
+        let next_update_time = map.get("next_update_time");
+        if next_update_time.is_none() {
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+
+        let mut usn = UPDATE_SEASON_NOTICE::new();
+        usn.set_season_id(season_id.as_u64().unwrap() as u32);
+        usn.set_last_update_time(last_update_time.to_string());
+        usn.set_next_update_time(next_update_time.to_string());
+        packet.set_data(&usn.write_to_bytes().unwrap()[..]);
+        self.write_to_game(packet.clone());
+        packet.set_cmd(RoomCode::UpdateSeason as u32);
         self.write_to_room(packet);
     }
 }

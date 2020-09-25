@@ -25,6 +25,8 @@ pub enum GameCode{
     SearchRoom = 1008,
     //战斗结算
     Summary = 1009,
+    //更新赛季
+    UpdateSeason = 9998,
     //热更新静态配置
     ReloadTemps = 9999,
     //范围最大值
@@ -82,6 +84,8 @@ pub enum RoomCode{
     //架势请求
     Pos = 20032,
 //---------------------------------------战斗结束
+    //更新赛季
+    UpdateSeason = 29998,
     //热更新静态配置
     ReloadTemps = 29999,
     //返回最大值

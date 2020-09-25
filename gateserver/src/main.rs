@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use tools::conf::Conf;
 use ws::{Builder, Sender as WsSender, Settings};
 
-use crate::net::http::{KickPlayerHttpHandler, ReloadTempsHandler};
+use crate::net::http::{KickPlayerHttpHandler, ReloadTempsHandler, UpdateSeasonHandler};
 use crate::net::tcp_client::TcpClientType;
 use crate::net::tcp_server;
 use std::env;
@@ -75,10 +75,11 @@ fn main() {
 }
 
 ///初始化http服务端
-fn init_http_server(gm: Arc<Mutex<ChannelMgr>>) {
+fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
-    http_vec.push(Box::new(KickPlayerHttpHandler::new(gm.clone())));
-    http_vec.push(Box::new(ReloadTempsHandler::new(gm.clone())));
+    http_vec.push(Box::new(KickPlayerHttpHandler::new(cm.clone())));
+    http_vec.push(Box::new(ReloadTempsHandler::new(cm.clone())));
+    http_vec.push(Box::new(UpdateSeasonHandler::new(cm.clone())));
     let http_port: &str = CONF_MAP.get_str("http_port");
     async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }

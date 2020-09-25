@@ -2,10 +2,13 @@ use super::*;
 use crate::entity::user::UserData;
 use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room, summary};
 use crate::entity::EntityData;
+use crate::SEASON;
 use chrono::Local;
 use protobuf::Message;
+use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
+use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 
 ///gameMgr结构体
@@ -111,6 +114,7 @@ impl GameMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
+        self.cmd_map.insert(UpdateSeason as u32, update_season);
         self.cmd_map.insert(ReloadTemps as u32, reload_temps);
         self.cmd_map.insert(SyncData as u32, sync);
         self.cmd_map.insert(LineOff as u32, off_line);
@@ -122,7 +126,28 @@ impl GameMgr {
     }
 }
 
+///热更新配置文件
 pub fn reload_temps(_: &mut GameMgr, _: Packet) -> anyhow::Result<()> {
+    Ok(())
+}
+
+///更新赛季
+pub fn update_season(_: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let mut usn = UPDATE_SEASON_NOTICE::new();
+    let res = usn.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    unsafe {
+        SEASON.season_id = usn.get_season_id();
+        let str = usn.get_last_update_time();
+        let last_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
+        let str = usn.get_next_update_time();
+        let next_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
+        SEASON.last_update_time = last_update_time as u64;
+        SEASON.next_update_time = next_update_time as u64;
+    }
     Ok(())
 }
 

@@ -4,7 +4,7 @@ use crate::handlers::battle_handler::{action, pos};
 use crate::handlers::room_handler::{
     change_team, choice_index, choice_skills, choice_turn, choose_character, create_room, emoji,
     join_room, kick_member, leave_room, prepare_cancel, reload_temps, room_setting, search_room,
-    skip_choice_turn, start,
+    skip_choice_turn, start, update_season,
 };
 use crate::room::room::Room;
 use crate::room::room_model::{BattleType, CustomRoom, MatchRooms, RoomModel, RoomType};
@@ -136,6 +136,9 @@ impl RoomMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
+        //更新赛季信息
+        self.cmd_map
+            .insert(RoomCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
             .insert(RoomCode::ReloadTemps as u32, reload_temps);

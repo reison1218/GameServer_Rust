@@ -9,11 +9,12 @@ use crate::net::http::{SavePlayerHttpHandler, StopPlayerHttpHandler};
 use crate::net::tcp_server;
 use tools::thread_pool::MyThreadPool;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 
 use crate::mgr::timer_mgr::init_timer;
-use log::info;
+use log::{error, info};
 use std::env;
+use std::str::FromStr;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
@@ -60,13 +61,33 @@ lazy_static! {
     };
 
     ///reids客户端
-    static ref REDIS_POOL:Arc<RwLock<RedisPoolTool>>={
+    static ref REDIS_POOL:Arc<Mutex<RedisPoolTool>>={
         let add: &str = CONF_MAP.get_str("redis_add");
         let pass: &str = CONF_MAP.get_str("redis_pass");
         let redis = RedisPoolTool::init(add,pass);
-        let redis:Arc<RwLock<RedisPoolTool>> = Arc::new(RwLock::new(redis));
+        let redis:Arc<Mutex<RedisPoolTool>> = Arc::new(Mutex::new(redis));
         redis
     };
+}
+
+///赛季结构体
+#[derive(Default)]
+pub struct Season {
+    season_id: u32,
+    last_update_time: u64,
+    next_update_time: u64,
+}
+
+///赛季信息
+pub static mut SEASON: Season = new_season();
+
+pub const fn new_season() -> Season {
+    let res = Season {
+        season_id: 0,
+        last_update_time: 0,
+        next_update_time: 0,
+    };
+    res
 }
 
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
@@ -85,11 +106,46 @@ fn main() {
     //初始化定时器任务管理
     init_timer(game_mgr.clone());
 
+    //初始化赛季
+    init_season();
+
     //初始化http服务端
     init_http_server(game_mgr.clone());
 
     //初始化tcp服务端
     init_tcp_server(game_mgr.clone());
+}
+
+///初始化赛季信息
+fn init_season() {
+    let mut lock = REDIS_POOL.lock().unwrap();
+    unsafe {
+        let res: Option<String> = lock.hget(3, "game_season", "101");
+        if let None = res {
+            error!("redis do not has season data about game:{}", 101);
+            return;
+        }
+        let str = res.unwrap();
+        let value = serde_json::Value::from(str);
+        let map = value.as_object();
+        if let None = map {
+            return;
+        }
+        let map = map.unwrap();
+        let season_id = map.get("season_id").unwrap().as_u64().unwrap() as u32;
+        let last_update_time = map.get("last_update_time").unwrap().as_str().unwrap();
+        let next_update_time = map.get("next_update_time").unwrap().as_str().unwrap();
+
+        let last_update_time = chrono::NaiveDateTime::from_str(last_update_time)
+            .unwrap()
+            .timestamp() as u64;
+        let next_update_time = chrono::NaiveDateTime::from_str(next_update_time)
+            .unwrap()
+            .timestamp() as u64;
+        SEASON.season_id = season_id;
+        SEASON.last_update_time = last_update_time;
+        SEASON.next_update_time = next_update_time;
+    }
 }
 
 fn init_temps() {
