@@ -6,7 +6,7 @@ mod map;
 mod test_async;
 mod behavior_test;
 use serde_json::json;
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, Instant};
 use protobuf::Message;
 use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
@@ -298,8 +298,16 @@ size: (f32, f32)
 
 impl_layoutable!(TestMacro);
 
-
 fn main() -> anyhow::Result<()> {
+    let start = Instant::now();
+    let mut sum = 0;
+    for i in 1..1000000000{
+        //println!("{}",i)
+        sum += 1;
+    }
+    let duration = start.elapsed();
+    println!("累积的和为：{:?}",sum);
+    println!("循环的耗时: {:?}", duration);
     // let date = chrono::Local::now();
     // let week_day = date.weekday();
     // let day = week_day.num_days_from_sunday();
@@ -311,7 +319,7 @@ fn main() -> anyhow::Result<()> {
     // println!("{:?}",res);
     // let sleep_time = res.timestamp() - date.timestamp();
     // println!("{}",sleep_time);
-    let test = TestMacro::default();
+    //let test = TestMacro::default();
     // let mut map= HashMap::new();
     // map.insert(1,Rc::new(RefCell::new(Form{p:String::new()})));
     // let res = map.get_mut(&1).unwrap();
