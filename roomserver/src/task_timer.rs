@@ -355,7 +355,7 @@ fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let battle_cter = battle_cter.unwrap();
 
     //如果玩家啥都没做，就T出房间
-    if battle_cter.open_map_cell_vec.is_empty() {
+    if battle_cter.flow_data.open_map_cell_vec.is_empty() {
         room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
     }
     let is_empty = room.is_empty();

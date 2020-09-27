@@ -72,7 +72,7 @@ impl BattleData {
         let mut map = serde_json::Map::new();
         let mut user_id = 0;
         for cter in self.battle_cter.values() {
-            user_id = cter.user_id;
+            user_id = cter.get_user_id();
             break;
         }
         map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
@@ -174,7 +174,7 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_cter is already died!user_id:{},cter_id:{}",
                 _user_id,
-                cter.cter_id
+                cter.get_cter_id()
             )
         }
         Ok(cter)
@@ -202,7 +202,7 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_cter is already died!user_id:{},cter_id:{}",
                 user_id,
-                cter.cter_id
+                cter.get_cter_id()
             )
         }
         Ok(cter)
@@ -232,7 +232,7 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_cter is already died!user_id:{},cter_id:{}",
                 user_id,
-                cter.cter_id
+                cter.get_cter_id()
             )
         }
         Ok(cter)

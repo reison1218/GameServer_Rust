@@ -215,7 +215,8 @@ pub fn pos(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if !res {
         warn!(
             "this battle_cter has no this skill!cter_id:{},skill_id:{}",
-            battle_cter.cter_id, skill_id
+            battle_cter.get_cter_id(),
+            skill_id
         );
         return Ok(());
     }
@@ -306,7 +307,7 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验剩余翻块次数
-    if battle_cter.residue_open_times <= 0 {
+    if battle_cter.flow_data.residue_open_times <= 0 {
         let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
@@ -449,10 +450,10 @@ fn unlock_oper(
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
     let v = *au.action_value.get(0).unwrap();
-    if battle_cter.locked_oper == 0 || battle_cter.locked_oper != v {
+    if battle_cter.status.locked_oper == 0 || battle_cter.status.locked_oper != v {
         anyhow::bail!("{there is no show cell skill activate!}")
     }
-    battle_cter.locked_oper = 0;
+    battle_cter.status.locked_oper = 0;
     battle_cter.set_is_can_end_turn(true);
     Ok(None)
 }
@@ -481,18 +482,18 @@ fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> anyhow::Result<
     if skill.skill_temp.consume_type != SkillConsumeType::Energy.into_u8() && skill.cd_times > 0 {
         anyhow::bail!(
             "this skill cd is not ready!cter_id:{},skill_id:{},cd:{}",
-            cter.cter_id,
+            cter.get_cter_id(),
             skill.id,
             skill.cd_times
         )
     } else if skill.skill_temp.consume_type == SkillConsumeType::Energy.into_u8()
-        && cter.energy < skill.skill_temp.consume_value
+        && cter.base_attr.energy < skill.skill_temp.consume_value
     {
         anyhow::bail!(
             "this cter's energy is not enough!cter_id:{},skill_id:{},energy:{},cost_energy:{}",
-            cter.cter_id,
+            cter.get_cter_id(),
             skill.id,
-            cter.energy,
+            cter.base_attr.energy,
             skill.skill_temp.consume_value
         )
     }

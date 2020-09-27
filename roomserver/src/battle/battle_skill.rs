@@ -192,7 +192,7 @@ pub fn show_map_cell(
             return None;
         }
         let battle_cter = battle_cter.unwrap();
-        battle_cter.locked_oper = skill_id;
+        battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
 
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -226,7 +226,7 @@ pub fn show_map_cell(
             return None;
         }
         let battle_cter = battle_cter.unwrap();
-        battle_cter.locked_oper = skill_id;
+        battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
     } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
@@ -263,7 +263,7 @@ pub fn show_map_cell(
             return None;
         }
         let battle_cter = battle_cter.unwrap();
-        battle_cter.locked_oper = skill_id;
+        battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell_id);
@@ -390,7 +390,8 @@ pub unsafe fn skill_damage_opened_element(
     if skill.is_none() {
         warn!(
             "can not find cter's skill!cter_id:{} skill_id:{}",
-            cter.cter_id, skill_id
+            cter.get_cter_id(),
+            skill_id
         );
         return None;
     }
@@ -426,7 +427,7 @@ pub unsafe fn skill_damage_opened_element(
     }
     need_rank = false;
     let tile_map = battle_data.as_mut().unwrap().tile_map.borrow_mut();
-    for index in cter.open_map_cell_vec.iter() {
+    for index in cter.flow_data.open_map_cell_vec.iter() {
         let index = *index;
         let map_cell = tile_map.map_cells.get(index).unwrap();
         if map_cell.element != skill.skill_temp.par2 as u8 {
@@ -571,7 +572,7 @@ pub unsafe fn auto_pair_map_cell(
 
     let pair_map_cell = pair_map_cell.unwrap();
     //处理本turn不能攻击
-    battle_cter.attack_state = AttackState::Locked;
+    battle_cter.status.attack_state = AttackState::Locked;
 
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(map_cell.id);
@@ -628,7 +629,7 @@ pub unsafe fn move_user(
         return None;
     }
     let target_cter = target_cter.unwrap();
-    let target_user = target_cter.user_id;
+    let target_user = target_cter.get_user_id();
     //处理移动后事件
     let v = battle_data.handler_cter_move(target_user, target_index, au);
     if let Err(e) = v {
@@ -777,9 +778,9 @@ pub unsafe fn single_skill_damage(
         return None;
     }
     let target_cter = target_cter.unwrap();
-    let target_user = target_cter.user_id;
+    let target_user = target_cter.get_user_id();
     if target_cter.is_died() {
-        warn!("this target is died!user_id:{}", target_cter.user_id);
+        warn!("this target is died!user_id:{}", target_cter.get_user_id());
         return None;
     }
     let skill_damage;

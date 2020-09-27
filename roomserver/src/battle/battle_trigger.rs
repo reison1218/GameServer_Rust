@@ -73,7 +73,7 @@ impl BattleData {
         }
         let mut au_v = Vec::new();
         let turn_index = self.next_turn_index;
-        let user_id = battle_cter.user_id;
+        let user_id = battle_cter.get_user_id();
         let map_cell = map_cell.unwrap();
         for buff in map_cell.buffs.clone().values() {
             let buff_id = buff.id;
@@ -92,7 +92,7 @@ impl BattleData {
                 }
                 let buff_temp = buff_temp.unwrap();
                 let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
-                battle_cter.buffs.insert(buff.id, buff_add);
+                battle_cter.battle_buffs.buffs.insert(buff.id, buff_add);
 
                 let mut target_pt_tmp = TargetPt::new();
                 target_pt_tmp
@@ -158,7 +158,7 @@ impl TriggerEvent for BattleData {
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()> {
         //先判断目标位置的角色是否有不动泰山被动技能
         let target_cter = self.get_battle_cter(Some(target_user), true).unwrap();
-        if target_cter.buffs.contains_key(&CAN_NOT_MOVED) && from_user != target_user {
+        if target_cter.battle_buffs.buffs.contains_key(&CAN_NOT_MOVED) && from_user != target_user {
             anyhow::bail!(
                 "this cter can not be move!cter_id:{},buff_id:{}",
                 target_user,
@@ -188,7 +188,7 @@ impl TriggerEvent for BattleData {
             let cter_index = other_cter.get_map_cell_index() as isize;
 
             //踩到别人到范围
-            for buff in other_cter.buffs.values_mut() {
+            for buff in other_cter.battle_buffs.buffs.values_mut() {
                 if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
@@ -202,15 +202,15 @@ impl TriggerEvent for BattleData {
                         continue;
                     }
                     let target_pt = self.deduct_hp(
-                        other_cter.user_id,
-                        battle_cter.user_id,
+                        other_cter.base_attr.user_id,
+                        battle_cter.base_attr.user_id,
                         Some(buff.buff_temp.par1 as i16),
                         true,
                     );
                     match target_pt {
                         Ok(target_pt) => {
                             let mut other_aupt = ActionUnitPt::new();
-                            other_aupt.from_user = other_cter.user_id;
+                            other_aupt.from_user = other_cter.base_attr.user_id;
                             other_aupt.action_type = ActionType::Buff as u32;
                             other_aupt.action_value.push(buff.id);
                             other_aupt.targets.push(target_pt);
@@ -226,7 +226,7 @@ impl TriggerEvent for BattleData {
             }
             //别人进入自己的范围触发
             //现在没有种buff，先注释代码
-            // if battle_cter.user_id == other_cter.user_id {
+            // if battle_cter.get_user_id() == other_cter.get_user_id() {
             //     continue;
             // }
             // for buff in battle_cter.buffs.values_mut() {
@@ -240,8 +240,8 @@ impl TriggerEvent for BattleData {
             //             continue;
             //         }
             //         let target_pt = self.deduct_hp(
-            //             battle_cter.user_id,
-            //             other_cter.user_id,
+            //             battle_cter.get_user_id(),
+            //             other_cter.get_user_id(),
             //             Some(buff.buff_temp.par1 as i32),
             //             need_rank,
             //         );
@@ -330,9 +330,9 @@ impl TriggerEvent for BattleData {
             .get_temp(&skill_id)
             .unwrap();
         if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
-            cter.turn_limit_skills.push(skill_id);
+            cter.flow_data.turn_limit_skills.push(skill_id);
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
-            cter.turn_limit_skills.push(skill_id);
+            cter.flow_data.turn_limit_skills.push(skill_id);
         }
     }
 
@@ -342,7 +342,7 @@ impl TriggerEvent for BattleData {
             anyhow::bail!("{:?}", e)
         }
         let cter = cter.unwrap();
-        for buff_id in cter.buffs.keys() {
+        for buff_id in cter.battle_buffs.buffs.keys() {
             if LOCK_SKILLS.contains(buff_id) {
                 anyhow::bail!("this cter can not use skill!cter's buff:{}", buff_id)
             }
@@ -354,8 +354,8 @@ impl TriggerEvent for BattleData {
     fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let battle_data = self as *mut BattleData;
         let cter = self.get_battle_cter_mut(Some(user_id), true).unwrap();
-        let max_energy = cter.max_energy;
-        for buff in cter.buffs.clone().values() {
+        let max_energy = cter.base_attr.max_energy;
+        for buff in cter.battle_buffs.buffs.clone().values() {
             let buff_id = buff.id;
             //被攻击打断技能
             if CHANGE_SKILL.contains(&buff_id) {

@@ -41,70 +41,108 @@ impl Into<CharacterPt> for Character {
     }
 }
 
+///角色战斗基础属性
+#[derive(Clone, Debug, Default)]
+pub struct BaseAttr {
+    pub user_id: u32,   //玩家id
+    pub cter_id: u32,   //角色的配置id
+    pub grade: u8,      //等级
+    pub atk: u8,        //攻击力
+    pub hp: i16,        //角色血量
+    pub defence: u8,    //角色防御
+    pub energy: u8,     //角色能量
+    pub max_energy: u8, //能量上限
+    pub element: u8,    //角色元素
+    pub hp_max: i16,    //血上限
+    pub item_max: u8,   //道具数量上限
+}
+
+///角色战斗基础属性
+#[derive(Clone, Debug, Default)]
+pub struct BattleStatus {
+    pub is_pair: bool,             //最近一次翻块是否匹配
+    pub is_attacked: bool,         //一轮有没有受到攻击伤害
+    is_can_end_turn: bool,         //是否可以结束turn
+    pub locked_oper: u32,          //锁住的操作，如果有值，玩家什么都做不了
+    pub state: BattleCterState,    //角色状态
+    pub attack_state: AttackState, //是否可以攻击
+}
+
+///角色战斗基础属性
+#[derive(Clone, Debug, Default)]
+pub struct BattleBuff {
+    pub buffs: HashMap<u32, Buff>,          //角色身上的buff
+    pub passive_buffs: HashMap<u32, Buff>,  //被动技能id
+    pub add_damage_buffs: HashMap<u32, u8>, //伤害加深buff key:buffid value:叠加次数
+    pub sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
+}
+
+///角色战斗流程相关数据
+#[derive(Clone, Debug, Default)]
+pub struct TurnFlowData {
+    pub residue_open_times: u8,        //剩余翻地图块次数
+    pub open_map_cell_vec: Vec<usize>, //最近一次turn翻过的地图块
+    pub turn_limit_skills: Vec<u32>,   //turn限制技能
+    pub round_limit_skills: Vec<u32>,  //round限制技能
+}
+
+///角色战斗流程相关数据
+#[derive(Clone, Debug, Default)]
+pub struct IndexData {
+    map_cell_index: Option<usize>,          //角色所在位置
+    pub last_map_cell_index: Option<usize>, //上一次所在地图块位置
+}
+
 ///角色战斗数据
 #[derive(Clone, Debug, Default)]
 pub struct BattleCharacter {
-    pub user_id: u32,                                      //玩家id
-    pub cter_id: u32,                                      //角色的配置id
-    pub grade: u8,                                         //等级
-    pub atk: u8,                                           //攻击力
-    pub hp: i16,                                           //角色血量
-    pub defence: u8,                                       //角色防御
-    pub energy: u8,                                        //角色能量
-    pub max_energy: u8,                                    //能量上限
-    pub element: u8,                                       //角色元素
-    pub hp_max: i16,                                       //血上限
-    pub item_max: u8,                                      //道具数量上限
-    pub is_pair: bool,                                     //最近一次翻块是否匹配
-    pub is_attacked: bool,                                 //一轮有没有受到攻击伤害
-    is_can_end_turn: bool,                                 //是否可以结束turn
-    pub residue_open_times: u8,                            //剩余翻地图块次数
-    pub locked_oper: u32,                                  //锁住的操作，如果有值，玩家什么都做不了
-    pub state: BattleCterState,                            //角色状态
-    pub attack_state: AttackState,                         //是否可以攻击
-    map_cell_index: Option<usize>,                         //角色所在位置
-    pub last_map_cell_index: Option<usize>,                //上一次所在地图块位置
+    pub base_attr: BaseAttr,                               //基础属性
+    pub status: BattleStatus,                              //战斗状态
+    pub battle_buffs: BattleBuff,                          //战斗buff
+    pub flow_data: TurnFlowData,                           //战斗流程相关数据
+    pub index_data: IndexData,                             //角色位置数据
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
-    pub passive_buffs: HashMap<u32, Buff>,                 //被动技能id
-    pub buffs: HashMap<u32, Buff>,                         //角色身上的buff
     pub items: HashMap<u32, Item>,                         //角色身上的道具
-    pub open_map_cell_vec: Vec<usize>,                     //最近一次turn翻过的地图块
-    pub add_damage_buffs: HashMap<u32, u8>,                //伤害加深buff key:buffid value:叠加次数
-    pub sub_damage_buffs: HashMap<u32, u8>,                //减伤buff  key:buffid value:叠加次数
-    pub turn_limit_skills: Vec<u32>,                       //turn限制技能
-    pub round_limit_skills: Vec<u32>,                      //round限制技能
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
     pub self_cter: Option<Box<BattleCharacter>>,           //原本的角色
 }
 
 impl BattleCharacter {
+    pub fn get_cter_id(&self) -> u32 {
+        self.base_attr.cter_id
+    }
+
+    pub fn get_user_id(&self) -> u32 {
+        self.base_attr.user_id
+    }
+
     ///是否行为被锁住了
     pub fn is_locked(&self) -> bool {
-        self.locked_oper > 0
+        self.status.locked_oper > 0
     }
 
     pub fn add_energy(&mut self, value: i8) {
-        let v = self.energy as i8;
+        let v = self.base_attr.energy as i8;
         let res = v + value;
         if res < 0 {
-            self.energy = 0;
-        } else if res > self.max_energy as i8 {
-            self.energy = self.max_energy;
+            self.base_attr.energy = 0;
+        } else if res > self.base_attr.max_energy as i8 {
+            self.base_attr.energy = self.base_attr.max_energy;
         } else {
-            self.energy = res as u8;
+            self.base_attr.energy = res as u8;
         }
     }
 
     pub fn set_is_can_end_turn(&mut self, value: bool) {
-        self.is_can_end_turn = value;
+        self.status.is_can_end_turn = value;
     }
 
     pub fn get_is_can_end_turn(&self) -> bool {
-        self.is_can_end_turn
+        self.status.is_can_end_turn
     }
 
     pub fn is_can_attack(&self) -> bool {
-        self.attack_state == AttackState::Able
+        self.status.attack_state == AttackState::Able
     }
 
     ///从静态配置中初始化
@@ -112,17 +150,17 @@ impl BattleCharacter {
         //先重制数据
         self.clean_all();
         //然后复制数据
-        self.cter_id = cter_temp.id;
-        self.element = cter_temp.element;
-        self.grade = 1;
-        self.hp = cter_temp.hp;
-        self.hp_max = cter_temp.hp;
-        self.energy = cter_temp.start_energy;
-        self.max_energy = cter_temp.max_energy;
-        self.item_max = cter_temp.usable_item_count;
-        self.defence = cter_temp.defence;
-        self.atk = cter_temp.attack;
-        self.state = BattleCterState::Alive;
+        self.base_attr.cter_id = cter_temp.id;
+        self.base_attr.element = cter_temp.element;
+        self.base_attr.grade = 1;
+        self.base_attr.hp = cter_temp.hp;
+        self.base_attr.hp_max = cter_temp.hp;
+        self.base_attr.energy = cter_temp.start_energy;
+        self.base_attr.max_energy = cter_temp.max_energy;
+        self.base_attr.item_max = cter_temp.usable_item_count;
+        self.base_attr.defence = cter_temp.defence;
+        self.base_attr.atk = cter_temp.attack;
+        self.status.state = BattleCterState::Alive;
 
         for skill_group in cter_temp.skills.iter() {
             for skill_id in skill_group.group.iter() {
@@ -140,8 +178,8 @@ impl BattleCharacter {
             let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(buff_id);
             if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
-                self.add_buff(Some(self.user_id), None, buff.id, None);
-                self.passive_buffs.insert(*buff_id, buff);
+                self.add_buff(Some(self.get_user_id()), None, buff.id, None);
+                self.battle_buffs.passive_buffs.insert(*buff_id, buff);
             }
         });
     }
@@ -157,21 +195,23 @@ impl BattleCharacter {
             cter = self.self_cter.as_mut().unwrap();
             is_self_transform = false;
         }
-        //然后复制数据
-        self.user_id = cter.user_id;
-        self.cter_id = cter.cter_id;
-        self.element = cter.element;
-        self.grade = cter.grade;
-        self.hp_max = cter.hp_max;
-        self.max_energy = cter.max_energy;
-        self.item_max = cter.item_max;
-        self.defence = cter.defence;
-        self.atk = cter.atk;
-        self.state = cter.state;
-        self.is_attacked = cter.is_attacked;
+        //先复制需要继承的属性
+        let residue_open_times = self.flow_data.residue_open_times;
+        let hp = self.base_attr.hp;
+        let attack_state = self.status.attack_state;
+        let map_cell_index = self.index_data.map_cell_index;
+        let energy = self.base_attr.energy;
+        //开始数据转换
+        self.base_attr = cter.base_attr.clone();
+        self.base_attr.hp = hp;
+        self.base_attr.energy = energy;
+        self.status = cter.status.clone();
+        self.status.attack_state = attack_state;
+        self.index_data.map_cell_index = map_cell_index;
+        self.flow_data = cter.flow_data.clone();
+        self.flow_data.residue_open_times = residue_open_times;
         self.skills = cter.skills.clone();
-        self.buffs = cter.buffs.clone();
-        self.passive_buffs = cter.passive_buffs.clone();
+        self.battle_buffs = cter.battle_buffs.clone();
 
         //如果是从自己变身的角色变回去，则清空自己变身角色
         if is_self_transform {
@@ -201,11 +241,11 @@ impl BattleCharacter {
         }
         let cter_temp = cter_temp.unwrap();
         //需要继承的属性
-        let residue_open_times = self.residue_open_times;
-        let hp = self.hp;
-        let attack_state = self.attack_state;
-        let map_cell_index = self.map_cell_index;
-        let energy = self.energy;
+        let residue_open_times = self.flow_data.residue_open_times;
+        let hp = self.base_attr.hp;
+        let attack_state = self.status.attack_state;
+        let map_cell_index = self.index_data.map_cell_index;
+        let energy = self.base_attr.energy;
 
         //生命原始指针
         let self_ptr = self as *mut BattleCharacter;
@@ -219,11 +259,11 @@ impl BattleCharacter {
             //初始化数据成另外一个角色
             self.init_from_temp(cter_temp);
             //将继承属性给当前角色
-            self.residue_open_times = residue_open_times;
-            self.hp = hp;
-            self.attack_state = attack_state;
-            self.map_cell_index = map_cell_index;
-            self.energy = energy;
+            self.flow_data.residue_open_times = residue_open_times;
+            self.base_attr.hp = hp;
+            self.status.attack_state = attack_state;
+            self.index_data.map_cell_index = map_cell_index;
+            self.base_attr.energy = energy;
 
             //给新变身加变身buff
             let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
@@ -233,9 +273,9 @@ impl BattleCharacter {
             }
             let buff_temp = buff_temp.unwrap();
             let buff = Buff::from(buff_temp);
-            self.buffs.insert(buff.id, buff);
+            self.battle_buffs.buffs.insert(buff.id, buff);
             //保存自己变身的角色
-            if self.user_id == from_user {
+            if self.base_attr.user_id == from_user {
                 self.self_transform_cter = Some(Box::new(self_ptr.as_ref().unwrap().clone()));
             }
         }
@@ -247,24 +287,24 @@ impl BattleCharacter {
 
     ///角色地图块下标是否有效
     pub fn map_cell_index_is_choiced(&self) -> bool {
-        self.map_cell_index.is_some()
+        self.index_data.map_cell_index.is_some()
     }
 
     ///设置角色地图块位置
     pub fn set_map_cell_index(&mut self, index: usize) {
-        self.map_cell_index = Some(index);
+        self.index_data.map_cell_index = Some(index);
     }
 
     ///获得角色地图块位置
     pub fn get_map_cell_index(&self) -> usize {
-        if self.map_cell_index.is_none() {
+        if self.index_data.map_cell_index.is_none() {
             error!(
                 "this cter's map_cell_index is None!user_id:{},cter_id:{}",
-                self.user_id, self.cter_id
+                self.base_attr.user_id, self.base_attr.cter_id
             );
             return 100;
         }
-        self.map_cell_index.unwrap()
+        self.index_data.map_cell_index.unwrap()
     }
 
     ///添加道具
@@ -276,21 +316,24 @@ impl BattleCharacter {
             id: item_id,
             skill_temp,
         };
-        if self.items.len() as u8 >= self.item_max {
-            anyhow::bail!("this cter's item is full!item_max:{}", self.item_max)
+        if self.items.len() as u8 >= self.base_attr.item_max {
+            anyhow::bail!(
+                "this cter's item is full!item_max:{}",
+                self.base_attr.item_max
+            )
         }
         self.items.insert(item.id, item);
         Ok(())
     }
 
     pub fn move_index(&mut self, index: usize) {
-        self.last_map_cell_index = Some(self.map_cell_index.unwrap());
-        self.map_cell_index = Some(index);
+        self.index_data.last_map_cell_index = Some(self.index_data.map_cell_index.unwrap());
+        self.index_data.map_cell_index = Some(index);
     }
 
     ///消耗buff,如果有buff被删除了，则返回some，否则范围none
     pub fn consume_buff(&mut self, buff_id: u32, is_turn_start: bool) {
-        let buff = self.buffs.get_mut(&buff_id);
+        let buff = self.battle_buffs.buffs.get_mut(&buff_id);
         if let Some(buff) = buff {
             if is_turn_start {
                 buff.sub_keep_times();
@@ -302,40 +345,40 @@ impl BattleCharacter {
 
     ///重制角色数据
     pub fn round_reset(&mut self) {
-        self.is_attacked = false;
-        self.attack_state = AttackState::None;
-        self.map_cell_index = None;
-        self.open_map_cell_vec.clear();
-        self.last_map_cell_index = None;
-        self.round_limit_skills.clear();
+        self.status.is_attacked = false;
+        self.status.attack_state = AttackState::None;
+        self.index_data.map_cell_index = None;
+        self.flow_data.open_map_cell_vec.clear();
+        self.index_data.last_map_cell_index = None;
+        self.flow_data.round_limit_skills.clear();
     }
 
     pub fn clean_all(&mut self) {
         self.turn_reset();
         self.round_reset();
         self.skills.clear();
-        self.buffs.clear();
-        self.passive_buffs.clear();
+        self.battle_buffs.buffs.clear();
+        self.battle_buffs.passive_buffs.clear();
         self.items.clear();
-        self.map_cell_index = None;
-        self.element = 0;
-        self.sub_damage_buffs.clear();
-        self.add_damage_buffs.clear();
+        self.index_data.map_cell_index = None;
+        self.base_attr.element = 0;
+        self.battle_buffs.sub_damage_buffs.clear();
+        self.battle_buffs.add_damage_buffs.clear();
         self.self_cter = None;
         self.self_transform_cter = None;
-        self.grade = 1;
-        self.hp = 0;
-        self.atk = 0;
-        self.defence = 0;
-        self.state = BattleCterState::Alive;
+        self.base_attr.grade = 1;
+        self.base_attr.hp = 0;
+        self.base_attr.atk = 0;
+        self.base_attr.defence = 0;
+        self.status.state = BattleCterState::Alive;
     }
 
     ///计算攻击力
     pub fn calc_damage(&self) -> i16 {
-        let mut damage = self.atk;
+        let mut damage = self.base_attr.atk;
 
-        for (buff_id, times) in self.add_damage_buffs.iter() {
-            let buff = self.buffs.get(buff_id);
+        for (buff_id, times) in self.battle_buffs.add_damage_buffs.iter() {
+            let buff = self.battle_buffs.buffs.get(buff_id);
             if buff.is_none() {
                 continue;
             }
@@ -353,10 +396,10 @@ impl BattleCharacter {
 
     ///计算减伤
     pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i16 {
-        let mut value = self.defence;
+        let mut value = self.base_attr.defence;
 
-        for (buff_id, times) in self.sub_damage_buffs.iter() {
-            let buff = self.buffs.get(buff_id);
+        for (buff_id, times) in self.battle_buffs.sub_damage_buffs.iter() {
+            let buff = self.battle_buffs.buffs.get(buff_id);
             if buff.is_none() {
                 continue;
             }
@@ -397,35 +440,35 @@ impl BattleCharacter {
             self.trigger_sub_damage_buff(buff_id);
         }
 
-        self.buffs.insert(buff.id, buff);
+        self.battle_buffs.buffs.insert(buff.id, buff);
     }
 
     ///移除buff
     pub fn remove_buff(&mut self, buff_id: u32) {
-        self.buffs.remove(&buff_id);
-        self.add_damage_buffs.remove(&buff_id);
-        self.sub_damage_buffs.remove(&buff_id);
+        self.battle_buffs.buffs.remove(&buff_id);
+        self.battle_buffs.add_damage_buffs.remove(&buff_id);
+        self.battle_buffs.sub_damage_buffs.remove(&buff_id);
     }
 
     ///触发增加伤害buff
     pub fn trigger_add_damage_buff(&mut self, buff_id: u32) {
-        if !self.add_damage_buffs.contains_key(&buff_id) {
-            self.add_damage_buffs.insert(buff_id, 1);
+        if !self.battle_buffs.add_damage_buffs.contains_key(&buff_id) {
+            self.battle_buffs.add_damage_buffs.insert(buff_id, 1);
         } else {
-            let res = self.add_damage_buffs.get(&buff_id).unwrap();
+            let res = self.battle_buffs.add_damage_buffs.get(&buff_id).unwrap();
             let res = *res + 1;
-            self.add_damage_buffs.insert(buff_id, res);
+            self.battle_buffs.add_damage_buffs.insert(buff_id, res);
         }
     }
 
     ///触发减伤buff
     pub fn trigger_sub_damage_buff(&mut self, buff_id: u32) {
-        if !self.sub_damage_buffs.contains_key(&buff_id) {
-            self.sub_damage_buffs.insert(buff_id, 1);
+        if !self.battle_buffs.sub_damage_buffs.contains_key(&buff_id) {
+            self.battle_buffs.sub_damage_buffs.insert(buff_id, 1);
         } else {
-            let res = self.sub_damage_buffs.get(&buff_id).unwrap();
+            let res = self.battle_buffs.sub_damage_buffs.get(&buff_id).unwrap();
             let res = *res + 1;
-            self.sub_damage_buffs.insert(buff_id, res);
+            self.battle_buffs.sub_damage_buffs.insert(buff_id, res);
         }
     }
 
@@ -433,9 +476,9 @@ impl BattleCharacter {
     pub fn init(cter: &Character) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
         let cter_id = cter.cter_id;
-        battle_cter.user_id = cter.user_id;
-        battle_cter.cter_id = cter_id;
-        battle_cter.grade = cter.grade;
+        battle_cter.base_attr.user_id = cter.user_id;
+        battle_cter.base_attr.cter_id = cter_id;
+        battle_cter.base_attr.grade = cter.grade;
         let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
         let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
         for skill_id in cter.skills.iter() {
@@ -459,19 +502,22 @@ impl BattleCharacter {
         }
         let cter_temp = cter_temp.unwrap();
         //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
-        battle_cter.hp = cter_temp.hp;
-        battle_cter.atk = cter_temp.attack;
-        battle_cter.defence = cter_temp.defence;
-        battle_cter.element = cter_temp.element;
-        battle_cter.energy = cter_temp.start_energy;
-        battle_cter.max_energy = cter_temp.max_energy;
-        battle_cter.hp_max = cter_temp.hp;
-        battle_cter.item_max = cter_temp.usable_item_count;
+        battle_cter.base_attr.hp = cter_temp.hp;
+        battle_cter.base_attr.atk = cter_temp.attack;
+        battle_cter.base_attr.defence = cter_temp.defence;
+        battle_cter.base_attr.element = cter_temp.element;
+        battle_cter.base_attr.energy = cter_temp.start_energy;
+        battle_cter.base_attr.max_energy = cter_temp.max_energy;
+        battle_cter.base_attr.hp_max = cter_temp.hp;
+        battle_cter.base_attr.item_max = cter_temp.usable_item_count;
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.add_buff(Some(battle_cter.user_id), None, buff.id, None);
-            battle_cter.passive_buffs.insert(*buff_id, buff);
+            battle_cter.add_buff(Some(battle_cter.get_user_id()), None, buff.id, None);
+            battle_cter
+                .battle_buffs
+                .passive_buffs
+                .insert(*buff_id, buff);
         });
 
         battle_cter.reset_residue_open_times();
@@ -480,12 +526,12 @@ impl BattleCharacter {
 
     ///重制翻块次数
     pub fn reset_residue_open_times(&mut self) {
-        self.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
+        self.flow_data.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
     }
 
     ///回合开始触发
     pub fn trigger_turn_start(&mut self) {
-        for buff in self.buffs.values() {
+        for buff in self.battle_buffs.buffs.values() {
             if CHANGE_SKILL.contains(&buff.id) {
                 let skill_id = buff.buff_temp.par1;
 
@@ -514,20 +560,20 @@ impl BattleCharacter {
         //重制剩余翻块地处
         self.reset_residue_open_times();
         //重制是否可以攻击
-        self.attack_state = AttackState::None;
+        self.status.attack_state = AttackState::None;
         //重制匹配状态
-        self.is_pair = false;
+        self.status.is_pair = false;
         //重制是否翻过地图块
-        self.open_map_cell_vec.clear();
+        self.flow_data.open_map_cell_vec.clear();
         //清空turn限制
-        self.turn_limit_skills.clear();
+        self.flow_data.turn_limit_skills.clear();
         //重制可结束turn状态
         self.set_is_can_end_turn(false);
     }
 
     ///触发抵挡攻击伤害
     pub fn trigger_attack_damge_gd(&mut self) -> (u32, bool) {
-        let gd_buff = self.buffs.get_mut(&GD_ATTACK_DAMAGE[0]);
+        let gd_buff = self.battle_buffs.buffs.get_mut(&GD_ATTACK_DAMAGE[0]);
         let mut buff_id = 0;
         let mut is_remove = false;
         if gd_buff.is_none() {
@@ -537,7 +583,7 @@ impl BattleCharacter {
 
         buff_id = gd_buff.id;
         self.consume_buff(buff_id, false);
-        let gd_buff = self.buffs.get_mut(&buff_id).unwrap();
+        let gd_buff = self.battle_buffs.buffs.get_mut(&buff_id).unwrap();
         if gd_buff.trigger_timesed <= 0 || gd_buff.keep_times <= 0 {
             is_remove = true;
         }
@@ -546,36 +592,37 @@ impl BattleCharacter {
 
     ///校验角色是否死亡
     pub fn is_died(&self) -> bool {
-        self.state == BattleCterState::Die
+        self.status.state == BattleCterState::Die
     }
 
     ///扣血
     pub fn sub_hp(&mut self, hp: i16) -> bool {
-        self.hp -= hp;
-        if self.hp <= 0 {
-            self.hp = 0;
-            self.state = BattleCterState::Die;
+        self.base_attr.hp -= hp;
+        if self.base_attr.hp <= 0 {
+            self.base_attr.hp = 0;
+            self.status.state = BattleCterState::Die;
         }
-        self.state == BattleCterState::Die
+        self.status.state == BattleCterState::Die
     }
 
     ///加血
     pub fn add_hp(&mut self, hp: i16) {
-        self.hp += hp;
-        if self.hp > self.hp_max {
-            self.hp = self.hp_max;
+        self.base_attr.hp += hp;
+        if self.base_attr.hp > self.base_attr.hp_max {
+            self.base_attr.hp = self.base_attr.hp_max;
         }
     }
 
     ///将自身转换成protobuf结构体
     pub fn convert_to_battle_cter(&self) -> BattleCharacterPt {
         let mut battle_cter_pt = BattleCharacterPt::new();
-        battle_cter_pt.user_id = self.user_id;
-        battle_cter_pt.cter_id = self.cter_id;
-        battle_cter_pt.hp = self.hp as u32;
-        battle_cter_pt.defence = self.defence.into();
-        battle_cter_pt.atk = self.atk as u32;
-        self.buffs
+        battle_cter_pt.user_id = self.base_attr.user_id;
+        battle_cter_pt.cter_id = self.base_attr.cter_id;
+        battle_cter_pt.hp = self.base_attr.hp as u32;
+        battle_cter_pt.defence = self.base_attr.defence.into();
+        battle_cter_pt.atk = self.base_attr.atk as u32;
+        self.battle_buffs
+            .buffs
             .values()
             .for_each(|buff| battle_cter_pt.buffs.push(buff.id));
         self.skills

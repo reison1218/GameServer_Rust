@@ -148,7 +148,7 @@ impl BattleData {
                 }
                 let target_pt = self.build_target_pt(
                     from_user,
-                    last_map_cell_user.user_id,
+                    last_map_cell_user.base_attr.user_id,
                     EffectType::RewardItem,
                     item_id,
                     Some(buff_id),
@@ -240,7 +240,10 @@ impl BattleData {
         if target_type == TargetType::MapCellPlayer {
             let last_map_cell_user = battle_cters.get_mut(&last_map_cell_user_id);
             if let Some(last_map_cell_user) = last_map_cell_user {
-                last_map_cell_user.buffs.insert(buff.id, buff.clone());
+                last_map_cell_user
+                    .battle_buffs
+                    .buffs
+                    .insert(buff.id, buff.clone());
                 target_pt
                     .target_value
                     .push(last_map_cell_user.get_map_cell_index() as u32);
@@ -255,7 +258,7 @@ impl BattleData {
             .push(battle_cter.get_map_cell_index() as u32);
         au.targets.push(target_pt);
 
-        battle_cter.buffs.insert(buff.id, buff);
+        battle_cter.battle_buffs.buffs.insert(buff.id, buff);
     }
 
     ///给附近的人添加技能cd
@@ -280,7 +283,7 @@ impl BattleData {
         target_pt.effects.push(ep);
         let isize_index = index as isize;
         for cter in battle_cters.values_mut() {
-            if cter.user_id == user_id {
+            if cter.get_user_id() == user_id {
                 continue;
             }
             if cter.is_died() {
@@ -292,7 +295,7 @@ impl BattleData {
                 if res != cter_index {
                     continue;
                 }
-                if cter.max_energy > 0 {
+                if cter.base_attr.max_energy > 0 {
                     continue;
                 }
                 cter.skills
@@ -400,7 +403,7 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) {
         let battle_cter = battle_cters.get_mut(&target_user).unwrap();
-        if map_cell_element != battle_cter.element {
+        if map_cell_element != battle_cter.base_attr.element {
             return;
         }
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
@@ -494,7 +497,7 @@ impl BattleData {
         }
         let open_cter = open_cter.unwrap();
 
-        let last_index = open_cter.last_map_cell_index;
+        let last_index = open_cter.index_data.last_map_cell_index;
         let cters = battle_cters.as_mut().unwrap();
         let index = open_cter.get_map_cell_index() as u32;
         let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
@@ -580,7 +583,7 @@ impl BattleData {
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
                     //此处触发加攻击不用通知客户端
                     let buff_element = buff.buff_temp.par1 as u8;
-                    let cter_element = cter.element;
+                    let cter_element = cter.base_attr.element;
                     if buff_element == cter_element && cter_element == map_cell_element {
                         cter.trigger_add_damage_buff(buff.id);
                     }
@@ -606,9 +609,9 @@ impl BattleData {
                     continue;
                 }
                 self.match_open_map_cell_buff(
-                    Some(cter.user_id),
-                    cter.buffs.values(),
-                    cter.user_id,
+                    Some(cter.get_user_id()),
+                    cter.battle_buffs.buffs.values(),
+                    cter.get_user_id(),
                     user_id,
                     battle_cters,
                     au,
@@ -630,7 +633,7 @@ impl BattleData {
                 self.match_open_map_cell_buff(
                     None,
                     map_cell.buffs.values(),
-                    cter.user_id,
+                    cter.get_user_id(),
                     user_id,
                     battle_cters,
                     au,

@@ -11,7 +11,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
 pub fn generate_map(){
-    TileMap::init(RoomType::Custom,Some(4001),4,4001).unwrap();
+    TileMap::init(RoomType::Custom,4001,4,4001).unwrap();
 }
 
 ///房间类型
@@ -214,40 +214,74 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(room_type:RoomType,mut season_id:Option<u32>,mut member_count: u8,last_map_id:u32) -> anyhow::Result<Self> {
+    pub fn init(room_type: RoomType,
+        mut season_id: u32,
+        mut member_count: u8,
+        last_map_id: u32,) -> anyhow::Result<Self> {
 
-        if member_count == 3{
-            member_count +=1;
+        //先算人数
+        if member_count == 3 {
+            member_count += 1;
         }
+        //创建随机结构体实例
         let mut rand = rand::thread_rng();
-        if room_type == RoomType::Match{
+        if room_type == RoomType::Match {
             //否则进行随机，0-1，0代表不开启世界块
             let res = rand.gen_range(0, 2);
-            if res>0{
-                season_id = Some(4001);
+            if res > 0 {
+                unsafe {
+                    season_id = 4001;
+                }
             }
         }
-        let season_id = season_id.unwrap();
 
+        //拿到地图配置管理器
         let tile_map_mgr = TEMPLATES.get_tile_map_temp_mgr_ref();
+        let tile_map_temp_vec;
+        //有世界块的逻辑
+        if season_id > 0 {
+            //获得赛季配置，里面包括人数，位置，数组对应关系的map
+            let res = tile_map_mgr.season_temps.get(&season_id);
+            if let None = res {
+                anyhow::bail!("there is no map config for season_id:{}", season_id)
+            }
 
-        let res = tile_map_mgr.season_temps.get(&season_id);
-        if let None = res {
-            anyhow::bail!("there is no map config for season_id:{}", season_id)
+            let map = res.unwrap();
+            //拿到相对人数的配置
+            let res = map.get(&member_count);
+            if let None = res {
+                anyhow::bail!("there is no map config for member_count:{}", member_count)
+            }
+            let tile_map_temp_map = res.unwrap();
+            let world_cell_index;
+            //计算处世界块位置，如果上次id不为0，则拿上次的世界块位置
+            let tile_map_temp = tile_map_mgr.get_temp(last_map_id);
+            if let Ok(tile_map_temp) = tile_map_temp {
+                world_cell_index = tile_map_temp.world_cell_index;
+            } else {
+                //如果为0，则随机从位置里面拿一个出来
+                let mut index_v = Vec::new();
+                for cell_index in tile_map_temp_map.keys() {
+                    index_v.push(*cell_index);
+                }
+                let index = rand.gen_range(0, index_v.len());
+                world_cell_index = *index_v.get(index).unwrap();
+            }
+            //拿到世界地图块位置的所有配置
+            tile_map_temp_vec = tile_map_temp_map.get(&world_cell_index).unwrap();
+        } else {
+            //无世界块的逻辑
+            let res = tile_map_mgr.member_temps.get(&member_count);
+            if let None = res {
+                anyhow::bail!("there is no map config for member_count:{}", member_count)
+            }
+            tile_map_temp_vec = res.unwrap().get(&false).unwrap();
         }
-
-        let map = res.unwrap();
-        let res = map.get(&member_count);
-        if let None = res {
-            anyhow::bail!("there is no map config for member_count:{}", member_count)
-        }
-
-        let mut tile_map_temp_vec = res.unwrap();
         let mut tile_map_temp_v = Vec::new();
-
-        for tmt in tile_map_temp_vec{
-            if tmt.id==last_map_id{
-               continue;
+        //这次随机出来的地图，不能与上次一样
+        for tmt in tile_map_temp_vec {
+            if tmt.id == last_map_id {
+                continue;
             }
             tile_map_temp_v.push(tmt.clone());
         }

@@ -29,7 +29,7 @@ impl BattleData {
         let allive_count = self
             .battle_cter
             .values()
-            .filter(|x| x.state == BattleCterState::Alive)
+            .filter(|x| x.status.state == BattleCterState::Alive)
             .count();
         let battle_members_ptr =
             self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
@@ -41,7 +41,7 @@ impl BattleData {
                 if member_cter.is_died() {
                     continue;
                 }
-                member = Some(member_cter.user_id);
+                member = Some(member_cter.get_user_id());
             }
             if let Some(member) = member {
                 self.rank_vec.push(vec![member]);
@@ -88,7 +88,7 @@ impl BattleData {
                             continue;
                         }
                         let cter = cter.unwrap();
-                        grade = cter.grade as i32;
+                        grade = cter.base_attr.grade as i32;
 
                         //处理grade升级和降级
                         if rank == 0 {
@@ -105,7 +105,7 @@ impl BattleData {
                         }
                         let mut smp = SummaryDataPt::new();
                         smp.user_id = *member_id;
-                        smp.cter_id = cter.cter_id;
+                        smp.cter_id = cter.get_cter_id();
                         smp.rank = rank;
                         smp.grade = grade as u32;
                         ssn.summary_datas.push(smp.clone());
@@ -158,7 +158,8 @@ impl BattleData {
         if let None = item {
             error!(
                 "item is None!user_id:{},item_id:{}",
-                battle_cter.user_id, item_id
+                battle_cter.get_user_id(),
+                item_id
             );
             anyhow::bail!("")
         }
@@ -282,7 +283,8 @@ impl BattleData {
         let mut aoe_buff: Option<u32> = None;
 
         //塞选出ape的buff
-        cter.buffs
+        cter.battle_buffs
+            .buffs
             .values()
             .filter(|buff| ADD_ATTACK_AND_AOE.contains(&buff.id))
             .for_each(|buff| {
@@ -298,14 +300,14 @@ impl BattleData {
         }
 
         let target_cter = target_cter.unwrap();
-        let target_user_id = target_cter.user_id;
+        let target_user_id = target_cter.get_user_id();
         let target_user_index = target_cter.get_map_cell_index();
         if target_user_id == user_id {
             warn!("the attack target can not be Self!user_id:{}", user_id);
             anyhow::bail!("")
         }
         if target_cter.is_died() {
-            warn!("the target is died!user_id:{}", target_cter.user_id);
+            warn!("the target is died!user_id:{}", target_cter.get_user_id());
             anyhow::bail!("")
         }
 
@@ -362,7 +364,7 @@ impl BattleData {
                 }
             }
         }
-        cter.attack_state = AttackState::None;
+        cter.status.attack_state = AttackState::None;
         Ok(())
     }
 
@@ -378,7 +380,7 @@ impl BattleData {
         let allive_count = self
             .battle_cter
             .values()
-            .filter(|x| x.state == BattleCterState::Alive)
+            .filter(|x| x.status.state == BattleCterState::Alive)
             .count();
         let res = TileMap::init(room_type, season_id, allive_count as u8, last_map_id)?;
         self.last_map_id = res.id;
@@ -392,14 +394,18 @@ impl BattleData {
                 }
                 cter.round_reset();
                 let cter = cter as *mut BattleCharacter;
-                for buff in cter.as_mut().unwrap().buffs.values_mut() {
+                for buff in cter.as_mut().unwrap().battle_buffs.buffs.values_mut() {
                     //刷新地图增加攻击力
                     if RESET_MAP_ADD_ATTACK.contains(&buff.id) {
                         cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
                     if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
-                        cter.as_mut().unwrap().add_damage_buffs.remove(&buff.id);
+                        cter.as_mut()
+                            .unwrap()
+                            .battle_buffs
+                            .add_damage_buffs
+                            .remove(&buff.id);
                     }
                 }
             }
@@ -453,9 +459,9 @@ impl BattleData {
             }
 
             //更新翻的地图块下标
-            battle_cter.open_map_cell_vec.push(index);
+            battle_cter.flow_data.open_map_cell_vec.push(index);
             //翻块次数-1
-            battle_cter.residue_open_times -= 1;
+            battle_cter.flow_data.residue_open_times -= 1;
 
             //玩家技能cd-1
             battle_cter.skills.values_mut().for_each(|skill| {
@@ -495,12 +501,12 @@ impl BattleData {
 
         //结算玩家身上的buff
         for cter in self.battle_cter.values_mut() {
-            for buff in cter.buffs.clone().values() {
+            for buff in cter.battle_buffs.buffs.clone().values() {
                 let buff_id = buff.id;
                 unsafe {
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
-                        Some(cter.user_id),
+                        Some(cter.get_user_id()),
                         None,
                         true,
                     );
