@@ -1,12 +1,12 @@
 use crate::battle::battle_enum::skill_type::{
-    ADD_BUFF, AUTO_PAIR_CELL, CHANGE_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE, RED_SKILL_CD,
-    SCOPE_CURE, SHOW_INDEX, SKILL_AOE, SKILL_DAMAGE, SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_CELL,
-    TRANSFORM,
+    ADD_BUFF, AUTO_PAIR_MAP_CELL, CHANGE_MAP_CELL_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE,
+    RED_SKILL_CD, SCOPE_CURE, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE, SKILL_DAMAGE_OPENED_ELEMENT,
+    SKILL_OPEN_MAP_CELL, TRANSFORM,
 };
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
-    add_buff, auto_pair_map_cell, change_index, move_user, scope_cure, show_index,
+    add_buff, auto_pair_map_cell, change_map_cell_index, move_user, scope_cure, show_map_cell,
     single_skill_damage, skill_aoe_damage, skill_damage_and_cure, skill_damage_opened_element,
     skill_open_map_cell, sub_cd, transform,
 };
@@ -55,6 +55,7 @@ pub struct BattleData {
         ) -> Option<Vec<ActionUnitPt>>,
     >, //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
+    pub last_map_id: u32,                           //上次地图id
     pub task_sender: crossbeam::Sender<Task>,       //任务sender
     pub sender: TcpSender,                          //sender
 }
@@ -96,16 +97,18 @@ impl BattleData {
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),
             total_turn_times: 0,
+            last_map_id: 0,
             task_sender,
             sender,
         };
 
         //初始化函数指针，封装到map里
         bd.skill_cmd_map
-            .insert(&AUTO_PAIR_CELL[..], auto_pair_map_cell);
+            .insert(&AUTO_PAIR_MAP_CELL[..], auto_pair_map_cell);
         bd.skill_cmd_map.insert(&ADD_BUFF[..], add_buff);
-        bd.skill_cmd_map.insert(&CHANGE_INDEX[..], change_index);
-        bd.skill_cmd_map.insert(&SHOW_INDEX[..], show_index);
+        bd.skill_cmd_map
+            .insert(&CHANGE_MAP_CELL_INDEX[..], change_map_cell_index);
+        bd.skill_cmd_map.insert(&SHOW_MAP_CELL[..], show_map_cell);
         bd.skill_cmd_map.insert(&MOVE_USER[..], move_user);
         bd.skill_cmd_map
             .insert(&NEAR_SKILL_DAMAGE_AND_CURE[..], skill_damage_and_cure);
@@ -114,7 +117,7 @@ impl BattleData {
         bd.skill_cmd_map.insert(&SKILL_AOE[..], skill_aoe_damage);
         bd.skill_cmd_map.insert(&RED_SKILL_CD[..], sub_cd);
         bd.skill_cmd_map
-            .insert(&SKILL_OPEN_CELL[..], skill_open_map_cell);
+            .insert(&SKILL_OPEN_MAP_CELL[..], skill_open_map_cell);
         bd.skill_cmd_map.insert(
             &SKILL_DAMAGE_OPENED_ELEMENT[..],
             skill_damage_opened_element,

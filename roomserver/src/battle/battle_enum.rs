@@ -26,17 +26,17 @@ pub mod skill_judge_type {
 pub mod skill_type {
 
     ///技能翻开地图块
-    pub const SKILL_OPEN_CELL: [u32; 1] = [223];
+    pub const SKILL_OPEN_MAP_CELL: [u32; 1] = [223];
     ///自残加buff
     pub const HURT_SELF_ADD_BUFF: [u32; 1] = [311];
     ///自动配对地图块
-    pub const AUTO_PAIR_CELL: [u32; 1] = [212];
+    pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
     pub const ADD_BUFF: [u32; 8] = [121, 211, 221, 311, 312, 322, 324, 20002];
     ///地图块换位置
-    pub const CHANGE_INDEX: [u32; 1] = [111];
+    pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
-    pub const SHOW_INDEX: [u32; 6] = [112, 113, 421, 422, 423, 20001];
+    pub const SHOW_MAP_CELL: [u32; 6] = [112, 113, 421, 422, 423, 20001];
     ///移动玩家
     pub const MOVE_USER: [u32; 1] = [222];
     ///相临玩家造成技能伤害并恢复生命
@@ -254,6 +254,8 @@ pub enum ActionType {
     Skill = 5,
     ///触发buff
     Buff = 6,
+    ///解锁行为(目前有结束向所有玩家展示地图)
+    UnlockOper = 7,
 }
 
 ///目标类型枚举

@@ -8,6 +8,7 @@ use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
+use crate::room::room_model::RoomType;
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
@@ -366,7 +367,12 @@ impl BattleData {
     }
 
     ///刷新地图
-    pub fn reset_map(&mut self, is_world_map_cell: Option<bool>) -> anyhow::Result<()> {
+    pub fn reset_map(
+        &mut self,
+        room_type: RoomType,
+        season_id: u32,
+        last_map_id: u32,
+    ) -> anyhow::Result<()> {
         //地图刷新前触发buff
         self.before_map_refresh_buff_trigger();
         let allive_count = self
@@ -374,8 +380,8 @@ impl BattleData {
             .values()
             .filter(|x| x.state == BattleCterState::Alive)
             .count();
-        let res = TileMap::init(allive_count as u8, is_world_map_cell)?;
-
+        let res = TileMap::init(room_type, season_id, allive_count as u8, last_map_id)?;
+        self.last_map_id = res.id;
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
         unsafe {

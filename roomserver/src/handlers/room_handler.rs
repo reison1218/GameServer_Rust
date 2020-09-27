@@ -514,11 +514,11 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let set_type = rs.get_set_type();
         let room_set_type = RoomSettingType::from(set_type);
         match room_set_type {
-            RoomSettingType::AILevel => {
-                room.setting.ai_level = rs.get_value();
+            RoomSettingType::IsOpenAI => {
+                room.setting.is_open_ai = rs.get_value() == 1;
             }
-            RoomSettingType::IsOpenWorldMapCell => {
-                room.setting.is_world_tile = rs.get_value() == 1;
+            RoomSettingType::SeasonId => {
+                room.setting.season_id = rs.get_value();
             }
             RoomSettingType::TurnLimitTime => {
                 room.setting.turn_limit_time = rs.get_value();

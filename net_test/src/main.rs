@@ -299,15 +299,6 @@ size: (f32, f32)
 impl_layoutable!(TestMacro);
 
 fn main() -> anyhow::Result<()> {
-    let start = Instant::now();
-    let mut sum = 0;
-    for i in 1..1000000000{
-        //println!("{}",i)
-        sum += 1;
-    }
-    let duration = start.elapsed();
-    println!("累积的和为：{:?}",sum);
-    println!("循环的耗时: {:?}", duration);
     // let date = chrono::Local::now();
     // let week_day = date.weekday();
     // let day = week_day.num_days_from_sunday();
@@ -328,7 +319,8 @@ fn main() -> anyhow::Result<()> {
     // println!("{:?}",v);
     // println!("{:?}",res);
     //tcp_client::test_tcp_clients();
-    //map::generate_map();
+    // let season_temp = TEMPLATES.get_season_temp_mgr_ref().get_temp(&1001).unwrap();
+     map::generate_map();
     // let a:u8 = HH::AA.into();
     // println!("{}",a)
     // let words:[u32;5] = [1,2,3,4,5];

@@ -65,7 +65,7 @@ impl From<&'static SkillTemp> for Skill {
 }
 
 ///地图块换位置
-pub unsafe fn change_index(
+pub unsafe fn change_map_cell_index(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
@@ -142,7 +142,7 @@ pub unsafe fn change_index(
 }
 
 ///展示地图块
-pub fn show_index(
+pub fn show_map_cell(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
@@ -186,6 +186,14 @@ pub fn show_index(
                 return None;
             }
         }
+        let battle_cter = battle_data.get_battle_cter_mut(None, true);
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            return None;
+        }
+        let battle_cter = battle_cter.unwrap();
+        battle_cter.locked_oper = skill_id;
+        battle_cter.set_is_can_end_turn(false);
 
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
@@ -212,6 +220,14 @@ pub fn show_index(
             target_pt.target_value.push(_map_cell.index as u32);
             au.targets.push(target_pt);
         }
+        let battle_cter = battle_data.get_battle_cter_mut(None, true);
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            return None;
+        }
+        let battle_cter = battle_cter.unwrap();
+        battle_cter.locked_oper = skill_id;
+        battle_cter.set_is_can_end_turn(false);
     } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -240,6 +256,15 @@ pub fn show_index(
             au.targets.push(target_pt);
             cter.add_energy(skill_temp.par2 as i8);
         }
+
+        let battle_cter = battle_data.get_battle_cter_mut(None, true);
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
+            return None;
+        }
+        let battle_cter = battle_cter.unwrap();
+        battle_cter.locked_oper = skill_id;
+        battle_cter.set_is_can_end_turn(false);
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell_id);
         target_pt.target_value.push(map_cell_index as u32);

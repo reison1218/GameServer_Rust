@@ -33,16 +33,16 @@ pub const MEMBER_MAX: u8 = 4;
 #[repr(u8)]
 pub enum RoomSettingType {
     None = 0,
-    AILevel = 1,
-    IsOpenWorldMapCell = 2,
+    IsOpenAI = 1,
+    SeasonId = 2,
     TurnLimitTime = 3,
 }
 
 impl From<u32> for RoomSettingType {
     fn from(value: u32) -> Self {
         match value {
-            1 => RoomSettingType::AILevel,
-            2 => RoomSettingType::IsOpenWorldMapCell,
+            1 => RoomSettingType::IsOpenAI,
+            2 => RoomSettingType::SeasonId,
             3 => RoomSettingType::TurnLimitTime,
             _ => RoomSettingType::None,
         }
@@ -173,13 +173,12 @@ impl Room {
         if !need_refresh {
             return false;
         }
-        let is_world_map_cell;
-        if self.room_type == RoomType::Match {
-            is_world_map_cell = None;
-        } else {
-            is_world_map_cell = Some(self.setting.is_world_tile);
-        }
-        let res = self.battle_data.reset_map(is_world_map_cell);
+
+        let res = self.battle_data.reset_map(
+            self.room_type,
+            self.setting.season_id,
+            self.battle_data.last_map_id,
+        );
         if let Err(e) = res {
             error!("{:?}", e);
             return false;
@@ -1146,13 +1145,12 @@ impl Room {
     ///生成地图
     pub fn generate_map(&self) -> anyhow::Result<TileMap> {
         let member_count = self.members.len() as u8;
-        let is_world_map_cell;
-        if self.room_type == RoomType::Match {
-            is_world_map_cell = None;
-        } else {
-            is_world_map_cell = Some(self.setting.is_world_tile);
-        }
-        let tmd = TileMap::init(member_count, is_world_map_cell)?;
+        let tmd = TileMap::init(
+            self.room_type,
+            self.setting.season_id,
+            member_count,
+            self.battle_data.last_map_id,
+        )?;
         Ok(tmd)
     }
 

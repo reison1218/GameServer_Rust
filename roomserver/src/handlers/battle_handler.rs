@@ -93,6 +93,11 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             au.action_type = ActionType::Attack as u32;
             res = attack(room, user_id, target_index, &mut au);
         }
+        //普通攻击
+        ActionType::UnlockOper => {
+            au.action_type = ActionType::UnlockOper as u32;
+            res = unlock_oper(room, user_id, &mut au);
+        }
         _ => {
             warn!("action_type is error!action_type:{:?}", action_type);
             return Ok(());
@@ -244,13 +249,20 @@ fn use_item(
     let battle_cter = rm.battle_data.battle_cter.get(&user_id);
     if let None = battle_cter {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
-        error!("{:?}", str);
+        warn!("{:?}", str);
         anyhow::bail!(str)
     }
     let battle_cter = battle_cter.unwrap();
+
+    if battle_cter.is_locked() {
+        let str = format!("battle_cter is locked!user_id:{}", user_id);
+        warn!("{:?}", str);
+        anyhow::bail!(str)
+    }
+
     if battle_cter.items.is_empty() {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
-        error!("{:?}", str.as_str());
+        warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
     let res = battle_cter.items.contains_key(&item_id);
@@ -281,7 +293,11 @@ fn open_map_cell(
     }
     let battle_data = rm.battle_data.borrow();
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
-
+    if battle_cter.is_locked() {
+        let str = format!("battle_cter is locked!user_id:{}", user_id);
+        warn!("{:?}", str);
+        anyhow::bail!(str)
+    }
     //校验地图块
     let res = battle_data.check_choice_index(target_map_cell_index, true, true, true, false);
     if let Err(e) = res {
@@ -313,6 +329,11 @@ fn attack(
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    if battle_cter.is_locked() {
+        let str = format!("battle_cter is locked!user_id:{}", user_id);
+        warn!("{:?}", str);
+        anyhow::bail!(str)
+    }
     if !battle_cter.is_can_attack() {
         let str = format!("now can not attack!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
@@ -340,6 +361,11 @@ fn use_skill(
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验技能id有效性
     let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
+    if battle_cter.is_locked() {
+        let str = format!("battle_cter is locked!user_id:{}", user_id);
+        warn!("{:?}", str);
+        anyhow::bail!(str)
+    }
     let skill = battle_cter.skills.get(&skill_id);
     if skill.is_none() {
         warn!("this skill is none!skill_id:{}", user_id);
@@ -411,6 +437,23 @@ fn skip_turn(
         room.battle_data.skip_turn(_au);
         room.refresh_map();
     }
+    Ok(None)
+}
+
+///结束操作
+fn unlock_oper(
+    rm: &mut Room,
+    user_id: u32,
+    au: &mut ActionUnitPt,
+) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+    //先校验玩家是否可以进行攻击
+    let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let v = *au.action_value.get(0).unwrap();
+    if battle_cter.locked_oper == 0 || battle_cter.locked_oper != v {
+        anyhow::bail!("{there is no show cell skill activate!}")
+    }
+    battle_cter.locked_oper = 0;
+    battle_cter.set_is_can_end_turn(true);
     Ok(None)
 }
 

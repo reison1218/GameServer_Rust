@@ -61,6 +61,13 @@ pub enum BattleType {
     TwoVTwo = 2,         //2v2
     OneVOne = 3,         //1v1
 }
+
+impl Default for BattleType {
+    fn default() -> Self {
+        BattleType::OneVOneVOneVOne
+    }
+}
+
 impl BattleType {
     pub fn into_u8(self) -> u8 {
         let res: u8 = self.into();
@@ -74,43 +81,27 @@ impl BattleType {
 }
 
 ///房间设置
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
     pub battle_type: BattleType, //战斗类型
     pub turn_limit_time: u32,    //回合限制时间
-    pub is_world_tile: bool,     //是否开启中立块
-    pub ai_level: u32,           //ai难度级别
+    pub season_id: u32,          //赛季id
+    pub is_open_ai: bool,        //是否开启ai
     pub victory_condition: u32,  //胜利条件
-}
-
-impl RoomSetting {
-    pub fn default() -> Self {
-        let battle_type = BattleType::OneVOneVOneVOne;
-        let is_world_tile = false;
-        let victory_condition = 0;
-        let turn_limit_time = 0;
-        let rs = RoomSetting {
-            battle_type,
-            turn_limit_time,
-            is_world_tile,
-            ai_level: 0,
-            victory_condition,
-        };
-        rs
-    }
 }
 
 impl From<RoomSettingPt> for RoomSetting {
     fn from(rs_pt: RoomSettingPt) -> Self {
         let battle_type = BattleType::try_from(rs_pt.battle_type as u8).unwrap();
-        let is_world_tile = rs_pt.is_open_world_tile;
+        let is_open_ai = rs_pt.is_open_ai;
         let victory_condition = rs_pt.victory_condition;
         let turn_limit_time = rs_pt.turn_limit_time;
+        let season_id = rs_pt.season_id;
         let rs = RoomSetting {
             battle_type,
             turn_limit_time,
-            is_world_tile,
-            ai_level: 0,
+            season_id,
+            is_open_ai,
             victory_condition,
         };
         rs
@@ -122,9 +113,9 @@ impl From<RoomSetting> for RoomSettingPt {
         let mut rsp = RoomSettingPt::new();
         rsp.set_victory_condition(r.victory_condition);
         rsp.set_battle_type(r.battle_type as u32);
-        rsp.set_is_open_world_tile(r.is_world_tile);
+        rsp.set_season_id(r.season_id);
         rsp.set_turn_limit_time(r.turn_limit_time);
-        rsp.set_ai_level(r.ai_level);
+        rsp.set_is_open_ai(r.is_open_ai);
         rsp
     }
 }

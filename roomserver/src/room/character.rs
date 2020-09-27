@@ -59,6 +59,7 @@ pub struct BattleCharacter {
     pub is_attacked: bool,                                 //一轮有没有受到攻击伤害
     is_can_end_turn: bool,                                 //是否可以结束turn
     pub residue_open_times: u8,                            //剩余翻地图块次数
+    pub locked_oper: u32,                                  //锁住的操作，如果有值，玩家什么都做不了
     pub state: BattleCterState,                            //角色状态
     pub attack_state: AttackState,                         //是否可以攻击
     map_cell_index: Option<usize>,                         //角色所在位置
@@ -77,6 +78,11 @@ pub struct BattleCharacter {
 }
 
 impl BattleCharacter {
+    ///是否行为被锁住了
+    pub fn is_locked(&self) -> bool {
+        self.locked_oper > 0
+    }
+
     pub fn add_energy(&mut self, value: i8) {
         let v = self.energy as i8;
         let res = v + value;
