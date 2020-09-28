@@ -5,7 +5,6 @@ use crate::entity::EntityData;
 use crate::SEASON;
 use chrono::Local;
 use protobuf::Message;
-use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
@@ -142,11 +141,15 @@ pub fn update_season(_: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     unsafe {
         SEASON.season_id = usn.get_season_id();
         let str = usn.get_last_update_time();
-        let last_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
+        let last_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
+            .unwrap()
+            .timestamp() as u64;
         let str = usn.get_next_update_time();
-        let next_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
-        SEASON.last_update_time = last_update_time as u64;
-        SEASON.next_update_time = next_update_time as u64;
+        let next_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
+            .unwrap()
+            .timestamp() as u64;
+        SEASON.last_update_time = last_update_time;
+        SEASON.next_update_time = next_update_time;
     }
     Ok(())
 }

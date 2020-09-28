@@ -3,7 +3,6 @@ use crate::room::character::Character;
 use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::SEASON;
 use std::convert::TryFrom;
-use std::str::FromStr;
 use tools::protos::room::{
     C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER,
     S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_START,
@@ -14,6 +13,7 @@ pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+///更新赛季
 pub fn update_season(_: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
@@ -24,11 +24,15 @@ pub fn update_season(_: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     unsafe {
         SEASON.season_id = usn.get_season_id();
         let str = usn.get_last_update_time();
-        let last_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
+        let last_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
+            .unwrap()
+            .timestamp() as u64;
         let str = usn.get_next_update_time();
-        let next_update_time = chrono::NaiveDateTime::from_str(str).unwrap().timestamp();
-        SEASON.last_update_time = last_update_time as u64;
-        SEASON.next_update_time = next_update_time as u64;
+        let next_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
+            .unwrap()
+            .timestamp() as u64;
+        SEASON.last_update_time = last_update_time;
+        SEASON.next_update_time = next_update_time;
     }
     Ok(())
 }

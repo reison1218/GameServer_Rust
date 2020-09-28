@@ -76,10 +76,10 @@ impl HttpServerHandler for UpdateSeasonHandler {
 
     fn execute(
         &mut self,
-        _: Option<Value>,
+        data: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         let mut lock = self.gm.lock().unwrap();
-        lock.notice_update_season();
+        lock.notice_update_season(data.unwrap());
         let value = json!({ "status":"OK" });
         Ok(value)
     }

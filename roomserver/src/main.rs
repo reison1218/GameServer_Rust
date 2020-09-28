@@ -14,7 +14,6 @@ use log::{error, info};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;
 use std::env;
-use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use tools::conf::Conf;
 use tools::my_log::init_log;
@@ -54,7 +53,7 @@ lazy_static! {
 }
 
 ///赛季结构体
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Season {
     season_id: u32,
     last_update_time: u64,
@@ -102,31 +101,36 @@ fn main() {
 fn init_season() {
     let mut lock = REDIS_POOL.lock().unwrap();
     unsafe {
-        let res: Option<String> = lock.hget(3, "game_season", "101");
+        let res: Option<String> = lock.hget(2, "game_season", "101");
         if let None = res {
             error!("redis do not has season data about game:{}", 101);
             return;
         }
         let str = res.unwrap();
-        let value = Value::from(str);
-        let map = value.as_object();
-        if let None = map {
+        let value = serde_json::from_str(str.as_str());
+        if let Err(e) = value {
+            error!("{:?}", e);
             return;
         }
-        let map = map.unwrap();
-        let season_id = map.get("season_id").unwrap().as_u64().unwrap() as u32;
-        let last_update_time = map.get("last_update_time").unwrap().as_str().unwrap();
-        let next_update_time = map.get("next_update_time").unwrap().as_str().unwrap();
+        let value: Value = value.unwrap();
+        let map = value.as_object();
+        if let Some(map) = map {
+            let season_id = map.get("season_id").unwrap().as_u64().unwrap() as u32;
+            let last_update_time: &str = map.get("last_update_time").unwrap().as_str().unwrap();
+            let next_update_time: &str = map.get("next_update_time").unwrap().as_str().unwrap();
+            let last_update_time =
+                chrono::NaiveDateTime::parse_from_str(last_update_time, "%Y-%m-%d %H:%M:%S")
+                    .unwrap()
+                    .timestamp() as u64;
 
-        let last_update_time = chrono::NaiveDateTime::from_str(last_update_time)
-            .unwrap()
-            .timestamp() as u64;
-        let next_update_time = chrono::NaiveDateTime::from_str(next_update_time)
-            .unwrap()
-            .timestamp() as u64;
-        SEASON.season_id = season_id;
-        SEASON.last_update_time = last_update_time;
-        SEASON.next_update_time = next_update_time;
+            let next_update_time =
+                chrono::NaiveDateTime::parse_from_str(next_update_time, "%Y-%m-%d %H:%M:%S")
+                    .unwrap()
+                    .timestamp() as u64;
+            SEASON.season_id = season_id;
+            SEASON.last_update_time = last_update_time;
+            SEASON.next_update_time = next_update_time;
+        }
     }
 }
 
