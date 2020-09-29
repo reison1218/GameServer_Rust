@@ -20,11 +20,11 @@ impl DbPool {
         sql: &str,
         params: Option<Vec<Value>>,
     ) -> Result<QueryResult<'static>, Error> {
-        if params.is_some() {
-            self.pool
-                .prep_exec(sql, Params::Positional(params.unwrap()))
-        } else {
-            self.pool.prep_exec(sql, ())
+        match params {
+            Some(params) => self
+                .pool
+                .prep_exec(sql, Params::Positional(params.unwrap())),
+            None => self.pool.prep_exec(sql, ()),
         }
     }
 }

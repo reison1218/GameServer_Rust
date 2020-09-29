@@ -203,7 +203,7 @@ fn handle_login(bytes: &[u8], lock: &mut MutexGuard<ChannelMgr>) -> anyhow::Resu
             mem_res,
             &c_login.get_user_id()
         );
-        info!("{:?}", str.as_str());
+        warn!("{:?}", str.as_str());
         anyhow::bail!("{:?}", str)
     }
     Ok(())

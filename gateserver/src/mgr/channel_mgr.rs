@@ -3,7 +3,6 @@ use super::*;
 use protobuf::Message;
 use serde_json::Value;
 use std::io::Write;
-use std::str::FromStr;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;

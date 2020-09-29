@@ -49,10 +49,11 @@ impl RedisPoolTool {
         get_pip().cmd("select").arg(0).execute(&mut self.conn);
         if res.is_err() {
             warn!(
-                "hget has error:{:?},index:{},key:{:?}",
+                "hget has error:{:?},index:{},hkey:{:?},key:{:?}",
                 res.err().unwrap(),
                 index,
-                hkey
+                hkey,
+                key
             );
             return None;
         }

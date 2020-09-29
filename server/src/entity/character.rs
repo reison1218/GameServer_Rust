@@ -253,8 +253,8 @@ impl Character {
         }
 
         let q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
-        if q.is_err() {
-            error!("{:?}", q.err().unwrap());
+        if let Err(e) = q {
+            error!("{:?}", e);
             return None;
         }
         let q = q.unwrap();

@@ -319,6 +319,10 @@ impl BattleData {
             anyhow::bail!("")
         }
         let mut target_pt = target_pt.unwrap();
+        if target_pt.effects.is_empty() {
+            error!("target_pt's effects is empty!");
+            anyhow::bail!("")
+        }
         //目标被攻击，触发目标buff
         if target_pt.effects.get(0).unwrap().effect_value > 0 {
             self.attacked_buffs_trigger(target_user_id, &mut target_pt);
@@ -412,6 +416,7 @@ impl BattleData {
         }
         Ok(())
     }
+
     ///翻地图块
     pub fn open_map_cell(
         &mut self,
