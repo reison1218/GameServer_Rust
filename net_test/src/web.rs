@@ -7,6 +7,8 @@ use async_h1::client;
 use serde_json::{Error, Map, Value};
 use serde_json::value::Value as JsonValue;
 use std::str::FromStr;
+use std::sync::{Arc, RwLock};
+use crate::Test;
 
 pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
     //let stream = TcpStream::connect("localhost:8888").await?;
@@ -151,49 +153,44 @@ async fn accept(addr: String, stream: TcpStream) -> http_types::Result<()> {
 
 
 //
-// fn test_channel(){
-//
-//     let (sender,rec) = std::sync::mpsc::sync_channel(1024000);
-//
-//     let time = std::time::SystemTime::now();
-//     for i in 0..1000
-//     {
-//         let sender_cp = sender.clone();
-//         let m = move ||{
-//             for i in 0..1000{
-//                 sender_cp.send(1);
-//             }
-//         };
-//         std::thread::spawn(m);
-//     }
-//     let mut i = 1;
-//     loop{
-//         let res = rec.recv();
-//         i += res.unwrap();
-//         if i >= 1000000{
-//             break;
-//         }
-//     }
-//     println!("channel:{}ms,{}",time.elapsed().unwrap().as_millis(),i);
-//     let time = std::time::SystemTime::now();
-//     let test=Arc::new(RwLock::new(Test{i:0}));
-//     for i in 0..1000{
-//         let t_cp = test.clone();
-//         let m = move ||{
-//             for j in 0..1000{
-//                 let i = t_cp.write().unwrap().i;
-//                 t_cp.write().unwrap().i+=1;
-//             }
-//         };
-//         let j = std::thread::spawn(m);
-//         j.join();
-//     }
-//     let test_cp = test.clone();
-//     // loop{
-//     //     let t = test_cp.read().unwrap();
-//     //     if t.i>=100000{
-//     println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.read().unwrap().i);
-//     //         break;
-//     //     }
-//     // }
-// }
+pub fn test_faster(){
+
+    let (sender,rec) = std::sync::mpsc::sync_channel(1024000);
+
+    let time = std::time::SystemTime::now();
+    for _ in 0..1000
+    {
+        let sender_cp = sender.clone();
+        let m = move ||{
+            for _ in 0..1000{
+                sender_cp.send(1);
+            }
+        };
+        std::thread::spawn(m);
+    }
+
+    let mut i = 1;
+    loop{
+        let res = rec.recv();
+        i += res.unwrap();
+        if i >= 1000000{
+            break;
+        }
+    }
+
+    println!("channel:{}ms,{}",time.elapsed().unwrap().as_millis(),i);
+
+    let time = std::time::SystemTime::now();
+    let test=Arc::new(RwLock::new(Test::default()));
+    for _ in 0..1000{
+        let t_cp = test.clone();
+        let m = move ||{
+            for _ in 0..1000{
+                let _ = t_cp.write().unwrap().i;
+                t_cp.write().unwrap().i+=1;
+            }
+        };
+        std::thread::spawn(m);
+    }
+    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.write().unwrap().i);
+}

@@ -40,7 +40,7 @@ use tools::tcp::ClientHandler;
 use tools::util::packet::Packet;
 use std::collections::btree_map::Entry::Vacant;
 use std::collections::binary_heap::PeekMut;
-use crate::web::test_http_server;
+use crate::web::{test_http_server, test_faster};
 use crate::web::test_http_client;
 use threadpool::ThreadPool;
 use std::any::Any;
@@ -297,19 +297,29 @@ size: (f32, f32)
 
 impl_layoutable!(TestMacro);
 
+
+
 fn main() -> anyhow::Result<()> {
-    let mut b = std::sync::Barrier::new(10);
-    let mut c = std::sync::Condvar::new();
-    let mut o = std::sync::Once::new();
-    // let date = chrono::Local::now();
-    // let week_day = date.weekday();
-    // let day = week_day.num_days_from_sunday();
-    // let add_day= 7-day;
-    // let now_days = date.day();
-    // let res = date.with_day(now_days+add_day+1);
-    // let res = res.unwrap();
-    // let res = res.with_hour(0).unwrap().with_minute(0).unwrap().with_second(0).unwrap();
-    // println!("{:?}",res);
+
+
+    test_faster();
+    // let m = move||{
+    //     loop{
+    //
+    //     }
+    // };
+    // std::thread::spawn(m);
+    // let builder = std::thread::Builder::new();
+    // // handler.join().unwrap();
+    //
+    // let handler = builder
+    //     .spawn(|| {
+    //         std::thread::current()
+    //     })
+    //     .unwrap();
+    // handler.join().expect("Couldn't join on the associated thread");
+
+
     // let sleep_time = res.timestamp() - date.timestamp();
     // println!("{}",sleep_time);
     //let test = TestMacro::default();
@@ -463,7 +473,8 @@ fn test_channel(){
 
 #[derive(Debug,Default)]
 struct Test{
-    pub str:String
+    pub str:String,
+    pub i:u32,
 }
 
 impl Drop for Test{
@@ -474,7 +485,7 @@ impl Drop for Test{
 
 fn test_unsafe(){
     unsafe {
-        let mut test = Test{str:"test".to_owned()};
+        let mut test = Test{str:"test".to_owned(),i:0};
         let test_p = &mut test as *mut Test;
         let s = test_p.as_mut().unwrap();
         let s1 = test_p.as_mut().unwrap();
