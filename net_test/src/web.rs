@@ -166,7 +166,8 @@ pub fn test_faster(){
                 sender_cp.send(1);
             }
         };
-        std::thread::spawn(m);
+        let handler = std::thread::spawn(m);
+        handler.join();
     }
 
     let mut i = 1;
@@ -190,7 +191,8 @@ pub fn test_faster(){
                 t_cp.write().unwrap().i+=1;
             }
         };
-        std::thread::spawn(m);
+        let handler = std::thread::spawn(m);
+        handler.join();
     }
     println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.write().unwrap().i);
 }
