@@ -100,7 +100,7 @@ pub mod tcp_server {
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub fn new<T: Handler>(addr: &str, handler: T) -> io::Result<()> {
+    pub fn new(addr: &str, handler: impl Handler) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
