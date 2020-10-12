@@ -50,6 +50,12 @@ lazy_static! {
     };
 }
 
+const REDIS_INDEX_USERS: u32 = 0;
+
+const REDIS_KEY_USERS: &str = "users";
+
+const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
+
 fn main() {
     //获得日志配置
     let info_log = CONF_MAP.get_str("info_log_path");

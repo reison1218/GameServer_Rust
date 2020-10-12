@@ -1,17 +1,26 @@
 use super::*;
+use crate::{REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID, REDIS_KEY_USERS};
 use serde_json::Value;
 use std::str::FromStr;
 
 ///修改玩家redis状态
 pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
     let mut redis_lock = REDIS_POOL.lock().unwrap();
-    let res: Option<String> = redis_lock.hget(1, "uid_2_pid", user_id.to_string().as_str());
+    let res: Option<String> = redis_lock.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_UID_2_PID,
+        user_id.to_string().as_str(),
+    );
     if res.is_none() {
         return;
     }
     let pid = res.unwrap();
 
-    let res: Option<String> = redis_lock.hget(0, "users", &pid.to_string().as_str());
+    let res: Option<String> = redis_lock.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_USERS,
+        &pid.to_string().as_str(),
+    );
     if res.is_none() {
         return;
     }
@@ -41,13 +50,21 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
 ///从redis获得玩家数据
 pub fn get_user_from_redis(user_id: u32) -> Option<Value> {
     let mut redis_lock = REDIS_POOL.lock().unwrap();
-    let value: Option<String> = redis_lock.hget(1, "uid_2_pid", user_id.to_string().trim());
+    let value: Option<String> = redis_lock.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_UID_2_PID,
+        user_id.to_string().trim(),
+    );
     if value.is_none() {
         return None;
     }
     let pid = value.unwrap();
 
-    let res: Option<String> = redis_lock.hget(0, "users", &pid.to_string().as_str());
+    let res: Option<String> = redis_lock.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_USERS,
+        &pid.to_string().as_str(),
+    );
     if res.is_none() {
         return None;
     }

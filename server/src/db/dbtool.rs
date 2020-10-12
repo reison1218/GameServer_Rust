@@ -21,9 +21,7 @@ impl DbPool {
         params: Option<Vec<Value>>,
     ) -> Result<QueryResult<'static>, Error> {
         match params {
-            Some(params) => self
-                .pool
-                .prep_exec(sql, Params::Positional(params.unwrap())),
+            Some(params) => self.pool.prep_exec(sql, Params::Positional(params)),
             None => self.pool.prep_exec(sql, ()),
         }
     }

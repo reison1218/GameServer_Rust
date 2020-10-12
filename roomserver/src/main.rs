@@ -52,6 +52,10 @@ lazy_static! {
     };
 }
 
+const REDIS_INDEX_GAME_SEASON: u32 = 0;
+
+const REDIS_KEY_GAME_SEASON: &str = "game_season";
+
 ///赛季结构体
 #[derive(Default, Debug)]
 pub struct Season {
@@ -101,7 +105,7 @@ fn main() {
 fn init_season() {
     let mut lock = REDIS_POOL.lock().unwrap();
     unsafe {
-        let res: Option<String> = lock.hget(2, "game_season", "101");
+        let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
         if let None = res {
             error!("redis do not has season data about game:{}", 101);
             return;

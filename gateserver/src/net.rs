@@ -3,8 +3,8 @@ pub mod tcp_client;
 pub mod tcp_server;
 pub mod websocket;
 pub mod websocket_channel;
-use crate::CONF_MAP;
-use crate::REDIS_POOL;
+use crate::{CONF_MAP, REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID};
+use crate::{REDIS_KEY_USERS, REDIS_POOL};
 use log::{debug, error, info, warn};
 use protobuf::Message;
 use std::net::TcpStream;
@@ -29,7 +29,11 @@ use std::str::FromStr;
 fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
     //校验用户中心是否登陆过，如果有，则不往下执行
     let mut redis_write = REDIS_POOL.write().unwrap();
-    let pid: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
+    let pid: Option<String> = redis_write.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_UID_2_PID,
+        user_id.to_string().as_str(),
+    );
     if pid.is_none() {
         anyhow::bail!("this user_id is invalid!user_id:{}", user_id)
     }
@@ -69,12 +73,16 @@ fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
 
 fn modify_redis_user(user_id: u32, is_login: bool) {
     let mut redis_write = REDIS_POOL.write().unwrap();
-    let pid: Option<String> = redis_write.hget(1, "uid_2_pid", user_id.to_string().as_str());
+    let pid: Option<String> = redis_write.hget(
+        REDIS_INDEX_USERS,
+        REDIS_KEY_UID_2_PID,
+        user_id.to_string().as_str(),
+    );
     if pid.is_none() {
         return;
     }
     let pid = pid.unwrap();
-    let res: Option<String> = redis_write.hget(0, "users", pid.as_str());
+    let res: Option<String> = redis_write.hget(REDIS_INDEX_USERS, REDIS_KEY_USERS, pid.as_str());
     if res.is_none() {
         return;
     }
