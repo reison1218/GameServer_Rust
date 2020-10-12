@@ -1,0 +1,82 @@
+use crate::robot::status::{GoHomeAndSleepTilRested, LocationType, Status, StatusAction};
+use std::time::Duration;
+
+///矿工结构体
+pub struct Miner {
+    pub id: u32,                       //id
+    pub location_type: LocationType,   //位置
+    pub gold_carried: u32,             //拥有的金矿数量
+    pub money_in_back: u32,            //存了多少钱
+    pub thirst: u32,                   //口渴程度
+    pub fatigue: u32,                  //疲惫程度
+    pub status: Box<dyn StatusAction>, //状态
+}
+
+impl Miner {
+    pub fn new(id: u32) -> Self {
+        let mut miner = Miner::default();
+        miner.id = id;
+        miner
+    }
+}
+
+impl Default for Miner {
+    fn default() -> Self {
+        let h = GoHomeAndSleepTilRested {
+            status: Status::GoHomeAndSleepTilRested,
+        };
+        Miner {
+            id: 0,
+            location_type: LocationType::Home,
+            gold_carried: 0,
+            money_in_back: 0,
+            thirst: 0,
+            fatigue: 0,
+            status: Box::new(h),
+        }
+    }
+}
+
+pub trait Robot {
+    fn update(&mut self);
+
+    fn change_status(&mut self, status: Box<dyn StatusAction>);
+
+    fn get_id(&self) -> u32;
+}
+
+impl Robot for Miner {
+    fn update(&mut self) {
+        std::thread::sleep(Duration::from_secs(2));
+    }
+
+    ///改变状态函数
+    fn change_status(&mut self, status: Box<dyn StatusAction>) {
+        self.update();
+        //退出当前状态
+        unsafe {
+            let miner_ptr = self as *mut Miner;
+            let b = miner_ptr.as_mut().unwrap();
+            miner_ptr.as_mut().unwrap().status.exit(b);
+            //更新状态
+            b.status = status;
+            //进入新的状态
+            b.status.enter(self);
+        }
+    }
+
+    fn get_id(&self) -> u32 {
+        self.id
+    }
+}
+
+impl Miner {
+    pub fn change_location(&mut self, location_type: LocationType) {
+        self.location_type = location_type;
+        println!("矿工改变位置,前往:{:?}", self.location_type);
+    }
+
+    pub fn add_gold_carried(&mut self) {
+        self.gold_carried += 1;
+    }
+}
