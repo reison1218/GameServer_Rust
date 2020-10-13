@@ -1,6 +1,8 @@
-use crate::robot::cter::{Miner, Robot};
+use crate::robot::miner::{Miner, Robot};
+use crate::robot::target::TargetAction;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use std::borrow::BorrowMut;
 
 ///pos操作类型
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -9,7 +11,7 @@ pub enum LocationType {
     None = 0,
     KuangChang = 1,
     Bank = 2,
-    JiuBa = 3,
+    Bar = 3,
     Home = 4,
 }
 
@@ -23,11 +25,11 @@ impl Default for LocationType {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum Status {
-    None = 0,
-    EnterMineAndDigForNugget = 1,
-    VisitBankAndDepositGold = 2,
-    Drink = 3,
-    GoHomeAndSleepTilRested = 4,
+    None = 0,                     //默认无意义状态
+    EnterMineAndDigForNugget = 1, //进入矿产并开始挖矿
+    GoBankAndDepositGold = 2,     //去银行并且换钱
+    GoBarAndDrink = 3,            //去酒吧并喝酒
+    GoHomeAndSleepTilRested = 4,  //回家睡觉
 }
 
 impl Default for Status {
@@ -36,39 +38,46 @@ impl Default for Status {
     }
 }
 
-pub struct VisitBankAndDepositGold {
+#[derive(Default)]
+pub struct GoBankAndDepositGold {
     pub status: Status,
+    pub target: Option<Box<dyn TargetAction>>,
 }
 
+#[derive(Default)]
 pub struct EnterMineAndDigForNugget {
     pub status: Status,
+    pub target: Option<Box<dyn TargetAction>>,
 }
 
+#[derive(Default)]
 pub struct GoHomeAndSleepTilRested {
     pub status: Status,
+    pub target: Option<Box<dyn TargetAction>>,
 }
 
+#[derive(Default)]
 pub struct Drink {
     pub status: Status,
+    pub target: Option<Box<dyn TargetAction>>,
 }
 
-pub struct Bank {
-    pub status: Status,
-}
-
-pub trait StatusAction {
-    fn enter(&self, cter: &mut Miner);
+pub trait StatusAction: Send + 'static {
+    fn enter(&mut self, cter: &mut Miner);
     fn execute(&self, cter: &mut Miner);
     fn exit(&mut self, cter: &mut Miner);
     fn get_status(&self) -> Status;
 }
 
 impl StatusAction for GoHomeAndSleepTilRested {
-    fn enter(&self, cter: &mut Miner) {
+    fn enter(&mut self, cter: &mut Miner) {
         if cter.location_type != LocationType::Home {
             cter.change_location(LocationType::Home);
         }
         self.execute(cter);
+        //选择目标
+        cter.chooice_target();
+        self.target.as_mut().unwrap().process(cter);
     }
 
     fn execute(&self, cter: &mut Miner) {
@@ -78,6 +87,7 @@ impl StatusAction for GoHomeAndSleepTilRested {
         println!("第二天到来，矿工该去上班了");
         let e = EnterMineAndDigForNugget {
             status: Status::EnterMineAndDigForNugget,
+            target: None,
         };
         cter.change_status(Box::new(e));
     }
@@ -91,8 +101,8 @@ impl StatusAction for GoHomeAndSleepTilRested {
     }
 }
 
-impl StatusAction for Bank {
-    fn enter(&self, cter: &mut Miner) {
+impl StatusAction for GoBankAndDepositGold {
+    fn enter(&mut self, cter: &mut Miner) {
         if cter.location_type != LocationType::Bank {
             cter.change_location(LocationType::Bank);
         }
@@ -109,6 +119,7 @@ impl StatusAction for Bank {
         );
         let g = GoHomeAndSleepTilRested {
             status: Status::GoHomeAndSleepTilRested,
+            target: None,
         };
         cter.change_status(Box::new(g));
     }
@@ -123,9 +134,9 @@ impl StatusAction for Bank {
 }
 
 impl StatusAction for Drink {
-    fn enter(&self, cter: &mut Miner) {
-        if cter.location_type != LocationType::JiuBa {
-            cter.change_location(LocationType::JiuBa);
+    fn enter(&mut self, cter: &mut Miner) {
+        if cter.location_type != LocationType::Bar {
+            cter.change_location(LocationType::Bar);
         }
         self.execute(cter);
     }
@@ -137,6 +148,7 @@ impl StatusAction for Drink {
         if cter.thirst == 0 {
             let e = EnterMineAndDigForNugget {
                 status: Status::EnterMineAndDigForNugget,
+                target: None,
             };
             cter.change_status(Box::new(e));
         } else {
@@ -154,7 +166,7 @@ impl StatusAction for Drink {
 }
 
 impl StatusAction for EnterMineAndDigForNugget {
-    fn enter(&self, cter: &mut Miner) {
+    fn enter(&mut self, cter: &mut Miner) {
         if cter.location_type != LocationType::KuangChang {
             cter.change_location(LocationType::KuangChang);
         }
@@ -167,13 +179,15 @@ impl StatusAction for EnterMineAndDigForNugget {
         cter.thirst += 1;
         cter.fatigue += 1;
         if cter.gold_carried >= 20 {
-            let b = Bank {
-                status: Status::VisitBankAndDepositGold,
+            let b = GoBankAndDepositGold {
+                status: Status::GoBankAndDepositGold,
+                target: None,
             };
             cter.change_status(Box::new(b));
         } else if cter.thirst >= 10 {
             let d = Drink {
-                status: Status::Drink,
+                status: Status::GoBarAndDrink,
+                target: None,
             };
             cter.change_status(Box::new(d));
         } else {

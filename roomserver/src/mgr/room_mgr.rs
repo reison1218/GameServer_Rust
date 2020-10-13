@@ -13,7 +13,7 @@ use log::warn;
 use tools::cmd_code::ClientCode;
 use tools::util::packet::Packet;
 
-//房间服管理器
+///房间服管理器
 pub struct RoomMgr {
     pub custom_room: CustomRoom,        //自定义房
     pub match_rooms: MatchRooms,        //公共房

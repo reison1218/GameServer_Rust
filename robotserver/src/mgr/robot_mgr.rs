@@ -1,4 +1,4 @@
-use crate::robot::cter::Miner;
+use crate::robot::miner::Miner;
 use std::collections::HashMap;
 use tools::tcp::TcpSender;
 

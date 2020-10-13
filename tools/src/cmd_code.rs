@@ -1,10 +1,10 @@
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
-///游戏服务专用命令号段枚举
+///游戏服务专用命令号段枚举 1000-10000
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
-pub enum GameCode{
+pub enum GameCode {
     //最小值
     Min = 1000,
     //心跳
@@ -33,17 +33,17 @@ pub enum GameCode{
     Max = 10000,
 }
 
-impl GameCode{
-    pub  fn into_u32(self)->u32{
-        let res:u32 = self.into();
+impl GameCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
         res
     }
 }
 
-///房间服专属命令号段枚举
+///房间服专属命令号段枚举 20001-30000
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
-pub enum RoomCode{
+pub enum RoomCode {
     //范围最小值
     Min = 20001,
     //离线
@@ -78,12 +78,12 @@ pub enum RoomCode{
     ChoiceTurnOrder = 20016,
     //跳过回合顺序选择
     SkipChoiceTurn = 20017,
-//--------------------------------------以下战斗相关---------------------------
+    //--------------------------------------以下战斗相关---------------------------
     //请求行动
     Action = 20031,
     //架势请求
     Pos = 20032,
-//---------------------------------------战斗结束
+    //---------------------------------------战斗结束
     //更新赛季
     UpdateSeason = 29998,
     //热更新静态配置
@@ -92,17 +92,36 @@ pub enum RoomCode{
     Max = 30000,
 }
 
-impl RoomCode{
-    pub  fn into_u32(self)->u32{
-        let res:u32 = self.into();
+impl RoomCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
         res
     }
 }
 
-///客户端专属命令号段枚举
+///房间服专属命令号段枚举 30001-40000
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
-pub enum ClientCode{
+pub enum RobotCode {
+    //最小命令号
+    Min = 30001,
+    //请求机器人
+    RequestRobot = 30002,
+    //最大命令号
+    Max = 40000,
+}
+
+impl RobotCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
+        res
+    }
+}
+
+///客户端专属命令号段枚举 10001-20000
+#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
+pub enum ClientCode {
     //最小命令号
     Min = 10001,
     //返回心跳包
@@ -122,25 +141,25 @@ pub enum ClientCode{
     //换队伍通知
     ChangeTeamNotice = 10009,
     //准备与取消准备
-    PrepareCancel=10010,
+    PrepareCancel = 10010,
     //房间设置
-    RoomSetting=10011,
+    RoomSetting = 10011,
     //房间新成员推送消息
-    RoomAddMemberNotice=10012,
+    RoomAddMemberNotice = 10012,
     //T人返回
-    KickMember=10013,
+    KickMember = 10013,
     //选择角色
-    ChoiceCharacter=10014,
+    ChoiceCharacter = 10014,
     //房间推送
-    RoomNotice=10015,
+    RoomNotice = 10015,
     //表情符号
-    Emoji=10016,
+    Emoji = 10016,
     //表情推送
     EmojiNotice = 10017,
     //离开房间推送
     MemberLeaveNotice = 10018,
     //选择角色推送
-    ChoiceCharacterNotice=10019,
+    ChoiceCharacterNotice = 10019,
     //选择角色技能
     ChoiceSkill = 10020,
     //准备状态推送
@@ -177,9 +196,9 @@ pub enum ClientCode{
     Max = 20000,
 }
 
-impl ClientCode{
-    pub  fn into_u32(self)->u32{
-        let res:u32 = self.into();
+impl ClientCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
         res
     }
 }

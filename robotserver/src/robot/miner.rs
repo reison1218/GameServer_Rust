@@ -24,6 +24,7 @@ impl Default for Miner {
     fn default() -> Self {
         let h = GoHomeAndSleepTilRested {
             status: Status::GoHomeAndSleepTilRested,
+            target: None,
         };
         Miner {
             id: 0,
@@ -41,6 +42,8 @@ pub trait Robot {
     fn update(&mut self);
 
     fn change_status(&mut self, status: Box<dyn StatusAction>);
+
+    fn chooice_target(&mut self);
 
     fn get_id(&self) -> u32;
 }
@@ -63,6 +66,11 @@ impl Robot for Miner {
             //进入新的状态
             b.status.enter(self);
         }
+    }
+
+    ///根据不同到状态选取目标
+    fn chooice_target(&mut self) {
+        //self.status.get_status()
     }
 
     fn get_id(&self) -> u32 {

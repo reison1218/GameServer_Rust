@@ -583,20 +583,6 @@ checksum = "8aebca1129a03dc6dc2b127edd729435bbc4a37e1d5f4d7513165089ceb02634"
 
 [[package]]
 name = "crossbeam"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69323bff1fb41c635347b8ead484a5ca6c3f11914d784170b158d8449ab07f8e"
-dependencies = [
- "cfg-if 0.1.10",
- "crossbeam-channel 0.4.4",
- "crossbeam-deque 0.7.3",
- "crossbeam-epoch 0.8.2",
- "crossbeam-queue 0.2.3",
- "crossbeam-utils 0.7.2",
-]
-
-[[package]]
-name = "crossbeam"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd01a6eb3daaafa260f6fc94c3a6c36390abc2080e38e3e34ced87393fb77d80"
@@ -1459,7 +1445,7 @@ dependencies = [
  "async-h1",
  "async-std",
  "chrono",
- "crossbeam 0.7.3",
+ "crossbeam",
  "dirs",
  "env_logger",
  "envmnt",
@@ -2406,7 +2392,7 @@ dependencies = [
  "async-h1",
  "async-std",
  "byteorder",
- "crossbeam 0.8.0",
+ "crossbeam",
  "futures",
  "http-types",
  "lazy_static",

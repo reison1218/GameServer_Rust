@@ -77,6 +77,7 @@ use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use crate::map::generate_map;
 use actix::{Actor, SyncArbiter};
 use std::convert::TryInto;
+use crossbeam::atomic::AtomicConsume;
 
 #[macro_use]
 extern crate lazy_static;
@@ -298,12 +299,19 @@ size: (f32, f32)
 impl_layoutable!(TestMacro);
 
 
+#[derive(Default)]
+pub struct TTT{
+    s:crossbeam::atomic::AtomicCell<String>,
+    d:crossbeam::atomic::AtomicCell<Vec<u8>>,
+}
+
 
 fn main() -> anyhow::Result<()> {
-
-
+    // let t = TTT::default();
+    // let res = t.d.take();
+    // println!("{:?}", t.borrow().d.take());
     //test_faster();
-    tcp_client::test_tcp_client("reison");
+    //tcp_client::test_tcp_client("reison");
     // let m = move||{
     //     loop{
     //
@@ -446,7 +454,7 @@ fn test_channel(){
     }
     println!("std_send time:{:?}",send_time.elapsed().unwrap());
 
-    let (cb_sender,cb_rec) = crossbeam::crossbeam_channel::bounded(102400);
+    let (cb_sender,cb_rec) = crossbeam::channel::bounded(102400);
 
     let m = move||{
         let mut size = 0;

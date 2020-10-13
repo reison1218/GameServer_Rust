@@ -50,7 +50,9 @@ impl tools::tcp::Handler for TcpServerHandler {
 
         for packet in packet_array {
             //判断是否是房间服的命令，如果不是，则直接无视掉
-            if packet.get_cmd() < RoomCode::Min as u32 || packet.get_cmd() > RoomCode::Max as u32 {
+            if packet.get_cmd() < RoomCode::Min.into_u32()
+                || packet.get_cmd() > RoomCode::Max.into_u32()
+            {
                 error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
                 continue;
             }

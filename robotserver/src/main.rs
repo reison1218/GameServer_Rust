@@ -4,7 +4,7 @@ pub mod robot;
 
 use crate::mgr::robot_mgr::RobotMgr;
 use crate::net::tcp_server::TcpServerHandler;
-use crate::robot::cter::{Miner, Robot};
+use crate::robot::miner::{Miner, Robot};
 use crate::robot::status::{EnterMineAndDigForNugget, Status};
 use log::{error, info, LevelFilter};
 use simplelog::{CombinedLogger, TermLogger, TerminalMode, WriteLogger};
@@ -44,6 +44,7 @@ fn test_robot() {
         let mut miner = Miner::new(1);
         let e = EnterMineAndDigForNugget {
             status: Status::EnterMineAndDigForNugget,
+            target: None,
         };
         miner.change_status(Box::new(e));
     };
