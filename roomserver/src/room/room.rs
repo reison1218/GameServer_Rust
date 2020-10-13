@@ -77,17 +77,17 @@ pub enum RoomState {
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
-    id: u32,                                      //房间id
-    room_type: RoomType,                          //房间类型
-    owner_id: u32,                                //房主id
-    pub state: RoomState,                         //房间状态
-    pub members: HashMap<u32, Member>,            //玩家对应的队伍
-    pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
-    pub setting: RoomSetting,                     //房间设置
-    pub battle_data: BattleData,                  //战斗相关数据封装
-    pub sender: TcpSender,                        //sender
-    task_sender: crossbeam::Sender<Task>,         //任务sender
-    time: DateTime<Utc>,                          //房间创建时间
+    id: u32,                                       //房间id
+    room_type: RoomType,                           //房间类型
+    owner_id: u32,                                 //房主id
+    pub state: RoomState,                          //房间状态
+    pub members: HashMap<u32, Member>,             //玩家对应的队伍
+    pub member_index: [u32; MEMBER_MAX as usize],  //玩家对应的位置
+    pub setting: RoomSetting,                      //房间设置
+    pub battle_data: BattleData,                   //战斗相关数据封装
+    pub sender: TcpSender,                         //sender
+    task_sender: crossbeam::channel::Sender<Task>, //任务sender
+    time: DateTime<Utc>,                           //房间创建时间
 }
 
 impl Room {
@@ -96,7 +96,7 @@ impl Room {
         mut owner: Member,
         room_type: RoomType,
         sender: TcpSender,
-        task_sender: crossbeam::Sender<Task>,
+        task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let user_id = owner.user_id;

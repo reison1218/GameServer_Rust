@@ -137,7 +137,7 @@ pub trait RoomModel {
         battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
-        task_sender: crossbeam::Sender<Task>,
+        task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32>;
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
@@ -187,7 +187,7 @@ impl RoomModel for CustomRoom {
         battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
-        task_sender: crossbeam::Sender<Task>,
+        task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
         let mut room = Room::new(owner.clone(), RoomType::Custom, sender, task_sender)?;
@@ -314,7 +314,7 @@ impl RoomModel for MatchRoom {
         battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
-        task_sender: crossbeam::Sender<Task>,
+        task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let mut room = Room::new(owner, RoomType::Match, sender, task_sender)?;
         room.setting.battle_type = battle_type;
@@ -418,7 +418,7 @@ impl MatchRoom {
         &mut self,
         member: Member,
         sender: TcpSender,
-        task_sender: crossbeam::Sender<Task>,
+        task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
         let user_id = member.user_id;

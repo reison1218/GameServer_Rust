@@ -38,7 +38,7 @@ pub struct Task {
 ///初始化定时执行任务
 pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
     let m = move || {
-        let (sender, rec) = crossbeam::crossbeam_channel::bounded(1024);
+        let (sender, rec) = crossbeam::channel::bounded(1024);
         let mut lock = rm.lock().unwrap();
         lock.task_sender = Some(sender);
         std::mem::drop(lock);

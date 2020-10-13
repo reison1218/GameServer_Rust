@@ -56,7 +56,7 @@ fn zero_day(gm: Arc<Mutex<GameMgr>>) {
 
 ///保存玩家数据的定时器任务函数
 fn save_timer(gm: Arc<Mutex<GameMgr>>) {
-    let (sender, rec) = crossbeam::crossbeam_channel::bounded(1024);
+    let (sender, rec) = crossbeam::channel::bounded(1024);
 
     let m = move || loop {
         let gm = gm.clone();

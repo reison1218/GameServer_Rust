@@ -56,7 +56,7 @@ pub struct BattleData {
     >, //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
-    pub task_sender: crossbeam::Sender<Task>,       //任务sender
+    pub task_sender: crossbeam::channel::Sender<Task>, //任务sender
     pub sender: TcpSender,                          //sender
 }
 
@@ -84,7 +84,7 @@ impl BattleData {
     }
 
     ///初始化战斗数据
-    pub fn new(task_sender: crossbeam::Sender<Task>, sender: TcpSender) -> Self {
+    pub fn new(task_sender: crossbeam::channel::Sender<Task>, sender: TcpSender) -> Self {
         let mut bd = BattleData {
             tile_map: TileMap::default(),
             choice_orders: [0; MEMBER_MAX as usize],

@@ -67,7 +67,7 @@ impl GameMgr {
     }
 
     ///保存玩家数据
-    pub fn save_user(&mut self, sender: crossbeam::Sender<Vec<Box<dyn EntityData>>>) {
+    pub fn save_user(&mut self, sender: crossbeam::channel::Sender<Vec<Box<dyn EntityData>>>) {
         let time = std::time::SystemTime::now();
         let mut v: Vec<Box<dyn EntityData>> = Vec::new();
         for ud in self.users.values_mut() {

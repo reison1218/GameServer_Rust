@@ -23,7 +23,7 @@ pub trait Handler: Send + Sync {
 ///tcp server sender
 #[derive(Clone, Debug)]
 pub struct TcpSender {
-    pub sender: crossbeam::crossbeam_channel::Sender<Data>,
+    pub sender: crossbeam::channel::Sender<Data>,
     pub token: usize,
 }
 
@@ -117,7 +117,7 @@ pub mod tcp_server {
         // Unique token for each incoming connection.
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
-        let (sender, rec) = crossbeam::crossbeam_channel::bounded(102400);
+        let (sender, rec) = crossbeam::channel::bounded(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
 
@@ -215,7 +215,7 @@ pub mod tcp_server {
 
     ///Read the data from the sender of the handler
     fn read_sender_mess(
-        rec: crossbeam::crossbeam_channel::Receiver<Data>,
+        rec: crossbeam::channel::Receiver<Data>,
         connections: Arc<RwLock<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
