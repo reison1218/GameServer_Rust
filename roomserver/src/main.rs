@@ -52,7 +52,7 @@ lazy_static! {
     };
 }
 
-const REDIS_INDEX_GAME_SEASON: u32 = 0;
+const REDIS_INDEX_GAME_SEASON: u32 = 1;
 
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 

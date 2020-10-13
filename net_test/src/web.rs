@@ -11,8 +11,8 @@ use std::sync::{Arc, RwLock};
 use crate::Test;
 
 pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
-    //let stream = TcpStream::connect("localhost:8888").await?;
-    let stream = TcpStream::connect("192.168.1.100:8888").await?;
+    let stream = TcpStream::connect("localhost:8888").await?;
+    //let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 
@@ -60,9 +60,8 @@ pub async fn test_http_server() -> http_types::Result<()> {
     let mut incoming = listener.incoming();
     while let Some(stream) = incoming.next().await {
         let stream = stream?;
-        let addr = addr.clone();
         task::spawn(async {
-            if let Err(err) = accept(addr, stream).await {
+            if let Err(err) = accept( stream).await {
                 eprintln!("{}", err);
             }
         });
@@ -71,9 +70,9 @@ pub async fn test_http_server() -> http_types::Result<()> {
 }
 
 // Take a TCP stream, and convert it into sequential HTTP request / response pairs.
-async fn accept(addr: String, stream: TcpStream) -> http_types::Result<()> {
+async fn accept(stream: TcpStream) -> http_types::Result<()> {
     println!("starting new connection from {}", stream.peer_addr().unwrap());
-    async_h1::accept(addr.as_str(),stream.clone(), |mut _req| async move {
+    async_h1::accept(stream.clone(), |mut _req| async move {
         _req.insert_header("Content-Type", "application/json").unwrap();
        let url = _req.url();
 

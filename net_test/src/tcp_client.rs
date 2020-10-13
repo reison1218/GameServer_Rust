@@ -38,8 +38,8 @@ pub fn test_tcp_clients(){
 
         let m = move || {
             let mut tcp_client = TcpClientHandler::new();
-            tcp_client.on_read("192.168.1.100:16801".to_string());
-            //tcp_client.on_read("localhost:16801".to_string());
+            //tcp_client.on_read("192.168.1.100:16801".to_string());
+            tcp_client.on_read("localhost:16801".to_string());
         };
 
         std::thread::spawn(m);
@@ -48,8 +48,8 @@ pub fn test_tcp_clients(){
     }
 
     let mut tcp_client = TcpClientHandler::new();
-    //tcp_client.on_read("127.0.0.1:16801".to_string());
-    tcp_client.on_read("192.168.1.100:16801".to_string());
+    tcp_client.on_read("127.0.0.1:16801".to_string());
+    //tcp_client.on_read("192.168.1.100:16801".to_string());
 }
 pub struct TcpClientHandler {
     ts: Option<TcpStream>,
@@ -86,8 +86,8 @@ impl ClientHandler for TcpClientHandler {
         // let res_map = res.as_object_mut().unwrap();
         // let user_id = res_map.get("user_id").unwrap();
         // let user_id = user_id.as_u64().unwrap() as u32;
-        s_l.set_user_id(id);
-        //s_l.set_user_id(self.user_id);
+        //s_l.set_user_id(id);
+        s_l.set_user_id(self.user_id);
         packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
         packet.set_len(16+packet.get_data().len() as u32);
         self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();

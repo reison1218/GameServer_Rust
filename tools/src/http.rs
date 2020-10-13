@@ -21,7 +21,6 @@ pub async fn http_server(
     handler_vec: Vec<Box<dyn HttpServerHandler>>,
 ) -> http_types::Result<()> {
     // Open up a TCP connection and create a URL.
-    //let listener = TcpListener::bind(("127.0.0.1", 8080)).await?;
     let listener = TcpListener::bind(address).await?;
     let addr = format!("http://{}", listener.local_addr()?);
     info!("HTTP-SERVER listening on {}", addr);
@@ -31,10 +30,9 @@ pub async fn http_server(
     let mut incoming = listener.incoming();
     while let Some(stream) = incoming.next().await {
         let stream = stream?;
-        let addr = addr.clone();
         let h_c = handler_vec_arc.clone();
         task::spawn(async move {
-            if let Err(err) = accept(addr, stream, h_c).await {
+            if let Err(err) = accept(stream, h_c).await {
                 error!("{:?}", err);
             }
         });
@@ -44,7 +42,6 @@ pub async fn http_server(
 
 // Take a TCP stream, and convert it into sequential HTTP request / response pairs.
 async fn accept(
-    addr: String,
     stream: TcpStream,
     handler_vec: AsyncArc<AsyncRwLock<Vec<Box<dyn HttpServerHandler>>>>,
 ) -> http_types::Result<()> {
@@ -52,7 +49,7 @@ async fn accept(
         "there is new connection from {}",
         stream.peer_addr().unwrap()
     );
-    async_h1::accept(addr.as_str(), stream.clone(), |mut _req| async {
+    async_h1::accept(stream.clone(), |mut _req| async {
         let mut _req = _req;
         let mut _req_mut = &mut _req;
         _req_mut
@@ -153,7 +150,7 @@ pub async fn send_http_request(
     info!("connecting to {:?}", str.as_str());
     let url = Url::parse(str.as_str())?;
     let mut req = Request::new(http_method.unwrap(), url);
-    req.insert_header("Content-Type", "application/json")?;
+    req.insert_header("Content-Type", "application/json");
     match params {
         Some(p) => {
             req.set_body(Body::from(p.to_string()));

@@ -25,10 +25,7 @@ impl HttpServerHandler for SavePlayerHttpHandler {
         "save"
     }
 
-    fn execute(
-        &mut self,
-        _: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn execute(&mut self, _: Option<Value>) -> Result<Value, http_types::Error> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         Ok(value)

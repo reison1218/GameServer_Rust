@@ -1,6 +1,6 @@
 use super::*;
 use std::sync::Mutex;
-use tools::cmd_code::RoomCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 
 pub enum TcpClientType {
     GameServer,
@@ -96,12 +96,16 @@ impl ClientHandler for TcpClientHandler {
                         );
                     }
                     None => {
+                        if packet.get_cmd() == ClientCode::LeaveRoom.into_u32()
+                            || packet.get_cmd() == ClientCode::MemberLeaveNotice.into_u32()
+                        {
+                            continue;
+                        }
                         warn!(
                             "user data is null,id:{},cmd:{}",
                             &packet.get_user_id(),
                             packet.get_cmd()
                         );
-                        continue;
                     }
                 }
             } else {

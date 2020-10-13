@@ -36,7 +36,7 @@ use async_std::task;
 
 
 use std::io::{Write, Read};
-use tools::tcp::ClientHandler;
+use tools::tcp::{ClientHandler, new_tcp_client};
 use tools::util::packet::Packet;
 use std::collections::btree_map::Entry::Vacant;
 use std::collections::binary_heap::PeekMut;
@@ -302,7 +302,8 @@ impl_layoutable!(TestMacro);
 fn main() -> anyhow::Result<()> {
 
 
-    test_faster();
+    //test_faster();
+    tcp_client::test_tcp_client("reison");
     // let m = move||{
     //     loop{
     //

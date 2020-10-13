@@ -112,6 +112,9 @@ impl User {
     ///增加在线时间
     pub fn add_online_time(&mut self) {
         let login_time = self.get_time("last_login_time");
+        if let None = login_time {
+            return;
+        }
         let res = login_time.unwrap().timestamp() - Local::now().timestamp();
         let res = (res / 1000) as usize;
         let total_time = self.get_usize(TOTLA_ONLINE_TIME);
