@@ -1,11 +1,12 @@
+pub mod fsm;
+pub mod goal_ai;
 pub mod mgr;
 pub mod net;
-pub mod robot;
 
+use crate::fsm::miner::{Miner, Robot};
+use crate::fsm::status::{EnterMineAndDigForNugget, Status};
 use crate::mgr::robot_mgr::RobotMgr;
 use crate::net::tcp_server::TcpServerHandler;
-use crate::robot::miner::{Miner, Robot};
-use crate::robot::status::{EnterMineAndDigForNugget, Status};
 use log::{error, info, LevelFilter};
 use simplelog::{CombinedLogger, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
@@ -44,7 +45,6 @@ fn test_robot() {
         let mut miner = Miner::new(1);
         let e = EnterMineAndDigForNugget {
             status: Status::EnterMineAndDigForNugget,
-            target: None,
         };
         miner.change_status(Box::new(e));
     };

@@ -1,5 +1,4 @@
-use crate::robot::miner::{Miner, Robot};
-use crate::robot::target::TargetAction;
+use crate::fsm::miner::{Miner, Robot};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::borrow::BorrowMut;
@@ -41,25 +40,21 @@ impl Default for Status {
 #[derive(Default)]
 pub struct GoBankAndDepositGold {
     pub status: Status,
-    pub target: Option<Box<dyn TargetAction>>,
 }
 
 #[derive(Default)]
 pub struct EnterMineAndDigForNugget {
     pub status: Status,
-    pub target: Option<Box<dyn TargetAction>>,
 }
 
 #[derive(Default)]
 pub struct GoHomeAndSleepTilRested {
     pub status: Status,
-    pub target: Option<Box<dyn TargetAction>>,
 }
 
 #[derive(Default)]
 pub struct Drink {
     pub status: Status,
-    pub target: Option<Box<dyn TargetAction>>,
 }
 
 pub trait StatusAction: Send + 'static {
@@ -75,9 +70,6 @@ impl StatusAction for GoHomeAndSleepTilRested {
             cter.change_location(LocationType::Home);
         }
         self.execute(cter);
-        //选择目标
-        cter.chooice_target();
-        self.target.as_mut().unwrap().process(cter);
     }
 
     fn execute(&self, cter: &mut Miner) {
@@ -87,7 +79,6 @@ impl StatusAction for GoHomeAndSleepTilRested {
         println!("第二天到来，矿工该去上班了");
         let e = EnterMineAndDigForNugget {
             status: Status::EnterMineAndDigForNugget,
-            target: None,
         };
         cter.change_status(Box::new(e));
     }
@@ -119,7 +110,6 @@ impl StatusAction for GoBankAndDepositGold {
         );
         let g = GoHomeAndSleepTilRested {
             status: Status::GoHomeAndSleepTilRested,
-            target: None,
         };
         cter.change_status(Box::new(g));
     }
@@ -148,7 +138,6 @@ impl StatusAction for Drink {
         if cter.thirst == 0 {
             let e = EnterMineAndDigForNugget {
                 status: Status::EnterMineAndDigForNugget,
-                target: None,
             };
             cter.change_status(Box::new(e));
         } else {
@@ -181,13 +170,11 @@ impl StatusAction for EnterMineAndDigForNugget {
         if cter.gold_carried >= 20 {
             let b = GoBankAndDepositGold {
                 status: Status::GoBankAndDepositGold,
-                target: None,
             };
             cter.change_status(Box::new(b));
         } else if cter.thirst >= 10 {
             let d = Drink {
                 status: Status::GoBarAndDrink,
-                target: None,
             };
             cter.change_status(Box::new(d));
         } else {
