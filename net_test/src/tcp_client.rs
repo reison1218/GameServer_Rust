@@ -101,21 +101,21 @@ impl ClientHandler for TcpClientHandler {
         let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();
-        //std::thread::sleep(Duration::from_secs(2));
+        std::thread::sleep(Duration::from_secs(2));
 
-        // let mut ccc = C_CHOOSE_CHARACTER::new();
-        // let mut write = ID.write().unwrap();
-        // write.fetch_add(1,Ordering::SeqCst);
-        // let cter_id = write.load(Ordering::SeqCst);
-        // let mut v = Vec::new();
-        // v.push(1001_u32);
-        // v.push(1002_u32);
-        // ccc.set_cter_id(cter_id);
-        // packet.set_cmd(RoomCode::ChoiceCharacter as u32);
-        // packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
-        // packet.set_len(16+packet.get_data().len() as u32);
-        // self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
-        // self.ts.as_mut().unwrap().flush().unwrap();
+        let mut ccc = C_CHOOSE_CHARACTER::new();
+        let mut write = ID.write().unwrap();
+        write.fetch_add(1,Ordering::SeqCst);
+        let cter_id = write.load(Ordering::SeqCst);
+        let mut v = Vec::new();
+        v.push(1001_u32);
+        v.push(1002_u32);
+        ccc.set_cter_id(cter_id);
+        packet.set_cmd(RoomCode::ChoiceCharacter as u32);
+        packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
+        packet.set_len(16+packet.get_data().len() as u32);
+        self.ts.as_mut().unwrap().write(&packet.build_client_bytes()[..]).unwrap();
+        self.ts.as_mut().unwrap().flush().unwrap();
         //std::thread::sleep(Duration::from_secs(2));
 
         // let mut cpc = C_PREPARE_CANCEL::new();

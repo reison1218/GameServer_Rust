@@ -306,12 +306,23 @@ pub struct TTT{
 }
 
 
+pub struct TestLift{
+    pub str:&'static mut String,
+}
+
+impl Drop for TestLift{
+    fn drop(&mut self) {
+        dbg!("drop TestLift");
+    }
+}
+
 fn main() -> anyhow::Result<()> {
+
     // let t = TTT::default();
     // let res = t.d.take();
     // println!("{:?}", t.borrow().d.take());
     //test_faster();
-    //tcp_client::test_tcp_client("reison");
+    tcp_client::test_tcp_client("reison");
     // let m = move||{
     //     loop{
     //
