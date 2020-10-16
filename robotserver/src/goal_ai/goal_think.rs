@@ -5,6 +5,7 @@ use crate::goal_ai::goal_combined::GoalCombined;
 use crate::goal_ai::goal_evaluator::GoalEvaluator;
 use crate::goal_ai::goal_status::GoalStatus;
 use crossbeam::atomic::AtomicCell;
+use std::collections::VecDeque;
 
 #[derive(Default)]
 pub struct GoalThink {
@@ -16,7 +17,7 @@ pub struct GoalThink {
 impl GoalThink {
     pub fn new() -> Self {
         let mut gt = GoalThink::default();
-        let attack = Box::new(AttackTargetGoalEvaluator::new(gt.attack_bias.take()));
+        let attack = Box::new(AttackTargetGoalEvaluator::new(gt.attack_bias.load()));
         gt.goal_evaluators.push(attack);
         gt
     }
@@ -56,7 +57,7 @@ impl Goal for GoalThink {
         if sub_goal_status == GoalStatus::Finish || sub_goal_status == GoalStatus::Fail {
             self.status.store(GoalStatus::Idel);
         }
-        self.status.take()
+        self.status.load()
     }
 
     fn terminate(&self) {
@@ -64,20 +65,12 @@ impl Goal for GoalThink {
     }
 
     fn get_goal_status(&self) -> GoalStatus {
-        unimplemented!()
+        self.status.load()
     }
 }
 
 impl GoalCombined for GoalThink {
-    fn process_sub_goals(&self, cter: &Cter) -> GoalStatus {
-        unimplemented!()
-    }
-
-    fn add_sub_goal(&self, goal: Box<dyn Goal>) {
-        unimplemented!()
-    }
-
-    fn remove_all_sub_goals(&self) {
+    fn get_sub_goals(&self) -> &mut VecDeque<Box<dyn Goal>> {
         unimplemented!()
     }
 }

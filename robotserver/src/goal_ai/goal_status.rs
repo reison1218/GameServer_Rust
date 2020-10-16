@@ -2,7 +2,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
 ///pos操作类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum GoalStatus {
     None = 0,   //无效值

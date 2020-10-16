@@ -1,6 +1,7 @@
 pub mod attack_target_goal_evaluator;
 pub mod cter;
 pub mod goal;
+pub mod goal_attack_target;
 pub mod goal_combined;
 pub mod goal_enum;
 pub mod goal_evaluator;

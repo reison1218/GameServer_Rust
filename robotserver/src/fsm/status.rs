@@ -2,9 +2,10 @@ use crate::fsm::miner::{Miner, Robot};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::borrow::BorrowMut;
+use std::time::Duration;
 
 ///pos操作类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum LocationType {
     None = 0,
@@ -58,24 +59,24 @@ pub struct Drink {
 }
 
 pub trait StatusAction: Send + 'static {
-    fn enter(&mut self, cter: &mut Miner);
-    fn execute(&self, cter: &mut Miner);
-    fn exit(&mut self, cter: &mut Miner);
+    fn enter(&self, cter: &Miner);
+    fn execute(&self, cter: &Miner);
+    fn exit(&self, cter: &Miner);
     fn get_status(&self) -> Status;
 }
 
 impl StatusAction for GoHomeAndSleepTilRested {
-    fn enter(&mut self, cter: &mut Miner) {
-        if cter.location_type != LocationType::Home {
+    fn enter(&self, cter: &Miner) {
+        if cter.location_type.load() != LocationType::Home {
             cter.change_location(LocationType::Home);
         }
         self.execute(cter);
     }
 
-    fn execute(&self, cter: &mut Miner) {
+    fn execute(&self, cter: &Miner) {
         println!("矿工一天的工作结束了，睡觉～");
-        cter.fatigue = 0;
-        cter.thirst = 0;
+        cter.fatigue.store(0);
+        cter.thirst.store(0);
         println!("第二天到来，矿工该去上班了");
         let e = EnterMineAndDigForNugget {
             status: Status::EnterMineAndDigForNugget,
@@ -83,7 +84,7 @@ impl StatusAction for GoHomeAndSleepTilRested {
         cter.change_status(Box::new(e));
     }
 
-    fn exit(&mut self, cter: &mut Miner) {
+    fn exit(&self, cter: &Miner) {
         println!("退出睡觉模式,该去上班了！");
     }
 
@@ -93,20 +94,23 @@ impl StatusAction for GoHomeAndSleepTilRested {
 }
 
 impl StatusAction for GoBankAndDepositGold {
-    fn enter(&mut self, cter: &mut Miner) {
-        if cter.location_type != LocationType::Bank {
+    fn enter(&self, cter: &Miner) {
+        if cter.location_type.load() != LocationType::Bank {
             cter.change_location(LocationType::Bank);
         }
         self.execute(cter);
     }
 
-    fn execute(&self, cter: &mut Miner) {
+    fn execute(&self, cter: &Miner) {
         println!("矿工在银行将金矿兑换成现金并存到银行！");
-        cter.money_in_back += cter.gold_carried;
-        cter.gold_carried = 0;
+        let res = cter.money_in_back.load() + cter.gold_carried.load();
+        cter.money_in_back.store(res);
+
+        cter.gold_carried.store(0);
         println!(
             "存钱结束，矿工持有金矿数量:{},存有金币:{}",
-            cter.gold_carried, cter.money_in_back
+            cter.gold_carried.load(),
+            cter.money_in_back.load()
         );
         let g = GoHomeAndSleepTilRested {
             status: Status::GoHomeAndSleepTilRested,
@@ -114,7 +118,7 @@ impl StatusAction for GoBankAndDepositGold {
         cter.change_status(Box::new(g));
     }
 
-    fn exit(&mut self, miner: &mut Miner) {
+    fn exit(&self, miner: &Miner) {
         println!("存钱结束，该回家了！");
     }
 
@@ -124,18 +128,18 @@ impl StatusAction for GoBankAndDepositGold {
 }
 
 impl StatusAction for Drink {
-    fn enter(&mut self, cter: &mut Miner) {
-        if cter.location_type != LocationType::Bar {
+    fn enter(&self, cter: &Miner) {
+        if cter.location_type.load() != LocationType::Bar {
             cter.change_location(LocationType::Bar);
         }
         self.execute(cter);
     }
 
-    fn execute(&self, cter: &mut Miner) {
+    fn execute(&self, cter: &Miner) {
         println!("矿工累了，喝啤酒解乏");
-        cter.thirst -= 1;
-        cter.fatigue = 0;
-        if cter.thirst == 0 {
+        cter.thirst.fetch_sub(1);
+        cter.fatigue.store(0);
+        if cter.thirst.load() == 0 {
             let e = EnterMineAndDigForNugget {
                 status: Status::EnterMineAndDigForNugget,
             };
@@ -145,7 +149,7 @@ impl StatusAction for Drink {
         }
     }
 
-    fn exit(&mut self, miner: &mut Miner) {
+    fn exit(&self, miner: &Miner) {
         println!("矿工休息结束！");
     }
 
@@ -155,24 +159,26 @@ impl StatusAction for Drink {
 }
 
 impl StatusAction for EnterMineAndDigForNugget {
-    fn enter(&mut self, cter: &mut Miner) {
-        if cter.location_type != LocationType::KuangChang {
+    fn enter(&self, cter: &Miner) {
+        if cter.location_type.load() != LocationType::KuangChang {
             cter.change_location(LocationType::KuangChang);
         }
         self.execute(cter);
     }
 
-    fn execute(&self, cter: &mut Miner) {
+    fn execute(&self, cter: &Miner) {
+        std::thread::sleep(Duration::from_secs(1));
         println!("矿工开始挖金矿");
         cter.add_gold_carried();
-        cter.thirst += 1;
-        cter.fatigue += 1;
-        if cter.gold_carried >= 20 {
+        let gold_carried = cter.gold_carried.load();
+        cter.thirst.fetch_add(1);
+        cter.fatigue.fetch_add(1);
+        if gold_carried >= 20 {
             let b = GoBankAndDepositGold {
                 status: Status::GoBankAndDepositGold,
             };
             cter.change_status(Box::new(b));
-        } else if cter.thirst >= 10 {
+        } else if cter.thirst.load() >= 10 {
             let d = Drink {
                 status: Status::GoBarAndDrink,
             };
@@ -182,11 +188,11 @@ impl StatusAction for EnterMineAndDigForNugget {
         }
     }
 
-    fn exit(&mut self, cter: &mut Miner) {
-        if cter.thirst >= 10 {
+    fn exit(&self, cter: &Miner) {
+        if cter.thirst.load() >= 10 {
             println!("矿工口渴了，去酒吧喝酒");
         }
-        if cter.gold_carried >= 20 {
+        if cter.gold_carried.load() >= 20 {
             println!("金矿包装满了，矿工去银行");
         }
     }

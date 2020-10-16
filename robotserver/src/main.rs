@@ -31,22 +31,34 @@ lazy_static! {
 }
 
 fn main() {
-    test_robot();
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-    //初始化日志
-    init_log(info_log, error_log);
-    ///初始化机器人服务器网络
-    init_tcp_server();
+    test_fsm();
+    // let info_log = CONF_MAP.get_str("info_log_path");
+    // let error_log = CONF_MAP.get_str("error_log_path");
+    // //初始化日志
+    // init_log(info_log, error_log);
+    // ///初始化机器人服务器网络
+    // init_tcp_server();
 }
 
-fn test_robot() {
+fn test_fsm() {
+    //let m = move || {
+    let e = EnterMineAndDigForNugget {
+        status: Status::EnterMineAndDigForNugget,
+    };
+    let status = Box::new(e);
+    let mut miner = Miner::new(1, status);
+    miner.update();
+    // };
+    // std::thread::spawn(m);
+}
+
+fn test_goal() {
     let m = move || {
-        let mut miner = Miner::new(1);
-        let e = EnterMineAndDigForNugget {
-            status: Status::EnterMineAndDigForNugget,
-        };
-        miner.change_status(Box::new(e));
+        // let mut miner = Miner::new(1);
+        // let e = EnterMineAndDigForNugget {
+        //     status: Status::EnterMineAndDigForNugget,
+        // };
+        // miner.change_status(Box::new(e));
     };
     std::thread::spawn(m);
 }

@@ -10,6 +10,7 @@ pub mod binary;
 pub mod cmd_code;
 pub mod conf;
 pub mod http;
+pub mod macros;
 pub mod my_log;
 pub mod protos;
 pub mod redis_pool;

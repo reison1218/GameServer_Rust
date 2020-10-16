@@ -77,7 +77,8 @@ use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use crate::map::generate_map;
 use actix::{Actor, SyncArbiter};
 use std::convert::TryInto;
-use crossbeam::atomic::AtomicConsume;
+use crossbeam::atomic::{AtomicConsume, AtomicCell};
+use tools::macros::GetMutRef;
 
 #[macro_use]
 extern crate lazy_static;
@@ -306,8 +307,12 @@ pub struct TTT{
 }
 
 
+
+
+
+#[derive(Default)]
 pub struct TestLift{
-    pub str:&'static mut String,
+    pub str:String,
 }
 
 impl Drop for TestLift{
@@ -316,13 +321,32 @@ impl Drop for TestLift{
     }
 }
 
+impl tools::macros::GetMutRef for TestLift{}
+
+
+
+
 fn main() -> anyhow::Result<()> {
+
+    let mut t = TestLift::default();
+
+    let time = std::time::SystemTime::now();
+    for i in 0..99{
+        let tt = t.get_mut_ref();
+    }
+    dbg!(time.elapsed().unwrap());
+
+    let time = std::time::SystemTime::now();
+    for i in 0..99{
+        let tt = &mut t;
+    }
+    dbg!(time.elapsed().unwrap());
 
     // let t = TTT::default();
     // let res = t.d.take();
     // println!("{:?}", t.borrow().d.take());
     //test_faster();
-    tcp_client::test_tcp_client("reison");
+    //tcp_client::test_tcp_client("reison");
     // let m = move||{
     //     loop{
     //
