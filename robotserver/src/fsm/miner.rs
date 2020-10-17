@@ -5,7 +5,6 @@ use crate::fsm::status::{
 use crossbeam::atomic::AtomicCell;
 use std::borrow::BorrowMut;
 use std::time::Duration;
-use tools::macros::GetMutRef;
 
 ///矿工结构体
 pub struct Miner {
@@ -18,7 +17,7 @@ pub struct Miner {
     pub status: Box<dyn StatusAction>,           //状态
 }
 
-impl GetMutRef for Miner {}
+tools::get_mut_ref!(Miner);
 
 impl Default for Box<dyn StatusAction> {
     fn default() -> Self {

@@ -1,18 +1,18 @@
 use crate::goal_ai::cter::Cter;
-use crate::goal_ai::goal::Goal;
-use crate::goal_ai::goal_combined::GoalCombined;
 use crate::goal_ai::goal_status::GoalStatus;
+use crate::goal_ai::goals::goal::Goal;
+use crate::goal_ai::goals::goal_combined::GoalCombined;
 use crossbeam::atomic::AtomicCell;
 use std::borrow::BorrowMut;
 use std::collections::VecDeque;
-use tools::macros::GetMutRef;
 
+///攻击目标
 pub struct GoalAttackTarget {
     pub status: AtomicCell<GoalStatus>,
     pub sub_goals: VecDeque<Box<dyn Goal>>,
 }
 
-impl tools::macros::GetMutRef for GoalAttackTarget {}
+tools::get_mut_ref!(GoalAttackTarget);
 
 impl Goal for GoalAttackTarget {
     fn activate(&self, cter: &Cter) {

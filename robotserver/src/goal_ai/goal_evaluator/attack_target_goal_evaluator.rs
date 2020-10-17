@@ -1,6 +1,6 @@
 use crate::goal_ai::cter::Cter;
-use crate::goal_ai::goal::Goal;
 use crate::goal_ai::goal_evaluator::GoalEvaluator;
+use crate::goal_ai::goals::goal::Goal;
 use crossbeam::atomic::AtomicCell;
 
 #[derive(Default)]

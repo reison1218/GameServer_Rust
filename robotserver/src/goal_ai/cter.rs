@@ -1,13 +1,12 @@
-use crate::goal_ai::goal::Goal;
 use crate::goal_ai::goal_status::GoalStatus;
 use crate::goal_ai::goal_think::GoalThink;
+use crate::goal_ai::goals::goal::Goal;
 use crate::goal_ai::target_system::TargetingSystem;
 use crossbeam::atomic::AtomicCell;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::borrow::Borrow;
 use tools::get_mut_ref;
-use tools::macros::GetMutRef;
 
 ///pos操作类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]

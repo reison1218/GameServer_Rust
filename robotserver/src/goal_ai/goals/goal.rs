@@ -1,6 +1,6 @@
 use crate::goal_ai::cter::Cter;
-use crate::goal_ai::goal_combined::GoalCombined;
 use crate::goal_ai::goal_status::GoalStatus;
+use crate::goal_ai::goals::goal_combined::GoalCombined;
 use crossbeam::atomic::AtomicCell;
 use crossbeam::queue::ArrayQueue;
 use std::borrow::Borrow;

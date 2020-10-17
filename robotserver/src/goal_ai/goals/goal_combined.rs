@@ -1,10 +1,11 @@
 use crate::goal_ai::cter::Cter;
-use crate::goal_ai::goal::Goal;
 use crate::goal_ai::goal_status::GoalStatus;
+use crate::goal_ai::goals::goal::Goal;
 use crossbeam::atomic::AtomicCell;
 use crossbeam::queue::ArrayQueue;
 use std::collections::VecDeque;
 
+///组合目标trait
 pub trait GoalCombined: Goal {
     fn get_sub_goals(&self) -> &mut VecDeque<Box<dyn Goal>>;
 
