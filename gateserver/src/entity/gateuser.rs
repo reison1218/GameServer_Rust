@@ -1,6 +1,8 @@
-use super::*;
 use crate::net::http::notice_user_center;
+use std::sync::Arc;
 use tools::tcp::TcpSender;
+use ws::CloseCode;
+use ws::Sender as WsSender;
 
 ///玩家会话封装结构体
 pub struct GateUser {

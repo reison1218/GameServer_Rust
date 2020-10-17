@@ -1,14 +1,21 @@
-use super::*;
 use crate::entity::user::UserData;
 use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room, summary};
 use crate::entity::EntityData;
 use crate::SEASON;
 use chrono::Local;
+use log::{error, info};
 use protobuf::Message;
+use std::collections::hash_map::RandomState;
+use std::collections::HashMap;
+use tools::cmd_code::GameCode::{
+    CreateRoom, JoinRoom, LineOff, ModifyNickName, ReloadTemps, SearchRoom, Summary, SyncData,
+    UpdateSeason,
+};
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
+use tools::util::packet::Packet;
 
 ///gameMgr结构体
 pub struct GameMgr {

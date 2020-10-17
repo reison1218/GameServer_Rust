@@ -1,11 +1,11 @@
-use std::path::PathBuf;
-use log::error;
 pub mod base;
+pub mod battle;
 pub mod protocol;
 pub mod room;
 pub mod server_protocol;
-pub mod battle;
 
+use log::error;
+use std::path::PathBuf;
 
 pub fn proto() {
     let res = std::env::current_dir().unwrap();
@@ -13,19 +13,19 @@ pub fn proto() {
     path_str.push_str("/protos/");
     let path_buf = PathBuf::from(path_str);
     let res = std::fs::read_dir(path_buf.as_path());
-    if let Err(e) = res{
-        error!("{:?}",e);
+    if let Err(e) = res {
+        error!("{:?}", e);
         return;
     }
     let dir = res.unwrap();
     let mut files = Vec::new();
-    for dir_entry in dir{
-        if let Err(e) = dir_entry{
-            error!("{:?}",e);
+    for dir_entry in dir {
+        if let Err(e) = dir_entry {
+            error!("{:?}", e);
             return;
         }
         let dir_entry = dir_entry.unwrap();
-        if dir_entry.file_name().eq(".DS_Store"){
+        if dir_entry.file_name().eq(".DS_Store") {
             continue;
         }
         let mut proto_file = String::from("protos/");
@@ -33,10 +33,10 @@ pub fn proto() {
         files.push(proto_file);
     }
     protoc_rust::Codegen::new()
-             .out_dir("src/protos")
-             .inputs(files.as_slice())
-             .include("protos")
-             .run()
-             .expect("Running protoc failed!");
+        .out_dir("src/protos")
+        .inputs(files.as_slice())
+        .include("protos")
+        .run()
+        .expect("Running protoc failed!");
     println!("protobuf generate success!")
 }

@@ -1,16 +1,19 @@
-use super::*;
-
-use tools::protos::base::ResourcesPt;
+use tools::protos::base::{PlayerPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
 use crate::entity::user::{insert_characters, insert_user, UserData};
 use crate::entity::user_contants::*;
+use crate::entity::user_info::User;
 use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
+use crate::mgr::game_mgr::GameMgr;
+use log::{error, info, warn};
 use protobuf::Message;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tools::cmd_code::{ClientCode, GameCode};
+use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
+use tools::util::packet::Packet;
 
 #[derive(Clone)]
 struct TcpServerHandler {
@@ -74,7 +77,7 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     }
     //判断是否执行登录
     if packet.get_cmd() == GameCode::Login as u32 {
-        let mut c_login = C_USER_LOGIN_PROTO::new();
+        let mut c_login = C_USER_LOGIN::new();
         let result = c_login.merge_from_bytes(packet.get_data());
 
         if let Err(e) = result {
@@ -168,8 +171,8 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
 }
 
 ///user结构体转proto
-fn user2proto(user: &mut UserData) -> S_USER_LOGIN_PROTO {
-    let mut lr = S_USER_LOGIN_PROTO::new();
+fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
+    let mut lr = S_USER_LOGIN::new();
     lr.set_is_succ(true);
     // let result = user.get_json_value("signInTime");
     // if result.is_some() {

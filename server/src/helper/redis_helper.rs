@@ -1,5 +1,6 @@
-use super::*;
+use crate::REDIS_POOL;
 use crate::{REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID, REDIS_KEY_USERS};
+use log::error;
 use serde_json::Value;
 use std::str::FromStr;
 

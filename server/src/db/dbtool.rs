@@ -1,5 +1,6 @@
-use super::*;
 use crate::CONF_MAP;
+use log::info;
+use mysql::{Error, Params, Pool, QueryResult, Value};
 
 pub struct DbPool {
     pub pool: Pool,

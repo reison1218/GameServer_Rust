@@ -1,12 +1,16 @@
-use super::*;
-
+use crate::entity::gateuser::GateUser;
+use log::{error, info, warn};
 use protobuf::Message;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::io::Write;
+use std::net::TcpStream;
 use std::sync::Arc;
 use tools::cmd_code::{GameCode, RoomCode};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
+use tools::util::packet::Packet;
+use ws::Sender as WsSender;
 
 ///channel管理结构体
 pub struct ChannelMgr {

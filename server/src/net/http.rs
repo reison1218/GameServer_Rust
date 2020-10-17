@@ -1,12 +1,13 @@
-use super::*;
 use crate::entity::save_player_http;
 use crate::helper::redis_helper::modify_redis_user;
+use crate::mgr::game_mgr::GameMgr;
 use crate::CONF_MAP;
 use http_types::Error as HttpTypesError;
+use log::{error, info};
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 

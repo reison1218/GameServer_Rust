@@ -1,13 +1,26 @@
-use super::*;
+use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::Character;
+use crate::room::member::Member;
+use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
+use crate::room::room_model::{BattleType, RoomModel, RoomType, TeamId};
 use crate::SEASON;
+use log::error;
+use log::info;
+use log::warn;
+use protobuf::Message;
 use std::convert::TryFrom;
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::room::{
-    C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER, S_CHOOSE_CHARACTER,
-    S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_START,
+    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER,
+    C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER,
+    S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_LEAVE_ROOM, S_ROOM_SETTING, S_START,
 };
-use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
+use tools::protos::server_protocol::{
+    G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
+};
+use tools::templates::emoji_temp::EmojiTemp;
+use tools::util::packet::Packet;
 
 pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
     Ok(())
