@@ -44,6 +44,7 @@ pub trait GoalCombined: Goal {
     }
 
     fn remove_all_sub_goals(&self) {
+        println!("删除所有子目标");
         let mut sub_goals = self.get_sub_goals();
         for sg in sub_goals.iter() {
             sg.terminate();

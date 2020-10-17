@@ -5,6 +5,8 @@ pub mod net;
 
 use crate::fsm::miner::{Miner, Robot};
 use crate::fsm::status::{EnterMineAndDigForNugget, Status};
+use crate::goal_ai::cter::Cter;
+use crate::goal_ai::goal_think::GoalThink;
 use crate::mgr::robot_mgr::RobotMgr;
 use crate::net::tcp_server::TcpServerHandler;
 use log::{error, info, LevelFilter};
@@ -31,13 +33,13 @@ lazy_static! {
 }
 
 fn main() {
-    test_fsm();
-    // let info_log = CONF_MAP.get_str("info_log_path");
-    // let error_log = CONF_MAP.get_str("error_log_path");
-    // //初始化日志
-    // init_log(info_log, error_log);
-    // ///初始化机器人服务器网络
-    // init_tcp_server();
+    test_goal();
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    //初始化日志
+    init_log(info_log, error_log);
+    ///初始化机器人服务器网络
+    init_tcp_server();
 }
 
 fn test_fsm() {
@@ -54,11 +56,10 @@ fn test_fsm() {
 
 fn test_goal() {
     let m = move || {
-        // let mut miner = Miner::new(1);
-        // let e = EnterMineAndDigForNugget {
-        //     status: Status::EnterMineAndDigForNugget,
-        // };
-        // miner.change_status(Box::new(e));
+        let mut cter = Cter::default();
+        let mut gt = GoalThink::new();
+        cter.goal_think = gt;
+        cter.update();
     };
     std::thread::spawn(m);
 }

@@ -7,6 +7,7 @@ use std::borrow::BorrowMut;
 use std::collections::VecDeque;
 
 ///攻击目标
+#[derive(Default)]
 pub struct GoalAttackTarget {
     pub status: AtomicCell<GoalStatus>,
     pub sub_goals: VecDeque<Box<dyn Goal>>,

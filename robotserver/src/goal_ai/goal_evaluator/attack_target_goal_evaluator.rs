@@ -22,6 +22,7 @@ impl GoalEvaluator for AttackTargetGoalEvaluator {
     }
 
     fn set_goal(&self, cter: &Cter) {
+        println!("向AttackTargetGoalEvaluator设置goal");
         cter.goal_think.add_attack_target();
     }
 }

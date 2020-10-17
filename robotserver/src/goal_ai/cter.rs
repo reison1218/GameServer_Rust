@@ -1,7 +1,7 @@
 use crate::goal_ai::goal_status::GoalStatus;
 use crate::goal_ai::goal_think::GoalThink;
 use crate::goal_ai::goals::goal::Goal;
-use crate::goal_ai::target_system::TargetingSystem;
+use crate::mgr::robot_mgr::RobotMgr;
 use crossbeam::atomic::AtomicCell;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -36,8 +36,7 @@ impl CterStatus {
 
 #[derive(Default)]
 pub struct Cter {
-    pub statuc: CterStatus,
-    pub target_system: TargetingSystem,
+    pub status: CterStatus,
     pub goal_think: GoalThink,
     pub id: AtomicCell<u32>,         //角色唯一id
     pub goal: Option<Box<dyn Goal>>, //目标
@@ -46,11 +45,16 @@ pub struct Cter {
 get_mut_ref!(Cter);
 
 impl Cter {
-    pub fn udpate(&self) {
-        self.goal_think.process(self);
-    }
+    pub fn update(&self) {
+        //进行仲裁
+        self.goal_think.arbitrate(self);
 
-    pub fn activate(&self) {}
+        //推进所有目标
+        let status = self.goal_think.process(self);
+        if status == GoalStatus::Finish {
+            return;
+        }
+    }
 
     pub fn get_goal_think(&self) -> &GoalThink {
         self.goal_think.borrow()
