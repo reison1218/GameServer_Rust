@@ -6,6 +6,7 @@ use crate::goal_ai::goals::goal::Goal;
 use crate::goal_ai::goals::goal_attack_target::GoalAttackTarget;
 use crate::goal_ai::goals::goal_combined::GoalCombined;
 use crossbeam::atomic::AtomicCell;
+use std::borrow::BorrowMut;
 use std::collections::VecDeque;
 
 #[derive(Default)]
@@ -13,7 +14,10 @@ pub struct GoalThink {
     status: AtomicCell<GoalStatus>,
     attack_bias: AtomicCell<u32>,
     goal_evaluators: Vec<Box<dyn GoalEvaluator>>,
+    pub sub_goals: VecDeque<Box<dyn Goal>>,
 }
+
+tools::get_mut_ref!(GoalThink);
 
 impl GoalThink {
     pub fn new() -> Self {
@@ -44,7 +48,7 @@ impl GoalThink {
     }
 
     pub fn add_sub_goal(&self, combin_goal: Box<dyn Goal>) {
-        unimplemented!()
+        self.get_mut_ref().sub_goals.push_front(combin_goal);
     }
 
     pub fn add_attack_target(&self) {
@@ -79,6 +83,6 @@ impl Goal for GoalThink {
 
 impl GoalCombined for GoalThink {
     fn get_sub_goals(&self) -> &mut VecDeque<Box<dyn Goal>> {
-        unimplemented!()
+        self.get_mut_ref().sub_goals.borrow_mut()
     }
 }

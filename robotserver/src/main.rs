@@ -34,10 +34,10 @@ lazy_static! {
 
 fn main() {
     test_goal();
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-    //初始化日志
-    init_log(info_log, error_log);
+    // let info_log = CONF_MAP.get_str("info_log_path");
+    // let error_log = CONF_MAP.get_str("error_log_path");
+    // //初始化日志
+    // init_log(info_log, error_log);
     ///初始化机器人服务器网络
     init_tcp_server();
 }

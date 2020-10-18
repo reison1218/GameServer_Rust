@@ -10,16 +10,22 @@ pub trait GoalCombined: Goal {
     fn get_sub_goals(&self) -> &mut VecDeque<Box<dyn Goal>>;
 
     fn process_sub_goals(&self, cter: &Cter) -> GoalStatus {
+        println!("执行所有子目标");
         let mut sub_goals = self.get_sub_goals();
+
         if sub_goals.is_empty() {
             return GoalStatus::Idel;
         }
-        loop {
-            let goal = sub_goals.front().unwrap();
-            //如果成功了，或者失败了，就终止，并将目标从队列弹出
+
+        for i in 0..sub_goals.len() {
+            let goal = sub_goals.get(i);
+            if goal.is_none() {
+                continue;
+            }
+            let goal = goal.unwrap();
             if goal.is_finished() || goal.is_failed() {
                 goal.terminate();
-                sub_goals.pop_front();
+                sub_goals.remove(i);
             }
         }
 
@@ -40,12 +46,14 @@ pub trait GoalCombined: Goal {
 
     fn add_sub_goal(&self, goal: Box<dyn Goal>) {
         let mut sub_goals = self.get_sub_goals();
+
         sub_goals.push_front(goal);
     }
 
     fn remove_all_sub_goals(&self) {
         println!("删除所有子目标");
-        let mut sub_goals = self.get_sub_goals();
+        let sub_goals = self.get_sub_goals();
+
         for sg in sub_goals.iter() {
             sg.terminate();
         }

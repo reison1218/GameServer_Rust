@@ -17,6 +17,7 @@ tools::get_mut_ref!(GoalAttackTarget);
 
 impl Goal for GoalAttackTarget {
     fn activate(&self, cter: &Cter) {
+        println!("激活GoalAttackTarget目标");
         self.status.swap(GoalStatus::Active);
         self.remove_all_sub_goals();
         //添加其他子目标
@@ -24,6 +25,7 @@ impl Goal for GoalAttackTarget {
     }
 
     fn process(&self, cter: &Cter) -> GoalStatus {
+        println!("执行GoalAttackTarget");
         let status = self.process_sub_goals(cter);
         return status;
     }
