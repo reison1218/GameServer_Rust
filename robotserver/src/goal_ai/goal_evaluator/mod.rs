@@ -1,6 +1,7 @@
+pub mod attack_target_goal_evaluator;
+pub mod skill_target_goal_evaluator;
 use crate::goal_ai::cter::Cter;
 
-pub mod attack_target_goal_evaluator;
 ///评估trait
 pub trait GoalEvaluator: Send + 'static {
     ///计算期望值

@@ -124,6 +124,7 @@ pub mod tcp_server {
         //read data from sender
         read_sender_mess(rec, conn_map_cp);
         info!("TCP-SERVER listening on:{:?}", addr);
+        info!("server start success!");
         // Register the server with poll we can receive events for it.
         poll.registry()
             .register(&mut server, SERVER, Interest::READABLE)?;
@@ -387,8 +388,6 @@ pub trait ClientHandler: Send + Sync {
     fn on_close(&mut self);
     ///called when have mess from server
     fn on_message(&mut self, mess: Vec<u8>);
-    ///get address
-    fn get_address(&self) -> &str;
     ///start read mess from server
     fn on_read(&mut self, address: String) {
         let read = new_tcp_client(address.as_str());

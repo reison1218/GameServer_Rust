@@ -13,6 +13,7 @@ use crate::net::http::{KickPlayerHttpHandler, ReloadTempsHandler, UpdateSeasonHa
 use crate::net::tcp_client::TcpClientType;
 use crate::net::tcp_server;
 use std::env;
+use std::time::Duration;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
@@ -73,6 +74,9 @@ fn main() {
     //连接房间服务器
     init_room_tcp_connect(cm.clone());
 
+    //连接机器人服务器
+    init_robot_tcp_connect(cm.clone());
+
     //初始化http服务
     init_http_server(cm.clone());
 
@@ -82,6 +86,7 @@ fn main() {
 
 ///初始化http服务端
 fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
+    std::thread::sleep(Duration::from_millis(10));
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(KickPlayerHttpHandler::new(cm.clone())));
     http_vec.push(Box::new(ReloadTempsHandler::new(cm.clone())));
@@ -127,6 +132,17 @@ fn init_room_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
         let address = CONF_MAP.get_str("room_port");
         info!("开始链接房间服:{:?}...", address);
+        tch.on_read(address.to_string());
+    };
+    async_std::task::spawn(room);
+}
+
+///初始化机器人服务器tcp客户端链接
+fn init_robot_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
+    let room = async {
+        let mut tch = TcpClientHandler::new(cp, TcpClientType::RobotServer);
+        let address = CONF_MAP.get_str("robot_port");
+        info!("开始链接机器人服:{:?}...", address);
         tch.on_read(address.to_string());
     };
     async_std::task::spawn(room);

@@ -18,6 +18,8 @@ pub struct ChannelMgr {
     pub game_client_channel: Option<TcpStream>,
     //房间服stream
     pub room_client_channel: Option<TcpStream>,
+    //机器人服stream
+    pub robot_client_channel: Option<TcpStream>,
     //玩家channels
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
@@ -31,6 +33,7 @@ impl ChannelMgr {
         let cm = ChannelMgr {
             game_client_channel: None,
             room_client_channel: None,
+            robot_client_channel: None,
             user_channel: players,
             channels: HashMap::new(),
         };
@@ -43,6 +46,10 @@ impl ChannelMgr {
 
     pub fn set_room_client_channel(&mut self, ts: TcpStream) {
         self.room_client_channel = Some(ts);
+    }
+
+    pub fn set_robot_client_channel(&mut self, ts: TcpStream) {
+        self.robot_client_channel = Some(ts);
     }
 
     ///处理离线事件
@@ -109,6 +116,29 @@ impl ChannelMgr {
             return;
         }
         let rc = self.room_client_channel.as_mut().unwrap();
+        let size = rc.write(&packet.build_server_bytes()[..]);
+        match size {
+            Ok(_) => {
+                let res = rc.flush();
+                if let Err(e) = res {
+                    error!("{:?}", e);
+                }
+            }
+            Err(e) => {
+                error!("{:?}", e);
+                return;
+            }
+        }
+    }
+
+    ///写到机器人服
+    #[warn(unused_must_use)]
+    pub fn write_to_robot(&mut self, packet: Packet) {
+        if self.robot_client_channel.is_none() {
+            error!("disconnect with Robot-Server,pls connect Robot-Server before send packet!");
+            return;
+        }
+        let rc = self.robot_client_channel.as_mut().unwrap();
         let size = rc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(_) => {

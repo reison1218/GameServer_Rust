@@ -1,10 +1,12 @@
 use super::*;
+use log::error;
 use std::sync::Mutex;
 use tools::cmd_code::{ClientCode, RoomCode};
 
 pub enum TcpClientType {
     GameServer,
     RoomServer,
+    RobotServer,
 }
 
 pub struct TcpClientHandler {
@@ -55,6 +57,12 @@ impl ClientHandler for TcpClientHandler {
                     .unwrap()
                     .set_room_client_channel(ts.try_clone().unwrap());
             }
+            TcpClientType::RobotServer => {
+                self.cp
+                    .lock()
+                    .unwrap()
+                    .set_room_client_channel(ts.try_clone().unwrap());
+            }
         }
         self.ts = Some(ts);
     }
@@ -68,6 +76,7 @@ impl ClientHandler for TcpClientHandler {
             TcpClientType::RoomServer => {
                 address = Some(CONF_MAP.get_str("room_port"));
             }
+            TcpClientType::RobotServer => address = Some(CONF_MAP.get_str("robot_port")),
         }
         self.on_read(address.unwrap().to_string());
     }
@@ -113,10 +122,5 @@ impl ClientHandler for TcpClientHandler {
                 self.arrange_packet(packet);
             }
         }
-    }
-
-    fn get_address(&self) -> &str {
-        let address = CONF_MAP.get_str("gamePort");
-        address
     }
 }

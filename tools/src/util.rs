@@ -176,7 +176,7 @@ pub mod packet {
         len: u32,
         user_id: u32,
         is_broad: bool,  //是否需要广播
-        is_client: bool, //是否需要广播
+        is_client: bool, //是否客户端
     }
 
     #[derive(Debug, Default, Clone)]

@@ -1,0 +1,32 @@
+syntax = "proto3";
+package protos;
+import "base.proto";
+
+///机器人proto结构体
+message RobotPt{
+    uint32 robot_id = 1;//机器人id
+    string nick_name = 2;//机器人名称
+    BattleCharacterPt cter = 3;//机器人选择的角色数据
+    uint32 state = 4;//机器人状态，是否已经准备 0:未准备，1：准备
+    uint32 team_id = 5;//机器人所属队伍id
+    uint64 join_time = 6;//玩家进入房间的时间
+}
+
+///机器人房间proto结构体
+message RobotRoomPt{
+    uint64 room_id = 1;//房间id
+}
+
+//请求机器人
+//cmd:25001
+message C_REQUEST_ROBOT{
+    uint64 room_id = 1;//房间类型
+    repeated uint32 need_index = 2;//需要机器人的下标
+    repeated uint32 already_cter = 3;//已经选择了的角色id
+}
+
+//请求机器人
+//cmd:30002
+message S_REQUEST_ROBOT{
+    repeated RobotPt robots = 2;//机器人
+}

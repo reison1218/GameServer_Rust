@@ -1,28 +1,27 @@
 use crate::goal_ai::cter::Cter;
 use crate::goal_ai::goal_evaluator::GoalEvaluator;
-use crate::goal_ai::goals::goal::Goal;
 use crossbeam::atomic::AtomicCell;
 
 #[derive(Default)]
-pub struct AttackTargetGoalEvaluator {
+pub struct SkillTargetGoalEvaluator {
     desirability: AtomicCell<u32>,
 }
 
-impl AttackTargetGoalEvaluator {
+impl SkillTargetGoalEvaluator {
     pub fn new(desirability: u32) -> Self {
-        let mut at = AttackTargetGoalEvaluator::default();
+        let mut at = SkillTargetGoalEvaluator::default();
         at.desirability = AtomicCell::new(desirability);
         at
     }
 }
 
-impl GoalEvaluator for AttackTargetGoalEvaluator {
+impl GoalEvaluator for SkillTargetGoalEvaluator {
     fn calculate_desirability(&self) -> u32 {
-        1
+        0
     }
 
     fn set_goal(&self, cter: &Cter) {
-        println!("向AttackTargetGoalEvaluator设置goal");
-        cter.goal_think.add_attack_target();
+        println!("向SkillTargetGoalEvaluator设置goal");
+        cter.goal_think.add_skill_target();
     }
 }

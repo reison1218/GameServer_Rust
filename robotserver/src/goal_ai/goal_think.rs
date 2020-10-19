@@ -5,6 +5,7 @@ use crate::goal_ai::goal_status::GoalStatus;
 use crate::goal_ai::goals::goal::Goal;
 use crate::goal_ai::goals::goal_attack_target::GoalAttackTarget;
 use crate::goal_ai::goals::goal_combined::GoalCombined;
+use crate::goal_ai::goals::goal_skill_target::GoalSkillTarget;
 use crossbeam::atomic::AtomicCell;
 use std::borrow::BorrowMut;
 use std::collections::VecDeque;
@@ -55,6 +56,12 @@ impl GoalThink {
         self.remove_all_sub_goals();
         let goald_att_target = GoalAttackTarget::default();
         self.add_sub_goal(Box::new(goald_att_target));
+    }
+
+    pub fn add_skill_target(&self) {
+        self.remove_all_sub_goals();
+        let goald_skill_target = GoalSkillTarget::default();
+        self.add_sub_goal(Box::new(goald_skill_target));
     }
 }
 

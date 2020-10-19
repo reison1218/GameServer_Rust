@@ -3,6 +3,7 @@ use log::{error, info};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use tools::cmd_code::RobotCode;
+use tools::protos::robot::C_REQUEST_ROBOT;
 use tools::tcp::{ClientHandler, TcpSender};
 use tools::util::packet::Packet;
 
@@ -60,4 +61,4 @@ impl tools::tcp::Handler for TcpServerHandler {
 }
 
 ///处理客户端消息
-async fn handler_mess_s(_: Arc<Mutex<RobotMgr>>, _: Packet) {}
+async fn handler_mess_s(_: Arc<Mutex<RobotMgr>>, packet: Packet) {}

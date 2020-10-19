@@ -18,4 +18,5 @@ lazy_static = "1.4.0"
 simplelog = "0.7.5"
 crossbeam ="0.8"
 async-std = "1.6"
+anyhow = "1.0.31"
 tools = { path = "../tools" }

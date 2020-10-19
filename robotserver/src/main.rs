@@ -1,5 +1,6 @@
 pub mod fsm;
 pub mod goal_ai;
+pub mod handlers;
 pub mod mgr;
 pub mod net;
 
@@ -33,11 +34,11 @@ lazy_static! {
 }
 
 fn main() {
-    test_goal();
-    // let info_log = CONF_MAP.get_str("info_log_path");
-    // let error_log = CONF_MAP.get_str("error_log_path");
-    // //初始化日志
-    // init_log(info_log, error_log);
+    //test_goal();
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    //初始化日志
+    init_log(info_log, error_log);
     ///初始化机器人服务器网络
     init_tcp_server();
 }
@@ -68,7 +69,7 @@ fn test_goal() {
 fn init_tcp_server() {
     let sh = TcpServerHandler {
         sender: None,
-        rm: Arc::new(Mutex::new(RobotMgr::default())),
+        rm: Arc::new(Mutex::new(RobotMgr::new())),
     };
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     let res = tcp_server::new(tcp_port, sh);
