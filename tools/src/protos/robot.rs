@@ -380,6 +380,534 @@ impl ::protobuf::reflect::ProtobufValue for RobotPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct MapCellPt {
+    // message fields
+    pub id: u32,
+    pub index: u32,
+    pub element: u32,
+    pub is_world_cell: bool,
+    pub x: i32,
+    pub y: i32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a MapCellPt {
+    fn default() -> &'a MapCellPt {
+        <MapCellPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl MapCellPt {
+    pub fn new() -> MapCellPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 id = 1;
+
+
+    pub fn get_id(&self) -> u32 {
+        self.id
+    }
+    pub fn clear_id(&mut self) {
+        self.id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: u32) {
+        self.id = v;
+    }
+
+    // uint32 index = 2;
+
+
+    pub fn get_index(&self) -> u32 {
+        self.index
+    }
+    pub fn clear_index(&mut self) {
+        self.index = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
+    }
+
+    // uint32 element = 3;
+
+
+    pub fn get_element(&self) -> u32 {
+        self.element
+    }
+    pub fn clear_element(&mut self) {
+        self.element = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_element(&mut self, v: u32) {
+        self.element = v;
+    }
+
+    // bool is_world_cell = 4;
+
+
+    pub fn get_is_world_cell(&self) -> bool {
+        self.is_world_cell
+    }
+    pub fn clear_is_world_cell(&mut self) {
+        self.is_world_cell = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_is_world_cell(&mut self, v: bool) {
+        self.is_world_cell = v;
+    }
+
+    // int32 x = 5;
+
+
+    pub fn get_x(&self) -> i32 {
+        self.x
+    }
+    pub fn clear_x(&mut self) {
+        self.x = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_x(&mut self, v: i32) {
+        self.x = v;
+    }
+
+    // int32 y = 6;
+
+
+    pub fn get_y(&self) -> i32 {
+        self.y
+    }
+    pub fn clear_y(&mut self) {
+        self.y = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_y(&mut self, v: i32) {
+        self.y = v;
+    }
+}
+
+impl ::protobuf::Message for MapCellPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.index = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.element = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.is_world_cell = tmp;
+                },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int32()?;
+                    self.x = tmp;
+                },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int32()?;
+                    self.y = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.index, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.element != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.element, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.is_world_cell != false {
+            my_size += 2;
+        }
+        if self.x != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.x, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.y != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.y, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.id != 0 {
+            os.write_uint32(1, self.id)?;
+        }
+        if self.index != 0 {
+            os.write_uint32(2, self.index)?;
+        }
+        if self.element != 0 {
+            os.write_uint32(3, self.element)?;
+        }
+        if self.is_world_cell != false {
+            os.write_bool(4, self.is_world_cell)?;
+        }
+        if self.x != 0 {
+            os.write_int32(5, self.x)?;
+        }
+        if self.y != 0 {
+            os.write_int32(6, self.y)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> MapCellPt {
+        MapCellPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "id",
+                |m: &MapCellPt| { &m.id },
+                |m: &mut MapCellPt| { &mut m.id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "index",
+                |m: &MapCellPt| { &m.index },
+                |m: &mut MapCellPt| { &mut m.index },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "element",
+                |m: &MapCellPt| { &m.element },
+                |m: &mut MapCellPt| { &mut m.element },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                "is_world_cell",
+                |m: &MapCellPt| { &m.is_world_cell },
+                |m: &mut MapCellPt| { &mut m.is_world_cell },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                "x",
+                |m: &MapCellPt| { &m.x },
+                |m: &mut MapCellPt| { &mut m.x },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                "y",
+                |m: &MapCellPt| { &m.y },
+                |m: &mut MapCellPt| { &mut m.y },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<MapCellPt>(
+                "MapCellPt",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static MapCellPt {
+        static instance: ::protobuf::rt::LazyV2<MapCellPt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(MapCellPt::new)
+    }
+}
+
+impl ::protobuf::Clear for MapCellPt {
+    fn clear(&mut self) {
+        self.id = 0;
+        self.index = 0;
+        self.element = 0;
+        self.is_world_cell = false;
+        self.x = 0;
+        self.y = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for MapCellPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for MapCellPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct TileMapPt {
+    // message fields
+    pub id: u32,
+    pub cell_maps: ::protobuf::RepeatedField<MapCellPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a TileMapPt {
+    fn default() -> &'a TileMapPt {
+        <TileMapPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl TileMapPt {
+    pub fn new() -> TileMapPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 id = 1;
+
+
+    pub fn get_id(&self) -> u32 {
+        self.id
+    }
+    pub fn clear_id(&mut self) {
+        self.id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: u32) {
+        self.id = v;
+    }
+
+    // repeated .protos.MapCellPt cell_maps = 2;
+
+
+    pub fn get_cell_maps(&self) -> &[MapCellPt] {
+        &self.cell_maps
+    }
+    pub fn clear_cell_maps(&mut self) {
+        self.cell_maps.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cell_maps(&mut self, v: ::protobuf::RepeatedField<MapCellPt>) {
+        self.cell_maps = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_cell_maps(&mut self) -> &mut ::protobuf::RepeatedField<MapCellPt> {
+        &mut self.cell_maps
+    }
+
+    // Take field
+    pub fn take_cell_maps(&mut self) -> ::protobuf::RepeatedField<MapCellPt> {
+        ::std::mem::replace(&mut self.cell_maps, ::protobuf::RepeatedField::new())
+    }
+}
+
+impl ::protobuf::Message for TileMapPt {
+    fn is_initialized(&self) -> bool {
+        for v in &self.cell_maps {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cell_maps)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        for value in &self.cell_maps {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.id != 0 {
+            os.write_uint32(1, self.id)?;
+        }
+        for v in &self.cell_maps {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> TileMapPt {
+        TileMapPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "id",
+                |m: &TileMapPt| { &m.id },
+                |m: &mut TileMapPt| { &mut m.id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<MapCellPt>>(
+                "cell_maps",
+                |m: &TileMapPt| { &m.cell_maps },
+                |m: &mut TileMapPt| { &mut m.cell_maps },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<TileMapPt>(
+                "TileMapPt",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static TileMapPt {
+        static instance: ::protobuf::rt::LazyV2<TileMapPt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(TileMapPt::new)
+    }
+}
+
+impl ::protobuf::Clear for TileMapPt {
+    fn clear(&mut self) {
+        self.id = 0;
+        self.cell_maps.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for TileMapPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for TileMapPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct RobotRoomPt {
     // message fields
     pub room_id: u64,
@@ -535,7 +1063,8 @@ impl ::protobuf::reflect::ProtobufValue for RobotRoomPt {
 pub struct C_REQUEST_ROBOT {
     // message fields
     pub room_id: u64,
-    pub need_index: ::std::vec::Vec<u32>,
+    pub need_num: u32,
+    pub tile_map: ::protobuf::SingularPtrField<TileMapPt>,
     pub already_cter: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -568,32 +1097,55 @@ impl C_REQUEST_ROBOT {
         self.room_id = v;
     }
 
-    // repeated uint32 need_index = 2;
+    // uint32 need_num = 2;
 
 
-    pub fn get_need_index(&self) -> &[u32] {
-        &self.need_index
+    pub fn get_need_num(&self) -> u32 {
+        self.need_num
     }
-    pub fn clear_need_index(&mut self) {
-        self.need_index.clear();
+    pub fn clear_need_num(&mut self) {
+        self.need_num = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_need_index(&mut self, v: ::std::vec::Vec<u32>) {
-        self.need_index = v;
+    pub fn set_need_num(&mut self, v: u32) {
+        self.need_num = v;
+    }
+
+    // .protos.TileMapPt tile_map = 3;
+
+
+    pub fn get_tile_map(&self) -> &TileMapPt {
+        self.tile_map.as_ref().unwrap_or_else(|| <TileMapPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_tile_map(&mut self) {
+        self.tile_map.clear();
+    }
+
+    pub fn has_tile_map(&self) -> bool {
+        self.tile_map.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_tile_map(&mut self, v: TileMapPt) {
+        self.tile_map = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
-    pub fn mut_need_index(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.need_index
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_tile_map(&mut self) -> &mut TileMapPt {
+        if self.tile_map.is_none() {
+            self.tile_map.set_default();
+        }
+        self.tile_map.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_need_index(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.need_index, ::std::vec::Vec::new())
+    pub fn take_tile_map(&mut self) -> TileMapPt {
+        self.tile_map.take().unwrap_or_else(|| TileMapPt::new())
     }
 
-    // repeated uint32 already_cter = 3;
+    // repeated uint32 already_cter = 4;
 
 
     pub fn get_already_cter(&self) -> &[u32] {
@@ -621,6 +1173,11 @@ impl C_REQUEST_ROBOT {
 
 impl ::protobuf::Message for C_REQUEST_ROBOT {
     fn is_initialized(&self) -> bool {
+        for v in &self.tile_map {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -636,9 +1193,16 @@ impl ::protobuf::Message for C_REQUEST_ROBOT {
                     self.room_id = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.need_index)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.need_num = tmp;
                 },
                 3 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.tile_map)?;
+                },
+                4 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.already_cter)?;
                 },
                 _ => {
@@ -656,11 +1220,15 @@ impl ::protobuf::Message for C_REQUEST_ROBOT {
         if self.room_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.need_index {
-            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
+        if self.need_num != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.need_num, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.tile_map.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         for value in &self.already_cter {
-            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -671,11 +1239,16 @@ impl ::protobuf::Message for C_REQUEST_ROBOT {
         if self.room_id != 0 {
             os.write_uint64(1, self.room_id)?;
         }
-        for v in &self.need_index {
-            os.write_uint32(2, *v)?;
-        };
+        if self.need_num != 0 {
+            os.write_uint32(2, self.need_num)?;
+        }
+        if let Some(ref v) = self.tile_map.as_ref() {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
         for v in &self.already_cter {
-            os.write_uint32(3, *v)?;
+            os.write_uint32(4, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -720,10 +1293,15 @@ impl ::protobuf::Message for C_REQUEST_ROBOT {
                 |m: &C_REQUEST_ROBOT| { &m.room_id },
                 |m: &mut C_REQUEST_ROBOT| { &mut m.room_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "need_index",
-                |m: &C_REQUEST_ROBOT| { &m.need_index },
-                |m: &mut C_REQUEST_ROBOT| { &mut m.need_index },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "need_num",
+                |m: &C_REQUEST_ROBOT| { &m.need_num },
+                |m: &mut C_REQUEST_ROBOT| { &mut m.need_num },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<TileMapPt>>(
+                "tile_map",
+                |m: &C_REQUEST_ROBOT| { &m.tile_map },
+                |m: &mut C_REQUEST_ROBOT| { &mut m.tile_map },
             ));
             fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "already_cter",
@@ -747,7 +1325,8 @@ impl ::protobuf::Message for C_REQUEST_ROBOT {
 impl ::protobuf::Clear for C_REQUEST_ROBOT {
     fn clear(&mut self) {
         self.room_id = 0;
-        self.need_index.clear();
+        self.need_num = 0;
+        self.tile_map.clear();
         self.already_cter.clear();
         self.unknown_fields.clear();
     }
@@ -937,12 +1516,20 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     me\x18\x02\x20\x01(\tR\x08nickName\x12-\n\x04cter\x18\x03\x20\x01(\x0b2\
     \x19.protos.BattleCharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\
     \x01(\rR\x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\
-    \x1b\n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"&\n\x0bRobotRoomPt\
-    \x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\"l\n\x0fC_REQUEST_\
-    ROBOT\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x1d\n\nne\
-    ed_index\x18\x02\x20\x03(\rR\tneedIndex\x12!\n\x0calready_cter\x18\x03\
-    \x20\x03(\rR\x0balreadyCter\":\n\x0fS_REQUEST_ROBOT\x12'\n\x06robots\x18\
-    \x02\x20\x03(\x0b2\x0f.protos.RobotPtR\x06robotsb\x06proto3\
+    \x1b\n\tjoin_time\x18\x06\x20\x01(\x04R\x08joinTime\"\x8b\x01\n\tMapCell\
+    Pt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12\x14\n\x05index\x18\x02\
+    \x20\x01(\rR\x05index\x12\x18\n\x07element\x18\x03\x20\x01(\rR\x07elemen\
+    t\x12\"\n\ris_world_cell\x18\x04\x20\x01(\x08R\x0bisWorldCell\x12\x0c\n\
+    \x01x\x18\x05\x20\x01(\x05R\x01x\x12\x0c\n\x01y\x18\x06\x20\x01(\x05R\
+    \x01y\"K\n\tTileMapPt\x12\x0e\n\x02id\x18\x01\x20\x01(\rR\x02id\x12.\n\t\
+    cell_maps\x18\x02\x20\x03(\x0b2\x11.protos.MapCellPtR\x08cellMaps\"&\n\
+    \x0bRobotRoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\"\
+    \x96\x01\n\x0fC_REQUEST_ROBOT\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\
+    \x06roomId\x12\x19\n\x08need_num\x18\x02\x20\x01(\rR\x07needNum\x12,\n\
+    \x08tile_map\x18\x03\x20\x01(\x0b2\x11.protos.TileMapPtR\x07tileMap\x12!\
+    \n\x0calready_cter\x18\x04\x20\x03(\rR\x0balreadyCter\":\n\x0fS_REQUEST_\
+    ROBOT\x12'\n\x06robots\x18\x02\x20\x03(\x0b2\x0f.protos.RobotPtR\x06robo\
+    tsb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

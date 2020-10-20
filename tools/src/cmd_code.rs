@@ -83,8 +83,6 @@ pub enum RoomCode {
     Action = 20031,
     //架势请求
     Pos = 20032,
-    //请求机器人
-    RequestRobot = 25001,
     //---------------------------------------战斗结束
     //更新赛季
     UpdateSeason = 29998,

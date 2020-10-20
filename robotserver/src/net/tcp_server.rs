@@ -61,4 +61,7 @@ impl tools::tcp::Handler for TcpServerHandler {
 }
 
 ///处理客户端消息
-async fn handler_mess_s(_: Arc<Mutex<RobotMgr>>, packet: Packet) {}
+async fn handler_mess_s(rm: Arc<Mutex<RobotMgr>>, packet: Packet) {
+    let mut lock = rm.lock().unwrap();
+    lock.invok(packet);
+}

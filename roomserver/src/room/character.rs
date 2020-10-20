@@ -68,7 +68,7 @@ pub struct BattleStatus {
     pub attack_state: AttackState, //是否可以攻击
 }
 
-///角色战斗基础属性
+///角色战斗buff
 #[derive(Clone, Debug, Default)]
 pub struct BattleBuff {
     pub buffs: HashMap<u32, Buff>,          //角色身上的buff

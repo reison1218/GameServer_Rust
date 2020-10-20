@@ -2182,6 +2182,7 @@ impl ::protobuf::reflect::ProtobufValue for CharacterPt {
 #[derive(PartialEq,Clone,Default)]
 pub struct BattleCharacterPt {
     // message fields
+    pub room_id: u64,
     pub user_id: u32,
     pub cter_id: u32,
     pub atk: u32,
@@ -2206,7 +2207,22 @@ impl BattleCharacterPt {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // uint64 room_id = 1;
+
+
+    pub fn get_room_id(&self) -> u64 {
+        self.room_id
+    }
+    pub fn clear_room_id(&mut self) {
+        self.room_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_id(&mut self, v: u64) {
+        self.room_id = v;
+    }
+
+    // uint32 user_id = 2;
 
 
     pub fn get_user_id(&self) -> u32 {
@@ -2221,7 +2237,7 @@ impl BattleCharacterPt {
         self.user_id = v;
     }
 
-    // uint32 cter_id = 2;
+    // uint32 cter_id = 3;
 
 
     pub fn get_cter_id(&self) -> u32 {
@@ -2236,7 +2252,7 @@ impl BattleCharacterPt {
         self.cter_id = v;
     }
 
-    // uint32 atk = 3;
+    // uint32 atk = 4;
 
 
     pub fn get_atk(&self) -> u32 {
@@ -2251,7 +2267,7 @@ impl BattleCharacterPt {
         self.atk = v;
     }
 
-    // uint32 hp = 4;
+    // uint32 hp = 5;
 
 
     pub fn get_hp(&self) -> u32 {
@@ -2266,7 +2282,7 @@ impl BattleCharacterPt {
         self.hp = v;
     }
 
-    // uint32 defence = 5;
+    // uint32 defence = 6;
 
 
     pub fn get_defence(&self) -> u32 {
@@ -2281,7 +2297,7 @@ impl BattleCharacterPt {
         self.defence = v;
     }
 
-    // repeated uint32 buffs = 6;
+    // repeated uint32 buffs = 7;
 
 
     pub fn get_buffs(&self) -> &[u32] {
@@ -2306,7 +2322,7 @@ impl BattleCharacterPt {
         ::std::mem::replace(&mut self.buffs, ::std::vec::Vec::new())
     }
 
-    // repeated uint32 skills = 7;
+    // repeated uint32 skills = 8;
 
 
     pub fn get_skills(&self) -> &[u32] {
@@ -2331,7 +2347,7 @@ impl BattleCharacterPt {
         ::std::mem::replace(&mut self.skills, ::std::vec::Vec::new())
     }
 
-    // repeated uint32 items = 8;
+    // repeated uint32 items = 9;
 
 
     pub fn get_items(&self) -> &[u32] {
@@ -2370,44 +2386,51 @@ impl ::protobuf::Message for BattleCharacterPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
+                    let tmp = is.read_uint64()?;
+                    self.room_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.cter_id = tmp;
+                    self.user_id = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.atk = tmp;
+                    self.cter_id = tmp;
                 },
                 4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.hp = tmp;
+                    self.atk = tmp;
                 },
                 5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.defence = tmp;
+                    self.hp = tmp;
                 },
                 6 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.defence = tmp;
                 },
                 7 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.skills)?;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.buffs)?;
                 },
                 8 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.skills)?;
+                },
+                9 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.items)?;
                 },
                 _ => {
@@ -2422,29 +2445,32 @@ impl ::protobuf::Message for BattleCharacterPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.room_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.atk != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.atk, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.atk, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.hp != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.hp, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(5, self.hp, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.defence != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.defence, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(6, self.defence, ::protobuf::wire_format::WireTypeVarint);
         }
         for value in &self.buffs {
-            my_size += ::protobuf::rt::value_size(6, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
-        for value in &self.skills {
             my_size += ::protobuf::rt::value_size(7, *value, ::protobuf::wire_format::WireTypeVarint);
         };
-        for value in &self.items {
+        for value in &self.skills {
             my_size += ::protobuf::rt::value_size(8, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
+        for value in &self.items {
+            my_size += ::protobuf::rt::value_size(9, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -2452,29 +2478,32 @@ impl ::protobuf::Message for BattleCharacterPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.room_id != 0 {
+            os.write_uint64(1, self.room_id)?;
+        }
         if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
+            os.write_uint32(2, self.user_id)?;
         }
         if self.cter_id != 0 {
-            os.write_uint32(2, self.cter_id)?;
+            os.write_uint32(3, self.cter_id)?;
         }
         if self.atk != 0 {
-            os.write_uint32(3, self.atk)?;
+            os.write_uint32(4, self.atk)?;
         }
         if self.hp != 0 {
-            os.write_uint32(4, self.hp)?;
+            os.write_uint32(5, self.hp)?;
         }
         if self.defence != 0 {
-            os.write_uint32(5, self.defence)?;
+            os.write_uint32(6, self.defence)?;
         }
         for v in &self.buffs {
-            os.write_uint32(6, *v)?;
-        };
-        for v in &self.skills {
             os.write_uint32(7, *v)?;
         };
-        for v in &self.items {
+        for v in &self.skills {
             os.write_uint32(8, *v)?;
+        };
+        for v in &self.items {
+            os.write_uint32(9, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2514,6 +2543,11 @@ impl ::protobuf::Message for BattleCharacterPt {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "room_id",
+                |m: &BattleCharacterPt| { &m.room_id },
+                |m: &mut BattleCharacterPt| { &mut m.room_id },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "user_id",
                 |m: &BattleCharacterPt| { &m.user_id },
@@ -2570,6 +2604,7 @@ impl ::protobuf::Message for BattleCharacterPt {
 
 impl ::protobuf::Clear for BattleCharacterPt {
     fn clear(&mut self) {
+        self.room_id = 0;
         self.user_id = 0;
         self.cter_id = 0;
         self.atk = 0;
@@ -4664,38 +4699,39 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\
     \x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\x05grade\
     \x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\x12\x16\n\
-    \x06skills\x18\x04\x20\x03(\rR\x06skills\"\xc5\x01\n\x11BattleCharacterP\
-    t\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter_i\
-    d\x18\x02\x20\x01(\rR\x06cterId\x12\x10\n\x03atk\x18\x03\x20\x01(\rR\x03\
-    atk\x12\x0e\n\x02hp\x18\x04\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\
-    \x05\x20\x01(\rR\x07defence\x12\x14\n\x05buffs\x18\x06\x20\x03(\rR\x05bu\
-    ffs\x12\x16\n\x06skills\x18\x07\x20\x03(\rR\x06skills\x12\x14\n\x05items\
-    \x18\x08\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_type\
-    \x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\
-    \rR\x0beffectValue\"\x96\x02\n\x08TargetPt\x12!\n\x0ctarget_value\x18\
-    \x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\x18\x02\x20\x03(\x0b2\
-    \x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\x03(\r\
-    R\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.protos.Tri\
-    ggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\t\
-    lostBuffs\x12@\n\x0etransform_cter\x18\x06\x20\x01(\x0b2\x19.protos.Batt\
-    leCharacterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_\
-    id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\
-    \x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0c\
-    ActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\
-    \x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_v\
-    alue\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\
-    \x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\
-    \x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\
-    \x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etrig\
-    gerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"k\n\rSu\
-    mmaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\
-    \x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\
-    \x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\"e\n\x0c\
-    CterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\
-    \n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\
-    \x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05ind\
-    ex\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\
-    \x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    \x06skills\x18\x04\x20\x03(\rR\x06skills\"\xde\x01\n\x11BattleCharacterP\
+    t\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x17\n\x07user\
+    _id\x18\x02\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\
+    \rR\x06cterId\x12\x10\n\x03atk\x18\x04\x20\x01(\rR\x03atk\x12\x0e\n\x02h\
+    p\x18\x05\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x06\x20\x01(\rR\x07\
+    defence\x12\x14\n\x05buffs\x18\x07\x20\x03(\rR\x05buffs\x12\x16\n\x06ski\
+    lls\x18\x08\x20\x03(\rR\x06skills\x12\x14\n\x05items\x18\t\x20\x03(\rR\
+    \x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\
+    \neffectType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0beffectValue\"\
+    \x96\x02\n\x08TargetPt\x12!\n\x0ctarget_value\x18\x01\x20\x03(\rR\x0btar\
+    getValue\x12*\n\x07effects\x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\
+    \x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\
+    \rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassi\
+    veEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\x12@\n\x0e\
+    transform_cter\x18\x06\x20\x01(\x0b2\x19.protos.BattleCharacterPtR\rtran\
+    sformCter\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\
+    \rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x14\n\
+    \x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUnitPt\x12\
+    \x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_ty\
+    pe\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\
+    \x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.prot\
+    os.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostB\
+    uffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\
+    \x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTimesed\x12\x1d\
+    \n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"k\n\rSummaryDataPt\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\
+    \x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05gra\
+    de\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\"e\n\x0cCterStatusPt\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\
+    \x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e\
+    .protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\
+    \x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffP\
+    tR\x05buffsb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

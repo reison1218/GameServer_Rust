@@ -1399,6 +1399,11 @@ dependencies = [
  "lazy_static",
  "log",
  "num_enum",
+ "protobuf",
+ "protobuf-codegen",
+ "protoc-rust",
+ "rand",
+ "rayon",
  "simplelog",
  "tools",
 ]

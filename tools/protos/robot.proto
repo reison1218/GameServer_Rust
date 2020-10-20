@@ -12,6 +12,23 @@ message RobotPt{
     uint64 join_time = 6;//玩家进入房间的时间
 }
 
+//地图proto封装结构体
+message MapCellPt{
+    uint32 id = 1;//快的配置id
+    uint32 index = 2;//块的下标
+    uint32 element = 3;//元素
+    bool is_world_cell = 4;//是否是世界块
+    int32 x = 5;//x坐标
+    int32 y = 6;//y坐标
+}
+
+
+//地图proto封装结构体
+message TileMapPt{
+    uint32 id = 1;//地图配置id
+    repeated MapCellPt cell_maps = 2;//地图块
+}
+
 ///机器人房间proto结构体
 message RobotRoomPt{
     uint64 room_id = 1;//房间id
@@ -21,8 +38,10 @@ message RobotRoomPt{
 //cmd:25001
 message C_REQUEST_ROBOT{
     uint64 room_id = 1;//房间类型
-    repeated uint32 need_index = 2;//需要机器人的下标
-    repeated uint32 already_cter = 3;//已经选择了的角色id
+    uint32 need_num = 2;//需要的数量
+    TileMapPt tile_map = 3;//地图数据
+    repeated uint32 already_cter = 4;//已经选择了的角色id
+
 }
 
 //请求机器人

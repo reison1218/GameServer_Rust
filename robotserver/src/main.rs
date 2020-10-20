@@ -1,9 +1,11 @@
+pub mod battle;
 pub mod fsm;
 pub mod goal_ai;
 pub mod handlers;
 pub mod mgr;
 pub mod net;
 
+use crate::battle::battle::RobotCter;
 use crate::fsm::miner::{Miner, Robot};
 use crate::fsm::status::{EnterMineAndDigForNugget, Status};
 use crate::goal_ai::cter::Cter;
@@ -35,12 +37,13 @@ lazy_static! {
 
 fn main() {
     //test_goal();
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-    //初始化日志
-    init_log(info_log, error_log);
-    ///初始化机器人服务器网络
-    init_tcp_server();
+    // let info_log = CONF_MAP.get_str("info_log_path");
+    // let error_log = CONF_MAP.get_str("error_log_path");
+    // //初始化日志
+    // init_log(info_log, error_log);
+    // let rm = Arc::new(Mutex::new(RobotMgr::new()));
+    // ///初始化机器人服务器网络
+    // init_tcp_server(rm.clone());
 }
 
 fn test_fsm() {
@@ -66,11 +69,8 @@ fn test_goal() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server() {
-    let sh = TcpServerHandler {
-        sender: None,
-        rm: Arc::new(Mutex::new(RobotMgr::new())),
-    };
+fn init_tcp_server(rm: Arc<Mutex<RobotMgr>>) {
+    let sh = TcpServerHandler { sender: None, rm };
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     let res = tcp_server::new(tcp_port, sh);
     if let Err(e) = res {

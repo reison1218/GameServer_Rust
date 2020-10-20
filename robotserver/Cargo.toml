@@ -12,6 +12,9 @@ lto = "fat" #链接时优化,所有crate贯穿所有进行优化
 codegen-units = 1 #将每一个crate作为一整块进行编译
 
 [dependencies]
+protobuf="2.10.1"
+protoc-rust = "2.10.1"
+protobuf-codegen="2.10.1"
 num_enum = "0.5.1"
 log="0.4.8"
 lazy_static = "1.4.0"
@@ -19,4 +22,6 @@ simplelog = "0.7.5"
 crossbeam ="0.8"
 async-std = "1.6"
 anyhow = "1.0.31"
+rayon = "1.4.1"
+rand = "0.7.3"
 tools = { path = "../tools" }

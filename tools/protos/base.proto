@@ -84,14 +84,15 @@ message CharacterPt{
 
 //玩家战斗角色数据
 message BattleCharacterPt{
-    uint32 user_id = 1;                 //玩家id
-    uint32 cter_id = 2;                 //角色id
-    uint32 atk = 3;                     //攻击力
-    uint32 hp = 4;                      //角色血量
-    uint32 defence = 5;                 //角色防御
-    repeated uint32 buffs = 6;          //角色身上的buff
-    repeated uint32 skills = 7;         //玩家选择的技能
-    repeated uint32 items = 8;          //玩家身上的道具
+    uint64 room_id = 1;                 //房间id
+    uint32 user_id = 2;                 //玩家id
+    uint32 cter_id = 3;                 //角色id
+    uint32 atk = 4;                     //攻击力
+    uint32 hp = 5;                      //角色血量
+    uint32 defence = 6;                 //角色防御
+    repeated uint32 buffs = 7;          //角色身上的buff
+    repeated uint32 skills = 8;         //玩家选择的技能
+    repeated uint32 items = 9;          //玩家身上的道具
 }
 
 message EffectPt{
