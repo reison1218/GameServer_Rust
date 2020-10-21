@@ -2,6 +2,7 @@ mod battle;
 mod handlers;
 mod mgr;
 mod net;
+mod robot;
 mod room;
 mod task_timer;
 #[macro_use]

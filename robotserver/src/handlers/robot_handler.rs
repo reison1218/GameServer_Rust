@@ -24,5 +24,6 @@ pub fn request_robot(rm: &RobotMgr, packet: Packet) -> anyhow::Result<()> {
     //将机器人添加到房间
     rm.add_robot_to_room(room_id, need_num, already_cters);
 
-    srr.robots.Ok(())
+    
+    Ok(())
 }
