@@ -4,6 +4,7 @@ use crate::handlers::room_handler::{
     join_room, kick_member, leave_room, prepare_cancel, reload_temps, room_setting, search_room,
     skip_choice_turn, start, update_season,
 };
+use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
 use crate::room::room_model::{BattleType, CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::task_timer::Task;
@@ -22,7 +23,10 @@ pub struct RoomMgr {
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
     sender: Option<TcpSender>, //tcp channel的发送方
     pub task_sender: Option<crossbeam::channel::Sender<Task>>, //task channel的发送方
+    pub robot_task_sender: Option<crossbeam::channel::Sender<RobotTask>>, //机器人task channel的发送方
 }
+
+tools::get_mut_ref!(RoomMgr);
 
 impl RoomMgr {
     pub fn new() -> RoomMgr {
@@ -37,6 +41,7 @@ impl RoomMgr {
             player_room,
             sender: None,
             task_sender: None,
+            robot_task_sender: None,
             cmd_map,
         };
         rm.cmd_init();

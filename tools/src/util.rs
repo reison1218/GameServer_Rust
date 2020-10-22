@@ -253,7 +253,7 @@ pub mod packet {
             }
         }
 
-        pub fn build_array_from_client(bytes: Vec<u8>) -> anyhow::Result<Vec<Packet>> {
+        pub fn build_array_client(bytes: Vec<u8>) -> anyhow::Result<Vec<Packet>> {
             let mut bb = ByteBuf::from(bytes);
             let mut v = Vec::new();
             loop {

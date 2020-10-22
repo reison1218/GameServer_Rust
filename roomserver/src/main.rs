@@ -43,6 +43,12 @@ lazy_static! {
         stp
     };
 
+    ///机器人定时器任务队列
+    static ref ROBOT_SCHEDULED_MGR : ScheduledThreadPool = {
+        let stp = ScheduledThreadPool::with_name("ROBOT_TASK_TIMER",8);
+        stp
+    };
+
     ///reids客户端
     static ref REDIS_POOL:Arc<Mutex<RedisPoolTool>>={
         let add: &str = CONF_MAP.get_str("redis_add");
@@ -52,6 +58,8 @@ lazy_static! {
         redis
     };
 }
+
+static ROBOT_ID: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
 
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 

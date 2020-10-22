@@ -4,10 +4,10 @@ use crate::robot::goal_evaluator::attack_goal_evaluator::AttackTargetGoalEvaluat
 use crate::room::character::BattleCharacter;
 
 ///评估trait
-pub trait GoalEvaluator: Send + 'static {
+pub trait GoalEvaluator: Send + Sync + 'static {
     ///计算期望值
-    fn calculate_desirability(&self) -> u32;
+    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32;
 
     ///设置评估
-    fn set_status(&self, cter: &mut BattleCharacter);
+    fn set_status(&self, cter: &BattleCharacter);
 }

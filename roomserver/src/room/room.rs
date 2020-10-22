@@ -11,7 +11,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
-use std::borrow::BorrowMut;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
@@ -168,7 +168,7 @@ impl Room {
     }
 
     ///刷新地图
-    pub fn refresh_map(&mut self) -> bool {
+    pub fn refresh_map(&'static mut self) -> bool {
         let need_refresh = self.battle_data.check_refresh_map();
         if !need_refresh {
             return false;
@@ -570,6 +570,14 @@ impl Room {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let member = self.members.get(&user_id);
+        if let None = member {
+            return;
+        }
+        let member = member.unwrap();
+        if member.is_robot {
+            return;
+        }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         self.get_sender_mut().write(bytes);
     }
@@ -1104,7 +1112,7 @@ impl Room {
 
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
-            let battle_cter = BattleCharacter::init(&member.chose_cter);
+            let battle_cter = BattleCharacter::init(&member.chose_cter, &self.battle_data);
             match battle_cter {
                 Ok(b_cter) => {
                     self.battle_data.battle_cter.insert(member.user_id, b_cter);

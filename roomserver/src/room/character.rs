@@ -1,4 +1,4 @@
-use crate::battle::battle::Item;
+use crate::battle::battle::{BattleData, Item};
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
@@ -11,6 +11,8 @@ use crate::robot::RobotData;
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::collections::HashMap;
+use std::sync::Arc;
+use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, CharacterPt, TargetPt};
 use tools::templates::character_temp::CharacterTemp;
 
@@ -105,6 +107,7 @@ pub struct BattleCharacter {
     pub index_data: IndexData,                             //角色位置数据
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub items: HashMap<u32, Item>,                         //角色身上的道具
+    pub battle_data: Option<Arc<*const BattleData>>,       //battle_data指针
     pub robot_data: Option<RobotData>, //机器人数据;如果有值，则是机器人，没有则是玩家
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
     pub self_cter: Option<Box<BattleCharacter>>, //原本的角色
@@ -113,6 +116,15 @@ pub struct BattleCharacter {
 tools::get_mut_ref!(BattleCharacter);
 
 impl BattleCharacter {
+    pub fn robot_start_action(&self) {
+        if self.robot_data.is_none() {
+            return;
+        }
+        let res = self.get_mut_ref().robot_data.as_mut().unwrap();
+        //开始仲裁
+        res.thinking_do_something(self);
+    }
+
     pub fn get_robot_action(&self) -> &mut Box<dyn RobotStatusAction> {
         let self_mut_ref = self.get_mut_ref();
         self_mut_ref
@@ -132,10 +144,10 @@ impl BattleCharacter {
     pub fn change_status(&self, robot_action: Box<dyn RobotStatusAction>) {
         let self_mut_ref = self.get_mut_ref();
         let res = self_mut_ref.get_robot_action();
-        res.exit(self.get_mut_ref());
+        res.exit();
         self_mut_ref.set_robot_status(robot_action);
         let res = self_mut_ref.get_robot_action();
-        res.enter(self.get_mut_ref());
+        res.enter();
     }
 
     pub fn set_robot_status(&mut self, status: Box<dyn RobotStatusAction>) {
@@ -507,8 +519,9 @@ impl BattleCharacter {
     }
 
     ///初始化战斗角色数据
-    pub fn init(cter: &Character) -> anyhow::Result<Self> {
+    pub fn init(cter: &Character, battle_data: &BattleData) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
+        battle_cter.battle_data = Some(Arc::new(battle_data));
         let cter_id = cter.cter_id;
         battle_cter.base_attr.user_id = cter.user_id;
         battle_cter.base_attr.cter_id = cter_id;

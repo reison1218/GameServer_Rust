@@ -129,8 +129,13 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let bytes = bytes.unwrap();
-    for member_id in room.members.clone().keys() {
-        room.send_2_client(ClientCode::ActionNotice, *member_id, bytes.clone());
+    for member in room.members.clone().values() {
+        if member.is_robot {
+            continue;
+        }
+        let member_id = member.user_id;
+
+        room.send_2_client(ClientCode::ActionNotice, member_id, bytes.clone());
     }
 
     unsafe {

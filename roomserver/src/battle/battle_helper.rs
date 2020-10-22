@@ -62,9 +62,14 @@ impl BattleData {
 
             let cter_res = self.get_battle_cter(Some(user_id), false);
             match cter_res {
-                Ok(cter) if cter.is_died() => {
-                    self.add_next_turn_index();
-                    return;
+                Ok(cter) => {
+                    if cter.is_died() {
+                        self.add_next_turn_index();
+                        return;
+                    }
+                    if cter.robot_data.is_some() {
+                        cter.robot_start_action();
+                    }
                 }
                 Err(e) => {
                     warn!("{:?}", e);
@@ -465,8 +470,12 @@ impl BattleData {
         }
 
         let bytes = sbtn.write_to_bytes().unwrap();
-        for user_id in self.battle_cter.clone().keys() {
-            self.send_2_client(ClientCode::BattleTurnNotice, *user_id, bytes.clone());
+        for cter in self.battle_cter.clone().values() {
+            if cter.robot_data.is_some() {
+                continue;
+            }
+            let user_id = cter.get_user_id();
+            self.send_2_client(ClientCode::BattleTurnNotice, user_id, bytes.clone());
         }
     }
     ///获得战斗角色可变借用指针

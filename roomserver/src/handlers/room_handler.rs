@@ -2,15 +2,18 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::Character;
 use crate::room::member::Member;
 use crate::room::member::MemberState;
-use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
+use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{BattleType, RoomModel, RoomType, TeamId};
 use crate::SEASON;
 use log::error;
 use log::info;
 use log::warn;
 use protobuf::Message;
+use rand::Rng;
 use std::convert::TryFrom;
+use std::sync::atomic::Ordering;
 use tools::cmd_code::{ClientCode, RoomCode};
+use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER,
     C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER,
@@ -334,7 +337,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
     //校验房间
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_mut_ref().get_room_mut(&user_id);
     if let None = room {
         warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
@@ -354,7 +357,8 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("there is player not ready,can not start game!");
         return Ok(());
     }
-
+    //todo   校验是否加载机器人
+    check_add_robot(rm.get_mut_ref(), room);
     //执行开始逻辑
     room.start();
 
@@ -362,6 +366,55 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     ss.is_succ = true;
     room.send_2_client(ClientCode::Start, user_id, ss.write_to_bytes().unwrap());
     Ok(())
+}
+
+///检查添加机器人
+pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
+    if !room.setting.is_open_ai {
+        return;
+    }
+    let need_num = MEMBER_MAX - room.members.len() as u8;
+    if need_num == 0 {
+        return;
+    }
+    let cters = [1001, 1002, 1003, 1004, 1005];
+    let mut cters_res = cters.clone().to_vec();
+    let mut cters_c = Vec::new();
+    //添加机器人
+    for id in room.members.keys() {
+        cters_c.push(*id);
+    }
+    let mut delete_v = Vec::new();
+    for i in cters_c.iter() {
+        for index in 0..cters.len() {
+            let j = cters.get(index).unwrap();
+            if i != j {
+                continue;
+            }
+            delete_v.push(index);
+        }
+    }
+    for index in delete_v {
+        cters_res.remove(index);
+    }
+
+    let mut rand = rand::thread_rng();
+
+    for _ in 0..need_num {
+        let index = rand.gen_range(0, cters_res.len());
+        let cter_id = *cters_res.get(index).unwrap();
+        let mut member = Member::default();
+        member.is_robot = true;
+        crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
+        let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+        member.user_id = robot_id;
+        member.state = MemberState::Ready as u8;
+        member.nick_name = "robot".to_owned();
+        let mut cter = Character::default();
+        cter.user_id = robot_id;
+        cter.grade = 1;
+        //加载机器人的角色列表
+    }
 }
 
 ///换队伍

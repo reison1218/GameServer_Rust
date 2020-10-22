@@ -60,6 +60,8 @@ pub struct BattleData {
     pub sender: TcpSender,                          //sender
 }
 
+unsafe impl Send for BattleData {}
+
 impl BattleData {
     ///添加总turn的次数
     pub fn add_total_turn_times(&mut self) {

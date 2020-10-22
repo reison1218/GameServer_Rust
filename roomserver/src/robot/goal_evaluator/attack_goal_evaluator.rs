@@ -9,11 +9,14 @@ pub struct AttackTargetGoalEvaluator {
 }
 
 impl GoalEvaluator for AttackTargetGoalEvaluator {
-    fn calculate_desirability(&self) -> u32 {
-        1
+    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
+        if cter.is_can_attack() {
+            return 1;
+        }
+        0
     }
 
-    fn set_status(&self, cter: &mut BattleCharacter) {
-        cter.set_robot_action(Box::new(Attack::default()));
+    fn set_status(&self, cter: &BattleCharacter) {
+        cter.change_status(Box::new(Attack::default()));
     }
 }

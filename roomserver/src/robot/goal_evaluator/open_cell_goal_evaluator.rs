@@ -9,11 +9,14 @@ pub struct OpenCellGoalEvaluator {
 }
 
 impl GoalEvaluator for OpenCellGoalEvaluator {
-    fn calculate_desirability(&self) -> u32 {
-        1
+    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
+        if cter.flow_data.residue_open_times > 0 {
+            return 1;
+        }
+        0
     }
 
-    fn set_status(&self, cter: &mut BattleCharacter) {
-        cter.set_robot_action(Box::new(OpenCell::default()));
+    fn set_status(&self, cter: &BattleCharacter) {
+        cter.change_status(Box::new(OpenCell::default()));
     }
 }

@@ -258,6 +258,13 @@ pub enum ActionType {
     UnlockOper = 7,
 }
 
+impl ActionType {
+    pub fn into_u32(self) -> u32 {
+        let res: u8 = self.into();
+        res as u32
+    }
+}
+
 ///目标类型枚举
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
