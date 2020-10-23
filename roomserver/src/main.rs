@@ -15,6 +15,7 @@ use log::{error, info};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;
 use std::env;
+use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 use tools::conf::Conf;
 use tools::my_log::init_log;
@@ -59,7 +60,7 @@ lazy_static! {
     };
 }
 
-static ROBOT_ID: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+static ROBOT_ID: AtomicU32 = AtomicU32::new(0);
 
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 

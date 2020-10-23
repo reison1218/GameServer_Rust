@@ -11,10 +11,10 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
-use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
+use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::battle::{S_BATTLE_START_NOTICE, S_MAP_REFRESH_NOTICE};
 use tools::protos::room::{
@@ -85,10 +85,12 @@ pub struct Room {
     pub member_index: [u32; MEMBER_MAX as usize],  //玩家对应的位置
     pub setting: RoomSetting,                      //房间设置
     pub battle_data: BattleData,                   //战斗相关数据封装
-    pub sender: TcpSender,                         //sender
+    sender: TcpSender,                             //sender
     task_sender: crossbeam::channel::Sender<Task>, //任务sender
     time: DateTime<Utc>,                           //房间创建时间
 }
+
+tools::get_mut_ref!(Room);
 
 impl Room {
     ///构建一个房间的结构体
@@ -193,15 +195,9 @@ impl Room {
             smrn.world_cell.push(wcp);
         }
         let bytes = smrn.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::MapRefreshNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
+            self_mut_ref.send_2_client(ClientCode::MapRefreshNotice, *id, bytes.clone());
         }
         self.start_choice_index();
         true
@@ -210,7 +206,7 @@ impl Room {
     ///回客户端消息
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into(), 0, bytes, true, false);
-        self.get_sender_mut().write(bytes);
+        self.sender.write(bytes);
     }
 
     ///开始选择占位
@@ -228,15 +224,9 @@ impl Room {
         }
         //推送开始选下标给客户端
         let bytes = sbs.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::StartChoiceIndexNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
+            self_mut_ref.send_2_client(ClientCode::StartChoiceIndexNotice, *id, bytes.clone());
         }
         //开始执行占位逻辑
         self.build_choice_index_task();
@@ -384,15 +374,9 @@ impl Room {
         let bytes = sstcn.write_to_bytes().unwrap();
 
         //推送给所有人
+        let self_mut_ref = self.get_mut_ref();
         for member_id in self.member_index.iter() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::SkipChoiceTurnNotice as u32,
-                *member_id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
+            self_mut_ref.send_2_client(ClientCode::SkipChoiceTurnNotice, *member_id, bytes.clone());
         }
 
         let is_all_choice = self.check_is_all_choice_turn();
@@ -435,16 +419,10 @@ impl Room {
         scln.set_user_id(user_id);
         scln.index = index;
         let bytes = scln.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         //通知给房间成员
         for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::ChoiceLoactionNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
+            self_mut_ref.send_2_client(ClientCode::ChoiceLoactionNotice, *id, bytes.clone());
         }
 
         //添加下个turnindex
@@ -531,15 +509,9 @@ impl Room {
         scron.user_id = user_id;
         scron.order = order as u32;
         let bytes = scron.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
-            let res = Packet::build_packet_bytes(
-                ClientCode::ChoiceRoundOrderNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(res);
+            self_mut_ref.send_2_client(ClientCode::ChoiceRoundOrderNotice, *id, bytes.clone());
         }
         let size = MEMBER_MAX as usize;
         self.add_next_choice_index();
@@ -579,11 +551,7 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.get_sender_mut().write(bytes);
-    }
-
-    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
-        self.sender.borrow_mut()
+        self.sender.write(bytes);
     }
 
     ///检查角色
@@ -623,13 +591,10 @@ impl Room {
         let mut srn = S_ROOM_NOTICE::new();
         srn.owner_id = self.owner_id;
         srn.set_setting(self.setting.clone().into());
-        let mut packet = Packet::new(ClientCode::RoomNotice as u32, 0, 0);
-        packet.set_data_from_vec(srn.write_to_bytes().unwrap());
-        packet.set_is_client(true);
-        packet.set_is_broad(false);
+        let bytes = srn.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
-            packet.set_user_id(*id);
-            self.sender.write(packet.build_server_bytes());
+            self_mut_ref.send_2_client(ClientCode::RoomNotice, *id, bytes.clone());
         }
     }
 
@@ -668,15 +633,9 @@ impl Room {
         self.set_next_choice_index(0);
         ssn.choice_order = self.battle_data.choice_orders.to_vec();
         let bytes = ssn.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
-            let bytes = Packet::build_packet_bytes(
-                ClientCode::StartNotice as u32,
-                *id,
-                bytes.clone(),
-                true,
-                true,
-            );
-            self.sender.write(bytes);
+            self_mut_ref.send_2_client(ClientCode::StartNotice, *id, bytes.clone());
         }
     }
 
@@ -691,15 +650,10 @@ impl Room {
         let mut sen = S_EMOJI_NOTICE::new();
         sen.user_id = user_id;
         sen.emoji_id = emoji_id;
+        let bytes = sen.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for user_id in self.members.keys() {
-            let bytes = Packet::build_packet_bytes(
-                ClientCode::EmojiNotice as u32,
-                *user_id,
-                sen.write_to_bytes().unwrap(),
-                true,
-                true,
-            );
-            self.sender.write(bytes);
+            self_mut_ref.send_2_client(ClientCode::EmojiNotice, *user_id, bytes.clone());
         }
     }
 
@@ -708,13 +662,10 @@ impl Room {
         let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
         srmln.set_notice_type(notice_type as u32);
         srmln.set_user_id(*user_id);
-        let mut packet = Packet::new(ClientCode::MemberLeaveNotice as u32, 0, 0);
-        packet.set_data_from_vec(srmln.write_to_bytes().unwrap());
-        packet.set_is_broad(false);
-        packet.set_is_client(true);
+        let bytes = srmln.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         for member_id in self.members.keys() {
-            packet.set_user_id(*member_id);
-            self.sender.write(packet.build_server_bytes());
+            self_mut_ref.send_2_client(ClientCode::MemberLeaveNotice, *member_id, bytes.clone());
         }
     }
 
@@ -739,14 +690,11 @@ impl Room {
         let mp = member.unwrap().clone().into();
         srmn.set_member(mp);
 
-        let mut packet = Packet::new(ClientCode::RoomAddMemberNotice as u32, 0, 0);
-        packet.set_data_from_vec(srmn.write_to_bytes().unwrap());
-        packet.set_is_broad(false);
-        packet.set_is_client(true);
-        if self.get_member_count() > 0 {
+        let bytes = srmn.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
+        if self_mut_ref.get_member_count() > 0 {
             for id in self.members.keys() {
-                packet.set_user_id(*id);
-                self.sender.write(packet.build_server_bytes());
+                self_mut_ref.send_2_client(ClientCode::RoomAddMemberNotice, *id, bytes.clone());
             }
         }
     }
@@ -755,14 +703,11 @@ impl Room {
         let mut spcn = S_PREPARE_CANCEL_NOTICE::new();
         spcn.set_user_id(user_id);
         spcn.set_prepare(state);
-        let mut packet = Packet::new(ClientCode::PrepareCancelNotice as u32, 0, 0);
-        packet.set_data_from_vec(spcn.write_to_bytes().unwrap());
-        packet.set_is_broad(false);
-        packet.set_is_client(true);
+        let bytes = spcn.write_to_bytes().unwrap();
+        let self_mut_ref = self.get_mut_ref();
         if self.get_member_count() > 0 {
             for id in self.members.keys() {
-                packet.set_user_id(*id);
-                self.sender.write(packet.build_server_bytes());
+                self_mut_ref.send_2_client(ClientCode::PrepareCancelNotice, *id, bytes.clone());
             }
         }
     }
@@ -933,15 +878,9 @@ impl Room {
             let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
             self.cter_2_battle_cter();
             let bytes = sbs.write_to_bytes().unwrap();
+            let self_mut_ref = self.get_mut_ref();
             for id in self.members.keys() {
-                let res = Packet::build_packet_bytes(
-                    ClientCode::StartChoiceIndexNotice as u32,
-                    *id,
-                    bytes.clone(),
-                    true,
-                    true,
-                );
-                self.sender.write(res);
+                self_mut_ref.send_2_client(ClientCode::StartChoiceIndexNotice, *id, bytes.clone());
             }
             //开始执行占位逻辑
             self.build_choice_index_task();

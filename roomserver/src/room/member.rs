@@ -1,4 +1,3 @@
-use crate::robot::robot_status::RobotStatus;
 use crate::room::character::Character;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -24,7 +23,6 @@ pub enum MemberState {
 pub struct Member {
     pub user_id: u32,                   //玩家id
     pub nick_name: String,              //玩家昵称
-    pub user_type: u8,                  //玩家类型，分为真实玩家和机器人
     pub state: u8,                      //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
     pub is_robot: bool,                 //是否的机器人
@@ -46,7 +44,6 @@ impl From<PlayerBattlePt> for Member {
         member.nick_name = pbp.get_nick_name().to_owned();
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady as u8;
-        member.user_type = UserType::Real as u8;
 
         let mut cters = HashMap::new();
         let res = pbp.take_cters();

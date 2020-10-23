@@ -1,3 +1,4 @@
+///获得可变指针trait
 pub trait GetMutRef {
     fn get_mut_ref(&self) -> &mut Self {
         let ptr = self as *const Self;

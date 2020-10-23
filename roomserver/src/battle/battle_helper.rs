@@ -74,7 +74,6 @@ impl BattleData {
                 Err(e) => {
                     warn!("{:?}", e);
                 }
-                _ => {}
             }
         } else {
             warn!("{:?}", user_id.err().unwrap());

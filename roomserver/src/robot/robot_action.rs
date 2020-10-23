@@ -1,7 +1,5 @@
-use crate::battle::battle::BattleData;
 use crate::robot::robot_status::RobotStatus;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
 
 ///机器人状态行为trait

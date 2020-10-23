@@ -21,3 +21,5 @@ pub const SKILL_JUDGE_TEMPLATE: &str = "SkillJudge";
 pub const BUFF: &str = "Buff";
 
 pub const SEASON: &str = "Season";
+
+pub const ROBOT: &str = "Robot";

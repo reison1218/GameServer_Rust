@@ -310,9 +310,9 @@ pub struct TTT{
 
 
 
-#[derive(Default)]
+
 pub struct TestLift{
-    pub str:String,
+    pub str:&'static String,
 }
 
 impl Drop for TestLift{
@@ -328,19 +328,8 @@ impl tools::macros::GetMutRef for TestLift{}
 
 fn main() -> anyhow::Result<()> {
 
-    let mut t = TestLift::default();
-
-    let time = std::time::SystemTime::now();
-    for i in 0..99{
-        let tt = t.get_mut_ref();
-    }
-    dbg!(time.elapsed().unwrap());
-
-    let time = std::time::SystemTime::now();
-    for i in 0..99{
-        let tt = &mut t;
-    }
-    dbg!(time.elapsed().unwrap());
+    let mut ts = std::net::TcpStream::connect("safadf").unwrap();
+    ts.write()
 
     // let t = TTT::default();
     // let res = t.d.take();

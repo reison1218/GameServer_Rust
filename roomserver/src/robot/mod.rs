@@ -1,6 +1,5 @@
 use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
-use crate::robot::robot_status::RobotStatus;
 use crate::room::character::BattleCharacter;
 
 pub mod goal_evaluator;

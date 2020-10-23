@@ -196,10 +196,4 @@ impl ClientHandler for TcpClientHandler {
             println!("client:{},from server-mem-notice:{:?}",self.user_id,s);
         }
     }
-
-    fn get_address(&self) -> &str {
-        //let address = "192.168.1.100:16801";
-        let address = "localhost:16801";
-        address
-    }
 }

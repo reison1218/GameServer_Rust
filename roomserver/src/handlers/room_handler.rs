@@ -357,7 +357,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("there is player not ready,can not start game!");
         return Ok(());
     }
-    //todo   校验是否加载机器人
+    //校验是否加载机器人
     check_add_robot(rm.get_mut_ref(), room);
     //执行开始逻辑
     room.start();
@@ -370,24 +370,29 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
 ///检查添加机器人
 pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
+    //如果没有开启ai则直接return
     if !room.setting.is_open_ai {
         return;
     }
     let need_num = MEMBER_MAX - room.members.len() as u8;
+    //需要机器人的数量，为0则直接return
     if need_num == 0 {
         return;
     }
-    let cters = [1001, 1002, 1003, 1004, 1005];
-    let mut cters_res = cters.clone().to_vec();
+    //机器人模版管理器
+    let robot_temp_mgr = crate::TEMPLATES.get_robot_temp_mgr_ref();
+
+    let mut cters_res = robot_temp_mgr.cters.clone();
     let mut cters_c = Vec::new();
-    //添加机器人
+    //添加已经选择了的角色
     for id in room.members.keys() {
         cters_c.push(*id);
     }
+    //删掉已经选择了的角色
     let mut delete_v = Vec::new();
     for i in cters_c.iter() {
-        for index in 0..cters.len() {
-            let j = cters.get(index).unwrap();
+        for index in 0..cters_res.len() {
+            let j = cters_res.get(index).unwrap();
             if i != j {
                 continue;
             }
@@ -397,23 +402,64 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     for index in delete_v {
         cters_res.remove(index);
     }
-
     let mut rand = rand::thread_rng();
 
+    //生成机器人
     for _ in 0..need_num {
+        //随机出下标
         let index = rand.gen_range(0, cters_res.len());
         let cter_id = *cters_res.get(index).unwrap();
-        let mut member = Member::default();
-        member.is_robot = true;
+
+        //删除已选择出来的角色
+        cters_res.remove(index);
+        //机器人id自增
         crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
         let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+
+        //初始化成员
+        let mut member = Member::default();
+        member.is_robot = true;
         member.user_id = robot_id;
         member.state = MemberState::Ready as u8;
         member.nick_name = "robot".to_owned();
+
+        //初始化选择的角色
         let mut cter = Character::default();
         cter.user_id = robot_id;
-        cter.grade = 1;
-        //加载机器人的角色列表
+        let grade = rand.gen_range(1, 3) as u8;
+        cter.grade = grade;
+        cter.cter_id = cter_id;
+
+        //初始化角色技能
+        let robot_temp = robot_temp_mgr.get_temp_ref(&cter_id);
+        if let None = robot_temp {
+            warn!("can not find cter_temp!cter_id:{}", cter_id);
+            continue;
+        }
+        let robot_temp = robot_temp.unwrap();
+        let skill_group1 = robot_temp.skills.get(0);
+        let skill_group2 = robot_temp.skills.get(1);
+        if skill_group1.is_none() || skill_group2.is_none() {
+            continue;
+        }
+        let skill_group1 = skill_group1.unwrap();
+        let skill_group2 = skill_group2.unwrap();
+        let index = rand.gen_range(0, skill_group1.group.len());
+        let skill_id = skill_group1.group.get(index).unwrap();
+        cter.skills.push(*skill_id);
+        let index = rand.gen_range(0, skill_group2.group.len());
+        let skill_id = skill_group2.group.get(index).unwrap();
+        cter.skills.push(*skill_id);
+        //将角色加入到成员里
+        member.chose_cter = cter;
+        let res = room.add_member(member);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        let room_id = room.get_room_id();
+        let value = tools::binary::combine_int_2_long(RoomType::Custom as u32, room_id);
+        rm.player_room.insert(robot_id, value);
     }
 }
 
@@ -757,16 +803,9 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     sccn.cter_id = cter_id;
     sccn.cter_grade = grade as u32;
     let bytes = sccn.write_to_bytes().unwrap();
-    let members = room.members.clone();
-    for member_id in members.keys() {
-        let mess = Packet::build_packet_bytes(
-            ClientCode::ChoiceCharacterNotice as u32,
-            *member_id,
-            bytes.clone(),
-            true,
-            true,
-        );
-        room.get_sender_mut().write(mess);
+    let room_mut_ref = room.get_mut_ref();
+    for member_id in room.members.keys() {
+        room_mut_ref.send_2_client(ClientCode::ChoiceCharacterNotice, *member_id, bytes.clone());
     }
     Ok(())
 }

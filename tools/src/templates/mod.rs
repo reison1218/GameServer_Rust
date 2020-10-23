@@ -4,6 +4,7 @@ pub mod character_temp;
 pub mod constant_temp;
 pub mod emoji_temp;
 pub mod item_temp;
+pub mod robot_temp;
 pub mod season_temp;
 pub mod skill_judge_temp;
 pub mod skill_scope_temp;

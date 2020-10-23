@@ -4,13 +4,14 @@ use crate::templates::character_temp::{CharacterTemp, CharacterTempMgr};
 use crate::templates::constant_temp::{ConstantTemp, ConstantTempMgr};
 use crate::templates::emoji_temp::{EmojiTemp, EmojiTempMgr};
 use crate::templates::item_temp::{ItemTemp, ItemTempMgr};
+use crate::templates::robot_temp::{RobotTemp, RobotTempMgr};
 use crate::templates::season_temp::{SeasonTemp, SeasonTempMgr};
 use crate::templates::skill_judge_temp::{SkillJudgeTemp, SkillJudgeTempMgr};
 use crate::templates::skill_scope_temp::{SkillScopeTemp, SkillScopeTempMgr};
 use crate::templates::skill_temp::{SkillTemp, SkillTempMgr};
 use crate::templates::template_name_constants::{
     BUFF, CELL_TEMPLATE, CHARACTER_TEMPLATE, CONSTANT_TEMPLATE, EMOJI_TEMPLATE, ITEM_TEMPLATE,
-    SEASON, SKILL_JUDGE_TEMPLATE, SKILL_SCOPE_TEMPLATE, SKILL_TEMPLATE, TILE_MAP_TEMPLATE,
+    ROBOT, SEASON, SKILL_JUDGE_TEMPLATE, SKILL_SCOPE_TEMPLATE, SKILL_TEMPLATE, TILE_MAP_TEMPLATE,
     WORLD_CELL_TEMPLATE,
 };
 use crate::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
@@ -42,6 +43,7 @@ pub struct TemplatesMgr {
     buff_temp_mgr: BuffTempMgr,              //buff配置mgr
     skill_judge_temp_mgr: SkillJudgeTempMgr, //判定条件配置mgr
     season_temp_mgr: SeasonTempMgr,          //赛季配置mgr
+    robot_temp_mgr: RobotTempMgr,            //机器人配置mgr
 }
 
 impl TemplatesMgr {
@@ -95,6 +97,10 @@ impl TemplatesMgr {
 
     pub fn get_season_temp_mgr_ref(&self) -> &SeasonTempMgr {
         self.season_temp_mgr.borrow()
+    }
+
+    pub fn get_robot_temp_mgr_ref(&self) -> &RobotTempMgr {
+        self.robot_temp_mgr.borrow()
     }
 }
 
@@ -174,6 +180,10 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
             let v: Vec<SeasonTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.season_temp_mgr = SeasonTempMgr::default();
             temps_mgr.season_temp_mgr.init(v);
+        } else if name.eq_ignore_ascii_case(ROBOT) {
+            let v: Vec<RobotTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.robot_temp_mgr = RobotTempMgr::default();
+            temps_mgr.robot_temp_mgr.init(v);
         }
     }
     Ok(temps_mgr)

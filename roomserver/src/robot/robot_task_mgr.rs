@@ -38,14 +38,14 @@ pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
 
             let task_cmd = ActionType::try_from(task.cmd).unwrap();
             let rm_clone = rm.clone();
-            let f = match task_cmd {
+            let fnc = match task_cmd {
                 ActionType::Attack => attack,
                 ActionType::Skill => use_skill,
                 ActionType::Open => open_cell,
                 ActionType::UseItem => use_item,
                 _ => attack,
             };
-            let m = move || f(rm_clone, task);
+            let m = move || fnc(rm_clone, task);
             ROBOT_SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
         }
     };
@@ -76,11 +76,14 @@ pub fn attack(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
     ca.action_type = ActionType::Attack.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
-    let mut lock = rm.lock().unwrap();
+    let lock = rm.lock().unwrap();
     //拿到RoomMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    func(rm_mut_ref, packet);
+    let res = func(rm_mut_ref, packet);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
 }
 
 ///打开地图块
@@ -101,11 +104,14 @@ pub fn open_cell(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
     ca.action_type = ActionType::Open.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
-    let mut lock = rm.lock().unwrap();
+    let lock = rm.lock().unwrap();
     //拿到RoomMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    func(rm_mut_ref, packet);
+    let res = func(rm_mut_ref, packet);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
 }
 
 ///使用技能

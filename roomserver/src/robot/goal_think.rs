@@ -2,9 +2,6 @@ use crate::robot::goal_evaluator::attack_goal_evaluator::AttackTargetGoalEvaluat
 use crate::robot::goal_evaluator::open_cell_goal_evaluator::OpenCellGoalEvaluator;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::room::character::BattleCharacter;
-use crossbeam::atomic::AtomicCell;
-use std::collections::VecDeque;
-use std::ops::Deref;
 
 #[derive(Default)]
 pub struct GoalThink {

@@ -47,7 +47,7 @@ pub mod skill_type {
     pub const SKILL_AOE: [u32; 3] = [411, 412, 432];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
-    ///对已所有翻开元素块上对玩家造成技能伤害
+    ///对已其他翻开元素块上对玩家造成技能伤害
     pub const SKILL_DAMAGE_OPENED_ELEMENT: [u32; 1] = [213];
     ///范围治疗
     pub const SCOPE_CURE: [u32; 1] = [313];
@@ -286,6 +286,7 @@ pub enum TargetType {
     SelfScopeAll = 14,       //以自己为中心某个范围内的所有玩家（包括自己）
     SelfScopeAny = 15,       //以自己为中心某个范围内的任意玩家（包括自己）
     OpenedMapCell = 16,      //已翻开的地图块
+    MapCellOtherPlayer = 17, //已翻开的地图块上其他玩家
 }
 
 impl TargetType {

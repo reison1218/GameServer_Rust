@@ -403,6 +403,12 @@ pub unsafe fn skill_damage_opened_element(
             continue;
         }
         let target_user = map_cell.user_id;
+        //地图块上面的其他玩家
+        if target_user == user_id
+            && skill.skill_temp.target == TargetType::MapCellOtherPlayer.into_u8()
+        {
+            continue;
+        }
         let target_cter = battle_data
             .as_mut()
             .unwrap()

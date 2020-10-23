@@ -2,23 +2,16 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::ActionType;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
-use log::info;
-use log::kv::ToValue;
+use log::{error, info};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use protobuf::Message;
 use rand::Rng;
-use rayon::iter::IntoParallelRefIterator;
 use serde_json::{Map, Value};
-use std::borrow::Borrow;
 use std::sync::Arc;
 use tools::cmd_code::RoomCode;
 use tools::get_mut_ref;
 use tools::macros::GetMutRef;
-use tools::protos::battle::C_ACTION;
-use tools::util::packet::Packet;
 
 ///pos操作类型
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -90,7 +83,10 @@ impl RobotStatusAction for Attack {
         map.insert("user_id".to_owned(), Value::from(self.robot_id));
         map.insert("target_index".to_owned(), Value::from(target_index));
         map.insert("cmd".to_owned(), Value::from(RoomCode::Action.into_u32()));
-        self.sender.as_ref().unwrap().send(robot_task);
+        let res = self.sender.as_ref().unwrap().send(robot_task);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
     fn exit(&self) {
@@ -155,7 +151,10 @@ impl RobotStatusAction for OpenCell {
         map.insert("user_id".to_owned(), Value::from(self.robot_id));
         map.insert("value".to_owned(), Value::from(index));
         map.insert("cmd".to_owned(), Value::from(RoomCode::Action.into_u32()));
-        self.sender.as_ref().unwrap().send(robot_task);
+        let res = self.sender.as_ref().unwrap().send(robot_task);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
     fn exit(&self) {
