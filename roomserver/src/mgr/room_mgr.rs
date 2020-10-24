@@ -8,6 +8,7 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
 use crate::room::room_model::{BattleType, CustomRoom, MatchRooms, RoomModel, RoomType};
 use crate::task_timer::Task;
+use crossbeam::channel::Sender;
 use log::warn;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
@@ -21,9 +22,9 @@ pub struct RoomMgr {
     pub match_rooms: MatchRooms,        //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
-    sender: Option<TcpSender>, //tcp channel的发送方
-    pub task_sender: Option<crossbeam::channel::Sender<Task>>, //task channel的发送方
-    pub robot_task_sender: Option<crossbeam::channel::Sender<RobotTask>>, //机器人task channel的发送方
+    sender: Option<TcpSender>,                        //tcp channel的发送方
+    pub task_sender: Option<Sender<Task>>,            //task channel的发送方
+    pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
 }
 
 tools::get_mut_ref!(RoomMgr);
@@ -50,6 +51,10 @@ impl RoomMgr {
 
     pub fn get_task_sender_clone(&self) -> crossbeam::channel::Sender<Task> {
         self.task_sender.as_ref().unwrap().clone()
+    }
+
+    pub fn get_robot_task_sender_clone(&self) -> crossbeam::channel::Sender<RobotTask> {
+        self.robot_task_sender.as_ref().unwrap().clone()
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {

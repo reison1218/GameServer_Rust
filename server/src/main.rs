@@ -29,10 +29,10 @@ lazy_static! {
 
     ///线程池
     static ref THREAD_POOL: MyThreadPool = {
-        let game_name = "game_name".to_string();
-        let user_name = "user_name".to_string();
-        let sys_name = "sys_name".to_string();
-        let mtp = MyThreadPool::init(game_name, 8, user_name, 8, sys_name, 2);
+        let game_model = "game_model".to_string();
+        let user_model = "user_model".to_string();
+        let sys_model = "sys_model".to_string();
+        let mtp = MyThreadPool::init(game_model, 8, user_model, 8, sys_model, 2);
         mtp
     };
 

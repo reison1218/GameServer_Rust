@@ -102,6 +102,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 owner,
                 rm.get_sender_clone(),
                 rm.get_task_sender_clone(),
+                rm.get_robot_task_sender_clone(),
             )?;
         }
         _ => {}
@@ -255,10 +256,12 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     //执行正常流程
     let sender = rm.get_sender_clone();
+    let task_sender = rm.get_task_sender_clone();
+    let robot_sender = rm.get_robot_task_sender_clone();
     let match_room = rm.match_rooms.get_match_room_mut(battle_type);
     let member = Member::from(grs.take_pbp());
 
-    let res = match_room.quickly_start(member, sender, rm.task_sender.clone().unwrap());
+    let res = match_room.quickly_start(member, sender, task_sender, robot_sender);
     //返回错误信息
     if let Err(e) = res {
         warn!("{:?}", e);
@@ -426,6 +429,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         //初始化选择的角色
         let mut cter = Character::default();
         cter.user_id = robot_id;
+        cter.is_robot = true;
         let grade = rand.gen_range(1, 3) as u8;
         cter.grade = grade;
         cter.cter_id = cter_id;

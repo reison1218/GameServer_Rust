@@ -5,6 +5,7 @@ mod mio_test;
 mod map;
 mod test_async;
 mod behavior_test;
+mod test_tokio;
 use serde_json::json;
 use std::time::{Duration, SystemTime, Instant};
 use protobuf::Message;
@@ -12,6 +13,7 @@ use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::FromPrimitive;
 use log::info;
+
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -307,10 +309,6 @@ pub struct TTT{
 }
 
 
-
-
-
-
 pub struct TestLift{
     pub str:&'static String,
 }
@@ -327,10 +325,7 @@ impl tools::macros::GetMutRef for TestLift{}
 
 
 fn main() -> anyhow::Result<()> {
-
-    let mut ts = std::net::TcpStream::connect("safadf").unwrap();
-    ts.write()
-
+    dbg!(1<<16);
     // let t = TTT::default();
     // let res = t.d.take();
     // println!("{:?}", t.borrow().d.take());

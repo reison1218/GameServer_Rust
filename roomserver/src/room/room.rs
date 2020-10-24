@@ -1,4 +1,5 @@
 use crate::battle::battle::BattleData;
+use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::member::{Member, MemberState};
@@ -6,6 +7,7 @@ use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
+use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -77,17 +79,18 @@ pub enum RoomState {
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
-    id: u32,                                       //房间id
-    room_type: RoomType,                           //房间类型
-    owner_id: u32,                                 //房主id
-    pub state: RoomState,                          //房间状态
-    pub members: HashMap<u32, Member>,             //玩家对应的队伍
-    pub member_index: [u32; MEMBER_MAX as usize],  //玩家对应的位置
-    pub setting: RoomSetting,                      //房间设置
-    pub battle_data: BattleData,                   //战斗相关数据封装
-    sender: TcpSender,                             //sender
-    task_sender: crossbeam::channel::Sender<Task>, //任务sender
-    time: DateTime<Utc>,                           //房间创建时间
+    id: u32,                                      //房间id
+    room_type: RoomType,                          //房间类型
+    owner_id: u32,                                //房主id
+    pub state: RoomState,                         //房间状态
+    pub members: HashMap<u32, Member>,            //玩家对应的队伍
+    pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
+    pub setting: RoomSetting,                     //房间设置
+    pub battle_data: BattleData,                  //战斗相关数据封装
+    tcp_sender: TcpSender,                        //tcpsender
+    task_sender: Sender<Task>,                    //任务sender
+    robot_sender: Sender<RobotTask>,              //机器人sender
+    time: DateTime<Utc>,                          //房间创建时间
 }
 
 tools::get_mut_ref!(Room);
@@ -98,7 +101,8 @@ impl Room {
         mut owner: Member,
         room_type: RoomType,
         sender: TcpSender,
-        task_sender: crossbeam::channel::Sender<Task>,
+        task_sender: Sender<Task>,
+        robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let user_id = owner.user_id;
@@ -115,8 +119,9 @@ impl Room {
             setting: RoomSetting::default(),
             battle_data: BattleData::new(task_sender.clone(), sender.clone()),
             room_type,
-            sender,
+            tcp_sender: sender,
             task_sender,
+            robot_sender,
             time,
         };
         if room.room_type == RoomType::Match {
@@ -206,7 +211,7 @@ impl Room {
     ///回客户端消息
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into(), 0, bytes, true, false);
-        self.sender.write(bytes);
+        self.tcp_sender.write(bytes);
     }
 
     ///开始选择占位
@@ -551,7 +556,7 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.sender.write(bytes);
+        self.tcp_sender.write(bytes);
     }
 
     ///检查角色
@@ -1051,7 +1056,11 @@ impl Room {
 
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
-            let battle_cter = BattleCharacter::init(&member.chose_cter, &self.battle_data);
+            let battle_cter = BattleCharacter::init(
+                &member.chose_cter,
+                &self.battle_data,
+                self.robot_sender.clone(),
+            );
             match battle_cter {
                 Ok(b_cter) => {
                     self.battle_data.battle_cter.insert(member.user_id, b_cter);
@@ -1173,7 +1182,7 @@ impl Room {
         }
         let mut sbsn = S_BATTLE_START_NOTICE::new();
         for battle_cter in self.battle_data.battle_cter.values() {
-            let cter_pt = battle_cter.convert_to_battle_cter();
+            let cter_pt = battle_cter.convert_to_battle_cter_pt();
             sbsn.battle_cters.push(cter_pt);
         }
         let res = sbsn.write_to_bytes();

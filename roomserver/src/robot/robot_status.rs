@@ -8,7 +8,6 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use rand::Rng;
 use serde_json::{Map, Value};
-use std::sync::Arc;
 use tools::cmd_code::RoomCode;
 use tools::get_mut_ref;
 use tools::macros::GetMutRef;
@@ -34,23 +33,30 @@ impl Default for RobotStatus {
 }
 
 #[derive(Default)]
-pub struct Attack {
+pub struct AttackRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
     pub battle_data: Option<*const BattleData>,
     pub status: RobotStatus,
-    pub sender: Option<crossbeam::channel::Sender<RobotTask>>,
+    pub sender: Option<Sender<RobotTask>>,
 }
 
-get_mut_ref!(Attack);
+get_mut_ref!(AttackRobotAction);
 
-impl Attack {
+impl AttackRobotAction {
     pub fn get_battle_data_ref(&self) -> &BattleData {
         unsafe { self.battle_data.unwrap().as_ref().unwrap() }
     }
+
+    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+        let mut attack_action = AttackRobotAction::default();
+        attack_action.battle_data = Some(battle_data);
+        attack_action.sender = Some(sender);
+        attack_action
+    }
 }
 
-impl RobotStatusAction for Attack {
+impl RobotStatusAction for AttackRobotAction {
     fn set_sender(&self, sender: Sender<RobotTask>) {
         self.get_mut_ref().sender = Some(sender);
     }
@@ -61,6 +67,7 @@ impl RobotStatusAction for Attack {
 
     fn enter(&self) {
         info!("robot:{} 进入攻击状态！", self.cter_id);
+        self.execute();
     }
 
     fn execute(&self) {
@@ -99,15 +106,15 @@ impl RobotStatusAction for Attack {
 }
 
 #[derive(Default)]
-pub struct OpenCell {
+pub struct OpenCellRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<Arc<*const BattleData>>,
+    pub battle_data: Option<*const BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
 
-impl OpenCell {
+impl OpenCellRobotAction {
     pub fn get_battle_data_ref(&self) -> &BattleData {
         unsafe {
             let ptr = self.battle_data.as_ref().unwrap().as_ref();
@@ -115,11 +122,18 @@ impl OpenCell {
             battle_data_ref
         }
     }
+
+    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+        let mut open_cell = OpenCellRobotAction::default();
+        open_cell.battle_data = Some(battle_data);
+        open_cell.sender = Some(sender);
+        open_cell
+    }
 }
 
-get_mut_ref!(OpenCell);
+get_mut_ref!(OpenCellRobotAction);
 
-impl RobotStatusAction for OpenCell {
+impl RobotStatusAction for OpenCellRobotAction {
     fn set_sender(&self, sender: Sender<RobotTask>) {
         self.get_mut_ref().sender = Some(sender);
     }

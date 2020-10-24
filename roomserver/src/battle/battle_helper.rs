@@ -447,7 +447,7 @@ impl BattleData {
         sbtn.set_user_id(self.get_turn_user(None).unwrap());
         //角色身上的
         for cter in self.battle_cter.values() {
-            let cter_pt = cter.convert_to_battle_cter();
+            let cter_pt = cter.convert_to_battle_cter_pt();
             sbtn.cters.push(cter_pt);
         }
 

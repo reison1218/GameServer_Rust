@@ -14,6 +14,7 @@ use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
+use crossbeam::channel::Sender;
 use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
@@ -21,12 +22,14 @@ use tools::protos::base::ActionUnitPt;
 use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
 
+///物品结构体
 #[derive(Clone, Debug)]
 pub struct Item {
     pub id: u32,                        //物品id
     pub skill_temp: &'static SkillTemp, //物品带的技能
 }
 
+///方向结构体,用于aoe技能范围计算
 #[derive(Debug, Clone)]
 pub struct Direction {
     pub direction: &'static Vec<isize>,
@@ -56,7 +59,7 @@ pub struct BattleData {
     >, //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
-    pub task_sender: crossbeam::channel::Sender<Task>, //任务sender
+    pub task_sender: Sender<Task>,                  //任务sender
     pub sender: TcpSender,                          //sender
 }
 
@@ -86,7 +89,7 @@ impl BattleData {
     }
 
     ///初始化战斗数据
-    pub fn new(task_sender: crossbeam::channel::Sender<Task>, sender: TcpSender) -> Self {
+    pub fn new(task_sender: Sender<Task>, sender: TcpSender) -> Self {
         let mut bd = BattleData {
             tile_map: TileMap::default(),
             choice_orders: [0; MEMBER_MAX as usize],

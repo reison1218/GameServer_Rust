@@ -92,8 +92,10 @@ pub mod tcp_server {
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
 
+    ///系统错误码35:代表OSX内核下的socket unactually
     const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
 
+    ///错误码11代表linux内核的socket unactually
     const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
     ///事件的唯一标示

@@ -20,7 +20,7 @@ pub struct RobotTask {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
+pub fn robot_init_timer(rm: Arc<Mutex<RoomMgr>>) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
         let mut lock = rm.lock().unwrap();
