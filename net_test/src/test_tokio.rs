@@ -2,7 +2,7 @@ use tokio::net::TcpListener;
 use tokio::prelude::*;
 
 async fn test_tokio() -> Result<(), Box<dyn std::error::Error>> {
-    let mut listener = TcpListener::bind("127.0.0.1:8080").await?;
+    let  listener = TcpListener::bind("127.0.0.1:8080").await?;
     loop {
         let (mut socket, _) = listener.accept().await?;
 

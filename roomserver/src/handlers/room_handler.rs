@@ -3,13 +3,14 @@ use crate::room::character::Character;
 use crate::room::member::Member;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{BattleType, RoomModel, RoomType, TeamId};
+use crate::room::room_model::{RoomModel, RoomType, TeamId};
 use crate::SEASON;
 use log::error;
 use log::info;
 use log::warn;
 use protobuf::Message;
 use rand::Rng;
+use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::sync::atomic::Ordering;
 use tools::cmd_code::{ClientCode, RoomCode};
@@ -98,7 +99,6 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     match room_type {
         RoomType::Custom => {
             room_id = rm.custom_room.create_room(
-                BattleType::None,
                 owner,
                 rm.get_sender_clone(),
                 rm.get_task_sender_clone(),
@@ -151,7 +151,6 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             }
         }
         let room_type = RoomType::from(room.get_room_type());
-        let battle_type = room.setting.battle_type;
         match room_type {
             RoomType::Custom => {
                 let res = rm.custom_room.leave_room(
@@ -182,7 +181,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             }
             RoomType::Match => {
                 if !room.is_empty() {
-                    let res = rm.match_rooms.leave(battle_type, room_id, &user_id);
+                    let res = rm.match_room.leave(room_id, &user_id);
                     if let Err(e) = res {
                         error!("{:?}", e);
                         return Ok(());
@@ -209,7 +208,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                         for member_id in room.members.keys() {
                             rm.player_room.remove(member_id);
                         }
-                        rm.match_rooms.rm_room(battle_type.into_u8(), room_id);
+                        rm.match_room.rm_room(&room_id);
                     }
                 }
             }
@@ -228,20 +227,20 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let battle_type = BattleType::try_from(grs.battle_type as u8);
-    if let Err(e) = battle_type {
+    let room_type = RoomType::try_from(grs.get_room_type() as u8);
+    if let Err(e) = room_type {
         error!("{:?}", e);
         return Ok(());
     }
-    let battle_type = battle_type.unwrap();
+    let room_type = room_type.unwrap();
+    let room_type_u8 = room_type.into_u8();
     let user_id = packet.get_user_id();
     //校验模式
-    if battle_type.into_u8() < BattleType::OneVOneVOneVOne.into_u8()
-        || battle_type.into_u8() > BattleType::OneVOne.into_u8()
+    if room_type_u8 < RoomType::Custom.into_u8() || room_type_u8 > RoomType::WorldBossPve.into_u8()
     {
         warn!(
-            "search_room:this model is not exist!model_type:{:?}",
-            battle_type
+            "search_room:this room type is not exist!room_type:{:?}",
+            room_type
         );
         return Ok(());
     }
@@ -258,16 +257,28 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let sender = rm.get_sender_clone();
     let task_sender = rm.get_task_sender_clone();
     let robot_sender = rm.get_robot_task_sender_clone();
-    let match_room = rm.match_rooms.get_match_room_mut(battle_type);
-    let member = Member::from(grs.take_pbp());
 
-    let res = match_room.quickly_start(member, sender, task_sender, robot_sender);
-    //返回错误信息
-    if let Err(e) = res {
-        warn!("{:?}", e);
-        return Ok(());
-    };
-    let room_id = res.unwrap();
+    let member = Member::from(grs.take_pbp());
+    let room_id;
+    match room_type {
+        RoomType::Match => {
+            let match_room = rm.match_room.borrow_mut();
+            let res = match_room.quickly_start(member, sender, task_sender, robot_sender);
+            //返回错误信息
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                return Ok(());
+            };
+            room_id = res.unwrap();
+        }
+        RoomType::WorldBossPve => {
+            room_id = 0;
+        }
+        _ => {
+            room_id = 0;
+        }
+    }
+
     let value = tools::binary::combine_int_2_long(RoomType::Match as u32, room_id);
     rm.player_room.insert(user_id, value);
     Ok(())
@@ -384,12 +395,12 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     }
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.get_robot_temp_mgr_ref();
-
+    //克隆一份机器人角色数组
     let mut cters_res = robot_temp_mgr.cters.clone();
     let mut cters_c = Vec::new();
     //添加已经选择了的角色
-    for id in room.members.keys() {
-        cters_c.push(*id);
+    for member in room.members.values() {
+        cters_c.push(member.chose_cter.cter_id);
     }
     //删掉已经选择了的角色
     let mut delete_v = Vec::new();
@@ -402,6 +413,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
             delete_v.push(index);
         }
     }
+    //删除
     for index in delete_v {
         cters_res.remove(index);
     }
@@ -411,10 +423,8 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     for _ in 0..need_num {
         //随机出下标
         let index = rand.gen_range(0, cters_res.len());
-        let cter_id = *cters_res.get(index).unwrap();
+        let cter_id = cters_res.remove(index);
 
-        //删除已选择出来的角色
-        cters_res.remove(index);
         //机器人id自增
         crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
         let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);

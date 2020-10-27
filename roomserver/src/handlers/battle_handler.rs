@@ -154,7 +154,6 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
     let is_summary = room.battle_summary();
     let room_type = room.get_room_type();
-    let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     //如果要结算,卸载数据
     if !is_summary {
@@ -163,8 +162,7 @@ pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
     let v = room.get_member_vec();
     match room_type {
         RoomType::Match => {
-            let res = rm.match_rooms.get_match_room_mut(battle_type);
-            res.rm_room(&room_id);
+            rm.match_room.rm_room(&room_id);
         }
         RoomType::Custom => {
             rm.custom_room.rm_room(&room_id);

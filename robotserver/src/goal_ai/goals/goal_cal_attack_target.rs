@@ -5,6 +5,7 @@ use crate::goal_ai::goals::goal_combined::GoalCombined;
 use crossbeam::atomic::AtomicCell;
 use std::borrow::BorrowMut;
 use std::collections::VecDeque;
+use tools::macros::GetMutRef;
 
 #[derive(Default)]
 pub struct GoalCalAttackTarget {

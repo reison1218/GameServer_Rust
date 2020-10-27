@@ -16,7 +16,7 @@ message G_R_JOIN_ROOM{
 
 ///游戏服务器发给房间服务器，快速开始
 message G_R_SEARCH_ROOM{
-    uint32 battle_type = 1;//模式
+    uint32 room_type = 1;//模式
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 

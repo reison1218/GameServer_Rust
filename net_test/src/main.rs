@@ -325,7 +325,10 @@ impl tools::macros::GetMutRef for TestLift{}
 
 
 fn main() -> anyhow::Result<()> {
-    dbg!(1<<16);
+    let s: String = "Hello, World".to_string();
+    let any: Box<dyn Any> = Box::new(s);
+    let res:Box<String> = any.downcast().unwrap();
+    dbg!(res);
     // let t = TTT::default();
     // let res = t.d.take();
     // println!("{:?}", t.borrow().d.take());

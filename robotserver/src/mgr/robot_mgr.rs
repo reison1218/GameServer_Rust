@@ -10,6 +10,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU32, Ordering};
 use tools::cmd_code::RobotCode;
+use tools::macros::GetMutRef;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 

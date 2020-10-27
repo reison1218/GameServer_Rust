@@ -330,7 +330,7 @@ impl ::protobuf::reflect::ProtobufValue for C_JOIN_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_SEARCH_ROOM {
     // message fields
-    pub battle_type: u32,
+    pub room_type: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -347,19 +347,19 @@ impl C_SEARCH_ROOM {
         ::std::default::Default::default()
     }
 
-    // uint32 battle_type = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_battle_type(&self) -> u32 {
-        self.battle_type
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
     }
-    pub fn clear_battle_type(&mut self) {
-        self.battle_type = 0;
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_type(&mut self, v: u32) {
-        self.battle_type = v;
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
     }
 }
 
@@ -377,7 +377,7 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.battle_type = tmp;
+                    self.room_type = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -391,8 +391,8 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.battle_type != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.battle_type, ::protobuf::wire_format::WireTypeVarint);
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -400,8 +400,8 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.battle_type != 0 {
-            os.write_uint32(1, self.battle_type)?;
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -442,9 +442,9 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "battle_type",
-                |m: &C_SEARCH_ROOM| { &m.battle_type },
-                |m: &mut C_SEARCH_ROOM| { &mut m.battle_type },
+                "room_type",
+                |m: &C_SEARCH_ROOM| { &m.room_type },
+                |m: &mut C_SEARCH_ROOM| { &mut m.room_type },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SEARCH_ROOM>(
                 "C_SEARCH_ROOM",
@@ -462,7 +462,7 @@ impl ::protobuf::Message for C_SEARCH_ROOM {
 
 impl ::protobuf::Clear for C_SEARCH_ROOM {
     fn clear(&mut self) {
-        self.battle_type = 0;
+        self.room_type = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6778,18 +6778,18 @@ impl ::protobuf::reflect::ProtobufValue for S_SKIP_TURN_CHOICE_NOTICE {
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
-    \x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\"0\n\rC_SEARCH_ROOM\x12\
-    \x1f\n\x0bbattle_type\x18\x01\x20\x01(\rR\nbattleType\"`\n\x06S_ROOM\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
-    \x0e.protos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\
-    \x18\x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\
-    \x05value\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\
-    \x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\
-    \x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\
-    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
-    rMess\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\r\
-    R\x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
+    \x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\",\n\rC_SEARCH_ROOM\x12\
+    \x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"`\n\x06S_ROOM\x12\x17\
+    \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\x0e.pr\
+    otos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\x18\
+    \x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05va\
+    lue\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
+    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\
+    \x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\
+    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
+    s\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\
+    \x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
     \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
     s\"l\n\x19S_CHOOSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
     (\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\

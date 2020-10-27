@@ -13,7 +13,6 @@ use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomSettingPt;
@@ -53,53 +52,22 @@ impl RoomType {
     }
 }
 
-///战斗模式类型
-#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-#[repr(u8)]
-pub enum BattleType {
-    None = 0,            //无效初始值
-    OneVOneVOneVOne = 1, //1v1v1v1
-    TwoVTwo = 2,         //2v2
-    OneVOne = 3,         //1v1
-}
-
-impl Default for BattleType {
-    fn default() -> Self {
-        BattleType::OneVOneVOneVOne
-    }
-}
-
-impl BattleType {
-    pub fn into_u8(self) -> u8 {
-        let res: u8 = self.into();
-        res
-    }
-
-    pub fn into_u32(self) -> u32 {
-        let res: u8 = self.into();
-        res as u32
-    }
-}
-
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
-    pub battle_type: BattleType, //战斗类型
-    pub turn_limit_time: u32,    //回合限制时间
-    pub season_id: u32,          //赛季id
-    pub is_open_ai: bool,        //是否开启ai
-    pub victory_condition: u32,  //胜利条件
+    pub turn_limit_time: u32,   //回合限制时间
+    pub season_id: u32,         //赛季id
+    pub is_open_ai: bool,       //是否开启ai
+    pub victory_condition: u32, //胜利条件
 }
 
 impl From<RoomSettingPt> for RoomSetting {
     fn from(rs_pt: RoomSettingPt) -> Self {
-        let battle_type = BattleType::try_from(rs_pt.battle_type as u8).unwrap();
         let is_open_ai = rs_pt.is_open_ai;
         let victory_condition = rs_pt.victory_condition;
         let turn_limit_time = rs_pt.turn_limit_time;
         let season_id = rs_pt.season_id;
         let rs = RoomSetting {
-            battle_type,
             turn_limit_time,
             season_id,
             is_open_ai,
@@ -113,7 +81,6 @@ impl From<RoomSetting> for RoomSettingPt {
     fn from(r: RoomSetting) -> Self {
         let mut rsp = RoomSettingPt::new();
         rsp.set_victory_condition(r.victory_condition);
-        rsp.set_battle_type(r.battle_type as u32);
         rsp.set_season_id(r.season_id);
         rsp.set_turn_limit_time(r.turn_limit_time);
         rsp.set_is_open_ai(r.is_open_ai);
@@ -135,7 +102,6 @@ pub trait RoomModel {
 
     fn create_room(
         &mut self,
-        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
@@ -186,7 +152,6 @@ impl RoomModel for CustomRoom {
     ///创建房间
     fn create_room(
         &mut self,
-        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
@@ -200,7 +165,6 @@ impl RoomModel for CustomRoom {
             task_sender,
             robot_sender,
         )?;
-        room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
@@ -238,67 +202,9 @@ impl RoomModel for CustomRoom {
     }
 }
 
-///匹配房数组结构封装体
-#[derive(Default, Clone)]
-pub struct MatchRooms {
-    pub match_rooms: HashMap<u8, MatchRoom>,
-}
-
-impl MatchRooms {
-    pub fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
-        for i in self.match_rooms.iter_mut() {
-            let res = i.1.rooms.get_mut(&room_id);
-            if res.is_some() {
-                return Some(res.unwrap());
-            }
-        }
-        None
-    }
-
-    pub fn rm_room(&mut self, battle_type: u8, room_id: u32) {
-        let match_room = self.match_rooms.get_mut(&battle_type);
-        if let Some(match_room) = match_room {
-            match_room.rm_room(&room_id);
-        }
-    }
-
-    ///离开房间，离线也好，主动离开也好
-    pub fn leave(
-        &mut self,
-        battle_type: BattleType,
-        room_id: u32,
-        user_id: &u32,
-    ) -> anyhow::Result<u32> {
-        let match_room = self.match_rooms.get_mut(&battle_type.into_u8());
-        if match_room.is_none() {
-            let str = format!("there is no battle_type:{:?}!", battle_type);
-            warn!("{:?}", str.as_str());
-            anyhow::bail!("{:?}", str)
-        }
-        let match_room = match_room.unwrap();
-        let res = match_room.leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, user_id);
-        res
-    }
-
-    pub fn get_match_room_mut(&mut self, battle_type: BattleType) -> &mut MatchRoom {
-        let res = self.match_rooms.get_mut(&battle_type.into_u8());
-        if res.is_none() {
-            let mr = MatchRoom {
-                battle_type: BattleType::OneVOneVOneVOne,
-                rooms: HashMap::new(),
-                room_cache: Vec::new(),
-            };
-            self.match_rooms.insert(battle_type.into_u8(), mr);
-        }
-        let res = self.match_rooms.get_mut(&battle_type.into_u8());
-        res.unwrap()
-    }
-}
-
 ///匹配房结构体
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct MatchRoom {
-    pub battle_type: BattleType,    //战斗模式类型
     pub rooms: HashMap<u32, Room>,  //key:房间id    value:房间结构体
     pub room_cache: Vec<RoomCache>, //key:房间id    value:房间人数
 }
@@ -320,14 +226,12 @@ impl RoomModel for MatchRoom {
     ///创建房间
     fn create_room(
         &mut self,
-        battle_type: BattleType,
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
         robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
         let mut room = Room::new(owner, RoomType::Match, sender, task_sender, robot_sender)?;
-        room.setting.battle_type = battle_type;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
@@ -402,6 +306,16 @@ impl RoomModel for MatchRoom {
 }
 
 impl MatchRoom {
+    pub fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
+        self.rooms.get_mut(room_id)
+    }
+
+    ///离开房间，离线也好，主动离开也好
+    pub fn leave(&mut self, room_id: u32, user_id: &u32) -> anyhow::Result<u32> {
+        let res = self.leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, user_id);
+        res
+    }
+
     pub fn get_room_cache_mut(&mut self, room_id: &u32) -> Option<&mut RoomCache> {
         let res = self.room_cache.iter_mut().find(|x| x.room_id == *room_id);
         res
@@ -441,13 +355,7 @@ impl MatchRoom {
                 anyhow::bail!("TileMapTempMgr is None")
             }
             //创建房间
-            room_id = self.create_room(
-                BattleType::OneVOneVOneVOne,
-                member,
-                sender,
-                task_sender,
-                robot_sender,
-            )?;
+            room_id = self.create_room(member, sender, task_sender, robot_sender)?;
             info!("创建匹配房间,room_id:{},user_id:{}", room_id, user_id);
         } else {
             //如果有，则往房间里塞
@@ -484,10 +392,6 @@ impl MatchRoom {
 
                 task.cmd = TaskCmd::MatchRoomStart as u16;
                 let mut map = Map::new();
-                map.insert(
-                    "battle_type".to_owned(),
-                    Value::from(self.battle_type.into_u8()),
-                );
                 map.insert("room_id".to_owned(), Value::from(room_id));
                 task.data = Value::from(map);
                 let res = task_sender.send(task);

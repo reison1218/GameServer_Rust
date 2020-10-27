@@ -6,7 +6,7 @@ use crate::handlers::room_handler::{
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
-use crate::room::room_model::{BattleType, CustomRoom, MatchRooms, RoomModel, RoomType};
+use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::warn;
@@ -19,7 +19,7 @@ use tools::util::packet::Packet;
 ///房间服管理器
 pub struct RoomMgr {
     pub custom_room: CustomRoom,        //自定义房
-    pub match_rooms: MatchRooms,        //公共房
+    pub match_room: MatchRoom,          //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
     sender: Option<TcpSender>,                        //tcp channel的发送方
@@ -34,11 +34,11 @@ impl RoomMgr {
         let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState> =
             HashMap::new();
         let custom_room = CustomRoom::default();
-        let match_rooms = MatchRooms::default();
+        let match_rooms = MatchRoom::default();
         let player_room: HashMap<u32, u64> = HashMap::new();
         let mut rm = RoomMgr {
             custom_room,
-            match_rooms,
+            match_room: match_rooms,
             player_room,
             sender: None,
             task_sender: None,
@@ -115,7 +115,7 @@ impl RoomMgr {
         if model == RoomType::into_u32(RoomType::Custom) {
             return self.custom_room.get_room_mut(&room_id);
         } else if model == RoomType::into_u32(RoomType::Match) {
-            return self.match_rooms.get_room_mut(&room_id);
+            return self.match_room.get_room_mut(&room_id);
         } else if model == RoomType::into_u32(RoomType::SeasonPve) {
             return None;
         }
@@ -123,17 +123,10 @@ impl RoomMgr {
     }
 
     ///删除房间
-    pub fn rm_room(
-        &mut self,
-        room_id: u32,
-        room_type: RoomType,
-        battle_type: BattleType,
-        member_v: Vec<u32>,
-    ) {
+    pub fn rm_room(&mut self, room_id: u32, room_type: RoomType, member_v: Vec<u32>) {
         match room_type {
             RoomType::Match => {
-                let res = self.match_rooms.get_match_room_mut(battle_type);
-                res.rm_room(&room_id);
+                self.match_room.rm_room(&room_id);
             }
             RoomType::Custom => {
                 self.custom_room.rm_room(&room_id);

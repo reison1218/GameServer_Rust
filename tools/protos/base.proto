@@ -17,11 +17,10 @@ package protos;
 //}
 
 message RoomSettingPt{
-    uint32 battle_type = 1;//战斗模式
-    uint32 turn_limit_time = 2;//回合时间限制
-    uint32 season_id = 3;//赛季id
-    bool is_open_ai = 4;//是否开启ai
-    uint32 victory_condition = 5;//胜利条件
+    uint32 turn_limit_time = 1;//回合时间限制
+    uint32 season_id = 2;//赛季id
+    bool is_open_ai = 3;//是否开启ai
+    uint32 victory_condition = 4;//胜利条件
 }
 
 //玩家信息

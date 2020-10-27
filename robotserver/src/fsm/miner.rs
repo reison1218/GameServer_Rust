@@ -5,6 +5,7 @@ use crate::fsm::status::{
 use crossbeam::atomic::AtomicCell;
 use std::borrow::BorrowMut;
 use std::time::Duration;
+use tools::macros::GetMutRef;
 
 ///矿工结构体
 pub struct Miner {

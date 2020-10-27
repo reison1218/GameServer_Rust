@@ -17,7 +17,7 @@ message C_JOIN_ROOM{
 //快速开始
 //cmd:1008
 message C_SEARCH_ROOM{
-    uint32 battle_type = 1;//要搜索的战斗模式
+    uint32 room_type = 1;//房间类型
 }
 
 //房间协议返回，对应返回的有：1006，1007，1008

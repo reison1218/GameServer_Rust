@@ -1,6 +1,7 @@
-use crate::mgr::robot_mgr::{GetMutRef, RobotMgr};
+use crate::mgr::robot_mgr::RobotMgr;
 use protobuf::Message;
 use std::collections::HashSet;
+use tools::macros::GetMutRef;
 use tools::protos::robot::{C_REQUEST_ROBOT, S_REQUEST_ROBOT};
 use tools::util::packet::Packet;
 
@@ -24,6 +25,5 @@ pub fn request_robot(rm: &RobotMgr, packet: Packet) -> anyhow::Result<()> {
     //将机器人添加到房间
     rm.add_robot_to_room(room_id, need_num, already_cters);
 
-    
     Ok(())
 }

@@ -1,13 +1,14 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{BattleType, MatchRoom, RoomModel};
+use crate::room::room_model::{MatchRoom, RoomModel};
 use crate::SCHEDULED_MGR;
 use chrono::Local;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
+use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -82,15 +83,6 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
         return;
     }
     let map = res.unwrap();
-    let battle_type = map.get("battle_type");
-    if battle_type.is_none() {
-        return;
-    }
-    let battle_type = battle_type.unwrap().as_u64();
-    if battle_type.is_none() {
-        return;
-    }
-    let battle_type = BattleType::try_from(battle_type.unwrap() as u8).unwrap();
 
     let room_id = map.get("room_id");
     if room_id.is_none() {
@@ -105,7 +97,7 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
 
     let mut lock = rm.lock().unwrap();
 
-    let match_room = lock.match_rooms.get_match_room_mut(battle_type);
+    let match_room = lock.match_room.borrow_mut();
     let match_room_ptr = match_room as *mut MatchRoom;
     let room = match_room.get_room_mut(&room_id);
     if room.is_none() {
@@ -181,10 +173,9 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
                         return;
                     }
                     let room_type = room.get_room_type();
-                    let battle_type = room.setting.battle_type;
                     let room_id = room.get_room_id();
                     let v = room.get_member_vec();
-                    lock.rm_room(room_id, room_type, battle_type, v);
+                    lock.rm_room(room_id, room_type, v);
                 }
             }
             return;
@@ -244,10 +235,9 @@ fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     if need_rm_room {
         let room_type = room.get_room_type();
-        let battle_type = room.setting.battle_type;
         let room_id = room.get_room_id();
         let v = room.get_member_vec();
-        lock.rm_room(room_id, room_type, battle_type, v);
+        lock.rm_room(room_id, room_type, v);
     }
     lock.player_room.remove(&user_id);
 }
@@ -361,10 +351,9 @@ fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     let is_empty = room.is_empty();
     if is_empty {
         let room_type = room.get_room_type();
-        let battle_type = room.setting.battle_type;
         let room_id = room.get_room_id();
         let v = room.get_member_vec();
-        lock.rm_room(room_id, room_type, battle_type, v);
+        lock.rm_room(room_id, room_type, v);
     }
 }
 
@@ -393,9 +382,8 @@ pub fn max_battle_turn_limit(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let room = room.unwrap();
     let room_type = room.get_room_type();
-    let battle_type = room.setting.battle_type;
     let room_id = room.get_room_id();
     let v = room.get_member_vec();
 
-    lock.rm_room(room_id, room_type, battle_type, v);
+    lock.rm_room(room_id, room_type, v);
 }
