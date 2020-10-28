@@ -1438,6 +1438,7 @@ dependencies = [
  "envmnt",
  "futures",
  "generic-array 0.14.4",
+ "hostname",
  "http-types",
  "lazy_static",
  "libc",

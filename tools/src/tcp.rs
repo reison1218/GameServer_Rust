@@ -1,4 +1,5 @@
 use super::*;
+use crossbeam::channel::{Receiver, Sender};
 use net2::TcpStreamExt;
 use std::io::Read;
 use std::marker::{Send, Sync};
@@ -9,7 +10,9 @@ use std::time::Duration;
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
 pub trait Handler: Send + Sync {
+    ///try to clone self
     fn try_clone(&self) -> Self;
+
     ///Triggered when there is a new client connection
     fn on_open(&mut self, sender: TcpSender);
 
@@ -23,7 +26,7 @@ pub trait Handler: Send + Sync {
 ///tcp server sender
 #[derive(Clone, Debug)]
 pub struct TcpSender {
-    pub sender: crossbeam::channel::Sender<Data>,
+    pub sender: Sender<Data>,
     pub token: usize,
 }
 
@@ -218,7 +221,7 @@ pub mod tcp_server {
 
     ///Read the data from the sender of the handler
     fn read_sender_mess(
-        rec: crossbeam::channel::Receiver<Data>,
+        rec: Receiver<Data>,
         connections: Arc<RwLock<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
@@ -428,8 +431,8 @@ pub trait ClientHandler: Send + Sync {
             //如果读取到的字节数大于0则交给handler
             if size > 0 {
                 //读取到字节交给handler处理来处理
-                let mut v = read_bytes.to_vec();
-                v.resize(size, 0);
+                let mut v = Vec::new();
+                v.extend_from_slice(&read_bytes[..size]);
                 self.on_message(v);
             }
         }

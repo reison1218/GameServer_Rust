@@ -63,7 +63,7 @@ use std::panic::catch_unwind;
 use std::fs::File;
 use std::env;
 use chrono::{Local, Datelike, Timelike};
-use std::fmt::Display;
+use std::fmt::{Display, Debug};
 use std::mem::Discriminant;
 use futures::executor::block_on;
 use std::thread::{Thread, JoinHandle};
@@ -323,12 +323,39 @@ impl tools::macros::GetMutRef for TestLift{}
 
 
 
+trait DoSomething<T>{
+    fn do_sth(&self,value:T);
+}
+impl <'a,T:Debug> DoSomething<T> for &'a usize{
+    fn do_sth(&self, value: T) {
+        println!("{:?}",value);
+    }
+}
+
+// fn do_foo<'a>(b:Box<dyn DoSomething<&'a usize>>){
+//     let s:usize = 10;
+//     b.do_sth(&s);
+// }
+
+fn do_bar(b:Box<dyn for<'f> DoSomething<&'f usize>>){
+    let s:usize = 10;
+    b.do_sth(&s);
+}
+
 
 fn main() -> anyhow::Result<()> {
-    let s: String = "Hello, World".to_string();
-    let any: Box<dyn Any> = Box::new(s);
-    let res:Box<String> = any.downcast().unwrap();
-    dbg!(res);
+    //test_channel();
+    // let x = Box::new(&2usize);
+    // do_bar(x);
+
+    // And set a new one
+    //hostname::set("potato")?;
+
+
+    // let s: String = "Hello, World".to_string();
+    // let any: Box<dyn Any> = Box::new(s);
+    // let res:Box<String> = any.downcast().unwrap();
+    // dbg!(res);
     // let t = TTT::default();
     // let res = t.d.take();
     // println!("{:?}", t.borrow().d.take());
@@ -464,14 +491,14 @@ fn test_channel(){
       loop{
           let res = std_rec.recv().unwrap();
           size+=1;
-          if size == 99999999{
+          if size == 9999999{
               println!("std_rec time:{:?}",rec_time.elapsed().unwrap());
           }
       }
     };
     std::thread::spawn(m);
     let send_time = std::time::SystemTime::now();
-    for i in 0..99999999{
+    for i in 0..9999999{
         std_sender.send(Test::default());
     }
     println!("std_send time:{:?}",send_time.elapsed().unwrap());
@@ -484,14 +511,14 @@ fn test_channel(){
         loop{
             let res = cb_rec.recv().unwrap();
             size+=1;
-            if size == 99999999{
+            if size == 9999999{
                 println!("cb_rec time:{:?}",rec_time.elapsed().unwrap());
             }
         }
     };
     std::thread::spawn(m);
     let send_time = std::time::SystemTime::now();
-    for i in 0..99999999{
+    for i in 0..9999999{
         cb_sender.send(Test::default());
     }
     println!("cb_send time:{:?}",send_time.elapsed().unwrap());
@@ -506,12 +533,6 @@ fn test_channel(){
 struct Test{
     pub str:String,
     pub i:u32,
-}
-
-impl Drop for Test{
-    fn drop(&mut self) {
-       println!("drop:{:?}",self.str);
-    }
 }
 
 fn test_unsafe(){

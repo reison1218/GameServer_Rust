@@ -158,7 +158,7 @@ impl RoomModel for CustomRoom {
         robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(
+        let room = Room::new(
             owner.clone(),
             RoomType::Custom,
             sender,
@@ -231,7 +231,7 @@ impl RoomModel for MatchRoom {
         task_sender: crossbeam::channel::Sender<Task>,
         robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
-        let mut room = Room::new(owner, RoomType::Match, sender, task_sender, robot_sender)?;
+        let room = Room::new(owner, RoomType::Match, sender, task_sender, robot_sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
