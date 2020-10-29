@@ -6,7 +6,6 @@ use crate::battle::battle_enum::buff_type::{
 };
 use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
-use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
@@ -110,7 +109,6 @@ pub struct BattleCharacter {
     pub index_data: IndexData,                             //角色位置数据
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub items: HashMap<u32, Item>,                         //角色身上的道具
-    pub battle_data: Option<*const BattleData>,            //battle_data指针
     pub robot_data: Option<RobotData>, //机器人数据;如果有值，则是机器人，没有则是玩家
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
     pub self_cter: Option<Box<BattleCharacter>>, //原本的角色
@@ -119,15 +117,24 @@ pub struct BattleCharacter {
 tools::get_mut_ref!(BattleCharacter);
 
 impl BattleCharacter {
+    pub fn get_robot_data_ref(&self) -> anyhow::Result<&RobotData> {
+        if self.robot_data.is_none() {
+            anyhow::bail!(
+                "this battle_cter is not robot!user_id:{},cter_id:{}",
+                self.base_attr.user_id,
+                self.base_attr.cter_id
+            )
+        }
+        Ok(self.robot_data.as_ref().unwrap())
+    }
+
     pub fn robot_start_action(&self) {
         if self.robot_data.is_none() {
             return;
         }
         let res = self.get_mut_ref().robot_data.as_mut().unwrap();
-        let battle_data = self.battle_data.as_ref().unwrap();
-        let bd = battle_data.clone();
         //开始仲裁
-        res.thinking_do_something(self, bd);
+        res.thinking_do_something();
     }
 
     pub fn get_robot_action(&self) -> &mut Box<dyn RobotStatusAction> {
@@ -189,6 +196,10 @@ impl BattleCharacter {
 
     pub fn is_can_attack(&self) -> bool {
         self.status.attack_state == AttackState::Able
+    }
+
+    pub fn is_robot(&self) -> bool {
+        self.robot_data.is_some()
     }
 
     ///从静态配置中初始化
@@ -525,7 +536,6 @@ impl BattleCharacter {
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
-        battle_cter.battle_data = Some(battle_data);
         let cter_id = cter.cter_id;
         battle_cter.base_attr.user_id = cter.user_id;
         battle_cter.base_attr.cter_id = cter_id;
@@ -574,9 +584,11 @@ impl BattleCharacter {
         battle_cter.reset_residue_open_times();
         //处理机器人部分
         if cter.is_robot {
-            let mut robot_data = RobotData::default();
-            robot_data.sender = Some(robot_sender);
-            robot_data.goal_think = GoalThink::new();
+            let robot_data = RobotData::new(
+                battle_cter.get_user_id(),
+                battle_data as *const BattleData,
+                robot_sender,
+            );
             battle_cter.robot_data = Some(robot_data);
         }
         Ok(battle_cter)

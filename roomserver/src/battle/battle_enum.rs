@@ -263,6 +263,10 @@ impl ActionType {
         let res: u8 = self.into();
         res as u32
     }
+
+    pub fn into_u8(self) -> u8 {
+        self.into()
+    }
 }
 
 ///目标类型枚举

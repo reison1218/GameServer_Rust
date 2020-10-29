@@ -63,6 +63,8 @@ pub struct BattleData {
     pub sender: TcpSender,                          //sender
 }
 
+tools::get_mut_ref!(BattleData);
+
 unsafe impl Send for BattleData {}
 
 impl BattleData {

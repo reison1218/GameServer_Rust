@@ -344,6 +344,7 @@ fn do_bar(b:Box<dyn for<'f> DoSomething<&'f usize>>){
 
 
 fn main() -> anyhow::Result<()> {
+
     //test_channel();
     // let x = Box::new(&2usize);
     // do_bar(x);

@@ -475,6 +475,8 @@ impl BattleData {
                 }
             });
             battle_cter.set_is_can_end_turn(true);
+            //调用触发器
+            self.see_map_cell_trigger(index);
             Ok(Some(v))
         }
     }

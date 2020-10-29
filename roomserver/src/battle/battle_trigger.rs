@@ -9,6 +9,8 @@ use crate::battle::battle_enum::skill_type::WATER_TURRET;
 use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
+use crate::robot::robot_trigger::RobotTriggerType;
+use crate::robot::RememberCell;
 use crate::room::character::BattleCharacter;
 use crate::TEMPLATES;
 use log::{error, warn};
@@ -25,6 +27,12 @@ pub trait TriggerEvent {
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) -> anyhow::Result<Option<ActionUnitPt>>;
+
+    ///看到地图块触发
+    fn see_map_cell_trigger(&self, index: usize);
+
+    ///配对触发
+    fn open_map_cell_pair_trigger(&self, index: usize);
 
     ///被移动前触发buff
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()>;
@@ -153,6 +161,36 @@ impl TriggerEvent for BattleData {
         //匹配地图块的
         self.trigger_open_map_cell_buff(Some(index), user_id, battle_cters, au, is_pair);
         Ok(None)
+    }
+
+    fn see_map_cell_trigger(&self, index: usize) {
+        let map_cell = self.tile_map.map_cells.get(index).unwrap();
+        let rc = RememberCell::new(index, map_cell.id);
+        for cter in self.battle_cter.values() {
+            //如果不是机器人就continue；
+            if !cter.is_robot() {
+                continue;
+            }
+            cter.robot_data
+                .as_ref()
+                .unwrap()
+                .trigger(rc.clone(), RobotTriggerType::SeeMapCell);
+        }
+    }
+
+    fn open_map_cell_pair_trigger(&self, index: usize) {
+        let map_cell = self.tile_map.map_cells.get(index).unwrap();
+        let rc = RememberCell::new(index, map_cell.id);
+        for cter in self.battle_cter.values() {
+            //如果不是机器人就continue；
+            if !cter.is_robot() {
+                continue;
+            }
+            cter.robot_data
+                .as_ref()
+                .unwrap()
+                .trigger(rc.clone(), RobotTriggerType::MapCellPair);
+        }
     }
 
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()> {

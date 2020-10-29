@@ -1,6 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::robot::goal_evaluator::GoalEvaluator;
-use crate::robot::robot_status::OpenCellRobotAction;
+use crate::robot::robot_status::open_cell_action::OpenCellRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crossbeam::atomic::AtomicCell;
