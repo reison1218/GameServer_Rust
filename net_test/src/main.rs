@@ -342,6 +342,23 @@ fn do_bar(b:Box<dyn for<'f> DoSomething<&'f usize>>){
     b.do_sth(&s);
 }
 
+pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
+    if str.len()>str1.len() {
+        return str
+    }
+    str1
+}
+
+pub struct TestSm<'a>{
+    pub v:&'a Vec<u32>
+}
+
+impl TestSm<'_>{
+    pub fn tt(&mut self,v:&Vec<u32>){
+        TestSm{v};
+    }
+}
+
 
 fn main() -> anyhow::Result<()> {
 
