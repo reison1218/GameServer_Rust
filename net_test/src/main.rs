@@ -361,6 +361,8 @@ impl TestSm<'_>{
 
 
 fn main() -> anyhow::Result<()> {
+    let v:Vec<u32> = Vec::new();
+    let s:&'_ Vec<u32> = &v;
 
     //test_channel();
     // let x = Box::new(&2usize);
