@@ -97,11 +97,7 @@ impl RoomMgr {
             warn!("there is no handler of cmd:{:?}!", cmd);
             return;
         }
-        let res: anyhow::Result<()> = f.unwrap()(self, packet);
-        match res {
-            Ok(_) => {}
-            Err(_) => {}
-        }
+        let _ = f.unwrap()(self, packet);
     }
 
     pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {

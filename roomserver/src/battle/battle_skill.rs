@@ -7,6 +7,7 @@ use crate::battle::battle_enum::skill_type::{
 };
 use crate::battle::battle_enum::{AttackState, EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
+use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::MapCell;
 use crate::TEMPLATES;
@@ -157,6 +158,7 @@ pub fn show_map_cell(
         );
         return None;
     }
+    let show_index;
     //向所有玩家随机展示一个地图块，优先生命元素
     if SHOW_ALL_USERS_CELL == skill_id {
         let mut v = Vec::new();
@@ -194,7 +196,7 @@ pub fn show_map_cell(
         let battle_cter = battle_cter.unwrap();
         battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
-
+        show_index = index;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
         let mut target_pt = TargetPt::new();
@@ -225,6 +227,7 @@ pub fn show_map_cell(
             error!("{:?}", e);
             return None;
         }
+        show_index = index;
         let battle_cter = battle_cter.unwrap();
         battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
@@ -234,7 +237,6 @@ pub fn show_map_cell(
         let element = map_cell.element;
         let map_cell_id = map_cell.id;
         let map_cell_index = map_cell.index;
-        std::mem::drop(map_cell);
         let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
         if let Err(e) = skill_temp {
             warn!("{:?}", e);
@@ -269,6 +271,7 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell_id);
         target_pt.target_value.push(map_cell_index as u32);
         au.targets.push(target_pt);
+        show_index = map_cell_index;
     } else {
         //展示地图块
         let index = *target_array.get(0).unwrap() as usize;
@@ -278,7 +281,7 @@ pub fn show_map_cell(
             warn!("show_index {:?}", e);
             return None;
         }
-
+        show_index = index;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
         let mut target_pt = TargetPt::new();
@@ -286,6 +289,9 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell.index as u32);
         au.targets.push(target_pt);
     }
+
+    //调用触发器
+    battle_data.map_cell_trigger_for_robot(show_index, RobotTriggerType::SeeMapCell);
     None
 }
 

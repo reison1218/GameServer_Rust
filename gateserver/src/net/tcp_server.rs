@@ -12,6 +12,8 @@ struct TcpServerHandler {
     cm: Arc<Mutex<ChannelMgr>>, //channel管理器
 }
 
+tools::get_mut_ref!(TcpServerHandler);
+
 unsafe impl Send for TcpServerHandler {}
 
 unsafe impl Sync for TcpServerHandler {}

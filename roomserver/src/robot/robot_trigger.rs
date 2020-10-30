@@ -4,7 +4,7 @@ use num_enum::TryFromPrimitive;
 use tools::macros::GetMutRef;
 
 ///触发器类型
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RobotTriggerType {
     None = 0,

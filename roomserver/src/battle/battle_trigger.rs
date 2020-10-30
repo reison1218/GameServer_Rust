@@ -29,10 +29,7 @@ pub trait TriggerEvent {
     ) -> anyhow::Result<Option<ActionUnitPt>>;
 
     ///看到地图块触发
-    fn see_map_cell_trigger(&self, index: usize);
-
-    ///配对触发
-    fn open_map_cell_pair_trigger(&self, index: usize);
+    fn map_cell_trigger_for_robot(&self, index: usize, robot_trigger_type: RobotTriggerType);
 
     ///被移动前触发buff
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()>;
@@ -163,7 +160,7 @@ impl TriggerEvent for BattleData {
         Ok(None)
     }
 
-    fn see_map_cell_trigger(&self, index: usize) {
+    fn map_cell_trigger_for_robot(&self, index: usize, robot_trigger_type: RobotTriggerType) {
         let map_cell = self.tile_map.map_cells.get(index).unwrap();
         let rc = RememberCell::new(index, map_cell.id);
         for cter in self.battle_cter.values() {
@@ -174,22 +171,7 @@ impl TriggerEvent for BattleData {
             cter.robot_data
                 .as_ref()
                 .unwrap()
-                .trigger(rc.clone(), RobotTriggerType::SeeMapCell);
-        }
-    }
-
-    fn open_map_cell_pair_trigger(&self, index: usize) {
-        let map_cell = self.tile_map.map_cells.get(index).unwrap();
-        let rc = RememberCell::new(index, map_cell.id);
-        for cter in self.battle_cter.values() {
-            //如果不是机器人就continue；
-            if !cter.is_robot() {
-                continue;
-            }
-            cter.robot_data
-                .as_ref()
-                .unwrap()
-                .trigger(rc.clone(), RobotTriggerType::MapCellPair);
+                .trigger(rc.clone(), robot_trigger_type);
         }
     }
 

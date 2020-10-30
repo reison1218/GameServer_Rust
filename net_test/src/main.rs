@@ -77,10 +77,11 @@ use crate::test_async::async_main;
 use std::collections::btree_map::Range;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use crate::map::generate_map;
-use actix::{Actor, SyncArbiter};
+use actix::{Actor, SyncArbiter, ContextFutureSpawner};
 use std::convert::TryInto;
 use crossbeam::atomic::{AtomicConsume, AtomicCell};
 use tools::macros::GetMutRef;
+use futures::future::join3;
 
 #[macro_use]
 extern crate lazy_static;
@@ -349,20 +350,25 @@ pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
     str1
 }
 
-pub struct TestSm<'a>{
-    pub v:&'a Vec<u32>
-}
-
-impl TestSm<'_>{
-    pub fn tt(&mut self,v:&Vec<u32>){
-        TestSm{v};
-    }
-}
-
-
 fn main() -> anyhow::Result<()> {
-    let v:Vec<u32> = Vec::new();
-    let s:&'_ Vec<u32> = &v;
+
+    let res = async{
+        let s = async {
+            dbg!(std::thread::current().name().unwrap());
+        };
+
+        let s1 = async {
+            dbg!(std::thread::current().name().unwrap());
+        };
+
+        let s2 = async {
+            dbg!(std::thread::current().name().unwrap());
+        };
+        let res = join3(s,s1,s2);
+        res.await;
+    };
+
+    async_std::task::block_on(res);
 
     //test_channel();
     // let x = Box::new(&2usize);

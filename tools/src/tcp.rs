@@ -114,7 +114,6 @@ pub mod tcp_server {
         let address = SocketAddr::from_str(addr).unwrap();
         // Setup the TCP server socket.
         let mut server = MioTcpListener::bind(address)?;
-
         // Map of `Token` -> `TcpStream`.
         let conn_map = Arc::new(RwLock::new(HashMap::new()));
         //handlermap
@@ -159,6 +158,7 @@ pub mod tcp_server {
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream
                         let mut hd = handler.try_clone();
+
                         //trigger the open event
                         hd.on_open(TcpSender {
                             sender: sender.clone(),

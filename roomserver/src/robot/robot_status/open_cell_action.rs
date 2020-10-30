@@ -62,14 +62,19 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut action_type = ActionType::Open.into_u8();
 
         //剩余翻块次数
-        let mut residue_open_times = battle_cter.flow_data.residue_open_times;
+        let residue_open_times = battle_cter.flow_data.residue_open_times;
 
         //剩余次数等于0，则啥也不干，直接返回
         if residue_open_times == 0 {
             return;
         }
         //计算可以配对多少个
-        let (pair_v, element_index) = cal_pair_num(battle_data, battle_cter);
+        let res = cal_pair_num(battle_data, battle_cter);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return;
+        }
+        let (pair_v, element_index) = res.unwrap();
 
         //大于1个时，优先配对与自己元素相同的地图块
         if pair_v.len() > 1 {
@@ -131,7 +136,7 @@ impl RobotStatusAction for OpenCellRobotAction {
 pub fn cal_pair_num(
     battle_data: &BattleData,
     battle_cter: &BattleCharacter,
-) -> (Vec<usize>, Option<usize>) {
+) -> anyhow::Result<(Vec<usize>, Option<usize>)> {
     let mut index_v = Vec::new();
     let mut element_index: Option<usize> = None;
 
@@ -139,12 +144,12 @@ pub fn cal_pair_num(
     let robot_data = battle_cter.get_robot_data_ref();
     if let Err(e) = robot_data {
         error!("{:?}", e);
-        return (Vec::new(), None);
+        anyhow::bail!(e)
     }
     let robot_data = robot_data.unwrap();
 
     //机器人记忆的地图块
-    let mut remember_cells = robot_data.remember_map_cell.borrow();
+    let remember_cells = robot_data.remember_map_cell.borrow();
 
     //这个turn放开的地图块下标
     let open_map_cell_vec = &battle_cter.flow_data.open_map_cell_vec;
@@ -167,5 +172,5 @@ pub fn cal_pair_num(
             }
         }
     }
-    (index_v, element_index)
+    Ok((index_v, element_index))
 }

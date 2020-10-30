@@ -6,6 +6,7 @@ use crate::battle::battle_enum::{AttackState, BattleCterState, SkillConsumeType}
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
+use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::room_model::RoomType;
@@ -475,8 +476,14 @@ impl BattleData {
                 }
             });
             battle_cter.set_is_can_end_turn(true);
+            let robot_trigger_type;
+            if is_pair {
+                robot_trigger_type = RobotTriggerType::MapCellPair;
+            } else {
+                robot_trigger_type = RobotTriggerType::SeeMapCell;
+            }
             //调用触发器
-            self.see_map_cell_trigger(index);
+            self.map_cell_trigger_for_robot(index, robot_trigger_type);
             Ok(Some(v))
         }
     }

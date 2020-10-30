@@ -56,7 +56,9 @@ impl tools::tcp::Handler for TcpServerHandler {
 
         for packet in packet_array {
             //判断是否是房间服的命令，如果不是，则直接无视掉
-            if packet.get_cmd() < GameCode::Min as u32 || packet.get_cmd() > GameCode::Max as u32 {
+            if packet.get_cmd() < GameCode::Min.into_u32()
+                || packet.get_cmd() > GameCode::Max.into_u32()
+            {
                 error!("the cmd:{} is not belong gameserver!", packet.get_cmd());
                 continue;
             }
@@ -68,15 +70,15 @@ impl tools::tcp::Handler for TcpServerHandler {
 
 async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
-    if packet.get_cmd() != GameCode::Login as u32
-        && packet.get_cmd() != GameCode::LineOff as u32
+    if packet.get_cmd() != GameCode::Login.into_u32()
+        && packet.get_cmd() != GameCode::LineOff.into_u32()
         && packet.get_data().is_empty()
     {
         error!("packet bytes is null!");
         return;
     }
     //判断是否执行登录
-    if packet.get_cmd() == GameCode::Login as u32 {
+    if packet.get_cmd() == GameCode::Login.into_u32() {
         let mut c_login = C_USER_LOGIN::new();
         let result = c_login.merge_from_bytes(packet.get_data());
 
@@ -223,7 +225,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     let mut res = ResourcesPt::new();
     res.id = 1;
     res.field_type = 1;
-    res.num = 100 as u32;
+    res.num = 100_u32;
     v.push(res);
 
     let resp = protobuf::RepeatedField::from(v);
