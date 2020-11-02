@@ -352,24 +352,57 @@ pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
 
 fn main() -> anyhow::Result<()> {
 
-    let res = async{
-        let s = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
+    let mut bb = tools::util::bytebuf::ByteBuf::new();
+    let time = std::time::SystemTime::now();
+    for _ in 0..999999{
+        bb.push_u32(1);
+    }
+    for _ in 0..999999{
+        let res = bb.read_u32();
+        if let Err(e) = res{
+            println!("{:?}",e);
+        }
+    }
+    dbg!(time.elapsed().unwrap());
 
-        let s1 = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
 
-        let s2 = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
-        let res = join3(s,s1,s2);
-        res.await;
-    };
+    // let mut queue = concurrent_queue::ConcurrentQueue::bounded(1024);
+    //
+    // queue.push(Test::default());
 
-    async_std::task::block_on(res);
 
+    // let tt_f = Arc::new(Mutex::new(Test::default()));
+    //
+    // let res = async move{
+    //     let tt = tt_f.clone();
+    //     let s = async move{
+    //         let mut tt = tt.lock().unwrap();
+    //         tt.i+=1;
+    //         std::thread::sleep(Duration::from_millis(5000));
+    //         //task::sleep(Duration::from_millis(5000)).await;
+    //         dbg!("s:{:?}",std::thread::current().name().unwrap());
+    //     };
+    //     let tt = tt_f.clone();
+    //     let s1 = async move{
+    //         let mut tt = tt.lock().unwrap();
+    //         tt.i+=1;
+    //         dbg!("s1:{:?}",std::thread::current().name().unwrap());
+    //     };
+    //     let tt = tt_f.clone();
+    //     let s2 = async move{
+    //         let mut tt = tt.lock().unwrap();
+    //         tt.i+=1;
+    //         dbg!("s2:{:?}",std::thread::current().name().unwrap());
+    //     };
+    //     let res = join3(s,s1,s2);
+    //     res.await;
+    // };
+    //
+    // task::spawn(res);
+
+    //std::thread::sleep(Duration::from_millis(50000));
+
+    //test_channel_and_mutex();
     //test_channel();
     // let x = Box::new(&2usize);
     // do_bar(x);
@@ -506,6 +539,51 @@ impl Drop for Count {
     fn drop(&mut self) {
         println!("dropping count {}", self.0);
     }
+}
+
+fn test_channel_and_mutex(){
+    let test = Test::default();
+    let arc = Arc::new(Mutex::new(test));
+    let metux_time = std::time::SystemTime::now();
+    let mut size = 0;
+    loop{
+        size+=1;
+        if size == 99999{
+            break;
+        }
+        let arc_clone = arc.clone();
+        let m = async move{
+            let mut lock = arc_clone.lock().unwrap();
+            lock.i+=1;
+        };
+        async_std::task::spawn(m);
+    }
+    let mut builder = std::thread::Builder::new();
+    let handler = builder.spawn(||{std::thread::current()}).unwrap();
+    handler.join();
+    println!("mutex time:{:?}",metux_time.elapsed().unwrap());
+
+    let (cb_sender,cb_rec) = crossbeam::channel::bounded(102400);
+    let m = move||{
+        let mut size = 0;
+        let rec_time = std::time::SystemTime::now();
+        loop{
+            let res = cb_rec.recv().unwrap();
+            size+=1;
+            if size == 99999{
+                println!("cb_rec time:{:?}",rec_time.elapsed().unwrap());
+            }
+        }
+    };
+    std::thread::spawn(m);
+    let send_time = std::time::SystemTime::now();
+    for i in 0..99999{
+        cb_sender.send(Test::default());
+    }
+    println!("cb_send time:{:?}",send_time.elapsed().unwrap());
+
+    std::thread::sleep(Duration::from_millis(5000));
+
 }
 
 

@@ -4,6 +4,7 @@ use crate::room::room::{MemberLeaveNoticeType, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
+use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -342,8 +343,8 @@ impl MatchRoom {
         &mut self,
         member: Member,
         sender: TcpSender,
-        task_sender: crossbeam::channel::Sender<Task>,
-        robot_sender: crossbeam::channel::Sender<RobotTask>,
+        task_sender: Sender<Task>,
+        robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
         let user_id = member.user_id;

@@ -46,4 +46,6 @@ scheduled-thread-pool = "0.2.5"
 actix = "0.10.0"
 tokio = { version="0.3.1" , features = ["full"] }
 hostname = "0.3.1"
+concurrent-queue = "1.2.2"
+bytes = "0.6.0"
 tools = { path = "../tools" }

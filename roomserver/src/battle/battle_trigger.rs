@@ -200,7 +200,7 @@ impl TriggerEvent for BattleData {
 
         //触发陷阱
         self.trigger_trap(battle_cter, index as usize);
-        //触发范围
+        //触发别人的范围
         for other_cter in battle_cters.values_mut() {
             if other_cter.is_died() {
                 continue;
@@ -212,6 +212,7 @@ impl TriggerEvent for BattleData {
                 if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
+                //换位置不触发"DEFENSE_NEAR_MOVE_SKILL_DAMAGE"
                 if is_change_index_both {
                     continue;
                 }
