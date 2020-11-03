@@ -187,11 +187,11 @@ pub fn test_faster(){
         let m = move ||{
             for _ in 0..1000{
                 let _ = t_cp.write().unwrap().i;
-                t_cp.write().unwrap().i+=1;
+                t_cp.write().unwrap().i.fetch_add(1);
             }
         };
         let handler = std::thread::spawn(m);
         handler.join();
     }
-    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.write().unwrap().i);
+    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.write().unwrap().i.load());
 }
