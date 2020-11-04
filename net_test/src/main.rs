@@ -351,6 +351,10 @@ pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
     str1
 }
 
+async fn testtt(){
+    println!("ss");
+}
+
 fn main() -> anyhow::Result<()> {
     // let mut queue = concurrent_queue::ConcurrentQueue::bounded(1024);
     //
@@ -360,30 +364,43 @@ fn main() -> anyhow::Result<()> {
         pub static I:u32 = 1;
     }
 
-    std::thread::sleep(Duration::from_millis(5000));
+    // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
     // let res = async move{
+    //     let t = test.clone();
     //     let s = async move{
-    //          // async_std::task::sleep(Duration::from_millis(5000)).await;
-    //         // std::thread::sleep(Duration::from_millis(5000));
+    //         let lock = t.lock().await;
     //         dbg!("s:{:?}",std::thread::current().name().unwrap());
+    //         ()
     //     };
-    //     let s1 = async move{
     //
+    //     let t1 = test.clone();
+    //     let s1 = async move{
+    //         let lock = t1.lock().await;
     //         dbg!("s1:{:?}",std::thread::current().name().unwrap());
+    //         ()
     //     };
+    //     let t2 = test.clone();
     //     let s2 = async move{
+    //         let lock = t2.lock().await;
     //         dbg!("s2:{:?}",std::thread::current().name().unwrap());
+    //         ()
     //     };
     //     let res = join3(s,s1,s2);
-    //     task::block_on(res);
+    //     task::spawn(res).await;
+    //     ()
     // };
     //
-    // task::block_on(res);
+    // async fn test_mutex(name:&str,test:Arc<Mutex<Test>>){
+    //     let lock = test.lock().unwrap();
+    //     dbg!("{:?}:{:?}",name,std::thread::current().name().unwrap());
+    // }
+    //
+    // block_on(res);
     //
     // std::thread::sleep(Duration::from_millis(50000));
     //
-    // test_channel_and_mutex();
-    //test_channel();
+    test_channel_and_mutex();
+    // test_channel();
     // let x = Box::new(&2usize);
     // do_bar(x);
 
@@ -523,7 +540,7 @@ impl Drop for Count {
 
 fn test_channel_and_mutex(){
     let test = Test::default();
-    let arc = Arc::new(RwLock::new(test));
+    let arc = Arc::new(tokio::sync::RwLock::new(test));
     let metux_time = std::time::SystemTime::now();
     let mut size = 0;
     loop{
@@ -532,16 +549,19 @@ fn test_channel_and_mutex(){
             break;
         }
         let arc_clone = arc.clone();
-        let m =   move ||{
-            let mut lock = arc_clone.write().unwrap();
+        let m =    async move  {
+            let mut lock = arc_clone.write().await;
             lock.i.fetch_add(1);
+            ()
         };
-        std::thread::spawn(m);
+        // std::thread::spawn(m);
+        let res = async_std::task::spawn(m);
+        block_on(res);
     }
-    let mut builder = std::thread::Builder::new();
-    let res = builder.spawn(||{std::thread::current()}).unwrap();
-    res.join();
-    println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),arc.write().unwrap().i.load());
+    // let mut builder = std::thread::Builder::new();
+    // let res = builder.spawn(||{std::thread::current()}).unwrap();
+    // res.join();
+    println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),block_on(arc.write()).i.load());
     // println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),arc.write().await.i.load());
 
     // let res = async move{
@@ -631,6 +651,10 @@ struct Test{
     pub str:String,
     pub i:AtomicCell<u32>,
 }
+
+unsafe impl Send for Test{}
+
+unsafe impl Sync for Test{}
 
 fn test_unsafe(){
     unsafe {

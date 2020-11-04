@@ -2435,6 +2435,7 @@ dependencies = [
  "anyhow",
  "async-h1",
  "async-std",
+ "async-trait",
  "byteorder",
  "crossbeam",
  "futures",

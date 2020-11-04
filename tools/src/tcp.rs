@@ -1,4 +1,5 @@
 use super::*;
+use async_trait::async_trait;
 use crossbeam::channel::{Receiver, Sender};
 use net2::TcpStreamExt;
 use std::io::Read;
@@ -9,18 +10,19 @@ use std::time::Duration;
 
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
+#[async_trait]
 pub trait Handler: Send + Sync {
     ///try to clone self
-    fn try_clone(&self) -> Self;
+    async fn try_clone(&self) -> Self;
 
     ///Triggered when there is a new client connection
-    fn on_open(&mut self, sender: TcpSender);
+    async fn on_open(&mut self, sender: TcpSender);
 
     ///Disconnect triggered when client was closed
-    fn on_close(&mut self);
+    async fn on_close(&mut self);
 
     ///Triggered when there is client data transfer
-    fn on_message(&mut self, mess: Vec<u8>);
+    async fn on_message(&mut self, mess: Vec<u8>);
 }
 
 ///tcp server sender
@@ -85,6 +87,7 @@ unsafe impl Sync for Data {}
 ///
 pub mod tcp_server {
     use super::*;
+    use futures::executor::block_on;
     use mio::event::Event;
     use mio::net::{TcpListener as MioTcpListener, TcpStream as MioTcpStream};
     use mio::{Events, Interest, Poll, Registry, Token};
@@ -105,7 +108,7 @@ pub mod tcp_server {
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub fn new(addr: &str, handler: impl Handler) -> io::Result<()> {
+    pub async fn new(addr: &str, handler: impl Handler) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
@@ -157,13 +160,14 @@ pub mod tcp_server {
                         }
                         let token = next(&mut unique_token);
                         //clone a handler for tcpstream
-                        let mut hd = handler.try_clone();
+                        let mut hd = handler.try_clone().await;
 
                         //trigger the open event
-                        hd.on_open(TcpSender {
+                        let res = hd.on_open(TcpSender {
                             sender: sender.clone(),
                             token: token.0,
                         });
+                        block_on(res);
 
                         //save the handler
                         handler_map.insert(token.0, hd);
@@ -294,7 +298,7 @@ pub mod tcp_server {
                     Ok(n) => {
                         let mut received_data = Vec::new();
                         received_data.extend_from_slice(&buf[..n]);
-                        handler.on_message(received_data);
+                        block_on(handler.on_message(received_data));
                     }
                     // Would block "errors" are the OS's way of saying that the
                     // connection is  unavailable ready to perform this I/O operation.
@@ -365,7 +369,7 @@ pub mod tcp_server {
             }
         }
         let _ = connect.shutdown(Shutdown::Both);
-        handler.on_close();
+        block_on(handler.on_close());
     }
 
     fn would_block(err: &io::Error) -> bool {
@@ -386,15 +390,16 @@ pub mod tcp_server {
 }
 
 ///TCP client handler, used to extend TCP events
+#[async_trait]
 pub trait ClientHandler: Send + Sync {
     ///Called when the connection  open
-    fn on_open(&mut self, ts: TcpStream);
+    async fn on_open(&mut self, ts: TcpStream);
     ///called when connection was closed
-    fn on_close(&mut self);
+    async fn on_close(&mut self);
     ///called when have mess from server
-    fn on_message(&mut self, mess: Vec<u8>);
+    async fn on_message(&mut self, mess: Vec<u8>);
     ///start read mess from server
-    fn on_read(&mut self, address: String) {
+    async fn on_read(&mut self, address: String) {
         let read = new_tcp_client(address.as_str());
         if let Err(e) = read {
             error!("{:?}", e);
@@ -409,7 +414,7 @@ pub trait ClientHandler: Send + Sync {
         let write = write.unwrap();
 
         //trigger socket open event
-        self.on_open(write);
+        self.on_open(write).await;
         //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
@@ -418,14 +423,14 @@ pub trait ClientHandler: Send + Sync {
             let size = read.read(&mut read_bytes);
             if let Err(e) = size {
                 error!("TCP-CLIENT:{:?}", e);
-                self.on_close();
+                self.on_close().await;
                 break;
             }
 
             let size = size.unwrap();
             if size == 0 {
                 info!("tcp客户端断开链接！尝试链接服务器！");
-                self.on_close();
+                self.on_close().await;
                 break;
             }
             //如果读取到的字节数大于0则交给handler
@@ -433,7 +438,7 @@ pub trait ClientHandler: Send + Sync {
                 //读取到字节交给handler处理来处理
                 let mut v = Vec::new();
                 v.extend_from_slice(&read_bytes[..size]);
-                self.on_message(v);
+                self.on_message(v).await;
             }
         }
     }

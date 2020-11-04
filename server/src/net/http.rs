@@ -2,21 +2,22 @@ use crate::entity::save_player_http;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::game_mgr::GameMgr;
 use crate::CONF_MAP;
+use async_std::sync::RwLock;
 use http_types::Error as HttpTypesError;
 use log::{error, info};
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 
 pub struct SavePlayerHttpHandler {
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Arc<RwLock<GameMgr>>,
 }
 
 impl SavePlayerHttpHandler {
-    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
+    pub fn new(gm: Arc<RwLock<GameMgr>>) -> Self {
         SavePlayerHttpHandler { gm }
     }
 }
@@ -34,11 +35,11 @@ impl HttpServerHandler for SavePlayerHttpHandler {
 }
 
 pub struct StopPlayerHttpHandler {
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Arc<RwLock<GameMgr>>,
 }
 
 impl StopPlayerHttpHandler {
-    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
+    pub fn new(gm: Arc<RwLock<GameMgr>>) -> Self {
         StopPlayerHttpHandler { gm }
     }
 }

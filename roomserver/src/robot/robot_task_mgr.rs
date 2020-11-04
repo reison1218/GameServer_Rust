@@ -1,12 +1,13 @@
 use crate::battle::battle_enum::ActionType;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::ROBOT_SCHEDULED_MGR;
+use async_std::sync::{Arc, RwLock};
+use futures::executor::block_on;
 use log::error;
 use log::info;
 use protobuf::Message;
 use serde_json::Value as JsonValue;
 use std::convert::TryFrom;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tools::macros::GetMutRef;
 use tools::protos::battle::C_ACTION;
@@ -20,10 +21,10 @@ pub struct RobotTask {
 }
 
 ///初始化定时执行任务
-pub fn robot_init_timer(rm: Arc<Mutex<RoomMgr>>) {
+pub fn robot_init_timer(rm: Arc<RwLock<RoomMgr>>) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
-        let mut lock = rm.lock().unwrap();
+        let mut lock = block_on(rm.write());
         lock.robot_task_sender = Some(sender);
         std::mem::drop(lock);
 
@@ -60,7 +61,7 @@ pub fn robot_init_timer(rm: Arc<Mutex<RoomMgr>>) {
 }
 
 ///普通攻击
-pub fn attack(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
+pub fn attack(rm: Arc<RwLock<RoomMgr>>, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -77,7 +78,7 @@ pub fn attack(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
     ca.action_type = ActionType::Attack.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
-    let lock = rm.lock().unwrap();
+    let lock = block_on(rm.write());
     //拿到RoomMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
@@ -88,7 +89,7 @@ pub fn attack(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
 }
 
 ///打开地图块
-pub fn open_cell(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
+pub fn open_cell(rm: Arc<RwLock<RoomMgr>>, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -105,7 +106,7 @@ pub fn open_cell(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
     ca.action_type = ActionType::Open.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
-    let lock = rm.lock().unwrap();
+    let lock = block_on(rm.write());
     //拿到RoomMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
@@ -116,7 +117,7 @@ pub fn open_cell(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
 }
 
 ///跳过回合
-pub fn skip_turn(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
+pub fn skip_turn(rm: Arc<RwLock<RoomMgr>>, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -131,7 +132,7 @@ pub fn skip_turn(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
     ca.action_type = ActionType::Skip.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
-    let lock = rm.lock().unwrap();
+    let lock = block_on(rm.write());
     //拿到RoomMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
@@ -142,7 +143,7 @@ pub fn skip_turn(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {
 }
 
 ///使用技能
-pub fn use_skill(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {}
+pub fn use_skill(rm: Arc<RwLock<RoomMgr>>, task: RobotTask) {}
 
 ///使用道具
-pub fn use_item(rm: Arc<Mutex<RoomMgr>>, task: RobotTask) {}
+pub fn use_item(rm: Arc<RwLock<RoomMgr>>, task: RobotTask) {}

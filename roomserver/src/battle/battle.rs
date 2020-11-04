@@ -67,6 +67,7 @@ pub struct BattleData {
 tools::get_mut_ref!(BattleData);
 
 unsafe impl Send for BattleData {}
+unsafe impl Sync for BattleData {}
 
 impl BattleData {
     ///添加总turn的次数

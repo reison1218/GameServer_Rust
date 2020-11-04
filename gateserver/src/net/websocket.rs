@@ -1,5 +1,6 @@
 use super::*;
-use std::sync::Mutex;
+use async_std::sync::RwLock;
+use futures::executor::block_on;
 use tools::cmd_code::RoomCode;
 
 pub struct ClientSender {
@@ -10,9 +11,9 @@ pub struct ClientSender {
 ///websockethandler
 /// 监听websocket网络事件
 pub struct WebSocketHandler {
-    pub ws: Arc<WsSender>,          //相当于channel
-    pub add: Option<String>,        //客户端地址
-    pub cm: Arc<Mutex<ChannelMgr>>, //channel管理结构体指针
+    pub ws: Arc<WsSender>,           //相当于channel
+    pub add: Option<String>,         //客户端地址
+    pub cm: Arc<RwLock<ChannelMgr>>, //channel管理结构体指针
 }
 
 ///实现相应的handler函数
@@ -25,7 +26,7 @@ impl Handler for WebSocketHandler {
             return;
         }
         let token = self.ws.token().0;
-        let mut lock = self.cm.lock().unwrap();
+        let mut lock = block_on(self.cm.write());
         lock.close_remove(&token);
         let user_id = lock.get_channels_user_id(&token);
         let mut mess = Packet::default();
@@ -84,7 +85,7 @@ impl Handler for WebSocketHandler {
             self.add.as_ref().unwrap()
         );
         let token = self.ws.token().0;
-        let mut lock = self.cm.lock().unwrap();
+        let mut lock = block_on(self.cm.write());
         let user_id = lock.get_channels_user_id(&token);
         if user_id.is_none() {
             return;
@@ -112,11 +113,7 @@ impl Handler for WebSocketHandler {
 impl WebSocketHandler {
     fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.ws.token().0;
-        let lock = self.cm.lock();
-        if lock.is_err() {
-            anyhow::bail!("{:?}", lock.err().unwrap().to_string())
-        }
-        let mut lock = lock.unwrap();
+        let mut lock = block_on(self.cm.write());
         let user_id = lock.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
@@ -176,7 +173,7 @@ impl WebSocketHandler {
 
     ///数据包转发
     fn arrange_packet(&mut self, packet: Packet) {
-        let mut lock = self.cm.lock().unwrap();
+        let mut lock = block_on(self.cm.write());
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
             lock.write_to_game(packet.clone());
