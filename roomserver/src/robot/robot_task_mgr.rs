@@ -2,7 +2,7 @@ use crate::battle::battle_enum::ActionType;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::ROBOT_SCHEDULED_MGR;
 use async_std::sync::{Arc, RwLock};
-use futures::executor::block_on;
+use async_std::task::block_on;
 use log::error;
 use log::info;
 use protobuf::Message;

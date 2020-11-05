@@ -1,7 +1,7 @@
 use super::*;
 use async_std::sync::RwLock;
+use async_std::task::block_on;
 use async_trait::async_trait;
-use futures::executor::block_on;
 use log::error;
 use tools::cmd_code::{ClientCode, RoomCode};
 

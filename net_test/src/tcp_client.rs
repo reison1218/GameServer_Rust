@@ -8,6 +8,7 @@ use tools::tcp::ClientHandler;
 use tools::cmd_code::{GameCode, RoomCode, ClientCode};
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use crate::ID;
+use async_trait::async_trait;
 
 use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicU32;
@@ -16,10 +17,10 @@ use tools::protos::base::{PlayerPt, CharacterPt};
 use tools::http::send_http_request;
 use serde_json::Value;
 use std::str::FromStr;
-use futures::executor::block_on;
+use async_std::task::block_on;
 
 pub fn test_tcp_client(pid:&str){
-        let uid = async_std::task::block_on(crate::test_http_client(pid));
+        let uid = block_on(crate::test_http_client(pid));
         if uid.is_err(){
             println!("{:?}",uid.err().unwrap().to_string());
             return;
@@ -27,7 +28,7 @@ pub fn test_tcp_client(pid:&str){
         let mut tcp_client = TcpClientHandler::new();
         tcp_client.user_id = uid.unwrap();
         //tcp_client.on_read("192.168.1.100:16801".to_string());
-        tcp_client.on_read("localhost:16801".to_string());
+        block_on(tcp_client.on_read("localhost:16801".to_string()));
 }
 
 pub fn test_tcp_clients(){
@@ -63,8 +64,9 @@ impl TcpClientHandler {
     }
 }
 
+#[async_trait]
 impl ClientHandler for TcpClientHandler {
-    fn on_open(&mut self, ts: TcpStream) {
+    async fn on_open(&mut self, ts: TcpStream) {
         self.ts = Some(ts);
         let mut s_l = tools::protos::protocol::C_USER_LOGIN::new();
         let mut packet = Packet::default();
@@ -161,14 +163,14 @@ impl ClientHandler for TcpClientHandler {
         // self.ts.as_mut().unwrap().flush().unwrap();
     }
 
-    fn on_close(&mut self) {
+    async fn on_close(&mut self) {
         println!("断开链接");
         //let address = "192.168.1.100:16801";
         let address = "localhost:16801";
-        self.on_read(address.to_string());
+        self.on_read(address.to_string()).await;
     }
 
-    fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) {
         let packet = Packet::from_only_client(mess.clone()).unwrap();
         if packet.get_cmd() == ClientCode::Login as u32{
             let mut s = S_USER_LOGIN::new();

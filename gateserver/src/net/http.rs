@@ -1,7 +1,7 @@
 use super::*;
 
 use async_std::sync::RwLock;
-use futures::executor::block_on;
+use async_std::task::block_on;
 use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;

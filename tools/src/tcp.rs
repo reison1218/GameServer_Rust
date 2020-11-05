@@ -87,7 +87,7 @@ unsafe impl Sync for Data {}
 ///
 pub mod tcp_server {
     use super::*;
-    use futures::executor::block_on;
+    use async_std::task::block_on;
     use mio::event::Event;
     use mio::net::{TcpListener as MioTcpListener, TcpStream as MioTcpStream};
     use mio::{Events, Interest, Poll, Registry, Token};

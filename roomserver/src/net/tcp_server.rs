@@ -1,7 +1,7 @@
 use crate::mgr::room_mgr::RoomMgr;
 use async_std::sync::{Arc, RwLock};
+use async_std::task::block_on;
 use async_trait::async_trait;
-use futures::executor::block_on;
 use log::{error, info};
 use tools::cmd_code::RoomCode;
 use tools::tcp::tcp_server;

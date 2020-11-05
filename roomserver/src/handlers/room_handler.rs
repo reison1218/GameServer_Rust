@@ -236,10 +236,9 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_type_u8 = room_type.into_u8();
     let user_id = packet.get_user_id();
     //校验模式
-    if room_type_u8 < RoomType::Custom.into_u8() || room_type_u8 > RoomType::WorldBossPve.into_u8()
-    {
+    if room_type_u8 < RoomType::Match.into_u8() || room_type_u8 > RoomType::WorldBossPve.into_u8() {
         warn!(
-            "search_room:this room type is not exist!room_type:{:?}",
+            "search_room:this room type is invaild!room_type:{:?}",
             room_type
         );
         return Ok(());

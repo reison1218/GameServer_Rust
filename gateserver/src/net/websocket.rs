@@ -1,6 +1,6 @@
 use super::*;
 use async_std::sync::RwLock;
-use futures::executor::block_on;
+use async_std::task::block_on;
 use tools::cmd_code::RoomCode;
 
 pub struct ClientSender {

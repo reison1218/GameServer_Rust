@@ -48,4 +48,5 @@ tokio = { version="0.3.1" , features = ["full"] }
 hostname = "0.3.1"
 concurrent-queue = "1.2.2"
 bytes = "0.6.0"
+async-trait = "0.1.41"
 tools = { path = "../tools" }

@@ -363,7 +363,7 @@ fn main() -> anyhow::Result<()> {
     thread_local! {
         pub static I:u32 = 1;
     }
-
+    tcp_client::test_tcp_client("reison");
     // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
     // let res = async move{
     //     let t = test.clone();
@@ -399,7 +399,7 @@ fn main() -> anyhow::Result<()> {
     //
     // std::thread::sleep(Duration::from_millis(50000));
     //
-    test_channel_and_mutex();
+    // test_channel_and_mutex();
     // test_channel();
     // let x = Box::new(&2usize);
     // do_bar(x);

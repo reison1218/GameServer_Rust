@@ -1,7 +1,7 @@
 use crate::mgr::game_mgr::GameMgr;
 use async_std::sync::RwLock;
+use async_std::task::block_on;
 use chrono::{Local, Timelike};
-use futures::executor::block_on;
 use log::{error, info};
 use std::sync::Arc;
 use std::time::Duration;
