@@ -433,14 +433,9 @@ fn skip_turn(
         warn!("this player not open any map_cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
-
-    unsafe {
-        let rm_ptr = rmgr as *mut RoomMgr;
-        let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id).unwrap();
-        //跳过当前这个人
-        room.battle_data.skip_turn(_au);
-        room.refresh_map();
-    }
+    //跳过当前这个人
+    rm.battle_data.skip_turn(_au);
+    rm.refresh_map();
     Ok(None)
 }
 

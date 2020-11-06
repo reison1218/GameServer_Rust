@@ -99,7 +99,7 @@ impl ClientHandler for TcpClientHandler {
         std::thread::sleep(Duration::from_secs(1));
 
         let mut  csr = C_SEARCH_ROOM::new();
-        csr.set_room_type(1 as u32);
+        csr.set_room_type(2 as u32);
         let bytes = Packet::build_packet_bytes(GameCode::SearchRoom as u32,self.user_id,csr.write_to_bytes().unwrap(),false,true);
         self.ts.as_mut().unwrap().write(&bytes[..]).unwrap();
         self.ts.as_mut().unwrap().flush().unwrap();

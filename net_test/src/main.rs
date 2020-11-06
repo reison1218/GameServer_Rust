@@ -12,7 +12,7 @@ use protobuf::Message;
 use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::FromPrimitive;
-use log::info;
+use log::{info, LevelFilter};
 
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -304,26 +304,6 @@ size: (f32, f32)
 impl_layoutable!(TestMacro);
 
 
-#[derive(Default)]
-pub struct TTT{
-    s:crossbeam::atomic::AtomicCell<String>,
-    d:crossbeam::atomic::AtomicCell<Vec<u8>>,
-}
-
-
-pub struct TestLift{
-    pub str:&'static String,
-}
-
-impl Drop for TestLift{
-    fn drop(&mut self) {
-        dbg!("drop TestLift");
-    }
-}
-
-impl tools::macros::GetMutRef for TestLift{}
-
-
 
 trait DoSomething<T>{
     fn do_sth(&self,value:T);
@@ -351,19 +331,44 @@ pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
     str1
 }
 
-async fn testtt(){
-    println!("ss");
+thread_local! {
+    pub static I:Cell<u32> = Cell::new(1);
+}
+
+pub struct TestT {
+    temp: &'static String,
+}
+
+impl Drop for TestT {
+    fn drop(&mut self) {
+        println!("drop Test");
+    }
+}
+
+pub fn test_unsafe2(){
+    let mut t: Option<TestT> = None;
+    unsafe {
+        let str = String::from("哈哈");
+        let str_ptr = str.borrow() as *const String;
+        t = Some(TestT {
+            temp: str_ptr.as_ref().unwrap(),
+        });
+    }
+    println!("res {:?}", t.as_ref().unwrap().temp);
+}
+
+#[derive(Default)]
+pub struct TestSize{
+    a:u32,
+    b:u32,
+    c:u32,
 }
 
 fn main() -> anyhow::Result<()> {
-    // let mut queue = concurrent_queue::ConcurrentQueue::bounded(1024);
-    //
-    // queue.push(Test::default());
 
-    thread_local! {
-        pub static I:u32 = 1;
-    }
-    tcp_client::test_tcp_client("reison");
+
+
+    // tcp_client::test_tcp_client("reison");
     // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
     // let res = async move{
     //     let t = test.clone();

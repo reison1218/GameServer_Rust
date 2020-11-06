@@ -1,5 +1,6 @@
 use crate::mgr::room_mgr::RoomMgr;
 use async_std::sync::{Arc, RwLock};
+use async_std::task;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info};
@@ -60,7 +61,7 @@ impl tools::tcp::Handler for TcpServerHandler {
                 continue;
             }
             //异步处理业务逻辑
-            async_std::task::spawn(handler_mess_s(self.rm.clone(), packet));
+            task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
     }
 }
