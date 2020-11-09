@@ -366,8 +366,25 @@ pub struct TestSize{
 
 fn main() -> anyhow::Result<()> {
 
+    let (sender,rec) = crossbeam::channel::unbounded();
+    let res = async move {
+        let time = std::time::SystemTime::now();
+        for _ in 0..999999999{
+            sender.send(1);
+        }
+        println!("send task time:{:?}",time.elapsed().unwrap());
+    };
+    async_std::task::spawn(res);
 
-
+    let time = std::time::SystemTime::now();
+    let mut res:i32 = 0;
+    loop{
+        res += rec.recv().unwrap();
+        if res>=999999999{
+            break;
+        }
+    }
+    println!("rec task time:{:?},{}",time.elapsed().unwrap(),res);
     // tcp_client::test_tcp_client("reison");
     // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
     // let res = async move{
