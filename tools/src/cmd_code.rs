@@ -49,46 +49,7 @@ pub enum RoomCode {
     //离线
     LineOff = 20002,
     //创建房间
-    CreateRoom = 20003,
-    //离开房间
-    LeaveRoom = 20004,
-    //T人
-    Kick = 20005,
-    //换队伍
-    ChangeTeam = 20006,
-    //准备与取消
-    PrepareCancel = 20007,
-    //开始游戏
-    StartGame = 20008,
-    //加入房间
-    JoinRoom = 20009,
-    //匹配房间
-    SearchRoom = 20010,
-    //房间设置
-    RoomSetting = 20011,
-    //选择角色
-    ChoiceCharacter = 20012,
-    //表情符号
-    Emoji = 20013,
-    //选择角色技能
-    ChoiceSkill = 20014,
-    //选择位置
-    ChoiceIndex = 20015,
-    //选择回合顺序
-    ChoiceTurnOrder = 20016,
-    //跳过回合顺序选择
-    SkipChoiceTurn = 20017,
-
-    //--------------------------------------以下战斗相关---------------------------
-    //请求行动
-    Action = 20031,
-    //架势请求
-    Pos = 20032,
-    //---------------------------------------战斗结束
-    //更新赛季
-    UpdateSeason = 29998,
-    //热更新静态配置
-    ReloadTemps = 29999,
+    DoSomeThing = 20003,
     //返回最大值
     Max = 30000,
 }
