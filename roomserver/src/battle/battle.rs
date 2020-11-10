@@ -35,6 +35,16 @@ pub struct Direction {
     pub direction: &'static Vec<isize>,
 }
 
+type SkillFn = HashMap<
+    &'static [u32],
+    unsafe fn(
+        &mut BattleData,
+        user_id: u32,
+        skill_id: u32,
+        target_array: Vec<u32>,
+        au: &mut ActionUnitPt,
+    ) -> Option<Vec<ActionUnitPt>>,
+>;
 ///房间战斗数据封装
 #[derive(Clone)]
 pub struct BattleData {
@@ -47,16 +57,7 @@ pub struct BattleData {
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<u32>>,                    //排名  user_id
     pub turn_limit_time: u64,                       //战斗turn时间限制
-    pub skill_cmd_map: HashMap<
-        &'static [u32],
-        unsafe fn(
-            &mut BattleData,
-            user_id: u32,
-            skill_id: u32,
-            target_array: Vec<u32>,
-            au: &mut ActionUnitPt,
-        ) -> Option<Vec<ActionUnitPt>>,
-    >, //技能函数指针map
+    pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
     pub task_sender: Sender<Task>,                  //任务sender
@@ -66,6 +67,7 @@ pub struct BattleData {
 tools::get_mut_ref!(BattleData);
 
 unsafe impl Send for BattleData {}
+unsafe impl Sync for BattleData {}
 
 impl BattleData {
     ///添加总turn的次数

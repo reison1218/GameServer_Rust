@@ -3,6 +3,8 @@ use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{MatchRoom, RoomModel};
 use crate::SCHEDULED_MGR;
+use async_std::sync::{Arc, RwLock};
+use async_std::task::block_on;
 use chrono::Local;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
@@ -10,7 +12,6 @@ use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -37,10 +38,10 @@ pub struct Task {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
+pub fn init_timer(rm: Arc<RwLock<RoomMgr>>) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
-        let mut lock = rm.lock().unwrap();
+        let mut lock = block_on(rm.write());
         lock.task_sender = Some(sender);
         std::mem::drop(lock);
 
@@ -76,7 +77,7 @@ pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
 }
 
 ///执行匹配房间任务
-fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn match_room_start(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -95,7 +96,7 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let room_id = room_id.unwrap() as u32;
 
-    let mut lock = rm.lock().unwrap();
+    let mut lock = block_on(rm.write());
 
     let match_room = lock.match_room.borrow_mut();
     let match_room_ptr = match_room as *mut MatchRoom;
@@ -186,7 +187,7 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
 }
 
 ///占位任务，没选的直接t出房间
-fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn choice_index(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -203,7 +204,7 @@ fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = rm.lock().unwrap();
+    let mut lock = block_on(rm.write());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
@@ -243,7 +244,7 @@ fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
 }
 
 ///选择占位,超时了就跳过，如果是最后一个人超时，则系统帮忙给未选择的人随机分配
-fn choice_turn(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn choice_turn(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -260,7 +261,7 @@ fn choice_turn(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = rm.lock().unwrap();
+    let mut lock = block_on(rm.write());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
@@ -292,7 +293,7 @@ fn choice_turn(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     room.skip_choice_turn(user_id);
 }
 
-fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn battle_turn_time(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -309,7 +310,7 @@ fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = rm.lock().unwrap();
+    let mut lock = block_on(rm.write());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
@@ -357,7 +358,7 @@ fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
 }
 
-pub fn max_battle_turn_limit(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn max_battle_turn_limit(rm: Arc<RwLock<RoomMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -374,7 +375,7 @@ pub fn max_battle_turn_limit(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = rm.lock().unwrap();
+    let mut lock = block_on(rm.write());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {

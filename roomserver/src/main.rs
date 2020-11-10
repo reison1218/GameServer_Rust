@@ -12,12 +12,13 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
 use crate::robot::robot_task_mgr::robot_init_timer;
 use crate::task_timer::init_timer;
+use async_std::sync::{Arc, RwLock};
 use log::{error, info};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;
 use std::env;
 use std::sync::atomic::AtomicU32;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use tools::conf::Conf;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
@@ -103,7 +104,7 @@ fn main() {
     //初始化配置
     init_temps();
     //初始化room_mgr多线程饮用计数器指针
-    let room_mgr = Arc::new(Mutex::new(RoomMgr::new()));
+    let room_mgr = Arc::new(RwLock::new(RoomMgr::new()));
     //初始化定时器任务
     init_timer(room_mgr.clone());
     //初始化机器人定时器任务
@@ -159,7 +160,7 @@ fn init_temps() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(rm: Arc<Mutex<RoomMgr>>) {
+fn init_tcp_server(rm: Arc<RwLock<RoomMgr>>) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, rm);
 }

@@ -12,7 +12,7 @@ use protobuf::Message;
 use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::FromPrimitive;
-use log::info;
+use log::{info, LevelFilter};
 
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -82,6 +82,7 @@ use std::convert::TryInto;
 use crossbeam::atomic::{AtomicConsume, AtomicCell};
 use tools::macros::GetMutRef;
 use futures::future::join3;
+use crossbeam::sync::ShardedLock;
 
 #[macro_use]
 extern crate lazy_static;
@@ -303,26 +304,6 @@ size: (f32, f32)
 impl_layoutable!(TestMacro);
 
 
-#[derive(Default)]
-pub struct TTT{
-    s:crossbeam::atomic::AtomicCell<String>,
-    d:crossbeam::atomic::AtomicCell<Vec<u8>>,
-}
-
-
-pub struct TestLift{
-    pub str:&'static String,
-}
-
-impl Drop for TestLift{
-    fn drop(&mut self) {
-        dbg!("drop TestLift");
-    }
-}
-
-impl tools::macros::GetMutRef for TestLift{}
-
-
 
 trait DoSomething<T>{
     fn do_sth(&self,value:T);
@@ -350,27 +331,98 @@ pub fn test_str<'b,'a:'b>(str:&'a str,str1: &'a str)->&'b str{
     str1
 }
 
+thread_local! {
+    pub static I:Cell<u32> = Cell::new(1);
+}
+
+pub struct TestT {
+    temp: &'static String,
+}
+
+impl Drop for TestT {
+    fn drop(&mut self) {
+        println!("drop Test");
+    }
+}
+
+pub fn test_unsafe2(){
+    let mut t: Option<TestT> = None;
+    unsafe {
+        let str = String::from("哈哈");
+        let str_ptr = str.borrow() as *const String;
+        t = Some(TestT {
+            temp: str_ptr.as_ref().unwrap(),
+        });
+    }
+    println!("res {:?}", t.as_ref().unwrap().temp);
+}
+
+#[derive(Default)]
+pub struct TestSize{
+    a:u32,
+    b:u32,
+    c:u32,
+}
+
 fn main() -> anyhow::Result<()> {
 
-    let res = async{
-        let s = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
-
-        let s1 = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
-
-        let s2 = async {
-            dbg!(std::thread::current().name().unwrap());
-        };
-        let res = join3(s,s1,s2);
-        res.await;
+    let (sender,rec) = crossbeam::channel::unbounded();
+    let res = async move {
+        let time = std::time::SystemTime::now();
+        for _ in 0..999999999{
+            sender.send(1);
+        }
+        println!("send task time:{:?}",time.elapsed().unwrap());
     };
+    async_std::task::spawn(res);
 
-    async_std::task::block_on(res);
-
-    //test_channel();
+    let time = std::time::SystemTime::now();
+    let mut res:i32 = 0;
+    loop{
+        res += rec.recv().unwrap();
+        if res>=999999999{
+            break;
+        }
+    }
+    println!("rec task time:{:?},{}",time.elapsed().unwrap(),res);
+    // tcp_client::test_tcp_client("reison");
+    // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
+    // let res = async move{
+    //     let t = test.clone();
+    //     let s = async move{
+    //         let lock = t.lock().await;
+    //         dbg!("s:{:?}",std::thread::current().name().unwrap());
+    //         ()
+    //     };
+    //
+    //     let t1 = test.clone();
+    //     let s1 = async move{
+    //         let lock = t1.lock().await;
+    //         dbg!("s1:{:?}",std::thread::current().name().unwrap());
+    //         ()
+    //     };
+    //     let t2 = test.clone();
+    //     let s2 = async move{
+    //         let lock = t2.lock().await;
+    //         dbg!("s2:{:?}",std::thread::current().name().unwrap());
+    //         ()
+    //     };
+    //     let res = join3(s,s1,s2);
+    //     task::spawn(res).await;
+    //     ()
+    // };
+    //
+    // async fn test_mutex(name:&str,test:Arc<Mutex<Test>>){
+    //     let lock = test.lock().unwrap();
+    //     dbg!("{:?}:{:?}",name,std::thread::current().name().unwrap());
+    // }
+    //
+    // block_on(res);
+    //
+    // std::thread::sleep(Duration::from_millis(50000));
+    //
+    // test_channel_and_mutex();
+    // test_channel();
     // let x = Box::new(&2usize);
     // do_bar(x);
 
@@ -508,6 +560,67 @@ impl Drop for Count {
     }
 }
 
+fn test_channel_and_mutex(){
+    let test = Test::default();
+    let arc = Arc::new(tokio::sync::RwLock::new(test));
+    let metux_time = std::time::SystemTime::now();
+    let mut size = 0;
+    loop{
+        size+=1;
+        if size == 99999{
+            break;
+        }
+        let arc_clone = arc.clone();
+        let m =    async move  {
+            let mut lock = arc_clone.write().await;
+            lock.i.fetch_add(1);
+            ()
+        };
+        // std::thread::spawn(m);
+        let res = async_std::task::spawn(m);
+        block_on(res);
+    }
+    // let mut builder = std::thread::Builder::new();
+    // let res = builder.spawn(||{std::thread::current()}).unwrap();
+    // res.join();
+    println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),block_on(arc.write()).i.load());
+    // println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),arc.write().await.i.load());
+
+    // let res = async move{
+    //     // async_std::task::sleep(Duration::from_millis(1000)).await;
+    //     let lock = arc.write().await;
+    //     println!("mutex time:{:?},value:{}",metux_time.elapsed().unwrap(),lock.i.load());
+    // };
+    // async_std::task::spawn(res);
+
+
+    let (cb_sender,cb_rec) = crossbeam::channel::bounded(102400);
+    let m = move||{
+        let mut size = 0;
+        let rec_time = std::time::SystemTime::now();
+        loop{
+            let res = cb_rec.recv();
+            if let Err(e) = res{
+                println!("{:?}",e);
+                break;
+            }
+            size+=1;
+            if size == 99999{
+                println!("cb_rec time:{:?}",rec_time.elapsed().unwrap());
+            }
+        }
+    };
+    std::thread::spawn(m);
+    let send_time = std::time::SystemTime::now();
+    for i in 0..99999{
+        cb_sender.send(Test::default());
+    }
+    println!("cb_send time:{:?}",send_time.elapsed().unwrap());
+
+    std::thread::sleep(Duration::from_millis(50000));
+
+}
+
 
 fn test_channel(){
     let (std_sender,std_rec) = std::sync::mpsc::sync_channel(102400);
@@ -558,12 +671,16 @@ fn test_channel(){
 #[derive(Debug,Default)]
 struct Test{
     pub str:String,
-    pub i:u32,
+    pub i:AtomicCell<u32>,
 }
+
+unsafe impl Send for Test{}
+
+unsafe impl Sync for Test{}
 
 fn test_unsafe(){
     unsafe {
-        let mut test = Test{str:"test".to_owned(),i:0};
+        let mut test = Test{str:"test".to_owned(),i:AtomicCell::new(0)};
         let test_p = &mut test as *mut Test;
         let s = test_p.as_mut().unwrap();
         let s1 = test_p.as_mut().unwrap();

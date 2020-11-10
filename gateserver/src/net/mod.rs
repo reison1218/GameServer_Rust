@@ -8,7 +8,7 @@ use crate::{REDIS_KEY_USERS, REDIS_POOL};
 use log::{debug, error, info, warn};
 use protobuf::Message;
 use std::net::TcpStream;
-use std::sync::{Arc, MutexGuard};
+use std::sync::Arc;
 use tools::tcp::ClientHandler;
 use ws::{
     CloseCode, Error as WsError, Handler, Handshake, Message as WMessage, Result,
@@ -22,13 +22,14 @@ use tools::util::packet::Packet;
 use tools::cmd_code::GameCode;
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 
+use async_std::sync::RwLockWriteGuard;
 use serde_json::Value;
 use std::str::FromStr;
 
 ///校验用户中心是否在线
 fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
     //校验用户中心是否登陆过，如果有，则不往下执行
-    let mut redis_write = REDIS_POOL.write().unwrap();
+    let mut redis_write = REDIS_POOL.lock().unwrap();
     let pid: Option<String> = redis_write.hget(
         REDIS_INDEX_USERS,
         REDIS_KEY_UID_2_PID,
@@ -58,7 +59,7 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
 }
 
 ///校验内存是否在线，并做处理
-fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
+fn check_mem_online(user_id: &u32, write: &mut RwLockWriteGuard<ChannelMgr>) -> bool {
     //校验内存是否已经登陆
     let gate_user = write.get_mut_user_channel_channel(user_id);
     let mut res: bool = false;
@@ -72,7 +73,7 @@ fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
 }
 
 fn modify_redis_user(user_id: u32, is_login: bool) {
-    let mut redis_write = REDIS_POOL.write().unwrap();
+    let mut redis_write = REDIS_POOL.lock().unwrap();
     let pid: Option<String> = redis_write.hget(
         REDIS_INDEX_USERS,
         REDIS_KEY_UID_2_PID,

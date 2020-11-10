@@ -3,9 +3,10 @@ mod mgr;
 mod net;
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
+use async_std::sync::RwLock;
 use log::info;
 use net::websocket::WebSocketHandler;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 use tools::conf::Conf;
 use ws::{Builder, Sender as WsSender, Settings};
 
@@ -42,11 +43,11 @@ lazy_static! {
     };
 
    ///reids客户端
-    static ref REDIS_POOL:Arc<RwLock<RedisPoolTool>>={
+    static ref REDIS_POOL:Arc<Mutex<RedisPoolTool>>={
         let add: &str = CONF_MAP.get_str("redis_add");
         let pass: &str = CONF_MAP.get_str("redis_pass");
         let redis = RedisPoolTool::init(add,pass);
-        let redis:Arc<RwLock<RedisPoolTool>> = Arc::new(RwLock::new(redis));
+        let redis:Arc<Mutex<RedisPoolTool>> = Arc::new(Mutex::new(redis));
         redis
     };
 }
@@ -66,7 +67,7 @@ fn main() {
     init_log(info_log, error_log);
 
     //创建核心结构体，channel管理器，因为涉及到多线程异步，所以创建结构体的arc引用计数器指针
-    let cm = Arc::new(Mutex::new(ChannelMgr::new()));
+    let cm = Arc::new(RwLock::new(ChannelMgr::new()));
 
     //连接游戏服务器
     init_game_tcp_connect(cm.clone());
@@ -82,7 +83,7 @@ fn main() {
 }
 
 ///初始化http服务端
-fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
+fn init_http_server(cm: Arc<RwLock<ChannelMgr>>) {
     std::thread::sleep(Duration::from_millis(10));
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(KickPlayerHttpHandler::new(cm.clone())));
@@ -93,7 +94,7 @@ fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
 }
 
 ///初始化网络服务这块
-fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
+fn init_net_server(cm: Arc<RwLock<ChannelMgr>>) {
     //获取通信模块
     let net_module = CONF_MAP.get_str("net_module");
     match net_module {
@@ -113,35 +114,35 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
 }
 
 ///初始化游戏服务器tcp客户端链接
-fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
+fn init_game_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let game = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("game_port");
         info!("开始链接游戏服:{:?}...", address);
-        tch.on_read(address.to_string());
+        tch.on_read(address.to_string()).await;
     };
     async_std::task::spawn(game);
 }
 
 ///初始化房间服务器tcp客户端链接
-fn init_room_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
+fn init_room_tcp_connect(cp: Arc<RwLock<ChannelMgr>>) {
     let room = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
         let address = CONF_MAP.get_str("room_port");
         info!("开始链接房间服:{:?}...", address);
-        tch.on_read(address.to_string());
+        tch.on_read(address.to_string()).await;
     };
     async_std::task::spawn(room);
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(cm: Arc<Mutex<ChannelMgr>>) {
+fn init_tcp_server(cm: Arc<RwLock<ChannelMgr>>) {
     let str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(str, cm);
 }
 
 ///初始化websocket
-fn init_web_socket(cp: Arc<Mutex<ChannelMgr>>) {
+fn init_web_socket(cp: Arc<RwLock<ChannelMgr>>) {
     let mut setting = Settings::default();
     setting.max_connections = 2048;
     //websocket队列大小

@@ -8,9 +8,12 @@ use crate::entity::user_info::User;
 use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
+use async_std::sync::RwLock;
+use async_std::task::block_on;
+use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 use tools::util::packet::Packet;
@@ -18,15 +21,16 @@ use tools::util::packet::Packet;
 #[derive(Clone)]
 struct TcpServerHandler {
     sender: Option<TcpSender>,
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Arc<RwLock<GameMgr>>,
 }
 
 unsafe impl Send for TcpServerHandler {}
 
 unsafe impl Sync for TcpServerHandler {}
 
+#[async_trait]
 impl tools::tcp::Handler for TcpServerHandler {
-    fn try_clone(&self) -> Self {
+    async fn try_clone(&self) -> Self {
         let mut sender: Option<TcpSender> = None;
         if self.sender.is_some() {
             sender = Some(self.sender.as_ref().unwrap().clone());
@@ -37,15 +41,15 @@ impl tools::tcp::Handler for TcpServerHandler {
         }
     }
 
-    fn on_open(&mut self, sender: TcpSender) {
-        self.gm.lock().unwrap().set_sender(sender);
+    async fn on_open(&mut self, sender: TcpSender) {
+        self.gm.write().await.set_sender(sender);
     }
 
-    fn on_close(&mut self) {
+    async fn on_close(&mut self) {
         info!("与tcp客户端断开连接");
     }
 
-    fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) {
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
@@ -68,7 +72,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
+async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
         && packet.get_cmd() != GameCode::LineOff.into_u32()
@@ -87,14 +91,14 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
             return;
         }
         //执行登录
-        let result = login(gm, packet);
+        let result = login(gm, packet).await;
         if let Err(e) = result {
             error!("{:?}", e);
             return;
         }
     } else {
         //不登录就执行其他命令
-        let res = gm.lock().unwrap().invok(packet);
+        let res = gm.write().await.invok(packet);
         match res {
             Ok(_) => {}
             Err(e) => {
@@ -105,12 +109,12 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
 }
 
 //登录函数，执行登录
-fn login(gm: Arc<Mutex<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
+async fn login(gm: Arc<RwLock<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
-    let user_data = gm.lock().unwrap().users.contains_key(&user_id);
+    let user_data = block_on(gm.write()).users.contains_key(&user_id);
     //走登录流程
-    let mut gm_lock = gm.lock().unwrap();
+    let mut gm_lock = gm.write().await;
     //如果内存没有数据，则从数据库里面找
     if !user_data {
         //初始化玩家数据
@@ -240,10 +244,12 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     lr
 }
 
-pub fn new(address: &str, gm: Arc<Mutex<GameMgr>>) {
-    let sh = TcpServerHandler {
-        sender: None,
-        gm: gm,
-    };
-    tools::tcp::tcp_server::new(address, sh).unwrap();
+pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
+    let sh = TcpServerHandler { sender: None, gm };
+    let res = tools::tcp::tcp_server::new(address, sh);
+    let res = block_on(res);
+    if let Err(e) = res {
+        error!("{:?}", e);
+        std::process::abort();
+    }
 }

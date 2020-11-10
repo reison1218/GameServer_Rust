@@ -15,6 +15,9 @@ pub struct UserData {
     version: Cell<u32>,
 }
 
+unsafe impl Send for UserData {}
+unsafe impl Sync for UserData {}
+
 ///为userdata结构体实现一些基础函数
 impl UserData {
     pub fn update_login(&mut self) {

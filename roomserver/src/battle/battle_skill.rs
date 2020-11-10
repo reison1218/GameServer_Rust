@@ -59,7 +59,7 @@ impl From<&'static SkillTemp> for Skill {
         Skill {
             id: skill_temp.id,
             cd_times: 0,
-            skill_temp: skill_temp,
+            skill_temp,
             is_active: false,
         }
     }
@@ -134,6 +134,9 @@ pub unsafe fn change_map_cell_index(
 
     map_ptr.as_mut().unwrap()[target_index] = source_map_cell;
     map_ptr.as_mut().unwrap()[source_index] = target_map_cell;
+
+    //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
+    battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);
 
     //通知客户端
     let mut target_pt = TargetPt::new();

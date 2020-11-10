@@ -1,6 +1,8 @@
 use super::*;
+use async_std::sync::RwLock;
+use async_std::task::block_on;
+use async_trait::async_trait;
 use log::error;
-use std::sync::Mutex;
 use tools::cmd_code::{ClientCode, RoomCode};
 
 pub enum TcpClientType {
@@ -11,11 +13,11 @@ pub enum TcpClientType {
 pub struct TcpClientHandler {
     client_type: TcpClientType,
     ts: Option<TcpStream>,
-    cp: Arc<Mutex<ChannelMgr>>,
+    cp: Arc<RwLock<ChannelMgr>>,
 }
 
 impl TcpClientHandler {
-    pub fn new(cp: Arc<Mutex<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
+    pub fn new(cp: Arc<RwLock<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
         let tch = TcpClientHandler {
             ts: None,
             cp,
@@ -28,39 +30,34 @@ impl TcpClientHandler {
     fn arrange_packet(&mut self, packet: Packet) {
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            let mut lock = self.cp.lock().unwrap();
+            let mut lock = block_on(self.cp.write());
             lock.write_to_game(packet);
             return;
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            let mut lock = self.cp.lock().unwrap();
+            let mut lock = block_on(self.cp.write());
             lock.write_to_room(packet);
             return;
         }
     }
 }
 
+#[async_trait]
 impl ClientHandler for TcpClientHandler {
-    fn on_open(&mut self, ts: TcpStream) {
+    async fn on_open(&mut self, ts: TcpStream) {
         match self.client_type {
             TcpClientType::GameServer => {
-                self.cp
-                    .lock()
-                    .unwrap()
-                    .set_game_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.write()).set_game_client_channel(ts.try_clone().unwrap());
             }
             TcpClientType::RoomServer => {
-                self.cp
-                    .lock()
-                    .unwrap()
-                    .set_room_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.write()).set_room_client_channel(ts.try_clone().unwrap());
             }
         }
         self.ts = Some(ts);
     }
 
-    fn on_close(&mut self) {
+    async fn on_close(&mut self) {
         let address: Option<&str>;
         match self.client_type {
             TcpClientType::GameServer => {
@@ -70,10 +67,10 @@ impl ClientHandler for TcpClientHandler {
                 address = Some(CONF_MAP.get_str("room_port"));
             }
         }
-        self.on_read(address.unwrap().to_string());
+        self.on_read(address.unwrap().to_string()).await;
     }
 
-    fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) {
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
@@ -85,7 +82,7 @@ impl ClientHandler for TcpClientHandler {
         for mut packet in packet_array {
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
-                let mut lock = self.cp.lock().unwrap();
+                let mut lock = block_on(self.cp.write());
                 let gate_user = lock.get_mut_user_channel_channel(&packet.get_user_id());
                 match gate_user {
                     Some(user) => {

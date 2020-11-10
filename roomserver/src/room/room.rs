@@ -175,7 +175,7 @@ impl Room {
     }
 
     ///刷新地图
-    pub fn refresh_map(&'static mut self) -> bool {
+    pub fn refresh_map(&mut self) -> bool {
         let need_refresh = self.battle_data.check_refresh_map();
         if !need_refresh {
             return false;

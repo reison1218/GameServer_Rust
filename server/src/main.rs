@@ -9,6 +9,7 @@ use crate::net::http::{SavePlayerHttpHandler, StopPlayerHttpHandler};
 use crate::net::tcp_server;
 use tools::thread_pool::MyThreadPool;
 
+use async_std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
 use crate::mgr::timer_mgr::init_timer;
@@ -101,7 +102,7 @@ pub const fn new_season() -> Season {
 
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
 fn main() {
-    let game_mgr = Arc::new(Mutex::new(GameMgr::new()));
+    let game_mgr = Arc::new(RwLock::new(GameMgr::new()));
 
     let info_log = CONF_MAP.get_str("info_log_path");
     let error_log = CONF_MAP.get_str("error_log_path");
@@ -164,7 +165,7 @@ fn init_temps() {
 }
 
 ///初始化http服务端
-fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
+fn init_http_server(gm: Arc<RwLock<GameMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
     http_vec.push(Box::new(StopPlayerHttpHandler::new(gm.clone())));
@@ -173,7 +174,7 @@ fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
 }
 
 ///init tcp server
-fn init_tcp_server(gm: Arc<Mutex<GameMgr>>) {
+fn init_tcp_server(gm: Arc<RwLock<GameMgr>>) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, gm);
 }

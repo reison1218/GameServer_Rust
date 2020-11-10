@@ -16,14 +16,16 @@ use tools::cmd_code::{ClientCode, RoomCode};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
+type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>;
+
 ///房间服管理器
 pub struct RoomMgr {
-    pub custom_room: CustomRoom,        //自定义房
-    pub match_room: MatchRoom,          //公共房
+    pub custom_room: CustomRoom,                      //自定义房
+    pub match_room: MatchRoom,                        //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
-    pub cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理 key:cmd,value:函数指针
-    sender: Option<TcpSender>,                        //tcp channel的发送方
-    pub task_sender: Option<Sender<Task>>,            //task channel的发送方
+    pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
+    sender: Option<TcpSender>,          //tcp channel的发送方
+    pub task_sender: Option<Sender<Task>>, //task channel的发送方
     pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
 }
 
