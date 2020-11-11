@@ -31,10 +31,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a00410c-fdea-4176-b301-520e9756777d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/web.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/web.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,11 +118,6 @@
       <envs />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
@@ -237,22 +230,22 @@
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
     <state x="2846" y="432" key="#com.intellij.ide.util.MemberChooser/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601456215652" />
-    <state width="1806" height="435" key="GridCell.Tab.0.bottom" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.bottom" timestamp="1605087607125">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.center" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605087607125" />
+    <state width="1852" height="184" key="GridCell.Tab.0.center" timestamp="1605087607124">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.left" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605087607124" />
+    <state width="1852" height="184" key="GridCell.Tab.0.left" timestamp="1605087607124">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.right" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605087607124" />
+    <state width="1852" height="184" key="GridCell.Tab.0.right" timestamp="1605087607125">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
+    <state width="1852" height="184" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605087607125" />
     <state width="1806" height="435" key="GridCell.Tab.1.bottom" timestamp="1601460987141">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
