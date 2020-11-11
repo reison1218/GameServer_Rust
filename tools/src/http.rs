@@ -120,9 +120,8 @@ async fn accept(
 
         //设置返回参数
         let mut res = Response::new(StatusCode::Ok);
-        //res.insert_header("Content-Type", "text/plain")?;
-        res.insert_header("Content-Type", "application/json")
-            .unwrap();
+        //res.insert_header("Content-Type", "text/plain").unwrap();
+        //res.insert_header("Content-Type", "application/json")?;
         res.set_body(value.to_string());
         Ok(res)
     })

@@ -15,7 +15,6 @@ pub mod my_log;
 pub mod protos;
 pub mod redis_pool;
 pub mod tcp;
-pub mod templates;
 pub mod thread_pool;
 pub mod util;
 use log::{error, info, warn};
