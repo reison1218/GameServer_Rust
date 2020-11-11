@@ -31,39 +31,178 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/config/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/config/config.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/entity.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/entity.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/entity/battle_model.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/entity/battle_model.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/entity/map_data.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/entity/map_data.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/entity/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/entity/room.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity/user_info.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/user_info.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/result.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/tcp.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/tcp.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/templates/tile_map_temp.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/templates/tile_map_temp.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/clearlog.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/entity/gateuser.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/entity/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/http.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket_channel.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/net_test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.project" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/behavior_test.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/map.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/mio_test.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/tcp_client.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/test_async.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/test_tokio.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/web.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/web_socket.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/.idea/register.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/entity.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/entity/NetClient.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr/id_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr/register_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/net.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/.idea/robotserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/battle.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/enums.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/map_data.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/miner.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/status.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/cter.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_enum.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/attack_target_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/skill_target_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_status.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_think.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_attack_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_cal_attack_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_combined.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_skill_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/battle_handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/robot_handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/mgr/robot_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/roomserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Season.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/server.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/dbtool.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/table_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/character.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/character_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/user.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/user_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/user_info.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/helper/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/helper/redis_helper.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mgr/timer_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/http.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Season.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/TileMap.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,12 +249,11 @@
       <recent name="$PROJECT_DIR$/template" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo Command.server">
+  <component name="RunManager" selected="Cargo.server">
     <configuration name="Run server" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="channel" value="STABLE" />
       <option name="command" value="run --package server --bin server" />
       <option name="allFeatures" value="true" />
-      <option name="nocapture" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -128,7 +266,6 @@
       <option name="channel" value="STABLE" />
       <option name="command" value="run" />
       <option name="allFeatures" value="true" />
-      <option name="nocapture" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -141,7 +278,6 @@
       <option name="channel" value="STABLE" />
       <option name="command" value="run" />
       <option name="allFeatures" value="true" />
-      <option name="nocapture" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -150,11 +286,6 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Cargo Command.Run server" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="RustProjectSettings">
     <option name="externalLinter" value="Clippy" />
@@ -625,11 +756,6 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/net/tcp_server.rs</url>
-          <line>247</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/../tools/src/templates/character_temp.rs</url>
           <line>42</line>

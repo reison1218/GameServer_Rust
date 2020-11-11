@@ -31,10 +31,178 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a00410c-fdea-4176-b301-520e9756777d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/clearlog.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clearlog/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/gateserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/entity/gateuser.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/entity/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/http.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket_channel.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/net_test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.project" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/web.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/web.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/behavior_test.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/map.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mio_test.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tcp_client.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_async.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_tokio.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/web.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/web_socket.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/.idea/register.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/entity.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/entity/NetClient.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr/id_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/mgr/register_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/net.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../register/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/.idea/robotserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/battle.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/enums.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/map_data.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/battle/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/miner.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/fsm/status.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/cter.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_enum.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/attack_target_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_evaluator/skill_target_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_status.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goal_think.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_attack_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_cal_attack_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_combined.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/goal_skill_target.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/goals/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/goal_ai/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/battle_handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/handlers/robot_handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/mgr/robot_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robotserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/roomserver.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Season.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/server.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/Cargo.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/Cargo.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/config/config.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/db/dbtool.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/db/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/db/table_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/character.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/character_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/user.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/user_contants.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/entity/user_info.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/helper/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/helper/redis_helper.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/main.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/mgr/game_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/mgr/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/mgr/timer_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/net/http.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/net/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/net/tcp_server.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Buff.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Constants.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Emoji.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Item.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Season.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Skill.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/SkillJudge.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/SkillScope.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/TileMap.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/WorldCell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/Cell.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/Character.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../template/TileMap.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,11 +288,6 @@
       <envs />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
@@ -237,22 +400,22 @@
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
     <state x="2846" y="432" key="#com.intellij.ide.util.MemberChooser/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601456215652" />
-    <state width="1806" height="435" key="GridCell.Tab.0.bottom" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.bottom" timestamp="1605079148201">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.center" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605079148201" />
+    <state width="1852" height="184" key="GridCell.Tab.0.center" timestamp="1605079148201">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.left" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605079148201" />
+    <state width="1852" height="184" key="GridCell.Tab.0.left" timestamp="1605079148200">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
-    <state width="1806" height="435" key="GridCell.Tab.0.right" timestamp="1601460987140">
+    <state width="1852" height="184" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605079148200" />
+    <state width="1852" height="184" key="GridCell.Tab.0.right" timestamp="1605079148201">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1806" height="435" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987140" />
+    <state width="1852" height="184" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605079148201" />
     <state width="1806" height="435" key="GridCell.Tab.1.bottom" timestamp="1601460987141">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
