@@ -290,7 +290,7 @@ pub enum TargetType {
     SelfScopeAll = 14,       //以自己为中心某个范围内的所有玩家（包括自己）
     SelfScopeAny = 15,       //以自己为中心某个范围内的任意玩家（包括自己）
     OpenedMapCell = 16,      //已翻开的地图块
-    MapCellOtherPlayer = 17, //已翻开的地图块上其他玩家
+    MapCellOtherPlayer = 17, //地图块上，除自己以外的玩家
 }
 
 impl TargetType {

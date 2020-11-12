@@ -364,27 +364,65 @@ pub struct TestSize{
     c:u32,
 }
 
-fn main() -> anyhow::Result<()> {
-
-    let (sender,rec) = crossbeam::channel::unbounded();
-    let res = async move {
-        let time = std::time::SystemTime::now();
-        for _ in 0..999999999{
-            sender.send(1);
-        }
-        println!("send task time:{:?}",time.elapsed().unwrap());
-    };
-    async_std::task::spawn(res);
-
-    let time = std::time::SystemTime::now();
-    let mut res:i32 = 0;
-    loop{
-        res += rec.recv().unwrap();
-        if res>=999999999{
-            break;
-        }
+#[cfg(feature="bar")]
+mod bar {
+    pub fn bar() {
+        println!("test");
     }
-    println!("rec task time:{:?},{}",time.elapsed().unwrap(),res);
+}
+
+#[cfg(any(bar))]
+mod ss{
+    pub fn test(){
+        println!("test");
+    }
+}
+
+
+#[derive(Default,Debug,Clone)]
+struct  STest{
+    str:String,
+    v:Vec<String>,
+}
+
+
+fn main() -> anyhow::Result<()> {
+    // crate::bar::bar();
+    // crate::ss::test();
+
+    let mut s1 = STest::default();
+    s1.str.push_str("s1");
+    s1.v.push("s1".to_owned());
+    let mut s2 = STest::default();
+    s2.str.push_str("s2");
+    s2.v.push("s2".to_owned());
+
+
+    std::mem::swap(&mut s1,&mut s2);
+     // std::mem::swap(&mut res,&mut s1);
+
+    std::mem::replace()
+    dbg!(s1);
+    dbg!(s2);
+    // let (sender,rec) = crossbeam::channel::unbounded();
+    // let res = async move {
+    //     let time = std::time::SystemTime::now();
+    //     for _ in 0..999999999{
+    //         sender.send(1);
+    //     }
+    //     println!("send task time:{:?}",time.elapsed().unwrap());
+    // };
+    // async_std::task::spawn(res);
+    //
+    // let time = std::time::SystemTime::now();
+    // let mut res:i32 = 0;
+    // loop{
+    //     res += rec.recv().unwrap();
+    //     if res>=999999999{
+    //         break;
+    //     }
+    // }
+    // println!("rec task time:{:?},{}",time.elapsed().unwrap(),res);
     // tcp_client::test_tcp_client("reison");
     // let test = async_std::sync::Arc::new(async_std::sync::Mutex::new(Test::default()));
     // let res = async move{

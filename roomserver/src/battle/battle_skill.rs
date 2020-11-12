@@ -111,29 +111,11 @@ pub unsafe fn change_map_cell_index(
     }
 
     let map_ptr = battle_data.tile_map.map_cells.borrow_mut() as *mut [MapCell; 30];
-    let mut source_map_cell = map_ptr.as_ref().unwrap().get(source_index).unwrap().clone();
-    let mut target_map_cell = map_ptr.as_ref().unwrap().get(target_index).unwrap().clone();
+    let source_map_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
+    let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
 
-    let source_map_cell_user = source_map_cell.user_id;
-    let target_map_cell_user = target_map_cell.user_id;
-
-    let (source_map_cell_2d_x, source_map_cell_2d_y) = (source_map_cell.x, source_map_cell.y);
-    let (target_map_cell_2d_x, target_map_cell_2d_y) = (target_map_cell.x, source_map_cell.y);
-
-    //替换下标
-    source_map_cell.index = target_index;
-    source_map_cell.x = target_map_cell_2d_x;
-    source_map_cell.y = target_map_cell_2d_y;
-    target_map_cell.index = source_index;
-    target_map_cell.x = source_map_cell_2d_x;
-    target_map_cell.y = source_map_cell_2d_y;
-
-    //替换上面的玩家id
-    source_map_cell.user_id = target_map_cell_user;
-    target_map_cell.user_id = source_map_cell_user;
-
-    map_ptr.as_mut().unwrap()[target_index] = source_map_cell;
-    map_ptr.as_mut().unwrap()[source_index] = target_map_cell;
+    //比较替换数据
+    std::mem::swap(source_map_cell, target_map_cell);
 
     //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
     battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);
@@ -389,8 +371,8 @@ pub unsafe fn skill_damage_opened_element(
     _: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    let battle_data = battle_data as *mut BattleData;
-    let cter = battle_data
+    let battle_data_ptr = battle_data as *mut BattleData;
+    let cter = battle_data_ptr
         .as_mut()
         .unwrap()
         .get_battle_cter_mut(Some(user_id), true)
@@ -407,31 +389,24 @@ pub unsafe fn skill_damage_opened_element(
     let skill = skill.unwrap();
     let skill_damage = skill.skill_temp.par1 as i16;
     let mut need_rank = true;
-    for map_cell in battle_data.as_mut().unwrap().tile_map.map_cells.iter() {
-        if map_cell.element != skill.skill_temp.par2 as u8 {
+
+    let target_array = battle_data_ptr
+        .as_mut()
+        .unwrap()
+        .get_target_array(user_id, skill_id);
+    if let Err(e) = target_array {
+        warn!("{:?}", e);
+        return None;
+    }
+    let target_array = target_array.unwrap();
+    //计算技能伤害
+    for index in target_array {
+        let map_cell = battle_data.tile_map.map_cells.get(index);
+        if let None = map_cell {
             continue;
         }
-        let target_user = map_cell.user_id;
-        //地图块上面的其他玩家
-        if target_user == user_id
-            && skill.skill_temp.target == TargetType::MapCellOtherPlayer.into_u8()
-        {
-            continue;
-        }
-        let target_cter = battle_data
-            .as_mut()
-            .unwrap()
-            .get_battle_cter_mut(Some(target_user), true);
-        if let Err(e) = target_cter {
-            error!("{:?}", e);
-            continue;
-        }
-        let target_pt = battle_data.as_mut().unwrap().deduct_hp(
-            user_id,
-            target_user,
-            Some(skill_damage),
-            need_rank,
-        );
+        let target_id = map_cell.unwrap().user_id;
+        let target_pt = battle_data.deduct_hp(user_id, target_id, Some(skill_damage), need_rank);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
@@ -440,31 +415,6 @@ pub unsafe fn skill_damage_opened_element(
         au.targets.push(target_pt);
         need_rank = false;
     }
-    need_rank = false;
-    let tile_map = battle_data.as_mut().unwrap().tile_map.borrow_mut();
-    for index in cter.flow_data.open_map_cell_vec.iter() {
-        let index = *index;
-        let map_cell = tile_map.map_cells.get(index).unwrap();
-        if map_cell.element != skill.skill_temp.par2 as u8 {
-            continue;
-        }
-        if map_cell.user_id != user_id {
-            continue;
-        }
-        let target_pt = battle_data.as_mut().unwrap().deduct_hp(
-            user_id,
-            user_id,
-            Some(skill_damage),
-            need_rank,
-        );
-        if let Err(e) = target_pt {
-            warn!("{:?}", e);
-            continue;
-        }
-        let target_pt = target_pt.unwrap();
-        au.targets.push(target_pt);
-    }
-
     None
 }
 
@@ -502,7 +452,8 @@ pub unsafe fn skill_open_map_cell(
         let mut v = Vec::new();
         for index in map_cells {
             let res = battle_data.check_choice_index(index, true, true, true, false);
-            if let Err(_) = res {
+            if let Err(e) = res {
+                warn!("{:?}", e);
                 continue;
             }
             v.push(index);
@@ -645,6 +596,7 @@ pub unsafe fn move_user(
     }
     let target_cter = target_cter.unwrap();
     let target_user = target_cter.get_user_id();
+
     //处理移动后事件
     let v = battle_data.handler_cter_move(target_user, target_index, au);
     if let Err(e) = v {

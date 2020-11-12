@@ -513,7 +513,59 @@ impl BattleData {
         self.get_sender_mut().write(bytes);
     }
 
-    ///检查目标数组
+    ///获取目标数组
+    pub fn get_target_array(&self, user_id: u32, skill_id: u32) -> anyhow::Result<Vec<usize>> {
+        let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+        if let Err(_) = res {
+            anyhow::bail!("could not find skill temp of {}", skill_id)
+        }
+        let skill_temp = res.unwrap();
+        let res = TargetType::try_from(skill_temp.target);
+        if let Err(e) = res {
+            anyhow::bail!("{:?}", e)
+        }
+        let cter = self.battle_cter.get(&user_id);
+        if let None = cter {
+            anyhow::bail!("could not find cter of {}", user_id)
+        }
+        let cter = cter.unwrap();
+
+        let mut v = Vec::new();
+        let target_type = res.unwrap();
+        match target_type {
+            TargetType::MapCellOtherPlayer => {
+                let element = skill_temp.par2 as u8;
+                for map_cell in self.tile_map.map_cells.iter() {
+                    let index = map_cell.index;
+                    //如果不是自己翻的
+                    if map_cell.pair_index.is_none()
+                        && !cter.flow_data.open_map_cell_vec.contains(&index)
+                    {
+                        continue;
+                    }
+                    //排除自己和上面没人的地图块
+                    if map_cell.user_id == user_id || map_cell.user_id == 0 {
+                        continue;
+                    }
+                    let target_cter = self.battle_cter.get(&map_cell.user_id);
+                    if let None = target_cter {
+                        continue;
+                    }
+                    let target_cter = target_cter.unwrap();
+
+                    //匹配元素
+                    if element > 0 && target_cter.base_attr.element != element {
+                        continue;
+                    }
+                    v.push(index);
+                }
+            }
+            _ => {}
+        }
+        Ok(v)
+    }
+
+    ///获取并检查目标数组
     pub fn check_target_array(
         &self,
         user_id: u32,
@@ -620,6 +672,7 @@ impl BattleData {
                     self.check_choice_index(index, false, true, false, false)?;
                 }
             }
+            TargetType::MapCellOtherPlayer => {}
             //其他目标类型
             _ => {}
         }
