@@ -3,9 +3,7 @@ use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
 use crate::entity::user::{insert_characters, insert_user, UserData};
-use crate::entity::user_contants::*;
 use crate::entity::user_info::User;
-use crate::entity::Entity;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
 use async_std::sync::RwLock;
@@ -13,6 +11,7 @@ use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
+use std::str::FromStr;
 use std::sync::Arc;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
@@ -187,40 +186,26 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
     // }
 
-    let mut result = user.get_user_info_mut_ref().get_time(SYNC_TIME);
-    let mut time = 0_u32;
-    if result.is_some() {
-        time = result.unwrap().timestamp_subsec_micros();
-    }
+    let mut time = user.get_user_info_mut_ref().sync_time;
     lr.sync_time = time;
     let mut ppt = PlayerPt::new();
-    let nick_name = user
-        .get_user_info_mut_ref()
-        .get_json_value(NICK_NAME)
-        .unwrap()
-        .as_str()
-        .unwrap();
+    let nick_name = user.get_user_info_mut_ref().nick_name.as_str();
     ppt.set_nick_name(nick_name.to_string());
-    let last_character = user.get_user_info_ref().get_usize(LAST_CHARACTER);
-    if last_character.is_none() {
-        ppt.set_last_character(0);
-    } else {
-        ppt.set_last_character(last_character.unwrap() as u32);
-    }
+    let last_character = user.get_user_info_ref().last_character;
+    ppt.set_last_character(last_character);
     ppt.dlc.push(1);
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
-    result = user.get_user_info_mut_ref().get_time(LAST_LOGIN_TIME);
     time = 0;
-    if result.is_some() {
-        time = result.unwrap().timestamp_subsec_micros();
+    let res =
+        chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_login_time.as_str());
+    if let Ok(res) = res {
+        time = res.timestamp_subsec_micros();
     }
-
     lr.last_login_time = time;
-
     time = 0;
-    result = user.get_user_info_mut_ref().get_time(OFF_TIME);
-    if result.is_some() {
-        time = result.unwrap().timestamp_subsec_micros();
+    let res = chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_off_time.as_str());
+    if let Ok(res) = res {
+        time = res.timestamp_subsec_micros();
     }
 
     lr.last_logoff_time = time;

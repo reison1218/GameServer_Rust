@@ -77,6 +77,7 @@ fn save_timer(gm: Arc<RwLock<GameMgr>>) {
             Ok(vec) => {
                 let time = std::time::SystemTime::now();
                 for v in vec {
+                    v.clear_version();
                     let rs = v.update();
                     match rs {
                         Ok(_) => {

@@ -112,7 +112,8 @@ impl ClientHandler for TcpClientHandler {
         let mut v = Vec::new();
         v.push(1001_u32);
         v.push(1002_u32);
-        ccc.set_cter_id(cter_id);
+        // ccc.set_cter_id(cter_id);
+        ccc.set_cter_id(1001);
         packet.set_cmd(RoomCode::ChoiceCharacter as u32);
         packet.set_data(&ccc.write_to_bytes().unwrap()[..]);
         packet.set_len(16+packet.get_data().len() as u32);

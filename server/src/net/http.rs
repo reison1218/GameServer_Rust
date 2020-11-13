@@ -66,6 +66,7 @@ impl HttpServerHandler for StopPlayerHttpHandler {
 }
 
 ///异步通知用户中心
+#[warn(dead_code)]
 pub async fn notice_user_center(user_id: u32, _type: &str) {
     let mut login = false;
     if _type.eq("login") {

@@ -13,6 +13,7 @@ use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::FromPrimitive;
 use log::{info, LevelFilter};
+use serde::{Serialize, Deserialize, Serializer};
 
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -385,25 +386,21 @@ struct  STest{
     v:Vec<String>,
 }
 
-
 fn main() -> anyhow::Result<()> {
+
+    tcp_client::test_tcp_client("reison1");
     // crate::bar::bar();
     // crate::ss::test();
 
-    let mut s1 = STest::default();
-    s1.str.push_str("s1");
-    s1.v.push("s1".to_owned());
-    let mut s2 = STest::default();
-    s2.str.push_str("s2");
-    s2.v.push("s2".to_owned());
-
-
-    std::mem::swap(&mut s1,&mut s2);
-     // std::mem::swap(&mut res,&mut s1);
-
-    std::mem::replace()
-    dbg!(s1);
-    dbg!(s2);
+    // let mut s1 = STest::default();
+    // s1.str.push_str("s1");
+    // s1.v.push("s1".to_owned());
+    // let mut s2 = STest::default();
+    // s2.str.push_str("s2");
+    // s2.v.push("s2".to_owned());
+    //
+    //
+    // std::mem::swap(&mut s1,&mut s2);
     // let (sender,rec) = crossbeam::channel::unbounded();
     // let res = async move {
     //     let time = std::time::SystemTime::now();

@@ -20,12 +20,6 @@ unsafe impl Sync for UserData {}
 
 ///为userdata结构体实现一些基础函数
 impl UserData {
-    pub fn update_login(&mut self) {
-        self.user_info.update_login();
-        self.add_version();
-        self.update();
-    }
-
     pub fn update_off(&mut self) {
         self.user_info.update_off();
         self.add_version();
@@ -55,13 +49,6 @@ impl UserData {
         let ud = UserData::new(user.unwrap(), cters.unwrap());
         Some(ud)
     }
-
-    pub fn init(&mut self, user_info: User, character: Characters) {
-        self.user_info = user_info;
-        self.character = character;
-        self.version = Cell::new(0);
-    }
-
     ///获得玩家id
     pub fn get_user_id(&self) -> u32 {
         self.user_info.user_id

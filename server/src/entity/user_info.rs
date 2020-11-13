@@ -1,8 +1,8 @@
 use super::*;
-use crate::entity::user_contants::*;
 use crate::helper::redis_helper::modify_redis_user;
 use chrono::Local;
 use protobuf::Message;
+use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
@@ -16,11 +16,18 @@ use tools::util::packet::Packet;
 /// user_id:玩家ID
 /// data：作为玩家具体数据，由jsonvalue封装
 /// version：数据版本号，大于0则代表有改动，需要update到db
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct User {
-    pub user_id: u32,       //玩家id
-    pub data: JsonValue,    //数据
-    pub version: Cell<u32>, //数据版本号
+    pub user_id: u32,            //玩家id
+    pub ol: bool,                //是否在线
+    pub nick_name: String,       //玩家昵称
+    pub last_login_time: String, //上次登陆时间
+    pub last_off_time: String,   //上次离线时间
+    pub last_character: u32,     //上次使用对角色
+    pub total_online_time: u64,  //总在线时间
+    pub sync_time: u32,          //同步时间
+    pub dlc: Vec<u32>,           //dlc
+    pub version: Cell<u32>,      //数据版本号
 }
 
 ///为User实现Entiry
@@ -46,10 +53,9 @@ impl Entity for User {
     }
 
     fn update_off_time(&mut self) {
-        let map = self.get_mut_json_value();
         let time = Local::now();
-        let jv = JsonValue::String(time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string());
-        map.unwrap().insert("last_off_time".to_owned(), jv);
+        let res = time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string();
+        self.last_off_time = res;
         self.add_version();
     }
 
@@ -73,31 +79,22 @@ impl Entity for User {
         self.user_id
     }
 
-    fn get_data(&self) -> &JsonValue {
-        &self.data
+    fn get_data(&self) -> String {
+        serde_json::to_string(self).unwrap()
     }
 
-    fn get_data_mut(&mut self) -> &mut JsonValue {
-        &mut self.data
-    }
-
-    fn init(user_id: u32, _: Option<u32>, js: JsonValue) -> Self
+    fn init(data: String) -> Self
     where
         Self: Sized,
     {
-        let u = User {
-            user_id,
-            data: js,
-            version: Cell::new(0),
-        };
-        u
+        let user: User = serde_json::from_str(data.as_str()).unwrap();
+        user
     }
 }
 
 impl EntityData for User {
     fn try_clone(&self) -> Box<dyn EntityData> {
-        let user = User::init(self.get_user_id(), None, self.data.clone());
-        Box::new(user)
+        Box::new(self.clone())
     }
 }
 
@@ -111,75 +108,61 @@ impl Dao for User {
 impl User {
     ///增加在线时间
     pub fn add_online_time(&mut self) {
-        let login_time = self.get_time("last_login_time");
-        if let None = login_time {
-            return;
-        }
-        let res = login_time.unwrap().timestamp() - Local::now().timestamp();
-        let res = (res / 1000) as usize;
-        let total_time = self.get_usize(TOTLA_ONLINE_TIME);
-        let tmp;
-        match total_time {
-            Some(total_time) => {
-                tmp = total_time + res;
-            }
-            None => {
-                tmp = res;
-            }
-        }
-        self.set_usize(TOTLA_ONLINE_TIME.to_string(), tmp);
-        self.add_version();
+        // let login_time = chrono::NaiveDateTime::from_str(self.last_login_time.as_str());
+        // if let Err(_) = login_time {
+        //     return;
+        // }
+        // let login_time = login_time.unwrap();
+        // let res = login_time.timestamp() - Local::now().timestamp();
+        // let res = (res / 1000) as usize;
+        // let total_time = self.total_online_time;
+        // let tmp = total_time + res as u64;
+        // self.total_online_time = tmp;
+        // self.add_version();
     }
 
     pub fn update_login(&mut self) {
         self.update_login_time();
-        self.set_usize(USER_OL.to_string(), 1);
+        self.ol = true;
         self.add_version();
     }
 
     pub fn update_off(&mut self) {
         self.update_off_time();
-        self.set_usize(USER_OL.to_string(), 0);
+        self.ol = false;
         self.add_online_time();
         self.add_version();
     }
 
     pub fn set_last_character(&mut self, cter_id: u32) {
-        let map = self.get_mut_json_value().unwrap();
-        map.insert(LAST_CHARACTER.to_owned(), serde_json::Value::from(cter_id));
+        self.last_character = cter_id;
         self.add_version();
     }
 
     pub fn set_nick_name(&mut self, name: &str) {
-        let map = self.get_mut_json_value().unwrap();
-        map.insert(NICK_NAME.to_owned(), serde_json::Value::from(name));
+        let str_key = "nick_name".to_owned();
+        self.nick_name = name.to_owned();
         self.add_version();
         //修改redis
-        modify_redis_user(self.user_id, NICK_NAME.to_string(), JsonValue::from(name));
+        modify_redis_user(self.user_id, str_key, JsonValue::from(name));
     }
 
     pub fn get_nick_name(&self) -> &str {
-        let nick_name = self.get_json_value(NICK_NAME);
-        if nick_name.is_none() {
-            return "";
-        }
-        nick_name.unwrap().as_str().unwrap()
+        self.nick_name.as_str()
     }
 
     pub fn set_dlc(&mut self, v: Vec<u32>) {
         if v.is_empty() {
             return;
         }
-        let map = self.get_mut_json_value().unwrap();
-        map.insert(DLC.to_owned(), serde_json::Value::from(v));
+        self.dlc = v;
         self.add_version();
     }
 
     pub fn new(user_id: u32, nick_name: &str) -> Self {
-        let mut js_data = serde_json::map::Map::new();
-        js_data.insert(USER_OL.to_string(), JsonValue::from(1));
-        js_data.insert(NICK_NAME.to_string(), JsonValue::from(nick_name));
-        let user = User::init(user_id, None, serde_json::Value::from(js_data));
+        let mut user = User::default();
+        user.user_id = user_id;
+        user.nick_name = nick_name.to_owned();
         user
     }
 
@@ -204,8 +187,8 @@ impl User {
 
         let mut data = None;
         for _qr in q {
-            let (id, js) = mysql::from_row(_qr.unwrap());
-            let u = User::init(id, tem_id, js);
+            let (_, js): (u32, String) = mysql::from_row(_qr.unwrap());
+            let u = User::init(js);
             data = Some(u);
         }
         data

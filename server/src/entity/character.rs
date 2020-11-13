@@ -1,11 +1,11 @@
 use super::*;
-use crate::entity::character_contants::{GRADE, LAST_USE_SKILLS, SKILLS};
 use crate::TEMPLATES;
+use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::protos::base::CharacterPt;
-use tools::templates::character_temp::CharacterTempMgr;
+use tools::templates::character_temp::{CharacterTempMgr, Group};
 use tools::templates::template::TemplateMgrTrait;
 
 #[derive(Debug, Clone, Default)]
@@ -70,8 +70,8 @@ impl Characters {
         let mut map = HashMap::new();
         let q = q.unwrap();
         for _qr in q {
-            let (uid, tid, js) = mysql::from_row(_qr.unwrap());
-            let c = Character::init(uid, Some(tid), js);
+            let (_, _, data): (u32, u32, String) = mysql::from_row(_qr.unwrap());
+            let c = Character::init(data);
             map.insert(c.character_id, c);
         }
         if map.is_empty() {
@@ -85,44 +85,36 @@ impl Characters {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Character {
-    pub user_id: u32,       //玩家id
-    pub character_id: u32,  //角色id
-    pub data: JsonValue,    //数据
-    pub version: Cell<u32>, //数据版本号
+    pub user_id: u32,              //玩家id
+    pub character_id: u32,         //角色id
+    pub grate: u8,                 //grate
+    pub skills: Vec<Group>,        //技能
+    pub last_use_skills: Vec<u32>, //上次使用的技能
+    pub version: Cell<u32>,        //数据版本号
 }
 
 impl Into<CharacterPt> for Character {
     fn into(self) -> CharacterPt {
         let mut cter_pt = CharacterPt::default();
         let res = self.get_skills();
-        match res {
-            Ok(skills) => {
-                cter_pt.set_skills(skills);
-            }
-            Err(_) => {}
-        }
-
+        cter_pt.set_skills(res);
         cter_pt.set_cter_id(self.character_id);
         let res = self.get_grade();
-        match res {
-            Ok(grade) => {
-                cter_pt.set_grade(grade);
-            }
-            Err(_) => {
-                cter_pt.set_grade(1);
-            }
-        }
-        let last_use_skills = self.get_last_use_skills().unwrap();
+        cter_pt.set_grade(res);
+        let last_use_skills = self.get_last_use_skills();
         cter_pt.set_last_use_skills(last_use_skills);
         cter_pt
     }
 }
 
 impl Character {
-    pub fn new(user_id: u32, character_id: u32, js: JsonValue) -> Self {
-        let mut cter = Character::init(user_id, Some(character_id), js);
+    pub fn new(user_id: u32, character_id: u32, skills: Vec<Group>) -> Self {
+        let mut cter = Character::default();
+        cter.user_id = user_id;
+        cter.character_id = character_id;
+        cter.skills = skills;
         let res = TEMPLATES
             .get_constant_temp_mgr_ref()
             .temps
@@ -133,69 +125,41 @@ impl Character {
                 let s = usize::from_str(temp.value.as_str());
                 match s {
                     Ok(g) => {
-                        grade = g;
+                        grade = g as u8;
                     }
                     Err(e) => {
                         error!("{:?}", e);
-                        grade = 1_usize;
+                        grade = 1u8;
                     }
                 }
             }
             None => {
-                grade = 1_usize;
+                grade = 1u8;
             }
         }
-        cter.set_usize(GRADE.to_string(), grade);
+        cter.grate = grade;
         cter
     }
 
-    pub fn get_skills(&self) -> anyhow::Result<Vec<u32>> {
-        let mut v: Vec<u32> = Vec::new();
-        let res = self.get_json_value(SKILLS);
-        if res.is_none() {
-            return Ok(v);
+    pub fn get_skills(&self) -> Vec<u32> {
+        let mut v = Vec::new();
+        for group in self.skills.iter() {
+            v.extend_from_slice(&group.group[..])
         }
-        let json = res.unwrap();
-        v = serde_json::from_value(json.clone())?;
-        Ok(v)
-    }
-    pub fn set_skills(&mut self, skills: Vec<u32>) {
-        let map: Option<&mut Map<String, JsonValue>> = self.get_mut_json_value();
-        if map.is_none() {
-            return;
-        }
-        let v = JsonValue::from(skills);
-        map.unwrap().insert(SKILLS.to_owned(), v);
+        v
     }
 
-    pub fn get_last_use_skills(&self) -> anyhow::Result<Vec<u32>> {
-        let mut v: Vec<u32> = Vec::new();
-        let res = self.get_json_value(LAST_USE_SKILLS);
-        if res.is_none() {
-            return Ok(v);
-        }
-        let json = res.unwrap();
-        v = serde_json::from_value(json.clone())?;
-        Ok(v)
+    pub fn get_last_use_skills(&self) -> Vec<u32> {
+        self.last_use_skills.clone()
     }
 
-    pub fn get_grade(&self) -> anyhow::Result<u32> {
-        let res = self.get_json_value(GRADE);
-        if res.is_none() {
-            return Ok(0);
-        }
-        let res = res.unwrap().as_u64();
-        let res = res.unwrap() as u32;
-        Ok(res)
+    pub fn get_grade(&self) -> u32 {
+        self.grate as u32
     }
 
     pub fn add_grade(&mut self) -> anyhow::Result<u32> {
         let res = self.get_grade();
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return Ok(0);
-        }
-        let mut grade = res.unwrap() as usize;
+        let mut grade = res as usize;
         grade += 1;
         let mut max_grade = 2_u32;
         let max_grade_temp = TEMPLATES.get_constant_temp_mgr_ref().temps.get("max_grade");
@@ -218,54 +182,22 @@ impl Character {
         if grade as u32 > max_grade {
             grade = 1;
         }
-        self.set_usize(GRADE.to_string(), grade);
+        self.grate = grade as u8;
         self.add_version();
         Ok(grade as u32)
     }
 
     pub fn sub_grade(&mut self) -> anyhow::Result<u32> {
         let res = self.get_grade();
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return Ok(0);
-        }
-        let mut grade = res.unwrap() as isize;
+
+        let mut grade = res as isize;
         grade -= 1;
         if grade <= 0 {
             grade = 1;
         }
-        self.set_usize(GRADE.to_string(), grade as usize);
+        self.grate = grade as u8;
         self.add_version();
         Ok(grade as u32)
-    }
-
-    #[warn(dead_code)]
-    pub fn query(table_name: &str, user_id: u32, tem_id: Option<u32>) -> Option<Self> {
-        let mut v: Vec<Value> = Vec::new();
-        v.push(Value::UInt(user_id as u64));
-
-        let mut sql = String::new();
-        sql.push_str("select * from ");
-        sql.push_str(table_name);
-        sql.push_str(" where user_id=:user_id");
-        if tem_id.is_some() {
-            sql.push_str(" and tem_id:tem_id");
-        }
-
-        let q: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
-        if let Err(e) = q {
-            error!("{:?}", e);
-            return None;
-        }
-        let q = q.unwrap();
-
-        let mut data = None;
-        for _qr in q {
-            let (id, js) = mysql::from_row(_qr.unwrap());
-            let c = Character::init(id, tem_id, js);
-            data = Some(c);
-        }
-        data
     }
 }
 
@@ -312,36 +244,22 @@ impl Entity for Character {
         self.user_id
     }
 
-    fn get_data(&self) -> &JsonValue {
-        &self.data
+    fn get_data(&self) -> String {
+        serde_json::to_string(self).unwrap()
     }
 
-    fn get_data_mut(&mut self) -> &mut JsonValue {
-        &mut self.data
-    }
-
-    fn init(user_id: u32, tem_id: Option<u32>, js: JsonValue) -> Self
+    fn init(data: String) -> Self
     where
         Self: Sized,
     {
-        let c = Character {
-            user_id,
-            character_id: tem_id.unwrap(),
-            data: js,
-            version: Cell::new(0),
-        };
+        let c = serde_json::from_str(data.as_str()).unwrap();
         c
     }
 }
 
 impl EntityData for Character {
     fn try_clone(&self) -> Box<dyn EntityData> {
-        let cter = Character::init(
-            self.get_user_id(),
-            Some(self.character_id),
-            self.data.clone(),
-        );
-        Box::new(cter)
+        Box::new(self.clone())
     }
 }
 
@@ -360,21 +278,11 @@ fn get_init_characters(user_id: u32) -> Result<Vec<Character>, String> {
     }
     let characters = cter_temp.get_init_character();
     for c in characters {
-        let mut map = Map::new();
         let mut skill_v = Vec::new();
         for group in c.skills.iter() {
-            for skill_id in group.group.iter() {
-                skill_v.push(*skill_id);
-            }
+            skill_v.push(group.clone());
         }
-        let skill_array = JsonValue::from(skill_v);
-        map.insert(
-            SKILLS.to_owned(),
-            serde_json::Value::from(skill_array.clone()),
-        );
-
-        let jv = serde_json::Value::from(map);
-        let cter = Character::new(user_id, c.get_id() as u32, jv);
+        let cter = Character::new(user_id, c.get_id() as u32, skill_v);
         v.push(cter);
     }
     Ok(v)
