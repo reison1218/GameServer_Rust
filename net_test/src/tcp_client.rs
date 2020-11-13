@@ -96,7 +96,7 @@ impl ClientHandler for TcpClientHandler {
         self.ts.as_mut().unwrap().flush().unwrap();
 
         //panic!("");
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_secs(2));
 
         let mut  csr = C_SEARCH_ROOM::new();
         csr.set_room_type(2 as u32);

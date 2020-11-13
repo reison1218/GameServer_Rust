@@ -17,17 +17,21 @@ use tools::util::packet::Packet;
 /// data：作为玩家具体数据，由jsonvalue封装
 /// version：数据版本号，大于0则代表有改动，需要update到db
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct User {
-    pub user_id: u32,            //玩家id
-    pub ol: bool,                //是否在线
-    pub nick_name: String,       //玩家昵称
+    pub user_id: u32,      //玩家id
+    pub ol: bool,          //是否在线
+    pub nick_name: String, //玩家昵称
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub last_login_time: String, //上次登陆时间
-    pub last_off_time: String,   //上次离线时间
-    pub last_character: u32,     //上次使用对角色
-    pub total_online_time: u64,  //总在线时间
-    pub sync_time: u32,          //同步时间
-    pub dlc: Vec<u32>,           //dlc
-    pub version: Cell<u32>,      //数据版本号
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub last_off_time: String, //上次离线时间
+    pub last_character: u32, //上次使用对角色
+    pub total_online_time: u64, //总在线时间
+    pub sync_time: u32,    //同步时间
+    pub dlc: Vec<u32>,     //dlc
+    #[serde(skip_serializing)]
+    pub version: Cell<u32>, //数据版本号
 }
 
 ///为User实现Entiry
@@ -83,11 +87,11 @@ impl Entity for User {
         serde_json::to_string(self).unwrap()
     }
 
-    fn init(data: String) -> Self
+    fn init(data: serde_json::Value) -> Self
     where
         Self: Sized,
     {
-        let user: User = serde_json::from_str(data.as_str()).unwrap();
+        let user: User = serde_json::from_value(data).unwrap();
         user
     }
 }
@@ -187,7 +191,7 @@ impl User {
 
         let mut data = None;
         for _qr in q {
-            let (_, js): (u32, String) = mysql::from_row(_qr.unwrap());
+            let (_, js): (u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
             let u = User::init(js);
             data = Some(u);
         }

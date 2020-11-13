@@ -70,7 +70,7 @@ impl Characters {
         let mut map = HashMap::new();
         let q = q.unwrap();
         for _qr in q {
-            let (_, _, data): (u32, u32, String) = mysql::from_row(_qr.unwrap());
+            let (_, _, data): (u32, u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
             let c = Character::init(data);
             map.insert(c.character_id, c);
         }
@@ -86,13 +86,15 @@ impl Characters {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Character {
     pub user_id: u32,              //玩家id
     pub character_id: u32,         //角色id
     pub grate: u8,                 //grate
     pub skills: Vec<Group>,        //技能
     pub last_use_skills: Vec<u32>, //上次使用的技能
-    pub version: Cell<u32>,        //数据版本号
+    #[serde(skip_serializing)]
+    pub version: Cell<u32>, //数据版本号
 }
 
 impl Into<CharacterPt> for Character {
@@ -248,11 +250,11 @@ impl Entity for Character {
         serde_json::to_string(self).unwrap()
     }
 
-    fn init(data: String) -> Self
+    fn init(data: serde_json::Value) -> Self
     where
         Self: Sized,
     {
-        let c = serde_json::from_str(data.as_str()).unwrap();
+        let c = serde_json::from_value(data).unwrap();
         c
     }
 }
