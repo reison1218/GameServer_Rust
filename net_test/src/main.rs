@@ -387,10 +387,22 @@ struct  STest{
 }
 
 fn main() -> anyhow::Result<()> {
-
-    tcp_client::test_tcp_client("reison1");
+    let mut t = Test::default();
+    t.str.push_str("asdf");
+    t.i.fetch_add(1);
+    unsafe{
+        let res:Test = std::mem::transmute_copy(&t);
+        dbg!(res);
+        dbg!(t);
+    }
+    // rc1.borrow().borrow_mut().str.push_str("1");
+    // rc2.borrow().borrow_mut().str.push_str("1");
+    // tcp_client::test_tcp_client("reison1");
     // crate::bar::bar();
     // crate::ss::test();
+
+    // let rc = RefCell::new(Test::default());
+    // rc.borrow_mut().str.push_str("1");
 
     // let mut s1 = STest::default();
     // s1.str.push_str("s1");

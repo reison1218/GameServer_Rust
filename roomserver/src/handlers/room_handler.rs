@@ -855,7 +855,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let cter = member.cters.get(&cter_id).unwrap();
 
-    //校验房间状态
+    //校验房间壮体啊
     if room_state != RoomState::Await {
         warn!("can not choice skill now!");
         return Ok(());
