@@ -42,7 +42,7 @@ impl Handler for ServerHandler {
     }
 
     async fn on_close(&mut self) {
-        info!("oh,tcp client was disconnect");
+        println!("oh,tcp client was disconnect");
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {

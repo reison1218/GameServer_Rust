@@ -25,6 +25,7 @@ impl ClientHandler for TcpClientHandler {
 
     async fn on_close(&mut self) {
         //todo u can do something here
+        println!("disconnect with tcp server!")
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {
@@ -35,6 +36,7 @@ impl ClientHandler for TcpClientHandler {
 ///todo u can do something here
 async fn handler_mess(mess: Vec<u8>) {
     //todo do something
+    println!("read mess from tcp server!size:{}", mess.len());
 }
 
 fn main() {
