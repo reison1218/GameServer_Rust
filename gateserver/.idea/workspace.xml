@@ -33,11 +33,14 @@
     <list default="true" id="d32276e2-449a-47db-9d37-c31c1b9dd340" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/tcp_client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Character.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Skill.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/entity/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/entity/character.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/entity/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/entity/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/entity/user_info.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/entity/user_info.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Character.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Skill.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,6 +194,8 @@
       <workItem from="1591321580352" duration="8363000" />
       <workItem from="1605086741477" duration="600000" />
       <workItem from="1605087702156" duration="225000" />
+      <workItem from="1605577788124" duration="7011000" />
+      <workItem from="1605605134540" duration="2057000" />
     </task>
     <servers />
   </component>
@@ -210,22 +215,26 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1816" height="248" key="GridCell.Tab.0.bottom" timestamp="1605256260094">
+    <state x="2577" y="401" key="#Plugins" timestamp="1605605277768">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1816" height="248" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605256260094" />
-    <state width="1816" height="248" key="GridCell.Tab.0.center" timestamp="1605256260094">
+    <state x="2577" y="401" key="#Plugins/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605605277768" />
+    <state width="1816" height="385" key="GridCell.Tab.0.bottom" timestamp="1605606795397">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1816" height="248" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605256260094" />
-    <state width="1816" height="248" key="GridCell.Tab.0.left" timestamp="1605256260093">
+    <state width="1816" height="385" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605606795397" />
+    <state width="1816" height="385" key="GridCell.Tab.0.center" timestamp="1605606795396">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1816" height="248" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605256260093" />
-    <state width="1816" height="248" key="GridCell.Tab.0.right" timestamp="1605256260094">
+    <state width="1816" height="385" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605606795396" />
+    <state width="1816" height="385" key="GridCell.Tab.0.left" timestamp="1605606795396">
       <screen x="2048" y="194" width="1920" height="1057" />
     </state>
-    <state width="1816" height="248" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605256260094" />
+    <state width="1816" height="385" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605606795396" />
+    <state width="1816" height="385" key="GridCell.Tab.0.right" timestamp="1605606795397">
+      <screen x="2048" y="194" width="1920" height="1057" />
+    </state>
+    <state width="1816" height="385" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605606795397" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -6,6 +6,7 @@ mod map;
 mod test_async;
 mod behavior_test;
 mod test_tokio;
+mod sig_rec;
 use serde_json::json;
 use std::time::{Duration, SystemTime, Instant};
 use protobuf::Message;
@@ -84,6 +85,7 @@ use crossbeam::atomic::{AtomicConsume, AtomicCell};
 use tools::macros::GetMutRef;
 use futures::future::join3;
 use crossbeam::sync::ShardedLock;
+use tools::protos::room::C_LEAVE_ROOM;
 
 #[macro_use]
 extern crate lazy_static;
@@ -336,6 +338,7 @@ thread_local! {
     pub static I:Cell<u32> = Cell::new(1);
 }
 
+#[derive(Debug)]
 pub struct TestT {
     temp: &'static String,
 }
@@ -386,15 +389,35 @@ struct  STest{
     v:Vec<String>,
 }
 
+#[derive(Default,Clone)]
+struct TestS{
+    i:u32,
+}
+
+tools::get_mut_ref!(TestS);
+
+
 fn main() -> anyhow::Result<()> {
-    let mut t = Test::default();
-    t.str.push_str("asdf");
-    t.i.fetch_add(1);
-    unsafe{
-        let res:Test = std::mem::transmute_copy(&t);
-        dbg!(res);
-        dbg!(t);
-    }
+
+    tcp_client::test_tcp_client("reison");
+    // let mut arc=  Arc::new(RwLock::new(TestS::default()));
+    // for i in 0..9999{
+    //     let res = arc.clone();
+    //     let m = move||{
+    //         let read = res.read().unwrap();
+    //     };
+    //
+    // }
+    // test_unsafe();
+    // let mut t = Test::default();
+    // t.str.push_str("asdf");
+    // t.i.fetch_add(1);
+    // unsafe{
+    //     let res:Test = std::mem::transmute_copy(&t);
+    //     dbg!(res);
+    //     dbg!(t);
+    // }
+
     // rc1.borrow().borrow_mut().str.push_str("1");
     // rc2.borrow().borrow_mut().str.push_str("1");
     // tcp_client::test_tcp_client("reison1");
@@ -727,14 +750,20 @@ unsafe impl Sync for Test{}
 
 fn test_unsafe(){
     unsafe {
-        let mut test = Test{str:"test".to_owned(),i:AtomicCell::new(0)};
-        let test_p = &mut test as *mut Test;
-        let s = test_p.as_mut().unwrap();
-        let s1 = test_p.as_mut().unwrap();
-        s1.str.push_str("2");
-        s.str.push_str("1");
-        println!("{:?}",s);
-        println!("{:?}",s1);
+
+        let mut t = Test::default();
+        let mut t2:Test = std::mem::transmute_copy(&t);
+        t2.i.store(100);
+        dbg!(t);
+        dbg!(t2);
+        // let mut test = Test{str:"test".to_owned(),i:AtomicCell::new(0)};
+        // let test_p = &mut test as *mut Test;
+        // let s = test_p.as_mut().unwrap();
+        // let s1 = test_p.as_mut().unwrap();
+        // s1.str.push_str("2");
+        // s.str.push_str("1");
+        // println!("{:?}",s);
+        // println!("{:?}",s1);
         // let mut str = "test".to_owned();
         // let s_p = &str as *const String;
         // let s_p_m = &mut str as *mut String;
