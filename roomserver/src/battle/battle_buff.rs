@@ -399,10 +399,9 @@ impl BattleData {
         target_user: u32,
         map_cell_element: u8,
         buff_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
-        let battle_cter = battle_cters.get_mut(&target_user).unwrap();
+        let battle_cter = self.battle_cter.get(&target_user).unwrap();
         if map_cell_element != battle_cter.base_attr.element {
             return;
         }
@@ -563,7 +562,6 @@ impl BattleData {
                             match_user,
                             map_cell_element,
                             buff.id,
-                            cters,
                             au,
                         );
                     } else if PAIR_CLEAN_SKILL_CD.contains(&buff.id) {
