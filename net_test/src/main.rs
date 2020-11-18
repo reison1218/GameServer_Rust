@@ -89,7 +89,6 @@ use tools::protos::room::C_LEAVE_ROOM;
 
 #[macro_use]
 extern crate lazy_static;
-extern crate proc_macro;
 
 lazy_static! {
     static ref ID:Arc<RwLock<AtomicU32>>={
