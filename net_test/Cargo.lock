@@ -1471,6 +1471,7 @@ dependencies = [
  "scroll",
  "serde",
  "serde_json",
+ "slab",
  "threadpool",
  "tokio 0.3.3",
  "tools",

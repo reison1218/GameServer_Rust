@@ -99,7 +99,6 @@ impl BattleData {
         user_id: u32,
         buff_id: u32,
         last_map_cell_user_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
@@ -110,7 +109,7 @@ impl BattleData {
         let buff_temp = buff_temp.unwrap();
         let item_id = buff_temp.par1;
 
-        let battle_cter = battle_cters.get_mut(&user_id);
+        let battle_cter = self.battle_cter.get_mut(&user_id);
         if let None = battle_cter {
             error!("battle_cter is not find!user_id:{}", user_id);
             return;
@@ -139,26 +138,28 @@ impl BattleData {
         }
         //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
         if buff_temp.target == TargetType::MapCellPlayer.into_u8() {
-            let last_map_cell_user = battle_cters.get_mut(&last_map_cell_user_id);
-            if let Some(last_map_cell_user) = last_map_cell_user {
-                let res = last_map_cell_user.add_item(item_id);
-                if let Err(e) = res {
-                    warn!("{:?}", e);
-                    return;
-                }
-                let target_pt = self.build_target_pt(
-                    from_user,
-                    last_map_cell_user.base_attr.user_id,
-                    EffectType::RewardItem,
-                    item_id,
-                    Some(buff_id),
-                );
-                if let Err(e) = target_pt {
-                    warn!("{:?}", e);
-                    return;
-                }
-                au.targets.push(target_pt.unwrap());
+            let last_map_cell_user = self.battle_cter.get_mut(&last_map_cell_user_id);
+            if let None = last_map_cell_user {
+                return;
             }
+            let last_map_cell_user = last_map_cell_user.unwrap();
+            let res = last_map_cell_user.add_item(item_id);
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                return;
+            }
+            let target_pt = self.build_target_pt(
+                from_user,
+                last_map_cell_user_id,
+                EffectType::RewardItem,
+                item_id,
+                Some(buff_id),
+            );
+            if let Err(e) = target_pt {
+                warn!("{:?}", e);
+                return;
+            }
+            au.targets.push(target_pt.unwrap());
         }
     }
 
@@ -169,7 +170,6 @@ impl BattleData {
         user_id: u32,
         buff_id: u32,
         last_map_cell_user_id: u32,
-        _: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
@@ -262,14 +262,7 @@ impl BattleData {
     }
 
     ///给附近的人添加技能cd
-    fn near_add_cd(
-        &mut self,
-        user_id: u32,
-        index: u32,
-        buff_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
-        au: &mut ActionUnitPt,
-    ) {
+    fn near_add_cd(&mut self, user_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
@@ -282,7 +275,7 @@ impl BattleData {
         ep.effect_value = buff_temp.par1;
         target_pt.effects.push(ep);
         let isize_index = index as isize;
-        for cter in battle_cters.values_mut() {
+        for cter in self.battle_cter.values_mut() {
             if cter.get_user_id() == user_id {
                 continue;
             }
@@ -311,14 +304,7 @@ impl BattleData {
     }
 
     ///附近造成技能伤害
-    fn near_skill_damage(
-        &mut self,
-        user_id: u32,
-        index: u32,
-        buff_id: u32,
-        _: &mut HashMap<u32, BattleCharacter>,
-        au: &mut ActionUnitPt,
-    ) {
+    fn near_skill_damage(&mut self, user_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
@@ -497,7 +483,6 @@ impl BattleData {
         let open_cter = open_cter.unwrap();
 
         let last_index = open_cter.index_data.last_map_cell_index;
-        let cters = battle_cters.as_mut().unwrap();
         let index = open_cter.get_map_cell_index() as u32;
         let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
         let map_cell_element = map_cell.element;
@@ -519,23 +504,9 @@ impl BattleData {
                 if is_pair {
                     //获得道具
                     if AWARD_ITEM.contains(&buff.id) {
-                        self.reward_item(
-                            from_user,
-                            match_user,
-                            buff.id,
-                            last_map_cell_user_id,
-                            cters,
-                            au,
-                        );
+                        self.reward_item(from_user, match_user, buff.id, last_map_cell_user_id, au);
                     } else if PAIR_CURE.contains(&buff.id) {
-                        self.pair_cure(
-                            from_user,
-                            match_user,
-                            buff.id,
-                            last_map_cell_user_id,
-                            cters,
-                            au,
-                        );
+                        self.pair_cure(from_user, match_user, buff.id, last_map_cell_user_id, au);
                     } else if AWARD_BUFF.contains(&buff.id) {
                         //获得一个buff
                         self.award_buff(
@@ -549,10 +520,10 @@ impl BattleData {
                         );
                     } else if NEAR_ADD_CD.contains(&buff.id) {
                         //相临的玩家技能cd增加
-                        self.near_add_cd(match_user, index, buff.id, cters, au);
+                        self.near_add_cd(match_user, index, buff.id, au);
                     } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff.id) {
                         //相临都玩家造成技能伤害
-                        self.near_skill_damage(match_user, index, buff.id, cters, au);
+                        self.near_skill_damage(match_user, index, buff.id, au);
                     } else if PAIR_SAME_ELEMENT_CURE.contains(&buff.id) {
                         //处理世界块的逻辑
                         //配对属性一样的地图块+hp

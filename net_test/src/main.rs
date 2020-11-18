@@ -71,7 +71,7 @@ use futures::executor::block_on;
 use std::thread::{Thread, JoinHandle};
 use rayon::prelude::ParallelSliceMut;
 use futures::SinkExt;
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::{Borrow, BorrowMut, Cow};
 use std::hash::Hasher;
 use std::rc::Rc;
 use futures::join;
@@ -86,6 +86,7 @@ use tools::macros::GetMutRef;
 use futures::future::join3;
 use crossbeam::sync::ShardedLock;
 use tools::protos::room::C_LEAVE_ROOM;
+use ntapi::_core::sync::atomic::AtomicPtr;
 
 #[macro_use]
 extern crate lazy_static;
@@ -389,17 +390,26 @@ struct  STest{
     v:Vec<String>,
 }
 
-#[derive(Default,Clone)]
+#[derive(Default)]
 struct TestS{
-    i:u32,
+    a:AtomicCell<u32>,
+    b:AtomicCell<u32>,
+    c:AtomicCell<u32>,
+    d:String,
+    e:Vec<u32>,
 }
+
+
+
+
 
 tools::get_mut_ref!(TestS);
 
 
 fn main() -> anyhow::Result<()> {
 
-    tcp_client::test_tcp_client("reison");
+    RefCell::new(1);
+    // tcp_client::test_tcp_client("reison");
     // let mut arc=  Arc::new(RwLock::new(TestS::default()));
     // for i in 0..9999{
     //     let res = arc.clone();
