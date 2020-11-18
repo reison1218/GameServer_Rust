@@ -9,7 +9,7 @@ edition = "2018"
 
 [profile.release]
 opt-level = 3 #优化等级最大
-lto = "fat" #链接时优化,所有crate贯穿所有进行优化
+lto = true #链接时优化,所有crate贯穿所有进行优化
 codegen-units = 1 #将每一个crate作为一整块进行编译
 
 [dependencies]
