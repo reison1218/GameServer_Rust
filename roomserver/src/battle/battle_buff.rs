@@ -6,14 +6,12 @@ use crate::battle::battle_enum::buff_type::{
 use crate::battle::battle_enum::EffectType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
-use crate::room::character::BattleCharacter;
-use crate::room::map_data::TileMap;
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::Values;
-use std::collections::HashMap;
 use std::convert::TryFrom;
+use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
@@ -211,7 +209,6 @@ impl BattleData {
         target_user: u32,
         buff_id: u32,
         last_map_cell_user_id: u32,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
     ) {
         let mut target_pt = TargetPt::new();
@@ -238,7 +235,7 @@ impl BattleData {
 
         //如果目标类型是地图块上的玩家
         if target_type == TargetType::MapCellPlayer {
-            let last_map_cell_user = battle_cters.get_mut(&last_map_cell_user_id);
+            let last_map_cell_user = self.battle_cter.get_mut(&last_map_cell_user_id);
             if let Some(last_map_cell_user) = last_map_cell_user {
                 last_map_cell_user
                     .battle_buffs
@@ -250,7 +247,7 @@ impl BattleData {
                 au.targets.push(target_pt.clone());
             }
         }
-        let battle_cter = battle_cters.get_mut(&target_user).unwrap();
+        let battle_cter = self.battle_cter.get_mut(&target_user).unwrap();
         //给自己加
         target_pt.target_value.clear();
         target_pt
@@ -414,7 +411,6 @@ impl BattleData {
         &mut self,
         from_user: Option<u32>,
         target_user: u32,
-        target_battle: &mut BattleCharacter,
         buff_id: u32,
         is_pair: bool,
         au: &mut ActionUnitPt,
@@ -429,6 +425,7 @@ impl BattleData {
         if is_pair {
             energy += buff_temp.par2 as u8;
         }
+        let target_battle = self.battle_cter.get_mut(&target_user).unwrap();
         target_battle.add_energy(energy as i8);
         let mut target_pt = TargetPt::new();
         target_pt
@@ -458,24 +455,16 @@ impl BattleData {
     ///battle_cters: *mut HashMap<u32, BattleCharacter>,裸指针
     ///au: &mut ActionUnitPt,proto
     ///is_pair: bool,是否配对了
-    unsafe fn match_open_map_cell_buff(
+    fn match_open_map_cell_buff(
         &mut self,
         from_user: Option<u32>,
         buffs: Values<u32, Buff>,
         match_user: u32,
         open_user: u32,
-        battle_cters: *mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let cter = battle_cters.as_mut().unwrap().get_mut(&match_user);
-        if let None = cter {
-            error!("battle_cter not find!user_id:{}", match_user);
-            return;
-        }
-        let cter = cter.unwrap();
-
-        let open_cter = battle_cters.as_mut().unwrap().get_mut(&open_user);
+        let open_cter = self.battle_cter.get_mut(&open_user);
         if let None = open_cter {
             error!("battle_cter not find!user_id:{}", open_user);
             return;
@@ -484,6 +473,11 @@ impl BattleData {
 
         let last_index = open_cter.index_data.last_map_cell_index;
         let index = open_cter.get_map_cell_index() as u32;
+
+        if !self.battle_cter.contains_key(&match_user) {
+            error!("battle_cter not find!user_id:{}", match_user);
+            return;
+        }
         let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
         let map_cell_element = map_cell.element;
         for buff in buffs {
@@ -515,7 +509,6 @@ impl BattleData {
                             match_user,
                             buff.id,
                             last_map_cell_user_id,
-                            battle_cters.as_mut().unwrap(),
                             au,
                         );
                     } else if NEAR_ADD_CD.contains(&buff.id) {
@@ -543,13 +536,14 @@ impl BattleData {
                 }
                 //翻开地图块加能量，配对加能量
                 if OPEN_CELL_AND_PAIR_ADD_ENERGY.contains(&buff.id) {
-                    self.open_map_cell_and_pair(from_user, match_user, cter, buff.id, is_pair, au);
+                    self.open_map_cell_and_pair(from_user, match_user, buff.id, is_pair, au);
                 }
             }
 
             if is_pair {
                 //匹配属性一样的地图块+攻击
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
+                    let cter = self.battle_cter.get_mut(&match_user).unwrap();
                     //此处触发加攻击不用通知客户端
                     let buff_element = buff.buff_temp.par1 as u8;
                     let cter_element = cter.base_attr.element;
@@ -562,49 +556,41 @@ impl BattleData {
     }
 
     ///匹配buff
-    pub unsafe fn trigger_open_map_cell_buff(
+    pub fn trigger_open_map_cell_buff(
         &mut self,
         map_cell_index: Option<usize>,
         user_id: u32,
-        battle_cters: *mut HashMap<u32, BattleCharacter>,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let cters = battle_cters.as_mut().unwrap();
+        let self_mut = self.get_mut_ref();
         if map_cell_index.is_none() {
             //匹配其他玩家身上的
-            for cter in cters.values_mut() {
+            for cter in self_mut.battle_cter.values_mut() {
                 if cter.is_died() {
                     continue;
                 }
-                self.match_open_map_cell_buff(
+                self.get_mut_ref().match_open_map_cell_buff(
                     Some(cter.get_user_id()),
                     cter.battle_buffs.buffs.values(),
                     cter.get_user_id(),
                     user_id,
-                    battle_cters,
                     au,
                     is_pair,
                 );
             }
         } else {
-            let tail_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
-            let map_cell = tail_map_ptr
-                .as_ref()
-                .unwrap()
-                .map_cells
-                .get(map_cell_index.unwrap())
-                .unwrap();
-            for cter in cters.values_mut() {
+            let tail_map_ptr = self_mut.tile_map.borrow_mut();
+            let map_cell = tail_map_ptr.map_cells.get(map_cell_index.unwrap()).unwrap();
+            for cter in self_mut.battle_cter.values_mut() {
                 if cter.is_died() {
                     continue;
                 }
-                self.match_open_map_cell_buff(
+                self.get_mut_ref().match_open_map_cell_buff(
                     None,
                     map_cell.buffs.values(),
                     cter.get_user_id(),
                     user_id,
-                    battle_cters,
                     au,
                     is_pair,
                 );

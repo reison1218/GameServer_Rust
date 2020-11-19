@@ -127,12 +127,7 @@ impl BattleData {
 
         let index = index as isize;
         //移动位置后触发事件
-        let v = self.after_move_trigger(
-            battle_cter,
-            index,
-            is_change_index_both,
-            battle_cters.as_mut().unwrap(),
-        );
+        let v = self.after_move_trigger(battle_cter, index, is_change_index_both);
         Ok(v)
     }
 

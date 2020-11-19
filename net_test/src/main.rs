@@ -400,28 +400,28 @@ struct TestS{
 }
 
 
+impl TestS{
+    pub fn test(&mut self){
 
+    }
+}
 
 
 tools::get_mut_ref!(TestS);
 
 
 fn main() -> anyhow::Result<()> {
-
-    let mut tt = TestS::default();
-    let t = tt.borrow_mut();
-    t.g.insert(1,Test::default());
-    let d:&mut String = t.d.borrow_mut();
-    let e:&mut Vec<u32> = t.e.borrow_mut();
-    let f = t.f.borrow_mut();
-    d.push_str("1");
-    f.str.push_str("1");
-    e.push(1);
-    let ttt=  t.g.get_mut(&1).unwrap();
-    let tttt=  t.g.get_mut(&1).unwrap();
-
-    ttt.str.push_str("1");
-
+    // let mut tt = TestS::default();
+    // let t = tt.borrow_mut();
+    // t.g.insert(1,Test::default());
+    // let d:&mut String = t.d.borrow_mut();
+    // let e:&mut Vec<u32> = t.e.borrow_mut();
+    // let f = t.f.borrow_mut();
+    // d.push_str("1");
+    // f.str.push_str("1");
+    // e.push(1);
+    // let ttt=  t.g.get_mut(&1).unwrap();
+    // ttt.str.push_str("1");
     // tcp_client::test_tcp_client("reison");
     // let mut arc=  Arc::new(RwLock::new(TestS::default()));
     // for i in 0..9999{

@@ -16,6 +16,7 @@ use crate::TEMPLATES;
 use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
 ///触发事件trait
@@ -35,12 +36,11 @@ pub trait TriggerEvent {
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()>;
 
     ///移动位置后触发事件
-    unsafe fn after_move_trigger(
+    fn after_move_trigger(
         &mut self,
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
     ) -> Vec<ActionUnitPt>;
 
     ///使用技能后触发
@@ -154,9 +154,9 @@ impl TriggerEvent for BattleData {
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let index = battle_cter.get_map_cell_index();
         //匹配玩家身上的
-        self.trigger_open_map_cell_buff(None, user_id, battle_cters, au, is_pair);
+        self.trigger_open_map_cell_buff(None, user_id, au, is_pair);
         //匹配地图块的
-        self.trigger_open_map_cell_buff(Some(index), user_id, battle_cters, au, is_pair);
+        self.trigger_open_map_cell_buff(Some(index), user_id, au, is_pair);
         Ok(None)
     }
 
@@ -189,26 +189,25 @@ impl TriggerEvent for BattleData {
     }
 
     ///移动后触发事件，大多数为buff
-    unsafe fn after_move_trigger(
+    fn after_move_trigger(
         &mut self,
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
-        battle_cters: &mut HashMap<u32, BattleCharacter>,
     ) -> Vec<ActionUnitPt> {
         let mut v = Vec::new();
-
+        let self_mut = self.get_mut_ref();
         //触发陷阱
-        self.trigger_trap(battle_cter, index as usize);
+        self_mut.trigger_trap(battle_cter, index as usize);
         //触发别人的范围
-        for other_cter in battle_cters.values_mut() {
+        for other_cter in self.battle_cter.values() {
             if other_cter.is_died() {
                 continue;
             }
             let cter_index = other_cter.get_map_cell_index() as isize;
 
             //踩到别人到范围
-            for buff in other_cter.battle_buffs.buffs.values_mut() {
+            for buff in other_cter.battle_buffs.buffs.values() {
                 if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
                     continue;
                 }
@@ -222,23 +221,26 @@ impl TriggerEvent for BattleData {
                     if index != res {
                         continue;
                     }
-                    let target_pt = self.deduct_hp(
-                        other_cter.base_attr.user_id,
-                        battle_cter.base_attr.user_id,
-                        Some(buff.buff_temp.par1 as i16),
-                        true,
-                    );
-                    match target_pt {
-                        Ok(target_pt) => {
-                            let mut other_aupt = ActionUnitPt::new();
-                            other_aupt.from_user = other_cter.base_attr.user_id;
-                            other_aupt.action_type = ActionType::Buff as u32;
-                            other_aupt.action_value.push(buff.id);
-                            other_aupt.targets.push(target_pt);
-                            v.push(other_aupt);
-                            break;
+
+                    unsafe {
+                        let target_pt = self_mut.deduct_hp(
+                            other_cter.base_attr.user_id,
+                            battle_cter.base_attr.user_id,
+                            Some(buff.buff_temp.par1 as i16),
+                            true,
+                        );
+                        match target_pt {
+                            Ok(target_pt) => {
+                                let mut other_aupt = ActionUnitPt::new();
+                                other_aupt.from_user = other_cter.base_attr.user_id;
+                                other_aupt.action_type = ActionType::Buff as u32;
+                                other_aupt.action_value.push(buff.id);
+                                other_aupt.targets.push(target_pt);
+                                v.push(other_aupt);
+                                break;
+                            }
+                            Err(e) => error!("{:?}", e),
                         }
-                        Err(e) => error!("{:?}", e),
                     }
                 }
                 if battle_cter.is_died() {
