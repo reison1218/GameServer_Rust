@@ -1,4 +1,4 @@
-///bytebuf封装，用户读写字节数组
+///this is byte handler model for easy read and write u8 array.
 pub mod bytebuf {
     pub enum ReadError {
         None,
@@ -8,8 +8,8 @@ pub mod bytebuf {
 
     #[derive(Clone, Debug, Default)]
     pub struct ByteBuf {
-        bytes: Vec<u8>, //bytes数据
-        index: usize,   //读写指针
+        bytes: Vec<u8>, //u8 data
+        index: usize,   //read and write point
     }
 
     impl From<Vec<u8>> for ByteBuf {
@@ -28,7 +28,7 @@ pub mod bytebuf {
     }
 
     impl ByteBuf {
-        ///创建一个空到bytebuf结构体
+        ///new a empty ByteBuf
         pub fn new() -> ByteBuf {
             ByteBuf {
                 bytes: Vec::new(),
@@ -86,17 +86,17 @@ pub mod bytebuf {
             self.bytes.extend_from_slice(value.as_ref());
         }
 
-        ///push char进去
+        ///push char
         pub fn push_char(&mut self, c: char) {
             self.bytes.push(c as u8);
         }
 
-        ///push字符串进去
+        ///push string
         pub fn push_string(&mut self, s: String) {
             self.bytes.extend_from_slice(s.as_bytes());
         }
 
-        ///读取指定长度的字节数
+        ///read assign len u8s
         pub fn read_bytes_size(&mut self, size: usize) -> anyhow::Result<&[u8]> {
             if self.bytes.len() - self.index < size {
                 anyhow::bail!("could not read u32,the readable u8 array is notEnough!")
@@ -107,7 +107,7 @@ pub mod bytebuf {
             Ok(res)
         }
 
-        ///读取4个字节并拼成一个u32
+        ///read 4 u8 and compose to a u32
         pub fn read_u32(&mut self) -> anyhow::Result<u32> {
             if self.bytes.len() - self.index < 4 {
                 anyhow::bail!("could not read u32,the readable u8 array is notEnough!")
@@ -119,7 +119,7 @@ pub mod bytebuf {
             Ok(u32::from_ne_bytes(bytes))
         }
 
-        ///读取两个字节并拼成一个u16
+        /// read 2 u8 and compose to a u16
         pub fn read_u16(&mut self) -> anyhow::Result<u16> {
             if self.bytes.len() - self.index < 2 {
                 anyhow::bail!("could not read u16,the readable u8 array is notEnough!")
@@ -131,7 +131,7 @@ pub mod bytebuf {
             Ok(u16::from_ne_bytes(bytes))
         }
 
-        ///读取8个字节并拼成一个u64
+        ///read 8 u8 and compose to a u64
         pub fn read_u64(&mut self) -> anyhow::Result<u64> {
             if self.bytes.len() - self.index < 8 {
                 anyhow::bail!("could not read u64,the readable u8 array is notEnough!")
@@ -143,7 +143,7 @@ pub mod bytebuf {
             Ok(u64::from_ne_bytes(bytes))
         }
 
-        ///读取1个字节并拼成一个u8
+        ///read one u8
         pub fn read_u8(&mut self) -> anyhow::Result<u8> {
             if self.bytes.len() - self.index < 1 {
                 anyhow::bail!("could not read u8,the readable u8 array is notEnough!")
@@ -153,21 +153,21 @@ pub mod bytebuf {
             Ok(*b)
         }
 
-        ///读取所有字节
+        ///read all the u8 array
         pub fn read_bytes(&mut self) -> &[u8] {
             let v = &self.bytes[self.index..];
             self.index = self.bytes.len() - 1;
             v
         }
 
-        ///获得所有字节
+        ///convert to Vec<u8>
         pub fn into_bytes(self) -> Vec<u8> {
             self.bytes
         }
     }
 }
 
-///数据包封装，用户封装传输的数据包
+///this is data packet,assign special order of u8
 pub mod packet {
     use crate::util::bytebuf::ByteBuf;
     #[derive(Debug, Default, Clone)]

@@ -3,9 +3,9 @@ use simplelog::{CombinedLogger, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::time;
 
-///初始化日志
-/// 传入info_path作为 info文件路径
-/// 传入error_path作为 error文件路径
+///init the log
+///info_path:the info log path
+///error_path:the error log path
 pub fn init_log(info_path: &str, error_path: &str) {
     let log_time = time::SystemTime::now();
     let mut config = simplelog::ConfigBuilder::new();
@@ -28,7 +28,7 @@ pub fn init_log(info_path: &str, error_path: &str) {
     ])
     .unwrap();
     info!(
-        "日志模块初始化完成！耗时:{}ms",
+        "log model init finish!take time:{}ms",
         log_time.elapsed().unwrap().as_millis()
     );
 }

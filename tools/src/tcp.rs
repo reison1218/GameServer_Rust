@@ -98,13 +98,13 @@ pub mod tcp_server {
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
 
-    ///系统错误码35:代表OSX内核下的socket unactually
+    ///OS error code 35:mean socket unactually of OSX.
     const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
 
-    ///错误码11代表linux内核的socket unactually
+    ///OS error code 11:mean socket unactually of linux
     const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
-    ///事件的唯一标示
+    ///the unique mark of tcp event
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
@@ -308,8 +308,8 @@ pub mod tcp_server {
                         if status.is_some() {
                             res = status.unwrap();
                         }
-                        //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
-                        //直接跳出token读取事件，待下次actually再进行读取
+                        //handler OS error code,35 mean OSX's socket unactually,11 mean linux's socket unactually
+                        //just break the loop,wait for next time read.
                         if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
                             || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
                         {
@@ -433,7 +433,7 @@ pub trait ClientHandler: Send + Sync {
                 self.on_close().await;
                 break;
             }
-            //如果读取到的字节数大于0则交给handler
+            //if size >0,trigger handler's on_message
             if size > 0 {
                 //读取到字节交给handler处理来处理
                 let mut v = Vec::new();
@@ -464,9 +464,9 @@ pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
     }
 
     let result = result.unwrap();
-    //设置参数
+    //setting the params
     set_tream_param(&result)?;
-    info!("连接服务器成功！{:?}", address);
+    info!("connect to server success!{:?}", address);
     Ok(result)
 }
 

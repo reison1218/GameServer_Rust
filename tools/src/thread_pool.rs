@@ -1,17 +1,17 @@
 use threadpool::ThreadPool;
 
-//线程池类型枚举
+//thread pool type emun
 pub enum ThreadPoolType {
     Game = 1,
     User = 2,
     Sys = 3,
 }
 
-//线程池结构体封装
+//thread pool struct
 pub struct MyThreadPool {
-    game_pool: ThreadPool, //游戏线程池
-    user_pool: ThreadPool, //用户线程池
-    sys_pool: ThreadPool,  //系统线程池
+    game_pool: ThreadPool, //game thread pool
+    user_pool: ThreadPool, //user thread pool
+    sys_pool: ThreadPool,  //sys thread pool
 }
 
 unsafe impl Sync for MyThreadPool {}
@@ -65,7 +65,7 @@ impl ThreadPoolHandler for MyThreadPool {
 }
 
 impl MyThreadPool {
-    ///初始化线程池结构体
+    ///init struct of thread pool
     pub fn init(
         game_name: String,
         game_size: usize,

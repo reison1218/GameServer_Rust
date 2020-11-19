@@ -1,14 +1,14 @@
 use super::*;
 use redis::{ Commands, Connection, FromRedisValue, Pipeline};
 
-///redis客户端封装结构体
+///redis client struct
 pub struct RedisPoolTool {
     conn: Connection,
 }
 
-///封装redis基本操作命令
+///packege base cmd of redis
 impl RedisPoolTool {
-    ///初始化结构体
+    ///init struct
     pub fn init(add: &str, password: &str) -> RedisPoolTool {
         let client = redis::Client::open(add).unwrap();
         info!("初始化redis客户端完成!");
@@ -22,7 +22,7 @@ impl RedisPoolTool {
         redis_pool
     }
 
-    ///操作hash数据结构
+    ///send hset cmd to redis server
     pub fn hset<T: FromRedisValue>(
         &mut self,
         index: u32,
@@ -42,7 +42,7 @@ impl RedisPoolTool {
         }
     }
 
-    ///读hash数据结构
+    ///send hget cmd to redis server
     pub fn hget<T: FromRedisValue>(&mut self, index: u32, hkey: &str, key: &str) -> Option<T> {
         get_pip().cmd("select").arg(index).execute(&mut self.conn);
         let res = self.conn.hget(hkey, key);
