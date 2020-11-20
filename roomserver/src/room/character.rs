@@ -691,6 +691,7 @@ impl BattleCharacter {
         battle_cter_pt.hp = self.base_attr.hp as u32;
         battle_cter_pt.defence = self.base_attr.defence.into();
         battle_cter_pt.atk = self.base_attr.atk as u32;
+        battle_cter_pt.energy = self.base_attr.energy as u32;
         self.battle_buffs
             .buffs
             .values()

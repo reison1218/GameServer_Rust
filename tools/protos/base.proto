@@ -89,9 +89,10 @@ message BattleCharacterPt{
     uint32 atk = 4;                     //攻击力
     uint32 hp = 5;                      //角色血量
     uint32 defence = 6;                 //角色防御
-    repeated uint32 buffs = 7;          //角色身上的buff
-    repeated uint32 skills = 8;         //玩家选择的技能
-    repeated uint32 items = 9;          //玩家身上的道具
+    uint32 energy = 7;                  //角色当前能量
+    repeated uint32 buffs = 8;          //角色身上的buff
+    repeated uint32 skills = 9;         //玩家选择的技能
+    repeated uint32 items = 10;          //玩家身上的道具
 }
 
 message EffectPt{
@@ -100,7 +101,7 @@ message EffectPt{
 }
 
 //受影响封装
-message TargetPt{
+message  TargetPt{
     repeated uint32 target_value = 1;//目标值
     repeated EffectPt effects = 2;//效果
     repeated uint32 add_buffs = 3;//对目标增加对buff

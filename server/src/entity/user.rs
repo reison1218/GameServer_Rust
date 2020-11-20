@@ -3,7 +3,6 @@ use crate::db::table_contants::{CHARACTER, USER};
 use crate::entity::character::{Character, Characters};
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::Cell;
-use std::collections::HashMap;
 
 ///玩家数据封装结构体
 #[derive(Debug, Clone, Default)]

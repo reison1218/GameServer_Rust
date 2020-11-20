@@ -375,6 +375,7 @@ impl MatchRoom {
             room_cache.count += 1;
             //如果人满里，则从缓存房间列表中弹出
             if room_cache.count >= MEMBER_MAX {
+                //人满了就从队列里面弹出去
                 room_cache_array.pop();
                 info!("匹配房人满,将房间从匹配队列移除！room_id:{}", room_id);
                 //创建延迟任务，并发送给定时器接收方执行
