@@ -14,7 +14,7 @@ pub fn init_log(info_path: &str, error_path: &str) {
     config.set_target_level(LevelFilter::Error);
     config.set_location_level(LevelFilter::Error);
     CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Info, config.build(), TerminalMode::Mixed).unwrap(),
+        TermLogger::new(LevelFilter::Info, config.build(), TerminalMode::Mixed),
         WriteLogger::new(
             LevelFilter::Info,
             config.build(),

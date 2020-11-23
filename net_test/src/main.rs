@@ -388,7 +388,7 @@ struct  STest{
     v:Vec<String>,
 }
 
-#[derive(Default)]
+#[derive(Clone,Default)]
 struct TestS{
     a:AtomicCell<u32>,
     b:AtomicCell<u32>,
@@ -399,18 +399,16 @@ struct TestS{
     g:HashMap<u32,Test>,
 }
 
-
 impl TestS{
     pub fn test(&mut self){
 
     }
 }
 
-
 tools::get_mut_ref!(TestS);
 
-
 fn main() -> anyhow::Result<()> {
+
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();
     // t.g.insert(1,Test::default());
@@ -423,7 +421,7 @@ fn main() -> anyhow::Result<()> {
     // let ttt=  t.g.get_mut(&1).unwrap();
     // ttt.str.push_str("1");
 
-    tcp_client::test_tcp_client("reison");
+    // tcp_client::test_tcp_client("reison");
     // let mut arc=  Arc::new(RwLock::new(TestS::default()));
     // for i in 0..9999{
     //     let res = arc.clone();

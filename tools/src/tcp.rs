@@ -373,7 +373,7 @@ pub mod tcp_server {
                 );
             }
             Err(_) => {
-                info!("{:?},then remove client", err_str);
+                warn!("{:?},then remove client", err_str);
             }
         }
         let _ = connect.shutdown(Shutdown::Both);
