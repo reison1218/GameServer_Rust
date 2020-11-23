@@ -368,8 +368,8 @@ pub mod tcp_server {
         match addr {
             Ok(add) => {
                 info!(
-                    "{:?} client disconnect!so remove client peer:{:?}",
-                    err_str, add
+                    "client disconnect!so remove client peer:{:?}",
+                     add
                 );
             }
             Err(_) => {
