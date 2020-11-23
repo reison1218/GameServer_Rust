@@ -11,7 +11,7 @@ use std::time::Duration;
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
 #[async_trait]
-pub trait optimized codeHandler: Send + Sync {
+pub trait Handler: Send + Sync {
     ///try to clone self
     async fn try_clone(&self) -> Self;
 
