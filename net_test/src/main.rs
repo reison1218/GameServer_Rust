@@ -423,7 +423,7 @@ fn main() -> anyhow::Result<()> {
     // let ttt=  t.g.get_mut(&1).unwrap();
     // ttt.str.push_str("1");
 
-    // tcp_client::test_tcp_client("reison");
+    tcp_client::test_tcp_client("reison");
     // let mut arc=  Arc::new(RwLock::new(TestS::default()));
     // for i in 0..9999{
     //     let res = arc.clone();

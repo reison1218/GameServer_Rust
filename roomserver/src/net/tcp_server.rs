@@ -10,8 +10,8 @@ use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
 ///处理客户端所有请求,每个客户端单独分配一个handler
+#[derive(Clone)]
 pub struct TcpServerHandler {
-    pub sender: Option<TcpSender>,
     pub rm: Arc<RwLock<RoomMgr>>,
 }
 
@@ -22,14 +22,7 @@ unsafe impl Sync for TcpServerHandler {}
 #[async_trait]
 impl tools::tcp::Handler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
-        let mut sender: Option<TcpSender> = None;
-        if self.sender.is_some() {
-            sender = Some(self.sender.as_ref().unwrap().clone());
-        }
-        TcpServerHandler {
-            sender,
-            rm: self.rm.clone(),
-        }
+        self.clone()
     }
 
     ///客户端tcp链接激活事件
@@ -74,7 +67,7 @@ async fn handler_mess_s(rm: Arc<RwLock<RoomMgr>>, packet: Packet) {
 
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: &str, rm: Arc<RwLock<RoomMgr>>) {
-    let sh = TcpServerHandler { sender: None, rm };
+    let sh = TcpServerHandler { rm };
     let res = block_on(tcp_server::new(address, sh));
     if let Err(e) = res {
         error!("{:?}", e);

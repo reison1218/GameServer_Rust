@@ -9,9 +9,9 @@ use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::HEART_BEAT;
 use tools::tcp::TcpSender;
 
+#[derive(Clone)]
 struct TcpServerHandler {
     pub tcp: Option<TcpSender>,  //相当于channel
-    pub add: Option<String>,     //客户端地址
     cm: Arc<RwLock<ChannelMgr>>, //channel管理器
 }
 
@@ -24,16 +24,7 @@ unsafe impl Sync for TcpServerHandler {}
 #[async_trait]
 impl tools::tcp::Handler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
-        let mut tcp: Option<TcpSender> = None;
-        if self.tcp.is_some() {
-            tcp = Some(self.tcp.as_ref().unwrap().clone());
-        }
-
-        TcpServerHandler {
-            tcp: tcp,
-            add: self.add.clone(),
-            cm: self.cm.clone(),
-        }
+        self.clone()
     }
 
     async fn on_open(&mut self, sender: TcpSender) {
@@ -41,10 +32,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     async fn on_close(&mut self) {
-        info!(
-            "tcp_server:客户端断开连接,通知其他服卸载玩家数据:{}",
-            self.add.as_ref().unwrap()
-        );
+        info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据",);
 
         let token = self.tcp.as_ref().unwrap().token;
         let mut lock = self.cm.write().await;
@@ -180,11 +168,7 @@ impl TcpServerHandler {
 
 ///创建新的tcpserver并开始监听
 pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
-    let sh = TcpServerHandler {
-        tcp: None,
-        cm,
-        add: Some(address.to_string()),
-    };
+    let sh = TcpServerHandler { tcp: None, cm };
     let res = tools::tcp::tcp_server::new(address, sh);
     let res = block_on(res);
     if res.is_err() {

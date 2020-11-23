@@ -329,6 +329,14 @@ pub mod tcp_server {
                         //warn!("{:?}",err);
                         continue;
                     }
+                    Err(ref err) if aborted(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
+                    }
+                    Err(ref err) if reset(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
+                    }
                     Err(ref err) if other(err) => {
                         warn!("{:?}", err);
                         continue;
@@ -382,6 +390,14 @@ pub mod tcp_server {
 
     fn time_out(err: &io::Error) -> bool {
         err.kind() == io::ErrorKind::TimedOut
+    }
+
+    fn aborted(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::ConnectionAborted
+    }
+
+    fn reset(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::ConnectionReset
     }
 
     fn other(err: &io::Error) -> bool {

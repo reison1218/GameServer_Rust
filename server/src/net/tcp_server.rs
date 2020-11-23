@@ -19,7 +19,6 @@ use tools::util::packet::Packet;
 
 #[derive(Clone)]
 struct TcpServerHandler {
-    sender: Option<TcpSender>,
     gm: Arc<RwLock<GameMgr>>,
 }
 
@@ -30,14 +29,7 @@ unsafe impl Sync for TcpServerHandler {}
 #[async_trait]
 impl tools::tcp::Handler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
-        let mut sender: Option<TcpSender> = None;
-        if self.sender.is_some() {
-            sender = Some(self.sender.as_ref().unwrap().clone());
-        }
-        TcpServerHandler {
-            sender: sender,
-            gm: self.gm.clone(),
-        }
+        self.clone()
     }
 
     async fn on_open(&mut self, sender: TcpSender) {
@@ -230,7 +222,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
 }
 
 pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
-    let sh = TcpServerHandler { sender: None, gm };
+    let sh = TcpServerHandler { gm };
     let res = tools::tcp::tcp_server::new(address, sh);
     let res = block_on(res);
     if let Err(e) = res {
