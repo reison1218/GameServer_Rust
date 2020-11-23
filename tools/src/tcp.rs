@@ -11,7 +11,7 @@ use std::time::Duration;
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
 #[async_trait]
-pub trait Handler: Send + Sync {
+pub trait optimized codeHandler: Send + Sync {
     ///try to clone self
     async fn try_clone(&self) -> Self;
 
@@ -329,6 +329,14 @@ pub mod tcp_server {
                         //warn!("{:?}",err);
                         continue;
                     }
+                    Err(ref err) if aborted(err) => {
+                        close_connect(connection, handler, Some(err));
+                        continue;
+                    }
+                    Err(ref err) if reset(err) => {
+                        close_connect(connection, handler, Some(err));
+                        continue;
+                    }
                     Err(ref err) if other(err) => {
                         warn!("{:?}", err);
                         continue;
@@ -378,6 +386,14 @@ pub mod tcp_server {
 
     fn interrupted(err: &io::Error) -> bool {
         err.kind() == io::ErrorKind::Interrupted
+    }
+
+    fn aborted(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::ConnectionAborted
+    }
+
+    fn reset(err: &io::Error) -> bool {
+        err.kind() == io::ErrorKind::ConnectionReset
     }
 
     fn time_out(err: &io::Error) -> bool {

@@ -1,7 +1,7 @@
 use async_std::sync::RwLock;
 use async_trait::async_trait;
 use futures::executor::block_on;
-use log::{error, info};
+use log::error;
 use std::sync::Arc;
 use tools::tcp::TcpSender;
 use tools::tcp::{tcp_server, Handler};
@@ -26,7 +26,6 @@ impl MyData {
 ///just need impl tools::tcp::Handler for it,then it could be handler mess from client.
 #[derive(Default, Clone)]
 struct ServerHandler {
-    sender: Option<TcpSender>,
     data: Arc<RwLock<MyData>>,
 }
 

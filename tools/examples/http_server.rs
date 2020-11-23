@@ -12,7 +12,7 @@ impl tools::http::HttpServerHandler for HelloHttpHandler {
         "hello"
     }
 
-    fn execute(&mut self, params: Option<Value>) -> Result<Value, Error> {
+    fn execute(&mut self, _params: Option<Value>) -> Result<Value, Error> {
         //todo do something
         println!("rec http request");
         let str = String::from("hello,i am http server");
@@ -24,5 +24,8 @@ pub fn main() {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(HelloHttpHandler::default()));
     let address = "127.0.0.1:9090";
-    block_on(http_server(address, http_vec));
+    let res = block_on(http_server(address, http_vec));
+    if let Err(e) = res {
+        println!("{:?}", e);
+    }
 }

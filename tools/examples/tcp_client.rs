@@ -1,8 +1,5 @@
-use async_std::sync::RwLock;
 use async_trait::async_trait;
-use log::error;
 use std::net::TcpStream;
-use std::sync::Arc;
 use tools::tcp::ClientHandler;
 
 ///u can put any data at here
@@ -25,7 +22,7 @@ impl ClientHandler for TcpClientHandler {
 
     async fn on_close(&mut self) {
         //todo u can do something here
-        println!("disconnect with tcp server!")
+        println!("disconnect with tcp server!");
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {
