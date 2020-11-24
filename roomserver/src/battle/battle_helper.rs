@@ -297,9 +297,8 @@ impl BattleData {
             .as_mut()
             .unwrap()
             .get_battle_cter_mut(Some(target), true)?;
-        target_pt
-            .target_value
-            .push(target_cter.get_map_cell_index() as u32);
+        let target_cter_index = target_cter.get_map_cell_index();
+        target_pt.target_value.push(target_cter_index as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
