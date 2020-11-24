@@ -5,7 +5,7 @@ pub mod user_info;
 use crate::entity::user_info::User;
 use crate::mgr::game_mgr::GameMgr;
 use crate::DB_POOL;
-use async_std::sync::RwLock;
+use async_std::sync::Mutex;
 use async_std::task::block_on;
 use log::{error, info, warn};
 use mysql::prelude::ToValue;
@@ -135,7 +135,7 @@ pub trait EntityData: Dao + Any {
 }
 
 ///提供给http保存玩家数据的函数
-pub fn save_player_http(gm: Arc<RwLock<GameMgr>>) {
-    let mut gm = block_on(gm.write());
+pub fn save_player_http(gm: Arc<Mutex<GameMgr>>) {
+    let mut gm = block_on(gm.lock());
     gm.save_user_http();
 }

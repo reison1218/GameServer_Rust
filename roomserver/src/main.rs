@@ -12,13 +12,12 @@ use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
 use crate::robot::robot_task_mgr::robot_init_timer;
 use crate::task_timer::init_timer;
-use async_std::sync::{Arc, RwLock};
+use async_std::sync::{Arc, Mutex};
 use log::{error, info};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;
 use std::env;
 use std::sync::atomic::AtomicU32;
-use std::sync::Mutex;
 use tools::conf::Conf;
 use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
@@ -53,11 +52,11 @@ lazy_static! {
     };
 
     ///reids客户端
-    static ref REDIS_POOL:Arc<Mutex<RedisPoolTool>>={
+    static ref REDIS_POOL:Arc<std::sync::Mutex<RedisPoolTool>>={
         let add: &str = CONF_MAP.get_str("redis_add");
         let pass: &str = CONF_MAP.get_str("redis_pass");
         let redis = RedisPoolTool::init(add,pass);
-        let redis:Arc<Mutex<RedisPoolTool>> = Arc::new(Mutex::new(redis));
+        let redis:Arc<std::sync::Mutex<RedisPoolTool>> = Arc::new(std::sync::Mutex::new(redis));
         redis
     };
 }
@@ -104,7 +103,7 @@ fn main() {
     //初始化配置
     init_temps();
     //初始化room_mgr多线程饮用计数器指针
-    let room_mgr = Arc::new(RwLock::new(RoomMgr::new()));
+    let room_mgr = Arc::new(Mutex::new(RoomMgr::new()));
     //初始化定时器任务
     init_timer(room_mgr.clone());
     //初始化机器人定时器任务
@@ -160,7 +159,7 @@ fn init_temps() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(rm: Arc<RwLock<RoomMgr>>) {
+fn init_tcp_server(rm: Arc<Mutex<RoomMgr>>) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, rm);
 }

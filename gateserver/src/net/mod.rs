@@ -22,7 +22,7 @@ use tools::util::packet::Packet;
 use tools::cmd_code::GameCode;
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 
-use async_std::sync::RwLockWriteGuard;
+use async_std::sync::MutexGuard;
 use serde_json::Value;
 use std::str::FromStr;
 
@@ -59,7 +59,7 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
 }
 
 ///校验内存是否在线，并做处理
-fn check_mem_online(user_id: &u32, write: &mut RwLockWriteGuard<ChannelMgr>) -> bool {
+fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
     //校验内存是否已经登陆
     let gate_user = write.get_mut_user_channel_channel(user_id);
     let mut res: bool = false;

@@ -1,6 +1,6 @@
 use super::*;
 
-use async_std::sync::RwLock;
+use async_std::sync::Mutex;
 use async_std::task::block_on;
 use http_types::Error as HttpTypesError;
 use serde_json::value::Value as JsonValue;
@@ -9,11 +9,11 @@ use serde_json::{json, Map};
 use tools::http::HttpServerHandler;
 
 pub struct KickPlayerHttpHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
+    gm: Arc<Mutex<ChannelMgr>>,
 }
 
 impl KickPlayerHttpHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
         KickPlayerHttpHandler { gm }
     }
 }
@@ -27,7 +27,7 @@ impl HttpServerHandler for KickPlayerHttpHandler {
         &mut self,
         _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut lock = block_on(self.gm.write());
+        let mut lock = block_on(self.gm.lock());
         lock.kick_all();
         let value = json!({ "status":"OK" });
         Ok(value)
@@ -35,11 +35,11 @@ impl HttpServerHandler for KickPlayerHttpHandler {
 }
 
 pub struct ReloadTempsHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
+    gm: Arc<Mutex<ChannelMgr>>,
 }
 
 impl ReloadTempsHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
         ReloadTempsHandler { gm }
     }
 }
@@ -53,7 +53,7 @@ impl HttpServerHandler for ReloadTempsHandler {
         &mut self,
         _: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut lock = block_on(self.gm.write());
+        let mut lock = block_on(self.gm.lock());
         lock.notice_reload_temps();
         let value = json!({ "status":"OK" });
         Ok(value)
@@ -61,11 +61,11 @@ impl HttpServerHandler for ReloadTempsHandler {
 }
 
 pub struct UpdateSeasonHandler {
-    gm: Arc<RwLock<ChannelMgr>>,
+    gm: Arc<Mutex<ChannelMgr>>,
 }
 
 impl UpdateSeasonHandler {
-    pub fn new(gm: Arc<RwLock<ChannelMgr>>) -> Self {
+    pub fn new(gm: Arc<Mutex<ChannelMgr>>) -> Self {
         UpdateSeasonHandler { gm }
     }
 }
@@ -79,7 +79,7 @@ impl HttpServerHandler for UpdateSeasonHandler {
         &mut self,
         data: Option<Value>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        let mut lock = block_on(self.gm.write());
+        let mut lock = block_on(self.gm.lock());
         lock.notice_update_season(data.unwrap());
         let value = json!({ "status":"OK" });
         Ok(value)

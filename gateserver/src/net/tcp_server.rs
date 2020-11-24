@@ -1,7 +1,6 @@
 use super::*;
 use crate::net::http::notice_user_center;
-use async_std::sync::RwLock;
-use async_std::sync::RwLockWriteGuard;
+use async_std::sync::{Mutex, MutexGuard};
 use async_std::task::block_on;
 use async_trait::async_trait;
 use chrono::Local;
@@ -11,8 +10,8 @@ use tools::tcp::TcpSender;
 
 #[derive(Clone)]
 struct TcpServerHandler {
-    pub tcp: Option<TcpSender>,  //相当于channel
-    cm: Arc<RwLock<ChannelMgr>>, //channel管理器
+    pub tcp: Option<TcpSender>, //相当于channel
+    cm: Arc<Mutex<ChannelMgr>>, //channel管理器
 }
 
 tools::get_mut_ref!(TcpServerHandler);
@@ -35,7 +34,7 @@ impl tools::tcp::Handler for TcpServerHandler {
         info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据",);
 
         let token = self.tcp.as_ref().unwrap().token;
-        let mut lock = self.cm.write().await;
+        let mut lock = self.cm.lock().await;
         lock.off_line(token);
     }
 
@@ -78,7 +77,7 @@ impl TcpServerHandler {
     ///处理二进制数据
     fn handle_binary(&mut self, mut packet: Packet) {
         let token = self.tcp.as_ref().unwrap().token;
-        let mut lock = block_on(self.cm.write());
+        let mut lock = block_on(self.cm.lock());
         let user_id = lock.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
@@ -152,7 +151,7 @@ impl TcpServerHandler {
 
     ///数据包转发
     fn arrange_packet(&mut self, packet: Packet) {
-        let mut lock = block_on(self.cm.write());
+        let mut lock = block_on(self.cm.lock());
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
             lock.write_to_game(packet);
@@ -167,7 +166,7 @@ impl TcpServerHandler {
 }
 
 ///创建新的tcpserver并开始监听
-pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
+pub fn new(address: &str, cm: Arc<Mutex<ChannelMgr>>) {
     let sh = TcpServerHandler { tcp: None, cm };
     let res = tools::tcp::tcp_server::new(address, sh);
     let res = block_on(res);
@@ -178,7 +177,7 @@ pub fn new(address: &str, cm: Arc<RwLock<ChannelMgr>>) {
 }
 
 ///处理登陆逻辑
-fn handle_login(bytes: &[u8], lock: &mut RwLockWriteGuard<ChannelMgr>) -> anyhow::Result<()> {
+fn handle_login(bytes: &[u8], lock: &mut MutexGuard<ChannelMgr>) -> anyhow::Result<()> {
     let mut c_login = C_USER_LOGIN::new();
     c_login.merge_from_bytes(bytes)?;
     //校验用户中心账号是否已经登陆了

@@ -6,7 +6,7 @@ use crate::entity::user::{insert_characters, insert_user, UserData};
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
-use async_std::sync::RwLock;
+use async_std::sync::Mutex;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
@@ -19,7 +19,7 @@ use tools::util::packet::Packet;
 
 #[derive(Clone)]
 struct TcpServerHandler {
-    gm: Arc<RwLock<GameMgr>>,
+    gm: Arc<Mutex<GameMgr>>,
 }
 
 unsafe impl Send for TcpServerHandler {}
@@ -33,7 +33,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     async fn on_open(&mut self, sender: TcpSender) {
-        self.gm.write().await.set_sender(sender);
+        self.gm.lock().await.set_sender(sender);
     }
 
     async fn on_close(&mut self) {
@@ -63,7 +63,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
+async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
         && packet.get_cmd() != GameCode::LineOff.into_u32()
@@ -89,7 +89,7 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
         }
     } else {
         //不登录就执行其他命令
-        let res = gm.write().await.invok(packet);
+        let res = gm.lock().await.invok(packet);
         match res {
             Ok(_) => {}
             Err(e) => {
@@ -100,12 +100,12 @@ async fn handler_mess_s(gm: Arc<RwLock<GameMgr>>, packet: Packet) {
 }
 
 //登录函数，执行登录
-async fn login(gm: Arc<RwLock<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
+async fn login(gm: Arc<Mutex<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
-    let user_data = block_on(gm.write()).users.contains_key(&user_id);
+    let mut gm_lock = gm.lock().await;
+    let user_data = gm_lock.users.contains_key(&user_id);
     //走登录流程
-    let mut gm_lock = gm.write().await;
     //如果内存没有数据，则从数据库里面找
     if !user_data {
         //初始化玩家数据
@@ -221,7 +221,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     lr
 }
 
-pub fn new(address: &str, gm: Arc<RwLock<GameMgr>>) {
+pub fn new(address: &str, gm: Arc<Mutex<GameMgr>>) {
     let sh = TcpServerHandler { gm };
     let res = tools::tcp::tcp_server::new(address, sh);
     let res = block_on(res);

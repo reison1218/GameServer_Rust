@@ -1,5 +1,5 @@
 use super::*;
-use async_std::sync::RwLock;
+use async_std::sync::Mutex;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::error;
@@ -13,11 +13,11 @@ pub enum TcpClientType {
 pub struct TcpClientHandler {
     client_type: TcpClientType,
     ts: Option<TcpStream>,
-    cp: Arc<RwLock<ChannelMgr>>,
+    cp: Arc<Mutex<ChannelMgr>>,
 }
 
 impl TcpClientHandler {
-    pub fn new(cp: Arc<RwLock<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
+    pub fn new(cp: Arc<Mutex<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
         let tch = TcpClientHandler {
             ts: None,
             cp,
@@ -30,13 +30,13 @@ impl TcpClientHandler {
     fn arrange_packet(&mut self, packet: Packet) {
         //转发到游戏服
         if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            let mut lock = block_on(self.cp.write());
+            let mut lock = block_on(self.cp.lock());
             lock.write_to_game(packet);
             return;
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            let mut lock = block_on(self.cp.write());
+            let mut lock = block_on(self.cp.lock());
             lock.write_to_room(packet);
             return;
         }
@@ -48,10 +48,10 @@ impl ClientHandler for TcpClientHandler {
     async fn on_open(&mut self, ts: TcpStream) {
         match self.client_type {
             TcpClientType::GameServer => {
-                block_on(self.cp.write()).set_game_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.lock()).set_game_client_channel(ts.try_clone().unwrap());
             }
             TcpClientType::RoomServer => {
-                block_on(self.cp.write()).set_room_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.lock()).set_room_client_channel(ts.try_clone().unwrap());
             }
         }
         self.ts = Some(ts);
@@ -82,7 +82,7 @@ impl ClientHandler for TcpClientHandler {
         for mut packet in packet_array {
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
-                let mut lock = block_on(self.cp.write());
+                let mut lock = block_on(self.cp.lock());
                 let gate_user = lock.get_mut_user_channel_channel(&packet.get_user_id());
                 match gate_user {
                     Some(user) => {
