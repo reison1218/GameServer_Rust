@@ -409,24 +409,24 @@ tools::get_mut_ref!(TestS);
 
 
 
-fn calc_n(n:u64){
+fn calc_n(n:i64){
     print!("N={},",n);
-    let now=std::time::Instant::now();
-    let mut ans=0u64;
+    let mut ans=0i64;
     let (mut r1,mut r2,mut r3,mut r4,mut r5,mut r6);
-    for a1 in 1..=n>>3{
+    let now=std::time::Instant::now();
+    for a1 in 1..n>>3{
         r1=n-a1;
-        for a2 in a1..=r1/7{
+        for a2 in a1..r1/7{
             r2=r1-a2;
-            for a3 in a2..=r2/6{
+            for a3 in a2..r2/6{
                 r3=r2-a3;
-                for a4 in a3..=r3/5{
+                for a4 in a3..r3/5{
                     r4=r3-a4;
-                    for a5 in a4..=r4>>2{
+                    for a5 in a4..r4>>2{
                         r5=r4-a5;
-                        for a6 in a5..=r5/3{
+                        for a6 in a5..r5/3{
                             r6=r5-a6;
-                            for a7 in a6..=r6>>1{
+                            for a7 in a6..r6>>1{
                                 ans+=a1^a2^a3^a4^a5^a6^a7^(r6-a7);
                             }
                         }
@@ -438,13 +438,41 @@ fn calc_n(n:u64){
     println!("{}, cost={:?}",ans,now.elapsed());
 }
 
+fn calc_n2(n:i64){
+    print!("N={},",n);
+    let mut ans=0i64;
+    let (mut r1,mut r2,mut r3,mut r4,mut r5,mut r6)=(0,0,0,0,0,0);
+    let now=std::time::Instant::now();
+    for a1 in 1..n>>3{
+        r1=n-a1;
+        for a2 in a1..r1/7{
+            r2=r1-a2;
+            for a3 in a2..r2/6{
+                r3=r2-a3;
+                for a4 in a3..r3/5{
+                    r4=r3-a4;
+                    for a5 in a4..r4>>2{
+                        r5=r4-a5;
+
+                        (a5..r5/3).for_each(|a6|{
+                            r6=r5-a6;
+                            (a6..r6>>1).for_each(|a7|{
+                                ans+=a1^a2^a3^a4^a5^a6^a7^(r6-a7);
+                            });
+                        });
+                    }
+                }
+            }
+        }
+    }
+    println!("{}, cost={:?}",ans,now.elapsed());
+}
+
+
+
 fn main() -> anyhow::Result<()> {
-    calc_n(100);
-    calc_n(160);
-    calc_n(300);
-    calc_n(400);
-    calc_n(500);
-    calc_n(600);
+    calc_n2(600);
+
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();
     // t.g.insert(1,Test::default());

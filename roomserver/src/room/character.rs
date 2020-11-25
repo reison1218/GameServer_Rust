@@ -337,6 +337,9 @@ impl BattleCharacter {
             }
         }
         let mut target_pt = TargetPt::new();
+        target_pt
+            .target_value
+            .push(self.get_map_cell_index() as u32);
         let battle_cter_pt = self.convert_to_battle_cter_pt();
         target_pt.set_transform_cter(battle_cter_pt);
         Ok(target_pt)
@@ -692,6 +695,7 @@ impl BattleCharacter {
         battle_cter_pt.defence = self.base_attr.defence.into();
         battle_cter_pt.atk = self.base_attr.atk as u32;
         battle_cter_pt.energy = self.base_attr.energy as u32;
+        battle_cter_pt.index = self.get_map_cell_index() as u32;
         self.battle_buffs
             .buffs
             .values()

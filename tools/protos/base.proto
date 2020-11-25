@@ -90,9 +90,10 @@ message BattleCharacterPt{
     uint32 hp = 5;                      //角色血量
     uint32 defence = 6;                 //角色防御
     uint32 energy = 7;                  //角色当前能量
-    repeated uint32 buffs = 8;          //角色身上的buff
-    repeated uint32 skills = 9;         //玩家选择的技能
-    repeated uint32 items = 10;          //玩家身上的道具
+    uint32 index = 8;                   //角色当前位置
+    repeated uint32 buffs = 9;          //角色身上的buff
+    repeated uint32 skills = 10;         //玩家选择的技能
+    repeated uint32 items = 11;          //玩家身上的道具
 }
 
 message EffectPt{
