@@ -471,8 +471,6 @@ fn calc_n2(n:i64){
 
 
 fn main() -> anyhow::Result<()> {
-    calc_n2(600);
-
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();
     // t.g.insert(1,Test::default());
@@ -828,6 +826,12 @@ fn test_channel(){
 struct Test{
     pub str:String,
     pub i:AtomicCell<u32>,
+}
+
+impl Drop for Test{
+    fn drop(&mut self) {
+        println!("drop Test");
+    }
 }
 
 unsafe impl Send for Test{}
