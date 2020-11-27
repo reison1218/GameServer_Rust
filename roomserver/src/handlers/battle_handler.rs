@@ -93,7 +93,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             au.action_type = ActionType::Attack as u32;
             res = attack(room, user_id, target_index, &mut au);
         }
-        //普通攻击
+        //解锁
         ActionType::UnlockOper => {
             au.action_type = ActionType::UnlockOper as u32;
             res = unlock_oper(room, user_id, &mut au);

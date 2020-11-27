@@ -471,6 +471,7 @@ fn calc_n2(n:i64){
 
 
 fn main() -> anyhow::Result<()> {
+    calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();
     // t.g.insert(1,Test::default());

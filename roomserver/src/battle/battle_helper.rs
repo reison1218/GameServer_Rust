@@ -100,6 +100,7 @@ impl BattleData {
             let target_user = map_cell.user_id;
             //先判断目标位置的角色是否有不动泰山被动技能
             self.before_moved_trigger(user_id, target_user)?;
+            //如果没有，则改变目标玩家的位置
             let target_cter = self.get_battle_cter_mut(Some(target_user), true).unwrap();
             target_cter.move_index(battle_cter.get_map_cell_index());
 

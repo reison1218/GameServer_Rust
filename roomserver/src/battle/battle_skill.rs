@@ -185,8 +185,8 @@ pub fn show_map_cell(
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell_id);
         target_pt.target_value.push(map_cell.index as u32);
+        target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
     } else if SHOW_SAME_ELMENT_CELL_ALL == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
@@ -203,8 +203,8 @@ pub fn show_map_cell(
                 continue;
             }
             let mut target_pt = TargetPt::new();
-            target_pt.target_value.push(_map_cell.id);
             target_pt.target_value.push(_map_cell.index as u32);
+            target_pt.target_value.push(_map_cell.id);
             au.targets.push(target_pt);
         }
         let battle_cter = battle_data.get_battle_cter_mut(None, true);
@@ -253,8 +253,8 @@ pub fn show_map_cell(
         battle_cter.status.locked_oper = skill_id;
         battle_cter.set_is_can_end_turn(false);
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell_id);
         target_pt.target_value.push(map_cell_index as u32);
+        target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
         show_index = map_cell_index;
     } else {
@@ -270,8 +270,8 @@ pub fn show_map_cell(
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell_id);
         target_pt.target_value.push(map_cell.index as u32);
+        target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
     }
 
@@ -468,8 +468,8 @@ pub unsafe fn skill_open_map_cell(
         let index = *res.unwrap();
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell.id);
         target_pt.target_value.push(index as u32);
+        target_pt.target_value.push(map_cell.id);
         au.targets.push(target_pt);
         //处理配对触发逻辑
         let res = battle_data.open_map_cell_buff_trigger(user_id, au, false);
@@ -541,12 +541,12 @@ pub unsafe fn auto_pair_map_cell(
     battle_cter.status.attack_state = AttackState::Locked;
 
     let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(map_cell.id);
     target_pt.target_value.push(target_index as u32);
+    target_pt.target_value.push(map_cell.id);
     au.targets.push(target_pt.clone());
     target_pt.target_value.clear();
-    target_pt.target_value.push(pair_map_cell.id);
     target_pt.target_value.push(pair_map_cell.index as u32);
+    target_pt.target_value.push(pair_map_cell.id);
     au.targets.push(target_pt);
 
     //处理配对触发逻辑
