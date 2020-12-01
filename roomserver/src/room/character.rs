@@ -176,11 +176,12 @@ impl BattleCharacter {
 
     pub fn add_energy(&mut self, value: i8) {
         let v = self.base_attr.energy as i8;
+        let max = self.base_attr.max_energy as i8;
         let res = v + value;
         if res < 0 {
             self.base_attr.energy = 0;
-        } else if res > self.base_attr.max_energy as i8 {
-            self.base_attr.energy = self.base_attr.max_energy;
+        } else if res > max {
+            self.base_attr.energy = max as u8;
         } else {
             self.base_attr.energy = res as u8;
         }
@@ -243,15 +244,16 @@ impl BattleCharacter {
 
     ///变回来
     pub fn transform_back(&mut self) -> TargetPt {
-        let cter;
+        let clone;
         let is_self_transform;
         if self.self_transform_cter.is_some() {
-            cter = self.self_transform_cter.as_mut().unwrap();
+            clone = self.self_transform_cter.as_mut().unwrap().clone();
             is_self_transform = true;
         } else {
-            cter = self.self_cter.as_mut().unwrap();
+            clone = self.self_cter.as_mut().unwrap().clone();
             is_self_transform = false;
         }
+
         //先复制需要继承的属性
         let residue_open_times = self.flow_data.residue_open_times;
         let hp = self.base_attr.hp;
@@ -259,16 +261,13 @@ impl BattleCharacter {
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
         //开始数据转换
-        self.base_attr = cter.base_attr.clone();
+        let _ = std::mem::replace(self, *clone);
+        //处理保留数据
         self.base_attr.hp = hp;
         self.base_attr.energy = energy;
-        self.status = cter.status.clone();
         self.status.attack_state = attack_state;
         self.index_data.map_cell_index = map_cell_index;
-        self.flow_data = cter.flow_data.clone();
         self.flow_data.residue_open_times = residue_open_times;
-        self.skills = cter.skills.clone();
-        self.battle_buffs = cter.battle_buffs.clone();
 
         //如果是从自己变身的角色变回去，则清空自己变身角色
         if is_self_transform {
@@ -304,37 +303,31 @@ impl BattleCharacter {
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
 
-        //生命原始指针
-        let self_ptr = self as *mut BattleCharacter;
-        unsafe {
-            //先克隆一份
-            let cter_clone = self_ptr.as_ref().unwrap().clone();
-            //保存原本角色
-            if self.self_cter.is_none() {
-                self.self_cter = Some(Box::new(cter_clone));
-            }
-            //初始化数据成另外一个角色
-            self.init_from_temp(cter_temp);
-            //将继承属性给当前角色
-            self.flow_data.residue_open_times = residue_open_times;
-            self.base_attr.hp = hp;
-            self.status.attack_state = attack_state;
-            self.index_data.map_cell_index = map_cell_index;
-            self.base_attr.energy = energy;
+        //保存原本角色
+        if self.self_cter.is_none() {
+            self.self_cter = Some(Box::new(self.clone()));
+        }
+        //初始化数据成另外一个角色
+        self.init_from_temp(cter_temp);
+        //将继承属性给当前角色
+        self.flow_data.residue_open_times = residue_open_times;
+        self.base_attr.hp = hp;
+        self.status.attack_state = attack_state;
+        self.index_data.map_cell_index = map_cell_index;
+        self.base_attr.energy = energy;
 
-            //给新变身加变身buff
-            let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
-            if let Err(e) = buff_temp {
-                warn!("{:?}", e);
-                anyhow::bail!("")
-            }
-            let buff_temp = buff_temp.unwrap();
-            let buff = Buff::from(buff_temp);
-            self.battle_buffs.buffs.insert(buff.id, buff);
-            //保存自己变身的角色
-            if self.base_attr.user_id == from_user {
-                self.self_transform_cter = Some(Box::new(self_ptr.as_ref().unwrap().clone()));
-            }
+        //给新变身加变身buff
+        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        if let Err(e) = buff_temp {
+            warn!("{:?}", e);
+            anyhow::bail!("")
+        }
+        let buff_temp = buff_temp.unwrap();
+        let buff = Buff::from(buff_temp);
+        self.battle_buffs.buffs.insert(buff.id, buff);
+        //保存自己变身的角色
+        if self.base_attr.user_id == from_user {
+            self.self_transform_cter = Some(Box::new(self.clone()));
         }
         let mut target_pt = TargetPt::new();
         target_pt

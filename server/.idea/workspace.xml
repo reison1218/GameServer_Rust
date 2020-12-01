@@ -31,16 +31,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Character.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Constants.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Skill.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/character.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/Character.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/Constants.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/Skill.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

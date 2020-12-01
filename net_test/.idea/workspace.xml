@@ -34,16 +34,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a00410c-fdea-4176-b301-520e9756777d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Character.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Constants.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Skill.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/character.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/template/Character.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Character.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Constants.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Skill.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,11 +134,6 @@
       <envs />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
@@ -306,11 +294,6 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/../tools/src/redis_pool.rs</url>
-          <line>42</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/tcp_client.rs</url>
           <line>19</line>
