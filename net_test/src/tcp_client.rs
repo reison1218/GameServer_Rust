@@ -27,8 +27,8 @@ pub fn test_tcp_client(pid:&str){
         }
         let mut tcp_client = TcpClientHandler::new();
         tcp_client.user_id = uid.unwrap();
-        //tcp_client.on_read("192.168.1.100:16801".to_string());
-        block_on(tcp_client.on_read("localhost:16801".to_string()));
+        block_on(tcp_client.on_read("192.168.1.100:16801".to_string()));
+        // block_on(tcp_client.on_read("localhost:16801".to_string()));
 }
 
 pub fn test_tcp_clients(){

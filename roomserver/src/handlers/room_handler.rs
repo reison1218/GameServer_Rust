@@ -923,18 +923,18 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
     if res.is_none() {
-        error!("this player is not in the room!user_id:{}", user_id);
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let room = res.unwrap();
     let member = room.get_member_mut(&user_id);
     if member.is_none() {
-        error!("this player is not in the room!user_id:{}", user_id);
+        warn!("this player is not in the room!user_id:{}", user_id);
         return Ok(());
     }
     let member = member.unwrap();
     if member.state != MemberState::Ready as u8 {
-        error!(
+        warn!(
             "this player is not ready,can not send emoji!user_id:{}",
             user_id
         );
@@ -953,7 +953,7 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         .temps
         .get(&emoji_id);
     if res.is_none() {
-        error!("there is no temp for emoji_id:{}", emoji_id);
+        warn!("there is no temp for emoji_id:{}", emoji_id);
         return Ok(());
     }
     //校验表情是否需要解锁和角色表情

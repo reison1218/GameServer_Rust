@@ -329,11 +329,13 @@ pub mod tcp_server {
                         //warn!("{:?}",err);
                         continue;
                     }
-                    Err(ref err) if aborted(err) => {
+                    Err(ref err) if reset(err) => {
+                        warn!("{:?}", err);
                         close_connect(connection, handler, Some(err));
                         return Ok(true);
                     }
-                    Err(ref err) if reset(err) => {
+                    Err(ref err) if aborted(err) => {
+                        warn!("{:?}", err);
                         close_connect(connection, handler, Some(err));
                         return Ok(true);
                     }
@@ -367,10 +369,7 @@ pub mod tcp_server {
         }
         match addr {
             Ok(add) => {
-                info!(
-                    "client disconnect!so remove client peer:{:?}",
-                     add
-                );
+                info!("client disconnect!so remove client peer:{:?}", add);
             }
             Err(_) => {
                 warn!("{:?},then remove client", err_str);
