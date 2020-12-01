@@ -515,7 +515,7 @@ impl BattleData {
 
         //结算玩家身上的buff
         for cter in self.battle_cter.values_mut() {
-            for buff in cter.battle_buffs.buffs.clone().values() {
+            for buff in cter.battle_buffs.buffs.values() {
                 let buff_id = buff.id;
                 unsafe {
                     battle_data.as_mut().unwrap().consume_buff(
@@ -530,7 +530,7 @@ impl BattleData {
 
         //结算该玩家加在地图块上的buff
         for map_cell in self.tile_map.map_cells.iter_mut() {
-            for buff_id in map_cell.buffs.clone().keys() {
+            for buff_id in map_cell.buffs.keys() {
                 let buff_id = *buff_id;
                 unsafe {
                     battle_data.as_mut().unwrap().consume_buff(

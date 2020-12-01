@@ -236,9 +236,7 @@ pub fn pos(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     spn.set_field_type(pos_type);
     spn.set_skill_id(skill_id);
     let bytes = spn.write_to_bytes().unwrap();
-    for member_id in room.members.clone().keys() {
-        room.send_2_client(ClientCode::PosNotice, *member_id, bytes.clone());
-    }
+    room.send_2_all_client(ClientCode::PosNotice, bytes);
     Ok(())
 }
 

@@ -1,4 +1,4 @@
-use crate::battle::battle::BattleData;
+use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
@@ -79,66 +79,65 @@ impl BattleData {
         let mut au_v = Vec::new();
         let turn_index = self.next_turn_index;
         let user_id = battle_cter.get_user_id();
-        let map_cell = map_cell.unwrap();
-        for buff in map_cell.buffs.clone().values() {
-            let buff_id = buff.id;
-            //先判断是否是陷阱类buff
-            if !TRAPS.contains(&buff.id) {
-                continue;
-            }
-            let mut target_pt = None;
-            //判断是否是上buff的陷阱
-            if TRAP_ADD_BUFF.contains(&buff.id) {
-                let buff_id = buff.buff_temp.par1;
-                let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
-                if let Err(e) = buff_temp {
-                    warn!("{:?}", e);
+        let map_cell = map_cell.unwrap()  as *mut MapCell;
+        unsafe{
+            for buff in map_cell.as_ref().unwrap().buffs.values() {
+                let buff_id = buff.id;
+                //先判断是否是陷阱类buff
+                if !TRAPS.contains(&buff.id) {
                     continue;
                 }
-                let buff_temp = buff_temp.unwrap();
-                let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
-                battle_cter.battle_buffs.buffs.insert(buff.id, buff_add);
-
-                let mut target_pt_tmp = TargetPt::new();
-                target_pt_tmp
-                    .target_value
-                    .push(battle_cter.get_map_cell_index() as u32);
-                target_pt_tmp.add_buffs.push(buff_id);
-                target_pt = Some(target_pt_tmp);
-            } else if TRAP_SKILL_DAMAGE.contains(&buff.id) {
-                //造成技能伤害的陷阱
-                let skill_damage = buff.buff_temp.par1 as i16;
-                unsafe {
-                    let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
-                    if let Err(e) = target_pt_tmp {
-                        error!("{:?}", e);
+                let mut target_pt = None;
+                //判断是否是上buff的陷阱
+                if TRAP_ADD_BUFF.contains(&buff.id) {
+                    let buff_id = buff.buff_temp.par1;
+                    let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+                    if let Err(e) = buff_temp {
+                        warn!("{:?}", e);
                         continue;
                     }
-                    let target_pt_tmp = target_pt_tmp.unwrap();
+                    let buff_temp = buff_temp.unwrap();
+                    let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
+                    battle_cter.battle_buffs.buffs.insert(buff.id, buff_add);
+    
+                    let mut target_pt_tmp = TargetPt::new();
+                    target_pt_tmp
+                        .target_value
+                        .push(battle_cter.get_map_cell_index() as u32);
+                    target_pt_tmp.add_buffs.push(buff_id);
                     target_pt = Some(target_pt_tmp);
+                } else if TRAP_SKILL_DAMAGE.contains(&buff.id) {
+                    //造成技能伤害的陷阱
+                    let skill_damage = buff.buff_temp.par1 as i16;
+                        let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
+                        if let Err(e) = target_pt_tmp {
+                            error!("{:?}", e);
+                            continue;
+                        }
+                        let target_pt_tmp = target_pt_tmp.unwrap();
+                        target_pt = Some(target_pt_tmp);
                 }
-            }
-
-            if target_pt.is_none() {
-                continue;
-            }
-            if buff.from_user.is_none() {
-                continue;
-            }
-            let mut target_pt = target_pt.unwrap();
-            let mut aup = ActionUnitPt::new();
-            unsafe {
+    
+                if target_pt.is_none() {
+                    continue;
+                }
+                if buff.from_user.is_none() {
+                    continue;
+                }
+                let mut target_pt = target_pt.unwrap();
+                let mut aup = ActionUnitPt::new();
                 let lost_buff = self.consume_buff(buff_id, None, Some(index), false);
                 if let Some(lost_buff) = lost_buff {
                     target_pt.lost_buffs.push(lost_buff);
                 }
+                aup.from_user = buff.from_user.unwrap();
+                aup.action_type = ActionType::Buff as u32;
+                aup.action_value.push(buff.id);
+                aup.targets.push(target_pt);
+                au_v.push(aup);
             }
-            aup.from_user = buff.from_user.unwrap();
-            aup.action_type = ActionType::Buff as u32;
-            aup.action_value.push(buff.id);
-            aup.targets.push(target_pt);
-            au_v.push(aup);
         }
+
         Some(au_v)
     }
 }

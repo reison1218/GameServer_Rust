@@ -148,7 +148,7 @@ pub fn show_map_cell(
     if SHOW_ALL_USERS_CELL == skill_id {
         let mut v = Vec::new();
         let mut nature_index = None;
-        for index in battle_data.tile_map.un_pair_map.clone().keys() {
+        for index in battle_data.tile_map.un_pair_map.keys() {
             let index = *index;
             let res = battle_data.check_choice_index(index, false, false, true, false);
             if let Err(_) = res {
