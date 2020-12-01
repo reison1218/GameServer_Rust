@@ -2,8 +2,8 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::skill_type::{
     HURT_SELF_ADD_BUFF, MOVE_TO_NULL_CELL_AND_TRANSFORM, SHOW_ALL_USERS_CELL,
-    SHOW_SAME_ELMENT_CELL_ALL, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_DAMAGE_NEAR_DEEP,
-    SKILL_OPEN_NEAR_CELL,
+    SHOW_SAME_ELMENT_CELL_ALL, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP,
+    SKILL_AOE_RED_SKILL_CD, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
 };
 use crate::battle::battle_enum::{AttackState, EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
@@ -674,9 +674,11 @@ pub unsafe fn skill_aoe_damage(
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
+    let self_index = battle_cter.get_map_cell_index();
     let skill = battle_cter.skills.get(&skill_id).unwrap();
-    let damage = skill.skill_temp.par1 as i16;
-    let damage_deep = skill.skill_temp.par2 as i16;
+    let par1 = skill.skill_temp.par1 as i16;
+    let par2 = skill.skill_temp.par2 as i16;
+    let par3 = skill.skill_temp.par3 as i16;
     let scope_id = skill.skill_temp.scope;
     let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
     if let Err(e) = scope_temp {
@@ -684,15 +686,6 @@ pub unsafe fn skill_aoe_damage(
         return None;
     }
     let scope_temp = scope_temp.unwrap();
-
-    //校验下标
-    for index in target_array.iter() {
-        let map_cell = battle_data.tile_map.map_cells.get(*index as usize);
-        if let None = map_cell {
-            warn!("there is no map_cell!index:{}", index);
-            return None;
-        }
-    }
 
     let center_index = *target_array.get(0).unwrap() as isize;
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
@@ -707,24 +700,46 @@ pub unsafe fn skill_aoe_damage(
     );
 
     let mut need_rank = true;
+    let mut count = 0i16;
     for target_user in v {
         let cter = battle_data
             .get_battle_cter_mut(Some(target_user), true)
             .unwrap();
         let damage_res;
         //判断是否中心位置
-        if cter.get_map_cell_index() == center_index as usize && damage_deep > 0 {
-            damage_res = damage_deep;
+        if cter.get_map_cell_index() == center_index as usize
+            && skill_id == SKILL_AOE_CENTER_DAMAGE_DEEP
+        {
+            damage_res = par2;
         } else {
-            damage_res = damage;
+            damage_res = par1;
         }
         let target_pt = battle_data.deduct_hp(user_id, target_user, Some(damage_res), need_rank);
         match target_pt {
             Ok(target_pt) => {
                 au.targets.push(target_pt);
                 need_rank = false;
+                count += 1;
             }
             Err(e) => error!("{:?}", e),
+        }
+    }
+    //如果技能是造成aoe并减cd
+    if skill_id == SKILL_AOE_RED_SKILL_CD {
+        //处理减cd逻辑,如果造成伤害人数大于参数
+        if count >= par2 {
+            let battle_cter = battle_data
+                .get_battle_cter_mut(Some(user_id), true)
+                .unwrap();
+            let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
+            skill.sub_cd(Some(par3 as i8));
+            let mut target_pt = TargetPt::new();
+            target_pt.target_value.push(self_index as u32);
+            let mut effect_pt = EffectPt::new();
+            effect_pt.effect_type = EffectType::SubSkillCd.into_u32();
+            effect_pt.effect_value = par3 as u32;
+            target_pt.effects.push(effect_pt);
+            au.targets.push(target_pt);
         }
     }
     None

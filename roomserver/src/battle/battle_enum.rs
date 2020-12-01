@@ -32,7 +32,7 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 8] = [121, 211, 221, 311, 312, 322, 324, 20002];
+    pub const ADD_BUFF: [u32; 8] = [122, 211, 221, 311, 312, 322, 324, 20002];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
@@ -42,9 +42,9 @@ pub mod skill_type {
     ///相临玩家造成技能伤害并恢复生命
     pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 6] = [122, 123, 20004, 20005, 323, 433];
+    pub const SKILL_DAMAGE: [u32; 6] = [999, 123, 20004, 20005, 323, 433];
     ///技能aoe
-    pub const SKILL_AOE: [u32; 3] = [411, 412, 432];
+    pub const SKILL_AOE: [u32; 4] = [121, 411, 412, 432];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///对已其他翻开元素块上对玩家造成技能伤害
@@ -62,13 +62,17 @@ pub mod skill_type {
     ///向所有玩家展示一个随机地图块，优先展示生命元素的
     pub const SHOW_ALL_USERS_CELL: u32 = 113;
     ///技能伤害，若目标在附近，则伤害加深
-    pub const SKILL_DAMAGE_NEAR_DEEP: u32 = 122;
+    pub const SKILL_DAMAGE_NEAR_DEEP: u32 = 999;
     ///展示所有相同元素的地图块给所有玩家
     pub const SHOW_SAME_ELMENT_CELL_ALL: u32 = 422;
     ///展示所有相同元素的地图块给所有玩家并治疗
     pub const SHOW_SAME_ELMENT_CELL_ALL_AND_CURE: u32 = 423;
     ///移动到一个空到地图块并变身，对周围造成技能伤害
     pub const MOVE_TO_NULL_CELL_AND_TRANSFORM: u32 = 431;
+    ///技能aoe中心伤害加深
+    pub const SKILL_AOE_CENTER_DAMAGE_DEEP: u32 = 432;
+    ///造成aoe伤害，并且减技能cd
+    pub const SKILL_AOE_RED_SKILL_CD: u32 = 121;
 }
 
 ///buff类型

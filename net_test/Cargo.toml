@@ -58,4 +58,5 @@ bytes = "0.6.0"
 async-trait = "0.1.41"
 chrono = "0.4.19"
 slab = "0.4.2"
+once_cell = "1.5.2"
 tools = { path = "../tools" }

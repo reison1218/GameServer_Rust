@@ -39,8 +39,8 @@ pub fn test_tcp_clients(){
 
         let m = move || {
             let mut tcp_client = TcpClientHandler::new();
-            //tcp_client.on_read("192.168.1.100:16801".to_string());
-            tcp_client.on_read("localhost:16801".to_string());
+            tcp_client.on_read("192.168.1.100:16801".to_string());
+            // tcp_client.on_read("localhost:16801".to_string());
         };
 
         std::thread::spawn(m);
@@ -49,8 +49,8 @@ pub fn test_tcp_clients(){
     }
 
     let mut tcp_client = TcpClientHandler::new();
-    tcp_client.on_read("127.0.0.1:16801".to_string());
-    //tcp_client.on_read("192.168.1.100:16801".to_string());
+    // tcp_client.on_read("127.0.0.1:16801".to_string());
+    tcp_client.on_read("192.168.1.100:16801".to_string());
 }
 pub struct TcpClientHandler {
     ts: Option<TcpStream>,

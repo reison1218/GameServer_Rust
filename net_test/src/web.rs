@@ -11,8 +11,8 @@ use std::sync::{Arc, RwLock};
 use crate::Test;
 
 pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
-    let stream = TcpStream::connect("localhost:8888").await?;
-    //let stream = TcpStream::connect("192.168.1.100:8888").await?;
+    // let stream = TcpStream::connect("localhost:8888").await?;
+    let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 

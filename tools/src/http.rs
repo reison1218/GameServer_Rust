@@ -52,9 +52,8 @@ async fn accept(
     async_h1::accept(stream.clone(), |mut _req| async {
         let mut _req = _req;
         let mut _req_mut = &mut _req;
-        _req_mut
-            .insert_header("Content-Type", "application/json")
-            .unwrap();
+        _req_mut.insert_header("Content-Type", "application/json");
+
         info!(
             "receive a http request from:{:?}",
             stream.peer_addr().unwrap()
@@ -120,9 +119,8 @@ async fn accept(
 
         //设置返回参数
         let mut res = Response::new(StatusCode::Ok);
-        //res.insert_header("Content-Type", "text/plain")?;
-        // res.insert_header("Content-Type", "application/json")
-        //     .unwrap();
+        res.insert_header("Content-Type", "text/plain");
+        res.insert_header("Content-Type", "application/json");
         res.set_body(value.to_string());
         Ok(res)
     })
