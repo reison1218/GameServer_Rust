@@ -73,6 +73,8 @@ pub mod skill_type {
     pub const SKILL_AOE_CENTER_DAMAGE_DEEP: u32 = 432;
     ///造成aoe伤害，并且减技能cd
     pub const SKILL_AOE_RED_SKILL_CD: u32 = 121;
+    ///只用推送给自己的技能
+    pub const PUSH_SELF: [u32; 3] = [421, 20001, 112];
 }
 
 ///buff类型

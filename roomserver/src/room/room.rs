@@ -87,7 +87,7 @@ pub struct Room {
     pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
     pub setting: RoomSetting,                     //房间设置
     pub battle_data: BattleData,                  //战斗相关数据封装
-    tcp_sender: TcpSender,                        //tcpsender
+    pub tcp_sender: TcpSender,                    //tcpsender
     task_sender: Sender<Task>,                    //任务sender
     robot_sender: Sender<RobotTask>,              //机器人sender
     time: DateTime<Utc>,                          //房间创建时间
@@ -552,11 +552,25 @@ impl Room {
             return;
         }
         let member = member.unwrap();
+        //如果是机器人，则返回，不发送
         if member.is_robot {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         self.tcp_sender.write(bytes);
+    }
+
+    pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
+        let mut user_id;
+        for member in self.members.values() {
+            user_id = member.user_id;
+            //如果是机器人，则返回，不发送
+            if member.is_robot {
+                return;
+            }
+            let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
+            self.tcp_sender.write(bytes);
+        }
     }
 
     ///检查角色
@@ -1169,13 +1183,21 @@ impl Room {
                 }
                 let world_cell_temp = world_cell_temp.unwrap();
                 for buff_id in world_cell_temp.buff.iter() {
-                    for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.add_buff(
-                            None,
-                            None,
-                            *buff_id,
-                            Some(self.battle_data.next_turn_index),
-                        );
+                    let buff = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+                    if let Err(e) = buff {
+                        error!("{:?}", e);
+                        continue;
+                    }
+                    let buff = buff.unwrap();
+                    if buff.par1 > 0 {
+                        for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
+                            battle_cter.add_buff(
+                                None,
+                                None,
+                                buff.par1,
+                                Some(self.battle_data.next_turn_index),
+                            );
+                        }
                     }
                 }
             }

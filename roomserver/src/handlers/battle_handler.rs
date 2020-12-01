@@ -1,3 +1,4 @@
+use crate::battle::battle_enum::skill_type::PUSH_SELF;
 use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
 use crate::battle::battle_skill::Skill;
 use crate::mgr::room_mgr::RoomMgr;
@@ -129,13 +130,12 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let bytes = bytes.unwrap();
-    for member in room.members.clone().values() {
-        if member.is_robot {
-            continue;
-        }
-        let member_id = member.user_id;
-
-        room.send_2_client(ClientCode::ActionNotice, member_id, bytes.clone());
+    //处理只用推送给自己的技能
+    if action_type == ActionType::Skill && PUSH_SELF.contains(&value) {
+        room.send_2_client(ClientCode::ActionNotice, user_id, bytes.clone());
+    } else {
+        //推送给所有房间成员
+        room.send_2_all_client(ClientCode::ActionNotice, bytes);
     }
 
     unsafe {

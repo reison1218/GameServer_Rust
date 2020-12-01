@@ -464,13 +464,8 @@ impl BattleData {
         }
 
         let bytes = sbtn.write_to_bytes().unwrap();
-        for cter in self.battle_cter.clone().values() {
-            if cter.robot_data.is_some() {
-                continue;
-            }
-            let user_id = cter.get_user_id();
-            self.send_2_client(ClientCode::BattleTurnNotice, user_id, bytes.clone());
-        }
+
+        self.send_2_all_client(ClientCode::BattleTurnNotice, bytes);
     }
     ///获得战斗角色可变借用指针
     pub fn get_battle_cter_mut(
@@ -506,6 +501,18 @@ impl BattleData {
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         self.get_sender_mut().write(bytes);
+    }
+
+    pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
+        for cter in self.battle_cter.values() {
+            if cter.robot_data.is_some() {
+                continue;
+            }
+            let user_id = cter.base_attr.user_id;
+            let bytes_res =
+                Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
+            self.sender.write(bytes_res);
+        }
     }
 
     ///获取目标数组

@@ -2,7 +2,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
 ///游戏服务专用命令号段枚举 1000-10000
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum GameCode {
     //最小值
@@ -41,7 +41,7 @@ impl GameCode {
 }
 
 ///房间服专属命令号段枚举 20001-30000
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum RoomCode {
     //范围最小值
@@ -101,7 +101,7 @@ impl RoomCode {
 }
 
 ///房间服专属命令号段枚举 30001-40000
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum RobotCode {
     //最小命令号
@@ -120,7 +120,7 @@ impl RobotCode {
 }
 
 ///客户端专属命令号段枚举 10001-20000
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum ClientCode {
     //最小命令号
