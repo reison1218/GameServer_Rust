@@ -507,17 +507,18 @@ impl BattleData {
         }
         let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
-        let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
-        if let Ok(battle_cter) = battle_cter {
-            //结算玩家自己的状态
-            battle_cter.turn_reset();
+        if user_id > 0 {
+            let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
+            if let Ok(battle_cter) = battle_cter {
+                battle_cter.turn_reset();
+            }
         }
 
-        //结算玩家身上的buff
-        for cter in self.battle_cter.values_mut() {
-            for buff in cter.battle_buffs.buffs.values() {
-                let buff_id = buff.id;
-                unsafe {
+        unsafe {
+            //结算玩家身上的buff
+            for cter in battle_data.as_mut().unwrap().battle_cter.values_mut() {
+                for buff in cter.battle_buffs.buffs.values() {
+                    let buff_id = buff.id;
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         Some(cter.get_user_id()),
@@ -526,13 +527,11 @@ impl BattleData {
                     );
                 }
             }
-        }
 
-        //结算该玩家加在地图块上的buff
-        for map_cell in self.tile_map.map_cells.iter_mut() {
-            for buff_id in map_cell.buffs.keys() {
-                let buff_id = *buff_id;
-                unsafe {
+            //结算该玩家加在地图块上的buff
+            for map_cell in battle_data.as_mut().unwrap().tile_map.map_cells.iter_mut() {
+                for buff_id in map_cell.buffs.keys() {
+                    let buff_id = *buff_id;
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         None,
@@ -541,28 +540,29 @@ impl BattleData {
                     );
                 }
             }
-        }
 
-        //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
-        let mut is_can_skip_turn: bool = true;
-        for index in self.tile_map.un_pair_map.keys() {
-            let map_cell = self.tile_map.map_cells.get(*index);
-            if let None = map_cell {
-                continue;
+            //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
+            if user_id > 0 {
+                let mut is_can_skip_turn: bool = true;
+                for index in battle_data.as_mut().unwrap().tile_map.un_pair_map.keys() {
+                    let map_cell = battle_data.as_mut().unwrap().tile_map.map_cells.get(*index);
+                    if let None = map_cell {
+                        continue;
+                    }
+                    let map_cell = map_cell.unwrap();
+                    if map_cell.check_is_locked() {
+                        continue;
+                    }
+                    is_can_skip_turn = false;
+                    break;
+                }
+                let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
+                if let Err(e) = battle_cter {
+                    error!("{:?}", e);
+                    return;
+                }
+                battle_cter.unwrap().set_is_can_end_turn(is_can_skip_turn);
             }
-            let map_cell = map_cell.unwrap();
-            if map_cell.check_is_locked() {
-                continue;
-            }
-            is_can_skip_turn = false;
-            break;
         }
-        let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
-        if let Err(e) = battle_cter {
-            error!("{:?}", e);
-            return;
-        }
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.set_is_can_end_turn(is_can_skip_turn);
     }
 }

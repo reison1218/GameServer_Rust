@@ -270,7 +270,7 @@ impl RoomModel for MatchRoom {
         }
 
         let room_cache = self.get_room_cache_mut(&room_id);
-        if room_cache.is_some() {
+        if let Some(room_cache) = room_cache {
             let rc = room_cache.unwrap();
             rc.count -= 1;
             //重新排序

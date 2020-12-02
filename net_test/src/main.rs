@@ -469,7 +469,6 @@ fn calc_n2(n:i64){
 }
 
 
-
 fn main() -> anyhow::Result<()> {
     //calc_n2(600);
     // let mut tt = TestS::default();
@@ -484,7 +483,6 @@ fn main() -> anyhow::Result<()> {
     // let ttt=  t.g.get_mut(&1).unwrap();
     // ttt.str.push_str("1");
 
-    tcp_client::test_tcp_client("reison");
     // let mut arc=  Arc::new(RwLock::new(TestS::default()));
     // for i in 0..9999{
     //     let res = arc.clone();
