@@ -329,13 +329,13 @@ pub mod tcp_server {
                         //warn!("{:?}",err);
                         continue;
                     }
-                    Err(ref err) if aborted(err) => {
-                        close_connect(connection, handler, Some(err));
-                        continue;
-                    }
                     Err(ref err) if reset(err) => {
                         close_connect(connection, handler, Some(err));
-                        continue;
+                        return Ok(true);
+                    }
+                    Err(ref err) if aborted(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
                     }
                     Err(ref err) if other(err) => {
                         warn!("{:?}", err);
@@ -343,7 +343,6 @@ pub mod tcp_server {
                     }
                     // Other errors we'll consider fatal.
                     Err(err) => {
-                        warn!("err:{:?}", err);
                         close_connect(connection, handler, Some(&err));
                         return Ok(true);
                     }
