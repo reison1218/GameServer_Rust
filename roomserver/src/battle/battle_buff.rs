@@ -360,7 +360,6 @@ impl BattleData {
         let cter = cter.unwrap();
         let skill = cter.skills.get_mut(&skill_id);
         if let None = skill {
-            warn!("this cter has no this skill!skill_id:{}", skill_id);
             return;
         }
         let skill = skill.unwrap();

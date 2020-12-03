@@ -55,7 +55,6 @@ pub fn robot_init_timer(rm: Arc<Mutex<RoomMgr>>) {
     let res = timer_thread.spawn(m);
     if let Err(e) = res {
         error!("{:?}", e);
-        std::process::abort();
     }
     info!("初始化定时器任务执行器成功!");
 }

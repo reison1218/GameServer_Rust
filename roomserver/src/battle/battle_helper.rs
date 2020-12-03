@@ -861,6 +861,7 @@ impl BattleData {
                     let y = center_map_cell.y + coord_temp.y;
                     let map_cell_index = self.tile_map.coord_map.get(&(x, y));
                     if let None = map_cell_index {
+                        println!("there is no map_cell for {:?}",(x, y));
                         continue;
                     }
                     let map_cell_index = map_cell_index.unwrap();
