@@ -256,10 +256,7 @@ impl RoomModel for MatchRoom {
             && member_count == MEMBER_MAX as usize
             && now_count < member_count
         {
-            let map = room.members.clone();
-            for id in map.keys() {
-                room.prepare_cancel(id, false);
-            }
+            room.do_cancel_prepare();
             if room.get_state() == RoomState::Await {
                 need_add_cache = true;
             }
@@ -271,8 +268,7 @@ impl RoomModel for MatchRoom {
 
         let room_cache = self.get_room_cache_mut(&room_id);
         if let Some(room_cache) = room_cache {
-            let rc = room_cache.unwrap();
-            rc.count -= 1;
+            room_cache.count -= 1;
             //重新排序
             self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
         } else if room_cache.is_none() && need_add_cache {

@@ -13,6 +13,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
@@ -478,7 +479,7 @@ impl Room {
 
         //如果是最后一个，直接给所有未选的玩家进行随机
         let room = self as *mut Room;
-        unsafe{
+        unsafe {
             for member_id in room.as_ref().unwrap().members.keys() {
                 let member_id = *member_id;
                 //选过了就跳过
@@ -493,8 +494,7 @@ impl Room {
                 index_v.remove(remove_index);
             }
         }
-        
-        
+
         self.state = RoomState::ChoiceIndex;
         self.set_next_turn_index(0);
         let next_turn_user = self.get_turn_user(None).unwrap();
@@ -587,6 +587,15 @@ impl Room {
             }
         }
         Ok(())
+    }
+
+    pub fn do_cancel_prepare(&mut self) {
+        let members_ptr = self.members.borrow_mut() as *mut HashMap<u32, Member>;
+        unsafe {
+            for id in members_ptr.as_ref().unwrap().keys() {
+                self.prepare_cancel(id, false);
+            }
+        }
     }
 
     ///准备与取消
@@ -1018,10 +1027,7 @@ impl Room {
         sct.set_user_id(*user_id);
         sct.set_team_id(*team_id as u32);
         let bytes = sct.write_to_bytes().unwrap();
-        let members = self.members.clone();
-        for member_id in members.keys() {
-            self.send_2_client(ClientCode::ChangeTeamNotice, *member_id, bytes.clone());
-        }
+        self.send_2_all_client(ClientCode::ChangeTeamNotice, bytes);
     }
 
     ///T人
