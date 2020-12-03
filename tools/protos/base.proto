@@ -102,7 +102,7 @@ message EffectPt{
 }
 
 //受影响封装
-message  TargetPt{
+message TargetPt{
     repeated uint32 target_value = 1;//目标值
     repeated EffectPt effects = 2;//效果
     repeated uint32 add_buffs = 3;//对目标增加对buff
