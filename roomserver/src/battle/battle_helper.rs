@@ -197,13 +197,17 @@ impl BattleData {
         } else if !is_turn_index {
             buff.sub_trigger_timesed()
         }
+        let cfg_keep_time = buff.buff_temp.keep_time;
+        let cfg_trigger_time = buff.buff_temp.trigger_times;
         //判断触发次数
-        if buff.buff_temp.keep_time == 0 && buff.trigger_timesed <= 0 {
+        if cfg_keep_time == 0 && buff.trigger_timesed <= 0 {
             need_remove = true;
-        } else if buff.buff_temp.trigger_times == 0 && buff.keep_times <= 0 {
+        } else if cfg_trigger_time == 0 && buff.keep_times <= 0 {
             //判断持续时间
             need_remove = true;
-        } else if buff.keep_times == 0 || buff.trigger_timesed == 0 {
+        } else if (cfg_trigger_time > 0 && cfg_keep_time > 0)
+            && (buff.keep_times == 0 || buff.trigger_timesed == 0)
+        {
             //判断双条件
             need_remove = true;
         } else {
@@ -346,7 +350,7 @@ impl BattleData {
         }
         ep.effect_value = res as u32;
         target_pt.effects.push(ep);
-        let is_die = target_cter.sub_hp(res);
+        let is_die = target_cter.add_hp(-res);
 
         //判断目标角色是否死亡
         if is_die {

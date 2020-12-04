@@ -143,6 +143,7 @@ pub fn show_map_cell(
         );
         return None;
     }
+
     let show_index;
     //向所有玩家随机展示一个地图块，优先生命元素
     if SHOW_ALL_USERS_CELL == skill_id {
@@ -173,14 +174,6 @@ pub fn show_map_cell(
                 return None;
             }
         }
-        let battle_cter = battle_data.get_battle_cter_mut(None, true);
-        if let Err(e) = battle_cter {
-            error!("{:?}", e);
-            return None;
-        }
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.status.locked_oper = skill_id;
-        battle_cter.set_is_can_end_turn(false);
         show_index = index;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
@@ -207,15 +200,7 @@ pub fn show_map_cell(
             target_pt.target_value.push(_map_cell.id);
             au.targets.push(target_pt);
         }
-        let battle_cter = battle_data.get_battle_cter_mut(None, true);
-        if let Err(e) = battle_cter {
-            error!("{:?}", e);
-            return None;
-        }
         show_index = index;
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.status.locked_oper = skill_id;
-        battle_cter.set_is_can_end_turn(false);
     } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -244,14 +229,6 @@ pub fn show_map_cell(
             cter.add_energy(skill_temp.par2 as i8);
         }
 
-        let battle_cter = battle_data.get_battle_cter_mut(None, true);
-        if let Err(e) = battle_cter {
-            error!("{:?}", e);
-            return None;
-        }
-        let battle_cter = battle_cter.unwrap();
-        battle_cter.status.locked_oper = skill_id;
-        battle_cter.set_is_can_end_turn(false);
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell_index as u32);
         target_pt.target_value.push(map_cell_id);
@@ -274,7 +251,9 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
     }
-
+    let battle_cter = battle_data.get_battle_cter_mut(None, true).unwrap();
+    battle_cter.status.locked_oper = skill_id;
+    battle_cter.set_is_can_end_turn(false);
     //调用触发器
     battle_data.map_cell_trigger_for_robot(show_index, RobotTriggerType::SeeMapCell);
     None

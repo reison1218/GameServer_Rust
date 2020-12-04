@@ -180,10 +180,9 @@ impl BattleCharacter {
         let res = v + value;
         if res < 0 {
             self.base_attr.energy = 0;
-        } else if res > max {
-            self.base_attr.energy = max as u8;
         } else {
-            self.base_attr.energy = res as u8;
+            let result = res.min(max);
+            self.base_attr.energy = result as u8;
         }
     }
 
@@ -661,22 +660,16 @@ impl BattleCharacter {
         self.status.state == BattleCterState::Die
     }
 
-    ///扣血
-    pub fn sub_hp(&mut self, hp: i16) -> bool {
-        self.base_attr.hp -= hp;
-        if self.base_attr.hp <= 0 {
+    ///加血
+    pub fn add_hp(&mut self, hp: i16) -> bool {
+        self.base_attr.hp += hp;
+        if self.base_attr.hp > self.base_attr.hp_max {
+            self.base_attr.hp = self.base_attr.hp_max;
+        } else if self.base_attr.hp <= 0 {
             self.base_attr.hp = 0;
             self.status.state = BattleCterState::Die;
         }
         self.status.state == BattleCterState::Die
-    }
-
-    ///加血
-    pub fn add_hp(&mut self, hp: i16) {
-        self.base_attr.hp += hp;
-        if self.base_attr.hp > self.base_attr.hp_max {
-            self.base_attr.hp = self.base_attr.hp_max;
-        }
     }
 
     ///将自身转换成protobuf结构体
