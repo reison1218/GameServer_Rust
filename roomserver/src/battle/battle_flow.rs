@@ -518,6 +518,10 @@ impl BattleData {
             //结算玩家身上的buff
             for cter in battle_data.as_mut().unwrap().battle_cter.values_mut() {
                 for buff in cter.battle_buffs.buffs.values() {
+                    //如果是永久buff,则跳过
+                    if buff.permanent {
+                        continue;
+                    }
                     let buff_id = buff.id;
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
@@ -530,8 +534,11 @@ impl BattleData {
 
             //结算该玩家加在地图块上的buff
             for map_cell in battle_data.as_mut().unwrap().tile_map.map_cells.iter_mut() {
-                for buff_id in map_cell.buffs.keys() {
-                    let buff_id = *buff_id;
+                for buff in map_cell.buffs.values() {
+                    if buff.permanent {
+                        continue;
+                    }
+                    let buff_id = buff.id;
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         None,

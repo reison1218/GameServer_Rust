@@ -112,7 +112,7 @@ pub mod buff_type {
     /// 无法被移动
     pub const CAN_NOT_MOVED: u32 = 10002;
     ///锁buff
-    pub const LOCKED: u32 = 321;
+    pub const LOCKED: u32 = 6;
     ///配对与自己相同元素时恢复生命
     pub const PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
     ///陷阱类buff

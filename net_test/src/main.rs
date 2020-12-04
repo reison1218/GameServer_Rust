@@ -366,7 +366,6 @@ pub struct TestSize{
     b:u32,
     c:u32,
 }
-
 #[cfg(feature="bar")]
 mod bar {
     pub fn bar() {
@@ -468,8 +467,9 @@ fn calc_n2(n:i64){
     println!("{}, cost={:?}",ans,now.elapsed());
 }
 
-
 fn main() -> anyhow::Result<()> {
+    let a = true;
+     let b = &mut a;
     //calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();

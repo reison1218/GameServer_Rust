@@ -186,17 +186,28 @@ impl BattleData {
             return lost_buff;
         }
         let buff = buff.unwrap();
-
+        //如果是永久的buff,直接返回
+        if buff.permanent {
+            return lost_buff;
+        }
         let need_remove;
         if is_turn_index && buff.turn_index.is_some() && buff.turn_index.unwrap() == next_turn_index
         {
             buff.sub_keep_times();
-        } else {
+        } else if !is_turn_index {
             buff.sub_trigger_timesed()
         }
-        if buff.keep_times <= 0 || buff.trigger_timesed <= 0 {
+        //判断触发次数
+        if buff.buff_temp.keep_time == 0 && buff.trigger_timesed <= 0 {
+            need_remove = true;
+        } else if buff.buff_temp.trigger_times == 0 && buff.keep_times <= 0 {
+            //判断持续时间
+            need_remove = true;
+        } else if buff.keep_times == 0 || buff.trigger_timesed == 0 {
+            //判断双条件
             need_remove = true;
         } else {
+            //不然不用删除
             need_remove = false;
         }
 
@@ -861,7 +872,7 @@ impl BattleData {
                     let y = center_map_cell.y + coord_temp.y;
                     let map_cell_index = self.tile_map.coord_map.get(&(x, y));
                     if let None = map_cell_index {
-                        println!("there is no map_cell for {:?}",(x, y));
+                        println!("there is no map_cell for {:?}", (x, y));
                         continue;
                     }
                     let map_cell_index = map_cell_index.unwrap();

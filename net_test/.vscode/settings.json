@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.cargo.allFeatures": true,
+    "editor.formatOnSave": true,
+    "go.useLanguageServer": true
+}
