@@ -245,9 +245,10 @@ impl BattleCharacter {
     pub fn transform_back(&mut self) -> TargetPt {
         let clone;
         let is_self_transform;
-        if self.self_transform_cter.is_some() {
-            clone = self.self_transform_cter.as_mut().unwrap().clone();
+
+        if self.base_attr.cter_id != self.self_transform_cter.as_ref().unwrap().base_attr.cter_id {
             is_self_transform = true;
+            clone = self.self_transform_cter.as_mut().unwrap().clone();
         } else {
             clone = self.self_cter.as_mut().unwrap().clone();
             is_self_transform = false;
@@ -255,6 +256,7 @@ impl BattleCharacter {
 
         //先复制需要继承的属性
         let residue_open_times = self.flow_data.residue_open_times;
+        let is_can_end_turn = self.status.is_can_end_turn;
         let hp = self.base_attr.hp;
         let attack_state = self.status.attack_state;
         let map_cell_index = self.index_data.map_cell_index;
@@ -263,6 +265,7 @@ impl BattleCharacter {
         let _ = std::mem::replace(self, *clone);
         //处理保留数据
         self.base_attr.hp = hp;
+        self.status.is_can_end_turn = is_can_end_turn;
         self.base_attr.energy = energy;
         self.status.attack_state = attack_state;
         self.index_data.map_cell_index = map_cell_index;
@@ -287,6 +290,7 @@ impl BattleCharacter {
         from_user: u32,
         cter_id: u32,
         buff_id: u32,
+        next_turn_index: usize,
     ) -> anyhow::Result<TargetPt> {
         let cter_temp = TEMPLATES
             .get_character_temp_mgr_ref()
@@ -298,6 +302,7 @@ impl BattleCharacter {
         //需要继承的属性
         let residue_open_times = self.flow_data.residue_open_times;
         let hp = self.base_attr.hp;
+        let is_can_end_turn = self.status.is_can_end_turn;
         let attack_state = self.status.attack_state;
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
@@ -311,6 +316,7 @@ impl BattleCharacter {
         //将继承属性给当前角色
         self.flow_data.residue_open_times = residue_open_times;
         self.base_attr.hp = hp;
+        self.status.is_can_end_turn = is_can_end_turn;
         self.status.attack_state = attack_state;
         self.index_data.map_cell_index = map_cell_index;
         self.base_attr.energy = energy;
@@ -322,7 +328,7 @@ impl BattleCharacter {
             anyhow::bail!("")
         }
         let buff_temp = buff_temp.unwrap();
-        let buff = Buff::from(buff_temp);
+        let buff = Buff::new(buff_temp, Some(next_turn_index), None, None);
         self.battle_buffs.buffs.insert(buff.id, buff);
         //保存自己变身的角色
         if self.base_attr.user_id == from_user {
@@ -416,7 +422,6 @@ impl BattleCharacter {
         self.base_attr.element = 0;
         self.battle_buffs.sub_damage_buffs.clear();
         self.battle_buffs.add_damage_buffs.clear();
-        self.self_cter = None;
         self.self_transform_cter = None;
         self.base_attr.grade = 1;
         self.base_attr.hp = 0;

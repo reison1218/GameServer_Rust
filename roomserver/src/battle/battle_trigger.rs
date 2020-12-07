@@ -1,4 +1,3 @@
-use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
@@ -13,6 +12,7 @@ use crate::robot::robot_trigger::RobotTriggerType;
 use crate::robot::RememberCell;
 use crate::room::character::BattleCharacter;
 use crate::TEMPLATES;
+use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
@@ -79,8 +79,8 @@ impl BattleData {
         let mut au_v = Vec::new();
         let turn_index = self.next_turn_index;
         let user_id = battle_cter.get_user_id();
-        let map_cell = map_cell.unwrap()  as *mut MapCell;
-        unsafe{
+        let map_cell = map_cell.unwrap() as *mut MapCell;
+        unsafe {
             for buff in map_cell.as_ref().unwrap().buffs.values() {
                 let buff_id = buff.id;
                 //先判断是否是陷阱类buff
@@ -99,7 +99,7 @@ impl BattleData {
                     let buff_temp = buff_temp.unwrap();
                     let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
                     battle_cter.battle_buffs.buffs.insert(buff.id, buff_add);
-    
+
                     let mut target_pt_tmp = TargetPt::new();
                     target_pt_tmp
                         .target_value
@@ -109,15 +109,15 @@ impl BattleData {
                 } else if TRAP_SKILL_DAMAGE.contains(&buff.id) {
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
-                        let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
-                        if let Err(e) = target_pt_tmp {
-                            error!("{:?}", e);
-                            continue;
-                        }
-                        let target_pt_tmp = target_pt_tmp.unwrap();
-                        target_pt = Some(target_pt_tmp);
+                    let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
+                    if let Err(e) = target_pt_tmp {
+                        error!("{:?}", e);
+                        continue;
+                    }
+                    let target_pt_tmp = target_pt_tmp.unwrap();
+                    target_pt = Some(target_pt_tmp);
                 }
-    
+
                 if target_pt.is_none() {
                     continue;
                 }
@@ -313,7 +313,11 @@ impl TriggerEvent for BattleData {
             skill_s = Some(Skill::from(skill_temp));
             skill = skill_s.as_mut().unwrap();
         } else {
-            skill = cter.skills.get_mut(&skill_id).unwrap();
+            let res = cter.skills.get_mut(&skill_id);
+            if let None = res {
+                return;
+            }
+            skill = res.unwrap();
         }
         //替换技能,水炮
         if skill.id == WATER_TURRET {
@@ -354,7 +358,7 @@ impl TriggerEvent for BattleData {
         if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
             cter.flow_data.turn_limit_skills.push(skill_id);
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
-            cter.flow_data.turn_limit_skills.push(skill_id);
+            cter.flow_data.round_limit_skills.push(skill_id);
         }
     }
 

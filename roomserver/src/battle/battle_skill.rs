@@ -1,9 +1,9 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::skill_type::{
-    HURT_SELF_ADD_BUFF, MOVE_TO_NULL_CELL_AND_TRANSFORM, SHOW_ALL_USERS_CELL,
-    SHOW_SAME_ELMENT_CELL_ALL, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP,
-    SKILL_AOE_RED_SKILL_CD, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
+    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_SAME_ELMENT_CELL_ALL,
+    SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
+    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
 };
 use crate::battle::battle_enum::{AttackState, EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
@@ -18,6 +18,8 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
+
+use super::battle_enum::SkillConsumeType;
 
 #[derive(Clone, Debug)]
 pub struct Skill {
@@ -468,18 +470,31 @@ pub unsafe fn skill_open_map_cell(
 pub unsafe fn auto_pair_map_cell(
     battle_data: &mut BattleData,
     user_id: u32,
-    _: u32,
+    skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     //将1个地图块自动配对。本回合内不能攻击。
     let target_index = *target_array.get(0).unwrap() as usize;
+    let next_turn_index = battle_data.next_turn_index;
     let res = battle_data.check_choice_index(target_index, true, true, true, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
     }
+    let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+    if let Err(e) = skill_temp {
+        warn!("{:?}", e);
+        return None;
+    }
+    let skill_temp = skill_temp.unwrap();
+    let buff_id = skill_temp.buff;
 
+    let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+    if let Err(e) = buff_temp {
+        warn!("{:?}", e);
+        return None;
+    }
     let map = &mut battle_data.tile_map.map_cells as *mut [MapCell; 30];
 
     //校验目标下标的地图块
@@ -518,7 +533,7 @@ pub unsafe fn auto_pair_map_cell(
     let pair_map_cell = pair_map_cell.unwrap();
     //处理本turn不能攻击
     battle_cter.status.attack_state = AttackState::Locked;
-
+    battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(target_index as u32);
     target_pt.target_value.push(map_cell.id);
@@ -526,6 +541,13 @@ pub unsafe fn auto_pair_map_cell(
     target_pt.target_value.clear();
     target_pt.target_value.push(pair_map_cell.index as u32);
     target_pt.target_value.push(pair_map_cell.id);
+    au.targets.push(target_pt);
+    //添加buff
+    let mut target_pt = TargetPt::new();
+    target_pt
+        .target_value
+        .push(battle_cter.get_map_cell_index() as u32);
+    target_pt.add_buffs.push(buff_id);
     au.targets.push(target_pt);
 
     //处理配对触发逻辑
@@ -845,17 +867,6 @@ pub unsafe fn scope_cure(
         return None;
     }
 
-    let target_pt = battle_data
-        .as_mut()
-        .unwrap()
-        .add_hp(Some(user_id), user_id, self_cure, None);
-    if let Err(e) = target_pt {
-        error!("{:?}", e);
-        return None;
-    }
-    let target_pt = target_pt.unwrap();
-    au.targets.push(target_pt);
-
     let scope_temp = scope_temp.unwrap();
     let (_, users) = battle_data.as_mut().unwrap().cal_scope(
         user_id,
@@ -865,11 +876,16 @@ pub unsafe fn scope_cure(
         Some(scope_temp),
     );
     for other_id in users {
-        let target_pt =
-            battle_data
-                .as_mut()
-                .unwrap()
-                .add_hp(Some(user_id), other_id, other_cure, None);
+        let res;
+        if other_id == user_id {
+            res = self_cure;
+        } else {
+            res = other_cure;
+        }
+        let target_pt = battle_data
+            .as_mut()
+            .unwrap()
+            .add_hp(Some(user_id), other_id, res, None);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
@@ -889,12 +905,34 @@ pub unsafe fn transform(
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_data = battle_data.borrow_mut() as *mut BattleData;
+    let next_turn_index = battle_data.as_ref().unwrap().next_turn_index;
+
     let cter = battle_data
         .as_mut()
         .unwrap()
         .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
-    let skill = cter.skills.get(&skill_id).unwrap();
+    //处理移动到空地图块并变身技能
+    let index = targets.get(0);
+    if let None = index {
+        warn!("transform!targets is empty!");
+        return None;
+    }
+    let index = *index.unwrap() as usize;
+    //检查选择对位置
+    let res = battle_data
+        .as_ref()
+        .unwrap()
+        .check_choice_index(index, true, true, true, true);
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return None;
+    }
+    //更新位置
+    cter.set_map_cell_index(index);
+    let skill = cter.skills.get_mut(&skill_id).unwrap();
+    let consume_type = skill.skill_temp.consume_type;
+    let consume_value = skill.skill_temp.consume_value;
     let buff_id = skill.skill_temp.buff;
     let transform_cter_id = skill.skill_temp.par2;
     let target_type = TargetType::try_from(skill.skill_temp.target);
@@ -903,59 +941,53 @@ pub unsafe fn transform(
         return None;
     }
     let target_type = target_type.unwrap();
-    //处理移动到空地图块并变身技能
-    if MOVE_TO_NULL_CELL_AND_TRANSFORM == skill_id {
-        let index = targets.get(0);
-        if let None = index {
-            warn!("transform!targets is empty!");
-            return None;
-        }
-        let index = *index.unwrap() as usize;
-        //检查选择对位置
-        let res = battle_data
-            .as_ref()
-            .unwrap()
-            .check_choice_index(index, true, true, true, true);
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return None;
-        }
 
-        //计算范围
-        let scope_id = skill.skill_temp.scope;
-        let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
-        if let Err(e) = scope_temp {
+    //计算范围
+    let scope_id = skill.skill_temp.scope;
+    let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
+    if let Err(e) = scope_temp {
+        warn!("{:?}", e);
+        return None;
+    }
+    let skill_damage = skill.skill_temp.par1 as i16;
+    let scope_temp = scope_temp.unwrap();
+    //对周围对人造成伤害
+    let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
+        user_id,
+        index as isize,
+        target_type,
+        None,
+        Some(scope_temp),
+    );
+    let mut need_rank = true;
+    for user in other_users {
+        //排除自己
+        if user == user_id {
+            continue;
+        }
+        let target_pt =
+            battle_data
+                .as_mut()
+                .unwrap()
+                .deduct_hp(user_id, user, Some(skill_damage), need_rank);
+        if let Err(e) = target_pt {
             warn!("{:?}", e);
-            return None;
+            continue;
         }
-        let skill_damage = skill.skill_temp.par1 as i16;
-        let scope_temp = scope_temp.unwrap();
-        //对周围对人造成伤害
-        let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
-            user_id,
-            cter.get_map_cell_index() as isize,
-            target_type,
-            None,
-            Some(scope_temp),
-        );
-        let mut need_rank = true;
-        for user in other_users {
-            let target_pt = battle_data.as_mut().unwrap().deduct_hp(
-                user_id,
-                user,
-                Some(skill_damage),
-                need_rank,
-            );
-            if let Err(e) = target_pt {
-                warn!("{:?}", e);
-                continue;
-            }
-            au.targets.push(target_pt.unwrap());
-            need_rank = false;
-        }
+        au.targets.push(target_pt.unwrap());
+        need_rank = false;
+    }
+
+    //处理技能消耗
+    if consume_type != SkillConsumeType::Energy as u8 {
+        skill.reset_cd();
+    } else {
+        let mut v = consume_value as i8;
+        v = v * -1;
+        cter.add_energy(v);
     }
     //处理变身
-    let res = cter.transform(user_id, transform_cter_id, buff_id);
+    let res = cter.transform(user_id, transform_cter_id, buff_id, next_turn_index);
     match res {
         Err(e) => {
             error!("{:?}", e);

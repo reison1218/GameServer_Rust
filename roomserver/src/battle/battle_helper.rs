@@ -215,7 +215,9 @@ impl BattleData {
             need_remove = false;
         }
 
+        //如果要删除
         if need_remove {
+            //处理技能状态
             if buff.from_user.is_some() {
                 let from_user = buff.from_user.unwrap();
                 let from_cter = cters.as_mut().unwrap().get_mut(&from_user);
@@ -876,7 +878,7 @@ impl BattleData {
                     let y = center_map_cell.y + coord_temp.y;
                     let map_cell_index = self.tile_map.coord_map.get(&(x, y));
                     if let None = map_cell_index {
-                        println!("there is no map_cell for {:?}", (x, y));
+                        warn!("there is no map_cell for {:?}", (x, y));
                         continue;
                     }
                     let map_cell_index = map_cell_index.unwrap();

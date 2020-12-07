@@ -67,8 +67,6 @@ pub mod skill_type {
     pub const SHOW_SAME_ELMENT_CELL_ALL: u32 = 422;
     ///展示所有相同元素的地图块给所有玩家并治疗
     pub const SHOW_SAME_ELMENT_CELL_ALL_AND_CURE: u32 = 423;
-    ///移动到一个空到地图块并变身，对周围造成技能伤害
-    pub const MOVE_TO_NULL_CELL_AND_TRANSFORM: u32 = 431;
     ///技能aoe中心伤害加深
     pub const SKILL_AOE_CENTER_DAMAGE_DEEP: u32 = 432;
     ///造成aoe伤害，并且减技能cd
