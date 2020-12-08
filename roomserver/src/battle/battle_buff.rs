@@ -290,7 +290,7 @@ impl BattleData {
                 }
                 cter.skills
                     .values_mut()
-                    .for_each(|skill| skill.add_cd(Some(buff_temp.par1 as i8)));
+                    .for_each(|skill| skill.add_cd(buff_temp.par1 as i8));
             }
             target_pt.target_value.clear();
             target_pt

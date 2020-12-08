@@ -256,9 +256,11 @@ impl BattleData {
                 break;
             }
 
-            //如果不是用能量的，则重制cd
+            //如果不是用能量的，则用完技能之后重制cd,把cd加上
             if skill.skill_temp.consume_type != SkillConsumeType::Energy as u8 {
-                skill.reset_cd();
+                if skill.cd_times <= 0 {
+                    skill.reset_cd();
+                }
             } else {
                 let mut v = skill.skill_temp.consume_value as i8;
                 v = v * -1;
@@ -472,7 +474,7 @@ impl BattleData {
             //玩家技能cd-1
             battle_cter.skills.values_mut().for_each(|skill| {
                 if !skill.is_active {
-                    skill.sub_cd(None)
+                    skill.add_cd(-1)
                 }
             });
             battle_cter.set_is_can_end_turn(true);

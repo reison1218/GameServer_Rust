@@ -108,7 +108,8 @@ message TargetPt{
     repeated uint32 add_buffs = 3;//对目标增加对buff
     repeated TriggerEffectPt passiveEffect = 4;	//被动效果
     repeated uint32 lost_buffs = 5;//目标失效的buff
-    BattleCharacterPt transform_cter = 6;//变身之后的角色
+    repeated uint32 lost_skills= 6;//玩家丢失的技能
+    BattleCharacterPt transform_cter = 7;//变身之后的角色
 }
 
 //触发效果
@@ -125,6 +126,7 @@ message ActionUnitPt{
     repeated uint32 action_value = 3;//行动对应类型的值
     repeated TargetPt targets = 4;//目标列表
     repeated uint32 lost_buffs= 5;//玩家失效的buff
+
 }
 
 //buff结构体

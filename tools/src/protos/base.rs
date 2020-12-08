@@ -2859,6 +2859,7 @@ pub struct TargetPt {
     pub add_buffs: ::std::vec::Vec<u32>,
     pub passiveEffect: ::protobuf::RepeatedField<TriggerEffectPt>,
     pub lost_buffs: ::std::vec::Vec<u32>,
+    pub lost_skills: ::std::vec::Vec<u32>,
     pub transform_cter: ::protobuf::SingularPtrField<BattleCharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -3001,7 +3002,32 @@ impl TargetPt {
         ::std::mem::replace(&mut self.lost_buffs, ::std::vec::Vec::new())
     }
 
-    // .protos.BattleCharacterPt transform_cter = 6;
+    // repeated uint32 lost_skills = 6;
+
+
+    pub fn get_lost_skills(&self) -> &[u32] {
+        &self.lost_skills
+    }
+    pub fn clear_lost_skills(&mut self) {
+        self.lost_skills.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_lost_skills(&mut self, v: ::std::vec::Vec<u32>) {
+        self.lost_skills = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_lost_skills(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.lost_skills
+    }
+
+    // Take field
+    pub fn take_lost_skills(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.lost_skills, ::std::vec::Vec::new())
+    }
+
+    // .protos.BattleCharacterPt transform_cter = 7;
 
 
     pub fn get_transform_cter(&self) -> &BattleCharacterPt {
@@ -3075,6 +3101,9 @@ impl ::protobuf::Message for TargetPt {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.lost_buffs)?;
                 },
                 6 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.lost_skills)?;
+                },
+                7 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.transform_cter)?;
                 },
                 _ => {
@@ -3106,6 +3135,9 @@ impl ::protobuf::Message for TargetPt {
         for value in &self.lost_buffs {
             my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
         };
+        for value in &self.lost_skills {
+            my_size += ::protobuf::rt::value_size(6, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
         if let Some(ref v) = self.transform_cter.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -3135,8 +3167,11 @@ impl ::protobuf::Message for TargetPt {
         for v in &self.lost_buffs {
             os.write_uint32(5, *v)?;
         };
+        for v in &self.lost_skills {
+            os.write_uint32(6, *v)?;
+        };
         if let Some(ref v) = self.transform_cter.as_ref() {
-            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(7, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
@@ -3203,6 +3238,11 @@ impl ::protobuf::Message for TargetPt {
                 |m: &TargetPt| { &m.lost_buffs },
                 |m: &mut TargetPt| { &mut m.lost_buffs },
             ));
+            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "lost_skills",
+                |m: &TargetPt| { &m.lost_skills },
+                |m: &mut TargetPt| { &mut m.lost_skills },
+            ));
             fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<BattleCharacterPt>>(
                 "transform_cter",
                 |m: &TargetPt| { &m.transform_cter },
@@ -3229,6 +3269,7 @@ impl ::protobuf::Clear for TargetPt {
         self.add_buffs.clear();
         self.passiveEffect.clear();
         self.lost_buffs.clear();
+        self.lost_skills.clear();
         self.transform_cter.clear();
         self.unknown_fields.clear();
     }
@@ -4743,30 +4784,31 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \t\x20\x03(\rR\x05buffs\x12\x16\n\x06skills\x18\n\x20\x03(\rR\x06skills\
     \x12\x14\n\x05items\x18\x0b\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\
     \x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_v\
-    alue\x18\x03\x20\x01(\rR\x0beffectValue\"\x96\x02\n\x08TargetPt\x12!\n\
+    alue\x18\x03\x20\x01(\rR\x0beffectValue\"\xb7\x02\n\x08TargetPt\x12!\n\
     \x0ctarget_value\x18\x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\
     \x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_bu\
     ffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\
     \x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_bu\
-    ffs\x18\x05\x20\x03(\rR\tlostBuffs\x12@\n\x0etransform_cter\x18\x06\x20\
-    \x01(\x0b2\x19.protos.BattleCharacterPtR\rtransformCter\"T\n\x0fTriggerE\
-    ffectPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04\
-    type\x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\
-    \x05value\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\
-    \x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactio\
-    nType\x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\
-    \x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\
-    \x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\
-    \n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\
-    \x18\x02\x20\x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\
-    \x01(\rR\tkeepTimes\"k\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\
-    \x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\
-    \x04\x20\x01(\rR\x04rank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06sk\
-    ills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"\
-    H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\
-    \x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    ffs\x18\x05\x20\x03(\rR\tlostBuffs\x12\x1f\n\x0blost_skills\x18\x06\x20\
+    \x03(\rR\nlostSkills\x12@\n\x0etransform_cter\x18\x07\x20\x01(\x0b2\x19.\
+    protos.BattleCharacterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\x12\x17\
+    \n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\
+    \x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\
+    \xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08f\
+    romUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\
+    \x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\
+    \x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_b\
+    uffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\
+    \x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01\
+    (\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTi\
+    mes\"k\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
+    Id\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
+    \x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04r\
+    ank\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
+    rId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\
+    \x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\
+    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\
+    \x03(\x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

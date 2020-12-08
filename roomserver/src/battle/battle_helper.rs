@@ -221,21 +221,14 @@ impl BattleData {
             if buff.from_user.is_some() {
                 let from_user = buff.from_user.unwrap();
                 let from_cter = cters.as_mut().unwrap().get_mut(&from_user);
-                if from_cter.is_none() {
-                    error!("can not find battle_cter!user_id:{}", from_user);
-                    return lost_buff;
+                if let Some(from_cter) = from_cter {
+                    if let Some(from_skill) = buff.from_skill {
+                        let skill = from_cter.skills.get_mut(&from_skill);
+                        if let Some(skill) = skill {
+                            skill.is_active = false;
+                        }
+                    }
                 }
-                let from_cter = from_cter.unwrap();
-                if buff.from_skill.is_none() {
-                    return lost_buff;
-                }
-                let from_skill = buff.from_skill.unwrap();
-                let skill = from_cter.skills.get_mut(&from_skill);
-                if skill.is_none() {
-                    return lost_buff;
-                }
-                let skill = skill.unwrap();
-                skill.is_active = false;
             }
 
             //如果是玩家身上的
@@ -543,11 +536,6 @@ impl BattleData {
         if let Err(e) = res {
             anyhow::bail!("{:?}", e)
         }
-        let cter = self.battle_cter.get(&user_id);
-        if let None = cter {
-            anyhow::bail!("could not find cter of {}", user_id)
-        }
-        let cter = cter.unwrap();
 
         let mut v = Vec::new();
         let target_type = res.unwrap();
@@ -556,12 +544,6 @@ impl BattleData {
                 let element = skill_temp.par2 as u8;
                 for map_cell in self.tile_map.map_cells.iter() {
                     let index = map_cell.index;
-                    //如果不是自己翻的
-                    if map_cell.pair_index.is_none()
-                        && !cter.flow_data.open_map_cell_vec.contains(&index)
-                    {
-                        continue;
-                    }
                     //排除自己和上面没人的地图块
                     if map_cell.user_id == user_id || map_cell.user_id == 0 {
                         continue;
@@ -570,10 +552,9 @@ impl BattleData {
                     if let None = target_cter {
                         continue;
                     }
-                    let target_cter = target_cter.unwrap();
 
                     //匹配元素
-                    if element > 0 && target_cter.base_attr.element != element {
+                    if element > 0 && map_cell.element != element {
                         continue;
                     }
                     v.push(index);
@@ -817,11 +798,22 @@ impl BattleData {
         center_index: isize,
         target_type: TargetType,
         targets: Option<Vec<u32>>,
-        scope_temp: Option<&SkillScopeTemp>,
+        mut scope_temp: Option<&SkillScopeTemp>,
     ) -> (Vec<usize>, Vec<u32>) {
         let mut v_u = Vec::new();
         let mut v = Vec::new();
         let center_map_cell = self.tile_map.map_cells.get(center_index as usize).unwrap();
+        if targets.is_none() && scope_temp.is_none() {
+            let res = TEMPLATES
+                .get_skill_scope_temp_mgr_ref()
+                .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                return (Vec::new(), Vec::new());
+            }
+            let res = res.unwrap();
+            scope_temp = Some(res);
+        }
         //没有目标，只有范围
         if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();

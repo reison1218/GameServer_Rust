@@ -337,11 +337,11 @@ impl TriggerEvent for BattleData {
                 .target_value
                 .push(cter.get_map_cell_index() as u32);
             //封装丢失技能
-            target_pt.lost_buffs.push(skill_id);
+            target_pt.lost_skills.push(skill_id);
             //封装增加的技能
             let mut ep = EffectPt::new();
             ep.effect_type = AddSkill.into_u32();
-            ep.effect_value = st.par2;
+            ep.effect_value = st.id;
             target_pt.effects.push(ep);
             //将新技能封装到内存
             let skill = Skill::from(st);

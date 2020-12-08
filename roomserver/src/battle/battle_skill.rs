@@ -12,7 +12,7 @@ use crate::room::character::BattleCharacter;
 use crate::room::map_data::MapCell;
 use crate::TEMPLATES;
 use log::{error, warn};
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -29,24 +29,13 @@ pub struct Skill {
     pub is_active: bool, //是否激活
 }
 impl Skill {
-    ///减去技能cd
-    pub fn sub_cd(&mut self, value: Option<i8>) {
-        if let Some(value) = value {
-            self.cd_times -= value;
-        } else {
-            self.cd_times -= 1;
-        }
+    ///增加技能cd
+    pub fn add_cd(&mut self, value: i8) {
+        self.cd_times += value;
         if self.cd_times < 0 {
             self.cd_times = 0;
-        }
-    }
-
-    ///增加技能cd
-    pub fn add_cd(&mut self, value: Option<i8>) {
-        if let Some(value) = value {
-            self.cd_times += value;
-        } else {
-            self.cd_times += 1;
+        } else if self.cd_times > self.skill_temp.cd as i8 {
+            self.cd_times = self.skill_temp.cd as i8;
         }
     }
 
@@ -404,49 +393,31 @@ pub unsafe fn skill_open_map_cell(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
-    _: Vec<u32>,
+    target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     if SKILL_OPEN_NEAR_CELL == skill_id {
-        let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
-        if let Err(e) = skill_temp {
-            error!("{:?}", e);
+        if target_array.is_empty() {
+            warn!("{:?}", "target_array is empty");
             return None;
         }
-        let skill_temp = skill_temp.unwrap();
-        let scope_temp = TEMPLATES
-            .get_skill_scope_temp_mgr_ref()
-            .get_temp(&skill_temp.scope);
-        if let Err(e) = scope_temp {
-            error!("{:?}", e);
-            return None;
-        }
+        let open_index = *target_array.get(0).unwrap() as usize;
         let cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
-        let scope_temp = scope_temp.unwrap();
         let (map_cells, _) = battle_data.cal_scope(
             user_id,
             cter.get_map_cell_index() as isize,
             TargetType::PlayerSelf,
             None,
-            Some(scope_temp),
+            None,
         );
-        let mut v = Vec::new();
-        for index in map_cells {
-            let res = battle_data.check_choice_index(index, true, true, true, false);
-            if let Err(e) = res {
-                warn!("{:?}", e);
-                continue;
-            }
-            v.push(index);
-        }
-        let index = thread_rng().gen_range(0, v.len());
-        let res = v.get(index);
-        if let None = res {
-            warn!("skill_open_map_cell!there is no map_cell can open!");
+
+        //校验目标位置
+        if !map_cells.contains(&open_index) {
+            warn!("{:?}", "target_index is invalid!");
             return None;
         }
 
-        let index = *res.unwrap();
+        let index = open_index;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(index as u32);
@@ -587,9 +558,7 @@ pub unsafe fn move_user(
         warn!("{:?}", e);
         return None;
     }
-    let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(target_index as u32);
-    au.targets.push(target_pt);
+
     let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(target_user_index);
     if let Err(e) = target_cter {
         warn!("{:?}", e);
@@ -604,6 +573,10 @@ pub unsafe fn move_user(
         warn!("{:?}", e);
         return None;
     }
+    let mut target_pt = TargetPt::new();
+    target_pt.target_value.push(target_user_index as u32);
+    target_pt.target_value.push(target_index as u32);
+    au.targets.push(target_pt);
     let v = v.unwrap();
 
     Some(v)
@@ -733,7 +706,8 @@ pub unsafe fn skill_aoe_damage(
                 .get_battle_cter_mut(Some(user_id), true)
                 .unwrap();
             let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
-            skill.sub_cd(Some(par3 as i8));
+            skill.reset_cd();
+            skill.add_cd(-(par3 as i8));
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(self_index as u32);
             let mut effect_pt = EffectPt::new();
@@ -833,7 +807,7 @@ pub unsafe fn sub_cd(
     battle_cter
         .skills
         .values_mut()
-        .for_each(|skill| skill.sub_cd(Some(skill_temp.par1 as i8)));
+        .for_each(|skill| skill.add_cd(-(skill_temp.par1 as i8)));
     None
 }
 
