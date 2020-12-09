@@ -707,7 +707,8 @@ pub unsafe fn skill_aoe_damage(
                 .unwrap();
             let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
             skill.reset_cd();
-            skill.add_cd(-(par3 as i8));
+            let reduce_cd = -(par3 as i8);
+            skill.add_cd(reduce_cd);
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(self_index as u32);
             let mut effect_pt = EffectPt::new();

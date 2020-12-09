@@ -258,8 +258,8 @@ pub enum ActionType {
     Skill = 5,
     ///触发buff
     Buff = 6,
-    ///解锁行为(目前有结束向所有玩家展示地图)
-    UnlockOper = 7,
+    ///结束展示地图块(解锁玩家状态)
+    EndShowMapCell = 7,
 }
 
 impl ActionType {

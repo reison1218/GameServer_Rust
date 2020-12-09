@@ -95,8 +95,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             res = attack(room, user_id, target_index, &mut au);
         }
         //解锁
-        ActionType::UnlockOper => {
-            au.action_type = ActionType::UnlockOper as u32;
+        ActionType::EndShowMapCell => {
+            au.action_type = ActionType::EndShowMapCell as u32;
             res = unlock_oper(room, user_id, &mut au);
         }
         _ => {
@@ -131,7 +131,9 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let bytes = bytes.unwrap();
     //处理只用推送给自己的技能
-    if action_type == ActionType::Skill && PUSH_SELF.contains(&value) {
+    if (action_type == ActionType::Skill || action_type == ActionType::EndShowMapCell)
+        && PUSH_SELF.contains(&value)
+    {
         room.send_2_client(ClientCode::ActionNotice, user_id, bytes.clone());
     } else {
         //推送给所有房间成员
