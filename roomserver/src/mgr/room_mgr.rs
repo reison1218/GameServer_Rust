@@ -143,57 +143,60 @@ impl RoomMgr {
             .insert(RoomCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
-            .insert(RoomCode::ReloadTemps as u32, reload_temps);
+            .insert(RoomCode::ReloadTemps.into_u32(), reload_temps);
         //创建房间
         self.cmd_map
-            .insert(RoomCode::CreateRoom as u32, create_room);
+            .insert(RoomCode::CreateRoom.into_u32(), create_room);
         //离开房间
-        self.cmd_map.insert(RoomCode::LeaveRoom as u32, leave_room);
+        self.cmd_map
+            .insert(RoomCode::LeaveRoom.into_u32(), leave_room);
         //换队伍
         self.cmd_map
-            .insert(RoomCode::ChangeTeam as u32, change_team);
+            .insert(RoomCode::ChangeTeam.into_u32(), change_team);
         //T人
-        self.cmd_map.insert(RoomCode::Kick as u32, kick_member);
+        self.cmd_map.insert(RoomCode::Kick.into_u32(), kick_member);
         //准备与取消
         self.cmd_map
-            .insert(RoomCode::PrepareCancel as u32, prepare_cancel);
+            .insert(RoomCode::PrepareCancel.into_u32(), prepare_cancel);
         //离线
-        self.cmd_map.insert(RoomCode::LineOff as u32, leave_room);
+        self.cmd_map
+            .insert(RoomCode::LineOff.into_u32(), leave_room);
         //添加房间
-        self.cmd_map.insert(RoomCode::JoinRoom as u32, join_room);
+        self.cmd_map
+            .insert(RoomCode::JoinRoom.into_u32(), join_room);
         //匹配房间
         self.cmd_map
-            .insert(RoomCode::SearchRoom as u32, search_room);
+            .insert(RoomCode::SearchRoom.into_u32(), search_room);
         //房间设置
         self.cmd_map
-            .insert(RoomCode::RoomSetting as u32, room_setting);
+            .insert(RoomCode::RoomSetting.into_u32(), room_setting);
         //选择角色
         self.cmd_map
-            .insert(RoomCode::ChoiceCharacter as u32, choose_character);
+            .insert(RoomCode::ChoiceCharacter.into_u32(), choose_character);
         //选择技能
         self.cmd_map
-            .insert(RoomCode::ChoiceSkill as u32, choice_skills);
+            .insert(RoomCode::ChoiceSkill.into_u32(), choice_skills);
         //发送表情
-        self.cmd_map.insert(RoomCode::Emoji as u32, emoji);
+        self.cmd_map.insert(RoomCode::Emoji.into_u32(), emoji);
         //开始游戏
-        self.cmd_map.insert(RoomCode::StartGame as u32, start);
+        self.cmd_map.insert(RoomCode::StartGame.into_u32(), start);
 
         //选择占位
         self.cmd_map
-            .insert(RoomCode::ChoiceIndex as u32, choice_index);
+            .insert(RoomCode::ChoiceIndex.into_u32(), choice_index);
 
         //选择回合顺序
         self.cmd_map
-            .insert(RoomCode::ChoiceTurnOrder as u32, choice_turn);
+            .insert(RoomCode::ChoiceTurnOrder.into_u32(), choice_turn);
 
         //跳过选择turn顺序
         self.cmd_map
-            .insert(RoomCode::SkipChoiceTurn as u32, skip_choice_turn);
+            .insert(RoomCode::SkipChoiceTurn.into_u32(), skip_choice_turn);
         //------------------------------------以下是战斗相关的--------------------------------
         //请求行动
-        self.cmd_map.insert(RoomCode::Action as u32, action);
+        self.cmd_map.insert(RoomCode::Action.into_u32(), action);
 
         //请求pos
-        self.cmd_map.insert(RoomCode::Pos as u32, pos);
+        self.cmd_map.insert(RoomCode::Pos.into_u32(), pos);
     }
 }

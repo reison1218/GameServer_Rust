@@ -1,7 +1,7 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::skill_type::{
-    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_SAME_ELMENT_CELL_ALL,
+    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_INDEX_SAME_ELEMENT,
     SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
     SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
 };
@@ -119,6 +119,63 @@ pub unsafe fn change_map_cell_index(
 }
 
 ///展示地图块
+pub fn show_index(
+    battle_data: &mut BattleData,
+    user_id: u32,
+    skill_id: u32,
+    target_array: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> Option<Vec<ActionUnitPt>> {
+    let show_index;
+    if SHOW_INDEX_SAME_ELEMENT == skill_id {
+        let index = *target_array.get(0).unwrap() as usize;
+        let res = battle_data.check_choice_index(index, false, true, false, false);
+        //校验地图块
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return None;
+        }
+        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
+        let cter = battle_data.get_battle_cter(Some(user_id), true);
+        if let Err(e) = cter {
+            warn!("{:?}", e);
+            return None;
+        }
+        let cter = cter.unwrap();
+        //地图块必须已翻开
+        if !cter.flow_data.open_map_cell_vec.contains(&index) && map_cell.pair_index.is_none() {
+            warn!(
+                "this index is invalid!the map_cell must open!index:{}",
+                index
+            );
+            return None;
+        }
+        let element = map_cell.element;
+        for _map_cell in battle_data.tile_map.map_cells.iter() {
+            let res = battle_data.check_choice_index(_map_cell.index, true, true, false, true);
+            if res.is_err() {
+                continue;
+            }
+
+            if _map_cell.element != element {
+                continue;
+            }
+
+            let mut target_pt = TargetPt::new();
+            target_pt.target_value.push(_map_cell.index as u32);
+            au.targets.push(target_pt);
+        }
+        show_index = index;
+    } else {
+        show_index = 0;
+    }
+
+    //调用触发器
+    battle_data.map_cell_trigger_for_robot(show_index, RobotTriggerType::SeeMapCell);
+    None
+}
+
+///展示地图块
 pub fn show_map_cell(
     battle_data: &mut BattleData,
     user_id: u32,
@@ -180,49 +237,6 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell.0 as u32);
         target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
-    } else if SHOW_SAME_ELMENT_CELL_ALL == skill_id {
-        let index = *target_array.get(0).unwrap() as usize;
-        let res = battle_data.check_choice_index(index, false, true, false, false);
-        //校验地图块
-        if let Err(e) = res {
-            warn!("{:?}", e);
-            return None;
-        }
-        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let cter = battle_data.get_battle_cter(Some(user_id), true);
-        if let Err(e) = cter {
-            warn!("{:?}", e);
-            return None;
-        }
-        let cter = cter.unwrap();
-        //地图块必须已翻开
-        if !cter.flow_data.open_map_cell_vec.contains(&index) && map_cell.pair_index.is_none() {
-            warn!(
-                "this index is invalid!the map_cell must open!index:{}",
-                index
-            );
-            return None;
-        }
-        let element = map_cell.element;
-        for _map_cell in battle_data.tile_map.map_cells.iter() {
-            if _map_cell.index == map_cell.index {
-                continue;
-            }
-
-            let res = battle_data.check_choice_index(_map_cell.index, false, true, false, true);
-            if let Err(_) = res {
-                continue;
-            }
-
-            if _map_cell.element != element {
-                continue;
-            }
-
-            let mut target_pt = TargetPt::new();
-            target_pt.target_value.push(_map_cell.index as u32);
-            au.targets.push(target_pt);
-        }
-        show_index = index;
     } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();

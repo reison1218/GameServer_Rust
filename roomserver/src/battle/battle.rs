@@ -1,14 +1,14 @@
 use crate::battle::battle_enum::skill_type::{
     ADD_BUFF, AUTO_PAIR_MAP_CELL, CHANGE_MAP_CELL_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE,
-    RED_SKILL_CD, SCOPE_CURE, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE, SKILL_DAMAGE_OPENED_ELEMENT,
-    SKILL_OPEN_MAP_CELL, TRANSFORM,
+    RED_SKILL_CD, SCOPE_CURE, SHOW_INDEX, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE,
+    SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_MAP_CELL, TRANSFORM,
 };
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
-    add_buff, auto_pair_map_cell, change_map_cell_index, move_user, scope_cure, show_map_cell,
-    single_skill_damage, skill_aoe_damage, skill_damage_and_cure, skill_damage_opened_element,
-    skill_open_map_cell, sub_cd, transform,
+    add_buff, auto_pair_map_cell, change_map_cell_index, move_user, scope_cure, show_index,
+    show_map_cell, single_skill_damage, skill_aoe_damage, skill_damage_and_cure,
+    skill_damage_opened_element, skill_open_map_cell, sub_cd, transform,
 };
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -118,6 +118,8 @@ impl BattleData {
         bd.skill_cmd_map
             .insert(&CHANGE_MAP_CELL_INDEX[..], change_map_cell_index);
         bd.skill_cmd_map.insert(&SHOW_MAP_CELL[..], show_map_cell);
+        bd.skill_cmd_map.insert(&SHOW_INDEX[..], show_index);
+
         bd.skill_cmd_map.insert(&MOVE_USER[..], move_user);
         bd.skill_cmd_map
             .insert(&NEAR_SKILL_DAMAGE_AND_CURE[..], skill_damage_and_cure);

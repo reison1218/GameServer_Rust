@@ -453,7 +453,17 @@ fn calc_n2(n: i64) {
     println!("{}, cost={:?}", ans, now.elapsed());
 }
 
+#[derive(Default)]
+pub struct PinTest{
+    str:String,
+    s:Option<&'static mut str>,
+}
+
+
+
 fn main() -> anyhow::Result<()> {
+
+    let mut p = PinTest::default();
     //calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();

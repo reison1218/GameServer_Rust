@@ -240,6 +240,7 @@ impl BattleData {
             } else if let Some(map_cell) = map_cell_res {
                 //如果是地图块上面的
                 map_cell.remove_buff(buff_id);
+                lost_buff = Some(buff_id);
             }
         }
         lost_buff

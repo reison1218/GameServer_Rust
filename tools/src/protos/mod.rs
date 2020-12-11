@@ -26,7 +26,7 @@ pub fn proto() {
             return;
         }
         let dir_entry = dir_entry.unwrap();
-        if dir_entry.file_name().eq(".DS_Store") {
+        if !dir_entry.file_name().to_str().unwrap().ends_with(".proto") {
             continue;
         }
         let mut proto_file = String::from("protos/");

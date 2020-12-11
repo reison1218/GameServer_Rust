@@ -36,7 +36,7 @@ pub mod skill_type {
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
-    pub const SHOW_MAP_CELL: [u32; 6] = [112, 113, 421, 422, 423, 20001];
+    pub const SHOW_MAP_CELL: [u32; 5] = [112, 113, 421, 423, 20001];
     ///移动玩家
     pub const MOVE_USER: [u32; 1] = [222];
     ///相临玩家造成技能伤害并恢复生命
@@ -53,6 +53,8 @@ pub mod skill_type {
     pub const SCOPE_CURE: [u32; 1] = [313];
     ///变身
     pub const TRANSFORM: [u32; 1] = [431];
+    ///展示地图块
+    pub const SHOW_INDEX: [u32; 1] = [422];
 
     ///---------------------------以下为了方便单独定义出来
     ///水炮
@@ -63,8 +65,6 @@ pub mod skill_type {
     pub const SHOW_ALL_USERS_CELL: u32 = 113;
     ///技能伤害，若目标在附近，则伤害加深
     pub const SKILL_DAMAGE_NEAR_DEEP: u32 = 999;
-    ///展示所有相同元素的地图块给所有玩家
-    pub const SHOW_SAME_ELMENT_CELL_ALL: u32 = 422;
     ///展示所有相同元素的地图块给所有玩家并治疗
     pub const SHOW_SAME_ELMENT_CELL_ALL_AND_CURE: u32 = 423;
     ///技能aoe中心伤害加深
@@ -73,6 +73,8 @@ pub mod skill_type {
     pub const SKILL_AOE_RED_SKILL_CD: u32 = 121;
     ///只用推送给自己的技能
     pub const PUSH_SELF: [u32; 5] = [421, 20001, 112, 312, 324];
+    ///选择一个地图块，展示其相同元素地图块位置
+    pub const SHOW_INDEX_SAME_ELEMENT: u32 = 422;
 }
 
 ///buff类型

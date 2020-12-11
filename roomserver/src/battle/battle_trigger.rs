@@ -197,7 +197,10 @@ impl TriggerEvent for BattleData {
         let mut v = Vec::new();
         let self_mut = self.get_mut_ref();
         //触发陷阱
-        self_mut.trigger_trap(battle_cter, index as usize);
+        let res = self_mut.trigger_trap(battle_cter, index as usize);
+        if let Some(res) = res {
+            v.extend_from_slice(res.as_slice());
+        }
         //触发别人的范围
         for other_cter in self.battle_cter.values() {
             if other_cter.is_died() {

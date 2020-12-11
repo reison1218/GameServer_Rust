@@ -316,6 +316,20 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
 
+    //校验本turn是否翻过
+    if battle_cter
+        .flow_data
+        .open_map_cell_vec
+        .contains(&target_map_cell_index)
+    {
+        let str = format!(
+            "this player already has open this map_cell!user_id:{},open_map_cell_vec:{:?},index:{}",
+            user_id, battle_cter.flow_data.open_map_cell_vec, target_map_cell_index
+        );
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
+    }
+
     let battle_data = rm.battle_data.borrow_mut();
     let res = battle_data.open_map_cell(target_map_cell_index, au);
     match res {
