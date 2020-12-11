@@ -371,6 +371,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "combine"
+version = "4.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9417a0c314565e2abffaece67e95a8cb51f9238cd39f3764d9dfdf09e72b20c"
+dependencies = [
+ "bytes 0.5.6",
+ "memchr",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -778,7 +789,7 @@ dependencies = [
  "log",
  "num_cpus",
  "protobuf",
- "redis",
+ "redis 0.15.1",
  "serde",
  "serde_json",
  "threadpool",
@@ -1225,9 +1236,9 @@ dependencies = [
 
 [[package]]
 name = "pin-project-lite"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e555d9e657502182ac97b539fb3dae8b79cda19e3e4f8ffb5e8de4f18df93c95"
+checksum = "c917123afa01924fc84bb20c4c03f004d9c38e5127e3c039bbf7f4b9c76a2f6b"
 
 [[package]]
 name = "pin-utils"
@@ -1413,7 +1424,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3eeb1fe3fc011cde97315f370bc88e4db3c23b08709a04915921e02b1d363b20"
 dependencies = [
  "bytes 0.5.6",
- "combine",
+ "combine 3.8.1",
  "dtoa",
  "futures-executor",
  "futures-util",
@@ -1423,6 +1434,21 @@ dependencies = [
  "sha1",
  "tokio",
  "tokio-util",
+ "url",
+]
+
+[[package]]
+name = "redis"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9215ee6e440bb40dbdbb4f1cd1548e50a483296741123db9cc2d964ebf956b02"
+dependencies = [
+ "async-trait",
+ "combine 4.4.0",
+ "dtoa",
+ "itoa",
+ "percent-encoding",
+ "sha1",
  "url",
 ]
 
@@ -1843,7 +1869,7 @@ dependencies = [
  "protobuf-codegen",
  "protoc-rust",
  "rayon",
- "redis",
+ "redis 0.18.0",
  "serde",
  "serde_json",
  "simplelog",

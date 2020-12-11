@@ -126,23 +126,31 @@ pub fn show_map_cell(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    //展示地图块
-    if target_array.is_empty() {
+    if skill_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
         warn!(
             "target_array is empty!skill_id:{},user_id:{}",
             skill_id, user_id
         );
         return None;
     }
-
+    let battle_cter = battle_data.get_battle_cter(Some(user_id), true);
+    if let Err(e) = battle_cter {
+        warn!("{:?}", e);
+        return None;
+    }
+    let battle_cter = battle_cter.unwrap();
     let show_index;
     //向所有玩家随机展示一个地图块，优先生命元素
     if SHOW_ALL_USERS_CELL == skill_id {
         let mut v = Vec::new();
         let mut nature_index = None;
-        for index in battle_data.tile_map.un_pair_map.keys() {
-            let index = *index;
-            let res = battle_data.check_choice_index(index, false, false, true, false);
+        for index in battle_data.tile_map.un_pair_map.iter() {
+            let (index, map_cell_id) = (*index.0, *index.1);
+            //排除是自己当前turn翻了的
+            if battle_cter.flow_data.open_map_cell_vec.contains(&index) {
+                continue;
+            }
+            let res = battle_data.check_choice_index(index, false, true, true, false);
             if let Err(_) = res {
                 continue;
             }
@@ -151,7 +159,7 @@ pub fn show_map_cell(
                 nature_index = Some(map_cell.index);
                 break;
             }
-            v.push(index);
+            v.push((index, map_cell_id));
         }
         let index;
         if nature_index.is_some() {
@@ -166,29 +174,52 @@ pub fn show_map_cell(
             }
         }
         show_index = index;
-        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let map_cell_id = map_cell.id;
+        let map_cell = v.get(index).unwrap();
+        let map_cell_id = map_cell.1;
         let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell.index as u32);
+        target_pt.target_value.push(map_cell.0 as u32);
         target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
     } else if SHOW_SAME_ELMENT_CELL_ALL == skill_id {
         let index = *target_array.get(0).unwrap() as usize;
+        let res = battle_data.check_choice_index(index, false, true, false, false);
+        //校验地图块
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return None;
+        }
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
+        let cter = battle_data.get_battle_cter(Some(user_id), true);
+        if let Err(e) = cter {
+            warn!("{:?}", e);
+            return None;
+        }
+        let cter = cter.unwrap();
+        //地图块必须已翻开
+        if !cter.flow_data.open_map_cell_vec.contains(&index) && map_cell.pair_index.is_none() {
+            warn!(
+                "this index is invalid!the map_cell must open!index:{}",
+                index
+            );
+            return None;
+        }
         let element = map_cell.element;
         for _map_cell in battle_data.tile_map.map_cells.iter() {
             if _map_cell.index == map_cell.index {
                 continue;
             }
-            if _map_cell.is_world {
+
+            let res = battle_data.check_choice_index(_map_cell.index, false, true, false, true);
+            if let Err(_) = res {
                 continue;
             }
+
             if _map_cell.element != element {
                 continue;
             }
+
             let mut target_pt = TargetPt::new();
             target_pt.target_value.push(_map_cell.index as u32);
-            target_pt.target_value.push(_map_cell.id);
             au.targets.push(target_pt);
         }
         show_index = index;
