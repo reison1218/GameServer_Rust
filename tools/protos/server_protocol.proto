@@ -36,5 +36,6 @@ message UPDATE_SEASON_NOTICE{
 message PlayerBattlePt{
     uint32 user_id = 1;//玩家id
     string nick_name = 2;//玩家昵称
-    repeated CharacterPt cters = 3;//玩家解锁的角色数组
+    uint32 grade = 3;//等级
+    repeated CharacterPt cters = 4;//玩家解锁的角色数组
 }

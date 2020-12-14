@@ -459,11 +459,15 @@ pub struct PinTest{
     s:Option<&'static mut str>,
 }
 
-
+#[derive(Default,Debug)]
+pub struct StructTest{
+    a:u32,
+    b:u32,
+    c:Vec<u32>,
+}
 
 fn main() -> anyhow::Result<()> {
 
-    let mut p = PinTest::default();
     //calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();

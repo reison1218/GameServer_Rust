@@ -3,7 +3,6 @@ use crate::TEMPLATES;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::str::FromStr;
 use tools::protos::base::CharacterPt;
 use tools::templates::character_temp::{CharacterTempMgr, Group};
 use tools::templates::template::TemplateMgrTrait;
@@ -90,7 +89,6 @@ impl Characters {
 pub struct Character {
     pub user_id: u32,              //玩家id
     pub character_id: u32,         //角色id
-    pub grate: u8,                 //grate
     pub skills: Vec<Group>,        //技能
     pub last_use_skills: Vec<u32>, //上次使用的技能
     #[serde(skip_serializing)]
@@ -103,8 +101,6 @@ impl Into<CharacterPt> for Character {
         let res = self.get_skills();
         cter_pt.set_skills(res);
         cter_pt.set_cter_id(self.character_id);
-        let res = self.get_grade();
-        cter_pt.set_grade(res);
         let last_use_skills = self.get_last_use_skills();
         cter_pt.set_last_use_skills(last_use_skills);
         cter_pt
@@ -117,29 +113,6 @@ impl Character {
         cter.user_id = user_id;
         cter.character_id = character_id;
         cter.skills = skills;
-        let res = TEMPLATES
-            .get_constant_temp_mgr_ref()
-            .temps
-            .get("character_init_grade");
-        let grade;
-        match res {
-            Some(temp) => {
-                let s = usize::from_str(temp.value.as_str());
-                match s {
-                    Ok(g) => {
-                        grade = g as u8;
-                    }
-                    Err(e) => {
-                        error!("{:?}", e);
-                        grade = 1u8;
-                    }
-                }
-            }
-            None => {
-                grade = 1u8;
-            }
-        }
-        cter.grate = grade;
         cter
     }
 
@@ -153,53 +126,6 @@ impl Character {
 
     pub fn get_last_use_skills(&self) -> Vec<u32> {
         self.last_use_skills.clone()
-    }
-
-    pub fn get_grade(&self) -> u32 {
-        self.grate as u32
-    }
-
-    pub fn add_grade(&mut self) -> anyhow::Result<u32> {
-        let res = self.get_grade();
-        let mut grade = res as usize;
-        grade += 1;
-        let mut max_grade = 2_u32;
-        let max_grade_temp = TEMPLATES.get_constant_temp_mgr_ref().temps.get("max_grade");
-        match max_grade_temp {
-            Some(max_grade_temp) => {
-                let res = u32::from_str(max_grade_temp.value.as_str());
-                match res {
-                    Ok(res) => {
-                        max_grade = res;
-                    }
-                    Err(e) => {
-                        error!("{:?}", e);
-                    }
-                }
-            }
-            None => {
-                error!("max_grade is not find!");
-            }
-        }
-        if grade as u32 > max_grade {
-            grade = 1;
-        }
-        self.grate = grade as u8;
-        self.add_version();
-        Ok(grade as u32)
-    }
-
-    pub fn sub_grade(&mut self) -> anyhow::Result<u32> {
-        let res = self.get_grade();
-
-        let mut grade = res as isize;
-        grade -= 1;
-        if grade <= 0 {
-            grade = 1;
-        }
-        self.grate = grade as u8;
-        self.add_version();
-        Ok(grade as u32)
     }
 }
 

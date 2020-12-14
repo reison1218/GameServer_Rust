@@ -1772,7 +1772,6 @@ pub struct S_CHOOSE_CHARACTER_NOTICE {
     // message fields
     pub user_id: u32,
     pub cter_id: u32,
-    pub cter_grade: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1818,21 +1817,6 @@ impl S_CHOOSE_CHARACTER_NOTICE {
     pub fn set_cter_id(&mut self, v: u32) {
         self.cter_id = v;
     }
-
-    // uint32 cter_grade = 3;
-
-
-    pub fn get_cter_grade(&self) -> u32 {
-        self.cter_grade
-    }
-    pub fn clear_cter_grade(&mut self) {
-        self.cter_grade = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_cter_grade(&mut self, v: u32) {
-        self.cter_grade = v;
-    }
 }
 
 impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
@@ -1858,13 +1842,6 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
                     let tmp = is.read_uint32()?;
                     self.cter_id = tmp;
                 },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.cter_grade = tmp;
-                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -1883,9 +1860,6 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
         if self.cter_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.cter_grade != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.cter_grade, ::protobuf::wire_format::WireTypeVarint);
-        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -1897,9 +1871,6 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
         }
         if self.cter_id != 0 {
             os.write_uint32(2, self.cter_id)?;
-        }
-        if self.cter_grade != 0 {
-            os.write_uint32(3, self.cter_grade)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1949,11 +1920,6 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
                 |m: &S_CHOOSE_CHARACTER_NOTICE| { &m.cter_id },
                 |m: &mut S_CHOOSE_CHARACTER_NOTICE| { &mut m.cter_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "cter_grade",
-                |m: &S_CHOOSE_CHARACTER_NOTICE| { &m.cter_grade },
-                |m: &mut S_CHOOSE_CHARACTER_NOTICE| { &mut m.cter_grade },
-            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_CHARACTER_NOTICE>(
                 "S_CHOOSE_CHARACTER_NOTICE",
                 fields,
@@ -1972,7 +1938,6 @@ impl ::protobuf::Clear for S_CHOOSE_CHARACTER_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
         self.cter_id = 0;
-        self.cter_grade = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6791,52 +6756,51 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     s\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\
     \x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
     \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"l\n\x19S_CHOOSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
-    (\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\
-    \x1d\n\ncter_grade\x18\x03\x20\x01(\rR\tcterGrade\"(\n\x0eC_CHOOSE_SKILL\
-    \x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_CHOOSE_SKI\
-    LL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
-    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\x03\x20\x03\
-    (\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\
-    \rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\x18\x01\x20\x01\
-    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"5\
-    \n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctarget\
-    TeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
-    (\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\rR\x06teamId\",\n\
-    \x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepa\
-    re\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
-    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"L\n\x17\
-    S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
-    Id\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07prepare\"\t\n\x07C_STAR\
-    T\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
-    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"Z\n\x18S_ROOM_ADD\
-    _MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12(\n\
-    \x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_\
-    ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\
-    \x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"\
-    $\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\
-    \x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
-    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\
-    \x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEMBER_LEAVE_NOTICE\x12\
-    \x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x17\n\x07user_\
-    id\x18\x02\x20\x01(\rR\x06userId\"\xa8\x01\n\x0eS_START_NOTICE\x12\x1f\n\
-    \x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\n\x0btile_map_id\
-    \x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\
-    \x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoice_order\x18\x04\x20\
-    \x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\x14\n\x05index\x18\
-    \x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\x17\n\x07is_succ\
-    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\x05order\x18\x01\
-    \x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\x17\n\x07is_succ\
-    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\rR\x05ind\
-    ex\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\x05order\"\x1d\
-    \n\x1bS_START_CHOOSE_INDEX_NOTICE\"\x14\n\x12C_SKIP_TURN_CHOICE\"4\n\x19\
-    S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06us\
-    erIdb\x06proto3\
+    s\"M\n\x19S_CHOOSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
+    (\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"(\n\
+    \x0eC_CHOOSE_SKILL\x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\
+    \n\x0eS_CHOOSE_SKILL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSuc\
+    c\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skil\
+    ls\x18\x03\x20\x03(\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_i\
+    d\x18\x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_su\
+    cc\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01\
+    (\tR\x07errMess\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\
+    \x01(\rR\x0ctargetTeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_\
+    id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\r\
+    R\x06teamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\
+    \x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\
+    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
+    \x07errMess\"L\n\x17S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userId\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07pre\
+    pare\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\
+    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
+    s\"Z\n\x18S_ROOM_ADD_MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\r\
+    R\x05index\x12(\n\x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\
+    \x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\
+    \x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSetti\
+    ngPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\
+    \rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08\
+    R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\
+    \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
+    BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
+    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xa8\x01\n\x0eS_ST\
+    ART_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\
+    \x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\
+    \x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoi\
+    ce_order\x18\x04\x20\x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\
+    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\
+    \x05order\x18\x01\x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\
+    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\
+    \x01(\rR\x05index\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_i\
+    d\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\
+    \x05order\"\x1d\n\x1bS_START_CHOOSE_INDEX_NOTICE\"\x14\n\x12C_SKIP_TURN_\
+    CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -439,8 +439,6 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         let mut cter = Character::default();
         cter.user_id = robot_id;
         cter.is_robot = true;
-        let grade = rand.gen_range(1, 3) as u8;
-        cter.grade = grade;
         cter.cter_id = cter_id;
 
         //初始化角色技能
@@ -798,8 +796,6 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
         member.chose_cter = choice_cter;
     }
 
-    let grade = member.chose_cter.grade;
-
     //走正常逻辑
     let mut scc = S_CHOOSE_CHARACTER::new();
     scc.is_succ = true;
@@ -814,7 +810,6 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     let mut sccn = S_CHOOSE_CHARACTER_NOTICE::new();
     sccn.user_id = user_id;
     sccn.cter_id = cter_id;
-    sccn.cter_grade = grade as u32;
     let bytes = sccn.write_to_bytes().unwrap();
     let room_mut_ref = room.get_mut_ref();
     for member_id in room.members.keys() {

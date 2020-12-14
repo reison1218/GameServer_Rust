@@ -1057,6 +1057,7 @@ pub struct PlayerBattlePt {
     // message fields
     pub user_id: u32,
     pub nick_name: ::std::string::String,
+    pub grade: u32,
     pub cters: ::protobuf::RepeatedField<super::base::CharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1115,7 +1116,22 @@ impl PlayerBattlePt {
         ::std::mem::replace(&mut self.nick_name, ::std::string::String::new())
     }
 
-    // repeated .protos.CharacterPt cters = 3;
+    // uint32 grade = 3;
+
+
+    pub fn get_grade(&self) -> u32 {
+        self.grade
+    }
+    pub fn clear_grade(&mut self) {
+        self.grade = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade(&mut self, v: u32) {
+        self.grade = v;
+    }
+
+    // repeated .protos.CharacterPt cters = 4;
 
 
     pub fn get_cters(&self) -> &[super::base::CharacterPt] {
@@ -1166,6 +1182,13 @@ impl ::protobuf::Message for PlayerBattlePt {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.nick_name)?;
                 },
                 3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.grade = tmp;
+                },
+                4 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
                 },
                 _ => {
@@ -1186,6 +1209,9 @@ impl ::protobuf::Message for PlayerBattlePt {
         if !self.nick_name.is_empty() {
             my_size += ::protobuf::rt::string_size(2, &self.nick_name);
         }
+        if self.grade != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
+        }
         for value in &self.cters {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -1202,8 +1228,11 @@ impl ::protobuf::Message for PlayerBattlePt {
         if !self.nick_name.is_empty() {
             os.write_string(2, &self.nick_name)?;
         }
+        if self.grade != 0 {
+            os.write_uint32(3, self.grade)?;
+        }
         for v in &self.cters {
-            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -1255,6 +1284,11 @@ impl ::protobuf::Message for PlayerBattlePt {
                 |m: &PlayerBattlePt| { &m.nick_name },
                 |m: &mut PlayerBattlePt| { &mut m.nick_name },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "grade",
+                |m: &PlayerBattlePt| { &m.grade },
+                |m: &mut PlayerBattlePt| { &mut m.grade },
+            ));
             fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::CharacterPt>>(
                 "cters",
                 |m: &PlayerBattlePt| { &m.cters },
@@ -1278,6 +1312,7 @@ impl ::protobuf::Clear for PlayerBattlePt {
     fn clear(&mut self) {
         self.user_id = 0;
         self.nick_name.clear();
+        self.grade = 0;
         self.cters.clear();
         self.unknown_fields.clear();
     }
@@ -1307,10 +1342,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ummaryDataPtR\x0csummaryDatas\"\x87\x01\n\x14UPDATE_SEASON_NOTICE\x12\
     \x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10last_update_\
     time\x18\x02\x20\x01(\tR\x0elastUpdateTime\x12(\n\x10next_update_time\
-    \x18\x03\x20\x01(\tR\x0enextUpdateTime\"q\n\x0ePlayerBattlePt\x12\x17\n\
-    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\
-    \x20\x01(\tR\x08nickName\x12)\n\x05cters\x18\x03\x20\x03(\x0b2\x13.proto\
-    s.CharacterPtR\x05ctersb\x06proto3\
+    \x18\x03\x20\x01(\tR\x0enextUpdateTime\"\x87\x01\n\x0ePlayerBattlePt\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\
+    \x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05g\
+    rade\x12)\n\x05cters\x18\x04\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ct\
+    ersb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

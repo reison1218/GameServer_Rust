@@ -157,11 +157,7 @@ impl BattleData {
         let battle_cter = battle_cter.unwrap();
         let item = battle_cter.items.get(&item_id);
         if let None = item {
-            error!(
-                "item is None!user_id:{},item_id:{}",
-                battle_cter.get_user_id(),
-                item_id
-            );
+            error!("item is None!user_id:{},item_id:{}", user_id, item_id);
             anyhow::bail!("")
         }
         let item = item.unwrap();

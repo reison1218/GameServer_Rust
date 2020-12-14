@@ -23,6 +23,7 @@ pub enum MemberState {
 pub struct Member {
     pub user_id: u32,                   //玩家id
     pub nick_name: String,              //玩家昵称
+    pub grade: u8,                      //玩家grade
     pub state: u8,                      //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
     pub is_robot: bool,                 //是否的机器人
@@ -44,7 +45,7 @@ impl From<PlayerBattlePt> for Member {
         member.nick_name = pbp.get_nick_name().to_owned();
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady as u8;
-
+        member.grade = pbp.grade as u8;
         let mut cters = HashMap::new();
         let res = pbp.take_cters();
 
@@ -64,6 +65,7 @@ impl Into<MemberPt> for Member {
         let mut mp = MemberPt::new();
         mp.user_id = self.get_user_id();
         mp.state = self.state as u32;
+        mp.grade = self.grade as u32;
         mp.nick_name = self.nick_name.clone();
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;

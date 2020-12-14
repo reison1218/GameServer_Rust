@@ -19,10 +19,9 @@ use tools::templates::character_temp::CharacterTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
-    pub user_id: u32,   //玩家id
-    pub cter_id: u32,   //角色的配置id
-    pub is_robot: bool, //是否是机器人
-    pub grade: u8,
+    pub user_id: u32,              //玩家id
+    pub cter_id: u32,              //角色的配置id
+    pub is_robot: bool,            //是否是机器人
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
     pub last_use_skills: Vec<u32>, //上次使用的技能
 }
@@ -31,7 +30,6 @@ impl From<CharacterPt> for Character {
     fn from(cter_pt: CharacterPt) -> Self {
         let mut c = Character::default();
         c.cter_id = cter_pt.cter_id;
-        c.grade = cter_pt.grade as u8;
         c.skills = cter_pt.skills;
         c.last_use_skills = cter_pt.last_use_skills;
         c
@@ -42,7 +40,8 @@ impl Into<CharacterPt> for Character {
     fn into(self) -> CharacterPt {
         let mut cter_pt = CharacterPt::new();
         cter_pt.set_cter_id(self.cter_id);
-        cter_pt.set_grade(self.grade as u32);
+        cter_pt.set_skills(self.skills);
+        cter_pt.set_last_use_skills(self.last_use_skills);
         cter_pt
     }
 }
@@ -532,6 +531,7 @@ impl BattleCharacter {
     ///初始化战斗角色数据
     pub fn init(
         cter: &Character,
+        grade: u8,
         battle_data: &BattleData,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
@@ -539,7 +539,7 @@ impl BattleCharacter {
         let cter_id = cter.cter_id;
         battle_cter.base_attr.user_id = cter.user_id;
         battle_cter.base_attr.cter_id = cter_id;
-        battle_cter.base_attr.grade = cter.grade;
+        battle_cter.base_attr.grade = grade;
         let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
         let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
         for skill_id in cter.skills.iter() {

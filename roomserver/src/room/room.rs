@@ -1083,6 +1083,7 @@ impl Room {
         for member in self.members.values_mut() {
             let battle_cter = BattleCharacter::init(
                 &member.chose_cter,
+                member.grade,
                 &self.battle_data,
                 self.robot_sender.clone(),
             );

@@ -4,6 +4,7 @@ use chrono::Local;
 use protobuf::Message;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
@@ -22,6 +23,7 @@ pub struct User {
     pub user_id: u32,      //玩家id
     pub ol: bool,          //是否在线
     pub nick_name: String, //玩家昵称
+    pub grade: u32,        //玩家等级
     #[serde(skip_serializing_if = "String::is_empty")]
     pub last_login_time: String, //上次登陆时间
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -110,6 +112,52 @@ impl Dao for User {
 }
 
 impl User {
+    pub fn add_grade(&mut self) -> anyhow::Result<u32> {
+        let res = self.grade;
+        let mut grade = res as usize;
+        grade += 1;
+        let mut max_grade = 2_u32;
+        let max_grade_temp = crate::TEMPLATES
+            .get_constant_temp_mgr_ref()
+            .temps
+            .get("max_grade");
+        match max_grade_temp {
+            Some(max_grade_temp) => {
+                let res = u32::from_str(max_grade_temp.value.as_str());
+                match res {
+                    Ok(res) => {
+                        max_grade = res;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
+                }
+            }
+            None => {
+                error!("max_grade is not find!");
+            }
+        }
+        if grade as u32 > max_grade {
+            grade = 1;
+        }
+        self.grade = grade as u32;
+        self.add_version();
+        Ok(grade as u32)
+    }
+
+    pub fn sub_grade(&mut self) -> anyhow::Result<u32> {
+        let res = self.grade;
+
+        let mut grade = res as isize;
+        grade -= 1;
+        if grade <= 0 {
+            grade = 1;
+        }
+        self.grade = grade as u32;
+        self.add_version();
+        Ok(grade as u32)
+    }
+
     ///增加在线时间
     pub fn add_online_time(&mut self) {
         // let login_time = chrono::NaiveDateTime::from_str(self.last_login_time.as_str());
@@ -166,6 +214,7 @@ impl User {
     pub fn new(user_id: u32, nick_name: &str) -> Self {
         let mut user = User::default();
         user.user_id = user_id;
+        user.grade = 1;
         user.nick_name = nick_name.to_owned();
         user
     }
@@ -263,12 +312,16 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     //解析客户端发过来的参数
     let mut cr = C_CREATE_ROOM::new();
     cr.merge_from_bytes(packet.get_data())?;
+    let room_type = cr.get_room_type();
+    //封装proto发送给房间服
     let mut gr = G_R_CREATE_ROOM::new();
-    gr.set_room_type(cr.room_type);
+    gr.set_room_type(room_type);
     let mut pbp = PlayerBattlePt::new();
     let user_data = user_data.unwrap();
+    let user_info = user_data.get_user_info_ref();
     pbp.set_user_id(user_id);
-    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    pbp.set_nick_name(user_info.get_nick_name().to_owned());
+    pbp.set_grade(user_info.grade);
     for cter in user_data.get_characters_ref().cter_map.values() {
         let cter_pt = cter.clone().into();
         pbp.cters.push(cter_pt);
@@ -303,9 +356,11 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let user_data = user_data.unwrap();
+    let user_info = user_data.get_user_info_ref();
     let mut pbp = PlayerBattlePt::new();
     pbp.set_user_id(user_id);
-    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    pbp.set_nick_name(user_info.get_nick_name().to_owned());
+    pbp.set_grade(user_info.grade);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -341,9 +396,11 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let user_data = user_data.unwrap();
+    let user_info = user_data.get_user_info_ref();
     let mut pbp = PlayerBattlePt::new();
     pbp.set_user_id(user_id);
-    pbp.set_nick_name(user_data.get_user_info_ref().get_nick_name().to_owned());
+    pbp.set_nick_name(user_info.get_nick_name().to_owned());
+    pbp.set_grade(user_info.grade);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -371,22 +428,14 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
             continue;
         }
         let user_data = res.unwrap();
-        let res = user_data
-            .get_characters_mut_ref()
-            .cter_map
-            .get_mut(&summary_data.cter_id);
-        if let None = res {
-            error! {"summary!Character is not find! user_id:{},cter_id:{}",summary_data.user_id,summary_data.cter_id};
-            continue;
-        }
-        let cter = res.unwrap();
+        let user_info = user_data.get_user_info_mut_ref();
         let res;
         //第一名就加grade
         if summary_data.rank == 0 {
-            res = cter.add_grade();
+            res = user_info.add_grade()
         } else {
             //否则就减grade
-            res = cter.sub_grade();
+            res = user_info.sub_grade();
         }
         if let Err(e) = res {
             error!("{:?}", e);

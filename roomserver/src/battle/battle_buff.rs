@@ -247,7 +247,11 @@ impl BattleData {
                 au.targets.push(target_pt.clone());
             }
         }
-        let battle_cter = self.battle_cter.get_mut(&target_user).unwrap();
+        let battle_cter = self.battle_cter.get_mut(&target_user);
+        if let None = battle_cter {
+            warn!("{:?}", "can not find battle_cter!cter_id={}", target_user);
+        }
+        let battle_cter = battle_cter.unwrap();
         //给自己加
         target_pt.target_value.clear();
         target_pt

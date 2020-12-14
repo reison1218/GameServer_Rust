@@ -732,6 +732,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "dhat"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d179b35af578cd327afc3f11b5b71a5ea27318a3d90e31b64ae1b3dd195648e7"
+dependencies = [
+ "backtrace",
+ "lazy_static",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "thousands",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1438,6 +1452,7 @@ dependencies = [
  "chrono",
  "concurrent-queue",
  "crossbeam",
+ "dhat",
  "dirs",
  "env_logger",
  "envmnt",
@@ -1948,6 +1963,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e3bad0ee36814ca07d7968269dd4b7ec89ec2da10c4bb613928d3077083c232"
 
 [[package]]
+name = "rustc-hash"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+
+[[package]]
 name = "rustc_version"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2251,6 +2272,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "thousands"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bf63baf9f5039dadc247375c29eb13706706cfde997d0330d05aa63a77d8820"
 
 [[package]]
 name = "thread_local"

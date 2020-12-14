@@ -744,6 +744,7 @@ pub struct MemberPt {
     pub nick_name: ::std::string::String,
     pub cter: ::protobuf::SingularPtrField<CharacterPt>,
     pub state: u32,
+    pub grade: u32,
     pub team_id: u32,
     pub join_time: u64,
     // special fields
@@ -851,7 +852,22 @@ impl MemberPt {
         self.state = v;
     }
 
-    // uint32 team_id = 5;
+    // uint32 grade = 5;
+
+
+    pub fn get_grade(&self) -> u32 {
+        self.grade
+    }
+    pub fn clear_grade(&mut self) {
+        self.grade = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade(&mut self, v: u32) {
+        self.grade = v;
+    }
+
+    // uint32 team_id = 6;
 
 
     pub fn get_team_id(&self) -> u32 {
@@ -866,7 +882,7 @@ impl MemberPt {
         self.team_id = v;
     }
 
-    // uint64 join_time = 6;
+    // uint64 join_time = 7;
 
 
     pub fn get_join_time(&self) -> u64 {
@@ -921,9 +937,16 @@ impl ::protobuf::Message for MemberPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.team_id = tmp;
+                    self.grade = tmp;
                 },
                 6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.team_id = tmp;
+                },
+                7 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -955,11 +978,14 @@ impl ::protobuf::Message for MemberPt {
         if self.state != 0 {
             my_size += ::protobuf::rt::value_size(4, self.state, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.grade != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.grade, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.team_id != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.team_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(6, self.team_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.join_time != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.join_time, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(7, self.join_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -981,11 +1007,14 @@ impl ::protobuf::Message for MemberPt {
         if self.state != 0 {
             os.write_uint32(4, self.state)?;
         }
+        if self.grade != 0 {
+            os.write_uint32(5, self.grade)?;
+        }
         if self.team_id != 0 {
-            os.write_uint32(5, self.team_id)?;
+            os.write_uint32(6, self.team_id)?;
         }
         if self.join_time != 0 {
-            os.write_uint64(6, self.join_time)?;
+            os.write_uint64(7, self.join_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1046,6 +1075,11 @@ impl ::protobuf::Message for MemberPt {
                 |m: &mut MemberPt| { &mut m.state },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "grade",
+                |m: &MemberPt| { &m.grade },
+                |m: &mut MemberPt| { &mut m.grade },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "team_id",
                 |m: &MemberPt| { &m.team_id },
                 |m: &mut MemberPt| { &mut m.team_id },
@@ -1075,6 +1109,7 @@ impl ::protobuf::Clear for MemberPt {
         self.nick_name.clear();
         self.cter.clear();
         self.state = 0;
+        self.grade = 0;
         self.team_id = 0;
         self.join_time = 0;
         self.unknown_fields.clear();
@@ -1879,7 +1914,6 @@ impl ::protobuf::reflect::ProtobufValue for NoticeMessPt {
 pub struct CharacterPt {
     // message fields
     pub cter_id: u32,
-    pub grade: u32,
     pub last_use_skills: ::std::vec::Vec<u32>,
     pub skills: ::std::vec::Vec<u32>,
     // special fields
@@ -1913,22 +1947,7 @@ impl CharacterPt {
         self.cter_id = v;
     }
 
-    // uint32 grade = 2;
-
-
-    pub fn get_grade(&self) -> u32 {
-        self.grade
-    }
-    pub fn clear_grade(&mut self) {
-        self.grade = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_grade(&mut self, v: u32) {
-        self.grade = v;
-    }
-
-    // repeated uint32 last_use_skills = 3;
+    // repeated uint32 last_use_skills = 2;
 
 
     pub fn get_last_use_skills(&self) -> &[u32] {
@@ -1953,7 +1972,7 @@ impl CharacterPt {
         ::std::mem::replace(&mut self.last_use_skills, ::std::vec::Vec::new())
     }
 
-    // repeated uint32 skills = 4;
+    // repeated uint32 skills = 3;
 
 
     pub fn get_skills(&self) -> &[u32] {
@@ -1996,16 +2015,9 @@ impl ::protobuf::Message for CharacterPt {
                     self.cter_id = tmp;
                 },
                 2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.grade = tmp;
-                },
-                3 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.last_use_skills)?;
                 },
-                4 => {
+                3 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.skills)?;
                 },
                 _ => {
@@ -2023,14 +2035,11 @@ impl ::protobuf::Message for CharacterPt {
         if self.cter_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.grade != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.grade, ::protobuf::wire_format::WireTypeVarint);
-        }
         for value in &self.last_use_skills {
-            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         for value in &self.skills {
-            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -2041,14 +2050,11 @@ impl ::protobuf::Message for CharacterPt {
         if self.cter_id != 0 {
             os.write_uint32(1, self.cter_id)?;
         }
-        if self.grade != 0 {
-            os.write_uint32(2, self.grade)?;
-        }
         for v in &self.last_use_skills {
-            os.write_uint32(3, *v)?;
+            os.write_uint32(2, *v)?;
         };
         for v in &self.skills {
-            os.write_uint32(4, *v)?;
+            os.write_uint32(3, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2093,11 +2099,6 @@ impl ::protobuf::Message for CharacterPt {
                 |m: &CharacterPt| { &m.cter_id },
                 |m: &mut CharacterPt| { &mut m.cter_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "grade",
-                |m: &CharacterPt| { &m.grade },
-                |m: &mut CharacterPt| { &mut m.grade },
-            ));
             fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "last_use_skills",
                 |m: &CharacterPt| { &m.last_use_skills },
@@ -2125,7 +2126,6 @@ impl ::protobuf::Message for CharacterPt {
 impl ::protobuf::Clear for CharacterPt {
     fn clear(&mut self) {
         self.cter_id = 0;
-        self.grade = 0;
         self.last_use_skills.clear();
         self.skills.clear();
         self.unknown_fields.clear();
@@ -4758,23 +4758,23 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ckName\x12%\n\x0elast_character\x18\x02\x20\x01(\rR\rlastCharacter\x12\
     \x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bResourcesPt\x12\x12\n\
     \x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\x02\x20\x01(\rR\
-    \x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xb5\x01\n\x08Member\
+    \x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xcb\x01\n\x08Member\
     Pt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_na\
     me\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\x0b2\
     \x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01(\rR\
-    \x05state\x12\x17\n\x07team_id\x18\x05\x20\x01(\rR\x06teamId\x12\x1b\n\t\
-    join_time\x18\x06\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\x14\
-    \n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\
-    \x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\
-    \x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\
-    \x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\
-    \n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\
-    \x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07member\
-    s\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistory\
-    MessPt\"\x0e\n\x0cNoticeMessPt\"|\n\x0bCharacterPt\x12\x17\n\x07cter_id\
-    \x18\x01\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x02\x20\x01(\rR\
-    \x05grade\x12&\n\x0flast_use_skills\x18\x03\x20\x03(\rR\rlastUseSkills\
-    \x12\x16\n\x06skills\x18\x04\x20\x03(\rR\x06skills\"\x8c\x02\n\x11Battle\
+    \x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\x05grade\x12\x17\n\x07t\
+    eam_id\x18\x06\x20\x01(\rR\x06teamId\x12\x1b\n\tjoin_time\x18\x07\x20\
+    \x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\x14\n\x05index\x18\x01\
+    \x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\x20\x01(\rR\x0bworl\
+    dCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\
+    \x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\
+    \n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\n\x0broom_status\
+    \x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\x05\x20\x01(\x0b2\
+    \x15.protos.RoomSettingPtR\x07setting\x12*\n\x07members\x18\x06\x20\x03(\
+    \x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0c\
+    NoticeMessPt\"f\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\x20\x01(\r\
+    R\x06cterId\x12&\n\x0flast_use_skills\x18\x02\x20\x03(\rR\rlastUseSkills\
+    \x12\x16\n\x06skills\x18\x03\x20\x03(\rR\x06skills\"\x8c\x02\n\x11Battle\
     CharacterPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x17\
     \n\x07user_id\x18\x02\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x03\
     \x20\x01(\rR\x06cterId\x12\x10\n\x03atk\x18\x04\x20\x01(\rR\x03atk\x12\

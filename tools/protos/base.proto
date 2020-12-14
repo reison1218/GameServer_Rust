@@ -43,8 +43,9 @@ message MemberPt{
     string nick_name = 2;//玩家昵称
     CharacterPt cter = 3;//玩家已经选择的角色数据
     uint32 state = 4;//玩家状态，是否已经准备 0:未准备，1：准备
-    uint32 team_id = 5;//玩家所属队伍id
-    uint64 join_time = 6;//玩家进入房间的时间
+    uint32 grade = 5;//角色等级
+    uint32 team_id = 6;//玩家所属队伍id
+    uint64 join_time = 7;//玩家进入房间的时间
 }
 
 message WorldCellPt{
@@ -76,9 +77,8 @@ message NoticeMessPt{
 //玩家角色数据
 message CharacterPt{
     uint32 cter_id = 1;//角色的配置id
-    uint32 grade = 2;//角色等级
-    repeated uint32 last_use_skills = 3;
-    repeated uint32 skills = 4;//玩家次角色所有已解锁的技能id
+    repeated uint32 last_use_skills = 2;
+    repeated uint32 skills = 3;//玩家次角色所有已解锁的技能id
 }
 
 //玩家战斗角色数据
