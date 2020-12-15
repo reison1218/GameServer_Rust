@@ -151,12 +151,12 @@ impl ChannelMgr {
         self.channels.insert(token, user_id);
     }
     ///获得玩家channel k:userid
-    pub fn get_user_channel(&mut self, user_id: &u32) -> Option<&GateUser> {
+    pub fn get_user_channel(&self, user_id: &u32) -> Option<&GateUser> {
         self.user_channel.get(user_id)
     }
 
     ///根据token获得userid
-    pub fn get_channels_user_id(&mut self, token: &usize) -> Option<&u32> {
+    pub fn get_channels_user_id(&self, token: &usize) -> Option<&u32> {
         self.channels.get(token)
     }
 

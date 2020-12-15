@@ -454,21 +454,21 @@ fn calc_n2(n: i64) {
 }
 
 #[derive(Default)]
-pub struct PinTest{
-    str:String,
-    s:Option<&'static mut str>,
+pub struct PinTest {
+    str: String,
+    s: Option<&'static mut str>,
 }
 
-#[derive(Default,Debug)]
-pub struct StructTest{
-    a:u32,
-    b:u32,
-    c:Vec<u32>,
+#[derive(Default, Debug)]
+pub struct StructTest {
+    a: u32,
+    b: u32,
+    c: Vec<u32>,
 }
 
 fn main() -> anyhow::Result<()> {
-    let res = tools::http::send_http_request("192.168.2.103:7777","reload_temps","post",None);
-    async_std::task::block_on(res);
+    // let res = tools::http::send_http_request("192.168.2.103:7777","reload_temps","post",None);
+    // async_std::task::block_on(res);
     //calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();

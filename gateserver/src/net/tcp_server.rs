@@ -83,14 +83,15 @@ impl TcpServerHandler {
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
         if user_id.is_none() && packet.get_cmd() != GameCode::Login.into_u32() {
             let str = format!(
-                "this player is not login!cmd:{},token:{}",
+                "this player is not login and cmd != Login!cmd:{},token:{}",
                 packet.get_cmd(),
                 token
             );
             warn!("{:?}", str.as_str());
+            return;
         }
 
-        let u_id;
+        let mut u_id = *user_id.unwrap();
         //执行登录
         if packet.get_cmd() == GameCode::Login.into_u32() {
             let mut c_u_l = C_USER_LOGIN::new();
@@ -102,10 +103,9 @@ impl TcpServerHandler {
             u_id = c_u_l.get_user_id();
             let res = handle_login(packet.get_data(), &mut lock);
             if let Err(e) = res {
-                let str = e.to_string();
                 let mut sul = S_USER_LOGIN::new();
                 sul.set_is_succ(false);
-                sul.set_err_mess(str.clone());
+                sul.set_err_mess(e.to_string());
                 packet.set_cmd(ClientCode::Login as u32);
                 packet.set_data_from_vec(sul.write_to_bytes().unwrap());
                 std::mem::drop(lock);
@@ -115,12 +115,6 @@ impl TcpServerHandler {
             lock.add_gate_user(u_id, None, self.tcp.clone());
             //通知用户中心
             async_std::task::spawn(notice_user_center(u_id, "login"));
-        } else if user_id.is_none() {
-            let str = format!("this user_id is invalid!user_id:{}", packet.get_user_id());
-            warn!("{:?}", str.as_str());
-            return;
-        } else {
-            u_id = *user_id.unwrap();
         }
         packet.set_user_id(u_id);
 
