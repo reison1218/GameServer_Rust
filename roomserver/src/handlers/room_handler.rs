@@ -27,6 +27,19 @@ use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
 
 pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
+    let path = std::env::current_dir();
+    if let Err(e) = path {
+        anyhow::bail!("{:?}", e)
+    }
+    let path = path.unwrap();
+    let str = path.as_os_str().to_str();
+    if let None = str {
+        anyhow::bail!("reload_temps can not path to_str!")
+    }
+    let str = str.unwrap();
+    let res = str.to_string() + "/template";
+    crate::TEMPLATES.reload_temps(res.as_str())?;
+    info!("reload_temps success!");
     Ok(())
 }
 

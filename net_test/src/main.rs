@@ -467,7 +467,8 @@ pub struct StructTest{
 }
 
 fn main() -> anyhow::Result<()> {
-
+    let res = tools::http::send_http_request("192.168.2.103:7777","reload_temps","post",None);
+    async_std::task::block_on(res);
     //calc_n2(600);
     // let mut tt = TestS::default();
     // let t = tt.borrow_mut();

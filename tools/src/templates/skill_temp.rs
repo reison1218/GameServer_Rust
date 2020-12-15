@@ -50,4 +50,9 @@ impl TemplateMgrTrait for SkillTempMgr {
     fn is_empty(&self) -> bool {
         self.temps.is_empty()
     }
+
+    fn clear(&mut self) {
+        self.temps.clear();
+        self.lock_skills.clear();
+    }
 }

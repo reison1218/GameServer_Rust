@@ -249,7 +249,7 @@ impl BattleData {
         }
         let battle_cter = self.battle_cter.get_mut(&target_user);
         if let None = battle_cter {
-            warn!("{:?}", "can not find battle_cter!cter_id={}", target_user);
+            warn!("can not find battle_cter!cter_id={}", target_user);
         }
         let battle_cter = battle_cter.unwrap();
         //给自己加

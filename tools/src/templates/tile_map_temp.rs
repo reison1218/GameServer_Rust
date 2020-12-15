@@ -81,4 +81,10 @@ impl TemplateMgrTrait for TileMapTempMgr {
     fn is_empty(&self) -> bool {
         self.temps.is_empty()
     }
+
+    fn clear(&mut self) {
+        self.temps.clear();
+        self.member_temps.clear();
+        self.season_temps.clear();
+    }
 }

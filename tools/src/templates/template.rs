@@ -16,8 +16,8 @@ use crate::templates::template_name_constants::{
 };
 use crate::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 use crate::templates::world_cell_temp::{WorldCellTemp, WorldCellTempMgr};
-use std::borrow::Borrow;
-use std::error::Error;
+use log::error;
+use std::borrow::{Borrow, BorrowMut};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -26,6 +26,7 @@ pub trait Template {}
 
 pub trait TemplateMgrTrait: Send + Sync {
     fn is_empty(&self) -> bool;
+    fn clear(&mut self);
 }
 
 //配置表mgr
@@ -102,18 +103,47 @@ impl TemplatesMgr {
     pub fn get_robot_temp_mgr_ref(&self) -> &RobotTempMgr {
         self.robot_temp_mgr.borrow()
     }
+
+    pub fn reload_temps(&self, path: &str) -> anyhow::Result<()> {
+        let mgr_ptr = self as *const TemplatesMgr as *mut TemplatesMgr;
+        unsafe {
+            let mgr_mut = mgr_ptr.as_mut().unwrap();
+            mgr_mut.character_temp_mgr.clear();
+            mgr_mut.tile_map_temp_mgr.clear();
+            mgr_mut.emoji_temp_mgr.clear();
+            mgr_mut.constant_temp_mgr.clear();
+            mgr_mut.world_cell_temp_mgr.clear();
+            mgr_mut.cell_temp_mgr.clear();
+            mgr_mut.skill_temp_mgr.clear();
+            mgr_mut.item_temp_mgr.clear();
+            mgr_mut.skill_scope_temp_mgr.clear();
+            mgr_mut.buff_temp_mgr.clear();
+            mgr_mut.skill_judge_temp_mgr.clear();
+            mgr_mut.season_temp_mgr.clear();
+            mgr_mut.robot_temp_mgr.clear();
+            let res = read_templates_from_dir(path, mgr_mut);
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return Ok(());
+            }
+        }
+        Ok(())
+    }
 }
 
 pub fn init_temps_mgr(path: &str) -> TemplatesMgr {
-    let res = read_templates_from_dir(path).unwrap();
-    res
+    let mut temps_mgr = TemplatesMgr::default();
+    read_templates_from_dir(path, temps_mgr.borrow_mut()).unwrap();
+    temps_mgr
 }
 
 ///读取配置文件
-fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<dyn Error>> {
+fn read_templates_from_dir<P: AsRef<Path>>(
+    path: P,
+    temps_mgr: &mut TemplatesMgr,
+) -> anyhow::Result<()> {
     // Open the file in read-only mode with buffer.
     let result = std::fs::read_dir(path)?;
-    let mut temps_mgr = TemplatesMgr::default();
     for f in result {
         let file = f.unwrap();
         let name = file.file_name();
@@ -134,57 +164,44 @@ fn read_templates_from_dir<P: AsRef<Path>>(path: P) -> Result<TemplatesMgr, Box<
 
         if name.eq_ignore_ascii_case(TILE_MAP_TEMPLATE) {
             let v: Vec<TileMapTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.tile_map_temp_mgr = TileMapTempMgr::default();
             temps_mgr.tile_map_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(CHARACTER_TEMPLATE) {
             let v: Vec<CharacterTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.character_temp_mgr = CharacterTempMgr::default();
             temps_mgr.character_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(EMOJI_TEMPLATE) {
             let v: Vec<EmojiTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.emoji_temp_mgr = EmojiTempMgr::default();
             temps_mgr.emoji_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(CONSTANT_TEMPLATE) {
             let v: Vec<ConstantTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.constant_temp_mgr = ConstantTempMgr::default();
             temps_mgr.constant_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(WORLD_CELL_TEMPLATE) {
             let v: Vec<WorldCellTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.world_cell_temp_mgr = WorldCellTempMgr::default();
             temps_mgr.world_cell_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(CELL_TEMPLATE) {
             let v: Vec<CellTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.cell_temp_mgr = CellTempMgr::default();
             temps_mgr.cell_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
             let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_temp_mgr = SkillTempMgr::default();
             temps_mgr.skill_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
             let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_scope_temp_mgr = SkillScopeTempMgr::default();
             temps_mgr.skill_scope_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
             let v: Vec<ItemTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.item_temp_mgr = ItemTempMgr::default();
             temps_mgr.item_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(SKILL_JUDGE_TEMPLATE) {
             let v: Vec<SkillJudgeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_judge_temp_mgr = SkillJudgeTempMgr::default();
             temps_mgr.skill_judge_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(BUFF) {
             let v: Vec<BuffTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.buff_temp_mgr = BuffTempMgr::default();
             temps_mgr.buff_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(SEASON) {
             let v: Vec<SeasonTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.season_temp_mgr = SeasonTempMgr::default();
             temps_mgr.season_temp_mgr.init(v);
         } else if name.eq_ignore_ascii_case(ROBOT) {
             let v: Vec<RobotTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.robot_temp_mgr = RobotTempMgr::default();
             temps_mgr.robot_temp_mgr.init(v);
         }
     }
-    Ok(temps_mgr)
+    Ok(())
 }

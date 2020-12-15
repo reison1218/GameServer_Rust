@@ -41,4 +41,9 @@ impl TemplateMgrTrait for RobotTempMgr {
     fn is_empty(&self) -> bool {
         self.temps.is_empty()
     }
+
+    fn clear(&mut self) {
+        self.temps.clear();
+        self.cters.clear();
+    }
 }
