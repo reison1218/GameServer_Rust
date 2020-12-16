@@ -466,6 +466,7 @@ pub struct StructTest {
     c: Vec<u32>,
 }
 
+fn fn1(s: &mut String) {}
 fn main() -> anyhow::Result<()> {
     // let res = tools::http::send_http_request("192.168.2.103:7777","reload_temps","post",None);
     // async_std::task::block_on(res);

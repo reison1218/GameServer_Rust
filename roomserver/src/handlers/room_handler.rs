@@ -130,56 +130,93 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
-    let rm_ptr = rm as *mut RoomMgr;
-    unsafe {
-        //校验房间是否存在
-        let room = rm_ptr.as_mut().unwrap().get_room_mut(&user_id);
-        if room.is_none() {
+    //校验房间是否存在
+    let room = rm.get_room_ref(&user_id);
+    if room.is_none() {
+        return Ok(());
+    }
+    let room = room.unwrap();
+
+    //如果不再等待阶段，不允许主动推出房间
+    if room.get_state() != RoomState::Await
+        && room.get_state() != RoomState::BattleStarted
+        && packet.get_cmd() == RoomCode::LeaveRoom as u32
+    {
+        warn!(
+            "can not leave room,this room is already started!room_id:{}",
+            room.get_room_id()
+        );
+        return Ok(());
+    }
+    let room_id = room.get_room_id();
+    if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
+        let member = room.get_member_ref(&user_id);
+        if let None = member {
+            warn!("leave_room:this player is none!user_id:{}", user_id);
             return Ok(());
         }
-        let room = room.unwrap();
 
-        //如果不再等待阶段，不允许主动推出房间
-        if room.get_state() != RoomState::Await && packet.get_cmd() == RoomCode::LeaveRoom as u32 {
+        let member = member.unwrap();
+        if member.state == MemberState::Ready as u8 {
             warn!(
-                "can not leave room,this room is already started!room_id:{}",
-                room.get_room_id()
+                "leave_room:this player is already ready!user_id:{}",
+                user_id
             );
             return Ok(());
         }
-        let room_id = room.get_room_id();
-        if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
-            let member = room.get_member_mut(&user_id);
-            if let None = member {
-                warn!("leave_room:this player is none!user_id:{}", user_id);
+    }
+    let room_type = RoomType::from(room.get_room_type());
+    match room_type {
+        RoomType::Custom => {
+            let res =
+                rm.custom_room
+                    .leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, &user_id);
+            if let Err(e) = res {
+                error!("{:?}", e);
                 return Ok(());
             }
-            let member = member.unwrap();
-            if member.state == MemberState::Ready as u8 {
-                warn!(
-                    "leave_room:this player is already ready!user_id:{}",
-                    user_id
-                );
-                return Ok(());
+            info!(
+                "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
+                user_id, room_id
+            );
+            let room = rm.custom_room.rooms.get(&user_id).unwrap();
+            let owner_id = room.get_owner_id();
+            let mut need_rm_room = false;
+            if room.is_empty() {
+                need_rm_room = true;
+            } else if room.state == RoomState::BattleOvered {
+                need_rm_room = true;
+            } else if user_id == owner_id {
+                need_rm_room = true;
+            }
+            if need_rm_room {
+                for member_id in room.members.keys() {
+                    rm.player_room.remove(member_id);
+                }
+                rm.custom_room.rm_room(&room_id);
             }
         }
-        let room_type = RoomType::from(room.get_room_type());
-        match room_type {
-            RoomType::Custom => {
-                let res = rm.custom_room.leave_room(
-                    MemberLeaveNoticeType::Leave as u8,
-                    &room_id,
-                    &user_id,
-                );
+        RoomType::Match => {
+            if !room.is_empty() {
+                let res = rm.match_room.leave(room_id, &user_id);
                 if let Err(e) = res {
                     error!("{:?}", e);
                     return Ok(());
                 }
+                let mut slr = S_LEAVE_ROOM::new();
+                slr.set_is_succ(true);
+                rm.send_2_client(
+                    ClientCode::LeaveRoom,
+                    user_id,
+                    slr.write_to_bytes().unwrap(),
+                );
                 info!(
-                    "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
+                    "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
                     user_id, room_id
                 );
+                rm.player_room.remove(&user_id);
                 let mut need_rm_room = false;
+                let room = rm.match_room.rooms.get_mut(&user_id).unwrap();
                 if room.is_empty() {
                     need_rm_room = true;
                 } else if room.state == RoomState::BattleOvered {
@@ -189,44 +226,11 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                     for member_id in room.members.keys() {
                         rm.player_room.remove(member_id);
                     }
-                    rm.custom_room.rm_room(&room_id);
+                    rm.match_room.rm_room(&room_id);
                 }
             }
-            RoomType::Match => {
-                if !room.is_empty() {
-                    let res = rm.match_room.leave(room_id, &user_id);
-                    if let Err(e) = res {
-                        error!("{:?}", e);
-                        return Ok(());
-                    }
-                    let mut slr = S_LEAVE_ROOM::new();
-                    slr.set_is_succ(true);
-                    rm.send_2_client(
-                        ClientCode::LeaveRoom,
-                        user_id,
-                        slr.write_to_bytes().unwrap(),
-                    );
-                    info!(
-                        "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
-                        user_id, room_id
-                    );
-                    rm.player_room.remove(&user_id);
-                    let mut need_rm_room = false;
-                    if room.is_empty() {
-                        need_rm_room = true;
-                    } else if room.state == RoomState::BattleOvered {
-                        need_rm_room = true;
-                    }
-                    if need_rm_room {
-                        for member_id in room.members.keys() {
-                            rm.player_room.remove(member_id);
-                        }
-                        rm.match_room.rm_room(&room_id);
-                    }
-                }
-            }
-            _ => {}
         }
+        _ => {}
     }
     Ok(())
 }

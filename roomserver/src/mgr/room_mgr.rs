@@ -120,6 +120,24 @@ impl RoomMgr {
         None
     }
 
+    pub fn get_room_ref(&self, user_id: &u32) -> Option<&Room> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let res = res.unwrap();
+        let (model, room_id) = tools::binary::separate_long_2_int(*res);
+
+        if model == RoomType::into_u32(RoomType::Custom) {
+            return self.custom_room.get_room_ref(&room_id);
+        } else if model == RoomType::into_u32(RoomType::Match) {
+            return self.match_room.get_room_ref(&room_id);
+        } else if model == RoomType::into_u32(RoomType::SeasonPve) {
+            return None;
+        }
+        None
+    }
+
     ///删除房间
     pub fn rm_room(&mut self, room_id: u32, room_type: RoomType, member_v: Vec<u32>) {
         match room_type {

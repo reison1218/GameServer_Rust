@@ -207,20 +207,22 @@ pub fn show_map_cell(
             if battle_cter.flow_data.open_map_cell_vec.contains(&index) {
                 continue;
             }
-            let res = battle_data.check_choice_index(index, false, true, true, false);
+            let res = battle_data.check_choice_index(index, false, false, true, false);
             if let Err(_) = res {
                 continue;
             }
+            //放到列表里面
+            v.push((index, map_cell_id));
+            //判断是否是生命元素,如果是，则直接跳出循环
             let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
             if map_cell.element == ElementType::Nature.into_u8() {
                 nature_index = Some(map_cell.index);
                 break;
             }
-            v.push((index, map_cell_id));
         }
         let index;
-        if nature_index.is_some() {
-            index = nature_index.unwrap();
+        if let Some(nature_index) = nature_index {
+            index = nature_index;
         } else {
             let mut rand = rand::thread_rng();
             index = rand.gen_range(0, v.len());

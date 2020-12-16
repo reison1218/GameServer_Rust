@@ -13,7 +13,6 @@ use crate::room::room_model::RoomType;
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::ops::Deref;
@@ -26,15 +25,12 @@ use tools::protos::server_protocol::R_G_SUMMARY;
 impl BattleData {
     ///处理战斗结算，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub unsafe fn battle_summary(&mut self) -> Option<R_G_SUMMARY> {
+    pub fn battle_summary(&mut self) -> Option<R_G_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
             .filter(|x| x.status.state == BattleCterState::Alive)
             .count();
-        let battle_members_ptr =
-            self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
-        let battle_cters = battle_members_ptr.as_mut().unwrap();
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
             let mut member: Option<u32> = None;
@@ -83,7 +79,7 @@ impl BattleData {
                         continue;
                     }
                     for member_id in members.iter() {
-                        let cter = battle_cters.get_mut(member_id);
+                        let cter = self.battle_cter.get_mut(member_id);
                         if cter.is_none() {
                             error!("handler_summary!cter is not find!user_id:{}", member_id);
                             continue;

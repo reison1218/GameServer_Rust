@@ -753,14 +753,19 @@ impl Room {
     pub fn check_ready(&self) -> bool {
         let size = 4;
         let mut index = 0;
+        let room_type = self.room_type;
         for member in self.members.values() {
             let res = member.state == MemberState::Ready as u8;
+            //如果是房主，并且是自定义房间
+            if member.user_id == self.owner_id && room_type == RoomType::Custom {
+                index += 1;
+            }
             if !res {
                 continue;
             }
             index += 1;
         }
-        size == index
+        size >= index
     }
 
     ///获得房主ID
@@ -842,13 +847,14 @@ impl Room {
             self.member_index[i] = 0;
             break;
         }
-        if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
-            for i in self.members.keys() {
-                self.owner_id = *i;
-                break;
-            }
-            self.room_notice();
-        }
+        // 转移房间房主权限
+        // if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
+        //     for i in self.members.keys() {
+        //         self.owner_id = *i;
+        //         break;
+        //     }
+        //     self.room_notice();
+        // }
         //房间空了就不用处理其他的了
         if self.is_empty() {
             return;

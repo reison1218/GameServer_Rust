@@ -260,6 +260,7 @@ impl BattleCharacter {
         let attack_state = self.status.attack_state;
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
+        let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
         //开始数据转换
         let _ = std::mem::replace(self, *clone);
         //处理保留数据
@@ -269,7 +270,7 @@ impl BattleCharacter {
         self.status.attack_state = attack_state;
         self.index_data.map_cell_index = map_cell_index;
         self.flow_data.residue_open_times = residue_open_times;
-
+        self.flow_data.open_map_cell_vec = open_map_cell_vec;
         //如果是从自己变身的角色变回去，则清空自己变身角色
         if is_self_transform {
             self.self_transform_cter = None;
@@ -305,6 +306,7 @@ impl BattleCharacter {
         let attack_state = self.status.attack_state;
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
+        let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
 
         //保存原本角色
         if self.self_cter.is_none() {
@@ -319,7 +321,7 @@ impl BattleCharacter {
         self.status.attack_state = attack_state;
         self.index_data.map_cell_index = map_cell_index;
         self.base_attr.energy = energy;
-
+        self.flow_data.open_map_cell_vec = open_map_cell_vec;
         //给新变身加变身buff
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {

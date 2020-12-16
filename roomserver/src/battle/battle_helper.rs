@@ -426,8 +426,9 @@ impl BattleData {
                 last_map_cell.pair_index = Some(index);
                 is_pair = true;
                 battle_cter.status.is_pair = true;
+                let attack_state = battle_cter.status.attack_state;
                 //状态改为可以进行攻击
-                if battle_cter.status.attack_state != AttackState::Locked {
+                if attack_state != AttackState::Locked {
                     battle_cter.status.attack_state = AttackState::Able;
                 }
                 self.tile_map.un_pair_map.remove(&last_map_cell.index);

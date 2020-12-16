@@ -101,6 +101,8 @@ pub trait RoomModel {
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room>;
 
+    fn get_room_ref(&self, room_id: &u32) -> Option<&Room>;
+
     fn create_room(
         &mut self,
         owner: Member,
@@ -147,6 +149,11 @@ impl RoomModel for CustomRoom {
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
         let res = self.rooms.get_mut(room_id);
+        res
+    }
+
+    fn get_room_ref(&self, room_id: &u32) -> Option<&Room> {
+        let res = self.rooms.get(room_id);
         res
     }
 
@@ -217,6 +224,15 @@ impl RoomModel for MatchRoom {
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
         let res = self.rooms.get_mut(room_id);
+        if res.is_none() {
+            return None;
+        }
+        let room = res.unwrap();
+        Some(room)
+    }
+
+    fn get_room_ref(&self, room_id: &u32) -> Option<&Room> {
+        let res = self.rooms.get(room_id);
         if res.is_none() {
             return None;
         }
