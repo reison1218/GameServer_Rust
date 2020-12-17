@@ -450,7 +450,7 @@ impl BattleData {
                 return Ok(Some(v));
             }
             //再配对
-            is_pair = self.handler_map_cell_pair(user_id);
+            is_pair = self.handler_map_cell_pair(user_id, None);
 
             //处理翻地图块触发buff
             let res = self.open_map_cell_buff_trigger(user_id, au, is_pair);

@@ -62,7 +62,7 @@ pub unsafe fn change_map_cell_index(
     user_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
-    au: &mut ActionUnitPt,
+    _: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     if target_array.len() < 2 {
         warn!(
@@ -88,14 +88,14 @@ pub unsafe fn change_map_cell_index(
     }
 
     //校验原下标
-    let res = battle_data.check_choice_index(source_index, true, true, true, false);
+    let res = battle_data.check_choice_index(source_index, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
     }
 
     //校验目标下标
-    let res = battle_data.check_choice_index(target_index, true, true, true, false);
+    let res = battle_data.check_choice_index(target_index, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -110,11 +110,6 @@ pub unsafe fn change_map_cell_index(
 
     //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
     battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);
-
-    //通知客户端
-    let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(source_index as u32);
-    au.targets.push(target_pt);
     None
 }
 
@@ -207,7 +202,7 @@ pub fn show_map_cell(
             if battle_cter.flow_data.open_map_cell_vec.contains(&index) {
                 continue;
             }
-            let res = battle_data.check_choice_index(index, false, false, true, false);
+            let res = battle_data.check_choice_index(index, false, false, false, false);
             if let Err(_) = res {
                 continue;
             }
@@ -216,7 +211,7 @@ pub fn show_map_cell(
             //判断是否是生命元素,如果是，则直接跳出循环
             let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
             if map_cell.element == ElementType::Nature.into_u8() {
-                nature_index = Some(map_cell.index);
+                nature_index = Some(v.len() - 1);
                 break;
             }
         }
@@ -276,7 +271,7 @@ pub fn show_map_cell(
         //展示地图块
         let index = *target_array.get(0).unwrap() as usize;
         //校验index合法性
-        let res = battle_data.check_choice_index(index, true, true, true, false);
+        let res = battle_data.check_choice_index(index, true, true, false, false);
         if let Err(e) = res {
             warn!("show_index {:?}", e);
             return None;
@@ -465,6 +460,7 @@ pub unsafe fn skill_open_map_cell(
         }
 
         let index = open_index;
+        battle_data.handler_map_cell_pair(user_id, Some(index));
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(index as u32);
@@ -600,7 +596,7 @@ pub unsafe fn move_user(
     let target_user_index = *target_array.get(0).unwrap() as usize;
     let target_index = *target_array.get(1).unwrap() as usize;
     //校验下标的地图块
-    let res = battle_data.check_choice_index(target_index, false, false, false, true);
+    let res = battle_data.check_choice_index(target_index, false, false, true, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;

@@ -91,7 +91,7 @@ impl TcpServerHandler {
             return;
         }
 
-        let mut u_id = *user_id.unwrap();
+        let u_id;
         //执行登录
         if packet.get_cmd() == GameCode::Login.into_u32() {
             let mut c_u_l = C_USER_LOGIN::new();
@@ -115,6 +115,8 @@ impl TcpServerHandler {
             lock.add_gate_user(u_id, None, self.tcp.clone());
             //通知用户中心
             async_std::task::spawn(notice_user_center(u_id, "login"));
+        } else {
+            u_id = *user_id.unwrap();
         }
         packet.set_user_id(u_id);
 

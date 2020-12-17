@@ -98,7 +98,7 @@ impl BattleData {
                     }
                     let buff_temp = buff_temp.unwrap();
                     let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
-                    battle_cter.battle_buffs.buffs.insert(buff.id, buff_add);
+                    battle_cter.battle_buffs.buffs.insert(buff_add.id, buff_add);
 
                     let mut target_pt_tmp = TargetPt::new();
                     target_pt_tmp

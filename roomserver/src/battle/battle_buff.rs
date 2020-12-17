@@ -373,7 +373,15 @@ impl BattleData {
             .target_value
             .push(cter.get_map_cell_index() as u32);
         let mut tep = TriggerEffectPt::new();
+        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        if let Err(e) = buff_temp {
+            warn!("{:?}", e);
+            return;
+        }
+        let buff_temp = buff_temp.unwrap();
         tep.buff_id = buff_id;
+        tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
+        tep.set_value(buff_temp.par1);
         target_pt.passiveEffect.push(tep);
         au.targets.push(target_pt);
     }

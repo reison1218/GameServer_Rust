@@ -166,6 +166,8 @@ pub enum EffectType {
     AddEnergy = 8,
     ///增加技能
     AddSkill = 9,
+    ///刷新技能cd
+    RefreshSkillCd = 10,
 }
 
 impl EffectType {

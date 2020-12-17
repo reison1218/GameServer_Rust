@@ -765,7 +765,7 @@ impl Room {
             }
             index += 1;
         }
-        size >= index
+        index >= size
     }
 
     ///获得房主ID

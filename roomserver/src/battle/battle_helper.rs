@@ -378,7 +378,7 @@ impl BattleData {
     }
 
     ///处理地图块配对逻辑
-    pub unsafe fn handler_map_cell_pair(&mut self, user_id: u32) -> bool {
+    pub unsafe fn handler_map_cell_pair(&mut self, user_id: u32, map_index: Option<usize>) -> bool {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
 
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
@@ -387,8 +387,12 @@ impl BattleData {
             return false;
         }
         let battle_cter = battle_cter.unwrap();
-
-        let index = battle_cter.get_map_cell_index();
+        let index;
+        if let Some(map_index) = map_index {
+            index = map_index;
+        } else {
+            index = battle_cter.get_map_cell_index();
+        }
         let map_cell = self.tile_map.map_cells.get_mut(index);
         if let None = map_cell {
             error!("map_cell is not find!map_cell_index:{}", index);

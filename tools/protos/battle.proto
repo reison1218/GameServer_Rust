@@ -34,6 +34,7 @@ import "base.proto";
 //     AddSkillCd = 7,              //增加技能cd
 //     AddEnergy = 8,               //增加能量
 //     AddSkill = 9,                //增加技能
+//     RefreshSkillCd = 10,         //刷新技能cd
 // }
 //
 //

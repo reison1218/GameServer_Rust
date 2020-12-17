@@ -179,7 +179,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
                 user_id, room_id
             );
-            let room = rm.custom_room.rooms.get(&user_id).unwrap();
+            let room = rm.custom_room.rooms.get(&room_id).unwrap();
             let owner_id = room.get_owner_id();
             let mut need_rm_room = false;
             if room.is_empty() {
@@ -216,7 +216,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 );
                 rm.player_room.remove(&user_id);
                 let mut need_rm_room = false;
-                let room = rm.match_room.rooms.get_mut(&user_id).unwrap();
+                let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
                 if room.is_empty() {
                     need_rm_room = true;
                 } else if room.state == RoomState::BattleOvered {
