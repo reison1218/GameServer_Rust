@@ -281,24 +281,26 @@ impl ActionType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum TargetType {
-    None = 0,                //无效目标
-    MapCell = 1,             //地图块
-    AnyPlayer = 2,           //任意玩家
-    PlayerSelf = 3,          //玩家自己
-    AllPlayer = 4,           //所有玩家
-    OtherAllPlayer = 5,      //除自己外所有玩家
-    OtherAnyPlayer = 6,      //除自己外任意玩家
-    UnOpenMapCell = 7,       //未翻开的地图块
-    UnPairMapCell = 8,       //未配对的地图块
-    NullMapCell = 9,         //空的地图块，上面没人
-    UnPairNullMapCell = 10,  //未配对的空地图块
-    MapCellPlayer = 11,      //地图块上的玩家
-    SelfScopeOthers = 12,    //以自己为中心某个范围内的所有其他玩家
-    SelfScopeAnyOthers = 13, //以自己为中心某个范围内的任意其他玩家
-    SelfScopeAll = 14,       //以自己为中心某个范围内的所有玩家（包括自己）
-    SelfScopeAny = 15,       //以自己为中心某个范围内的任意玩家（包括自己）
-    OpenedMapCell = 16,      //已翻开的地图块
-    MapCellOtherPlayer = 17, //地图块上，除自己以外的玩家
+    None = 0,                    //无效目标
+    MapCell = 1,                 //地图块
+    AnyPlayer = 2,               //任意玩家
+    PlayerSelf = 3,              //玩家自己
+    AllPlayer = 4,               //所有玩家
+    OtherAllPlayer = 5,          //除自己外所有玩家
+    OtherAnyPlayer = 6,          //除自己外任意玩家
+    UnOpenMapCell = 7,           //未翻开的地图块
+    UnPairMapCell = 8,           //未配对的地图块
+    NullMapCell = 9,             //空的地图块，上面没人
+    UnPairNullMapCell = 10,      //未配对的空地图块
+    MapCellPlayer = 11,          //地图块上的玩家
+    SelfScopeOthers = 12,        //以自己为中心某个范围内的所有其他玩家
+    SelfScopeAnyOthers = 13,     //以自己为中心某个范围内的任意其他玩家
+    SelfScopeAll = 14,           //以自己为中心某个范围内的所有玩家（包括自己）
+    SelfScopeAny = 15,           //以自己为中心某个范围内的任意玩家（包括自己）
+    OpenedMapCell = 16,          //已翻开的地图块
+    MapCellOtherPlayer = 17,     //地图块上，除自己以外的玩家
+    UnOpenMapCellAndUnLock = 18, //未翻开，且未锁定
+    UnLockNullMapCell = 19,      //未锁定空地图块
 }
 
 impl TargetType {

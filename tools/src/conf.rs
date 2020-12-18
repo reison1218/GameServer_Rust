@@ -29,6 +29,15 @@ impl Conf {
         value.unwrap().as_i64().unwrap() as usize
     }
 
+    ///拿bool
+    pub fn get_bool(&self, key: &str) -> bool {
+        let value = self.conf.get(key);
+        if value.is_none() {
+            return false;
+        }
+        value.unwrap().as_bool().unwrap()
+    }
+
     ///拿字符切片
     pub fn get_str(&self, key: &str) -> &str {
         let value = self.conf.get(key);

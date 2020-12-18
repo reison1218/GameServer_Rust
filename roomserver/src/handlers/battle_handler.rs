@@ -303,7 +303,7 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验地图块
-    let res = battle_data.check_choice_index(target_map_cell_index, true, true, true, false);
+    let res = battle_data.check_choice_index(target_map_cell_index, true, true, true, true, false);
     if let Err(e) = res {
         let str = format!("{:?}", e);
         warn!("{:?}", str.as_str());

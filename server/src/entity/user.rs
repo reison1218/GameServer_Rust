@@ -36,10 +36,12 @@ impl UserData {
     }
 
     pub fn init_from_db(user_id: u32) -> Option<Self> {
+        //初始化玩家基础数据
         let user = User::query(USER, user_id, None);
         if user.is_none() {
             return None;
         }
+        //初始化玩家角色数据
         let mut cters = Characters::query(CHARACTER, user_id);
         if cters.is_none() {
             let c = Characters::new(user_id);

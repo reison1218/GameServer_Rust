@@ -1004,7 +1004,7 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let res = room
         .battle_data
-        .check_choice_index(index as usize, false, true, false, false);
+        .check_choice_index(index as usize, false, false, true, false, false);
     //校验参数
     if let Err(e) = res {
         warn!("{:?}", e);

@@ -13,7 +13,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::{thread_rng, Rng};
-use std::borrow::BorrowMut;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
@@ -1221,9 +1221,13 @@ impl Room {
             }
         }
         let mut sbsn = S_BATTLE_START_NOTICE::new();
+        let debug = crate::CONF_MAP.borrow().get_bool("debug");
         for battle_cter in self.battle_data.battle_cter.values() {
             let cter_pt = battle_cter.convert_to_battle_cter_pt();
             sbsn.battle_cters.push(cter_pt);
+        }
+        if debug {
+            sbsn.map_data = self.battle_data.tile_map.to_json_for_debug().to_string();
         }
         let res = sbsn.write_to_bytes();
         if let Err(e) = res {

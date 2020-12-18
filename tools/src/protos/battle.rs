@@ -255,6 +255,7 @@ impl ::protobuf::reflect::ProtobufValue for C_ACTION {
 pub struct S_BATTLE_START_NOTICE {
     // message fields
     pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
+    pub map_data: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -295,6 +296,32 @@ impl S_BATTLE_START_NOTICE {
     pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
         ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
     }
+
+    // string map_data = 2;
+
+
+    pub fn get_map_data(&self) -> &str {
+        &self.map_data
+    }
+    pub fn clear_map_data(&mut self) {
+        self.map_data.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_map_data(&mut self, v: ::std::string::String) {
+        self.map_data = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_map_data(&mut self) -> &mut ::std::string::String {
+        &mut self.map_data
+    }
+
+    // Take field
+    pub fn take_map_data(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.map_data, ::std::string::String::new())
+    }
 }
 
 impl ::protobuf::Message for S_BATTLE_START_NOTICE {
@@ -314,6 +341,9 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
                 1 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
                 },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.map_data)?;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -330,6 +360,9 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
+        if !self.map_data.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.map_data);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -341,6 +374,9 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
+        if !self.map_data.is_empty() {
+            os.write_string(2, &self.map_data)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -384,6 +420,11 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
                 |m: &S_BATTLE_START_NOTICE| { &m.battle_cters },
                 |m: &mut S_BATTLE_START_NOTICE| { &mut m.battle_cters },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "map_data",
+                |m: &S_BATTLE_START_NOTICE| { &m.map_data },
+                |m: &mut S_BATTLE_START_NOTICE| { &mut m.map_data },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_BATTLE_START_NOTICE>(
                 "S_BATTLE_START_NOTICE",
                 fields,
@@ -401,6 +442,7 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
 impl ::protobuf::Clear for S_BATTLE_START_NOTICE {
     fn clear(&mut self) {
         self.battle_cters.clear();
+        self.map_data.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1648,22 +1690,23 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"d\n\x08C_ACTION\x12\
     \x1f\n\x0baction_type\x18\x01\x20\x01(\rR\nactionType\x12\x14\n\x05value\
     \x18\x02\x20\x01(\rR\x05value\x12!\n\x0ctarget_index\x18\x03\x20\x03(\rR\
-    \x0btargetIndex\"U\n\x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\
-    \x01\x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"J\n\x0f\
-    S_ACTION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.\
-    ActionUnitPtR\x0bactionUints\"\x93\x01\n\x14S_BATTLE_TURN_NOTICE\x12\x17\
-    \n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12/\n\x05cters\x18\x02\x20\
-    \x03(\x0b2\x19.protos.BattleCharacterPtR\x05cters\x121\n\ncell_buffs\x18\
-    \x03\x20\x03(\x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\n\x05C_POS\x12\
-    \x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\
-    \x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\
-    \x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\x8b\x01\n\x14S_M\
-    AP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStat\
-    us\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld\
-    _cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x10S\
-    _SUMMARY_NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.S\
-    ummaryDataPtR\x0csummaryDatasb\x06proto3\
+    \x0btargetIndex\"p\n\x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\
+    \x01\x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\x12\x19\
+    \n\x08map_data\x18\x02\x20\x01(\tR\x07mapData\"J\n\x0fS_ACTION_NOTICE\
+    \x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.protos.ActionUnitPtR\
+    \x0bactionUints\"\x93\x01\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07user_id\
+    \x18\x01\x20\x01(\rR\x06userId\x12/\n\x05cters\x18\x02\x20\x03(\x0b2\x19\
+    .protos.BattleCharacterPtR\x05cters\x121\n\ncell_buffs\x18\x03\x20\x03(\
+    \x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\n\x05C_POS\x12\x12\n\x04type\
+    \x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\
+    \x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\r\
+    R\x06userId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08s\
+    kill_id\x18\x03\x20\x01(\rR\x07skillId\"\x8b\x01\n\x14S_MAP_REFRESH_NOTI\
+    CE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\n\
+    \x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\
+    \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\"N\n\x10S_SUMMARY_\
+    NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDat\
+    aPtR\x0csummaryDatasb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

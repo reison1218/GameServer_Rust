@@ -484,6 +484,8 @@ impl BattleData {
 
     ///下个turn
     pub fn next_turn(&mut self) {
+        //清空翻开地图玩家id
+        self.clear_open_cells();
         //计算下一个回合
         self.add_next_turn_index();
         //给客户端推送战斗turn推送

@@ -42,6 +42,26 @@ impl BattleData {
         false
     }
 
+    pub fn clear_open_cells(&mut self) {
+        let index = self.next_turn_index;
+        let res = self.turn_orders.get(index);
+        if res.is_none() {
+            return;
+        }
+        let user_id = *res.unwrap();
+        let cter = self.battle_cter.get(&user_id);
+        if let None = cter {
+            return;
+        }
+        let cter = cter.unwrap();
+        for index in cter.flow_data.open_map_cell_vec.iter() {
+            let map_cell = self.tile_map.map_cells.get_mut(*index);
+            if let Some(map_cell) = map_cell {
+                map_cell.open_user = 0;
+            }
+        }
+    }
+
     ///下一个
     pub fn add_next_turn_index(&mut self) {
         self.next_turn_index += 1;
@@ -400,6 +420,8 @@ impl BattleData {
         }
         let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
         let map_cell_mut = map_cell_ptr.as_mut().unwrap();
+        //设置翻开的人
+        map_cell_mut.open_user = user_id;
         let mut is_pair = false;
         let map_cell_id = map_cell_mut.id;
         if battle_cter.flow_data.open_map_cell_vec.is_empty() || battle_cter.status.is_pair {
@@ -647,39 +669,53 @@ impl BattleData {
                 //校验地图块下标有效性
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, false, false, false)?;
+                    self.check_choice_index(index, false, false, false, false, false)?;
                 }
             }
             //未翻开的地图块
             TargetType::UnOpenMapCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, true, false)?;
+                    self.check_choice_index(*index as usize, true, true, true, false, false)?;
                 }
             } //未配对的地图块
             TargetType::UnPairMapCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, true, false)?;
+                    self.check_choice_index(*index as usize, false, true, true, true, false)?;
                 }
             } //空的地图块
             TargetType::NullMapCell => {
                 for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, false, true)?;
+                    self.check_choice_index(*index as usize, false, true, true, false, true)?;
                 }
             } //空的地图块，上面没人
             TargetType::UnPairNullMapCell => {
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, false, false, true)?;
+                    self.check_choice_index(index, false, false, false, false, true)?;
                 }
             }
             TargetType::OpenedMapCell => {
                 for index in target_array {
                     let index = *index as usize;
-                    self.check_choice_index(index, false, true, false, false)?;
+                    self.check_choice_index(index, true, true, true, false, false)?;
                 }
             }
-            TargetType::MapCellOtherPlayer => {}
             //其他目标类型
+            TargetType::MapCellOtherPlayer => {}
+            //未翻开，且未锁定
+            TargetType::UnOpenMapCellAndUnLock => {
+                for index in target_array {
+                    let index = *index as usize;
+                    self.check_choice_index(index, true, false, true, true, false)?;
+                }
+            }
+            //未锁定空地图块
+            TargetType::UnLockNullMapCell => {
+                for index in target_array {
+                    let index = *index as usize;
+                    self.check_choice_index(index, false, false, true, true, true)?;
+                }
+            }
             _ => {}
         }
         Ok(())
@@ -705,6 +741,7 @@ impl BattleData {
     pub fn check_choice_index(
         &self,
         index: usize,
+        is_check_open: bool,
         is_check_pair: bool,
         is_check_world: bool,
         is_check_locked: bool,
@@ -724,6 +761,11 @@ impl BattleData {
         }
 
         let map_cell = res.unwrap();
+        if is_check_open && map_cell.open_user > 0 {
+            anyhow::bail!("this map_cell already opened!index:{}", map_cell.index)
+        } else if map_cell.pair_index.is_some() {
+            anyhow::bail!("this map_cell already pair!index:{}", map_cell.index)
+        }
         if is_check_pair && map_cell.pair_index.is_some() {
             anyhow::bail!("this map_cell already pair!index:{}", map_cell.index)
         }

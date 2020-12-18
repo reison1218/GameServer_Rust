@@ -89,6 +89,7 @@ message C_ACTION{
 //cmd=10030
 message S_BATTLE_START_NOTICE{
     repeated BattleCharacterPt battle_cters = 1;//战斗角色数据
+    string map_data = 2;//地图数据
 }
 
 //行动推送

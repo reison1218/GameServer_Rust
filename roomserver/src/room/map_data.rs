@@ -39,6 +39,20 @@ pub struct TileMap {
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
 }
 
+impl TileMap {
+    pub fn to_json_for_debug(&self) -> String {
+        let mut str = String::new();
+        let mut index = 0;
+        for map_cell in self.map_cells.iter() {
+            let res = index.to_string() + ":" + map_cell.id.to_string().as_str();
+            str.push_str(res.as_str());
+            str.push_str("｜");
+            index += 1;
+        }
+        str
+    }
+}
+
 ///块的封装结构体
 #[derive(Debug, Default, Clone)]
 pub struct MapCell {
@@ -49,6 +63,7 @@ pub struct MapCell {
     pub element: u8,               //地图块的属性
     pub passive_buffs: Vec<u32>,   //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
+    pub open_user: u32,            //翻开这个地图块的玩家
     pub pair_index: Option<usize>, //与之配对的下标
     pub x: isize,                  //x轴坐标
     pub y: isize,                  //y轴坐标
@@ -300,7 +315,6 @@ impl TileMap {
             tmp.map_cells[index] = map_cell;
             index += 1;
         }
-        info!("{:?}", tmp.un_pair_map);
         Ok(tmp)
     }
 }
