@@ -66,7 +66,7 @@ pub struct BattleData {
     pub turn_orders: [u32; MEMBER_MAX as usize],    //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,            //刷新地图时的turn下标
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
-    pub rank_vec: Vec<Vec<u32>>,                    //排名  user_id
+    pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
