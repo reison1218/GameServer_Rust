@@ -101,7 +101,7 @@ pub trait Dao: Entity {
     }
 
     ///insert函数（trait默认函数，不必重写）
-    fn insert(&mut self) -> Result<u32, String> {
+    fn insert(&self) -> Result<u32, String> {
         let v: Vec<Value> = self.to_insert_vec_value();
         let mut sql = String::new();
         sql.push_str("insert into ");

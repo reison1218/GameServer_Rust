@@ -49,17 +49,18 @@ impl Into<CharacterPt> for Character {
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
 pub struct BaseAttr {
-    pub user_id: u32,   //玩家id
-    pub cter_id: u32,   //角色的配置id
-    pub grade: u8,      //等级
-    pub atk: u8,        //攻击力
-    pub hp: i16,        //角色血量
-    pub defence: u8,    //角色防御
-    pub energy: u8,     //角色能量
-    pub max_energy: u8, //能量上限
-    pub element: u8,    //角色元素
-    pub hp_max: i16,    //血上限
-    pub item_max: u8,   //道具数量上限
+    pub user_id: u32,      //玩家id
+    pub cter_id: u32,      //角色的配置id
+    pub grade: u8,         //等级
+    pub atk: u8,           //攻击力
+    pub hp: i16,           //角色血量
+    pub defence: u8,       //角色防御
+    pub energy: u8,        //角色能量
+    pub max_energy: u8,    //能量上限
+    pub element: u8,       //角色元素
+    pub hp_max: i16,       //血上限
+    pub item_max: u8,      //道具数量上限
+    pub league_score: u32, //段位积分
 }
 
 ///角色战斗基础属性

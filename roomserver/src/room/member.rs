@@ -19,11 +19,19 @@ pub enum MemberState {
     Ready = 1,
 }
 
+impl MemberState {
+    pub fn into_u8(self) -> u8 {
+        let res: u8 = self.into();
+        res
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Member {
     pub user_id: u32,                   //玩家id
     pub nick_name: String,              //玩家昵称
     pub grade: u8,                      //玩家grade
+    pub league_score: u32,              //段位积分
     pub state: u8,                      //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
     pub is_robot: bool,                 //是否的机器人
@@ -46,6 +54,7 @@ impl From<PlayerBattlePt> for Member {
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady as u8;
         member.grade = pbp.grade as u8;
+        member.league_score = pbp.league_score;
         let mut cters = HashMap::new();
         let res = pbp.take_cters();
 

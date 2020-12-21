@@ -45,6 +45,17 @@ type SkillFn = HashMap<
         au: &mut ActionUnitPt,
     ) -> Option<Vec<ActionUnitPt>>,
 >;
+
+#[derive(Clone, Default)]
+pub struct SummaryPlayer {
+    pub user_id: u32,      //玩家id
+    pub cter_id: u32,      //角色id
+    pub grade: u8,         //玩家等级
+    pub rank: u8,          //玩家当局排名
+    pub league_score: u32, //段位总积分
+    pub reward_score: i32, //当局奖励积分
+}
+
 ///房间战斗数据封装
 #[derive(Clone)]
 pub struct BattleData {

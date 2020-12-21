@@ -322,6 +322,9 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    //封装玩家排行积分
+    pbp.league_score = user_data.get_league_ref().score;
+    //封装角色
     for cter in user_data.get_characters_ref().cter_map.values() {
         let cter_pt = cter.clone().into();
         pbp.cters.push(cter_pt);
@@ -361,6 +364,8 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    //封装玩家排行积分
+    pbp.league_score = user_data.get_league_ref().score;
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -401,6 +406,8 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    //封装玩家排行积分
+    pbp.league_score = user_data.get_league_ref().score;
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }

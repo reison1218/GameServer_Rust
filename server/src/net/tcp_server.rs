@@ -2,7 +2,8 @@ use tools::protos::base::{PlayerPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
-use crate::entity::user::{insert_characters, insert_user, UserData};
+use crate::entity::league::League;
+use crate::entity::user::{insert_characters, insert_league, insert_user, UserData};
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
@@ -155,14 +156,17 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         //以下入库采用异步执行，以免造成io堵塞
         //玩家角色数据
         let c = Characters::new(user.user_id);
+        //玩家段位数据
+        let league = League::new(user.user_id, user.nick_name.clone());
         user.set_last_character(c.get_frist());
 
         //封装到userdata里
-        ud = Some(UserData::new(user.clone(), c.clone()));
+        ud = Some(UserData::new(user.clone(), c.clone(), league.clone()));
 
         //异步持久化到db
         async_std::task::spawn(insert_user(user));
         async_std::task::spawn(insert_characters(c));
+        async_std::task::spawn(insert_league(league));
     }
     Ok(ud.unwrap())
 }

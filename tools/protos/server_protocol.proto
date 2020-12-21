@@ -34,8 +34,9 @@ message UPDATE_SEASON_NOTICE{
 
 //玩家战斗数据封装proto
 message PlayerBattlePt{
-    uint32 user_id = 1;//玩家id
-    string nick_name = 2;//玩家昵称
-    uint32 grade = 3;//等级
-    repeated CharacterPt cters = 4;//玩家解锁的角色数组
+    uint32 user_id = 1;             //玩家id
+    string nick_name = 2;           //玩家昵称
+    uint32 grade = 3;               //等级
+    uint32 league_score = 4;        //段位积分
+    repeated CharacterPt cters = 5; //玩家解锁的角色数组
 }

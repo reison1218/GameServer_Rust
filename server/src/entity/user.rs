@@ -1,6 +1,7 @@
 use super::*;
-use crate::db::table_contants::{CHARACTER, USER};
+use crate::db::table_contants::{CHARACTER, LEAGUE, USER};
 use crate::entity::character::{Character, Characters};
+use crate::entity::league::League;
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::Cell;
 
@@ -11,6 +12,8 @@ pub struct UserData {
     user_info: User,
     ///玩家角色
     character: Characters,
+    ///玩家段位数据
+    league: League,
     ///版本号（大于0代表有修改，需要update到db）
     version: Cell<u32>,
 }
@@ -27,10 +30,11 @@ impl UserData {
     }
 
     ///构造函数，创建一个新的userdata结构体
-    pub fn new(user_info: User, character: Characters) -> UserData {
+    pub fn new(user_info: User, character: Characters, league: League) -> UserData {
         UserData {
             user_info,
-            character: character,
+            character,
+            league,
             version: Cell::new(0),
         }
     }
@@ -41,6 +45,15 @@ impl UserData {
         if user.is_none() {
             return None;
         }
+        let user = user.unwrap();
+        //段位数据
+        let mut league = League::query(LEAGUE, user_id);
+        if league.is_none() {
+            let res = League::new(user.user_id, user.nick_name.clone());
+            async_std::task::spawn(insert_league(res.clone()));
+            league = Some(res);
+        }
+
         //初始化玩家角色数据
         let mut cters = Characters::query(CHARACTER, user_id);
         if cters.is_none() {
@@ -48,7 +61,7 @@ impl UserData {
             async_std::task::spawn(insert_characters(c.clone()));
             cters = Some(c);
         }
-        let ud = UserData::new(user.unwrap(), cters.unwrap());
+        let ud = UserData::new(user, cters.unwrap(), league.unwrap());
         Some(ud)
     }
     ///获得玩家id
@@ -102,6 +115,10 @@ impl UserData {
     pub fn get_characters_ref(&self) -> &Characters {
         self.character.borrow()
     }
+    ///获得段位的只读指针
+    pub fn get_league_ref(&self) -> &League {
+        self.league.borrow()
+    }
 
     ///获得character结构体的可变指针
     pub fn get_characters_mut_ref(&mut self) -> &mut Characters {
@@ -130,12 +147,20 @@ pub async fn insert_user(mut user: User) {
     }
 }
 
-pub async fn insert_characters(mut cter: Characters) {
+pub async fn insert_characters(cter: Characters) {
     info!("玩家角色数据不存在,现在创建新角色:{}", cter.user_id);
-    for ct in cter.cter_map.iter_mut() {
+    for ct in cter.cter_map.iter() {
         let result = Character::insert(ct.1);
-        if result.is_err() {
-            error!("{:?}", result.err().unwrap());
+        if let Err(e) = result {
+            error!("{:?}", e);
         }
+    }
+}
+
+pub async fn insert_league(league: League) {
+    info!("玩家段位数据不存在,现在创建玩家段位数据:{}", league.user_id);
+    let res = League::insert(&league);
+    if let Err(e) = res {
+        error!("{:?}", e);
     }
 }

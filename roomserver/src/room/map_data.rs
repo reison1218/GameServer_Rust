@@ -2,7 +2,6 @@ use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::LOCKED;
 use crate::room::room_model::RoomType;
 use crate::TEMPLATES;
-use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use rand::Rng;

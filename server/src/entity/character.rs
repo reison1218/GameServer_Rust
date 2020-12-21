@@ -152,8 +152,8 @@ impl Entity for Character {
     }
 
     fn add_version(&self) {
-        let v = self.version.get() + 1;
-        self.version.set(v);
+        let res = self.version.get() + 1;
+        self.version.set(res);
     }
 
     fn clear_version(&self) {

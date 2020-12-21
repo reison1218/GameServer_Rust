@@ -1,3 +1,4 @@
+use crate::battle::battle::SummaryPlayer;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::Character;
 use crate::room::member::Member;
@@ -136,20 +137,38 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = room.unwrap();
-
+    let room_id = room.get_room_id();
     //如果不再等待阶段，不允许主动推出房间
-    if room.get_state() != RoomState::Await
-        && room.get_state() != RoomState::BattleStarted
+    if room.get_state() == RoomState::BattleStarted
         && packet.get_cmd() == RoomCode::LeaveRoom as u32
     {
-        warn!(
-            "can not leave room,this room is already started!room_id:{}",
-            room.get_room_id()
-        );
+        //判断玩家角色是否已经死亡
+        let res = room.battle_data.get_battle_cter(Some(user_id), false);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return Ok(());
+        }
+        let cter = res.unwrap();
+        if !cter.is_died() {
+            warn!(
+                "can not leave room,this room is already started!and this cter is not die!room_id:{},user_id:{}",
+                room.get_room_id(),user_id
+            );
+        }
+        //玩家角色死亡后主动推出房间
+        let league_score = cter.base_attr.league_score;
+        let grade = cter.base_attr.grade;
+
+        let mut sp = SummaryPlayer::default();
+        sp.user_id = user_id;
+        sp.cter_id = cter.id;
+        sp.league_score = cter.base_attr.league_score;
+        sp.grade = cter.base_attr.grade;
+
         return Ok(());
-    }
-    let room_id = room.get_room_id();
-    if packet.get_cmd() == RoomCode::LeaveRoom as u32 {
+    } else if room.get_state() == RoomState::Await
+        && packet.get_cmd() == RoomCode::LeaveRoom.into_u32()
+    {
         let member = room.get_member_ref(&user_id);
         if let None = member {
             warn!("leave_room:this player is none!user_id:{}", user_id);
@@ -157,13 +176,14 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         }
 
         let member = member.unwrap();
-        if member.state == MemberState::Ready as u8 {
+        if member.state == MemberState::Ready.into_u8() {
             warn!(
                 "leave_room:this player is already ready!user_id:{}",
                 user_id
             );
             return Ok(());
         }
+    } else { //命令号是离线
     }
     let room_type = RoomType::from(room.get_room_type());
     match room_type {

@@ -140,8 +140,10 @@ message BuffPt{
 message SummaryDataPt{
     uint32 user_id = 1;//玩家id
     uint32 cter_id = 2;//角色id
-    uint32 grade = 3;//等级
-    uint32 rank = 4;//排名
+    uint32 grade = 3;//当前等级
+    uint32 rank = 4;//当局排名
+    uint32 league_score = 5;//玩家总积分
+    int32 reward_score = 6;//奖励积分
 }
 
 message CterStatusPt{

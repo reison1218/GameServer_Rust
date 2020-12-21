@@ -382,7 +382,12 @@ impl TriggerEvent for BattleData {
     ///受到普通攻击触发的buff
     fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let battle_data = self as *mut BattleData;
-        let cter = self.get_battle_cter_mut(Some(user_id), true).unwrap();
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
+        if let Err(e) = cter {
+            warn!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
         let max_energy = cter.base_attr.max_energy;
         for buff in cter.battle_buffs.buffs.clone().values() {
             let buff_id = buff.id;
