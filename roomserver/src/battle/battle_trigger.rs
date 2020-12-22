@@ -1,3 +1,4 @@
+use crate::battle::battle::SummaryPlayer;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
@@ -16,6 +17,7 @@ use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
@@ -62,6 +64,9 @@ pub trait TriggerEvent {
 
     ///buff失效时候触发
     fn buff_lost_trigger(&mut self, user_id: u32, buff_id: u32);
+
+    ///角色死亡触发
+    fn after_cter_died_trigger(&mut self, user_id: u32, is_last_one: bool, is_punishment: bool);
 }
 
 impl BattleData {
@@ -453,6 +458,63 @@ impl TriggerEvent for BattleData {
         //如果是变身buff,那就变回来
         if TRANSFORM_BUFF.contains(&buff_id) {
             cter.transform_back();
+        }
+    }
+
+    fn after_cter_died_trigger(&mut self, user_id: u32, is_last_one: bool, is_punishment: bool) {
+        let cter = self.get_battle_cter(Some(user_id), false);
+        if let Err(e) = cter {
+            warn!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
+
+        let mut reward_score = 0i32;
+
+        //如果是惩罚结算
+        if is_punishment {
+            let con_temp = crate::TEMPLATES
+                .get_constant_temp_mgr_ref()
+                .temps
+                .get("punishment_summary");
+            if let None = con_temp {
+                reward_score = -50;
+            }
+            let con_temp = con_temp.unwrap();
+            let reward_score_temp = i32::from_str(con_temp.value.as_str());
+            if let Err(e) = reward_score_temp {
+                warn!("{:?}", e);
+                reward_score = -50;
+            }
+        }
+
+        let alive_count = self.get_alive_player_num();
+        let mut sp = SummaryPlayer::default();
+        sp.user_id = user_id;
+        sp.cter_id = cter.get_cter_id();
+        sp.league_score = cter.base_attr.league_score;
+        sp.grade = cter.base_attr.grade;
+        let rank_vec_temp = &mut self.rank_vec_temp;
+        rank_vec_temp.push(sp);
+        //判断是否需要排行,如果需要则从第最后
+        if is_last_one {
+            let index = alive_count - rank_vec_temp.len();
+            let res = self.rank_vec.get_mut(index).unwrap();
+            res.extend_from_slice(&rank_vec_temp[..]);
+            for sp in rank_vec_temp.iter_mut() {
+                sp.rank = index as u8;
+                //进行结算
+                if is_punishment {
+                    sp.reward_score = reward_score;
+                } else {
+                    //todo 计算基础分+浮动分
+                }
+            }
+            rank_vec_temp.clear();
+        }
+        let map_cell = self.tile_map.get_map_cell_mut_by_user_id(user_id);
+        if let Some(map_cell) = map_cell {
+            map_cell.user_id = 0;
         }
     }
 }

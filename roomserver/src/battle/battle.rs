@@ -56,6 +56,17 @@ pub struct SummaryPlayer {
     pub reward_score: i32, //当局奖励积分
 }
 
+impl From<&BattleCharacter> for SummaryPlayer {
+    fn from(cter: &BattleCharacter) -> Self {
+        let mut sp = SummaryPlayer::default();
+        sp.user_id = cter.get_user_id();
+        sp.cter_id = cter.get_cter_id();
+        sp.grade = cter.base_attr.grade;
+        sp.league_score = cter.base_attr.league_score;
+        sp
+    }
+}
+
 ///房间战斗数据封装
 #[derive(Clone)]
 pub struct BattleData {
@@ -67,6 +78,7 @@ pub struct BattleData {
     pub reflash_map_turn: Option<usize>,            //刷新地图时的turn下标
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
+    pub rank_vec_temp: Vec<SummaryPlayer>,          //同一批挂掉的人
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
@@ -105,6 +117,10 @@ impl BattleData {
 
     ///初始化战斗数据
     pub fn new(task_sender: Sender<Task>, sender: TcpSender) -> Self {
+        let mut v = Vec::new();
+        for _ in 0..MEMBER_MAX {
+            v.push(Vec::new());
+        }
         let mut bd = BattleData {
             tile_map: TileMap::default(),
             choice_orders: [0; MEMBER_MAX as usize],
@@ -113,7 +129,8 @@ impl BattleData {
             turn_orders: [0; MEMBER_MAX as usize],
             reflash_map_turn: None,
             battle_cter: HashMap::new(),
-            rank_vec: Vec::new(),
+            rank_vec: v,
+            rank_vec_temp: Vec::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),
             total_turn_times: 0,

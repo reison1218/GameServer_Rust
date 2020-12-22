@@ -1,4 +1,4 @@
-use crate::battle::battle::BattleData;
+use crate::battle::battle::{BattleData, SummaryPlayer};
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
@@ -34,14 +34,17 @@ impl BattleData {
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
             let mut member: Option<u32> = None;
+            let mut summary_player = None;
             for member_cter in self.battle_cter.values() {
                 if member_cter.is_died() {
                     continue;
                 }
-                member = Some(member_cter.get_user_id());
+                summary_player = Some(SummaryPlayer::from(member_cter));
             }
-            if let Some(member) = member {
-                self.rank_vec.push(vec![member]);
+            if let Some(mut summary_player) = summary_player {
+                summary_player.rank = 0;
+                let v = self.rank_vec.get_mut(0).unwrap();
+                v.push(summary_player);
             }
             //等级
             let mut grade;
@@ -78,33 +81,12 @@ impl BattleData {
                     if members.is_empty() {
                         continue;
                     }
-                    for member_id in members.iter() {
-                        let cter = self.battle_cter.get_mut(member_id);
-                        if cter.is_none() {
-                            error!("handler_summary!cter is not find!user_id:{}", member_id);
-                            continue;
-                        }
-                        let cter = cter.unwrap();
-                        grade = cter.base_attr.grade as i32;
-
-                        //处理grade升级和降级
-                        if rank == 0 {
-                            grade += 1;
-                        } else {
-                            grade -= 1;
-                        }
-                        //满足条件就初始化
-                        if grade > max_grade {
-                            grade = max_grade;
-                        }
-                        if grade <= 0 {
-                            grade = 1;
-                        }
+                    for sp in members.iter() {
                         let mut smp = SummaryDataPt::new();
                         smp.user_id = *member_id;
                         smp.cter_id = cter.get_cter_id();
-                        smp.rank = rank;
-                        smp.grade = grade as u32;
+                        smp.rank = sp.rank as u32;
+                        smp.grade = sp.grade as u32;
                         ssn.summary_datas.push(smp.clone());
                         rgs.summary_datas.push(smp);
                     }
@@ -116,9 +98,7 @@ impl BattleData {
                     break;
                 }
             }
-
             let res = ssn.write_to_bytes();
-
             match res {
                 Ok(bytes) => {
                     let v = self.get_battle_cters_vec();
@@ -305,9 +285,14 @@ impl BattleData {
             warn!("the target is died!user_id:{}", target_cter.get_user_id());
             anyhow::bail!("")
         }
+        let mut is_last_one = false;
+
+        if aoe_buff.is_none() {
+            is_last_one = true;
+        }
 
         //扣血
-        let target_pt = self.deduct_hp(user_id, target_user_id, None, true);
+        let target_pt = self.deduct_hp(user_id, target_user_id, None, is_last_one);
 
         if let Err(e) = target_pt {
             error!("{:?}", e);
@@ -347,12 +332,17 @@ impl BattleData {
             );
 
             //目标周围的玩家
-            for target_user in v {
+            for index in 0..v.len() {
+                let target_user = v.get(index).unwrap();
+                let target_user = target_user.unwrap();
                 if target_user_id == target_user {
                     continue;
                 }
+                if index == v.len() - 1 {
+                    is_last_one = true;
+                }
                 //扣血
-                let target_pt = self.deduct_hp(user_id, target_user, None, false);
+                let target_pt = self.deduct_hp(user_id, target_user, None, is_last_one);
                 match target_pt {
                     Ok(mut target_pt) => {
                         //目标被攻击，触发目标buff

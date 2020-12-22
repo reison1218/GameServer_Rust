@@ -1,4 +1,4 @@
-use crate::battle::battle::BattleData;
+use crate::battle::battle::{BattleData, SummaryPlayer};
 use crate::battle::battle_enum::skill_judge_type::{
     HP_LIMIT_GT, LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES,
 };
@@ -311,13 +311,22 @@ impl BattleData {
         target_cter.calc_reduce_damage(res)
     }
 
+    pub fn get_alive_player_num(&self) -> usize {
+        let alive_count = self
+            .battle_cter
+            .values()
+            .filter(|x| x.status.state == BattleCterState::Alive)
+            .count();
+        alive_count
+    }
+
     ///扣血
     pub unsafe fn deduct_hp(
         &mut self,
         from: u32,
         target: u32,
         skill_damege: Option<i16>,
-        need_rank: bool,
+        is_last_one: bool,
     ) -> anyhow::Result<TargetPt> {
         let battle_data_ptr = self as *mut BattleData;
         let mut target_pt = TargetPt::new();
@@ -330,6 +339,7 @@ impl BattleData {
             .unwrap()
             .get_battle_cter_mut(Some(target), true)?;
         let target_cter_index = target_cter.get_map_cell_index();
+        let target_user_id = target_cter.base_attr.user_id;
         target_pt.target_value.push(target_cter_index as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
@@ -370,29 +380,7 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
-            //判断是否需要排行
-            if need_rank {
-                self.rank_vec.push(Vec::new());
-            }
-            //此处做一个容错处理
-            if self.rank_vec.is_empty() {
-                self.rank_vec.push(Vec::new());
-            }
-            let mut rank_vec_size = self.rank_vec.len();
-            if rank_vec_size != 0 {
-                rank_vec_size -= 1;
-            }
-            let v = self.rank_vec.get_mut(rank_vec_size);
-            if v.is_none() {
-                error!("rank_vec can not find data!rank_vec_size:{}", rank_vec_size);
-                return Ok(target_pt);
-            }
-            v.unwrap().push(target);
-
-            let map_cell = self.tile_map.get_map_cell_mut_by_user_id(target);
-            if let Some(map_cell) = map_cell {
-                map_cell.user_id = 0;
-            }
+            self.after_cter_died_trigger(target_user_id, is_last_one, false);
         }
         Ok(target_pt)
     }

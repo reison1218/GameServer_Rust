@@ -401,7 +401,6 @@ pub unsafe fn skill_damage_opened_element(
     }
     let skill = skill.unwrap();
     let skill_damage = skill.skill_temp.par1 as i16;
-    let mut need_rank = true;
 
     let target_array = battle_data_ptr
         .as_mut()
@@ -412,21 +411,27 @@ pub unsafe fn skill_damage_opened_element(
         return None;
     }
     let target_array = target_array.unwrap();
+    let mut is_last_one = false;
+
     //计算技能伤害
-    for index in target_array {
+    for index_temp in 0..target_array.len() {
+        let index = target_array.get(index_temp).unwrap();
+        let index = *index;
+        if index_temp == target_array.len() - 1 {
+            is_last_one = true;
+        }
         let map_cell = battle_data.tile_map.map_cells.get(index);
         if let None = map_cell {
             continue;
         }
         let target_id = map_cell.unwrap().user_id;
-        let target_pt = battle_data.deduct_hp(user_id, target_id, Some(skill_damage), need_rank);
+        let target_pt = battle_data.deduct_hp(user_id, target_id, Some(skill_damage), is_last_one);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
         }
         let target_pt = target_pt.unwrap();
         au.targets.push(target_pt);
-        need_rank = false;
     }
     None
 }
@@ -651,14 +656,20 @@ pub unsafe fn skill_damage_and_cure(
     let (_, v) = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
 
     let mut add_hp = 0_u32;
-    let mut need_rank = true;
-    for target_user in v {
+    let mut is_last_one = false;
+
+    for index in 0..v.len() {
+        let target_user = v.get(index).unwrap();
+        let target_user = *target_user;
+        if index == v.len() - 1 {
+            is_last_one = true;
+        }
         //扣血
         let target_pt = battle_data.deduct_hp(
             user_id,
             target_user,
             Some(skill.skill_temp.par1 as i16),
-            need_rank,
+            is_last_one,
         );
         match target_pt {
             Ok(target_pt) => {
@@ -667,7 +678,6 @@ pub unsafe fn skill_damage_and_cure(
             }
             Err(e) => error!("{:?}", e),
         }
-        need_rank = false;
     }
 
     //给自己加血
@@ -717,9 +727,15 @@ pub unsafe fn skill_aoe_damage(
         Some(scope_temp),
     );
 
-    let mut need_rank = true;
+    let mut is_last_one = false;
     let mut count = 0i16;
-    for target_user in v {
+
+    for index in 0..v.len() {
+        let target_user = v.get(index).unwrap();
+        let target_user = *target_user;
+        if index == v.len() - 1 {
+            is_last_one = true;
+        }
         let cter = battle_data
             .get_battle_cter_mut(Some(target_user), true)
             .unwrap();
@@ -732,16 +748,16 @@ pub unsafe fn skill_aoe_damage(
         } else {
             damage_res = par1;
         }
-        let target_pt = battle_data.deduct_hp(user_id, target_user, Some(damage_res), need_rank);
+        let target_pt = battle_data.deduct_hp(user_id, target_user, Some(damage_res), is_last_one);
         match target_pt {
             Ok(target_pt) => {
                 au.targets.push(target_pt);
-                need_rank = false;
                 count += 1;
             }
             Err(e) => error!("{:?}", e),
         }
     }
+
     //如果技能是造成aoe并减cd
     if skill_id == SKILL_AOE_RED_SKILL_CD {
         //处理减cd逻辑,如果造成伤害人数大于参数
@@ -978,23 +994,28 @@ pub unsafe fn transform(
         None,
         Some(scope_temp),
     );
-    let mut need_rank = true;
-    for user in other_users {
+    let mut is_last_one = false;
+
+    for index in 0..other_users.len() {
+        let user = other_users.get(index).unwrap();
+        let user = user.unwrap();
         //排除自己
         if user == user_id {
             continue;
+        }
+        if index == other_users.len() - 1 {
+            is_last_one = true;
         }
         let target_pt =
             battle_data
                 .as_mut()
                 .unwrap()
-                .deduct_hp(user_id, user, Some(skill_damage), need_rank);
+                .deduct_hp(user_id, user, Some(skill_damage), is_last_one);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
         }
         au.targets.push(target_pt.unwrap());
-        need_rank = false;
     }
 
     //处理技能消耗

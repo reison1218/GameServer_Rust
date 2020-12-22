@@ -1,4 +1,4 @@
-use crate::battle::battle::BattleData;
+use crate::battle::battle::{BattleData, SummaryPlayer};
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -16,7 +16,7 @@ use rand::{thread_rng, Rng};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode};
+use tools::cmd_code::{ClientCode, GameCode, RoomCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::battle::{S_BATTLE_START_NOTICE, S_MAP_REFRESH_NOTICE};
@@ -153,6 +153,84 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    //离开房间结算
+    pub fn leave_summary(&mut self, user_id: u32, code: u32) {
+        let member = self.get_member_ref(&user_id);
+        let member = member.unwrap();
+        let mut need_summary = false;
+        let mut punishment = false;
+        let room_state = self.state;
+        let room_id = self.id;
+        let res = self.battle_data.get_battle_cter(Some(user_id), false);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+            return;
+        }
+        let cter = res.unwrap();
+        //如果是主动退出房间
+        if code == RoomCode::LeaveRoom.into_u32() {
+            //校验房间状态
+            if room_state != RoomState::Await || room_state != RoomState::BattleStarted {
+                warn!(
+                    "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
+                    room_state, user_id, room_id
+                );
+                return;
+            }
+
+            //房间为等待状态，并且已经准备了，则不允许退出房间
+            if room_state == RoomState::Await && member.state == MemberState::Ready.into_u8() {
+                warn!(
+                    "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
+                    user_id
+                );
+                return;
+            }
+        }
+
+        //房间为战斗状态，并且角色还没有死亡，则不允许退出房间
+        if room_state == RoomState::BattleStarted {
+            need_summary = true;
+            //没死走惩罚逻辑，死了走正常逻辑
+            if !cter.is_died() {
+                punishment = true;
+            }
+        }
+
+        let mut sp = SummaryPlayer::default();
+        sp.grade = cter.base_attr.grade;
+        sp.league_score = cter.base_attr.league_score;
+        sp.user_id = cter.get_user_id();
+        sp.cter_id = cter.base_attr.cter_id;
+        //走惩罚结算
+        if need_summary && punishment {
+            let reward_score_temp = crate::TEMPLATES
+                .get_constant_temp_mgr_ref()
+                .temps
+                .get("punishment_summary");
+            if let None = reward_score_temp {
+                warn!("punishment_summary's config is none!");
+                return Ok(());
+            }
+            let reward_score_temp = reward_score_temp.unwrap();
+            let reward_score = i32::from_str(reward_score_temp.value.as_str());
+            if let Err(e) = reward_score {
+                warn!("{:?}", e);
+                return;
+            }
+            let reward_score = reward_score.unwrap();
+            sp.reward_score = reward_score;
+            let rank_vec = &mut self.battle_data.rank_vec;
+            rank_vec.push(Vec::new());
+            let v = rank_vec.last_mut().unwrap();
+            v.unwrap().push(sp);
+        } else if need_summary {
+            //走正常结算
+            let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
+            let rank_vec = &mut self.battle_data.rank_vec;
+        }
     }
 
     ///处理战斗结算

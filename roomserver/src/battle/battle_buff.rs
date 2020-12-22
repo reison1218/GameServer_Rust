@@ -324,17 +324,20 @@ impl BattleData {
         let isize_index = index as isize;
         let target_type = TargetType::try_from(buff_temp.target as u8).unwrap();
         let (_, v) = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
-        let mut need_rank = true;
+        let mut is_last_one = false;
         unsafe {
-            for target_user in v.iter() {
+            for index in 0..v.len() {
+                if index == v.len() - 1 {
+                    is_last_one = true;
+                }
+                let target_user = v.get(index).unwrap();
                 //造成技能伤害
                 let target_pt = self.deduct_hp(
                     user_id,
                     *target_user,
                     Some(buff_temp.par1 as i16),
-                    need_rank,
+                    is_last_one,
                 );
-
                 match target_pt {
                     Ok(target_pt) => {
                         au.targets.push(target_pt);
@@ -343,7 +346,6 @@ impl BattleData {
                         error!("{:?}", e);
                     }
                 }
-                need_rank = false;
             }
         }
     }
