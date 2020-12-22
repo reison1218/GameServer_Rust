@@ -998,7 +998,7 @@ pub unsafe fn transform(
 
     for index in 0..other_users.len() {
         let user = other_users.get(index).unwrap();
-        let user = user.unwrap();
+        let user = *user;
         //排除自己
         if user == user_id {
             continue;

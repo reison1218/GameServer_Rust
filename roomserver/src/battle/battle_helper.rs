@@ -1,4 +1,4 @@
-use crate::battle::battle::{BattleData, SummaryPlayer};
+use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::skill_judge_type::{
     HP_LIMIT_GT, LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES,
 };

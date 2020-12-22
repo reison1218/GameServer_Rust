@@ -120,6 +120,7 @@ impl RoomMgr {
         None
     }
 
+    #[allow(dead_code)]
     pub fn get_room_ref(&self, user_id: &u32) -> Option<&Room> {
         let res = self.player_room.get(user_id);
         if res.is_none() {

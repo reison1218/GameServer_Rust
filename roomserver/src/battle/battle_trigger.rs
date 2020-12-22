@@ -488,7 +488,7 @@ impl TriggerEvent for BattleData {
             }
         }
 
-        let alive_count = self.get_alive_player_num();
+        let player_count = self.get_alive_player_num();
         let mut sp = SummaryPlayer::default();
         sp.user_id = user_id;
         sp.cter_id = cter.get_cter_id();
@@ -498,8 +498,17 @@ impl TriggerEvent for BattleData {
         rank_vec_temp.push(sp);
         //判断是否需要排行,如果需要则从第最后
         if is_last_one {
-            let index = alive_count - rank_vec_temp.len();
-            let res = self.rank_vec.get_mut(index).unwrap();
+            let index = player_count;
+            let res = self.rank_vec.get_mut(index);
+            if let None = res {
+                warn!(
+                    "the rank_vec's len is {},but the index is {}",
+                    self.rank_vec.len(),
+                    index
+                );
+                return;
+            }
+            let res = res.unwrap();
             res.extend_from_slice(&rank_vec_temp[..]);
             for sp in rank_vec_temp.iter_mut() {
                 sp.rank = index as u8;

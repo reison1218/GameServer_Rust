@@ -1,4 +1,4 @@
-use crate::battle::battle::{BattleData, SummaryPlayer};
+use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
@@ -16,7 +16,6 @@ use protobuf::Message;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::ops::Deref;
-use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
@@ -33,69 +32,39 @@ impl BattleData {
             .count();
         //如果达到结算条件，则进行结算
         if allive_count <= 1 {
-            let mut member: Option<u32> = None;
-            let mut summary_player = None;
-            for member_cter in self.battle_cter.values() {
-                if member_cter.is_died() {
-                    continue;
+            let self_ptr = self as *mut BattleData;
+            unsafe {
+                let self_mut = self_ptr.as_mut().unwrap();
+                for member_cter in self.battle_cter.values_mut() {
+                    if member_cter.is_died() {
+                        continue;
+                    }
+                    member_cter.status.state = BattleCterState::Die;
+                    let user_id = member_cter.get_user_id();
+                    self_mut.after_cter_died_trigger(user_id, true, false);
                 }
-                summary_player = Some(SummaryPlayer::from(member_cter));
             }
-            if let Some(mut summary_player) = summary_player {
-                summary_player.rank = 0;
-                let v = self.rank_vec.get_mut(0).unwrap();
-                v.push(summary_player);
-            }
-            //等级
-            let mut grade;
-            let mut ssn = S_SUMMARY_NOTICE::new();
-            let mut rank = 0_u32;
 
+            //回客户端消息
+            let mut ssn = S_SUMMARY_NOTICE::new();
             let mut index = self.rank_vec.len();
             if index == 0 {
                 return None;
             } else {
                 index -= 1;
             }
-            let mut max_grade = 2_i32;
-            let max_grade_temp = TEMPLATES.get_constant_temp_mgr_ref().temps.get("max_grade");
-            match max_grade_temp {
-                Some(max_grade_temp) => {
-                    let res = u32::from_str(max_grade_temp.value.as_str());
-                    match res {
-                        Ok(grade) => {
-                            max_grade = grade as i32;
-                        }
-                        Err(e) => {
-                            warn!("{:?}", e);
-                        }
-                    }
-                }
-                None => {
-                    error!("max_grade is not find!");
-                }
-            }
             let mut rgs = R_G_SUMMARY::new();
-            loop {
-                for members in self.rank_vec.get(index) {
-                    if members.is_empty() {
-                        continue;
-                    }
-                    for sp in members.iter() {
-                        let mut smp = SummaryDataPt::new();
-                        smp.user_id = *member_id;
-                        smp.cter_id = cter.get_cter_id();
-                        smp.rank = sp.rank as u32;
-                        smp.grade = sp.grade as u32;
-                        ssn.summary_datas.push(smp.clone());
-                        rgs.summary_datas.push(smp);
-                    }
-                    rank += 1;
-                }
-                if index > 0 {
-                    index -= 1;
-                } else {
-                    break;
+            for members in self.rank_vec.get(index) {
+                for sp in members.iter() {
+                    let mut smp = SummaryDataPt::new();
+                    smp.user_id = sp.user_id;
+                    smp.cter_id = sp.cter_id;
+                    smp.rank = sp.rank as u32;
+                    smp.grade = sp.grade as u32;
+                    smp.reward_score = sp.reward_score;
+                    smp.league_score = sp.league_score;
+                    ssn.summary_datas.push(smp.clone());
+                    rgs.summary_datas.push(smp);
                 }
             }
             let res = ssn.write_to_bytes();
@@ -334,7 +303,7 @@ impl BattleData {
             //目标周围的玩家
             for index in 0..v.len() {
                 let target_user = v.get(index).unwrap();
-                let target_user = target_user.unwrap();
+                let target_user = *target_user;
                 if target_user_id == target_user {
                     continue;
                 }

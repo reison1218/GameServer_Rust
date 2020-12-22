@@ -1,4 +1,5 @@
-use crate::battle::battle::{BattleData, SummaryPlayer};
+use crate::battle::battle::BattleData;
+use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -198,38 +199,14 @@ impl Room {
                 punishment = true;
             }
         }
-
-        let mut sp = SummaryPlayer::default();
-        sp.grade = cter.base_attr.grade;
-        sp.league_score = cter.base_attr.league_score;
-        sp.user_id = cter.get_user_id();
-        sp.cter_id = cter.base_attr.cter_id;
         //走惩罚结算
         if need_summary && punishment {
-            let reward_score_temp = crate::TEMPLATES
-                .get_constant_temp_mgr_ref()
-                .temps
-                .get("punishment_summary");
-            if let None = reward_score_temp {
-                warn!("punishment_summary's config is none!");
-                return Ok(());
-            }
-            let reward_score_temp = reward_score_temp.unwrap();
-            let reward_score = i32::from_str(reward_score_temp.value.as_str());
-            if let Err(e) = reward_score {
-                warn!("{:?}", e);
-                return;
-            }
-            let reward_score = reward_score.unwrap();
-            sp.reward_score = reward_score;
-            let rank_vec = &mut self.battle_data.rank_vec;
-            rank_vec.push(Vec::new());
-            let v = rank_vec.last_mut().unwrap();
-            v.unwrap().push(sp);
+            self.battle_data
+                .after_cter_died_trigger(user_id, true, true);
         } else if need_summary {
             //走正常结算
-            let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
-            let rank_vec = &mut self.battle_data.rank_vec;
+            self.battle_data
+                .after_cter_died_trigger(user_id, true, false);
         }
     }
 

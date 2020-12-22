@@ -1,4 +1,3 @@
-use crate::battle::battle::SummaryPlayer;
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::Character;
 use crate::room::member::Member;
@@ -13,10 +12,8 @@ use protobuf::Message;
 use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
-use std::ops::Rem;
-use std::str::FromStr;
 use std::sync::atomic::Ordering;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::ClientCode;
 use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER,
@@ -134,13 +131,17 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
     //校验房间是否存在
-    let room = rm.get_room_ref(&user_id);
+    let room = rm.get_room_mut(&user_id);
     if room.is_none() {
         return Ok(());
     }
     let room = room.unwrap();
     let room_id = room.get_room_id();
     let room_type = RoomType::from(room.get_room_type());
+    let code = packet.get_cmd();
+    //处理战斗离开房间结算
+    room.leave_summary(user_id, code);
+    //处理退出房间
     match room_type {
         RoomType::Custom => {
             let res =

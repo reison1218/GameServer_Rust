@@ -423,6 +423,7 @@ fn calc_n(n: i64) {
     println!("{}, cost={:?}", ans, now.elapsed());
 }
 
+#[allow(dead_code)]
 fn calc_n2(n: i64) {
     print!("N={},", n);
     let mut ans = 0i64;
@@ -469,8 +470,9 @@ pub struct StructTest {
 fn fn1(s: &mut String) {}
 
 fn main() -> anyhow::Result<()> {
-    let StructTest{a,..} = StructTest::default();
-    println!{"{}",a};
+    // let StructTest{a,..} = StructTest::default();
+    // println!{"{}",a};
+    calc_n2(50);
     // let res = tools::http::send_http_request("192.168.2.103:7777","reload_temps","post",None);
     // async_std::task::block_on(res);
     //calc_n2(600);
