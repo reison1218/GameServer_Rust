@@ -324,6 +324,7 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
     pbp.league_score = user_data.get_league_ref().score;
+    pbp.league_id = user_data.get_league_ref().id as u32;
     //封装角色
     for cter in user_data.get_characters_ref().cter_map.values() {
         let cter_pt = cter.clone().into();
@@ -366,6 +367,7 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
     pbp.league_score = user_data.get_league_ref().score;
+    pbp.league_id = user_data.get_league_ref().id as u32;
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -408,6 +410,7 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
     pbp.league_score = user_data.get_league_ref().score;
+    pbp.league_id = user_data.get_league_ref().id as u32;
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -436,16 +439,30 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         }
         let user_data = res.unwrap();
         let user_info = user_data.get_user_info_mut_ref();
-        let res;
         //第一名就加grade
         if summary_data.rank == 0 {
-            res = user_info.add_grade()
+            user_info.add_grade();
         } else {
             //否则就减grade
-            res = user_info.sub_grade();
+            user_info.sub_grade();
         }
+        //更新段位积分
+        let league = &mut user_data.league;
+        let league_id = league.id;
+        league.set_score(summary_data.league_score);
+
+        //更新进入段位时间
+        let score = league.score;
+        let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+        let res = league_temp_mgr.get_league_by_score(score as i32);
         if let Err(e) = res {
-            error!("{:?}", e);
+            warn!("{:?}", e);
+            return Ok(());
+        }
+        let league_temp = res.unwrap();
+        if league_temp.id != league_id {
+            league.id = league_temp.id;
+            league.update_league_time();
         }
     }
     Ok(())

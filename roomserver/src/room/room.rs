@@ -207,17 +207,20 @@ impl Room {
             //走正常结算
             self.battle_data
                 .after_cter_died_trigger(user_id, true, false);
+            unsafe {
+                self.battle_summary(Some(user_id));
+            }
         }
     }
 
     ///处理战斗结算
     /// 返回是否结算，是否刷新地图
-    pub unsafe fn battle_summary(&mut self) -> bool {
+    pub unsafe fn battle_summary(&mut self, leave_user: Option<u32>) -> bool {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
         let is_summary;
-        let summary_proto = self.battle_data.battle_summary();
+        let summary_proto = self.battle_data.summary(leave_user);
         if let Some(summary_proto) = summary_proto {
             let bytes = summary_proto.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
@@ -686,6 +689,13 @@ impl Room {
         }
     }
 
+    pub fn init_league_map(&mut self) {
+        let leagues = &mut self.battle_data.leagues;
+        for member in self.members.values() {
+            leagues.insert(member.get_user_id(), member.league_id as u8);
+        }
+    }
+
     //战斗通知
     pub fn start_notice(&mut self) {
         let mut ssn = S_START_NOTICE::new();
@@ -1074,9 +1084,9 @@ impl Room {
             self.handler_leave_battle_turn(user_id, turn_index);
         }
         //处理结算
-        unsafe {
-            self.battle_summary();
-        }
+        // unsafe {
+        //     self.battle_summary(None);
+        // }
     }
 
     ///换队伍
@@ -1179,6 +1189,8 @@ impl Room {
         self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
         //改变房间状态
         self.state = RoomState::ChoiceTurn;
+        //初始化段位积分快照
+        self.init_league_map();
         //下发通知
         self.start_notice();
         //创建choice_turn定时器任务

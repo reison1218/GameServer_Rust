@@ -60,7 +60,7 @@ pub struct BaseAttr {
     pub element: u8,       //角色元素
     pub hp_max: i16,       //血上限
     pub item_max: u8,      //道具数量上限
-    pub league_score: u32, //段位积分
+    pub league_score: i32, //段位积分
 }
 
 ///角色战斗基础属性

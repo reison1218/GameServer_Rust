@@ -4,8 +4,8 @@ use std::collections::HashMap;
 ///结算奖励配置
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct SummaryAwardTemp {
-    id: u8,
-    score: i16,
+    pub id: u8,
+    pub score: i16,
 }
 impl Template for SummaryAwardTemp {}
 
@@ -39,5 +39,10 @@ impl SummaryAwardTempMgr {
         for tt in t {
             self.temps.insert(tt.id, tt);
         }
+    }
+
+    pub fn get_score_by_rank(&self, rank: u8) -> anyhow::Result<i16> {
+        let res = self.get_temp(&rank)?;
+        Ok(res.score)
     }
 }

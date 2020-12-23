@@ -1,16 +1,18 @@
 use super::*;
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct League {
-    pub user_id: u32,    //玩家id
-    pub name: String,    //玩家名称
-    pub score: u32,      //积分
-    pub rank: i32,       //排名
-    pub cters: Vec<u32>, //常用的三个角色
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub rank_time: String, //上次离线时间
+    pub id: u8,              //段位id
+    pub user_id: u32,        //玩家id
+    pub name: String,        //玩家名称
+    pub score: u32,          //积分
+    pub rank: i32,           //排名
+    pub cters: Vec<u32>,     //常用的三个角色
+    pub league_time: String, //进入段位时间
+    #[serde(skip_serializing)]
     pub version: Cell<u32>, //版本号
 }
 
@@ -80,11 +82,23 @@ impl Dao for League {
 }
 
 impl League {
+    pub(crate) fn update_league_time(&mut self) {
+        let time = Local::now();
+        let res = time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string();
+        self.league_time = res;
+        self.add_version();
+    }
+
     pub fn new(user_id: u32, name: String) -> Self {
         let mut l = League::default();
         l.user_id = user_id;
         l.name = name;
         l
+    }
+
+    pub fn set_score(&mut self, score: u32) {
+        self.score = score;
+        self.add_version();
     }
 
     pub fn query(table_name: &str, user_id: u32) -> Option<Self> {

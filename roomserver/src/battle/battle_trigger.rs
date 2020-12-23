@@ -468,27 +468,29 @@ impl TriggerEvent for BattleData {
             return;
         }
         let cter = cter.unwrap();
-
-        let mut reward_score = 0i32;
-
-        //如果是惩罚结算
-        if is_punishment {
-            let con_temp = crate::TEMPLATES
-                .get_constant_temp_mgr_ref()
-                .temps
-                .get("punishment_summary");
-            if let None = con_temp {
-                reward_score = -50;
-            }
-            let con_temp = con_temp.unwrap();
+        let mut punishment_score = -50;
+        let mut reward_score;
+        let con_temp = crate::TEMPLATES
+            .get_constant_temp_mgr_ref()
+            .temps
+            .get("punishment_summary");
+        if let Some(con_temp) = con_temp {
             let reward_score_temp = i32::from_str(con_temp.value.as_str());
-            if let Err(e) = reward_score_temp {
-                warn!("{:?}", e);
-                reward_score = -50;
+            match reward_score_temp {
+                Ok(reward_score_temp) => punishment_score = reward_score_temp,
+                Err(e) => warn!("{:?}", e),
             }
         }
 
-        let player_count = self.get_alive_player_num();
+        //如果是惩罚结算
+        let mut player_count = self.get_alive_player_num() as i32;
+        if is_punishment {
+            player_count -= 1;
+            if player_count < 0 {
+                player_count = 0;
+            }
+        }
+
         let mut sp = SummaryPlayer::default();
         sp.user_id = user_id;
         sp.cter_id = cter.get_cter_id();
@@ -498,7 +500,7 @@ impl TriggerEvent for BattleData {
         rank_vec_temp.push(sp);
         //判断是否需要排行,如果需要则从第最后
         if is_last_one {
-            let index = player_count;
+            let index = player_count as usize;
             let res = self.rank_vec.get_mut(index);
             if let None = res {
                 warn!(
@@ -510,13 +512,68 @@ impl TriggerEvent for BattleData {
             }
             let res = res.unwrap();
             res.extend_from_slice(&rank_vec_temp[..]);
+            let count = rank_vec_temp.len();
+            let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
+            let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+            let leagues = &mut self.leagues;
+            let self_league = *leagues.get(&user_id).unwrap();
             for sp in rank_vec_temp.iter_mut() {
                 sp.rank = index as u8;
                 //进行结算
                 if is_punishment {
-                    sp.reward_score = reward_score;
+                    reward_score = punishment_score;
                 } else {
-                    //todo 计算基础分+浮动分
+                    //计算基础分
+                    let mut rank = sp.rank + 1;
+                    let mut base_score = 0;
+                    for index in 0..count {
+                        rank += index as u8;
+                        let score_temp = summary_award_temp_mgr.get_score_by_rank(rank);
+                        if let Err(e) = score_temp {
+                            warn!("{:?}", e);
+                            continue;
+                        }
+                        base_score += score_temp.unwrap();
+                    }
+                    base_score /= count as i16;
+                    //计算浮动分
+                    let mut average_league = 0;
+                    for i in leagues.iter() {
+                        if i.0 == &user_id {
+                            continue;
+                        }
+                        average_league += *i.1;
+                    }
+                    average_league /= leagues.len() as u8;
+                    let mut unstable = 0;
+                    if self_league >= average_league {
+                        unstable = 0;
+                    } else if average_league > self_league {
+                        unstable = (average_league - self_league) * 10;
+                    }
+                    reward_score = (base_score + unstable as i16) as i32;
+                }
+                //处理掉段问题
+                let mut score_copy = sp.league_score;
+                score_copy += reward_score;
+                let res = league_temp_mgr.get_league_by_score(score_copy);
+                match res {
+                    Ok(league) => {
+                        if league.id < self_league {
+                            let self_score_config = league_temp_mgr
+                                .get_league_by_score(sp.league_score)
+                                .unwrap();
+
+                            reward_score = self_score_config.score - sp.league_score;
+                        }
+                    }
+                    Err(e) => warn!("{:?}", e),
+                }
+                sp.reward_score = reward_score;
+
+                sp.league_score += reward_score;
+                if sp.league_score < 0 {
+                    sp.league_score = 0;
                 }
             }
             rank_vec_temp.clear();

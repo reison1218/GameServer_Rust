@@ -24,14 +24,29 @@ use tools::protos::server_protocol::R_G_SUMMARY;
 impl BattleData {
     ///处理战斗结算，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub fn battle_summary(&mut self) -> Option<R_G_SUMMARY> {
+    pub fn summary(&mut self, leave_user: Option<u32>) -> Option<R_G_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
             .filter(|x| x.status.state == BattleCterState::Alive)
             .count();
-        //如果达到结算条件，则进行结算
-        if allive_count <= 1 {
+
+        //回客户端消息
+        let mut ssn = S_SUMMARY_NOTICE::new();
+        let mut index = self.rank_vec.len();
+        if index == 0 {
+            return None;
+        } else {
+            index -= 1;
+        }
+        let mut need_summary = false;
+        let mut rgs = R_G_SUMMARY::new();
+        //如果有玩家退出房间
+        if leave_user.is_some() {
+            need_summary = true;
+        } else if allive_count <= 1 {
+            need_summary = true;
+            //如果达到结算条件，则进行结算
             let self_ptr = self as *mut BattleData;
             unsafe {
                 let self_mut = self_ptr.as_mut().unwrap();
@@ -44,42 +59,54 @@ impl BattleData {
                     self_mut.after_cter_died_trigger(user_id, true, false);
                 }
             }
-
-            //回客户端消息
-            let mut ssn = S_SUMMARY_NOTICE::new();
-            let mut index = self.rank_vec.len();
-            if index == 0 {
-                return None;
-            } else {
-                index -= 1;
-            }
-            let mut rgs = R_G_SUMMARY::new();
-            for members in self.rank_vec.get(index) {
-                for sp in members.iter() {
+        }
+        if need_summary {
+            'out: for members in self.rank_vec.get_mut(index) {
+                for sp in members.iter_mut() {
+                    if let Some(leave_user) = leave_user {
+                        if sp.user_id != leave_user {
+                            continue;
+                        }
+                    }
                     let mut smp = SummaryDataPt::new();
                     smp.user_id = sp.user_id;
                     smp.cter_id = sp.cter_id;
                     smp.rank = sp.rank as u32;
                     smp.grade = sp.grade as u32;
                     smp.reward_score = sp.reward_score;
-                    smp.league_score = sp.league_score;
+                    smp.league_score = sp.league_score as u32;
                     ssn.summary_datas.push(smp.clone());
-                    rgs.summary_datas.push(smp);
+                    if !sp.push_to_server {
+                        rgs.summary_datas.push(smp);
+                        sp.push_to_server = true;
+                    }
+                    if leave_user.is_some() {
+                        break 'out;
+                    }
                 }
             }
+        }
+
+        if ssn.summary_datas.len() > 0 {
             let res = ssn.write_to_bytes();
             match res {
                 Ok(bytes) => {
-                    let v = self.get_battle_cters_vec();
-                    for member_id in v {
-                        self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
+                    if let Some(leave_user) = leave_user {
+                        self.send_2_client(ClientCode::SummaryNotice, leave_user, bytes.clone());
+                    } else {
+                        let v = self.get_battle_cters_vec();
+                        for member_id in v {
+                            self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
+                        }
                     }
                 }
                 Err(e) => {
                     error!("{:?}", e);
                 }
             }
-            return Some(rgs);
+            if rgs.summary_datas.len() > 0 {
+                return Some(rgs);
+            }
         }
         None
     }

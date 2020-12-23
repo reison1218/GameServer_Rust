@@ -48,12 +48,13 @@ type SkillFn = HashMap<
 
 #[derive(Clone, Default)]
 pub struct SummaryPlayer {
-    pub user_id: u32,      //玩家id
-    pub cter_id: u32,      //角色id
-    pub grade: u8,         //玩家等级
-    pub rank: u8,          //玩家当局排名
-    pub league_score: u32, //段位总积分
-    pub reward_score: i32, //当局奖励积分
+    pub user_id: u32,         //玩家id
+    pub cter_id: u32,         //角色id
+    pub grade: u8,            //玩家等级
+    pub rank: u8,             //玩家当局排名
+    pub league_score: i32,    //段位总积分
+    pub reward_score: i32,    //当局奖励积分
+    pub push_to_server: bool, //是否推送过给游戏服务器
 }
 
 impl From<&BattleCharacter> for SummaryPlayer {
@@ -79,6 +80,7 @@ pub struct BattleData {
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
     pub rank_vec_temp: Vec<SummaryPlayer>,          //同一批挂掉的人
+    pub leagues: HashMap<u32, u8>,                  //房间内所有人积分快照，只记录刚进入战斗时候
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
@@ -131,6 +133,7 @@ impl BattleData {
             battle_cter: HashMap::new(),
             rank_vec: v,
             rank_vec_temp: Vec::new(),
+            leagues: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),
             total_turn_times: 0,

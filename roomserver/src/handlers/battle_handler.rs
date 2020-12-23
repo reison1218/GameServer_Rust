@@ -144,7 +144,7 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let cter = room.battle_data.get_battle_cter(None, false).unwrap();
         let current_cter_is_died = cter.is_died();
         //判断是否进行结算
-        let is_summary = battle_summary(rm_ptr.as_mut().unwrap(), room);
+        let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
         if !is_summary && current_cter_is_died {
             room.battle_data.next_turn();
         }
@@ -153,8 +153,8 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///处理战斗结算
-pub unsafe fn battle_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
-    let is_summary = room.battle_summary();
+pub unsafe fn process_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
+    let is_summary = room.battle_summary(None);
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //如果要结算,卸载数据

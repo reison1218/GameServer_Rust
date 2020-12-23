@@ -38,5 +38,6 @@ message PlayerBattlePt{
     string nick_name = 2;           //玩家昵称
     uint32 grade = 3;               //等级
     uint32 league_score = 4;        //段位积分
-    repeated CharacterPt cters = 5; //玩家解锁的角色数组
+    uint32 league_id = 5;           //段位id
+    repeated CharacterPt cters = 6; //玩家解锁的角色数组
 }

@@ -13,7 +13,7 @@ pub struct UserData {
     ///玩家角色
     character: Characters,
     ///玩家段位数据
-    league: League,
+    pub league: League,
     ///版本号（大于0代表有修改，需要update到db）
     version: Cell<u32>,
 }
@@ -97,6 +97,10 @@ impl UserData {
                 error!("{:?}", e);
             }
         }
+        let res = self.league.update();
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
         self.clear_version();
     }
 
@@ -117,6 +121,12 @@ impl UserData {
     }
     ///获得段位的只读指针
     pub fn get_league_ref(&self) -> &League {
+        self.league.borrow()
+    }
+
+    ///获得段位的可写指针
+    pub fn get_league_mut_ref(&self) -> &League {
+        self.add_version();
         self.league.borrow()
     }
 

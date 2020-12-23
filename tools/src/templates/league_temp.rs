@@ -4,8 +4,8 @@ use std::collections::HashMap;
 ///段位配置
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct LeagueTemp {
-    id: u8,
-    score: u32,
+    pub id: u8,
+    pub score: i32,
 }
 
 impl Template for LeagueTemp {}
@@ -40,5 +40,19 @@ impl LeagueTempMgr {
         for tt in t {
             self.temps.insert(tt.id, tt);
         }
+    }
+
+    pub fn get_league_by_score(&self, score: i32) -> anyhow::Result<&LeagueTemp> {
+        let mut res_temp = None;
+        for temp in self.temps.values() {
+            if score < temp.score {
+                continue;
+            }
+            res_temp = Some(temp);
+        }
+        if let None = res_temp {
+            anyhow::bail!("can not find temp for score:{}!", score)
+        }
+        Ok(res_temp.unwrap())
     }
 }
