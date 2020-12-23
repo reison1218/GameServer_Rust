@@ -483,13 +483,7 @@ impl TriggerEvent for BattleData {
         }
 
         //如果是惩罚结算
-        let mut player_count = self.get_alive_player_num() as i32;
-        if is_punishment {
-            player_count -= 1;
-            if player_count < 0 {
-                player_count = 0;
-            }
-        }
+        let player_count = self.get_alive_player_num() as i32;
 
         let mut sp = SummaryPlayer::default();
         sp.user_id = user_id;

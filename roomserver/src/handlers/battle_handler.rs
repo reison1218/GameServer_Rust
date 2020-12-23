@@ -153,8 +153,9 @@ pub fn action(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///处理战斗结算
+/// 在action末尾处,用于处理战斗推进过程中的战斗结算
 pub unsafe fn process_summary(rm: &mut RoomMgr, room: &mut Room) -> bool {
-    let is_summary = room.battle_summary(None);
+    let is_summary = room.battle_summary();
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //如果要结算,卸载数据

@@ -80,6 +80,7 @@ pub struct BattleData {
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
     pub rank_vec_temp: Vec<SummaryPlayer>,          //同一批挂掉的人
+    pub punishment_user: u32,                       //惩罚结算玩家id
     pub leagues: HashMap<u32, u8>,                  //房间内所有人积分快照，只记录刚进入战斗时候
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
@@ -133,6 +134,7 @@ impl BattleData {
             battle_cter: HashMap::new(),
             rank_vec: v,
             rank_vec_temp: Vec::new(),
+            punishment_user: 0,
             leagues: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),

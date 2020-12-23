@@ -199,28 +199,26 @@ impl Room {
                 punishment = true;
             }
         }
-        //走惩罚结算
+        //走惩罚触发
         if need_summary && punishment {
             self.battle_data
                 .after_cter_died_trigger(user_id, true, true);
+            self.battle_data.punishment_user = user_id;
         } else if need_summary {
-            //走正常结算
+            //走正常触发
             self.battle_data
                 .after_cter_died_trigger(user_id, true, false);
-            unsafe {
-                self.battle_summary(Some(user_id));
-            }
         }
     }
 
-    ///处理战斗结算
-    /// 返回是否结算，是否刷新地图
-    pub unsafe fn battle_summary(&mut self, leave_user: Option<u32>) -> bool {
+    ///处理战斗结算,外部需要判断这个玩家在不在房间里
+    ///返回是否结算，是否刷新地图
+    pub unsafe fn battle_summary(&mut self) -> bool {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
         let is_summary;
-        let summary_proto = self.battle_data.summary(leave_user);
+        let summary_proto = self.battle_data.summary();
         if let Some(summary_proto) = summary_proto {
             let bytes = summary_proto.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
@@ -1083,10 +1081,9 @@ impl Room {
         } else if self.state == RoomState::BattleStarted {
             self.handler_leave_battle_turn(user_id, turn_index);
         }
-        //处理结算
-        // unsafe {
-        //     self.battle_summary(None);
-        // }
+        unsafe {
+            self.battle_summary();
+        }
     }
 
     ///换队伍

@@ -22,9 +22,9 @@ use tools::protos::battle::S_SUMMARY_NOTICE;
 use tools::protos::server_protocol::R_G_SUMMARY;
 
 impl BattleData {
-    ///处理战斗结算，不管地图刷新逻辑
+    ///处理战斗结算核心逻辑，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub fn summary(&mut self, leave_user: Option<u32>) -> Option<R_G_SUMMARY> {
+    pub fn summary(&mut self) -> Option<R_G_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
@@ -41,8 +41,10 @@ impl BattleData {
         }
         let mut need_summary = false;
         let mut rgs = R_G_SUMMARY::new();
+        let punishment_user = self.punishment_user;
+
         //如果有玩家退出房间
-        if leave_user.is_some() {
+        if punishment_user > 0 {
             need_summary = true;
         } else if allive_count <= 1 {
             need_summary = true;
@@ -61,12 +63,10 @@ impl BattleData {
             }
         }
         if need_summary {
-            'out: for members in self.rank_vec.get_mut(index) {
-                for sp in members.iter_mut() {
-                    if let Some(leave_user) = leave_user {
-                        if sp.user_id != leave_user {
-                            continue;
-                        }
+            'out: for spa_v in self.rank_vec.get_mut(index) {
+                for sp in spa_v.iter_mut() {
+                    if punishment_user > 0 && sp.user_id != punishment_user {
+                        continue;
                     }
                     let mut smp = SummaryDataPt::new();
                     smp.user_id = sp.user_id;
@@ -80,7 +80,8 @@ impl BattleData {
                         rgs.summary_datas.push(smp);
                         sp.push_to_server = true;
                     }
-                    if leave_user.is_some() {
+                    if punishment_user > 0 && sp.user_id == punishment_user {
+                        self.punishment_user = 0;
                         break 'out;
                     }
                 }
@@ -91,8 +92,12 @@ impl BattleData {
             let res = ssn.write_to_bytes();
             match res {
                 Ok(bytes) => {
-                    if let Some(leave_user) = leave_user {
-                        self.send_2_client(ClientCode::SummaryNotice, leave_user, bytes.clone());
+                    if punishment_user > 0 {
+                        self.send_2_client(
+                            ClientCode::SummaryNotice,
+                            punishment_user,
+                            bytes.clone(),
+                        );
                     } else {
                         let v = self.get_battle_cters_vec();
                         for member_id in v {
