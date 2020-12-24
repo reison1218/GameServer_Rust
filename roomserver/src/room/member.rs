@@ -1,4 +1,4 @@
-use crate::room::character::Character;
+use crate::room::character::{Character, League};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
@@ -31,8 +31,7 @@ pub struct Member {
     pub user_id: u32,                   //玩家id
     pub nick_name: String,              //玩家昵称
     pub grade: u8,                      //玩家grade
-    pub league_score: u32,              //段位积分
-    pub league_id: u32,                 //段位id
+    pub league: League,                 //段位数据
     pub state: u8,                      //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
     pub is_robot: bool,                 //是否的机器人
@@ -55,8 +54,15 @@ impl From<PlayerBattlePt> for Member {
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady as u8;
         member.grade = pbp.grade as u8;
-        member.league_score = pbp.league_score;
-        member.league_id = pbp.league_id;
+        let mut league = League::default();
+        let score = pbp.league_score as i32;
+        let res = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_league_by_score(score)
+            .unwrap();
+        league.score = score;
+        league.league_temp = res;
+        member.league = league;
         let mut cters = HashMap::new();
         let res = pbp.take_cters();
 

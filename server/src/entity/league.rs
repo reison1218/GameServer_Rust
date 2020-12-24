@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct League {
     pub id: u8,              //段位id
     pub user_id: u32,        //玩家id
@@ -91,8 +92,10 @@ impl League {
 
     pub fn new(user_id: u32, name: String) -> Self {
         let mut l = League::default();
+        l.id = 1;
         l.user_id = user_id;
         l.name = name;
+        l.update_league_time();
         l
     }
 
@@ -118,7 +121,7 @@ impl League {
         let q = q.unwrap();
         let mut res = None;
         for _qr in q {
-            let (_, _, data): (u32, u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
+            let (_, data): (u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
             let c = League::init(data);
             res = Some(c);
             break;

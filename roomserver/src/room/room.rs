@@ -1,4 +1,5 @@
 use crate::battle::battle::BattleData;
+use crate::battle::battle_enum::BattleCterState;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
@@ -160,11 +161,12 @@ impl Room {
     pub fn leave_summary(&mut self, user_id: u32, code: u32) {
         let member = self.get_member_ref(&user_id);
         let member = member.unwrap();
+        let member_state = member.state;
         let mut need_summary = false;
         let mut punishment = false;
         let room_state = self.state;
         let room_id = self.id;
-        let res = self.battle_data.get_battle_cter(Some(user_id), false);
+        let res = self.battle_data.get_battle_cter_mut(Some(user_id), false);
         if let Err(e) = res {
             warn!("{:?}", e);
             return;
@@ -182,7 +184,7 @@ impl Room {
             }
 
             //房间为等待状态，并且已经准备了，则不允许退出房间
-            if room_state == RoomState::Await && member.state == MemberState::Ready.into_u8() {
+            if room_state == RoomState::Await && member_state == MemberState::Ready.into_u8() {
                 warn!(
                     "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
                     user_id
@@ -198,16 +200,14 @@ impl Room {
             if !cter.is_died() {
                 punishment = true;
             }
+            cter.status.state = BattleCterState::Die;
         }
         //走惩罚触发
         if need_summary && punishment {
             self.battle_data
                 .after_cter_died_trigger(user_id, true, true);
-            self.battle_data.punishment_user = user_id;
         } else if need_summary {
-            //走正常触发
-            self.battle_data
-                .after_cter_died_trigger(user_id, true, false);
+            self.battle_data.leave_user = user_id;
         }
     }
 
@@ -217,18 +217,22 @@ impl Room {
         if self.state != RoomState::ChoiceIndex && self.state != RoomState::BattleStarted {
             return false;
         }
-        let is_summary;
+        let is_battle_over;
         let summary_proto = self.battle_data.summary();
         if let Some(summary_proto) = summary_proto {
             let bytes = summary_proto.write_to_bytes().unwrap();
             //发给游戏服同步结算数据
             self.send_2_game(GameCode::Summary, bytes);
-            self.state = RoomState::BattleOvered;
-            is_summary = true;
-        } else {
-            is_summary = false;
         }
-        is_summary
+
+        let size = self.battle_data.get_alive_player_num();
+        if size == 0 {
+            is_battle_over = true;
+            self.state = RoomState::BattleOvered;
+        } else {
+            is_battle_over = false;
+        }
+        is_battle_over
     }
 
     ///刷新地图
@@ -687,13 +691,6 @@ impl Room {
         }
     }
 
-    pub fn init_league_map(&mut self) {
-        let leagues = &mut self.battle_data.leagues;
-        for member in self.members.values() {
-            leagues.insert(member.get_user_id(), member.league_id as u8);
-        }
-    }
-
     //战斗通知
     pub fn start_notice(&mut self) {
         let mut ssn = S_START_NOTICE::new();
@@ -1149,12 +1146,8 @@ impl Room {
 
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
-            let battle_cter = BattleCharacter::init(
-                &member.chose_cter,
-                member.grade,
-                &self.battle_data,
-                self.robot_sender.clone(),
-            );
+            let battle_cter =
+                BattleCharacter::init(&member, &self.battle_data, self.robot_sender.clone());
             match battle_cter {
                 Ok(b_cter) => {
                     self.battle_data.battle_cter.insert(member.user_id, b_cter);
@@ -1186,12 +1179,20 @@ impl Room {
         self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
         //改变房间状态
         self.state = RoomState::ChoiceTurn;
-        //初始化段位积分快照
-        self.init_league_map();
+        //初始化段位快照
+        self.init_leave_map();
         //下发通知
         self.start_notice();
         //创建choice_turn定时器任务
         self.build_choice_turn_task();
+    }
+
+    pub fn init_leave_map(&mut self) {
+        for member in self.members.values() {
+            self.battle_data
+                .leave_map
+                .insert(member.user_id, member.league.get_league_id());
+        }
     }
 
     ///生成地图

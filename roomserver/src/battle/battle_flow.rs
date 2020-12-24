@@ -33,18 +33,12 @@ impl BattleData {
 
         //回客户端消息
         let mut ssn = S_SUMMARY_NOTICE::new();
-        let mut index = self.rank_vec.len();
-        if index == 0 {
-            return None;
-        } else {
-            index -= 1;
-        }
         let mut need_summary = false;
         let mut rgs = R_G_SUMMARY::new();
-        let punishment_user = self.punishment_user;
+        let leave_user = self.leave_user;
 
         //如果有玩家退出房间
-        if punishment_user > 0 {
+        if leave_user > 0 {
             need_summary = true;
         } else if allive_count <= 1 {
             need_summary = true;
@@ -63,9 +57,9 @@ impl BattleData {
             }
         }
         if need_summary {
-            'out: for spa_v in self.rank_vec.get_mut(index) {
+            'out: for spa_v in self.rank_vec.iter_mut() {
                 for sp in spa_v.iter_mut() {
-                    if punishment_user > 0 && sp.user_id != punishment_user {
+                    if leave_user > 0 && sp.user_id != leave_user {
                         continue;
                     }
                     let mut smp = SummaryDataPt::new();
@@ -75,13 +69,14 @@ impl BattleData {
                     smp.grade = sp.grade as u32;
                     smp.reward_score = sp.reward_score;
                     smp.league_score = sp.league_score as u32;
+                    smp.league_id = sp.league_id as u32;
                     ssn.summary_datas.push(smp.clone());
                     if !sp.push_to_server {
                         rgs.summary_datas.push(smp);
                         sp.push_to_server = true;
                     }
-                    if punishment_user > 0 && sp.user_id == punishment_user {
-                        self.punishment_user = 0;
+                    if leave_user > 0 && sp.user_id == leave_user {
+                        self.leave_user = 0;
                         break 'out;
                     }
                 }
@@ -92,12 +87,8 @@ impl BattleData {
             let res = ssn.write_to_bytes();
             match res {
                 Ok(bytes) => {
-                    if punishment_user > 0 {
-                        self.send_2_client(
-                            ClientCode::SummaryNotice,
-                            punishment_user,
-                            bytes.clone(),
-                        );
+                    if leave_user > 0 {
+                        self.send_2_client(ClientCode::SummaryNotice, leave_user, bytes.clone());
                     } else {
                         let v = self.get_battle_cters_vec();
                         for member_id in v {

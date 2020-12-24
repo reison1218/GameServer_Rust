@@ -9,6 +9,7 @@ use crate::battle::battle_skill::Skill;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
+use crate::room::member::Member;
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
 use log::{error, warn};
@@ -16,6 +17,7 @@ use std::collections::HashMap;
 use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, CharacterPt, TargetPt};
 use tools::templates::character_temp::CharacterTemp;
+use tools::templates::league_temp::LeagueTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -49,18 +51,47 @@ impl Into<CharacterPt> for Character {
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
 pub struct BaseAttr {
-    pub user_id: u32,      //玩家id
-    pub cter_id: u32,      //角色的配置id
-    pub grade: u8,         //等级
-    pub atk: u8,           //攻击力
-    pub hp: i16,           //角色血量
-    pub defence: u8,       //角色防御
-    pub energy: u8,        //角色能量
-    pub max_energy: u8,    //能量上限
-    pub element: u8,       //角色元素
-    pub hp_max: i16,       //血上限
-    pub item_max: u8,      //道具数量上限
-    pub league_score: i32, //段位积分
+    pub user_id: u32,   //玩家id
+    pub cter_id: u32,   //角色的配置id
+    pub grade: u8,      //等级
+    pub atk: u8,        //攻击力
+    pub hp: i16,        //角色血量
+    pub defence: u8,    //角色防御
+    pub energy: u8,     //角色能量
+    pub max_energy: u8, //能量上限
+    pub element: u8,    //角色元素
+    pub hp_max: i16,    //血上限
+    pub item_max: u8,   //道具数量上限
+}
+
+///段位数据
+#[derive(Clone, Debug)]
+pub struct League {
+    pub score: i32, //段位积分
+    pub league_temp: &'static LeagueTemp,
+}
+
+impl League {
+    pub fn get_league_id(&self) -> u8 {
+        self.league_temp.id
+    }
+
+    pub fn get_temp_score(&self) -> i32 {
+        self.league_temp.score
+    }
+}
+
+impl Default for League {
+    fn default() -> Self {
+        let res = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_league_by_score(0)
+            .unwrap();
+        League {
+            score: 0,
+            league_temp: res,
+        }
+    }
 }
 
 ///角色战斗基础属性
@@ -103,6 +134,7 @@ pub struct IndexData {
 #[derive(Clone, Default)]
 pub struct BattleCharacter {
     pub base_attr: BaseAttr,                               //基础属性
+    pub league: League,                                    //单位数据
     pub status: BattleStatus,                              //战斗状态
     pub battle_buffs: BattleBuff,                          //战斗buff
     pub flow_data: TurnFlowData,                           //战斗流程相关数据
@@ -218,7 +250,7 @@ impl BattleCharacter {
         self.base_attr.defence = cter_temp.defence;
         self.base_attr.atk = cter_temp.attack;
         self.status.state = BattleCterState::Alive;
-
+        self.league = League::default();
         for skill_group in cter_temp.skills.iter() {
             for skill_id in skill_group.group.iter() {
                 let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
@@ -533,16 +565,16 @@ impl BattleCharacter {
 
     ///初始化战斗角色数据
     pub fn init(
-        cter: &Character,
-        grade: u8,
+        member: &Member,
         battle_data: &BattleData,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
+        let cter = &member.chose_cter;
         let mut battle_cter = BattleCharacter::default();
         let cter_id = cter.cter_id;
         battle_cter.base_attr.user_id = cter.user_id;
         battle_cter.base_attr.cter_id = cter_id;
-        battle_cter.base_attr.grade = grade;
+        battle_cter.base_attr.grade = member.grade;
         let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
         let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
         for skill_id in cter.skills.iter() {
@@ -574,6 +606,7 @@ impl BattleCharacter {
         battle_cter.base_attr.max_energy = cter_temp.max_energy;
         battle_cter.base_attr.hp_max = cter_temp.hp;
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
+        battle_cter.league = member.league.clone();
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);

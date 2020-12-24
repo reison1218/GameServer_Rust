@@ -143,7 +143,8 @@ message SummaryDataPt{
     uint32 grade = 3;//当前等级
     uint32 rank = 4;//当局排名
     uint32 league_score = 5;//玩家总积分
-    int32 reward_score = 6;//奖励积分
+    uint32 league_id = 6;//段位id
+    int32 reward_score = 7;//奖励积分
 }
 
 message CterStatusPt{

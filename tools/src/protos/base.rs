@@ -4057,6 +4057,7 @@ pub struct SummaryDataPt {
     pub grade: u32,
     pub rank: u32,
     pub league_score: u32,
+    pub league_id: u32,
     pub reward_score: i32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -4149,7 +4150,22 @@ impl SummaryDataPt {
         self.league_score = v;
     }
 
-    // int32 reward_score = 6;
+    // uint32 league_id = 6;
+
+
+    pub fn get_league_id(&self) -> u32 {
+        self.league_id
+    }
+    pub fn clear_league_id(&mut self) {
+        self.league_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_id(&mut self, v: u32) {
+        self.league_id = v;
+    }
+
+    // int32 reward_score = 7;
 
 
     pub fn get_reward_score(&self) -> i32 {
@@ -4213,6 +4229,13 @@ impl ::protobuf::Message for SummaryDataPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
+                    let tmp = is.read_uint32()?;
+                    self.league_id = tmp;
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
                     let tmp = is.read_int32()?;
                     self.reward_score = tmp;
                 },
@@ -4243,8 +4266,11 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.league_score != 0 {
             my_size += ::protobuf::rt::value_size(5, self.league_score, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.league_id != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.league_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.reward_score != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.reward_score, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(7, self.reward_score, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -4267,8 +4293,11 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.league_score != 0 {
             os.write_uint32(5, self.league_score)?;
         }
+        if self.league_id != 0 {
+            os.write_uint32(6, self.league_id)?;
+        }
         if self.reward_score != 0 {
-            os.write_int32(6, self.reward_score)?;
+            os.write_int32(7, self.reward_score)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -4333,6 +4362,11 @@ impl ::protobuf::Message for SummaryDataPt {
                 |m: &SummaryDataPt| { &m.league_score },
                 |m: &mut SummaryDataPt| { &mut m.league_score },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "league_id",
+                |m: &SummaryDataPt| { &m.league_id },
+                |m: &mut SummaryDataPt| { &mut m.league_id },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                 "reward_score",
                 |m: &SummaryDataPt| { &m.reward_score },
@@ -4359,6 +4393,7 @@ impl ::protobuf::Clear for SummaryDataPt {
         self.grade = 0;
         self.rank = 0;
         self.league_score = 0;
+        self.league_id = 0;
         self.reward_score = 0;
         self.unknown_fields.clear();
     }
@@ -4871,16 +4906,17 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     uffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\
     \x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01\
     (\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTi\
-    mes\"\xb1\x01\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    mes\"\xce\x01\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
     \x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\
     \x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01\
     (\rR\x04rank\x12!\n\x0cleague_score\x18\x05\x20\x01(\rR\x0bleagueScore\
-    \x12!\n\x0creward_score\x18\x06\x20\x01(\x05R\x0brewardScore\"e\n\x0cCte\
-    rStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\
-    \x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03\
-    (\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\
-    \x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.\
-    protos.BuffPtR\x05buffsb\x06proto3\
+    \x12\x1b\n\tleague_id\x18\x06\x20\x01(\rR\x08leagueId\x12!\n\x0creward_s\
+    core\x18\x07\x20\x01(\x05R\x0brewardScore\"e\n\x0cCterStatusPt\x12\x17\n\
+    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\x18\x02\
+    \x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.\
+    BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\
+    \x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05bu\
+    ffsb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

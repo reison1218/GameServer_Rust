@@ -112,6 +112,12 @@ impl Dao for User {
 }
 
 impl User {
+    pub fn set_grade(&mut self, grade: u32) {
+        self.grade = grade;
+        self.add_version();
+    }
+
+    #[allow(dead_code)]
     pub fn add_grade(&mut self) -> anyhow::Result<u32> {
         let res = self.grade;
         let mut grade = res as usize;
@@ -145,6 +151,7 @@ impl User {
         Ok(grade as u32)
     }
 
+    #[allow(dead_code)]
     pub fn sub_grade(&mut self) -> anyhow::Result<u32> {
         let res = self.grade;
 
@@ -440,28 +447,15 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         let user_data = res.unwrap();
         let user_info = user_data.get_user_info_mut_ref();
         //第一名就加grade
-        if summary_data.rank == 0 {
-            user_info.add_grade();
-        } else {
-            //否则就减grade
-            user_info.sub_grade();
-        }
+        user_info.set_grade(summary_data.get_grade());
         //更新段位积分
         let league = &mut user_data.league;
         let league_id = league.id;
+        let new_league_id = summary_data.league_id as u8;
         league.set_score(summary_data.league_score);
-
         //更新进入段位时间
-        let score = league.score;
-        let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-        let res = league_temp_mgr.get_league_by_score(score as i32);
-        if let Err(e) = res {
-            warn!("{:?}", e);
-            return Ok(());
-        }
-        let league_temp = res.unwrap();
-        if league_temp.id != league_id {
-            league.id = league_temp.id;
+        if new_league_id != league_id {
+            league.id = new_league_id;
             league.update_league_time();
         }
     }

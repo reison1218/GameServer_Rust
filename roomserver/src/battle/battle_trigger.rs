@@ -468,6 +468,9 @@ impl TriggerEvent for BattleData {
             return;
         }
         let cter = cter.unwrap();
+        let self_league = cter.league.get_league_id();
+        let self_league_temp_score = cter.league.get_temp_score();
+        let self_league_score = cter.league.score;
         let mut punishment_score = -50;
         let mut reward_score;
         let con_temp = crate::TEMPLATES
@@ -475,9 +478,9 @@ impl TriggerEvent for BattleData {
             .temps
             .get("punishment_summary");
         if let Some(con_temp) = con_temp {
-            let reward_score_temp = i32::from_str(con_temp.value.as_str());
+            let reward_score_temp = f64::from_str(con_temp.value.as_str());
             match reward_score_temp {
-                Ok(reward_score_temp) => punishment_score = reward_score_temp,
+                Ok(reward_score_temp) => punishment_score = reward_score_temp as i32,
                 Err(e) => warn!("{:?}", e),
             }
         }
@@ -488,7 +491,7 @@ impl TriggerEvent for BattleData {
         let mut sp = SummaryPlayer::default();
         sp.user_id = user_id;
         sp.cter_id = cter.get_cter_id();
-        sp.league_score = cter.base_attr.league_score;
+        sp.league_score = cter.league.score;
         sp.grade = cter.base_attr.grade;
         let rank_vec_temp = &mut self.rank_vec_temp;
         rank_vec_temp.push(sp);
@@ -504,13 +507,10 @@ impl TriggerEvent for BattleData {
                 );
                 return;
             }
-            let res = res.unwrap();
-            res.extend_from_slice(&rank_vec_temp[..]);
+            let rank_vec = res.unwrap();
             let count = rank_vec_temp.len();
             let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
             let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-            let leagues = &mut self.leagues;
-            let self_league = *leagues.get(&user_id).unwrap();
             for sp in rank_vec_temp.iter_mut() {
                 sp.rank = index as u8;
                 //进行结算
@@ -519,6 +519,17 @@ impl TriggerEvent for BattleData {
                 } else {
                     //计算基础分
                     let mut rank = sp.rank + 1;
+                    if rank == 1 {
+                        sp.grade += 1;
+                        if sp.grade > 2 {
+                            sp.grade = 2;
+                        }
+                    } else {
+                        sp.grade -= 1;
+                        if sp.grade <= 0 {
+                            sp.grade = 1;
+                        }
+                    }
                     let mut base_score = 0;
                     for index in 0..count {
                         rank += index as u8;
@@ -532,13 +543,15 @@ impl TriggerEvent for BattleData {
                     base_score /= count as i16;
                     //计算浮动分
                     let mut average_league = 0;
-                    for i in leagues.iter() {
-                        if i.0 == &user_id {
+                    let mut league_count = 0;
+                    for (cter_id, league_id) in self.leave_map.iter() {
+                        if *cter_id == user_id {
                             continue;
                         }
-                        average_league += *i.1;
+                        league_count += 1;
+                        average_league += *league_id;
                     }
-                    average_league /= leagues.len() as u8;
+                    average_league /= league_count;
                     let mut unstable = 0;
                     if self_league >= average_league {
                         unstable = 0;
@@ -547,29 +560,30 @@ impl TriggerEvent for BattleData {
                     }
                     reward_score = (base_score + unstable as i16) as i32;
                 }
-                //处理掉段问题
-                let mut score_copy = sp.league_score;
-                score_copy += reward_score;
-                let res = league_temp_mgr.get_league_by_score(score_copy);
-                match res {
-                    Ok(league) => {
-                        if league.id < self_league {
-                            let self_score_config = league_temp_mgr
-                                .get_league_by_score(sp.league_score)
-                                .unwrap();
-
-                            reward_score = self_score_config.score - sp.league_score;
-                        }
-                    }
-                    Err(e) => warn!("{:?}", e),
-                }
                 sp.reward_score = reward_score;
 
                 sp.league_score += reward_score;
                 if sp.league_score < 0 {
                     sp.league_score = 0;
+                    sp.reward_score = 0;
                 }
+                //不允许掉段位
+                let res = league_temp_mgr.get_league_by_score(sp.league_score);
+                match res {
+                    Ok(res) => {
+                        if res.id < self_league {
+                            sp.reward_score = self_league_score - self_league_temp_score;
+                            sp.league_score = self_league_temp_score;
+                        }
+                    }
+                    Err(_) => {}
+                }
+                let res = league_temp_mgr
+                    .get_league_by_score(sp.league_score)
+                    .unwrap();
+                sp.league_id = res.id;
             }
+            rank_vec.extend_from_slice(&rank_vec_temp[..]);
             rank_vec_temp.clear();
         }
         let map_cell = self.tile_map.get_map_cell_mut_by_user_id(user_id);

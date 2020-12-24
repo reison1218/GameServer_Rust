@@ -747,7 +747,7 @@ impl BattleData {
         let map_cell = res.unwrap();
         if is_check_open && map_cell.open_user > 0 {
             anyhow::bail!("this map_cell already opened!index:{}", map_cell.index)
-        } else if map_cell.pair_index.is_some() {
+        } else if is_check_open && map_cell.pair_index.is_some() {
             anyhow::bail!("this map_cell already pair!index:{}", map_cell.index)
         }
         if is_check_pair && map_cell.pair_index.is_some() {

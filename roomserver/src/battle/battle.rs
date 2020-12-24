@@ -53,6 +53,7 @@ pub struct SummaryPlayer {
     pub grade: u8,            //玩家等级
     pub rank: u8,             //玩家当局排名
     pub league_score: i32,    //段位总积分
+    pub league_id: u8,        //段位
     pub reward_score: i32,    //当局奖励积分
     pub push_to_server: bool, //是否推送过给游戏服务器
 }
@@ -63,7 +64,7 @@ impl From<&BattleCharacter> for SummaryPlayer {
         sp.user_id = cter.get_user_id();
         sp.cter_id = cter.get_cter_id();
         sp.grade = cter.base_attr.grade;
-        sp.league_score = cter.base_attr.league_score;
+        sp.league_score = cter.league.score;
         sp
     }
 }
@@ -80,8 +81,8 @@ pub struct BattleData {
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
     pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
     pub rank_vec_temp: Vec<SummaryPlayer>,          //同一批挂掉的人
-    pub punishment_user: u32,                       //惩罚结算玩家id
-    pub leagues: HashMap<u32, u8>,                  //房间内所有人积分快照，只记录刚进入战斗时候
+    pub leave_user: u32,                            //惩罚结算玩家id
+    pub leave_map: HashMap<u32, u8>,                //段位快照
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
@@ -134,8 +135,8 @@ impl BattleData {
             battle_cter: HashMap::new(),
             rank_vec: v,
             rank_vec_temp: Vec::new(),
-            punishment_user: 0,
-            leagues: HashMap::new(),
+            leave_user: 0,
+            leave_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),
             total_turn_times: 0,
