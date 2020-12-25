@@ -18,15 +18,14 @@ use rand::{thread_rng, Rng};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode, RoomCode};
+use tools::cmd_code::{ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
 use tools::protos::battle::{S_BATTLE_START_NOTICE, S_MAP_REFRESH_NOTICE};
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE, S_CHOOSE_TURN_ORDER_NOTICE, S_EMOJI,
-    S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM,
-    S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_SKIP_TURN_CHOICE_NOTICE,
-    S_START_CHOOSE_INDEX_NOTICE, S_START_NOTICE,
+    S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER,
+    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE,
+    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -73,10 +72,9 @@ pub enum MemberLeaveNoticeType {
 #[repr(u8)]
 pub enum RoomState {
     Await = 0,         //等待
-    ChoiceTurn = 1,    //选择回合
-    ChoiceIndex = 2,   //选择占位
-    BattleStarted = 3, //战斗开始
-    BattleOvered = 4,  //战斗结束
+    ChoiceIndex = 1,   //选择占位
+    BattleStarted = 2, //战斗开始
+    BattleOvered = 3,  //战斗结束
 }
 
 ///房间结构体，封装房间必要信息
@@ -158,56 +156,32 @@ impl Room {
     }
 
     //离开房间结算
-    pub fn leave_summary(&mut self, user_id: u32, code: u32) {
-        let member = self.get_member_ref(&user_id);
-        let member = member.unwrap();
-        let member_state = member.state;
+    pub fn league_summary(&mut self, user_id: u32) {
         let mut need_summary = false;
         let mut punishment = false;
         let room_state = self.state;
-        let room_id = self.id;
         let res = self.battle_data.get_battle_cter_mut(Some(user_id), false);
-        if let Err(e) = res {
-            warn!("{:?}", e);
+        if let Err(_) = res {
             return;
         }
         let cter = res.unwrap();
-        //如果是主动退出房间
-        if code == RoomCode::LeaveRoom.into_u32() {
-            //校验房间状态
-            if room_state != RoomState::Await || room_state != RoomState::BattleStarted {
-                warn!(
-                    "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
-                    room_state, user_id, room_id
-                );
-                return;
-            }
 
-            //房间为等待状态，并且已经准备了，则不允许退出房间
-            if room_state == RoomState::Await && member_state == MemberState::Ready.into_u8() {
-                warn!(
-                    "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
-                    user_id
-                );
-                return;
-            }
-        }
-
-        //房间为战斗状态，并且角色还没有死亡，则不允许退出房间
-        if room_state == RoomState::BattleStarted {
+        //房间必须为选择占位阶段和开始战斗阶段
+        if room_state == RoomState::ChoiceIndex || room_state == RoomState::BattleStarted {
             need_summary = true;
+
             //没死走惩罚逻辑，死了走正常逻辑
             if !cter.is_died() {
                 punishment = true;
             }
+            //离开房间，当死亡处理
             cter.status.state = BattleCterState::Die;
+            self.battle_data.leave_user = (user_id, punishment);
         }
         //走惩罚触发
         if need_summary && punishment {
             self.battle_data
                 .after_cter_died_trigger(user_id, true, true);
-        } else if need_summary {
-            self.battle_data.leave_user = user_id;
         }
     }
 
@@ -277,23 +251,16 @@ impl Room {
 
     ///开始选择占位
     pub fn start_choice_index(&mut self) {
-        //刷新地图
         self.state = RoomState::ChoiceIndex;
+        //把cter转换成battle_cter
+        if !self.battle_data.reflash_map_turn.is_some() {
+            self.cter_2_battle_cter();
+        }
         info!(
             "choice_turn finish!turn_order:{:?}",
             self.battle_data.turn_orders
         );
-        let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
-        //如果不是刷新，则需要把cter转换成battle_cter
-        if !self.battle_data.reflash_map_turn.is_some() {
-            self.cter_2_battle_cter();
-        }
-        //推送开始选下标给客户端
-        let bytes = sbs.write_to_bytes().unwrap();
-        let self_mut_ref = self.get_mut_ref();
-        for id in self.members.keys() {
-            self_mut_ref.send_2_client(ClientCode::StartChoiceIndexNotice, *id, bytes.clone());
-        }
+
         //开始执行占位逻辑
         self.build_choice_index_task();
     }
@@ -307,17 +274,6 @@ impl Room {
     }
 
     ///判断选择是否能选
-    pub fn is_can_choice_turn_now(&self, user_id: u32) -> bool {
-        let res = self.get_choice_user(None);
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return false;
-        }
-        let id = res.unwrap();
-        id == user_id
-    }
-
-    ///判断选择是否能选
     pub fn is_can_choice_index_now(&self, user_id: u32) -> bool {
         let res = self.get_turn_user(None);
         if let Err(e) = res {
@@ -326,31 +282,6 @@ impl Room {
         }
         let id = res.unwrap();
         id == user_id
-    }
-
-    pub fn set_next_choice_index(&mut self, index: usize) {
-        self.battle_data.next_choice_index = index;
-    }
-
-    pub fn get_next_choice_index(&self) -> usize {
-        self.battle_data.next_choice_index
-    }
-
-    pub fn add_next_choice_index(&mut self) {
-        self.battle_data.next_choice_index += 1;
-        let index = self.battle_data.next_choice_index;
-        if index >= MEMBER_MAX as usize {
-            return;
-        }
-        let user_id = self.get_choice_user(Some(index));
-        if let Ok(user_id) = user_id {
-            if user_id != 0 {
-                return;
-            }
-            self.add_next_choice_index();
-        } else {
-            warn!("{:?}", user_id.err().unwrap());
-        }
     }
 
     pub fn add_next_turn_index(&mut self) {
@@ -389,22 +320,6 @@ impl Room {
         self.battle_data.turn_orders[index] = 0;
     }
 
-    pub fn remove_choice_order(&mut self, index: usize) {
-        let size = self.battle_data.choice_orders.len() as isize;
-        if index as isize > size - 1 {
-            return;
-        }
-        self.battle_data.choice_orders[index] = 0;
-    }
-
-    pub fn insert_choice_order(&mut self, index: usize, user_id: u32) {
-        let size = self.battle_data.choice_orders.len() as isize;
-        if index as isize > size - 1 {
-            return;
-        }
-        self.battle_data.choice_orders[index] = user_id;
-    }
-
     pub fn get_next_turn_index(&self) -> usize {
         self.battle_data.next_turn_index
     }
@@ -422,38 +337,7 @@ impl Room {
     }
 
     pub fn check_index_over(&mut self) -> bool {
-        self.state != RoomState::Await
-            && self.state != RoomState::ChoiceTurn
-            && self.state != RoomState::ChoiceIndex
-    }
-
-    ///选择跳过
-    pub fn skip_choice_turn(&mut self, user_id: u32) {
-        let mut index = self.get_next_choice_index();
-        info!(
-            "choice skpi_choice_turn user_id:{},index:{},choice_order:{:?}",
-            user_id, index, self.battle_data.choice_orders
-        );
-        self.add_next_choice_index();
-        let mut sstcn = S_SKIP_TURN_CHOICE_NOTICE::new();
-        sstcn.user_id = user_id;
-        let bytes = sstcn.write_to_bytes().unwrap();
-
-        //推送给所有人
-        let self_mut_ref = self.get_mut_ref();
-        for member_id in self.member_index.iter() {
-            self_mut_ref.send_2_client(ClientCode::SkipChoiceTurnNotice, *member_id, bytes.clone());
-        }
-
-        let is_all_choice = self.check_is_all_choice_turn();
-        index = self.get_next_choice_index();
-        let size = MEMBER_MAX as usize;
-        if is_all_choice {
-            self.state = RoomState::ChoiceIndex;
-            self.set_next_choice_index(0);
-        } else if index >= size {
-            self.random_choice_turn();
-        }
+        self.state != RoomState::Await && self.state != RoomState::ChoiceIndex
     }
 
     ///选择占位
@@ -505,23 +389,8 @@ impl Room {
         }
     }
 
-    //检查是否都选了回合顺序
-    pub fn check_is_all_choice_turn(&self) -> bool {
-        let index = self.get_next_choice_index();
-        if index >= MEMBER_MAX as usize {
-            for member_id in self.members.keys() {
-                if !self.battle_data.turn_orders.contains(member_id) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-        true
-    }
-
     //给没选都人随机回合顺序
-    pub fn random_choice_turn(&mut self) {
+    pub fn init_turn_order(&mut self) {
         //先选出可以随机的下标
         let mut index_v: Vec<usize> = Vec::new();
         for index in 0..MEMBER_MAX as usize {
@@ -550,65 +419,21 @@ impl Room {
                 let remove_index = rand.gen_range(0, index_v.len());
                 let index = index_v.get(remove_index).unwrap();
                 let turn_order = *index as usize;
-                self.choice_turn(member_id, turn_order, false);
+                self.insert_turn_orders(turn_order, member_id);
                 index_v.remove(remove_index);
             }
         }
 
-        self.state = RoomState::ChoiceIndex;
         self.set_next_turn_index(0);
         let next_turn_user = self.get_turn_user(None).unwrap();
         if next_turn_user == 0 {
             self.add_next_turn_index();
         }
+        self.start_choice_index();
     }
 
     pub fn turn_order_contains(&self, user_id: &u32) -> bool {
         self.battle_data.turn_orders.contains(user_id)
-    }
-
-    ///选择回合
-    pub fn choice_turn(&mut self, user_id: u32, order: usize, need_random: bool) {
-        if self.state != RoomState::ChoiceTurn {
-            return;
-        }
-        //如果玩家选择的
-        self.insert_turn_orders(order, user_id);
-        //通知其他玩家
-        let mut scron = S_CHOOSE_TURN_ORDER_NOTICE::new();
-        scron.user_id = user_id;
-        scron.order = order as u32;
-        let bytes = scron.write_to_bytes().unwrap();
-        let self_mut_ref = self.get_mut_ref();
-        for id in self.members.keys() {
-            self_mut_ref.send_2_client(ClientCode::ChoiceRoundOrderNotice, *id, bytes.clone());
-        }
-        let size = MEMBER_MAX as usize;
-        self.add_next_choice_index();
-        let index = self.get_next_choice_index();
-
-        let is_all_choice = self.check_is_all_choice_turn();
-        if is_all_choice {
-            self.set_next_turn_index(0);
-            //校验下一个是不是为0
-            let next_turn_user = self.get_turn_user(None).unwrap();
-            if next_turn_user == 0 {
-                self.add_next_turn_index();
-            }
-            self.start_choice_index();
-        } else if !is_all_choice && index >= size && need_random {
-            self.random_choice_turn();
-        }
-        let res = self.check_choice_turn_over();
-        //如果都选完了，开始选占位，并发送战斗数据给客户端
-        if !res {
-            //如果没选完，继续选
-            self.build_choice_turn_task();
-        }
-    }
-
-    pub fn check_choice_turn_over(&mut self) -> bool {
-        self.state != RoomState::Await && self.state != RoomState::ChoiceTurn
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
@@ -703,28 +528,10 @@ impl Room {
             wcp.set_world_cell_id(*id);
             ssn.world_cell.push(wcp);
         }
-        //随机出选择的顺序
-        let mut random = rand::thread_rng();
-        let member_count = self.get_member_count();
-        let mut member_v = self.member_index.clone().to_vec();
-        member_v.resize(member_count, 0);
-        let mut index = 0_u32;
-
-        loop {
-            if index > (member_count - 1) as u32 {
-                break;
-            }
-            let rm_index = random.gen_range(0, member_v.len());
-            let res = member_v.remove(rm_index);
-            if res == 0 {
-                continue;
-            }
-            self.insert_choice_order(index as usize, res);
-            index += 1;
+        //封装turn order
+        for index in self.battle_data.turn_orders.iter() {
+            ssn.turn_order.push(*index);
         }
-        //此一次，所以直接取0下标的值
-        self.set_next_choice_index(0);
-        ssn.choice_order = self.battle_data.choice_orders.to_vec();
         let bytes = ssn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
@@ -897,9 +704,15 @@ impl Room {
             return;
         }
 
+        //通知客户端
         self.member_leave_notice(notice_type, user_id);
-        self.members.remove(user_id);
 
+        //处理战斗相关的数据
+        self.handler_leave(*user_id);
+
+        //删除数据
+        self.members.remove(user_id);
+        //删除玩家数组的下标
         for i in 0..self.member_index.len() {
             if self.member_index[i] != *user_id {
                 continue;
@@ -915,79 +728,14 @@ impl Room {
         //     }
         //     self.room_notice();
         // }
-        //房间空了就不用处理其他的了
-        if self.is_empty() {
-            return;
-        }
-        //处理战斗相关的数据
-        self.handler_leave(*user_id);
-    }
-
-    fn get_choice_orders(&self) -> &[u32] {
-        &self.battle_data.choice_orders[..]
     }
 
     fn get_turn_orders(&self) -> &[u32] {
         &self.battle_data.turn_orders[..]
     }
 
-    pub fn get_choice_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
-        let index;
-        if let Some(_index) = _index {
-            index = _index;
-        } else {
-            index = self.get_next_choice_index();
-        }
-        let res = self.battle_data.choice_orders.get(index);
-        if res.is_none() {
-            let str = format!("get_next_choice_user is none for index:{} ", index);
-            anyhow::bail!(str)
-        }
-        let user_id = res.unwrap();
-        Ok(*user_id)
-    }
-
     pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
         self.battle_data.get_turn_user(_index)
-    }
-
-    ///处理选择回合顺序时候的离开
-    fn handler_leave_choice_turn(&mut self, user_id: u32, index: usize) {
-        let next_turn_user = self.get_choice_user(None);
-        if let Err(e) = next_turn_user {
-            error!("{:?}", e);
-            return;
-        }
-        let next_turn_user = next_turn_user.unwrap();
-        let member_size = MEMBER_MAX as usize;
-        let last_order_user = self.battle_data.choice_orders[member_size - 1];
-
-        //处理正在开始的战斗
-        self.remove_choice_order(index);
-        //如果当前离开玩家不是当前顺序则退出
-        if next_turn_user != user_id {
-            return;
-        }
-        //如果当前玩家正好处于最后一个顺序
-        if last_order_user == user_id {
-            self.set_next_turn_index(0);
-            self.state = RoomState::ChoiceIndex;
-            //系统帮忙选回合顺序
-            self.random_choice_turn();
-            let sbs = S_START_CHOOSE_INDEX_NOTICE::new();
-            self.cter_2_battle_cter();
-            let bytes = sbs.write_to_bytes().unwrap();
-            let self_mut_ref = self.get_mut_ref();
-            for id in self.members.keys() {
-                self_mut_ref.send_2_client(ClientCode::StartChoiceIndexNotice, *id, bytes.clone());
-            }
-            //开始执行占位逻辑
-            self.build_choice_index_task();
-        } else {
-            //不是最后一个就轮到下一个
-            self.add_next_choice_index();
-            self.build_choice_turn_task();
-        }
     }
 
     ///处理选择占位时候的离开
@@ -1054,14 +802,14 @@ impl Room {
 
     ///处理玩家离开
     fn handler_leave(&mut self, user_id: u32) {
-        let mut chocie_index = 0;
         let mut turn_index = 0;
-        //找出离开玩家的选择下标
-        for i in self.get_choice_orders() {
-            if i == &user_id {
-                break;
-            }
-            chocie_index += 1;
+
+        //处理段位结算
+        self.league_summary(user_id);
+
+        //处理战斗结算
+        unsafe {
+            self.battle_summary();
         }
 
         //找出离开玩家的回合下标
@@ -1071,15 +819,11 @@ impl Room {
             }
             turn_index += 1;
         }
-        if self.state == RoomState::ChoiceTurn {
-            self.handler_leave_choice_turn(user_id, chocie_index);
-        } else if self.state == RoomState::ChoiceIndex {
+        //删除各项数据
+        if self.state == RoomState::ChoiceIndex {
             self.handler_leave_choice_index(user_id, turn_index);
         } else if self.state == RoomState::BattleStarted {
             self.handler_leave_battle_turn(user_id, turn_index);
-        }
-        unsafe {
-            self.battle_summary();
         }
     }
 
@@ -1175,19 +919,15 @@ impl Room {
             error!("{:?}", e);
             return;
         }
-        self.battle_data.tile_map = res.unwrap();
-        self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
-        //改变房间状态
-        self.state = RoomState::ChoiceTurn;
         //初始化段位快照
-        self.init_leave_map();
+        self.init_league_map();
+        //初始化turn顺序
+        self.init_turn_order();
         //下发通知
         self.start_notice();
-        //创建choice_turn定时器任务
-        self.build_choice_turn_task();
     }
 
-    pub fn init_leave_map(&mut self) {
+    pub fn init_league_map(&mut self) {
         for member in self.members.values() {
             self.battle_data
                 .leave_map
@@ -1196,7 +936,7 @@ impl Room {
     }
 
     ///生成地图
-    pub fn generate_map(&self) -> anyhow::Result<TileMap> {
+    pub fn generate_map(&mut self) -> anyhow::Result<()> {
         let member_count = self.members.len() as u8;
         let tmd = TileMap::init(
             self.room_type,
@@ -1204,46 +944,9 @@ impl Room {
             member_count,
             self.battle_data.last_map_id,
         )?;
-        Ok(tmd)
-    }
-
-    pub fn build_choice_turn_task(&self) {
-        let user_id = self.get_choice_user(None);
-        if let Err(_) = user_id {
-            return;
-        }
-        let user_id = user_id.unwrap();
-
-        //没选择完，继续选
-        let time_limit = TEMPLATES
-            .get_constant_temp_mgr_ref()
-            .temps
-            .get("choice_turn_time");
-        let mut task = Task::default();
-        if let Some(time) = time_limit {
-            let time = u64::from_str(time.value.as_str());
-            match time {
-                Ok(time) => {
-                    task.delay = time + 500;
-                }
-                Err(e) => {
-                    task.delay = 5000_u64;
-                    error!("{:?}", e);
-                }
-            }
-        } else {
-            task.delay = 5000_u64;
-            warn!("the choice_turn_time of Constant config is None!pls check!");
-        }
-        task.cmd = TaskCmd::ChoiceTurnOrder as u16;
-
-        let mut map = serde_json::Map::new();
-        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
-        task.data = serde_json::Value::from(map);
-        let res = self.task_sender.send(task);
-        if res.is_err() {
-            error!("{:?}", res.err().unwrap());
-        }
+        self.battle_data.tile_map = tmd;
+        self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
+        Ok(())
     }
 
     ///战斗开始

@@ -47,7 +47,7 @@ type SkillFn = HashMap<
 >;
 
 #[derive(Clone, Default)]
-pub struct SummaryPlayer {
+pub struct SummaryUser {
     pub user_id: u32,         //玩家id
     pub cter_id: u32,         //角色id
     pub grade: u8,            //玩家等级
@@ -58,9 +58,9 @@ pub struct SummaryPlayer {
     pub push_to_server: bool, //是否推送过给游戏服务器
 }
 
-impl From<&BattleCharacter> for SummaryPlayer {
+impl From<&BattleCharacter> for SummaryUser {
     fn from(cter: &BattleCharacter) -> Self {
-        let mut sp = SummaryPlayer::default();
+        let mut sp = SummaryUser::default();
         sp.user_id = cter.get_user_id();
         sp.cter_id = cter.get_cter_id();
         sp.grade = cter.base_attr.grade;
@@ -73,15 +73,13 @@ impl From<&BattleCharacter> for SummaryPlayer {
 #[derive(Clone)]
 pub struct BattleData {
     pub tile_map: TileMap,                          //地图数据
-    pub choice_orders: [u32; MEMBER_MAX as usize],  //选择顺序里面放玩家id
-    pub next_choice_index: usize,                   //下一个选择的下标
     pub next_turn_index: usize,                     //下个turn的下标
     pub turn_orders: [u32; MEMBER_MAX as usize],    //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,            //刷新地图时的turn下标
     pub battle_cter: HashMap<u32, BattleCharacter>, //角色战斗数据
-    pub rank_vec: Vec<Vec<SummaryPlayer>>,          //排名  user_id
-    pub rank_vec_temp: Vec<SummaryPlayer>,          //同一批挂掉的人
-    pub leave_user: u32,                            //惩罚结算玩家id
+    pub summary_vec: Vec<Vec<SummaryUser>>,         //排名  user_id
+    pub summary_vec_temp: Vec<SummaryUser>,         //同一批挂掉的人
+    pub leave_user: (u32, bool),                    //离开玩家id,是否惩罚
     pub leave_map: HashMap<u32, u8>,                //段位快照
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
@@ -127,15 +125,13 @@ impl BattleData {
         }
         let mut bd = BattleData {
             tile_map: TileMap::default(),
-            choice_orders: [0; MEMBER_MAX as usize],
-            next_choice_index: 0,
             next_turn_index: 0,
             turn_orders: [0; MEMBER_MAX as usize],
             reflash_map_turn: None,
             battle_cter: HashMap::new(),
-            rank_vec: v,
-            rank_vec_temp: Vec::new(),
-            leave_user: 0,
+            summary_vec: v,
+            summary_vec_temp: Vec::new(),
+            leave_user: (0, false),
             leave_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
             skill_cmd_map: HashMap::new(),

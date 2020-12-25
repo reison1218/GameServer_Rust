@@ -195,7 +195,7 @@ message S_START_NOTICE{
     uint32 room_status = 1;//房间状态
     uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
-    repeated uint32 choice_order = 4;//选择顺序
+    repeated uint32 turn_order = 4;//turn顺序
 }
 
 //选择位置请求
@@ -236,22 +236,4 @@ message S_CHOOSE_INDEX_NOTICE{
 message S_CHOOSE_TURN_ORDER_NOTICE{
     uint32 user_id = 1;//玩家id
     uint32 order = 2;//玩家所选择的顺位
-}
-
-//选择角色占位推送
-//cmd:10027
-message S_START_CHOOSE_INDEX_NOTICE{
-
-}
-
-//跳过选择回合顺序请求
-//cmd:20017
-message C_SKIP_TURN_CHOICE{
-
-}
-
-//跳过选择回合顺序通知
-//cmd:10028
-message S_SKIP_TURN_CHOICE_NOTICE{
-    uint32 user_id = 1;//跳过的玩家id
 }

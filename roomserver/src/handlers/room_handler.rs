@@ -13,12 +13,12 @@ use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::sync::atomic::Ordering;
-use tools::cmd_code::ClientCode;
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::macros::GetMutRef;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_CHOOSE_TURN_ORDER,
-    C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER,
-    S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_LEAVE_ROOM, S_ROOM_SETTING, S_START,
+    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_EMOJI, C_KICK_MEMBER,
+    C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
+    S_CHOOSE_SKILL, S_LEAVE_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
@@ -137,10 +137,40 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
     let room_id = room.get_room_id();
+    let member = room.members.get(&user_id);
+    if let None = member {
+        warn!(
+            "could not find member for user_id:{},room_id:{}",
+            user_id, room_id
+        );
+        return Ok(());
+    }
+    let member = member.unwrap();
+    let member_state = member.state;
+    let room_state = room.state;
+    let room_id = room.get_room_id();
     let room_type = RoomType::from(room.get_room_type());
     let code = packet.get_cmd();
-    //处理战斗离开房间结算
-    room.leave_summary(user_id, code);
+    //如果是主动退出房间
+    if code == RoomCode::LeaveRoom.into_u32() {
+        //校验房间状态
+        if room_state != RoomState::Await || room_state != RoomState::BattleStarted {
+            warn!(
+                "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
+                room_state, user_id, room_id
+            );
+            return Ok(());
+        }
+
+        //房间为等待状态，并且已经准备了，则不允许退出房间
+        if room_state == RoomState::Await && member_state == MemberState::Ready.into_u8() {
+            warn!(
+                "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
+                user_id
+            );
+            return Ok(());
+        }
+    }
     //处理退出房间
     match room_type {
         RoomType::Custom => {
@@ -978,15 +1008,6 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
 
-    let res = room
-        .battle_data
-        .check_choice_index(index as usize, false, false, true, false, false);
-    //校验参数
-    if let Err(e) = res {
-        warn!("{:?}", e);
-        return Ok(());
-    }
-
     //校验是否轮到他了
     if !room.is_can_choice_index_now(user_id) {
         warn!(
@@ -998,6 +1019,15 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let res = room
+        .battle_data
+        .check_choice_index(index as usize, false, false, true, false, false);
+    //校验参数
+    if let Err(e) = res {
+        warn!("{:?}", e);
+        return Ok(());
+    }
+
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
     if member.map_cell_index_is_choiced() {
@@ -1005,67 +1035,5 @@ pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     room.choice_index(user_id, index);
-    Ok(())
-}
-
-///选择回合顺序
-pub fn choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    let user_id = packet.get_user_id();
-    let mut ccl = C_CHOOSE_TURN_ORDER::new();
-    ccl.merge_from_bytes(packet.get_data())?;
-    let order = ccl.order;
-
-    let room = rm.get_room_mut(&user_id);
-    if room.is_none() {
-        warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
-    }
-    let room = room.unwrap();
-
-    //校验参数
-    if order > (MEMBER_MAX - 1) as u32 {
-        warn!("the order's value is error!!user_id:{}", user_id);
-        return Ok(());
-    }
-
-    //判断能不能选
-    if !room.is_can_choice_turn_now(user_id) {
-        warn!(
-            "this player is not the next choice turn player!user_id:{},order:{:?}",
-            user_id, room.battle_data.choice_orders
-        );
-        return Ok(());
-    }
-
-    //校验他选过没有
-    if room.turn_order_contains(&user_id) {
-        warn!(
-            "this player is already choice round order!user_id:{}",
-            user_id
-        );
-        return Ok(());
-    }
-    room.choice_turn(user_id, order as usize, true);
-    Ok(())
-}
-
-///跳过选择回合顺序
-pub fn skip_choice_turn(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    let user_id = packet.get_user_id();
-    let room = rm.get_room_mut(&user_id);
-    if room.is_none() {
-        warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
-    }
-    let room = room.unwrap();
-    //判断能不能选
-    if !room.is_can_choice_turn_now(user_id) {
-        warn!(
-            "this player is not the next choice turn player!user_id:{}",
-            user_id
-        );
-        return Ok(());
-    }
-    room.skip_choice_turn(user_id);
     Ok(())
 }

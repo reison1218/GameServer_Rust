@@ -35,12 +35,10 @@ impl BattleData {
         let mut ssn = S_SUMMARY_NOTICE::new();
         let mut need_summary = false;
         let mut rgs = R_G_SUMMARY::new();
-        let leave_user = self.leave_user;
+        let (leave_user, punishment) = self.leave_user;
 
-        //如果有玩家退出房间
-        if leave_user > 0 {
-            need_summary = true;
-        } else if allive_count <= 1 {
+        //如果房间就只有最后一个人了，直接计算
+        if allive_count <= 1 {
             need_summary = true;
             //如果达到结算条件，则进行结算
             let self_ptr = self as *mut BattleData;
@@ -55,13 +53,13 @@ impl BattleData {
                     self_mut.after_cter_died_trigger(user_id, true, false);
                 }
             }
+        } else if leave_user > 0 {
+            //如果有玩家退出房间
+            need_summary = true;
         }
         if need_summary {
-            'out: for spa_v in self.rank_vec.iter_mut() {
+            for spa_v in self.summary_vec.iter_mut() {
                 for sp in spa_v.iter_mut() {
-                    if leave_user > 0 && sp.user_id != leave_user {
-                        continue;
-                    }
                     let mut smp = SummaryDataPt::new();
                     smp.user_id = sp.user_id;
                     smp.cter_id = sp.cter_id;
@@ -75,10 +73,6 @@ impl BattleData {
                         rgs.summary_datas.push(smp);
                         sp.push_to_server = true;
                     }
-                    if leave_user > 0 && sp.user_id == leave_user {
-                        self.leave_user = 0;
-                        break 'out;
-                    }
                 }
             }
         }
@@ -87,14 +81,15 @@ impl BattleData {
             let res = ssn.write_to_bytes();
             match res {
                 Ok(bytes) => {
-                    if leave_user > 0 {
-                        self.send_2_client(ClientCode::SummaryNotice, leave_user, bytes.clone());
-                    } else {
-                        let v = self.get_battle_cters_vec();
-                        for member_id in v {
-                            self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
+                    let v = self.get_battle_cters_vec();
+                    for member_id in v {
+                        //强退的人不发
+                        if member_id == leave_user && punishment {
+                            continue;
                         }
+                        self.send_2_client(ClientCode::SummaryNotice, member_id, bytes.clone());
                     }
+                    self.leave_user = (0, false);
                 }
                 Err(e) => {
                     error!("{:?}", e);

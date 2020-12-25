@@ -1,8 +1,8 @@
 use crate::handlers::battle_handler::{action, pos};
 use crate::handlers::room_handler::{
-    change_team, choice_index, choice_skills, choice_turn, choose_character, create_room, emoji,
-    join_room, kick_member, leave_room, prepare_cancel, reload_temps, room_setting, search_room,
-    skip_choice_turn, start, update_season,
+    change_team, choice_index, choice_skills, choose_character, create_room, emoji, join_room,
+    kick_member, leave_room, prepare_cancel, reload_temps, room_setting, search_room, start,
+    update_season,
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
@@ -203,14 +203,6 @@ impl RoomMgr {
         //选择占位
         self.cmd_map
             .insert(RoomCode::ChoiceIndex.into_u32(), choice_index);
-
-        //选择回合顺序
-        self.cmd_map
-            .insert(RoomCode::ChoiceTurnOrder.into_u32(), choice_turn);
-
-        //跳过选择turn顺序
-        self.cmd_map
-            .insert(RoomCode::SkipChoiceTurn.into_u32(), skip_choice_turn);
         //------------------------------------以下是战斗相关的--------------------------------
         //请求行动
         self.cmd_map.insert(RoomCode::Action.into_u32(), action);

@@ -23,7 +23,7 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" ENABLED="true" />
     </configurations>
   </component>
   <component name="CargoProjects">
@@ -31,9 +31,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/character.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_flow.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle_flow.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_trigger.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle_trigger.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/room.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/protos/room.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/protos/room.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/protos/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/room.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,37 +90,43 @@
   </component>
   <component name="RunManager" selected="Cargo.server">
     <configuration name="Run server" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="channel" value="STABLE" />
       <option name="command" value="run --package server --bin server" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="channel" value="STABLE" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-      <option name="channel" value="STABLE" />
       <option name="command" value="run" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="channel" value="STABLE" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
     <configuration name="server" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-      <option name="channel" value="STABLE" />
       <option name="command" value="run" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="channel" value="STABLE" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
@@ -218,6 +232,7 @@
       <workItem from="1591323383941" duration="4743000" />
       <workItem from="1605577710049" duration="3168000" />
       <workItem from="1605605138336" duration="2680000" />
+      <workItem from="1608863472865" duration="1967000" />
     </task>
     <task id="LOCAL-00002" summary="提交">
       <created>1571399172530</created>
@@ -250,44 +265,6 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state width="1189" height="341" key="GridCell.Tab.0.bottom" timestamp="1605607929629">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929629" />
-    <state width="1189" height="341" key="GridCell.Tab.0.center" timestamp="1605607929629">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929629" />
-    <state width="1189" height="341" key="GridCell.Tab.0.left" timestamp="1605607929628">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929628" />
-    <state width="1189" height="341" key="GridCell.Tab.0.right" timestamp="1605607929629">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929629" />
-    <state width="1189" height="341" key="GridCell.Tab.1.bottom" timestamp="1605607929630">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.1.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929630" />
-    <state width="1189" height="341" key="GridCell.Tab.1.center" timestamp="1605607929630">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.1.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929630" />
-    <state width="1189" height="341" key="GridCell.Tab.1.left" timestamp="1605607929630">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.1.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929630" />
-    <state width="1189" height="341" key="GridCell.Tab.1.right" timestamp="1605607929630">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1189" height="341" key="GridCell.Tab.1.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607929630" />
-    <state x="2631" y="416" width="672" height="678" key="search.everywhere.popup" timestamp="1605256642986">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state x="2631" y="416" width="672" height="678" key="search.everywhere.popup/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605256642986" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

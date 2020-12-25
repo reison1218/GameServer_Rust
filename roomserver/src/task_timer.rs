@@ -19,9 +19,8 @@ use std::time::Duration;
 pub enum TaskCmd {
     MatchRoomStart = 101,     //匹配房间开始任务
     ChoiceIndex = 102,        //选择占位
-    ChoiceTurnOrder = 103,    //选择回合顺序
-    BattleTurnTime = 104,     //战斗时间回合限制
-    MaxBattleTurnTimes = 105, //战斗turn达到最大
+    BattleTurnTime = 103,     //战斗时间回合限制
+    MaxBattleTurnTimes = 104, //战斗turn达到最大
 }
 
 impl TaskCmd {
@@ -59,7 +58,6 @@ pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
             let f = match task_cmd {
                 TaskCmd::MatchRoomStart => match_room_start,
                 TaskCmd::ChoiceIndex => choice_index,
-                TaskCmd::ChoiceTurnOrder => choice_turn,
                 TaskCmd::BattleTurnTime => battle_turn_time,
                 TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
             };
@@ -241,56 +239,6 @@ fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
         lock.rm_room(room_id, room_type, v);
     }
     lock.player_room.remove(&user_id);
-}
-
-///选择占位,超时了就跳过，如果是最后一个人超时，则系统帮忙给未选择的人随机分配
-fn choice_turn(rm: Arc<Mutex<RoomMgr>>, task: Task) {
-    let json_value = task.data;
-    let res = json_value.as_object();
-    if res.is_none() {
-        return;
-    }
-    let map = res.unwrap();
-    let user_id = map.get("user_id");
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap().as_u64();
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap() as u32;
-
-    let mut lock = block_on(rm.lock());
-
-    let room = lock.get_room_mut(&user_id);
-    if room.is_none() {
-        return;
-    }
-    let room = room.unwrap();
-
-    //判断房间状态
-    if room.state != RoomState::ChoiceTurn {
-        return;
-    }
-
-    //判断当前是不是轮到自己选
-    let next_user = room.get_choice_user(None);
-    if let Err(e) = next_user {
-        warn!("{:?}", e);
-        return;
-    }
-    let next_user = next_user.unwrap();
-    if next_user != user_id {
-        warn!(
-            "timer choice_turn next_user!=user_id!next_user:{},user_id:{}",
-            next_user, user_id
-        );
-        return;
-    }
-
-    //跳过
-    room.skip_choice_turn(user_id);
 }
 
 fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {

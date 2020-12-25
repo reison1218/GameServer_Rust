@@ -5019,7 +5019,7 @@ pub struct S_START_NOTICE {
     pub room_status: u32,
     pub tile_map_id: u32,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
-    pub choice_order: ::std::vec::Vec<u32>,
+    pub turn_order: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -5091,29 +5091,29 @@ impl S_START_NOTICE {
         ::std::mem::replace(&mut self.world_cell, ::protobuf::RepeatedField::new())
     }
 
-    // repeated uint32 choice_order = 4;
+    // repeated uint32 turn_order = 4;
 
 
-    pub fn get_choice_order(&self) -> &[u32] {
-        &self.choice_order
+    pub fn get_turn_order(&self) -> &[u32] {
+        &self.turn_order
     }
-    pub fn clear_choice_order(&mut self) {
-        self.choice_order.clear();
+    pub fn clear_turn_order(&mut self) {
+        self.turn_order.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_choice_order(&mut self, v: ::std::vec::Vec<u32>) {
-        self.choice_order = v;
+    pub fn set_turn_order(&mut self, v: ::std::vec::Vec<u32>) {
+        self.turn_order = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_choice_order(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.choice_order
+    pub fn mut_turn_order(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.turn_order
     }
 
     // Take field
-    pub fn take_choice_order(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.choice_order, ::std::vec::Vec::new())
+    pub fn take_turn_order(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.turn_order, ::std::vec::Vec::new())
     }
 }
 
@@ -5149,7 +5149,7 @@ impl ::protobuf::Message for S_START_NOTICE {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.world_cell)?;
                 },
                 4 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.choice_order)?;
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.turn_order)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -5173,7 +5173,7 @@ impl ::protobuf::Message for S_START_NOTICE {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
-        for value in &self.choice_order {
+        for value in &self.turn_order {
             my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
@@ -5193,7 +5193,7 @@ impl ::protobuf::Message for S_START_NOTICE {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
-        for v in &self.choice_order {
+        for v in &self.turn_order {
             os.write_uint32(4, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
@@ -5250,9 +5250,9 @@ impl ::protobuf::Message for S_START_NOTICE {
                 |m: &mut S_START_NOTICE| { &mut m.world_cell },
             ));
             fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "choice_order",
-                |m: &S_START_NOTICE| { &m.choice_order },
-                |m: &mut S_START_NOTICE| { &mut m.choice_order },
+                "turn_order",
+                |m: &S_START_NOTICE| { &m.turn_order },
+                |m: &mut S_START_NOTICE| { &mut m.turn_order },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_NOTICE>(
                 "S_START_NOTICE",
@@ -5273,7 +5273,7 @@ impl ::protobuf::Clear for S_START_NOTICE {
         self.room_status = 0;
         self.tile_map_id = 0;
         self.world_cell.clear();
-        self.choice_order.clear();
+        self.turn_order.clear();
         self.unknown_fields.clear();
     }
 }
@@ -6356,390 +6356,6 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_TURN_ORDER_NOTICE {
     }
 }
 
-#[derive(PartialEq,Clone,Default)]
-pub struct S_START_CHOOSE_INDEX_NOTICE {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_START_CHOOSE_INDEX_NOTICE {
-    fn default() -> &'a S_START_CHOOSE_INDEX_NOTICE {
-        <S_START_CHOOSE_INDEX_NOTICE as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_START_CHOOSE_INDEX_NOTICE {
-    pub fn new() -> S_START_CHOOSE_INDEX_NOTICE {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for S_START_CHOOSE_INDEX_NOTICE {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_START_CHOOSE_INDEX_NOTICE {
-        S_START_CHOOSE_INDEX_NOTICE::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
-        descriptor.get(|| {
-            let fields = ::std::vec::Vec::new();
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_CHOOSE_INDEX_NOTICE>(
-                "S_START_CHOOSE_INDEX_NOTICE",
-                fields,
-                file_descriptor_proto()
-            )
-        })
-    }
-
-    fn default_instance() -> &'static S_START_CHOOSE_INDEX_NOTICE {
-        static instance: ::protobuf::rt::LazyV2<S_START_CHOOSE_INDEX_NOTICE> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(S_START_CHOOSE_INDEX_NOTICE::new)
-    }
-}
-
-impl ::protobuf::Clear for S_START_CHOOSE_INDEX_NOTICE {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_START_CHOOSE_INDEX_NOTICE {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_START_CHOOSE_INDEX_NOTICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct C_SKIP_TURN_CHOICE {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a C_SKIP_TURN_CHOICE {
-    fn default() -> &'a C_SKIP_TURN_CHOICE {
-        <C_SKIP_TURN_CHOICE as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl C_SKIP_TURN_CHOICE {
-    pub fn new() -> C_SKIP_TURN_CHOICE {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for C_SKIP_TURN_CHOICE {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> C_SKIP_TURN_CHOICE {
-        C_SKIP_TURN_CHOICE::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
-        descriptor.get(|| {
-            let fields = ::std::vec::Vec::new();
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SKIP_TURN_CHOICE>(
-                "C_SKIP_TURN_CHOICE",
-                fields,
-                file_descriptor_proto()
-            )
-        })
-    }
-
-    fn default_instance() -> &'static C_SKIP_TURN_CHOICE {
-        static instance: ::protobuf::rt::LazyV2<C_SKIP_TURN_CHOICE> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(C_SKIP_TURN_CHOICE::new)
-    }
-}
-
-impl ::protobuf::Clear for C_SKIP_TURN_CHOICE {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for C_SKIP_TURN_CHOICE {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for C_SKIP_TURN_CHOICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct S_SKIP_TURN_CHOICE_NOTICE {
-    // message fields
-    pub user_id: u32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a S_SKIP_TURN_CHOICE_NOTICE {
-    fn default() -> &'a S_SKIP_TURN_CHOICE_NOTICE {
-        <S_SKIP_TURN_CHOICE_NOTICE as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl S_SKIP_TURN_CHOICE_NOTICE {
-    pub fn new() -> S_SKIP_TURN_CHOICE_NOTICE {
-        ::std::default::Default::default()
-    }
-
-    // uint32 user_id = 1;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-}
-
-impl ::protobuf::Message for S_SKIP_TURN_CHOICE_NOTICE {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> S_SKIP_TURN_CHOICE_NOTICE {
-        S_SKIP_TURN_CHOICE_NOTICE::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
-        descriptor.get(|| {
-            let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "user_id",
-                |m: &S_SKIP_TURN_CHOICE_NOTICE| { &m.user_id },
-                |m: &mut S_SKIP_TURN_CHOICE_NOTICE| { &mut m.user_id },
-            ));
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SKIP_TURN_CHOICE_NOTICE>(
-                "S_SKIP_TURN_CHOICE_NOTICE",
-                fields,
-                file_descriptor_proto()
-            )
-        })
-    }
-
-    fn default_instance() -> &'static S_SKIP_TURN_CHOICE_NOTICE {
-        static instance: ::protobuf::rt::LazyV2<S_SKIP_TURN_CHOICE_NOTICE> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(S_SKIP_TURN_CHOICE_NOTICE::new)
-    }
-}
-
-impl ::protobuf::Clear for S_SKIP_TURN_CHOICE_NOTICE {
-    fn clear(&mut self) {
-        self.user_id = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for S_SKIP_TURN_CHOICE_NOTICE {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for S_SKIP_TURN_CHOICE_NOTICE {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
@@ -6784,23 +6400,21 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
     BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
-    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xa8\x01\n\x0eS_ST\
+    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\xa4\x01\n\x0eS_ST\
     ART_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\
     \x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\
-    \x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12!\n\x0cchoi\
-    ce_order\x18\x04\x20\x03(\rR\x0bchoiceOrder\"&\n\x0eC_CHOOSE_INDEX\x12\
-    \x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\
-    \x05order\x18\x01\x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\
-    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\
-    \x01(\rR\x05index\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_i\
-    d\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\
-    \x05order\"\x1d\n\x1bS_START_CHOOSE_INDEX_NOTICE\"\x14\n\x12C_SKIP_TURN_\
-    CHOICE\"4\n\x19S_SKIP_TURN_CHOICE_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userIdb\x06proto3\
+    \x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12\x1d\n\ntur\
+    n_order\x18\x04\x20\x03(\rR\tturnOrder\"&\n\x0eC_CHOOSE_INDEX\x12\x14\n\
+    \x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\x17\n\
+    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\"+\n\x13C_CHOOSE_TURN_ORDER\x12\x14\n\x05ord\
+    er\x18\x01\x20\x01(\rR\x05order\"I\n\x13S_CHOOSE_TURN_ORDER\x12\x17\n\
+    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07u\
+    ser_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\
+    \rR\x05index\"K\n\x1aS_CHOOSE_TURN_ORDER_NOTICE\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12\x14\n\x05order\x18\x02\x20\x01(\rR\x05ord\
+    erb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -1,4 +1,4 @@
-use crate::battle::battle::SummaryPlayer;
+use crate::battle::battle::SummaryUser;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
@@ -488,21 +488,21 @@ impl TriggerEvent for BattleData {
         //如果是惩罚结算
         let player_count = self.get_alive_player_num() as i32;
 
-        let mut sp = SummaryPlayer::default();
+        let mut sp = SummaryUser::default();
         sp.user_id = user_id;
         sp.cter_id = cter.get_cter_id();
         sp.league_score = cter.league.score;
         sp.grade = cter.base_attr.grade;
-        let rank_vec_temp = &mut self.rank_vec_temp;
+        let rank_vec_temp = &mut self.summary_vec_temp;
         rank_vec_temp.push(sp);
         //判断是否需要排行,如果需要则从第最后
         if is_last_one {
             let index = player_count as usize;
-            let res = self.rank_vec.get_mut(index);
+            let res = self.summary_vec.get_mut(index);
             if let None = res {
                 warn!(
                     "the rank_vec's len is {},but the index is {}",
-                    self.rank_vec.len(),
+                    self.summary_vec.len(),
                     index
                 );
                 return;
@@ -511,6 +511,23 @@ impl TriggerEvent for BattleData {
             let count = rank_vec_temp.len();
             let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
             let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+            let con_temp_mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+            let res = con_temp_mgr.temps.get("max_grade");
+            let mut max_grade = 2;
+            match res {
+                None => {
+                    warn!("max_grade config is None!");
+                }
+                Some(res) => {
+                    max_grade = match u8::from_str(res.value.as_str()) {
+                        Ok(res) => res,
+                        Err(e) => {
+                            warn!("{:?}", e);
+                            max_grade
+                        }
+                    }
+                }
+            }
             for sp in rank_vec_temp.iter_mut() {
                 sp.rank = index as u8;
                 //进行结算
@@ -522,7 +539,7 @@ impl TriggerEvent for BattleData {
                     if rank == 1 {
                         sp.grade += 1;
                         if sp.grade > 2 {
-                            sp.grade = 2;
+                            sp.grade = max_grade;
                         }
                     } else {
                         sp.grade -= 1;
@@ -578,10 +595,10 @@ impl TriggerEvent for BattleData {
                     }
                     Err(_) => {}
                 }
-                let res = league_temp_mgr
+                let league_temp = league_temp_mgr
                     .get_league_by_score(sp.league_score)
                     .unwrap();
-                sp.league_id = res.id;
+                sp.league_id = league_temp.id;
             }
             rank_vec.extend_from_slice(&rank_vec_temp[..]);
             rank_vec_temp.clear();
