@@ -32,16 +32,13 @@
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_flow.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle_flow.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_trigger.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/battle/battle_trigger.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/room.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/config/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/config/config.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/mgr/channel_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/protos/room.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/protos/room.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/protos/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/room.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/cmd_code.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/cmd_code.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -233,6 +230,10 @@
       <workItem from="1605577710049" duration="3168000" />
       <workItem from="1605605138336" duration="2680000" />
       <workItem from="1608863472865" duration="1967000" />
+      <workItem from="1609205854437" duration="143000" />
+      <workItem from="1609206016193" duration="634000" />
+      <workItem from="1609207582226" duration="4210000" />
+      <workItem from="1609222204693" duration="2836000" />
     </task>
     <task id="LOCAL-00002" summary="提交">
       <created>1571399172530</created>
@@ -286,7 +287,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/../tools/src/templates/template.rs</url>
-          <line>25</line>
+          <line>29</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

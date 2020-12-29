@@ -8,6 +8,7 @@ use tools::cmd_code::{ClientCode, RoomCode};
 pub enum TcpClientType {
     GameServer,
     RoomServer,
+    GameCenter,
 }
 
 pub struct TcpClientHandler {
@@ -37,7 +38,7 @@ impl TcpClientHandler {
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
             let mut lock = block_on(self.cp.lock());
-            lock.write_to_room(packet);
+            lock.write_to_game_center(packet);
             return;
         }
     }
@@ -50,8 +51,11 @@ impl ClientHandler for TcpClientHandler {
             TcpClientType::GameServer => {
                 block_on(self.cp.lock()).set_game_client_channel(ts.try_clone().unwrap());
             }
-            TcpClientType::RoomServer => {
-                block_on(self.cp.lock()).set_room_client_channel(ts.try_clone().unwrap());
+            // TcpClientType::RoomServer => {
+            //     block_on(self.cp.lock()).set_room_client_channel(ts.try_clone().unwrap());
+            // }
+            TcpClientType::GameCenter => {
+                block_on(self.cp.lock()).set_game_center_client_channel(ts.try_clone().unwrap());
             }
         }
         self.ts = Some(ts);

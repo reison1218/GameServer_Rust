@@ -17,7 +17,9 @@ pub struct ChannelMgr {
     //游戏服tcpstream
     pub game_client_channel: Option<TcpStream>,
     //房间服stream
-    pub room_client_channel: Option<TcpStream>,
+    // pub room_client_channel: Option<TcpStream>,
+    //游戏中心stream
+    pub game_center_client_channel: Option<TcpStream>,
     //玩家channels
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
@@ -30,7 +32,8 @@ impl ChannelMgr {
         let players: HashMap<u32, GateUser> = HashMap::new();
         let cm = ChannelMgr {
             game_client_channel: None,
-            room_client_channel: None,
+            // room_client_channel: None,
+            game_center_client_channel: None,
             user_channel: players,
             channels: HashMap::new(),
         };
@@ -41,8 +44,12 @@ impl ChannelMgr {
         self.game_client_channel = Some(ts);
     }
 
-    pub fn set_room_client_channel(&mut self, ts: TcpStream) {
-        self.room_client_channel = Some(ts);
+    // pub fn set_room_client_channel(&mut self, ts: TcpStream) {
+    //     self.room_client_channel = Some(ts);
+    // }
+
+    pub fn set_game_center_client_channel(&mut self, ts: TcpStream) {
+        self.game_center_client_channel = Some(ts);
     }
 
     ///处理离线事件
@@ -75,8 +82,12 @@ impl ChannelMgr {
         packet.set_cmd(GameCode::LineOff as u32);
         self.write_to_game(packet.clone());
         //发给房间服
+        // packet.set_cmd(RoomCode::LineOff as u32);
+        // self.write_to_room(packet);
+        //发给游戏中心
+        //todo 这个地方命令有待完善
         packet.set_cmd(RoomCode::LineOff as u32);
-        self.write_to_room(packet);
+        self.write_to_game_center(packet);
     }
 
     ///写到游戏服
@@ -101,14 +112,37 @@ impl ChannelMgr {
         }
     }
 
-    ///写到房间服
+    // ///写到房间服
+    // #[warn(unused_must_use)]
+    // pub fn write_to_room(&mut self, packet: Packet) {
+    //     if self.room_client_channel.is_none() {
+    //         error!("disconnect with Room-Server,pls connect Room-Server before send packet!");
+    //         return;
+    //     }
+    //     let rc = self.room_client_channel.as_mut().unwrap();
+    //     let size = rc.write(&packet.build_server_bytes()[..]);
+    //     match size {
+    //         Ok(_) => {
+    //             let res = rc.flush();
+    //             if let Err(e) = res {
+    //                 error!("{:?}", e);
+    //             }
+    //         }
+    //         Err(e) => {
+    //             error!("{:?}", e);
+    //             return;
+    //         }
+    //     }
+    // }
+
+    ///写到游戏中心
     #[warn(unused_must_use)]
-    pub fn write_to_room(&mut self, packet: Packet) {
-        if self.room_client_channel.is_none() {
-            error!("disconnect with Room-Server,pls connect Room-Server before send packet!");
+    pub fn write_to_game_center(&mut self, packet: Packet) {
+        if self.game_center_client_channel.is_none() {
+            error!("disconnect with Game-Center,pls connect Game-Center before send packet!");
             return;
         }
-        let rc = self.room_client_channel.as_mut().unwrap();
+        let rc = self.game_center_client_channel.as_mut().unwrap();
         let size = rc.write(&packet.build_server_bytes()[..]);
         match size {
             Ok(_) => {
@@ -197,8 +231,12 @@ impl ChannelMgr {
         packet.set_is_client(false);
         packet.set_is_broad(false);
         self.write_to_game(packet.clone());
-        packet.set_cmd(RoomCode::ReloadTemps as u32);
-        self.write_to_room(packet);
+        // packet.set_cmd(RoomCode::ReloadTemps as u32);
+        // self.write_to_room(packet);
+
+        //todo 这个地方命令有点完善
+        packet.set_cmd(RoomCode::LineOff as u32);
+        self.write_to_game_center(packet);
     }
 
     ///通知更新服务器更新赛季
@@ -234,7 +272,10 @@ impl ChannelMgr {
         usn.set_next_update_time(next_update_time.to_string());
         packet.set_data(&usn.write_to_bytes().unwrap()[..]);
         self.write_to_game(packet.clone());
-        packet.set_cmd(RoomCode::UpdateSeason as u32);
-        self.write_to_room(packet);
+        // packet.set_cmd(RoomCode::UpdateSeason as u32);
+        // self.write_to_room(packet);
+        //todo 这个地方命令有待完善
+        packet.set_cmd(RoomCode::LineOff as u32);
+        self.write_to_game_center(packet);
     }
 }

@@ -74,10 +74,6 @@ pub enum RoomCode {
     ChoiceSkill = 20014,
     //选择位置
     ChoiceIndex = 20015,
-    //选择回合顺序
-    ChoiceTurnOrder = 20016,
-    //跳过回合顺序选择
-    SkipChoiceTurn = 20017,
 
     //--------------------------------------以下战斗相关---------------------------
     //请求行动
@@ -100,19 +96,20 @@ impl RoomCode {
     }
 }
 
-///房间服专属命令号段枚举 30001-40000
+///战斗服服专属命令号段枚举 30001-40000
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-#[repr(u32)]
-pub enum RobotCode {
+pub enum BattleCode {
     //最小命令号
     Min = 30001,
-    //请求机器人
-    RequestRobot = 30002,
+    //请求行动
+    Action = 30002,
+    //架势请求
+    Pos = 30003,
     //最大命令号
     Max = 40000,
 }
 
-impl RobotCode {
+impl BattleCode {
     pub fn into_u32(self) -> u32 {
         let res: u32 = self.into();
         res
