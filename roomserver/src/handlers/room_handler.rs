@@ -671,7 +671,18 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 room.setting.season_id = rs.get_value();
             }
             RoomSettingType::TurnLimitTime => {
-                room.setting.turn_limit_time = rs.get_value();
+                let id = rs.get_value() as u8;
+                let limit_time_mgr = crate::TEMPLATES.get_battle_limit_time_temp_mgr_ref();
+                let res = limit_time_mgr.get_temp(&id);
+                match res {
+                    Ok(temp) => {
+                        room.setting.turn_limit_time = temp.ms;
+                    }
+                    Err(e) => {
+                        warn!("{:?}", e);
+                        room.setting.turn_limit_time = 60;
+                    }
+                }
             }
             _ => {}
         }

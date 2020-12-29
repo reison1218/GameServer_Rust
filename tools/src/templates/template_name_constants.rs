@@ -27,3 +27,5 @@ pub const ROBOT: &str = "Robot";
 pub const LEAGUE: &str = "League";
 
 pub const SUMMARY_AWARD: &str = "SummaryAward";
+
+pub const BATTLE_LIMIT_TIME: &str = "BattleLimitTime";
