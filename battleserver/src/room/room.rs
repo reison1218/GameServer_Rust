@@ -26,6 +26,7 @@ use tools::protos::room::{
 };
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+use std::convert::TryFrom;
 
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
@@ -45,6 +46,19 @@ pub struct Room {
 }
 
 tools::get_mut_ref!(Room);
+
+impl From<&RoomPt> for Room{
+    fn from(rp: &RoomPt) -> Self {
+        let owner_id = rp.owner_id;
+        let room_id = rp.room_id;
+        let room_type = RoomType::try_from(rp.room_type);
+        if let Err(e) = room_type{
+            warn!("{:?}", e);
+        }
+        let room_type = room_type.unwrap();
+        Room::new(owner_id, room_type, TcpSender {}, (), ())
+    }
+}
 
 impl Room {
     ///构建一个房间的结构体

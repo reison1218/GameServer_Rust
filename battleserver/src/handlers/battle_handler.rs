@@ -184,10 +184,9 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let res = rbs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         warn!("{:?}", e);
-        return;
+        return Ok(());
     }
     let rt = rbs.get_room_pt();
-    Room::from
     Ok(())
 }
 

@@ -10,6 +10,10 @@ use scheduled_thread_pool::ScheduledThreadPool;
 use std::env;
 use tools::conf::Conf;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
+use crate::task_timer::init_timer;
+use crate::mgr::battle_mgr::BattleMgr;
+use std::sync::Arc;
+use async_std::sync::Mutex;
 
 #[macro_use]
 extern crate lazy_static;
@@ -72,5 +76,6 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 fn main() {
-    println!("Hello, world!");
+    let bm = Arc::new(Mutex::new(BattleMgr::new()));
+    init_timer(bm.clone());
 }

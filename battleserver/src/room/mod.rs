@@ -40,6 +40,7 @@ pub enum RoomType {
     WorldBossPve = 4, //世界boss房间
 }
 
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomState {
