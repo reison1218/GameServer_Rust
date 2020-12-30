@@ -2,6 +2,11 @@ syntax = "proto3";
 package protos;
 import "base.proto";
 
+///房间服到战斗服-战斗开始
+message R_B_START{
+    RoomPt room_pt = 1;//房间数据
+}
+
 ///游戏服务器发给房间服务器，创建房间
 message G_R_CREATE_ROOM{
     uint32 room_type = 1;//房间类型

@@ -72,8 +72,8 @@ fn main() {
     //连接游戏服务器
     init_game_tcp_connect(cm.clone());
 
-    //连接房间服务器
-    init_room_tcp_connect(cm.clone());
+    //连接游戏中心服
+    init_game_center_tcp_connect(cm.clone());
 
     //初始化http服务
     init_http_server(cm.clone());
@@ -125,11 +125,11 @@ fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
 }
 
 ///初始化房间服务器tcp客户端链接
-fn init_room_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
+fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
     let room = async {
-        let mut tch = TcpClientHandler::new(cp, TcpClientType::RoomServer);
-        let address = CONF_MAP.get_str("room_port");
-        info!("开始链接房间服:{:?}...", address);
+        let mut tch = TcpClientHandler::new(cp, TcpClientType::GameCenter);
+        let address = CONF_MAP.get_str("game_center_port");
+        info!("开始链接游戏中心服:{:?}...", address);
         tch.on_read(address.to_string()).await;
     };
     async_std::task::spawn(room);

@@ -81,11 +81,7 @@ impl ChannelMgr {
         //发给游戏服
         packet.set_cmd(GameCode::LineOff as u32);
         self.write_to_game(packet.clone());
-        //发给房间服
-        // packet.set_cmd(RoomCode::LineOff as u32);
-        // self.write_to_room(packet);
-        //发给游戏中心
-        //todo 这个地方命令有待完善
+        //发给房间相关服
         packet.set_cmd(RoomCode::LineOff as u32);
         self.write_to_game_center(packet);
     }
@@ -112,30 +108,7 @@ impl ChannelMgr {
         }
     }
 
-    // ///写到房间服
-    // #[warn(unused_must_use)]
-    // pub fn write_to_room(&mut self, packet: Packet) {
-    //     if self.room_client_channel.is_none() {
-    //         error!("disconnect with Room-Server,pls connect Room-Server before send packet!");
-    //         return;
-    //     }
-    //     let rc = self.room_client_channel.as_mut().unwrap();
-    //     let size = rc.write(&packet.build_server_bytes()[..]);
-    //     match size {
-    //         Ok(_) => {
-    //             let res = rc.flush();
-    //             if let Err(e) = res {
-    //                 error!("{:?}", e);
-    //             }
-    //         }
-    //         Err(e) => {
-    //             error!("{:?}", e);
-    //             return;
-    //         }
-    //     }
-    // }
-
-    ///写到游戏中心
+    ///写到游戏中心服
     #[warn(unused_must_use)]
     pub fn write_to_game_center(&mut self, packet: Packet) {
         if self.game_center_client_channel.is_none() {

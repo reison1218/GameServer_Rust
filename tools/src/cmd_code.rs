@@ -83,8 +83,6 @@ pub enum RoomCode {
     //---------------------------------------战斗结束
     //更新赛季
     UpdateSeason = 29998,
-    //热更新静态配置
-    ReloadTemps = 29999,
     //返回最大值
     Max = 30000,
 }
@@ -96,16 +94,19 @@ impl RoomCode {
     }
 }
 
-///战斗服服专属命令号段枚举 30001-40000
+///房间服专属命令号段枚举 30001-40000
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
 pub enum BattleCode {
-    //最小命令号
     Min = 30001,
-    //请求行动
-    Action = 30002,
-    //架势请求
-    Pos = 30003,
-    //最大命令号
+    LeaveRoom = 30002,    //离开房间
+    Start = 30003,        //开始战斗
+    ChoiceIndex = 30004,  //选择位置
+    Action = 30005,       //请求行动
+    Pos = 30006,          //架势请求
+    Emoji = 30007,        //表情符号
+    ReloadTemps = 38888,  //热更新静态配置
+    UpdateSeason = 38889, //更新赛季
     Max = 40000,
 }
 

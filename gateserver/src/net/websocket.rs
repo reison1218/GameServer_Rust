@@ -97,7 +97,7 @@ impl Handler for WebSocketHandler {
         lock.write_to_game(packet.clone());
 
         packet.set_cmd(tools::cmd_code::RoomCode::LineOff as u32);
-        lock.write_to_room(packet);
+        lock.write_to_game_center(packet);
         lock.close_remove(&token);
     }
 
@@ -180,7 +180,7 @@ impl WebSocketHandler {
         }
         //转发到房间服
         if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            lock.write_to_room(packet);
+            lock.write_to_game_center(packet);
         }
     }
 }

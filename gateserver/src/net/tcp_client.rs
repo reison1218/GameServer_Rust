@@ -7,7 +7,6 @@ use tools::cmd_code::{ClientCode, RoomCode};
 
 pub enum TcpClientType {
     GameServer,
-    RoomServer,
     GameCenter,
 }
 
@@ -51,9 +50,6 @@ impl ClientHandler for TcpClientHandler {
             TcpClientType::GameServer => {
                 block_on(self.cp.lock()).set_game_client_channel(ts.try_clone().unwrap());
             }
-            // TcpClientType::RoomServer => {
-            //     block_on(self.cp.lock()).set_room_client_channel(ts.try_clone().unwrap());
-            // }
             TcpClientType::GameCenter => {
                 block_on(self.cp.lock()).set_game_center_client_channel(ts.try_clone().unwrap());
             }
@@ -67,8 +63,8 @@ impl ClientHandler for TcpClientHandler {
             TcpClientType::GameServer => {
                 address = Some(CONF_MAP.get_str("game_port"));
             }
-            TcpClientType::RoomServer => {
-                address = Some(CONF_MAP.get_str("room_port"));
+            TcpClientType::GameCenter => {
+                address = Some(CONF_MAP.get_str("game_center_port"));
             }
         }
         self.on_read(address.unwrap().to_string()).await;

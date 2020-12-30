@@ -154,7 +154,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //如果是主动退出房间
     if code == RoomCode::LeaveRoom.into_u32() {
         //校验房间状态
-        if room_state != RoomState::Await || room_state != RoomState::BattleStarted {
+        if room_state != RoomState::Await && room_state != RoomState::BattleStarted {
             warn!(
                 "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
                 room_state, user_id, room_id

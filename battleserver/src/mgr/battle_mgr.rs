@@ -1,0 +1,148 @@
+use crate::handlers::battle_handler::{
+    action, choice_index, emoji, leave_room, pos, reload_temps, start, update_season,
+};
+use crate::robot::robot_task_mgr::RobotTask;
+use crate::room::room::Room;
+use crate::task_timer::Task;
+use crossbeam::channel::Sender;
+use log::warn;
+use std::collections::hash_map::RandomState;
+use std::collections::HashMap;
+use std::io::Write;
+use std::net::TcpStream;
+use tools::cmd_code::{BattleCode, ClientCode};
+use tools::util::packet::Packet;
+
+type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet) -> anyhow::Result<()>, RandomState>;
+
+///战斗管理器
+#[derive(Default)]
+pub struct BattleMgr {
+    pub player_room: HashMap<u32, u32>,               //玩家对应房间
+    pub rooms: HashMap<u32, Room>,                    //房间map
+    pub cmd_map: CmdFn,                               //命令函数指针
+    pub game_center_channel: Option<TcpStream>,       //tcp客户的
+    pub task_sender: Option<Sender<Task>>,            //task channel的发送方
+    pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
+}
+
+tools::get_mut_ref!(BattleMgr);
+
+impl BattleMgr {
+    pub fn set_game_center_channel(&mut self, ts: TcpStream) {
+        self.game_center_channel = Some(ts);
+    }
+
+    pub fn new() -> BattleMgr {
+        let mut bm = BattleMgr::default();
+        bm.cmd_init();
+        bm
+    }
+
+    pub fn get_task_sender_clone(&self) -> crossbeam::channel::Sender<Task> {
+        self.task_sender.as_ref().unwrap().clone()
+    }
+
+    pub fn get_robot_task_sender_clone(&self) -> crossbeam::channel::Sender<RobotTask> {
+        self.robot_task_sender.as_ref().unwrap().clone()
+    }
+
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
+        let res = self.get_game_center_channel_mut();
+        let size = res.write(&bytes[..]);
+        match size {
+            Ok(_) => {
+                let _ = res.flush();
+            }
+            Err(e) => warn!("{:?}", e),
+        }
+    }
+
+    pub fn get_game_center_channel_mut(&mut self) -> &mut TcpStream {
+        self.game_center_channel.as_mut().unwrap()
+    }
+
+    ///检查玩家是否已经在房间里
+    pub fn check_player(&self, user_id: &u32) -> bool {
+        self.player_room.contains_key(user_id)
+    }
+
+    pub fn get_room_id(&self, user_id: &u32) -> Option<u32> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let res = res.unwrap();
+        return Some(*res);
+    }
+
+    ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
+    pub fn invok(&mut self, packet: Packet) {
+        let cmd = packet.get_cmd();
+        let f = self.cmd_map.get_mut(&cmd);
+        if f.is_none() {
+            warn!("there is no handler of cmd:{:?}!", cmd);
+            return;
+        }
+        let _ = f.unwrap()(self, packet);
+    }
+
+    pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let res = res.unwrap();
+        let room_id = *res;
+        self.rooms.get_mut(&room_id)
+    }
+
+    #[allow(dead_code)]
+    pub fn get_room_ref(&self, user_id: &u32) -> Option<&Room> {
+        let res = self.player_room.get(user_id);
+        if res.is_none() {
+            return None;
+        }
+        let res = res.unwrap();
+        let room_id = *res;
+        self.rooms.get(&room_id)
+    }
+
+    ///删除房间
+    pub fn rm_room(&mut self, room_id: u32) {
+        let room = self.rooms.remove(&room_id);
+        if let Some(room) = room {
+            for user_id in room.members.keys() {
+                self.player_room.remove(user_id);
+            }
+        }
+    }
+
+    ///命令初始化
+    fn cmd_init(&mut self) {
+        //开始战斗
+        self.cmd_map.insert(BattleCode::Start.into_u32(), start);
+        //更新赛季信息
+        self.cmd_map
+            .insert(BattleCode::UpdateSeason.into_u32(), update_season);
+        //热更静态配置
+        self.cmd_map
+            .insert(BattleCode::ReloadTemps.into_u32(), reload_temps);
+        //离开房间
+        self.cmd_map
+            .insert(BattleCode::LeaveRoom.into_u32(), leave_room);
+        //发送表情
+        self.cmd_map.insert(BattleCode::Emoji.into_u32(), emoji);
+
+        //选择占位
+        self.cmd_map
+            .insert(BattleCode::ChoiceIndex.into_u32(), choice_index);
+        //------------------------------------以下是战斗相关的--------------------------------
+        //请求行动
+        self.cmd_map.insert(BattleCode::Action.into_u32(), action);
+
+        //请求pos
+        self.cmd_map.insert(BattleCode::Pos.into_u32(), pos);
+    }
+}
