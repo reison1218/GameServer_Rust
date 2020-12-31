@@ -28,4 +28,5 @@ http-types = "2.5"
 async-h1 = "2.1"
 anyhow = "1.0.31"
 async-trait = "0.1.41"
+crossbeam = "0.8.0"
 tools = { path = "../tools" }

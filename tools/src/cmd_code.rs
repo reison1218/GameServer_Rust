@@ -4,13 +4,32 @@ use num_enum::TryFromPrimitive;
 ///游戏服务专用命令号段枚举 1000-10000
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
+pub enum ServerCommonCode {
+    //离线
+    LineOff = 101,
+    //离开房间
+    LeaveRoom = 102,
+    //热更新静态配置
+    ReloadTemps = 103,
+    //更新赛季
+    UpdateSeason = 104,
+}
+
+impl ServerCommonCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
+        res
+    }
+}
+
+///游戏服务专用命令号段枚举 1000-10000
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
 pub enum GameCode {
     //最小值
     Min = 1000,
     //心跳
     HeartBeat = 1001,
-    //离线
-    LineOff = 1002,
     //登陆
     Login = 1003,
     //同步数据
@@ -25,10 +44,6 @@ pub enum GameCode {
     SearchRoom = 1008,
     //战斗结算
     Summary = 1009,
-    //更新赛季
-    UpdateSeason = 9998,
-    //热更新静态配置
-    ReloadTemps = 9999,
     //范围最大值
     Max = 10000,
 }
@@ -46,12 +61,8 @@ impl GameCode {
 pub enum RoomCode {
     //范围最小值
     Min = 20001,
-    //离线
-    LineOff = 20002,
     //创建房间
     CreateRoom = 20003,
-    //离开房间
-    LeaveRoom = 20004,
     //T人
     Kick = 20005,
     //换队伍
@@ -81,8 +92,6 @@ pub enum RoomCode {
     //架势请求
     Pos = 20032,
     //---------------------------------------战斗结束
-    //更新赛季
-    UpdateSeason = 29998,
     //返回最大值
     Max = 30000,
 }
@@ -99,14 +108,11 @@ impl RoomCode {
 #[repr(u32)]
 pub enum BattleCode {
     Min = 30001,
-    LeaveRoom = 30002,    //离开房间
-    Start = 30003,        //开始战斗
-    ChoiceIndex = 30004,  //选择位置
-    Action = 30005,       //请求行动
-    Pos = 30006,          //架势请求
-    Emoji = 30007,        //表情符号
-    ReloadTemps = 38888,  //热更新静态配置
-    UpdateSeason = 38889, //更新赛季
+    Start = 30002,       //开始战斗
+    ChoiceIndex = 30003, //选择位置
+    Action = 30004,      //请求行动
+    Pos = 30005,         //架势请求
+    Emoji = 30006,       //表情符号
     Max = 40000,
 }
 

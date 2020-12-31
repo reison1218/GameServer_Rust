@@ -8,10 +8,9 @@ use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::GameCode::{
-    CreateRoom, JoinRoom, LineOff, ModifyNickName, ReloadTemps, SearchRoom, Summary, SyncData,
-    UpdateSeason,
+    CreateRoom, JoinRoom, ModifyNickName, SearchRoom, Summary, SyncData,
 };
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
@@ -48,12 +47,12 @@ impl GameMgr {
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.get_sender_mut().write(bytes);
+        self.get_sender_mut().send(bytes);
     }
 
     pub fn send_2_room(&mut self, cmd: RoomCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, false);
-        self.get_sender_mut().write(bytes);
+        self.get_sender_mut().send(bytes);
     }
 
     pub fn save_user_http(&mut self) {
@@ -122,10 +121,13 @@ impl GameMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
-        self.cmd_map.insert(UpdateSeason as u32, update_season);
-        self.cmd_map.insert(ReloadTemps as u32, reload_temps);
+        self.cmd_map
+            .insert(ServerCommonCode::UpdateSeason as u32, update_season);
+        self.cmd_map
+            .insert(ServerCommonCode::ReloadTemps as u32, reload_temps);
         self.cmd_map.insert(SyncData as u32, sync);
-        self.cmd_map.insert(LineOff as u32, off_line);
+        self.cmd_map
+            .insert(ServerCommonCode::LineOff as u32, off_line);
         self.cmd_map.insert(ModifyNickName as u32, modify_nick_name);
         self.cmd_map.insert(CreateRoom as u32, create_room);
         self.cmd_map.insert(JoinRoom as u32, join_room);

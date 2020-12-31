@@ -1,5 +1,6 @@
 pub mod character;
 pub mod map_data;
+pub mod member;
 pub mod room;
 
 use num_enum::IntoPrimitive;
@@ -40,7 +41,6 @@ pub enum RoomType {
     WorldBossPve = 4, //世界boss房间
 }
 
-
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomState {
@@ -74,8 +74,8 @@ pub struct RoomSetting {
     pub victory_condition: u32, //胜利条件
 }
 
-impl From<RoomSettingPt> for RoomSetting {
-    fn from(rs_pt: RoomSettingPt) -> Self {
+impl From<&RoomSettingPt> for RoomSetting {
+    fn from(rs_pt: &RoomSettingPt) -> Self {
         let is_open_ai = rs_pt.is_open_ai;
         let victory_condition = rs_pt.victory_condition;
         let turn_limit_time = rs_pt.turn_limit_time;

@@ -746,6 +746,8 @@ pub struct MemberPt {
     pub state: u32,
     pub grade: u32,
     pub team_id: u32,
+    pub league_score: u32,
+    pub league_id: u32,
     pub join_time: u64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -882,7 +884,37 @@ impl MemberPt {
         self.team_id = v;
     }
 
-    // uint64 join_time = 7;
+    // uint32 league_score = 7;
+
+
+    pub fn get_league_score(&self) -> u32 {
+        self.league_score
+    }
+    pub fn clear_league_score(&mut self) {
+        self.league_score = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_score(&mut self, v: u32) {
+        self.league_score = v;
+    }
+
+    // uint32 league_id = 8;
+
+
+    pub fn get_league_id(&self) -> u32 {
+        self.league_id
+    }
+    pub fn clear_league_id(&mut self) {
+        self.league_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_id(&mut self, v: u32) {
+        self.league_id = v;
+    }
+
+    // uint64 join_time = 9;
 
 
     pub fn get_join_time(&self) -> u64 {
@@ -950,6 +982,20 @@ impl ::protobuf::Message for MemberPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
+                    let tmp = is.read_uint32()?;
+                    self.league_score = tmp;
+                },
+                8 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.league_id = tmp;
+                },
+                9 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
                     let tmp = is.read_uint64()?;
                     self.join_time = tmp;
                 },
@@ -984,8 +1030,14 @@ impl ::protobuf::Message for MemberPt {
         if self.team_id != 0 {
             my_size += ::protobuf::rt::value_size(6, self.team_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.league_score != 0 {
+            my_size += ::protobuf::rt::value_size(7, self.league_score, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.league_id != 0 {
+            my_size += ::protobuf::rt::value_size(8, self.league_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.join_time != 0 {
-            my_size += ::protobuf::rt::value_size(7, self.join_time, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(9, self.join_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1013,8 +1065,14 @@ impl ::protobuf::Message for MemberPt {
         if self.team_id != 0 {
             os.write_uint32(6, self.team_id)?;
         }
+        if self.league_score != 0 {
+            os.write_uint32(7, self.league_score)?;
+        }
+        if self.league_id != 0 {
+            os.write_uint32(8, self.league_id)?;
+        }
         if self.join_time != 0 {
-            os.write_uint64(7, self.join_time)?;
+            os.write_uint64(9, self.join_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1084,6 +1142,16 @@ impl ::protobuf::Message for MemberPt {
                 |m: &MemberPt| { &m.team_id },
                 |m: &mut MemberPt| { &mut m.team_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "league_score",
+                |m: &MemberPt| { &m.league_score },
+                |m: &mut MemberPt| { &mut m.league_score },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "league_id",
+                |m: &MemberPt| { &m.league_id },
+                |m: &mut MemberPt| { &mut m.league_id },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                 "join_time",
                 |m: &MemberPt| { &m.join_time },
@@ -1111,6 +1179,8 @@ impl ::protobuf::Clear for MemberPt {
         self.state = 0;
         self.grade = 0;
         self.team_id = 0;
+        self.league_score = 0;
+        self.league_id = 0;
         self.join_time = 0;
         self.unknown_fields.clear();
     }
@@ -4863,60 +4933,61 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ckName\x12%\n\x0elast_character\x18\x02\x20\x01(\rR\rlastCharacter\x12\
     \x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bResourcesPt\x12\x12\n\
     \x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\x02\x20\x01(\rR\
-    \x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xcb\x01\n\x08Member\
+    \x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\x8b\x02\n\x08Member\
     Pt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_na\
     me\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\x0b2\
     \x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01(\rR\
     \x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\x05grade\x12\x17\n\x07t\
-    eam_id\x18\x06\x20\x01(\rR\x06teamId\x12\x1b\n\tjoin_time\x18\x07\x20\
-    \x01(\x04R\x08joinTime\"G\n\x0bWorldCellPt\x12\x14\n\x05index\x18\x01\
-    \x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\x20\x01(\rR\x0bworl\
-    dCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\
-    \x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\
-    \n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\n\x0broom_status\
-    \x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\x05\x20\x01(\x0b2\
-    \x15.protos.RoomSettingPtR\x07setting\x12*\n\x07members\x18\x06\x20\x03(\
-    \x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0c\
-    NoticeMessPt\"f\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\x20\x01(\r\
-    R\x06cterId\x12&\n\x0flast_use_skills\x18\x02\x20\x03(\rR\rlastUseSkills\
-    \x12\x16\n\x06skills\x18\x03\x20\x03(\rR\x06skills\"\x8c\x02\n\x11Battle\
-    CharacterPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x17\
-    \n\x07user_id\x18\x02\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x03\
-    \x20\x01(\rR\x06cterId\x12\x10\n\x03atk\x18\x04\x20\x01(\rR\x03atk\x12\
-    \x0e\n\x02hp\x18\x05\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x06\x20\
-    \x01(\rR\x07defence\x12\x16\n\x06energy\x18\x07\x20\x01(\rR\x06energy\
-    \x12\x14\n\x05index\x18\x08\x20\x01(\rR\x05index\x12\x14\n\x05buffs\x18\
-    \t\x20\x03(\rR\x05buffs\x12\x16\n\x06skills\x18\n\x20\x03(\rR\x06skills\
-    \x12\x14\n\x05items\x18\x0b\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\
-    \x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_v\
-    alue\x18\x03\x20\x01(\rR\x0beffectValue\"\xb7\x02\n\x08TargetPt\x12!\n\
-    \x0ctarget_value\x18\x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\
-    \x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_bu\
-    ffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\
-    \x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_bu\
-    ffs\x18\x05\x20\x03(\rR\tlostBuffs\x12\x1f\n\x0blost_skills\x18\x06\x20\
-    \x03(\rR\nlostSkills\x12@\n\x0etransform_cter\x18\x07\x20\x01(\x0b2\x19.\
-    protos.BattleCharacterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\x12\x17\
-    \n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\
-    \x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\
-    \xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08f\
-    romUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\
-    \x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\
-    \x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_b\
-    uffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\
-    \x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01\
-    (\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTi\
-    mes\"\xce\x01\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\
-    \x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01\
-    (\rR\x04rank\x12!\n\x0cleague_score\x18\x05\x20\x01(\rR\x0bleagueScore\
-    \x12\x1b\n\tleague_id\x18\x06\x20\x01(\rR\x08leagueId\x12!\n\x0creward_s\
-    core\x18\x07\x20\x01(\x05R\x0brewardScore\"e\n\x0cCterStatusPt\x12\x17\n\
-    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\x18\x02\
-    \x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.\
-    BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\
-    \x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05bu\
-    ffsb\x06proto3\
+    eam_id\x18\x06\x20\x01(\rR\x06teamId\x12!\n\x0cleague_score\x18\x07\x20\
+    \x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x08\x20\x01(\rR\x08leag\
+    ueId\x12\x1b\n\tjoin_time\x18\t\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldC\
+    ellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cel\
+    l_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\
+    \x07room_id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\
+    \x20\x01(\rR\x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08room\
+    Type\x12\x1f\n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07\
+    setting\x18\x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\
+    \n\x07members\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\
+    \x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\"f\n\x0bCharacterPt\x12\
+    \x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12&\n\x0flast_use_skill\
+    s\x18\x02\x20\x03(\rR\rlastUseSkills\x12\x16\n\x06skills\x18\x03\x20\x03\
+    (\rR\x06skills\"\x8c\x02\n\x11BattleCharacterPt\x12\x17\n\x07room_id\x18\
+    \x01\x20\x01(\x04R\x06roomId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\
+    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x10\n\
+    \x03atk\x18\x04\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x05\x20\x01(\rR\
+    \x02hp\x12\x18\n\x07defence\x18\x06\x20\x01(\rR\x07defence\x12\x16\n\x06\
+    energy\x18\x07\x20\x01(\rR\x06energy\x12\x14\n\x05index\x18\x08\x20\x01(\
+    \rR\x05index\x12\x14\n\x05buffs\x18\t\x20\x03(\rR\x05buffs\x12\x16\n\x06\
+    skills\x18\n\x20\x03(\rR\x06skills\x12\x14\n\x05items\x18\x0b\x20\x03(\r\
+    R\x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\
+    \neffectType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0beffectValue\"\
+    \xb7\x02\n\x08TargetPt\x12!\n\x0ctarget_value\x18\x01\x20\x03(\rR\x0btar\
+    getValue\x12*\n\x07effects\x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\
+    \x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\
+    \rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassi\
+    veEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\x12\x1f\n\
+    \x0blost_skills\x18\x06\x20\x03(\rR\nlostSkills\x12@\n\x0etransform_cter\
+    \x18\x07\x20\x01(\x0b2\x19.protos.BattleCharacterPtR\rtransformCter\"T\n\
+    \x0fTriggerEffectPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\
+    \x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\
+    \x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_us\
+    er\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\
+    \x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactio\
+    nValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07t\
+    argets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06Buff\
+    Pt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_\
+    timesed\x18\x02\x20\x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\
+    \x03\x20\x01(\rR\tkeepTimes\"\xce\x01\n\rSummaryDataPt\x12\x17\n\x07user\
+    _id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\
+    \rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\
+    \x04rank\x18\x04\x20\x01(\rR\x04rank\x12!\n\x0cleague_score\x18\x05\x20\
+    \x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x06\x20\x01(\rR\x08leag\
+    ueId\x12!\n\x0creward_score\x18\x07\x20\x01(\x05R\x0brewardScore\"e\n\
+    \x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
+    \x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\
+    \x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\
+    \x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\
+    \x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

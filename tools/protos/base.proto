@@ -45,7 +45,10 @@ message MemberPt{
     uint32 state = 4;//玩家状态，是否已经准备 0:未准备，1：准备
     uint32 grade = 5;//角色等级
     uint32 team_id = 6;//玩家所属队伍id
-    uint64 join_time = 7;//玩家进入房间的时间
+    uint32 league_score = 7;//玩家段位积分
+    uint32 league_id = 8;//玩家段位
+    uint64 join_time = 9;//玩家进入房间的时间
+
 }
 
 message WorldCellPt{

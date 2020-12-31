@@ -81,7 +81,7 @@ use threadpool::ThreadPool;
 use tools::macros::GetMutRef;
 use tools::protos::room::C_LEAVE_ROOM;
 use tools::redis_pool::RedisPoolTool;
-use tools::tcp::{new_tcp_client, ClientHandler};
+use tools::tcp::ClientHandler;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 use tools::util::bytebuf::ByteBuf;
 use tools::util::packet::Packet;
@@ -470,6 +470,8 @@ pub struct StructTest {
 fn fn1(s: &mut String) {}
 
 fn main() -> anyhow::Result<()> {
+    let a = [0, 0, 0, 0, 0];
+    println!("{}", *a.iter().min_by(|x, y| x.cmp(y)).unwrap());
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);

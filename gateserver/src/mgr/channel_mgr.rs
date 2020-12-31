@@ -1,12 +1,11 @@
 use crate::entity::gateuser::GateUser;
+use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
-use std::io::Write;
-use std::net::TcpStream;
 use std::sync::Arc;
-use tools::cmd_code::{GameCode, RoomCode};
+use tools::cmd_code::ServerCommonCode;
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -15,11 +14,11 @@ use ws::Sender as WsSender;
 ///channel管理结构体
 pub struct ChannelMgr {
     //游戏服tcpstream
-    pub game_client_channel: Option<TcpStream>,
+    pub game_client_channel: Option<Sender<Vec<u8>>>,
     //房间服stream
     // pub room_client_channel: Option<TcpStream>,
     //游戏中心stream
-    pub game_center_client_channel: Option<TcpStream>,
+    pub game_center_client_channel: Option<Sender<Vec<u8>>>,
     //玩家channels
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
@@ -40,7 +39,7 @@ impl ChannelMgr {
         cm
     }
 
-    pub fn set_game_client_channel(&mut self, ts: TcpStream) {
+    pub fn set_game_client_channel(&mut self, ts: Sender<Vec<u8>>) {
         self.game_client_channel = Some(ts);
     }
 
@@ -48,7 +47,7 @@ impl ChannelMgr {
     //     self.room_client_channel = Some(ts);
     // }
 
-    pub fn set_game_center_client_channel(&mut self, ts: TcpStream) {
+    pub fn set_game_center_client_channel(&mut self, ts: Sender<Vec<u8>>) {
         self.game_center_client_channel = Some(ts);
     }
 
@@ -78,11 +77,12 @@ impl ChannelMgr {
         packet.set_is_client(false);
         packet.set_is_broad(false);
 
+        let cmd = ServerCommonCode::LineOff.into_u32();
         //发给游戏服
-        packet.set_cmd(GameCode::LineOff as u32);
+        packet.set_cmd(cmd);
         self.write_to_game(packet.clone());
         //发给房间相关服
-        packet.set_cmd(RoomCode::LineOff as u32);
+        packet.set_cmd(cmd);
         self.write_to_game_center(packet);
     }
 
@@ -93,18 +93,9 @@ impl ChannelMgr {
             return;
         }
         let gc = self.game_client_channel.as_mut().unwrap();
-        let size = gc.write(&packet.build_server_bytes()[..]);
-        match size {
-            Ok(_) => {
-                let res = gc.flush();
-                if let Err(e) = res {
-                    error!("flush has error!mess:{:?}", e);
-                }
-            }
-            Err(e) => {
-                error!("{:?}", e.to_string());
-                return;
-            }
+        let size = gc.send(packet.build_server_bytes());
+        if let Err(e) = size {
+            error!("{:?}", e);
         }
     }
 
@@ -116,18 +107,9 @@ impl ChannelMgr {
             return;
         }
         let rc = self.game_center_client_channel.as_mut().unwrap();
-        let size = rc.write(&packet.build_server_bytes()[..]);
-        match size {
-            Ok(_) => {
-                let res = rc.flush();
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                }
-            }
-            Err(e) => {
-                error!("{:?}", e);
-                return;
-            }
+        let size = rc.send(packet.build_server_bytes());
+        if let Err(e) = size {
+            error!("{:?}", e);
         }
     }
 
@@ -200,7 +182,8 @@ impl ChannelMgr {
 
     ///通知热更静态配置
     pub fn notice_reload_temps(&mut self) {
-        let mut packet = Packet::new(GameCode::ReloadTemps as u32, 0, 0);
+        let cmd = ServerCommonCode::ReloadTemps.into_u32();
+        let mut packet = Packet::new(cmd, 0, 0);
         packet.set_is_client(false);
         packet.set_is_broad(false);
         self.write_to_game(packet.clone());
@@ -208,13 +191,14 @@ impl ChannelMgr {
         // self.write_to_room(packet);
 
         //todo 这个地方命令有点完善
-        packet.set_cmd(RoomCode::LineOff as u32);
+        packet.set_cmd(cmd);
         self.write_to_game_center(packet);
     }
 
     ///通知更新服务器更新赛季
     pub fn notice_update_season(&mut self, value: Value) {
-        let mut packet = Packet::new(GameCode::UpdateSeason as u32, 0, 0);
+        let cmd = ServerCommonCode::UpdateSeason.into_u32();
+        let mut packet = Packet::new(cmd, 0, 0);
         packet.set_is_client(false);
         packet.set_is_broad(true);
         let map = value.as_object();
@@ -245,10 +229,8 @@ impl ChannelMgr {
         usn.set_next_update_time(next_update_time.to_string());
         packet.set_data(&usn.write_to_bytes().unwrap()[..]);
         self.write_to_game(packet.clone());
-        // packet.set_cmd(RoomCode::UpdateSeason as u32);
-        // self.write_to_room(packet);
-        //todo 这个地方命令有待完善
-        packet.set_cmd(RoomCode::LineOff as u32);
+        //通知游戏中心
+        packet.set_cmd(ServerCommonCode::UpdateSeason.into_u32());
         self.write_to_game_center(packet);
     }
 }

@@ -8,8 +8,6 @@ use crossbeam::channel::Sender;
 use log::warn;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::io::Write;
-use std::net::TcpStream;
 use tools::cmd_code::{BattleCode, ClientCode};
 use tools::util::packet::Packet;
 
@@ -21,7 +19,7 @@ pub struct BattleMgr {
     pub player_room: HashMap<u32, u32>,               //玩家对应房间
     pub rooms: HashMap<u32, Room>,                    //房间map
     pub cmd_map: CmdFn,                               //命令函数指针
-    pub game_center_channel: Option<TcpStream>,       //tcp客户的
+    pub game_center_channel: Option<Sender<Vec<u8>>>, //tcp客户的
     pub task_sender: Option<Sender<Task>>,            //task channel的发送方
     pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
 }
@@ -29,7 +27,7 @@ pub struct BattleMgr {
 tools::get_mut_ref!(BattleMgr);
 
 impl BattleMgr {
-    pub fn set_game_center_channel(&mut self, ts: TcpStream) {
+    pub fn set_game_center_channel(&mut self, ts: Sender<Vec<u8>>) {
         self.game_center_channel = Some(ts);
     }
 
@@ -37,6 +35,10 @@ impl BattleMgr {
         let mut bm = BattleMgr::default();
         bm.cmd_init();
         bm
+    }
+
+    pub fn get_game_center_channel_clone(&self) -> crossbeam::channel::Sender<Vec<u8>> {
+        self.game_center_channel.as_ref().unwrap().clone()
     }
 
     pub fn get_task_sender_clone(&self) -> crossbeam::channel::Sender<Task> {
@@ -50,16 +52,13 @@ impl BattleMgr {
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
         let res = self.get_game_center_channel_mut();
-        let size = res.write(&bytes[..]);
-        match size {
-            Ok(_) => {
-                let _ = res.flush();
-            }
-            Err(e) => warn!("{:?}", e),
+        let size = res.send(bytes);
+        if let Err(e) = size {
+            warn!("{:?}", e);
         }
     }
 
-    pub fn get_game_center_channel_mut(&mut self) -> &mut TcpStream {
+    pub fn get_game_center_channel_mut(&mut self) -> &mut Sender<Vec<u8>> {
         self.game_center_channel.as_mut().unwrap()
     }
 

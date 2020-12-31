@@ -4,29 +4,27 @@ use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
-use crate::room::{MemberLeaveNoticeType, RoomSetting, RoomState, RoomType, MEMBER_MAX};
+use crate::room::member::Member;
+use crate::room::{RoomSetting, RoomState, RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
-use chrono::{DateTime, Local, Utc};
+use chrono::{DateTime, Utc};
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use protobuf::Message;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::macros::GetMutRef;
-use tools::protos::base::{MemberPt, RoomPt, WorldCellPt};
+use tools::protos::base::{RoomPt, WorldCellPt};
 use tools::protos::battle::{S_BATTLE_START_NOTICE, S_MAP_REFRESH_NOTICE};
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_CHOOSE_INDEX_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER,
-    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE,
-    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE, S_START_NOTICE,
+    S_CHOOSE_INDEX_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_START_NOTICE,
 };
-use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
-use std::convert::TryFrom;
 
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
@@ -35,11 +33,11 @@ pub struct Room {
     room_type: RoomType,                          //房间类型
     owner_id: u32,                                //房主id
     pub state: RoomState,                         //房间状态
-    pub members: HashMap<u32, u32>,               //玩家id对应角色id
+    pub members: HashMap<u32, Member>,            //玩家id对应角色id
     pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
     pub setting: RoomSetting,                     //房间设置
     pub battle_data: BattleData,                  //战斗相关数据封装
-    pub tcp_sender: TcpSender,                    //tcpsender
+    pub tcp_sender: Sender<Vec<u8>>,              //tcpsender
     task_sender: Sender<Task>,                    //任务sender
     robot_sender: Sender<RobotTask>,              //机器人sender
     time: DateTime<Utc>,                          //房间创建时间
@@ -47,68 +45,47 @@ pub struct Room {
 
 tools::get_mut_ref!(Room);
 
-impl From<&RoomPt> for Room{
-    fn from(rp: &RoomPt) -> Self {
-        let owner_id = rp.owner_id;
-        let room_id = rp.room_id;
-        let room_type = RoomType::try_from(rp.room_type);
-        if let Err(e) = room_type{
-            warn!("{:?}", e);
-        }
-        let room_type = room_type.unwrap();
-        Room::new(owner_id, room_type, TcpSender {}, (), ())
-    }
-}
-
 impl Room {
     ///构建一个房间的结构体
     pub fn new(
-        mut owner: u32,
-        room_type: RoomType,
-        sender: TcpSender,
+        rp: &RoomPt,
+        tcp_sender: Sender<Vec<u8>>,
         task_sender: Sender<Task>,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Room> {
+        let owner_id = rp.owner_id;
+        let room_id = rp.room_id;
+        let room_type = RoomType::try_from(rp.room_type as u8);
+        if let Err(e) = room_type {
+            anyhow::bail!("{:?}", e)
+        }
+        let room_type = room_type.unwrap();
+        let mut members = HashMap::new();
+        let mut member_index: [u32; MEMBER_MAX as usize] = [0; MEMBER_MAX as usize];
+        let mut index = 0;
+        for member in rp.members.iter() {
+            members.insert(member.user_id, Member::from(member));
+            member_index[index] = member.user_id;
+            index += 1;
+        }
+        let room_setting = RoomSetting::from(rp.setting.as_ref().unwrap());
+
         //转换成tilemap数据
-        let user_id = owner;
-        let mut str = Local::now().timestamp_subsec_micros().to_string();
-        str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
-        let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
-        let mut room = Room {
-            id,
-            owner_id: user_id,
-            members: HashMap::new(),
-            member_index: [0; MEMBER_MAX as usize],
-            state: RoomState::Await,
-            setting: RoomSetting::default(),
-            battle_data: BattleData::new(task_sender.clone(), sender.clone()),
+        let room = Room {
+            id: room_id,
+            owner_id,
+            members,
+            member_index,
+            state: RoomState::BattleStarted,
+            setting: room_setting,
+            battle_data: BattleData::new(task_sender.clone(), tcp_sender.clone()),
             room_type,
-            tcp_sender: sender,
+            tcp_sender,
             task_sender,
             robot_sender,
             time,
         };
-        if room.room_type == RoomType::Match {
-            let limit_time = TEMPLATES
-                .get_constant_temp_mgr_ref()
-                .temps
-                .get("battle_turn_limit_time");
-            if let Some(limit_time) = limit_time {
-                let res = u32::from_str(limit_time.value.as_str());
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                } else {
-                    room.setting.turn_limit_time = res.unwrap();
-                }
-            } else {
-                warn!("constant temp's battle_turn_limit_time is none!")
-            }
-        }
-        let mut size = 4;
-        size += 1;
-        room.member_index[0] = user_id;
-        //返回客户端
         Ok(room)
     }
 
@@ -203,7 +180,10 @@ impl Room {
     ///回客户端消息
     pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into(), 0, bytes, true, false);
-        self.tcp_sender.write(bytes);
+        let res = self.tcp_sender.send(bytes);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
     ///开始选择占位
@@ -352,6 +332,10 @@ impl Room {
 
     //给没选都人随机回合顺序
     pub fn init_turn_order(&mut self) {
+        //初始化段位快照
+        self.init_league_map();
+        //初始化战斗角色
+        self.cter_2_battle_cter();
         //先选出可以随机的下标
         let mut index_v: Vec<usize> = Vec::new();
         for index in 0..MEMBER_MAX as usize {
@@ -408,13 +392,16 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.tcp_sender.write(bytes);
+        let res = self.tcp_sender.send(bytes);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let mut user_id;
         for member in self.members.values() {
-            user_id = *member;
+            user_id = member.user_id;
             let cter = self.battle_data.battle_cter.get(&user_id);
             //如果是机器人，则返回，不发送
             if cter.is_none() {
@@ -425,19 +412,10 @@ impl Room {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
-            self.tcp_sender.write(bytes);
-        }
-    }
-
-    ///房间变更通知
-    pub fn room_notice(&mut self) {
-        let mut srn = S_ROOM_NOTICE::new();
-        srn.owner_id = self.owner_id;
-        srn.set_setting(self.setting.clone().into());
-        let bytes = srn.write_to_bytes().unwrap();
-        let self_mut_ref = self.get_mut_ref();
-        for id in self.members.keys() {
-            self_mut_ref.send_2_client(ClientCode::RoomNotice, *id, bytes.clone());
+            let res = self.tcp_sender.send(bytes);
+            if let Err(e) = res {
+                error!("{:?}", e);
+            }
         }
     }
 
@@ -669,25 +647,17 @@ impl Room {
     }
 
     pub fn cter_2_battle_cter(&mut self) {
-        // for member in self.members.values_mut() {
-        //     let battle_cter =
-        //         BattleCharacter::init(&member, &self.battle_data, self.robot_sender.clone());
-        //     match battle_cter {
-        //         Ok(b_cter) => {
-        //             self.battle_data.battle_cter.insert(member.user_id, b_cter);
-        //         }
-        //         Err(_) => {
-        //             return;
-        //         }
-        //     }
-        // }
-    }
-
-    pub fn is_started(&self) -> bool {
-        if self.state != RoomState::BattleStarted {
-            false
-        } else {
-            true
+        for member in self.members.values_mut() {
+            let battle_cter =
+                BattleCharacter::init(&member, &self.battle_data, self.robot_sender.clone());
+            match battle_cter {
+                Ok(b_cter) => {
+                    self.battle_data.battle_cter.insert(member.user_id, b_cter);
+                }
+                Err(_) => {
+                    return;
+                }
+            }
         }
     }
 
@@ -699,8 +669,6 @@ impl Room {
             error!("{:?}", e);
             return;
         }
-        //初始化段位快照
-        self.init_league_map();
         //初始化turn顺序
         self.init_turn_order();
         //下发通知
@@ -709,9 +677,9 @@ impl Room {
 
     pub fn init_league_map(&mut self) {
         for member in self.members.values() {
-            let user_id = *member;
+            let user_id = member.user_id;
             let cter = self.battle_data.get_battle_cter(Some(user_id), false);
-            if let Err(e) = cter {
+            if let Err(_) = cter {
                 continue;
             }
             let cter = cter.unwrap();

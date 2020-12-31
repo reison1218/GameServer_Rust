@@ -7,7 +7,6 @@ use crate::{CONF_MAP, REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID};
 use crate::{REDIS_KEY_USERS, REDIS_POOL};
 use log::{debug, error, info, warn};
 use protobuf::Message;
-use std::net::TcpStream;
 use std::sync::Arc;
 use tools::tcp::ClientHandler;
 use ws::{

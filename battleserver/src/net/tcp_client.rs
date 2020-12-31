@@ -2,8 +2,8 @@ use crate::mgr::battle_mgr::BattleMgr;
 use async_std::sync::{Arc, Mutex};
 use async_std::task::block_on;
 use async_trait::async_trait;
+use crossbeam::channel::Sender;
 use log::{error, warn};
-use std::net::TcpStream;
 use tools::tcp::ClientHandler;
 use tools::util::packet::Packet;
 
@@ -13,9 +13,16 @@ pub struct TcpClientHandler {
     pub bm: Arc<Mutex<BattleMgr>>,
 }
 
+impl TcpClientHandler {
+    pub fn new(bm: Arc<Mutex<BattleMgr>>) -> Self {
+        let tch = TcpClientHandler { bm };
+        tch
+    }
+}
+
 #[async_trait]
 impl ClientHandler for TcpClientHandler {
-    async fn on_open(&mut self, ts: TcpStream) {
+    async fn on_open(&mut self, ts: Sender<Vec<u8>>) {
         let mut lock = block_on(self.bm.lock());
         lock.set_game_center_channel(ts);
     }
@@ -35,26 +42,21 @@ impl ClientHandler for TcpClientHandler {
         }
         let packet_array = packet_array.unwrap();
         //遍历命令，并执行
-        for mut packet in packet_array {
+        for packet in packet_array {
             let cmd = packet.get_cmd();
-            //判断是否是发给客户端消息
-            if packet.get_cmd() > 0 {
-                let mut lock = block_on(self.bm.lock());
-                let f = lock.cmd_map.get_mut(&cmd);
-                match f {
-                    Some(f) => {
-                        let res = f(&mut lock, packet.clone());
-                        if let Err(e) = res {
-                            warn!("{:?}", e);
-                        }
-                    }
-                    None => {
-                        warn!("could not find function！cmd:{}", cmd);
-                    }
-                }
-            } else {
-                //todo 暂时不做处理
+            if cmd <= 0 {
+                warn!("cmd is invalid!cmd = {}", cmd);
+                continue;
             }
+            let mut lock = block_on(self.bm.lock());
+            lock.invok(packet);
         }
     }
+}
+
+///创建新的tcp服务器,如果有问题，终端进程
+pub fn new(address: &str, bm: Arc<Mutex<BattleMgr>>) {
+    let mut tch = TcpClientHandler::new(bm);
+    let res = tch.on_read(address.to_string());
+    async_std::task::block_on(res);
 }

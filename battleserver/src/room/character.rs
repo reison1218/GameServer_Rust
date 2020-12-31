@@ -1,4 +1,4 @@
-use crate::battle::battle::Item;
+use crate::battle::battle::{BattleData, Item};
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
@@ -7,8 +7,11 @@ use crate::battle::battle_enum::buff_type::{
 use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::robot::robot_action::RobotStatusAction;
+use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
+use crate::room::member::Member;
 use crate::TEMPLATES;
+use crossbeam::channel::Sender;
 use log::{error, warn};
 use std::collections::HashMap;
 use tools::macros::GetMutRef;
@@ -25,12 +28,12 @@ pub struct Character {
     pub last_use_skills: Vec<u32>, //上次使用的技能
 }
 
-impl From<CharacterPt> for Character {
-    fn from(cter_pt: CharacterPt) -> Self {
+impl From<&CharacterPt> for Character {
+    fn from(cter_pt: &CharacterPt) -> Self {
         let mut c = Character::default();
         c.cter_id = cter_pt.cter_id;
-        c.skills = cter_pt.skills;
-        c.last_use_skills = cter_pt.last_use_skills;
+        c.skills = cter_pt.skills.clone();
+        c.last_use_skills = cter_pt.last_use_skills.clone();
         c
     }
 }
@@ -146,6 +149,73 @@ pub struct BattleCharacter {
 tools::get_mut_ref!(BattleCharacter);
 
 impl BattleCharacter {
+    ///初始化战斗角色数据
+    pub fn init(
+        member: &Member,
+        battle_data: &BattleData,
+        robot_sender: Sender<RobotTask>,
+    ) -> anyhow::Result<Self> {
+        let cter = &member.chose_cter;
+        let mut battle_cter = BattleCharacter::default();
+        let cter_id = cter.cter_id;
+        battle_cter.base_attr.user_id = cter.user_id;
+        battle_cter.base_attr.cter_id = cter_id;
+        battle_cter.base_attr.grade = member.grade;
+        let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
+        let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
+        for skill_id in cter.skills.iter() {
+            let res = skill_ref.temps.get(skill_id);
+            if res.is_none() {
+                let str = format!("there is no skill for skill_id:{}!", skill_id);
+                warn!("{:?}", str.as_str());
+                anyhow::bail!(str)
+            }
+            let skill_temp = res.unwrap();
+            let skill = Skill::from(skill_temp);
+            battle_cter.skills.insert(*skill_id, skill);
+        }
+        let cter_temp: Option<&CharacterTemp> = TEMPLATES
+            .get_character_temp_mgr_ref()
+            .get_temp_ref(&cter_id);
+        if cter_temp.is_none() {
+            let str = format!("cter_temp is none for cter_id:{}!", cter_id);
+            warn!("{:?}", str.as_str());
+            anyhow::bail!(str)
+        }
+        let cter_temp = cter_temp.unwrap();
+        //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
+        battle_cter.base_attr.hp = cter_temp.hp;
+        battle_cter.base_attr.atk = cter_temp.attack;
+        battle_cter.base_attr.defence = cter_temp.defence;
+        battle_cter.base_attr.element = cter_temp.element;
+        battle_cter.base_attr.energy = cter_temp.start_energy;
+        battle_cter.base_attr.max_energy = cter_temp.max_energy;
+        battle_cter.base_attr.hp_max = cter_temp.hp;
+        battle_cter.base_attr.item_max = cter_temp.usable_item_count;
+        battle_cter.league = member.league.clone();
+        cter_temp.passive_buff.iter().for_each(|buff_id| {
+            let buff_temp = buff_ref.temps.get(buff_id).unwrap();
+            let buff = Buff::from(buff_temp);
+            battle_cter.add_buff(Some(battle_cter.get_user_id()), None, buff.id, None);
+            battle_cter
+                .battle_buffs
+                .passive_buffs
+                .insert(*buff_id, buff);
+        });
+
+        battle_cter.reset_residue_open_times();
+        //处理机器人部分
+        if cter.is_robot {
+            let robot_data = RobotData::new(
+                battle_cter.get_user_id(),
+                battle_data as *const BattleData,
+                robot_sender,
+            );
+            battle_cter.robot_data = Some(robot_data);
+        }
+        Ok(battle_cter)
+    }
+
     pub fn get_robot_data_ref(&self) -> anyhow::Result<&RobotData> {
         if self.robot_data.is_none() {
             anyhow::bail!(

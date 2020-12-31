@@ -2,6 +2,7 @@ use super::*;
 use async_std::sync::Mutex;
 use async_std::task::block_on;
 use async_trait::async_trait;
+use crossbeam::channel::Sender;
 use log::error;
 use tools::cmd_code::{ClientCode, RoomCode};
 
@@ -12,7 +13,7 @@ pub enum TcpClientType {
 
 pub struct TcpClientHandler {
     client_type: TcpClientType,
-    ts: Option<TcpStream>,
+    ts: Option<Sender<Vec<u8>>>,
     cp: Arc<Mutex<ChannelMgr>>,
 }
 
@@ -45,13 +46,13 @@ impl TcpClientHandler {
 
 #[async_trait]
 impl ClientHandler for TcpClientHandler {
-    async fn on_open(&mut self, ts: TcpStream) {
+    async fn on_open(&mut self, ts: Sender<Vec<u8>>) {
         match self.client_type {
             TcpClientType::GameServer => {
-                block_on(self.cp.lock()).set_game_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.lock()).set_game_client_channel(ts.clone());
             }
             TcpClientType::GameCenter => {
-                block_on(self.cp.lock()).set_game_center_client_channel(ts.try_clone().unwrap());
+                block_on(self.cp.lock()).set_game_center_client_channel(ts.clone());
             }
         }
         self.ts = Some(ts);
@@ -86,7 +87,7 @@ impl ClientHandler for TcpClientHandler {
                 let gate_user = lock.get_mut_user_channel_channel(&packet.get_user_id());
                 match gate_user {
                     Some(user) => {
-                        user.get_tcp_mut_ref().write(packet.build_client_bytes());
+                        user.get_tcp_mut_ref().send(packet.build_client_bytes());
                         info!(
                             "回给客户端消息,user_id:{},cmd:{}",
                             packet.get_user_id(),

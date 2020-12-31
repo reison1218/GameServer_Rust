@@ -142,7 +142,7 @@ pub fn skip_turn(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
 }
 
 ///使用技能
-pub fn use_skill(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {}
+pub fn use_skill(_: Arc<Mutex<BattleMgr>>, _: RobotTask) {}
 
 ///使用道具
-pub fn use_item(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {}
+pub fn use_item(_: Arc<Mutex<BattleMgr>>, _: RobotTask) {}

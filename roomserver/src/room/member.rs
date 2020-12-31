@@ -86,6 +86,8 @@ impl Into<MemberPt> for Member {
         mp.nick_name = self.nick_name.clone();
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;
+        mp.league_score = self.league.score as u32;
+        mp.league_id = self.league.get_league_id() as u32;
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
         mp

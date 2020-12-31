@@ -522,7 +522,10 @@ impl BattleData {
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.get_sender_mut().write(bytes);
+        let res = self.get_sender_mut().send(bytes);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
@@ -533,7 +536,10 @@ impl BattleData {
             let user_id = cter.base_attr.user_id;
             let bytes_res =
                 Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
-            self.sender.write(bytes_res);
+            let res = self.tcp_sender.send(bytes_res);
+            if let Err(e) = res {
+                error!("{:?}", e);
+            }
         }
     }
 

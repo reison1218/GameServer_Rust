@@ -19,7 +19,6 @@ use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::ActionUnitPt;
-use tools::tcp::TcpSender;
 use tools::templates::skill_temp::SkillTemp;
 
 ///物品结构体
@@ -86,7 +85,7 @@ pub struct BattleData {
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
     pub task_sender: Sender<Task>,                  //任务sender
-    pub sender: TcpSender,                          //sender
+    pub tcp_sender: Sender<Vec<u8>>,                //sender
 }
 
 tools::get_mut_ref!(BattleData);
@@ -118,7 +117,7 @@ impl BattleData {
     }
 
     ///初始化战斗数据
-    pub fn new(task_sender: Sender<Task>, sender: TcpSender) -> Self {
+    pub fn new(task_sender: Sender<Task>, tcp_sender: Sender<Vec<u8>>) -> Self {
         let mut v = Vec::new();
         for _ in 0..MEMBER_MAX {
             v.push(Vec::new());
@@ -138,7 +137,7 @@ impl BattleData {
             total_turn_times: 0,
             last_map_id: 0,
             task_sender,
-            sender,
+            tcp_sender,
         };
 
         //初始化函数指针，封装到map里
@@ -186,8 +185,8 @@ impl BattleData {
         Ok(user_id)
     }
 
-    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
-        self.sender.borrow_mut()
+    pub fn get_sender_mut(&mut self) -> &mut Sender<Vec<u8>> {
+        self.tcp_sender.borrow_mut()
     }
 
     ///获得战斗角色借用指针

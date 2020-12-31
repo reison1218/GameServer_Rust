@@ -160,7 +160,6 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
 /// 在action末尾处,用于处理战斗推进过程中的战斗结算
 pub unsafe fn process_summary(bm: &mut BattleMgr, room: &mut Room) -> bool {
     let is_summary = room.battle_summary();
-    let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //如果要结算,卸载数据
     if !is_summary {
@@ -186,7 +185,21 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", e);
         return Ok(());
     }
+
     let rt = rbs.get_room_pt();
+    let tcp_sender = bm.get_game_center_channel_clone();
+    let task_sender = bm.get_task_sender_clone();
+    let robot_task_sender = bm.get_robot_task_sender_clone();
+    //创建战斗房间
+    let room = Room::new(rt, tcp_sender, task_sender, robot_task_sender);
+    if let Err(e) = room {
+        error!("create battle room fail!{:?}", e);
+        return Ok(());
+    }
+    let mut room = room.unwrap();
+    //开始战斗
+    room.start();
+    bm.rooms.insert(room.get_room_id(), room);
     Ok(())
 }
 

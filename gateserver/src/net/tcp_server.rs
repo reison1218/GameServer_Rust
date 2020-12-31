@@ -66,7 +66,7 @@ impl TcpServerHandler {
         let res = self.tcp.as_mut();
         match res {
             Some(ts) => {
-                ts.write(bytes);
+                ts.send(bytes);
             }
             None => {
                 warn!("TcpServerHandler's tcp is None!");
@@ -133,7 +133,7 @@ impl TcpServerHandler {
                 return;
             }
             let gate_user = gate_user.unwrap();
-            gate_user.get_tcp_mut_ref().write(res);
+            gate_user.get_tcp_mut_ref().send(res);
             info!(
                 "回给客户端消息,user_id:{},cmd:{}",
                 packet.get_user_id(),
@@ -164,7 +164,7 @@ impl TcpServerHandler {
 ///创建新的tcpserver并开始监听
 pub fn new(address: &str, cm: Arc<Mutex<ChannelMgr>>) {
     let sh = TcpServerHandler { tcp: None, cm };
-    let res = tools::tcp::tcp_server::new(address, sh);
+    let res = tools::tcp::tcp_server::new(address.to_string(), sh);
     let res = block_on(res);
     if res.is_err() {
         error!("{:?}", res.err().unwrap().to_string());

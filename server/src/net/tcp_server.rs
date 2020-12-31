@@ -14,7 +14,7 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::str::FromStr;
 use std::sync::Arc;
-use tools::cmd_code::{ClientCode, GameCode};
+use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 use tools::util::packet::Packet;
 
@@ -67,7 +67,7 @@ impl tools::tcp::Handler for TcpServerHandler {
 async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
-        && packet.get_cmd() != GameCode::LineOff.into_u32()
+        && packet.get_cmd() != ServerCommonCode::LineOff.into_u32()
         && packet.get_data().is_empty()
     {
         error!("packet bytes is null!");
@@ -227,7 +227,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
 
 pub fn new(address: &str, gm: Arc<Mutex<GameMgr>>) {
     let sh = TcpServerHandler { gm };
-    let res = tools::tcp::tcp_server::new(address, sh);
+    let res = tools::tcp::tcp_server::new(address.to_string(), sh);
     let res = block_on(res);
     if let Err(e) = res {
         error!("{:?}", e);

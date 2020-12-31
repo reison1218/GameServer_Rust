@@ -785,6 +785,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "chrono",
+ "crossbeam",
  "futures",
  "http-types",
  "lazy_static",

@@ -2,7 +2,7 @@ use super::*;
 use async_trait::async_trait;
 use crossbeam::channel::{Receiver, Sender};
 use net2::TcpStreamExt;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::marker::{Send, Sync};
 use std::net::Shutdown;
 use std::net::TcpStream;
@@ -33,7 +33,7 @@ pub struct TcpSender {
 }
 
 impl TcpSender {
-    pub fn write(&mut self, bytes: Vec<u8>) {
+    pub fn send(&mut self, bytes: Vec<u8>) {
         let res = self.sender.send(Data {
             bytes,
             token: self.token,
@@ -108,13 +108,13 @@ pub mod tcp_server {
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub async fn new(addr: &str, handler: impl Handler) -> io::Result<()> {
+    pub async fn new(addr: String, handler: impl Handler) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
         let mut events = Events::with_capacity(5120);
         // tcp listenner address
-        let address = SocketAddr::from_str(addr).unwrap();
+        let address = SocketAddr::from_str(addr.as_str()).unwrap();
         // Setup the TCP server socket.
         let mut server = MioTcpListener::bind(address)?;
         // Map of `Token` -> `TcpStream`.
@@ -405,7 +405,7 @@ pub mod tcp_server {
 #[async_trait]
 pub trait ClientHandler: Send + Sync {
     ///Called when the connection  open
-    async fn on_open(&mut self, ts: TcpStream);
+    async fn on_open(&mut self, sender: Sender<Vec<u8>>);
     ///called when connection was closed
     async fn on_close(&mut self);
     ///called when have mess from server
@@ -424,9 +424,10 @@ pub trait ClientHandler: Send + Sync {
             return;
         }
         let write = write.unwrap();
-
+        let (sender, rec) = crossbeam::channel::bounded(102400);
+        read_sender_mess_client(rec, write);
         //trigger socket open event
-        self.on_open(write).await;
+        self.on_open(sender).await;
         //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
@@ -456,9 +457,35 @@ pub trait ClientHandler: Send + Sync {
     }
 }
 
+///Read the data from the sender of the handler
+fn read_sender_mess_client(rec: Receiver<Vec<u8>>, tcp_stream: std::net::TcpStream) {
+    let mut tcp_stream = tcp_stream;
+    let m = move || loop {
+        let result = rec.recv();
+        match result {
+            Ok(data) => {
+                let bytes = data;
+                let write = tcp_stream.write(&bytes[..]);
+                if let Err(e) = write {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let res = tcp_stream.flush();
+                if let Err(e) = res {
+                    error!("{:?}", e);
+                }
+            }
+            Err(e) => {
+                error!("{:?}", e);
+            }
+        }
+    };
+    std::thread::spawn(m);
+}
+
 ///new tcp client
 #[warn(unused_assignments)]
-pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
+fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
     let mut ts: Option<std::io::Result<TcpStream>>;
     let result: Option<TcpStream>;
     let dur = Duration::from_secs(5);
