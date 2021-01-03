@@ -1,8 +1,6 @@
-mod battle;
 mod handlers;
 mod mgr;
 mod net;
-mod robot;
 mod room;
 mod task_timer;
 #[macro_use]
@@ -10,7 +8,6 @@ extern crate lazy_static;
 
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
-use crate::robot::robot_task_mgr::robot_init_timer;
 use crate::task_timer::init_timer;
 use async_std::sync::{Arc, Mutex};
 use log::{error, info};
@@ -106,8 +103,6 @@ fn main() {
     let room_mgr = Arc::new(Mutex::new(RoomMgr::new()));
     //初始化定时器任务
     init_timer(room_mgr.clone());
-    //初始化机器人定时器任务
-    robot_init_timer(room_mgr.clone());
     //初始化赛季
     init_season();
     //初始化tcp服务

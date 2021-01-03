@@ -68,7 +68,7 @@ async fn handler_mess_s(rm: Arc<Mutex<RoomMgr>>, packet: Packet) {
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: &str, rm: Arc<Mutex<RoomMgr>>) {
     let sh = TcpServerHandler { rm };
-    let res = block_on(tcp_server::new(address, sh));
+    let res = block_on(tcp_server::new(address.to_string(), sh));
     if let Err(e) = res {
         error!("{:?}", e);
         std::process::abort();

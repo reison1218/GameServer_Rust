@@ -31,44 +31,45 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d32276e2-449a-47db-9d37-c31c1b9dd340" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../battleserver/config/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/config/config.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/battle/battle.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/battle/battle.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/battle/battle_helper.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/battle/battle_helper.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/handlers/battle_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/handlers/battle_handler.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/main.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gamecenter/.idea/gamecenter.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../battleserver/src/mgr/battle_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/mgr/battle_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/net/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/net/tcp_client.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/robot/robot_task_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/robot/robot_task_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/character.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/room.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/task_timer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/task_timer.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/config/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/config/config.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gamecenter/.idea/rankserver.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/src/net/battle_tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/net/battle_tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/src/net/gate_tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/net/gate_tcp_server.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../gamecenter/src/net/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/net/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/channel_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcp_client.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/websocket.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/tcp_client.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/member.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/member.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/mgr/game_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/net/tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/protos/base.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/protos/base.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/cmd_code.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/cmd_code.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/protos/base.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/base.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/tcp.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/tcp.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_buff.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_enum.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_flow.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_helper.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_skill.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/battle_trigger.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/battle/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/battle_handler.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/handlers/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/net/tcp_server.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/goal_evaluator/attack_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/goal_evaluator/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/goal_evaluator/open_cell_goal_evaluator.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/goal_think.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_action.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_status/attack_action.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_status/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_status/open_cell_action.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_status/robot_status.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_task_mgr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/robot/robot_trigger.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/character.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/map_data.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/room.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/room.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/room_model.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/room_model.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/task_timer.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -235,6 +236,7 @@
       <workItem from="1609292445841" duration="9104000" />
       <workItem from="1609379372507" duration="119000" />
       <workItem from="1609379526303" duration="5762000" />
+      <workItem from="1609515255542" duration="1015000" />
     </task>
     <servers />
   </component>
@@ -263,12 +265,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/mgr/channel_mgr.rs</url>
-          <line>87</line>
+          <line>83</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/mgr/channel_mgr.rs</url>
-          <line>152</line>
+          <line>110</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>

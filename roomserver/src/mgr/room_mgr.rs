@@ -1,10 +1,7 @@
-use crate::handlers::battle_handler::{action, pos};
 use crate::handlers::room_handler::{
-    change_team, choice_index, choice_skills, choose_character, create_room, emoji, join_room,
-    kick_member, leave_room, prepare_cancel, reload_temps, room_setting, search_room, start,
-    update_season,
+    change_team, choice_skills, choose_character, create_room, emoji, join_room, kick_member,
+    leave_room, prepare_cancel, reload_temps, room_setting, search_room, start, update_season,
 };
-use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
@@ -12,7 +9,7 @@ use crossbeam::channel::Sender;
 use log::warn;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -20,13 +17,12 @@ type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, Random
 
 ///房间服管理器
 pub struct RoomMgr {
-    pub custom_room: CustomRoom,                      //自定义房
-    pub match_room: MatchRoom,                        //公共房
+    pub custom_room: CustomRoom,           //自定义房
+    pub match_room: MatchRoom,             //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
     sender: Option<TcpSender>,          //tcp channel的发送方
     pub task_sender: Option<Sender<Task>>, //task channel的发送方
-    pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
 }
 
 tools::get_mut_ref!(RoomMgr);
@@ -44,7 +40,6 @@ impl RoomMgr {
             player_room,
             sender: None,
             task_sender: None,
-            robot_task_sender: None,
             cmd_map,
         };
         rm.cmd_init();
@@ -55,13 +50,9 @@ impl RoomMgr {
         self.task_sender.as_ref().unwrap().clone()
     }
 
-    pub fn get_robot_task_sender_clone(&self) -> crossbeam::channel::Sender<RobotTask> {
-        self.robot_task_sender.as_ref().unwrap().clone()
-    }
-
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
-        self.get_sender_mut().write(bytes);
+        self.get_sender_mut().send(bytes);
     }
 
     pub fn set_sender(&mut self, sender: TcpSender) {
@@ -159,16 +150,19 @@ impl RoomMgr {
     fn cmd_init(&mut self) {
         //更新赛季信息
         self.cmd_map
-            .insert(RoomCode::UpdateSeason.into_u32(), update_season);
+            .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
-            .insert(RoomCode::ReloadTemps.into_u32(), reload_temps);
+            .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
+        //离开房间
+        self.cmd_map
+            .insert(ServerCommonCode::LeaveRoom.into_u32(), leave_room);
+        //离线
+        self.cmd_map
+            .insert(ServerCommonCode::LineOff.into_u32(), leave_room);
         //创建房间
         self.cmd_map
             .insert(RoomCode::CreateRoom.into_u32(), create_room);
-        //离开房间
-        self.cmd_map
-            .insert(RoomCode::LeaveRoom.into_u32(), leave_room);
         //换队伍
         self.cmd_map
             .insert(RoomCode::ChangeTeam.into_u32(), change_team);
@@ -177,9 +171,7 @@ impl RoomMgr {
         //准备与取消
         self.cmd_map
             .insert(RoomCode::PrepareCancel.into_u32(), prepare_cancel);
-        //离线
-        self.cmd_map
-            .insert(RoomCode::LineOff.into_u32(), leave_room);
+
         //添加房间
         self.cmd_map
             .insert(RoomCode::JoinRoom.into_u32(), join_room);
@@ -199,15 +191,5 @@ impl RoomMgr {
         self.cmd_map.insert(RoomCode::Emoji.into_u32(), emoji);
         //开始游戏
         self.cmd_map.insert(RoomCode::StartGame.into_u32(), start);
-
-        //选择占位
-        self.cmd_map
-            .insert(RoomCode::ChoiceIndex.into_u32(), choice_index);
-        //------------------------------------以下是战斗相关的--------------------------------
-        //请求行动
-        self.cmd_map.insert(RoomCode::Action.into_u32(), action);
-
-        //请求pos
-        self.cmd_map.insert(RoomCode::Pos.into_u32(), pos);
     }
 }

@@ -6,7 +6,7 @@ use crate::SCHEDULED_MGR;
 use async_std::sync::{Arc, Mutex};
 use async_std::task::block_on;
 use chrono::Local;
-use log::{error, info, warn};
+use log::{error, info};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
@@ -17,10 +17,7 @@ use std::time::Duration;
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
 pub enum TaskCmd {
-    MatchRoomStart = 101,     //匹配房间开始任务
-    ChoiceIndex = 102,        //选择占位
-    BattleTurnTime = 103,     //战斗时间回合限制
-    MaxBattleTurnTimes = 104, //战斗turn达到最大
+    MatchRoomStart = 101, //匹配房间开始任务
 }
 
 impl TaskCmd {
@@ -57,9 +54,6 @@ pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
             let rm_clone = rm.clone();
             let f = match task_cmd {
                 TaskCmd::MatchRoomStart => match_room_start,
-                TaskCmd::ChoiceIndex => choice_index,
-                TaskCmd::BattleTurnTime => battle_turn_time,
-                TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
             };
             let m = move || f(rm_clone, task);
             SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
@@ -182,157 +176,4 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     //执行开始逻辑
     room.start();
-}
-
-///占位任务，没选的直接t出房间
-fn choice_index(rm: Arc<Mutex<RoomMgr>>, task: Task) {
-    let json_value = task.data;
-    let res = json_value.as_object();
-    if res.is_none() {
-        return;
-    }
-    let map = res.unwrap();
-    let user_id = map.get("user_id");
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap().as_u64();
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap() as u32;
-
-    let mut lock = block_on(rm.lock());
-
-    let room = lock.get_room_mut(&user_id);
-    if room.is_none() {
-        return;
-    }
-    let room = room.unwrap();
-
-    //判断房间状态
-    if room.state != RoomState::ChoiceIndex {
-        return;
-    }
-    let next_user = room.get_turn_user(None);
-    if let Err(_) = next_user {
-        return;
-    }
-    let next_user = next_user.unwrap();
-    //判断是否轮到自己
-    if next_user != user_id {
-        return;
-    }
-
-    info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
-    let need_rm_room;
-    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id);
-    if room.state == RoomState::BattleOvered {
-        need_rm_room = true
-    } else {
-        need_rm_room = false;
-    }
-    if need_rm_room {
-        let room_type = room.get_room_type();
-        let room_id = room.get_room_id();
-        let v = room.get_member_vec();
-        lock.rm_room(room_id, room_type, v);
-    }
-    lock.player_room.remove(&user_id);
-}
-
-fn battle_turn_time(rm: Arc<Mutex<RoomMgr>>, task: Task) {
-    let json_value = task.data;
-    let res = json_value.as_object();
-    if res.is_none() {
-        return;
-    }
-    let map = res.unwrap();
-    let user_id = map.get("user_id");
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap().as_u64();
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap() as u32;
-
-    let mut lock = block_on(rm.lock());
-
-    let room = lock.get_room_mut(&user_id);
-    if room.is_none() {
-        return;
-    }
-    let room = room.unwrap();
-
-    //校验房间状态
-    if room.state != RoomState::BattleStarted {
-        warn!(
-            "battle_turn_time,the room state is not RoomState::BattleStarted!room_id:{}",
-            room.get_room_id()
-        );
-        return;
-    }
-
-    //校验当前是不是这个人
-    let next_user_id = room.get_turn_user(None);
-    if let Err(e) = next_user_id {
-        warn!("{:?}", e);
-        return;
-    }
-    let next_user_id = next_user_id.unwrap();
-    if next_user_id != user_id {
-        return;
-    }
-
-    let battle_cter = room.battle_data.get_battle_cter(Some(user_id), true);
-    if let Err(e) = battle_cter {
-        warn!("{:?}", e);
-        return;
-    }
-    let battle_cter = battle_cter.unwrap();
-
-    //如果玩家啥都没做，就T出房间
-    if battle_cter.flow_data.open_map_cell_vec.is_empty() {
-        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
-    }
-    let is_empty = room.is_empty();
-    if is_empty {
-        let room_type = room.get_room_type();
-        let room_id = room.get_room_id();
-        let v = room.get_member_vec();
-        lock.rm_room(room_id, room_type, v);
-    }
-}
-
-fn max_battle_turn_limit(rm: Arc<Mutex<RoomMgr>>, task: Task) {
-    let json_value = task.data;
-    let res = json_value.as_object();
-    if res.is_none() {
-        return;
-    }
-    let map = res.unwrap();
-    let user_id = map.get("user_id");
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap().as_u64();
-    if user_id.is_none() {
-        return;
-    }
-    let user_id = user_id.unwrap() as u32;
-
-    let mut lock = block_on(rm.lock());
-
-    let room = lock.get_room_mut(&user_id);
-    if room.is_none() {
-        return;
-    }
-    let room = room.unwrap();
-    let room_type = room.get_room_type();
-    let room_id = room.get_room_id();
-    let v = room.get_member_vec();
-
-    lock.rm_room(room_id, room_type, v);
 }

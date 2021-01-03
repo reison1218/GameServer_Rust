@@ -1,4 +1,3 @@
-use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::member::Member;
 use crate::room::room::{MemberLeaveNoticeType, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
@@ -78,8 +77,8 @@ impl From<RoomSettingPt> for RoomSetting {
     }
 }
 
-impl From<RoomSetting> for RoomSettingPt {
-    fn from(r: RoomSetting) -> Self {
+impl From<&RoomSetting> for RoomSettingPt {
+    fn from(r: &RoomSetting) -> Self {
         let mut rsp = RoomSettingPt::new();
         rsp.set_victory_condition(r.victory_condition);
         rsp.set_season_id(r.season_id);
@@ -108,7 +107,6 @@ pub trait RoomModel {
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
-        robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32>;
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
 
@@ -163,16 +161,9 @@ impl RoomModel for CustomRoom {
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
-        robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(
-            owner.clone(),
-            RoomType::Custom,
-            sender,
-            task_sender,
-            robot_sender,
-        )?;
+        let room = Room::new(owner.clone(), RoomType::Custom, sender, task_sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
@@ -246,9 +237,8 @@ impl RoomModel for MatchRoom {
         owner: Member,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
-        robot_sender: crossbeam::channel::Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
-        let room = Room::new(owner, RoomType::Match, sender, task_sender, robot_sender)?;
+        let room = Room::new(owner, RoomType::Match, sender, task_sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
@@ -356,7 +346,6 @@ impl MatchRoom {
         member: Member,
         sender: TcpSender,
         task_sender: Sender<Task>,
-        robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
         let user_id = member.user_id;
@@ -368,7 +357,7 @@ impl MatchRoom {
                 anyhow::bail!("TileMapTempMgr is None")
             }
             //创建房间
-            room_id = self.create_room(member, sender, task_sender, robot_sender)?;
+            room_id = self.create_room(member, sender, task_sender)?;
             info!("创建匹配房间,room_id:{},user_id:{}", room_id, user_id);
         } else {
             //如果有，则往房间里塞

@@ -70,19 +70,17 @@ impl ChannelMgr {
     fn notice_off_line(&mut self, user_id: u32, token: &usize) {
         //关闭连接
         self.close_remove(token);
+        let cmd = ServerCommonCode::LineOff.into_u32();
         //初始化包
         let mut packet = Packet::default();
         packet.set_user_id(user_id);
         packet.set_len(14_u32);
         packet.set_is_client(false);
         packet.set_is_broad(false);
-
-        let cmd = ServerCommonCode::LineOff.into_u32();
-        //发给游戏服
         packet.set_cmd(cmd);
+        //发给游戏服
         self.write_to_game(packet.clone());
         //发给房间相关服
-        packet.set_cmd(cmd);
         self.write_to_game_center(packet);
     }
 

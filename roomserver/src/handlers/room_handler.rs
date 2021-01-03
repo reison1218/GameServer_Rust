@@ -13,12 +13,12 @@ use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::sync::atomic::Ordering;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, ServerCommonCode};
 use tools::macros::GetMutRef;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_INDEX, C_CHOOSE_SKILL, C_EMOJI, C_KICK_MEMBER,
-    C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_LEAVE_ROOM, S_ROOM_SETTING, S_START,
+    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL,
+    C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_LEAVE_ROOM,
+    S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
@@ -115,7 +115,6 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 owner,
                 rm.get_sender_clone(),
                 rm.get_task_sender_clone(),
-                rm.get_robot_task_sender_clone(),
             )?;
         }
         _ => {}
@@ -152,7 +151,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_type = RoomType::from(room.get_room_type());
     let code = packet.get_cmd();
     //如果是主动退出房间
-    if code == RoomCode::LeaveRoom.into_u32() {
+    if code == ServerCommonCode::LeaveRoom.into_u32() {
         //校验房间状态
         if room_state != RoomState::Await && room_state != RoomState::BattleStarted {
             warn!(
@@ -278,14 +277,13 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //执行正常流程
     let sender = rm.get_sender_clone();
     let task_sender = rm.get_task_sender_clone();
-    let robot_sender = rm.get_robot_task_sender_clone();
 
     let member = Member::from(grs.take_pbp());
     let room_id;
     match room_type {
         RoomType::Match => {
             let match_room = rm.match_room.borrow_mut();
-            let res = match_room.quickly_start(member, sender, task_sender, robot_sender);
+            let res = match_room.quickly_start(member, sender, task_sender);
             //返回错误信息
             if let Err(e) = res {
                 warn!("{:?}", e);
@@ -1002,49 +1000,5 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     //走正常逻辑
     room.emoji(user_id, emoji_id);
-    Ok(())
-}
-
-///选择初始占位
-pub fn choice_index(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
-    let user_id = packet.get_user_id();
-    let mut ccl = C_CHOOSE_INDEX::new();
-    ccl.merge_from_bytes(packet.get_data())?;
-    let index = ccl.index;
-
-    let room = rm.get_room_mut(&user_id);
-    if room.is_none() {
-        warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
-    }
-    let room = room.unwrap();
-
-    //校验是否轮到他了
-    if !room.is_can_choice_index_now(user_id) {
-        warn!(
-            "this player is not the next choice index player!user_id:{},index:{},choice_order:{:?}",
-            user_id,
-            room.get_next_turn_index(),
-            room.battle_data.turn_orders
-        );
-        return Ok(());
-    }
-
-    let res = room
-        .battle_data
-        .check_choice_index(index as usize, false, false, true, false, false);
-    //校验参数
-    if let Err(e) = res {
-        warn!("{:?}", e);
-        return Ok(());
-    }
-
-    //校验他选过没有
-    let member = room.get_battle_cter_ref(&user_id).unwrap();
-    if member.map_cell_index_is_choiced() {
-        warn!("this player is already choice index!user_id:{}", user_id);
-        return Ok(());
-    }
-    room.choice_index(user_id, index);
     Ok(())
 }

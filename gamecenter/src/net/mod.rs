@@ -73,6 +73,9 @@ trait Forward {
                     Ok(gc) => gc.send(bytes),
                     Err(e) => warn!("{:?}", e),
                 }
+            }else{
+                warn!("could not find cmd {}!", cmd);
+                return;
             }
 
             //玩家离开房间，解除玩家绑定

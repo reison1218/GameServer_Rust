@@ -60,8 +60,6 @@ impl GameCenterMgr {
         if cmd == ServerCommonCode::LineOff.into_u32() {
             self.user_w_battle.remove(&user_id);
             self.user_w_gate.remove(&user_id);
-        } else if cmd == ServerCommonCode::LeaveRoom.into_u32() {
-            self.user_w_battle.remove(&user_id);
         }
     }
 
