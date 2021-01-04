@@ -1,12 +1,9 @@
 use crate::entity::gateuser::GateUser;
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
-use protobuf::Message;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tools::cmd_code::ServerCommonCode;
-use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 use ws::Sender as WsSender;
@@ -176,59 +173,5 @@ impl ChannelMgr {
         for (token, user_id) in res.iter() {
             self.notice_off_line(*user_id, token);
         }
-    }
-
-    ///通知热更静态配置
-    pub fn notice_reload_temps(&mut self) {
-        let cmd = ServerCommonCode::ReloadTemps.into_u32();
-        let mut packet = Packet::new(cmd, 0, 0);
-        packet.set_is_client(false);
-        packet.set_is_broad(false);
-        self.write_to_game(packet.clone());
-        // packet.set_cmd(RoomCode::ReloadTemps as u32);
-        // self.write_to_room(packet);
-
-        //todo 这个地方命令有点完善
-        packet.set_cmd(cmd);
-        self.write_to_game_center(packet);
-    }
-
-    ///通知更新服务器更新赛季
-    pub fn notice_update_season(&mut self, value: Value) {
-        let cmd = ServerCommonCode::UpdateSeason.into_u32();
-        let mut packet = Packet::new(cmd, 0, 0);
-        packet.set_is_client(false);
-        packet.set_is_broad(true);
-        let map = value.as_object();
-        if let None = map {
-            return;
-        }
-        let map = map.unwrap();
-        let season_id = map.get("season_id");
-        if season_id.is_none() {
-            return;
-        }
-        let season_id = season_id.unwrap();
-        let last_update_time = map.get("last_update_time");
-        if last_update_time.is_none() {
-            return;
-        }
-        let last_update_time = last_update_time.unwrap();
-
-        let next_update_time = map.get("next_update_time");
-        if next_update_time.is_none() {
-            return;
-        }
-        let next_update_time = next_update_time.unwrap();
-
-        let mut usn = UPDATE_SEASON_NOTICE::new();
-        usn.set_season_id(season_id.as_u64().unwrap() as u32);
-        usn.set_last_update_time(last_update_time.to_string());
-        usn.set_next_update_time(next_update_time.to_string());
-        packet.set_data(&usn.write_to_bytes().unwrap()[..]);
-        self.write_to_game(packet.clone());
-        //通知游戏中心
-        packet.set_cmd(ServerCommonCode::UpdateSeason.into_u32());
-        self.write_to_game_center(packet);
     }
 }

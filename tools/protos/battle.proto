@@ -75,10 +75,37 @@ import "base.proto";
 //     Fire = 4,   //火元素
 // }
 
+//游戏开始推送
+//cmd:10022
+message S_START_NOTICE{
+    uint32 room_status = 1;//房间状态
+    uint32 tile_map_id = 2;//地图配置id
+    repeated WorldCellPt world_cell = 3;//世界块
+    repeated uint32 turn_order = 4;//turn顺序
+}
 
+//选择位置请求
+//cmd:30003
+message C_CHOOSE_INDEX{
+    uint32 index = 1;//位置下标
+}
+
+//选择位置返回
+//cmd:10023
+message S_CHOOSE_INDEX{
+    bool is_succ = 1;//是否成功;
+    string err_mess = 2;//错误信息;
+}
+
+//选择位置通知
+//cmd:10025
+message S_CHOOSE_INDEX_NOTICE{
+    uint32 user_id = 1;//玩家id
+    uint32 index = 2;//玩家所选择的位置
+}
 
 //行动请求
-//cmd=20031
+//cmd=30004
 message C_ACTION{
     uint32 action_type = 1;//行动类型 可以是使用技能，可以是普通攻击,可以是使用道具
     uint32 value = 2;//行动对应类型的值
@@ -107,7 +134,7 @@ message S_BATTLE_TURN_NOTICE{
 }
 
 //架势请求
-//cmd = 20032
+//cmd = 30005
 message C_POS{
     uint32 type = 1;//1:切换架势，2:取消架势
     uint32 skill_id = 2;//技能id
@@ -134,3 +161,4 @@ message S_MAP_REFRESH_NOTICE{
 message S_SUMMARY_NOTICE{
     repeated SummaryDataPt summary_datas = 1;//数据
 }
+

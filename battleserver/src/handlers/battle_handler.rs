@@ -542,6 +542,7 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let room_type = room.get_room_type();
     let owner_id = room.get_owner_id();
     room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    info!("玩家离开战斗服务!room_id={},user_id={}", room_id, user_id);
     let mut need_rm_room = false;
     if room.is_empty() {
         need_rm_room = true;
@@ -552,6 +553,10 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     }
     if need_rm_room {
         bm.rm_room(room_id);
+        info!(
+            "删除房间，释放内存！room_type:{:?},room_id:{}",
+            room_type, room_id
+        );
     }
     Ok(())
 }

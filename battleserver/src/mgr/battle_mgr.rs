@@ -9,7 +9,7 @@ use log::warn;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::ServerCommonCode::{LeaveRoom, ReloadTemps, UpdateSeason};
-use tools::cmd_code::{BattleCode, ClientCode};
+use tools::cmd_code::{BattleCode, ClientCode, ServerCommonCode};
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet) -> anyhow::Result<()>, RandomState>;
@@ -121,14 +121,21 @@ impl BattleMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
+        //掉线
+        self.cmd_map
+            .insert(ServerCommonCode::LineOff.into_u32(), leave_room);
+        //离开房间
+        self.cmd_map
+            .insert(ServerCommonCode::LeaveRoom.into_u32(), leave_room);
+        //更新赛季信息
+        self.cmd_map
+            .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
+        //热更静态配置
+        self.cmd_map
+            .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
         //开始战斗
         self.cmd_map.insert(BattleCode::Start.into_u32(), start);
-        //更新赛季信息
-        self.cmd_map.insert(UpdateSeason.into_u32(), update_season);
-        //热更静态配置
-        self.cmd_map.insert(ReloadTemps.into_u32(), reload_temps);
-        //离开房间
-        self.cmd_map.insert(LeaveRoom.into_u32(), leave_room);
+
         //发送表情
         self.cmd_map.insert(BattleCode::Emoji.into_u32(), emoji);
 

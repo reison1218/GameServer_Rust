@@ -313,7 +313,7 @@ impl Room {
         let self_mut_ref = self.get_mut_ref();
         //通知给房间成员
         for id in self.battle_data.battle_cter.keys() {
-            self_mut_ref.send_2_client(ClientCode::ChoiceLoactionNotice, *id, bytes.clone());
+            self_mut_ref.send_2_client(ClientCode::ChoiceIndexNotice, *id, bytes.clone());
         }
 
         //添加下个turnindex

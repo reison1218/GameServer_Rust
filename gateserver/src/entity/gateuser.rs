@@ -34,6 +34,7 @@ impl GateUser {
         self.user_id
     }
 
+    #[warn(dead_code)]
     pub fn get_token(&self) -> usize {
         let mut token = 0_usize;
         if self.tcp.is_some() {
@@ -48,6 +49,7 @@ impl GateUser {
         self.ws.as_ref().unwrap()
     }
 
+    #[warn(dead_code)]
     pub fn get_ws_mut_ref(&mut self) -> &mut Arc<WsSender> {
         self.ws.as_mut().unwrap()
     }

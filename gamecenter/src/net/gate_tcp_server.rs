@@ -11,6 +11,7 @@ use tools::util::packet::Packet;
 ///处理客户端所有请求,每个客户端单独分配一个handler
 #[derive(Clone)]
 pub struct GateTcpServerHandler {
+    pub token: usize,
     pub gm: Arc<Mutex<GameCenterMgr>>,
 }
 
@@ -19,6 +20,14 @@ unsafe impl Send for GateTcpServerHandler {}
 unsafe impl Sync for GateTcpServerHandler {}
 
 impl Forward for GateTcpServerHandler {
+    fn get_battle_token(&self) -> Option<usize> {
+        None
+    }
+
+    fn get_gate_token(&self) -> Option<usize> {
+        Some(self.token)
+    }
+
     fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>> {
         &mut self.gm
     }
@@ -32,6 +41,7 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 
     ///客户端tcp链接激活事件
     async fn on_open(&mut self, sender: TcpSender) {
+        self.token = sender.token;
         self.gm.lock().await.add_gate_client(sender);
     }
 
@@ -55,7 +65,7 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: String, rm: Arc<Mutex<GameCenterMgr>>) {
-    let sh = GateTcpServerHandler { gm: rm };
+    let sh = GateTcpServerHandler { token:0,gm: rm };
     let m = async move {
         let _ = block_on(tools::tcp::tcp_server::new(address, sh));
     };

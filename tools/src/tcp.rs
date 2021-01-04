@@ -425,9 +425,10 @@ pub trait ClientHandler: Send + Sync {
         }
         let write = write.unwrap();
         let (sender, rec) = crossbeam::channel::bounded(102400);
-        read_sender_mess_client(rec, write);
         //trigger socket open event
-        self.on_open(sender).await;
+        self.on_open(sender.clone()).await;
+        //start reading the sender message
+        read_sender_mess_client(rec, write);
         //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
@@ -477,9 +478,11 @@ fn read_sender_mess_client(rec: Receiver<Vec<u8>>, tcp_stream: std::net::TcpStre
             }
             Err(e) => {
                 error!("{:?}", e);
+                break;
             }
         }
     };
+
     std::thread::spawn(m);
 }
 

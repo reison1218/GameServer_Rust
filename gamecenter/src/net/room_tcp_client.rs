@@ -15,6 +15,14 @@ pub struct RoomTcpClientHandler {
 }
 
 impl Forward for RoomTcpClientHandler {
+    fn get_battle_token(&self) -> Option<usize> {
+        None
+    }
+
+    fn get_gate_token(&self) -> Option<usize> {
+        None
+    }
+
     fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>> {
         &mut self.gm
     }

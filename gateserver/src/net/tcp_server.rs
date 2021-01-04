@@ -4,7 +4,7 @@ use async_std::sync::{Mutex, MutexGuard};
 use async_std::task::block_on;
 use async_trait::async_trait;
 use chrono::Local;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{BattleCode, ClientCode, RoomCode};
 use tools::protos::protocol::HEART_BEAT;
 use tools::tcp::TcpSender;
 
@@ -153,8 +153,12 @@ impl TcpServerHandler {
             lock.write_to_game(packet);
             return;
         }
-        //转发到房间服
-        if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
+        //转发到中心服
+        if (packet.get_cmd() >= RoomCode::Min.into_u32()
+            && packet.get_cmd() <= RoomCode::Max.into_u32())
+            || (packet.get_cmd() >= BattleCode::Min.into_u32()
+                && packet.get_cmd() <= BattleCode::Max.into_u32())
+        {
             lock.write_to_game_center(packet);
             return;
         }

@@ -51,13 +51,6 @@ impl tools::tcp::Handler for TcpServerHandler {
         let packet_array = packet_array.unwrap();
 
         for packet in packet_array {
-            //判断是否是房间服的命令，如果不是，则直接无视掉
-            if packet.get_cmd() < GameCode::Min.into_u32()
-                || packet.get_cmd() > GameCode::Max.into_u32()
-            {
-                error!("the cmd:{} is not belong gameserver!", packet.get_cmd());
-                continue;
-            }
             let gm = self.gm.clone();
             async_std::task::spawn(handler_mess_s(gm, packet));
         }
@@ -68,6 +61,7 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
         && packet.get_cmd() != ServerCommonCode::LineOff.into_u32()
+        && packet.get_cmd() != ServerCommonCode::ReloadTemps.into_u32()
         && packet.get_data().is_empty()
     {
         error!("packet bytes is null!");

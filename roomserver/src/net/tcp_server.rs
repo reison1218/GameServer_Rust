@@ -4,7 +4,6 @@ use async_std::task;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info};
-use tools::cmd_code::RoomCode;
 use tools::tcp::tcp_server;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -46,13 +45,6 @@ impl tools::tcp::Handler for TcpServerHandler {
         let packet_array = packet_array.unwrap();
 
         for packet in packet_array {
-            //判断是否是房间服的命令，如果不是，则直接无视掉
-            if packet.get_cmd() < RoomCode::Min.into_u32()
-                || packet.get_cmd() > RoomCode::Max.into_u32()
-            {
-                error!("the cmd:{} is not belong roomserver!", packet.get_cmd());
-                continue;
-            }
             //异步处理业务逻辑
             task::spawn(handler_mess_s(self.rm.clone(), packet));
         }

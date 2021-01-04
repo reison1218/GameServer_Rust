@@ -676,10 +676,12 @@ name = "gamecenter"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-h1",
  "async-std",
  "async-trait",
  "crossbeam",
  "futures",
+ "http-types",
  "lazy_static",
  "log",
  "protobuf",

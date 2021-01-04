@@ -10,6 +10,7 @@ use tools::util::packet::Packet;
 
 #[derive(Clone)]
 pub struct BattleTcpServerHandler {
+    pub token:usize,
     pub gm: Arc<Mutex<GameCenterMgr>>,
 }
 
@@ -18,6 +19,14 @@ unsafe impl Send for BattleTcpServerHandler {}
 unsafe impl Sync for BattleTcpServerHandler {}
 
 impl Forward for BattleTcpServerHandler {
+    fn get_battle_token(&self) -> Option<usize> {
+        Some(self.token)
+    }
+
+    fn get_gate_token(&self) -> Option<usize> {
+        None
+    }
+
     fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>> {
         &mut self.gm
     }
@@ -55,7 +64,7 @@ impl tools::tcp::Handler for BattleTcpServerHandler {
 
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: String, rm: Arc<Mutex<GameCenterMgr>>) {
-    let sh = BattleTcpServerHandler { gm: rm };
+    let sh = BattleTcpServerHandler {token:0, gm: rm };
     let m = async move {
         let _ = block_on(tools::tcp::tcp_server::new(address, sh));
     };

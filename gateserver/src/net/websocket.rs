@@ -3,6 +3,7 @@ use async_std::sync::Mutex;
 use async_std::task::block_on;
 use tools::cmd_code::{RoomCode, ServerCommonCode};
 
+#[warn(dead_code)]
 pub struct ClientSender {
     pub user_id: Option<u32>,
     ws: WsSender,

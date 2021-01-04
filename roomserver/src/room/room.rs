@@ -12,7 +12,7 @@ use rand::{thread_rng, Rng};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode};
+use tools::cmd_code::{BattleCode, ClientCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
@@ -161,9 +161,9 @@ impl Room {
         Ok(room)
     }
 
-    ///回客户端消息
-    pub fn send_2_game(&mut self, cmd: GameCode, bytes: Vec<u8>) {
-        let bytes = Packet::build_packet_bytes(cmd.into(), 0, bytes, true, false);
+    ///转发到游戏中心服
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         self.tcp_sender.send(bytes);
     }
 
@@ -522,7 +522,12 @@ impl Room {
 
     ///开始游戏
     pub fn start(&mut self) {
+        if self.state == RoomState::BattleStarted {
+            return;
+        }
+        self.state = RoomState::BattleStarted;
         //通知战斗服务器，游戏开始战斗
+        let user_id = self.owner_id;
         let mut rbs = R_B_START::new();
         let res = &*self;
         let rp: RoomPt = res.into();
@@ -533,6 +538,6 @@ impl Room {
             return;
         }
         let bytes = res.unwrap();
-        self.tcp_sender.send(bytes);
+        self.send_2_server(BattleCode::Start.into_u32(), user_id, bytes);
     }
 }

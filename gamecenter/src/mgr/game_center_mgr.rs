@@ -3,9 +3,10 @@ use log::warn;
 use protobuf::Message;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, ServerCommonCode};
-use tools::protos::server_protocol::R_B_START;
+use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+use serde_json::Value;
 
 #[derive(Default)]
 pub struct GameCenterMgr {
@@ -21,11 +22,96 @@ impl GameCenterMgr {
         GameCenterMgr::default()
     }
 
+    ///通知更新服务器更新赛季
+    pub fn notice_update_season(&mut self, value: Value) {
+        let map = value.as_object();
+        if let None = map {
+            return;
+        }
+        let map = map.unwrap();
+        let season_id = map.get("season_id");
+        if season_id.is_none() {
+            return;
+        }
+        let season_id = season_id.unwrap();
+        let last_update_time = map.get("last_update_time");
+        if last_update_time.is_none() {
+            return;
+        }
+        let last_update_time = last_update_time.unwrap();
+
+        let next_update_time = map.get("next_update_time");
+        if next_update_time.is_none() {
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+
+        let mut usn = UPDATE_SEASON_NOTICE::new();
+        usn.set_season_id(season_id.as_u64().unwrap() as u32);
+        usn.set_last_update_time(last_update_time.to_string());
+        usn.set_next_update_time(next_update_time.to_string());
+
+        let cmd = ServerCommonCode::UpdateSeason.into_u32();
+        let mut packet = Packet::new(cmd, 0, 0);
+        packet.set_is_client(false);
+        packet.set_is_broad(true);
+        packet.set_data(&usn.write_to_bytes().unwrap()[..]);
+        packet.set_cmd(ServerCommonCode::UpdateSeason.into_u32());
+        let bytes = packet.build_server_bytes();
+        //通知gate(其实是通知游戏服务器)
+        for gate_client in self.gate_clients.values_mut(){
+            gate_client.send(bytes.clone());
+        }
+
+        //通知战斗服
+        for battle_client in self.battle_clients.values_mut(){
+            battle_client.send(bytes.clone());
+        }
+
+        //通知房间服
+        let res = self.get_room_center_mut().send(bytes);
+        if let Err(e) = res{
+            warn!("{:?}", e);
+        }
+    }
+
+
+    pub fn notice_reload_temps(&mut self){
+        let bytes = Packet::build_packet_bytes(ServerCommonCode::ReloadTemps.into_u32(),0,Vec::new(),true,false);
+        //通知gate reload_temps
+        for gate_client in self.gate_clients.values_mut(){
+            gate_client.send(bytes.clone());
+        }
+
+        //通知战斗服
+        for battle_client in self.battle_clients.values_mut(){
+            battle_client.send(bytes.clone());
+        }
+
+        //通知房间服
+        let res = self.get_room_center_mut().send(bytes);
+        if let Err(e) = res{
+            warn!("{:?}", e);
+        }
+    }
+
     pub fn handler(&mut self, packet: &Packet) {
         let cmd = packet.get_cmd();
         //开始战斗,负载均衡，分配战斗服务器
         if cmd == BattleCode::Start.into_u32() {
             self.slb(packet.clone());
+        }
+    }
+
+    pub fn bound_user_w_gate(&mut self,user_id:u32,token:usize){
+        if user_id<=0{
+            return;
+        }
+        if token ==0{
+            return;
+        }
+        if !self.user_w_gate.contains_key(&user_id){
+            self.user_w_gate.insert(user_id,token);
         }
     }
 

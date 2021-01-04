@@ -83,9 +83,6 @@ pub enum RoomCode {
     Emoji = 20013,
     //选择角色技能
     ChoiceSkill = 20014,
-    //选择位置
-    ChoiceIndex = 20015,
-
     //--------------------------------------以下战斗相关---------------------------
     //请求行动
     Action = 20031,
@@ -176,7 +173,7 @@ pub enum ClientCode {
     //选择回合顺序返回
     ChoiceRoundOrder = 10024,
     //选择位置通知
-    ChoiceLoactionNotice = 10025,
+    ChoiceIndexNotice = 10025,
     //选择回合顺序通知
     ChoiceRoundOrderNotice = 10026,
     //选择占位推送

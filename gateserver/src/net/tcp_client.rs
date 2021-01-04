@@ -4,7 +4,7 @@ use async_std::task::block_on;
 use async_trait::async_trait;
 use crossbeam::channel::Sender;
 use log::error;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 
 pub enum TcpClientType {
     GameServer,
@@ -29,15 +29,18 @@ impl TcpClientHandler {
 
     ///数据包转发
     fn arrange_packet(&mut self, packet: Packet) {
+        let cmd = packet.get_cmd();
+        let mut lock = block_on(self.cp.lock());
         //转发到游戏服
-        if packet.get_cmd() >= GameCode::Min as u32 && packet.get_cmd() <= GameCode::Max as u32 {
-            let mut lock = block_on(self.cp.lock());
+        if (cmd == ServerCommonCode::ReloadTemps.into_u32()
+            || cmd == ServerCommonCode::UpdateSeason.into_u32())
+            || (cmd >= GameCode::Min.into_u32() && cmd <= GameCode::Max.into_u32())
+        {
             lock.write_to_game(packet);
             return;
         }
         //转发到房间服
-        if packet.get_cmd() >= RoomCode::Min as u32 && packet.get_cmd() <= RoomCode::Max as u32 {
-            let mut lock = block_on(self.cp.lock());
+        if cmd >= RoomCode::Min as u32 && cmd <= RoomCode::Max as u32 {
             lock.write_to_game_center(packet);
             return;
         }

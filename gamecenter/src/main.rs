@@ -11,6 +11,9 @@ use std::sync::Arc;
 use tools::conf::Conf;
 use tools::my_log::init_log;
 use tools::tcp::ClientHandler;
+use crate::net::http::{ReloadTempsHandler, UpdateSeasonHandler};
+use tools::http::HttpServerHandler;
+use std::time::Duration;
 
 #[macro_use]
 extern crate lazy_static;
@@ -35,6 +38,8 @@ fn main() {
     init_log(info_log, error_log);
     //初始化tcp服务端
     init_tcp_server(game_center.clone());
+    //初始化http服务器
+    init_http_server(game_center.clone());
     //初始化tcp客户端
     init_tcp_client(game_center);
 }
@@ -54,4 +59,14 @@ fn init_tcp_client(gm: Arc<Mutex<GameCenterMgr>>) {
     let address: &str = CONF_MAP.get_str("room_port");
     let res = rth.on_read(address.to_string());
     async_std::task::block_on(res);
+}
+
+///初始化http服务端
+fn init_http_server(gm: Arc<Mutex<GameCenterMgr>>) {
+    std::thread::sleep(Duration::from_millis(10));
+    let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
+    http_vec.push(Box::new(ReloadTempsHandler::new(gm.clone())));
+    http_vec.push(Box::new(UpdateSeasonHandler::new(gm.clone())));
+    let http_port: &str = CONF_MAP.get_str("http_port");
+    async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }
