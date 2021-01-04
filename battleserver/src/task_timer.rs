@@ -112,7 +112,7 @@ fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
     let need_rm_room;
-    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id);
+    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id,true);
     if room.state == RoomState::BattleOvered {
         need_rm_room = true
     } else {
@@ -179,7 +179,7 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     //如果玩家啥都没做，就T出房间
     if battle_cter.flow_data.open_map_cell_vec.is_empty() {
-        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id,true);
     }
     let is_empty = room.is_empty();
     if is_empty {

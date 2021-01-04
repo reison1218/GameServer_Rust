@@ -18,6 +18,7 @@ use tools::protos::room::{C_CHOOSE_INDEX, C_EMOJI};
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
+use tools::cmd_code::ServerCommonCode;
 
 ///行动请求
 #[track_caller]
@@ -537,11 +538,16 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     if room.is_none() {
         return Ok(());
     }
+    let cmd = packet.get_cmd();
     let room = room.unwrap();
     let room_id = room.get_room_id();
     let room_type = room.get_room_type();
     let owner_id = room.get_owner_id();
-    room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id);
+    let mut need_push_self = false;
+    if cmd == ServerCommonCode::LeaveRoom.into_u32(){
+        need_push_self = true;
+    }
+    room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id,need_push_self);
     info!("玩家离开战斗服务!room_id={},user_id={}", room_id, user_id);
     let mut need_rm_room = false;
     if room.is_empty() {

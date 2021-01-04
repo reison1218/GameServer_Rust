@@ -175,7 +175,11 @@ impl RoomModel for CustomRoom {
     ///离开房间
     fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
+        let room_id = room.get_room_id();
         room.remove_member(notice_type, user_id);
+        if room.state == RoomState::BattleStarted {
+            return Ok(room_id);
+        }
         let mut slr = S_LEAVE_ROOM::new();
         slr.set_is_succ(true);
         room.send_2_client(
@@ -183,7 +187,7 @@ impl RoomModel for CustomRoom {
             *user_id,
             slr.write_to_bytes().unwrap(),
         );
-        let room_id = room.get_room_id();
+
         Ok(room_id)
     }
 

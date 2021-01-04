@@ -8,7 +8,6 @@ use crossbeam::channel::Sender;
 use log::warn;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use tools::cmd_code::ServerCommonCode::{LeaveRoom, ReloadTemps, UpdateSeason};
 use tools::cmd_code::{BattleCode, ClientCode, ServerCommonCode};
 use tools::util::packet::Packet;
 

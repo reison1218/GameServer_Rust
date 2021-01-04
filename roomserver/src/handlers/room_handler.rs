@@ -128,7 +128,6 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 ///离开房间
 pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
-
     //校验房间是否存在
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {

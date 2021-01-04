@@ -421,7 +421,9 @@ impl Room {
         }
 
         //通知客户端
-        self.member_leave_notice(notice_type, user_id);
+        if self.state != RoomState::BattleStarted {
+            self.member_leave_notice(notice_type, user_id);
+        }
 
         //处理战斗相关的数据
         self.handler_leave(*user_id);

@@ -461,13 +461,16 @@ impl Room {
     }
 
     ///成员离开推送
-    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32) {
+    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32,need_push_self:bool) {
         let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
         srmln.set_notice_type(notice_type as u32);
         srmln.set_user_id(*user_id);
         let bytes = srmln.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         for member_id in self.members.keys() {
+            if !need_push_self && member_id == user_id{
+                continue;
+            }
             self_mut_ref.send_2_client(ClientCode::MemberLeaveNotice, *member_id, bytes.clone());
         }
     }
@@ -512,14 +515,14 @@ impl Room {
     }
 
     ///移除玩家
-    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32) {
+    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32,need_push_self:bool) {
         let res = self.members.get(user_id);
         if res.is_none() {
             return;
         }
 
         //通知客户端
-        self.member_leave_notice(notice_type, user_id);
+        self.member_leave_notice(notice_type, user_id,need_push_self);
 
         //处理战斗相关的数据
         self.handler_leave(*user_id);
