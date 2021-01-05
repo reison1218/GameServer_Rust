@@ -977,26 +977,29 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     if room_type == RoomType::Match || room_type == RoomType::WorldBossPve {
         rm.clear_room_without_push(user_id);
         return Ok(());
-    }
-    room.state = RoomState::Await;
-    let mut brs = B_R_SUMMARY::new();
-    let res = brs.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return Ok(());
-    }
-    for sd in brs.summary_datas.iter() {
-        let user_id = sd.user_id;
-        let member = room.get_member_mut(&user_id);
-        if let None = member {
-            continue;
+    } else if room_type == RoomType::Custom {
+        //如果是自定义房间
+        room.state = RoomState::Await;
+        let mut brs = B_R_SUMMARY::new();
+        let res = brs.merge_from_bytes(packet.get_data());
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return Ok(());
         }
-        let member = member.unwrap();
-        member.chose_cter = Character::default();
-        member.grade = sd.grade as u8;
-        member.league.update_league_id(sd.league_score as i32);
-        member.state = MemberState::NotReady as u8;
+        for sd in brs.summary_datas.iter() {
+            let user_id = sd.user_id;
+            let member = room.get_member_mut(&user_id);
+            if let None = member {
+                continue;
+            }
+            let member = member.unwrap();
+            member.chose_cter = Character::default();
+            member.grade = sd.grade as u8;
+            member.league.update_league_id(sd.league_score as i32);
+            member.state = MemberState::NotReady as u8;
+        }
     }
+
     Ok(())
 }
 
