@@ -110,15 +110,14 @@ fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
 
+    //移除玩家
+    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
+
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
-    let need_rm_room;
-    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id,true);
-    if room.state == RoomState::BattleOvered {
-        need_rm_room = true
-    } else {
-        need_rm_room = false;
-    }
-    if need_rm_room {
+
+    let is_empty = room.is_empty();
+    let room_state = room.state;
+    if is_empty || room_state == RoomState::BattleOvered {
         let room_id = room.get_room_id();
         lock.rm_room(room_id);
     }
@@ -179,13 +178,16 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     //如果玩家啥都没做，就T出房间
     if battle_cter.flow_data.open_map_cell_vec.is_empty() {
-        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id,true);
+        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id, true);
+        info!("定时检测翻格子任务,没有翻人T出去,user_id:{}", user_id);
     }
+    let room_state = room.state;
     let is_empty = room.is_empty();
-    if is_empty {
+    if is_empty || room_state == RoomState::BattleOvered {
         let room_id = room.get_room_id();
         lock.rm_room(room_id);
     }
+    lock.player_room.remove(&user_id);
 }
 
 fn max_battle_turn_limit(rm: Arc<Mutex<BattleMgr>>, task: Task) {

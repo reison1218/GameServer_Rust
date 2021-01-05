@@ -7,6 +7,7 @@ use std::marker::{Send, Sync};
 use std::net::Shutdown;
 use std::net::TcpStream;
 use std::time::Duration;
+use std::io;
 
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
@@ -376,29 +377,31 @@ pub mod tcp_server {
         block_on(handler.on_close());
     }
 
-    fn would_block(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::WouldBlock
-    }
+    
+}
 
-    fn interrupted(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::Interrupted
-    }
+pub fn would_block(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::WouldBlock
+}
 
-    fn time_out(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::TimedOut
-    }
+pub fn interrupted(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::Interrupted
+}
 
-    fn aborted(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::ConnectionAborted
-    }
+pub fn time_out(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::TimedOut
+}
 
-    fn reset(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::ConnectionReset
-    }
+pub fn aborted(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::ConnectionAborted
+}
 
-    fn other(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::Other
-    }
+pub fn reset(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::ConnectionReset
+}
+
+pub fn other(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::Other
 }
 
 ///TCP client handler, used to extend TCP events
@@ -435,24 +438,48 @@ pub trait ClientHandler: Send + Sync {
         loop {
             //start read
             let size = read.read(&mut read_bytes);
-            if let Err(e) = size {
-                error!("TCP-CLIENT:{:?}", e);
-                self.on_close().await;
-                break;
-            }
 
-            let size = size.unwrap();
-            if size == 0 {
-                info!("tcp客户端断开链接！尝试链接服务器！");
-                self.on_close().await;
-                break;
-            }
-            //如果读取到的字节数大于0则交给handler
-            if size > 0 {
-                //读取到字节交给handler处理来处理
-                let mut v = Vec::new();
-                v.extend_from_slice(&read_bytes[..size]);
-                self.on_message(v).await;
+            match size {
+                Ok(size)=>{
+                    if size == 0 {
+                        info!("tcp客户端断开链接！尝试链接服务器！");
+                        self.on_close().await;
+                        break;
+                    }
+                    //如果读取到的字节数大于0则交给handler
+                    if size > 0 {
+                        //读取到字节交给handler处理来处理
+                        let mut v = Vec::new();
+                        v.extend_from_slice(&read_bytes[..size]);
+                        self.on_message(v).await;
+                    }
+                },
+                Err(ref err) if interrupted(err) => {
+                    warn!("{:?}", err);
+                    continue;
+                }
+                Err(ref err) if time_out(err) => {
+                    //warn!("{:?}",err);
+                    continue;
+                }
+                Err(ref err) if reset(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if aborted(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if other(err) => {
+                    warn!("{:?}", err);
+                    continue;
+                }
+                // Other errors we'll consider fatal.
+                Err(err) => {
+                    error!("TCP-CLIENT:{:?}", err);
+                    self.on_close().await;
+                    break;
+                }
             }
         }
     }

@@ -19,12 +19,12 @@ use std::ops::Deref;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
-use tools::protos::server_protocol::R_G_SUMMARY;
+use tools::protos::server_protocol::B_G_SUMMARY;
 
 impl BattleData {
     ///处理战斗结算核心逻辑，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub fn summary(&mut self) -> Option<R_G_SUMMARY> {
+    pub fn summary(&mut self) -> Vec<B_G_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
@@ -34,7 +34,7 @@ impl BattleData {
         //回客户端消息
         let mut ssn = S_SUMMARY_NOTICE::new();
         let mut need_summary = false;
-        let mut rgs = R_G_SUMMARY::new();
+        let mut bgs = Vec::new();
         let (leave_user, punishment) = self.leave_user;
 
         //如果房间就只有最后一个人了，直接计算
@@ -70,7 +70,9 @@ impl BattleData {
                     smp.league_id = sp.league_id as u32;
                     ssn.summary_datas.push(smp.clone());
                     if !sp.push_to_server {
-                        rgs.summary_datas.push(smp);
+                        let mut bg = B_G_SUMMARY::new();
+                        bg.set_summary_data(smp);
+                        bgs.push(bg);
                         sp.push_to_server = true;
                     }
                 }
@@ -95,11 +97,8 @@ impl BattleData {
                     error!("{:?}", e);
                 }
             }
-            if rgs.summary_datas.len() > 0 {
-                return Some(rgs);
-            }
         }
-        None
+        bgs
     }
 
     ///使用道具,道具都是一次性的，用完了就删掉

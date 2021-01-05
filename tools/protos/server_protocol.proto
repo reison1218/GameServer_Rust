@@ -26,7 +26,12 @@ message G_R_SEARCH_ROOM{
 }
 
 ///游戏服务器发给房间服务器，快速开始
-message R_G_SUMMARY{
+message B_G_SUMMARY{
+    SummaryDataPt summary_data = 1;//结算数据
+}
+
+///游戏服务器发给房间服务器，快速开始
+message B_R_SUMMARY{
     repeated SummaryDataPt summary_datas = 1;//结算数据
 }
 

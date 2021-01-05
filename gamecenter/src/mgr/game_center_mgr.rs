@@ -2,7 +2,7 @@ use crossbeam::channel::Sender;
 use log::warn;
 use protobuf::Message;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, ServerCommonCode};
+use tools::cmd_code::{BattleCode, ServerCommonCode, GameCode};
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -142,8 +142,8 @@ impl GameCenterMgr {
     }
 
     ///玩家离开
-    pub fn user_leave(&mut self, cmd: u32, user_id: u32) {
-        if cmd == ServerCommonCode::LineOff.into_u32() {
+    pub fn user_leave(&mut self, cmd:u32,user_id:u32) {
+        if cmd == GameCode::Summary.into_u32(){
             self.user_w_battle.remove(&user_id);
             self.user_w_gate.remove(&user_id);
         }

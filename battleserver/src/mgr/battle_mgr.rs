@@ -5,7 +5,7 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
-use log::warn;
+use log::{info, warn};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, ClientCode, ServerCommonCode};
@@ -112,9 +112,15 @@ impl BattleMgr {
     pub fn rm_room(&mut self, room_id: u32) {
         let room = self.rooms.remove(&room_id);
         if let Some(room) = room {
+            let room_type = room.get_room_type();
+            let room_id = room.get_room_id();
             for user_id in room.members.keys() {
                 self.player_room.remove(user_id);
             }
+            info!(
+                "删除房间，释放内存！room_type:{:?},room_id:{}",
+                room_type, room_id
+            );
         }
     }
 

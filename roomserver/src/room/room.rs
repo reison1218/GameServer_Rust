@@ -274,13 +274,16 @@ impl Room {
     }
 
     ///成员离开推送
-    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32) {
+    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32, nees_push_self: bool) {
         let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
         srmln.set_notice_type(notice_type as u32);
         srmln.set_user_id(*user_id);
         let bytes = srmln.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         for member_id in self.members.keys() {
+            if !nees_push_self && member_id == user_id {
+                continue;
+            }
             self_mut_ref.send_2_client(ClientCode::MemberLeaveNotice, *member_id, bytes.clone());
         }
     }
@@ -413,8 +416,17 @@ impl Room {
         Ok(self.id)
     }
 
+    pub fn remove_member_without_push(&mut self, user_id: u32) {
+        let res = self.members.get(&user_id);
+        if res.is_none() {
+            return;
+        }
+        //删除房间内玩家数据
+        self.handler_leave(user_id);
+    }
+
     ///移除玩家
-    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32) {
+    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32, nees_push_self: bool) {
         let res = self.members.get(user_id);
         if res.is_none() {
             return;
@@ -422,22 +434,10 @@ impl Room {
 
         //通知客户端
         if self.state != RoomState::BattleStarted {
-            self.member_leave_notice(notice_type, user_id);
+            self.member_leave_notice(notice_type, user_id, nees_push_self);
         }
-
-        //处理战斗相关的数据
+        //删除房间内玩家数据
         self.handler_leave(*user_id);
-
-        //删除数据
-        self.members.remove(user_id);
-        //删除玩家数组的下标
-        for i in 0..self.member_index.len() {
-            if self.member_index[i] != *user_id {
-                continue;
-            }
-            self.member_index[i] = 0;
-            break;
-        }
     }
 
     ///处理玩家离开
@@ -482,7 +482,7 @@ impl Room {
             skm.write_to_bytes().unwrap(),
         );
         //移除玩家
-        self.remove_member(MemberLeaveNoticeType::Kicked as u8, target_id);
+        self.remove_member(MemberLeaveNoticeType::Kicked as u8, target_id, true);
 
         Ok(())
     }

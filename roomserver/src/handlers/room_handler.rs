@@ -21,7 +21,7 @@ use tools::protos::room::{
     S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
-    G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
+    B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
 };
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
@@ -134,6 +134,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = room.unwrap();
+
     let room_id = room.get_room_id();
     let member = room.members.get(&user_id);
     if let None = member {
@@ -149,6 +150,15 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_id = room.get_room_id();
     let room_type = RoomType::from(room.get_room_type());
     let code = packet.get_cmd();
+    let mut need_push_self = false;
+
+    //如果战斗已经开始了,删除玩家，不要推送消息给客户端,战斗服已经处理过了
+    if room.state == RoomState::BattleStarted {
+        rm.remove_member_without_push(user_id);
+        return Ok(());
+    }
+
+    //如果不是战斗状态，继续处理
     //如果是主动退出房间
     if code == ServerCommonCode::LeaveRoom.into_u32() {
         //校验房间状态
@@ -168,13 +178,17 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             );
             return Ok(());
         }
+        need_push_self = true;
     }
     //处理退出房间
     match room_type {
         RoomType::Custom => {
-            let res =
-                rm.custom_room
-                    .leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, &user_id);
+            let res = rm.custom_room.leave_room(
+                MemberLeaveNoticeType::Leave as u8,
+                &room_id,
+                &user_id,
+                need_push_self,
+            );
             if let Err(e) = res {
                 error!("{:?}", e);
                 return Ok(());
@@ -202,18 +216,20 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         }
         RoomType::Match => {
             if !room.is_empty() {
-                let res = rm.match_room.leave(room_id, &user_id);
+                let res = rm.match_room.leave(room_id, &user_id, need_push_self);
                 if let Err(e) = res {
                     error!("{:?}", e);
                     return Ok(());
                 }
                 let mut slr = S_LEAVE_ROOM::new();
                 slr.set_is_succ(true);
-                rm.send_2_client(
-                    ClientCode::LeaveRoom,
-                    user_id,
-                    slr.write_to_bytes().unwrap(),
-                );
+                if need_push_self {
+                    rm.send_2_client(
+                        ClientCode::LeaveRoom,
+                        user_id,
+                        slr.write_to_bytes().unwrap(),
+                    );
+                }
                 info!(
                     "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
                     user_id, room_id
@@ -941,6 +957,46 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         user_id,
         scs.write_to_bytes().unwrap(),
     );
+    Ok(())
+}
+
+///发送表情
+pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    if user_id == 0 {
+        warn!("summary,the user_id is 0!");
+        return Ok(());
+    }
+    let room = rm.get_room_mut(&user_id);
+    if let None = room {
+        warn!("summary,the room is None!user_id:{}", user_id);
+        return Ok(());
+    }
+    let room = room.unwrap();
+    let room_type = room.get_room_type();
+    if room_type == RoomType::Match || room_type == RoomType::WorldBossPve {
+        rm.clear_room_without_push(user_id);
+        return Ok(());
+    }
+
+    let mut brs = B_R_SUMMARY::new();
+    let res = brs.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    for sd in brs.summary_datas.iter() {
+        let user_id = sd.user_id;
+        let member = room.get_member_mut(&user_id);
+        if let None = member {
+            continue;
+        }
+        let member = member.unwrap();
+        member.chose_cter = Character::default();
+        member.grade = sd.grade as u8;
+        member.league.update_league_id(sd.league_score as i32);
+        member.state = MemberState::NotReady as u8;
+    }
     Ok(())
 }
 

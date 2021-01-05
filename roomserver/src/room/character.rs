@@ -41,6 +41,14 @@ impl League {
     pub fn get_league_id(&self) -> u8 {
         self.league_temp.id
     }
+
+    pub fn update_league_id(&mut self, score: i32) {
+        let res = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_league_by_score(score)
+            .unwrap();
+        self.league_temp = res;
+    }
 }
 
 impl Default for League {

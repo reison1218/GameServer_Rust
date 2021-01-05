@@ -108,7 +108,14 @@ pub trait RoomModel {
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32>;
-    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32>;
+
+    fn leave_room(
+        &mut self,
+        notice_type: u8,
+        room_id: &u32,
+        user_id: &u32,
+        need_push_self: bool,
+    ) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32);
 
@@ -173,10 +180,16 @@ impl RoomModel for CustomRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+    fn leave_room(
+        &mut self,
+        notice_type: u8,
+        room_id: &u32,
+        user_id: &u32,
+        need_push_self: bool,
+    ) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
-        room.remove_member(notice_type, user_id);
+        room.remove_member(notice_type, user_id, need_push_self);
         if room.state == RoomState::BattleStarted {
             return Ok(room_id);
         }
@@ -253,11 +266,17 @@ impl RoomModel for MatchRoom {
     }
 
     ///离开房间
-    fn leave_room(&mut self, notice_type: u8, room_id: &u32, user_id: &u32) -> anyhow::Result<u32> {
+    fn leave_room(
+        &mut self,
+        notice_type: u8,
+        room_id: &u32,
+        user_id: &u32,
+        need_push_self: bool,
+    ) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = *room_id;
         let member_count = room.get_member_count();
-        room.remove_member(notice_type, user_id);
+        room.remove_member(notice_type, user_id, need_push_self);
         let need_remove = room.is_empty();
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
@@ -318,8 +337,18 @@ impl MatchRoom {
     }
 
     ///离开房间，离线也好，主动离开也好
-    pub fn leave(&mut self, room_id: u32, user_id: &u32) -> anyhow::Result<u32> {
-        let res = self.leave_room(MemberLeaveNoticeType::Leave as u8, &room_id, user_id);
+    pub fn leave(
+        &mut self,
+        room_id: u32,
+        user_id: &u32,
+        need_push_self: bool,
+    ) -> anyhow::Result<u32> {
+        let res = self.leave_room(
+            MemberLeaveNoticeType::Leave as u8,
+            &room_id,
+            user_id,
+            need_push_self,
+        );
         res
     }
 

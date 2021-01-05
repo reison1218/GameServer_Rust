@@ -61,10 +61,12 @@ trait Forward {
             } else if cmd > RoomCode::Min.into_u32()//转发给房间服
                 && cmd < RoomCode::Max.into_u32()
             {
+                //绑定玩家到gate
                 let user_id = packet.get_user_id();
                 if let Some(gate_token) = gate_token{
                     lock.bound_user_w_gate(user_id,gate_token);
                 }
+                //发消息到房间服
                 let res = lock.get_room_center_mut().send(bytes);
                 if let Err(e) = res {
                     warn!("{:?}", e);
@@ -75,7 +77,7 @@ trait Forward {
                 let res = lock.get_gate_client_mut(user_id);
                 match res {
                     Ok(gc) => gc.send(bytes),
-                    Err(e) => warn!("{:?}", e),
+                    Err(e) => warn!("{:?},cmd:{}", e,cmd),
                 }
             } else if cmd > BattleCode::Min.into_u32()//转发给战斗服
                 && cmd < BattleCode::Max.into_u32()
@@ -83,13 +85,12 @@ trait Forward {
                 let res = lock.get_battle_client_mut(user_id);
                 match res {
                     Ok(gc) => gc.send(bytes),
-                    Err(e) => warn!("{:?},packet:{:?}", e,packet),
+                    Err(e) => warn!("{:?},cmd:{:?}", e,cmd),
                 }
             }else{
                 warn!("could not find cmd {}!", cmd);
                 return;
             }
-
             //玩家离开房间，解除玩家绑定
             lock.user_leave(cmd, user_id);
         }

@@ -7,10 +7,7 @@ use log::{error, info};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use tools::cmd_code::GameCode::{
-    CreateRoom, JoinRoom, ModifyNickName, SearchRoom, Summary, SyncData,
-};
-use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
+use tools::cmd_code::{ClientCode, GameCode, RoomCode, ServerCommonCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
@@ -128,11 +125,14 @@ impl GameMgr {
         self.cmd_map.insert(SyncData as u32, sync);
         self.cmd_map
             .insert(ServerCommonCode::LineOff as u32, off_line);
-        self.cmd_map.insert(ModifyNickName as u32, modify_nick_name);
-        self.cmd_map.insert(CreateRoom as u32, create_room);
-        self.cmd_map.insert(JoinRoom as u32, join_room);
-        self.cmd_map.insert(SearchRoom as u32, search_room);
-        self.cmd_map.insert(Summary as u32, summary);
+        self.cmd_map
+            .insert(GameCode::ModifyNickName as u32, modify_nick_name);
+        self.cmd_map
+            .insert(GameCode::CreateRoom as u32, create_room);
+        self.cmd_map.insert(GameCode::JoinRoom as u32, join_room);
+        self.cmd_map
+            .insert(GameCode::SearchRoom as u32, search_room);
+        self.cmd_map.insert(GameCode::Summary as u32, summary);
     }
 }
 

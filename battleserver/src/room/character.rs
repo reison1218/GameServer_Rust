@@ -21,7 +21,6 @@ use tools::templates::league_temp::LeagueTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
-    pub user_id: u32,              //玩家id
     pub cter_id: u32,              //角色的配置id
     pub is_robot: bool,            //是否是机器人
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
@@ -158,7 +157,7 @@ impl BattleCharacter {
         let cter = &member.chose_cter;
         let mut battle_cter = BattleCharacter::default();
         let cter_id = cter.cter_id;
-        battle_cter.base_attr.user_id = cter.user_id;
+        battle_cter.base_attr.user_id = member.user_id;
         battle_cter.base_attr.cter_id = cter_id;
         battle_cter.base_attr.grade = member.grade;
         let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();

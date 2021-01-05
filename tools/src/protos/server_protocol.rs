@@ -825,7 +825,181 @@ impl ::protobuf::reflect::ProtobufValue for G_R_SEARCH_ROOM {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct R_G_SUMMARY {
+pub struct B_G_SUMMARY {
+    // message fields
+    pub summary_data: ::protobuf::SingularPtrField<super::base::SummaryDataPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a B_G_SUMMARY {
+    fn default() -> &'a B_G_SUMMARY {
+        <B_G_SUMMARY as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl B_G_SUMMARY {
+    pub fn new() -> B_G_SUMMARY {
+        ::std::default::Default::default()
+    }
+
+    // .protos.SummaryDataPt summary_data = 1;
+
+
+    pub fn get_summary_data(&self) -> &super::base::SummaryDataPt {
+        self.summary_data.as_ref().unwrap_or_else(|| <super::base::SummaryDataPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_summary_data(&mut self) {
+        self.summary_data.clear();
+    }
+
+    pub fn has_summary_data(&self) -> bool {
+        self.summary_data.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_summary_data(&mut self, v: super::base::SummaryDataPt) {
+        self.summary_data = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_summary_data(&mut self) -> &mut super::base::SummaryDataPt {
+        if self.summary_data.is_none() {
+            self.summary_data.set_default();
+        }
+        self.summary_data.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_summary_data(&mut self) -> super::base::SummaryDataPt {
+        self.summary_data.take().unwrap_or_else(|| super::base::SummaryDataPt::new())
+    }
+}
+
+impl ::protobuf::Message for B_G_SUMMARY {
+    fn is_initialized(&self) -> bool {
+        for v in &self.summary_data {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.summary_data)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.summary_data.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.summary_data.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> B_G_SUMMARY {
+        B_G_SUMMARY::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
+                "summary_data",
+                |m: &B_G_SUMMARY| { &m.summary_data },
+                |m: &mut B_G_SUMMARY| { &mut m.summary_data },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<B_G_SUMMARY>(
+                "B_G_SUMMARY",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static B_G_SUMMARY {
+        static instance: ::protobuf::rt::LazyV2<B_G_SUMMARY> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(B_G_SUMMARY::new)
+    }
+}
+
+impl ::protobuf::Clear for B_G_SUMMARY {
+    fn clear(&mut self) {
+        self.summary_data.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for B_G_SUMMARY {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for B_G_SUMMARY {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct B_R_SUMMARY {
     // message fields
     pub summary_datas: ::protobuf::RepeatedField<super::base::SummaryDataPt>,
     // special fields
@@ -833,14 +1007,14 @@ pub struct R_G_SUMMARY {
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a R_G_SUMMARY {
-    fn default() -> &'a R_G_SUMMARY {
-        <R_G_SUMMARY as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a B_R_SUMMARY {
+    fn default() -> &'a B_R_SUMMARY {
+        <B_R_SUMMARY as ::protobuf::Message>::default_instance()
     }
 }
 
-impl R_G_SUMMARY {
-    pub fn new() -> R_G_SUMMARY {
+impl B_R_SUMMARY {
+    pub fn new() -> B_R_SUMMARY {
         ::std::default::Default::default()
     }
 
@@ -870,7 +1044,7 @@ impl R_G_SUMMARY {
     }
 }
 
-impl ::protobuf::Message for R_G_SUMMARY {
+impl ::protobuf::Message for B_R_SUMMARY {
     fn is_initialized(&self) -> bool {
         for v in &self.summary_datas {
             if !v.is_initialized() {
@@ -944,8 +1118,8 @@ impl ::protobuf::Message for R_G_SUMMARY {
         Self::descriptor_static()
     }
 
-    fn new() -> R_G_SUMMARY {
-        R_G_SUMMARY::new()
+    fn new() -> B_R_SUMMARY {
+        B_R_SUMMARY::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -954,37 +1128,37 @@ impl ::protobuf::Message for R_G_SUMMARY {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
                 "summary_datas",
-                |m: &R_G_SUMMARY| { &m.summary_datas },
-                |m: &mut R_G_SUMMARY| { &mut m.summary_datas },
+                |m: &B_R_SUMMARY| { &m.summary_datas },
+                |m: &mut B_R_SUMMARY| { &mut m.summary_datas },
             ));
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_SUMMARY>(
-                "R_G_SUMMARY",
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<B_R_SUMMARY>(
+                "B_R_SUMMARY",
                 fields,
                 file_descriptor_proto()
             )
         })
     }
 
-    fn default_instance() -> &'static R_G_SUMMARY {
-        static instance: ::protobuf::rt::LazyV2<R_G_SUMMARY> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(R_G_SUMMARY::new)
+    fn default_instance() -> &'static B_R_SUMMARY {
+        static instance: ::protobuf::rt::LazyV2<B_R_SUMMARY> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(B_R_SUMMARY::new)
     }
 }
 
-impl ::protobuf::Clear for R_G_SUMMARY {
+impl ::protobuf::Clear for B_R_SUMMARY {
     fn clear(&mut self) {
         self.summary_datas.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for R_G_SUMMARY {
+impl ::std::fmt::Debug for B_R_SUMMARY {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for R_G_SUMMARY {
+impl ::protobuf::reflect::ProtobufValue for B_R_SUMMARY {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -1583,16 +1757,18 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\
     X\n\x0fG_R_SEARCH_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomT\
     ype\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pb\
-    p\"I\n\x0bR_G_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.pr\
-    otos.SummaryDataPtR\x0csummaryDatas\"\x87\x01\n\x14UPDATE_SEASON_NOTICE\
-    \x12\x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10last_upd\
-    ate_time\x18\x02\x20\x01(\tR\x0elastUpdateTime\x12(\n\x10next_update_tim\
-    e\x18\x03\x20\x01(\tR\x0enextUpdateTime\"\xc7\x01\n\x0ePlayerBattlePt\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\
-    \x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\
-    \x05grade\x12!\n\x0cleague_score\x18\x04\x20\x01(\rR\x0bleagueScore\x12\
-    \x1b\n\tleague_id\x18\x05\x20\x01(\rR\x08leagueId\x12)\n\x05cters\x18\
-    \x06\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ctersb\x06proto3\
+    p\"G\n\x0bB_G_SUMMARY\x128\n\x0csummary_data\x18\x01\x20\x01(\x0b2\x15.p\
+    rotos.SummaryDataPtR\x0bsummaryData\"I\n\x0bB_R_SUMMARY\x12:\n\rsummary_\
+    datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"\
+    \x87\x01\n\x14UPDATE_SEASON_NOTICE\x12\x1b\n\tseason_id\x18\x01\x20\x01(\
+    \rR\x08seasonId\x12(\n\x10last_update_time\x18\x02\x20\x01(\tR\x0elastUp\
+    dateTime\x12(\n\x10next_update_time\x18\x03\x20\x01(\tR\x0enextUpdateTim\
+    e\"\xc7\x01\n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\
+    \n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12!\n\x0cleague_score\x18\x04\
+    \x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x05\x20\x01(\rR\x08\
+    leagueId\x12)\n\x05cters\x18\x06\x20\x03(\x0b2\x13.protos.CharacterPtR\
+    \x05ctersb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

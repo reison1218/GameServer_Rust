@@ -437,27 +437,25 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         error!("{:?}", e);
         return Ok(());
     }
-
-    for summary_data in rgs.get_summary_datas() {
-        let res = gm.users.get_mut(&summary_data.user_id);
-        if let None = res {
-            error! {"summary!UserData is not find! user_id:{}",summary_data.user_id};
-            continue;
-        }
-        let user_data = res.unwrap();
-        let user_info = user_data.get_user_info_mut_ref();
-        //第一名就加grade
-        user_info.set_grade(summary_data.get_grade());
-        //更新段位积分
-        let league = &mut user_data.league;
-        let league_id = league.id;
-        let new_league_id = summary_data.league_id as u8;
-        league.set_score(summary_data.league_score);
-        //更新进入段位时间
-        if new_league_id != league_id {
-            league.id = new_league_id;
-            league.update_league_time();
-        }
+    let summary_data = rgs.get_summary_data();
+    let res = gm.users.get_mut(&summary_data.user_id);
+    if let None = res {
+        error! {"summary!UserData is not find! user_id:{}",summary_data.user_id};
+        return Ok(());
+    }
+    let user_data = res.unwrap();
+    let user_info = user_data.get_user_info_mut_ref();
+    //第一名就加grade
+    user_info.set_grade(summary_data.get_grade());
+    //更新段位积分
+    let league = &mut user_data.league;
+    let league_id = league.id;
+    let new_league_id = summary_data.league_id as u8;
+    league.set_score(summary_data.league_score);
+    //更新进入段位时间
+    if new_league_id != league_id {
+        league.id = new_league_id;
+        league.update_league_time();
     }
     Ok(())
 }
