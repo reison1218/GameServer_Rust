@@ -649,10 +649,10 @@ impl Room {
             self.handler_leave_battle_turn(user_id, turn_index);
         }
         //删除数据
-        self.members.remove(user_id);
+        self.members.remove(&user_id);
         //删除玩家数组的下标
         for i in 0..self.member_index.len() {
-            if self.member_index[i] != *user_id {
+            if self.member_index[i] != user_id {
                 continue;
             }
             self.member_index[i] = 0;

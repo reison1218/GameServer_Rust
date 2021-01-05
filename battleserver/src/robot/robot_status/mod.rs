@@ -10,7 +10,6 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crossbeam::channel::Sender;
 use rand::Rng;
 use serde_json::Value;
-use tools::cmd_code::RoomCode;
 
 use log::{error, info};
 use num_enum::IntoPrimitive;

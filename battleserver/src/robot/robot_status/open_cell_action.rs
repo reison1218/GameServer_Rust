@@ -2,6 +2,7 @@ use super::*;
 use crate::room::character::BattleCharacter;
 use log::error;
 use std::borrow::Borrow;
+use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
 pub struct OpenCellRobotAction {
@@ -116,7 +117,7 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut map = Map::new();
         map.insert("user_id".to_owned(), Value::from(self.robot_id));
         map.insert("value".to_owned(), Value::from(index));
-        map.insert("cmd".to_owned(), Value::from(RoomCode::Action.into_u32()));
+        map.insert("cmd".to_owned(), Value::from(BattleCode::Action.into_u32()));
         let res = self.sender.as_ref().unwrap().send(robot_task);
         if let Err(e) = res {
             error!("{:?}", e);
