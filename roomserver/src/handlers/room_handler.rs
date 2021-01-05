@@ -978,7 +978,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         rm.clear_room_without_push(user_id);
         return Ok(());
     }
-
+    room.state = RoomState::Await;
     let mut brs = B_R_SUMMARY::new();
     let res = brs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
