@@ -2,12 +2,12 @@ use super::*;
 use async_trait::async_trait;
 use crossbeam::channel::{Receiver, Sender};
 use net2::TcpStreamExt;
+use std::io;
 use std::io::{Read, Write};
 use std::marker::{Send, Sync};
 use std::net::Shutdown;
 use std::net::TcpStream;
 use std::time::Duration;
-use std::io;
 
 ///The TCP server side handler is used to handle TCP general events, such as connections,
 /// closing connections, having data transfers
@@ -58,6 +58,12 @@ pub struct Data {
 unsafe impl Send for Data {}
 unsafe impl Sync for Data {}
 
+///系统错误码35:代表OSX内核下的socket unactually
+const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
+
+///错误码11代表linux内核的socket unactually
+const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
+
 ///TCP server module, just need impl Handler, and call the new function, can run the TCP server program,
 /// each client corresponds to a separate handler for client requests. The following is an example.
 /// like this:
@@ -98,12 +104,6 @@ pub mod tcp_server {
     use std::net::SocketAddr;
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
-
-    ///系统错误码35:代表OSX内核下的socket unactually
-    const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
-
-    ///错误码11代表linux内核的socket unactually
-    const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);
@@ -376,8 +376,6 @@ pub mod tcp_server {
         let _ = connect.shutdown(Shutdown::Both);
         block_on(handler.on_close());
     }
-
-    
 }
 
 pub fn would_block(err: &io::Error) -> bool {
@@ -440,7 +438,7 @@ pub trait ClientHandler: Send + Sync {
             let size = read.read(&mut read_bytes);
 
             match size {
-                Ok(size)=>{
+                Ok(size) => {
                     if size == 0 {
                         info!("tcp客户端断开链接！尝试链接服务器！");
                         self.on_close().await;
@@ -453,7 +451,26 @@ pub trait ClientHandler: Send + Sync {
                         v.extend_from_slice(&read_bytes[..size]);
                         self.on_message(v).await;
                     }
-                },
+                }
+                Err(ref err) if would_block(err) => {
+                    let status = err.raw_os_error();
+                    let mut res = 0;
+                    if status.is_some() {
+                        res = status.unwrap();
+                    }
+                    //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
+                    //直接跳出token读取事件，待下次actually再进行读取
+                    if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                        || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                    {
+                        //just continue,get up this packet
+                        continue;
+                    } else {
+                        warn!("{:?}", err.to_string());
+                    }
+                    self.on_close().await;
+                    break;
+                }
                 Err(ref err) if interrupted(err) => {
                     warn!("{:?}", err);
                     continue;

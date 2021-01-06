@@ -55,7 +55,7 @@ impl ChannelMgr {
         match user_id {
             Some(user_id) => {
                 let user_id = *user_id;
-                self.notice_off_line(user_id, &token);
+                self.notice_off_line(user_id);
             }
             None => {
                 warn!("user_id is none for token:{},so nothing to do!", token);
@@ -64,9 +64,7 @@ impl ChannelMgr {
     }
 
     ///通知下线
-    fn notice_off_line(&mut self, user_id: u32, token: &usize) {
-        //关闭连接
-        self.close_remove(token);
+    fn notice_off_line(&mut self, user_id: u32) {
         let cmd = ServerCommonCode::LineOff.into_u32();
         //初始化包
         let mut packet = Packet::default();
@@ -75,8 +73,6 @@ impl ChannelMgr {
         packet.set_is_client(false);
         packet.set_is_broad(false);
         packet.set_cmd(cmd);
-        //发给游戏服
-        self.write_to_game(packet.clone());
         //发给房间相关服
         self.write_to_game_center(packet);
     }
@@ -170,8 +166,8 @@ impl ChannelMgr {
     ///T掉所有玩家
     pub fn kick_all(&mut self) {
         let res = self.channels.clone();
-        for (token, user_id) in res.iter() {
-            self.notice_off_line(*user_id, token);
+        for (_, user_id) in res.iter() {
+            self.notice_off_line(*user_id);
         }
     }
 }

@@ -416,6 +416,22 @@ impl Room {
         Ok(self.id)
     }
 
+    //随便获得一个玩家,如果玩家id==0,则代表没有玩家了
+    pub fn get_user(&self) -> u32 {
+        let mut res = 0;
+        for member in self.members.values() {
+            if member.is_robot {
+                continue;
+            }
+            let member_id = member.user_id;
+            if member_id > res {
+                res = member_id;
+                break;
+            }
+        }
+        res
+    }
+
     pub fn remove_member_without_push(&mut self, user_id: u32) {
         let res = self.members.get(&user_id);
         if res.is_none() {

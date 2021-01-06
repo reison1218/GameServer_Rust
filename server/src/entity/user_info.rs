@@ -9,7 +9,7 @@ use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_G_SUMMARY,
+    PlayerBattlePt, B_G_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
 };
 use tools::util::packet::Packet;
 
@@ -431,16 +431,17 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
 
 ///房间战斗结算
 pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
-    let mut rgs = R_G_SUMMARY::new();
-    let res = rgs.merge_from_bytes(packet.get_data());
+    let mut bgs = B_G_SUMMARY::new();
+    let res = bgs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return Ok(());
     }
-    let summary_data = rgs.get_summary_data();
-    let res = gm.users.get_mut(&summary_data.user_id);
+    let summary_data = bgs.get_summary_data();
+    let user_id = summary_data.user_id;
+    let res = gm.users.get_mut(&user_id);
     if let None = res {
-        error! {"summary!UserData is not find! user_id:{}",summary_data.user_id};
+        error! {"summary!UserData is not find! user_id:{}",user_id};
         return Ok(());
     }
     let user_data = res.unwrap();

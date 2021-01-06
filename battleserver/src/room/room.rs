@@ -90,6 +90,22 @@ impl Room {
         Ok(room)
     }
 
+    //随便获得一个玩家,如果玩家id==0,则代表没有玩家了
+    pub fn get_user(&self) -> u32 {
+        let mut res = 0;
+        for member in self.members.values() {
+            if member.is_robot {
+                continue;
+            }
+            let member_id = member.user_id;
+            if member_id > res {
+                res = member_id;
+                break;
+            }
+        }
+        res
+    }
+
     //离开房间结算
     pub fn league_summary(&mut self, user_id: u32) {
         let mut need_summary = false;
@@ -140,9 +156,11 @@ impl Room {
             let bytes = brs.write_to_bytes();
             match bytes {
                 Ok(bytes) => {
-                    let user_id = self.owner_id;
-                    //发给游戏服同步结算数据
-                    self.send_2_game(RoomCode::Summary.into_u32(), user_id, bytes);
+                    let user_id = self.get_user();
+                    if user_id > 0 {
+                        //发给房间服同步结算数据
+                        self.send_2_game(RoomCode::Summary.into_u32(), user_id, bytes);
+                    }
                 }
                 Err(e) => {
                     error!("{:?}", e);

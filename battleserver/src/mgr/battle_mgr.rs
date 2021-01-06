@@ -49,8 +49,8 @@ impl BattleMgr {
         self.robot_task_sender.as_ref().unwrap().clone()
     }
 
-    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         let res = self.get_game_center_channel_mut();
         let size = res.send(bytes);
         if let Err(e) = size {

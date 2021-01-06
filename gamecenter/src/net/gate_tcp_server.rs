@@ -3,7 +3,7 @@ use crate::net::Forward;
 use async_std::sync::Mutex;
 use async_std::task::block_on;
 use async_trait::async_trait;
-use log::{error, info};
+use log::error;
 use std::sync::Arc;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -47,7 +47,8 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 
     ///客户端tcp链接关闭事件
     async fn on_close(&mut self) {
-        info!("Gate-Listener与tcp客户端断开连接!处理所有有关用户！");
+        let token = self.token;
+        self.gm.lock().await.gate_clients.remove(&token);
     }
 
     ///客户端读取事件

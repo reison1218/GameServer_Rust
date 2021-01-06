@@ -7,7 +7,7 @@ use crate::room::room::Room;
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
-use log::warn;
+use log::{info, warn};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
@@ -69,16 +69,20 @@ impl RoomMgr {
             return;
         }
         let room = room.unwrap();
-        let room_id = room.get_room_id();
         room.remove_member_without_push(user_id);
-        for member_id in room.members.keys() {
-            self.player_room.remove(member_id);
+        self.player_room.remove(&user_id);
+        info!(
+            "玩家退出房间!删除房间内玩家数据!不通知客户端!user_id:{},room_id:{}",
+            user_id, room_id
+        );
+        let user = room.get_user();
+        if (room.is_empty() || room.members.len() == 1) && user > 0 {
+            self.clear_room_without_push(user);
         }
-        self.match_room.rooms.remove(&room_id);
     }
 
-    pub fn clear_room_without_push(&mut self, owner_id: u32) {
-        let res = self.player_room.get(&owner_id);
+    pub fn clear_room_without_push(&mut self, user_id: u32) {
+        let res = self.player_room.get(&user_id);
         if res.is_none() {
             return;
         }
@@ -95,7 +99,7 @@ impl RoomMgr {
             room = None;
         }
         if let None = room {
-            warn!("the room is None!owner_id:{}", owner_id);
+            warn!("the room is None!user_id:{}", user_id);
             return;
         }
         let room = room.unwrap();
@@ -103,8 +107,8 @@ impl RoomMgr {
         let room_type = room.get_room_type();
 
         if room_type == RoomType::Match || room_type == RoomType::WorldBossPve {
-            for user_id in room.members.keys() {
-                self.player_room.remove(user_id);
+            for id in room.members.keys() {
+                self.player_room.remove(id);
             }
         }
         if room_type == RoomType::Match {
@@ -113,6 +117,10 @@ impl RoomMgr {
         if room_type == RoomType::WorldBossPve {
             //预留代码
         }
+        info!(
+            "删除房间，释放内存,不推送给客户端!room_type:{:?},room_id:{}",
+            room_type, room_id
+        );
     }
 
     pub fn get_task_sender_clone(&self) -> crossbeam::channel::Sender<Task> {
@@ -121,6 +129,11 @@ impl RoomMgr {
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
+        self.get_sender_mut().send(bytes);
+    }
+
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         self.get_sender_mut().send(bytes);
     }
 

@@ -36,6 +36,15 @@ impl TcpClientHandler {
             || cmd == ServerCommonCode::UpdateSeason.into_u32())
             || (cmd >= GameCode::Min.into_u32() && cmd <= GameCode::Max.into_u32())
         {
+            if cmd == GameCode::UnloadUser.into_u32() {
+                let user_id = packet.get_user_id();
+                let gate = lock.get_user_channel(&user_id);
+                if let Some(gate) = gate {
+                    let token = gate.get_token();
+                    //关闭连接
+                    lock.close_remove(&token);
+                }
+            }
             lock.write_to_game(packet);
             return;
         }

@@ -60,11 +60,11 @@ impl tools::tcp::Handler for TcpServerHandler {
 async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
-        && packet.get_cmd() != ServerCommonCode::LineOff.into_u32()
+        && packet.get_cmd() != GameCode::UnloadUser.into_u32()
         && packet.get_cmd() != ServerCommonCode::ReloadTemps.into_u32()
         && packet.get_data().is_empty()
     {
-        error!("packet bytes is null!");
+        error!("packet bytes is null!cmd:{}", packet.get_cmd());
         return;
     }
     //判断是否执行登录

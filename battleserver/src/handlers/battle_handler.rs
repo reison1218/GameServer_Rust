@@ -11,8 +11,8 @@ use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::convert::TryFrom;
 use std::fmt::Debug;
-use tools::cmd_code::ClientCode;
 use tools::cmd_code::ServerCommonCode;
+use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
 use tools::protos::room::C_EMOJI;
@@ -538,16 +538,15 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
 pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
-    //校验房间是否存在
+    //校验用户不在战斗房间里
     let room = bm.get_room_mut(&user_id);
     if room.is_none() {
         return Ok(());
     }
+
     let cmd = packet.get_cmd();
     let room = room.unwrap();
     let room_id = room.get_room_id();
-    let room_type = room.get_room_type();
-    let owner_id = room.get_owner_id();
     let mut need_push_self = false;
     if cmd == ServerCommonCode::LeaveRoom.into_u32() {
         need_push_self = true;
@@ -557,18 +556,19 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         &user_id,
         need_push_self,
     );
+
     info!("玩家离开战斗服务!room_id={},user_id={}", room_id, user_id);
     let mut need_rm_room = false;
     if room.is_empty() {
         need_rm_room = true;
     } else if room.state == RoomState::BattleOvered {
         need_rm_room = true;
-    } else if user_id == owner_id && room_type == RoomType::Custom {
-        need_rm_room = true;
     }
     if need_rm_room {
         bm.rm_room(room_id);
     }
+    //通知游戏服卸载玩家数据
+    bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     Ok(())
 }
 

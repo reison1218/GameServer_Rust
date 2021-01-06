@@ -7,6 +7,7 @@ use log::{error, info};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use tools::cmd_code::GameCode::SyncData;
 use tools::cmd_code::{ClientCode, GameCode, RoomCode, ServerCommonCode};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
@@ -123,8 +124,7 @@ impl GameMgr {
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps as u32, reload_temps);
         self.cmd_map.insert(SyncData as u32, sync);
-        self.cmd_map
-            .insert(ServerCommonCode::LineOff as u32, off_line);
+        self.cmd_map.insert(GameCode::UnloadUser as u32, off_line);
         self.cmd_map
             .insert(GameCode::ModifyNickName as u32, modify_nick_name);
         self.cmd_map

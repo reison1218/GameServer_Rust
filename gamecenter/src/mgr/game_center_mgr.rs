@@ -143,7 +143,7 @@ impl GameCenterMgr {
 
     ///玩家离开
     pub fn user_leave(&mut self, cmd:u32,user_id:u32) {
-        if cmd == GameCode::Summary.into_u32(){
+        if cmd == GameCode::UnloadUser.into_u32(){
             self.user_w_battle.remove(&user_id);
             self.user_w_gate.remove(&user_id);
         }
