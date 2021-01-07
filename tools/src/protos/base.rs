@@ -285,6 +285,7 @@ pub struct PlayerPt {
     // message fields
     pub nick_name: ::std::string::String,
     pub last_character: u32,
+    pub punish_match: ::protobuf::SingularPtrField<PunishMatchPt>,
     pub dlc: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -343,7 +344,40 @@ impl PlayerPt {
         self.last_character = v;
     }
 
-    // repeated uint32 dlc = 3;
+    // .protos.PunishMatchPt punish_match = 3;
+
+
+    pub fn get_punish_match(&self) -> &PunishMatchPt {
+        self.punish_match.as_ref().unwrap_or_else(|| <PunishMatchPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_punish_match(&mut self) {
+        self.punish_match.clear();
+    }
+
+    pub fn has_punish_match(&self) -> bool {
+        self.punish_match.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_punish_match(&mut self, v: PunishMatchPt) {
+        self.punish_match = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_punish_match(&mut self) -> &mut PunishMatchPt {
+        if self.punish_match.is_none() {
+            self.punish_match.set_default();
+        }
+        self.punish_match.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_punish_match(&mut self) -> PunishMatchPt {
+        self.punish_match.take().unwrap_or_else(|| PunishMatchPt::new())
+    }
+
+    // repeated uint32 dlc = 4;
 
 
     pub fn get_dlc(&self) -> &[u32] {
@@ -371,6 +405,11 @@ impl PlayerPt {
 
 impl ::protobuf::Message for PlayerPt {
     fn is_initialized(&self) -> bool {
+        for v in &self.punish_match {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -389,6 +428,9 @@ impl ::protobuf::Message for PlayerPt {
                     self.last_character = tmp;
                 },
                 3 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.punish_match)?;
+                },
+                4 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.dlc)?;
                 },
                 _ => {
@@ -409,8 +451,12 @@ impl ::protobuf::Message for PlayerPt {
         if self.last_character != 0 {
             my_size += ::protobuf::rt::value_size(2, self.last_character, ::protobuf::wire_format::WireTypeVarint);
         }
+        if let Some(ref v) = self.punish_match.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         for value in &self.dlc {
-            my_size += ::protobuf::rt::value_size(3, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -424,8 +470,13 @@ impl ::protobuf::Message for PlayerPt {
         if self.last_character != 0 {
             os.write_uint32(2, self.last_character)?;
         }
+        if let Some(ref v) = self.punish_match.as_ref() {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
         for v in &self.dlc {
-            os.write_uint32(3, *v)?;
+            os.write_uint32(4, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -475,6 +526,11 @@ impl ::protobuf::Message for PlayerPt {
                 |m: &PlayerPt| { &m.last_character },
                 |m: &mut PlayerPt| { &mut m.last_character },
             ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PunishMatchPt>>(
+                "punish_match",
+                |m: &PlayerPt| { &m.punish_match },
+                |m: &mut PlayerPt| { &mut m.punish_match },
+            ));
             fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "dlc",
                 |m: &PlayerPt| { &m.dlc },
@@ -498,6 +554,7 @@ impl ::protobuf::Clear for PlayerPt {
     fn clear(&mut self) {
         self.nick_name.clear();
         self.last_character = 0;
+        self.punish_match.clear();
         self.dlc.clear();
         self.unknown_fields.clear();
     }
@@ -4924,70 +4981,260 @@ impl ::protobuf::reflect::ProtobufValue for CellBuffPt {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct PunishMatchPt {
+    // message fields
+    pub start_time: u64,
+    pub punish_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a PunishMatchPt {
+    fn default() -> &'a PunishMatchPt {
+        <PunishMatchPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl PunishMatchPt {
+    pub fn new() -> PunishMatchPt {
+        ::std::default::Default::default()
+    }
+
+    // uint64 start_time = 1;
+
+
+    pub fn get_start_time(&self) -> u64 {
+        self.start_time
+    }
+    pub fn clear_start_time(&mut self) {
+        self.start_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_start_time(&mut self, v: u64) {
+        self.start_time = v;
+    }
+
+    // uint32 punish_id = 2;
+
+
+    pub fn get_punish_id(&self) -> u32 {
+        self.punish_id
+    }
+    pub fn clear_punish_id(&mut self) {
+        self.punish_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_punish_id(&mut self, v: u32) {
+        self.punish_id = v;
+    }
+}
+
+impl ::protobuf::Message for PunishMatchPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.start_time = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.punish_id = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.start_time != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.start_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.punish_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.punish_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.start_time != 0 {
+            os.write_uint64(1, self.start_time)?;
+        }
+        if self.punish_id != 0 {
+            os.write_uint32(2, self.punish_id)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> PunishMatchPt {
+        PunishMatchPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "start_time",
+                |m: &PunishMatchPt| { &m.start_time },
+                |m: &mut PunishMatchPt| { &mut m.start_time },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "punish_id",
+                |m: &PunishMatchPt| { &m.punish_id },
+                |m: &mut PunishMatchPt| { &mut m.punish_id },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<PunishMatchPt>(
+                "PunishMatchPt",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static PunishMatchPt {
+        static instance: ::protobuf::rt::LazyV2<PunishMatchPt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(PunishMatchPt::new)
+    }
+}
+
+impl ::protobuf::Clear for PunishMatchPt {
+    fn clear(&mut self) {
+        self.start_time = 0;
+        self.punish_id = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for PunishMatchPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for PunishMatchPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nbase.proto\x12\x06protos\"\x9f\x01\n\rRoomSettingPt\x12&\n\x0fturn_l\
     imit_time\x18\x01\x20\x01(\rR\rturnLimitTime\x12\x1b\n\tseason_id\x18\
     \x02\x20\x01(\rR\x08seasonId\x12\x1c\n\nis_open_ai\x18\x03\x20\x01(\x08R\
     \x08isOpenAi\x12+\n\x11victory_condition\x18\x04\x20\x01(\rR\x10victoryC\
-    ondition\"`\n\x08PlayerPt\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08ni\
-    ckName\x12%\n\x0elast_character\x18\x02\x20\x01(\rR\rlastCharacter\x12\
-    \x10\n\x03dlc\x18\x03\x20\x03(\rR\x03dlc\"C\n\x0bResourcesPt\x12\x12\n\
-    \x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\x02\x20\x01(\rR\
-    \x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\x8b\x02\n\x08Member\
-    Pt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_na\
-    me\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\x0b2\
-    \x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01(\rR\
-    \x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\x05grade\x12\x17\n\x07t\
-    eam_id\x18\x06\x20\x01(\rR\x06teamId\x12!\n\x0cleague_score\x18\x07\x20\
-    \x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x08\x20\x01(\rR\x08leag\
-    ueId\x12\x1b\n\tjoin_time\x18\t\x20\x01(\x04R\x08joinTime\"G\n\x0bWorldC\
-    ellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cel\
-    l_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\
-    \x07room_id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\
-    \x20\x01(\rR\x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08room\
-    Type\x12\x1f\n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07\
-    setting\x18\x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\
-    \n\x07members\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\
-    \x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\"f\n\x0bCharacterPt\x12\
-    \x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12&\n\x0flast_use_skill\
-    s\x18\x02\x20\x03(\rR\rlastUseSkills\x12\x16\n\x06skills\x18\x03\x20\x03\
-    (\rR\x06skills\"\x8c\x02\n\x11BattleCharacterPt\x12\x17\n\x07room_id\x18\
-    \x01\x20\x01(\x04R\x06roomId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\
-    \x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x10\n\
-    \x03atk\x18\x04\x20\x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x05\x20\x01(\rR\
-    \x02hp\x12\x18\n\x07defence\x18\x06\x20\x01(\rR\x07defence\x12\x16\n\x06\
-    energy\x18\x07\x20\x01(\rR\x06energy\x12\x14\n\x05index\x18\x08\x20\x01(\
-    \rR\x05index\x12\x14\n\x05buffs\x18\t\x20\x03(\rR\x05buffs\x12\x16\n\x06\
-    skills\x18\n\x20\x03(\rR\x06skills\x12\x14\n\x05items\x18\x0b\x20\x03(\r\
-    R\x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\
-    \neffectType\x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0beffectValue\"\
-    \xb7\x02\n\x08TargetPt\x12!\n\x0ctarget_value\x18\x01\x20\x03(\rR\x0btar\
-    getValue\x12*\n\x07effects\x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\
-    \x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\
-    \rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassi\
-    veEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\x12\x1f\n\
-    \x0blost_skills\x18\x06\x20\x03(\rR\nlostSkills\x12@\n\x0etransform_cter\
-    \x18\x07\x20\x01(\x0b2\x19.protos.BattleCharacterPtR\rtransformCter\"T\n\
-    \x0fTriggerEffectPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\
-    \x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\
-    \x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_us\
-    er\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\
-    \x01(\rR\nactionType\x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactio\
-    nValue\x12*\n\x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07t\
-    argets\x12\x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06Buff\
-    Pt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_\
-    timesed\x18\x02\x20\x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\
-    \x03\x20\x01(\rR\tkeepTimes\"\xce\x01\n\rSummaryDataPt\x12\x17\n\x07user\
-    _id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\
-    \rR\x06cterId\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x12\n\
-    \x04rank\x18\x04\x20\x01(\rR\x04rank\x12!\n\x0cleague_score\x18\x05\x20\
-    \x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x06\x20\x01(\rR\x08leag\
-    ueId\x12!\n\x0creward_score\x18\x07\x20\x01(\x05R\x0brewardScore\"e\n\
-    \x0cCterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
-    \x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\
-    \x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\
-    \x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\
-    \x0b2\x0e.protos.BuffPtR\x05buffsb\x06proto3\
+    ondition\"\x9a\x01\n\x08PlayerPt\x12\x1b\n\tnick_name\x18\x01\x20\x01(\t\
+    R\x08nickName\x12%\n\x0elast_character\x18\x02\x20\x01(\rR\rlastCharacte\
+    r\x128\n\x0cpunish_match\x18\x03\x20\x01(\x0b2\x15.protos.PunishMatchPtR\
+    \x0bpunishMatch\x12\x10\n\x03dlc\x18\x04\x20\x03(\rR\x03dlc\"C\n\x0bReso\
+    urcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\
+    \x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\
+    \x8b\x02\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userI\
+    d\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\
+    \x18\x03\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05stat\
+    e\x18\x04\x20\x01(\rR\x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\
+    \x05grade\x12\x17\n\x07team_id\x18\x06\x20\x01(\rR\x06teamId\x12!\n\x0cl\
+    eague_score\x18\x07\x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\
+    \x08\x20\x01(\rR\x08leagueId\x12\x1b\n\tjoin_time\x18\t\x20\x01(\x04R\
+    \x08joinTime\"G\n\x0bWorldCellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\
+    \x05index\x12\"\n\rworld_cell_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\
+    \xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\
+    \x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_ty\
+    pe\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\n\x0broom_status\x18\x04\x20\
+    \x01(\rR\nroomStatus\x12/\n\x07setting\x18\x05\x20\x01(\x0b2\x15.protos.\
+    RoomSettingPtR\x07setting\x12*\n\x07members\x18\x06\x20\x03(\x0b2\x10.pr\
+    otos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\
+    \"f\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\
+    \x12&\n\x0flast_use_skills\x18\x02\x20\x03(\rR\rlastUseSkills\x12\x16\n\
+    \x06skills\x18\x03\x20\x03(\rR\x06skills\"\x8c\x02\n\x11BattleCharacterP\
+    t\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x17\n\x07user\
+    _id\x18\x02\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\
+    \rR\x06cterId\x12\x10\n\x03atk\x18\x04\x20\x01(\rR\x03atk\x12\x0e\n\x02h\
+    p\x18\x05\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x06\x20\x01(\rR\x07\
+    defence\x12\x16\n\x06energy\x18\x07\x20\x01(\rR\x06energy\x12\x14\n\x05i\
+    ndex\x18\x08\x20\x01(\rR\x05index\x12\x14\n\x05buffs\x18\t\x20\x03(\rR\
+    \x05buffs\x12\x16\n\x06skills\x18\n\x20\x03(\rR\x06skills\x12\x14\n\x05i\
+    tems\x18\x0b\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_t\
+    ype\x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\x03\x20\
+    \x01(\rR\x0beffectValue\"\xb7\x02\n\x08TargetPt\x12!\n\x0ctarget_value\
+    \x18\x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\x18\x02\x20\x03(\
+    \x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\
+    \x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.pro\
+    tos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\
+    \x03(\rR\tlostBuffs\x12\x1f\n\x0blost_skills\x18\x06\x20\x03(\rR\nlostSk\
+    ills\x12@\n\x0etransform_cter\x18\x07\x20\x01(\x0b2\x19.protos.BattleCha\
+    racterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_id\
+    \x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04\
+    type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActi\
+    onUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\
+    \x0baction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\
+    \x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\
+    \x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\
+    \x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\
+    \rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTi\
+    mesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"\xce\x01\n\r\
+    SummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\
+    \n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\
+    \x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\x12!\
+    \n\x0cleague_score\x18\x05\x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_\
+    id\x18\x06\x20\x01(\rR\x08leagueId\x12!\n\x0creward_score\x18\x07\x20\
+    \x01(\x05R\x0brewardScore\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06sk\
+    ills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"\
+    H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\
+    \x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"K\n\rPunish\
+    MatchPt\x12\x1d\n\nstart_time\x18\x01\x20\x01(\x04R\tstartTime\x12\x1b\n\
+    \tpunish_id\x18\x02\x20\x01(\rR\x08punishIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

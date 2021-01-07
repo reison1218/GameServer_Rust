@@ -49,5 +49,6 @@ message PlayerBattlePt{
     uint32 grade = 3;               //等级
     uint32 league_score = 4;        //段位积分
     uint32 league_id = 5;           //段位id
-    repeated CharacterPt cters = 6; //玩家解锁的角色数组
+    PunishMatchPt punish_match = 6; //匹配惩罚
+    repeated CharacterPt cters = 7; //玩家解锁的角色数组
 }

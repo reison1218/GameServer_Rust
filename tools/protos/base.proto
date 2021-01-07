@@ -27,7 +27,8 @@ message RoomSettingPt{
 message PlayerPt{
     string nick_name = 1;//昵称
     uint32 last_character = 2;//最近一次使用到角色id
-	repeated uint32 dlc = 3;//dlc
+    PunishMatchPt punish_match = 3; //匹配惩罚
+	repeated uint32 dlc = 4;//dlc
 }
 
 // 资源封装
@@ -159,4 +160,10 @@ message CterStatusPt{
 message CellBuffPt{
     uint32 index = 1;//地图块下标
     repeated BuffPt buffs = 2;//地图块上buff数据
+}
+
+//惩罚数据
+message PunishMatchPt{
+    uint64 start_time = 1;           //开始时间
+    uint32 punish_id = 2;            //惩罚id
 }

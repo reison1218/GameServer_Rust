@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RoomCode};
+use tools::protos::base::PunishMatchPt;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
@@ -38,11 +39,20 @@ pub struct User {
 }
 
 ///匹配惩罚数据
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PunishMatch {
     pub start_time: u64, //开始惩罚时间
     pub punish_id: u8,   //惩罚id
+}
+
+impl Into<PunishMatchPt> for PunishMatch {
+    fn into(self) -> PunishMatchPt {
+        let mut pmp = PunishMatchPt::new();
+        pmp.punish_id = self.punish_id as u32;
+        pmp.start_time = self.start_time;
+        pmp
+    }
 }
 
 ///为User实现Entiry
@@ -341,6 +351,8 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     //封装玩家排行积分
     pbp.league_score = user_data.get_league_ref().score;
     pbp.league_id = user_data.get_league_ref().id as u32;
+    let punish_match_pt = user_info.punish_match.into();
+    pbp.set_punish_match(punish_match_pt);
     //封装角色
     for cter in user_data.get_characters_ref().cter_map.values() {
         let cter_pt = cter.clone().into();
@@ -384,6 +396,8 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     //封装玩家排行积分
     pbp.league_score = user_data.get_league_ref().score;
     pbp.league_id = user_data.get_league_ref().id as u32;
+    let punish_match_pt = user_info.punish_match.into();
+    pbp.set_punish_match(punish_match_pt);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
