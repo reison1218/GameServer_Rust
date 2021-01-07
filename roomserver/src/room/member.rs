@@ -15,8 +15,15 @@ pub enum UserType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum MemberState {
-    NotReady = 0,
-    Ready = 1,
+    AwaitConfirm = 0,
+    NotReady = 1,
+    Ready = 2,
+}
+
+impl Default for MemberState {
+    fn default() -> Self {
+        MemberState::NotReady
+    }
 }
 
 impl MemberState {
@@ -32,7 +39,7 @@ pub struct Member {
     pub nick_name: String,              //玩家昵称
     pub grade: u8,                      //玩家grade
     pub league: League,                 //段位数据
-    pub state: u8,                      //玩家状态
+    pub state: MemberState,             //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
     pub is_robot: bool,                 //是否的机器人
     pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
@@ -52,7 +59,7 @@ impl From<PlayerBattlePt> for Member {
         let mut member = Member::default();
         member.nick_name = pbp.get_nick_name().to_owned();
         member.user_id = pbp.user_id;
-        member.state = MemberState::NotReady as u8;
+        member.state = MemberState::NotReady;
         member.grade = pbp.grade as u8;
         let mut league = League::default();
         let score = pbp.league_score as i32;

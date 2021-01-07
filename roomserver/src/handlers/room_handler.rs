@@ -13,12 +13,12 @@ use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::sync::atomic::Ordering;
-use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::cmd_code::{ClientCode, GameCode, RoomCode, ServerCommonCode};
 use tools::macros::GetMutRef;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_EMOJI, C_KICK_MEMBER, C_PREPARE_CANCEL,
-    C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_LEAVE_ROOM,
-    S_ROOM_SETTING, S_START,
+    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
+    C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
+    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, UPDATE_SEASON_NOTICE,
@@ -125,8 +125,34 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///离开房间
+//离开房间
 pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let room = rm.get_room_mut(&user_id);
+    let cmd = packet.get_cmd();
+    if room.is_none() {
+        warn!("could not find room!user_id:{}", user_id);
+        return Ok(());
+    }
+    let room = room.unwrap();
+    let room_id = room.get_room_id();
+    let room_type = room.get_room_type();
+    if room_type == RoomType::Match && room.get_member_count() == MEMBER_MAX as usize {
+        warn!(
+            "match room is full,could not leave room now! room_id:{},user_id:{}",
+            room_id, user_id
+        );
+        return Ok(());
+    }
+    let res = handler_leave_room(rm, user_id, cmd);
+    if let Err(e) = res {
+        warn!("{:?}", e);
+    }
+    Ok(())
+}
+
+///离开房间
+pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let cmd = packet.get_cmd();
     //校验房间是否存在
@@ -139,129 +165,15 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = room.unwrap();
-
-    let room_id = room.get_room_id();
-    let member = room.members.get(&user_id);
-    if let None = member {
-        warn!(
-            "could not find member for user_id:{},room_id:{}",
-            user_id, room_id
-        );
-        return Ok(());
-    }
-    let member = member.unwrap();
-    let member_state = member.state;
-    let room_state = room.state;
-    let room_id = room.get_room_id();
-    let room_type = RoomType::from(room.get_room_type());
-    let code = packet.get_cmd();
-    let mut need_push_self = false;
-
-    //如果战斗已经开始了,删除玩家，不要推送消息给客户端,战斗服已经处理过了
-    if room_state == RoomState::BattleStarted {
-        rm.remove_member_without_push(user_id);
-        return Ok(());
-    }
-    if cmd == ServerCommonCode::LineOff.into_u32() {
+    if room.state != RoomState::BattleStarted {
         //通知游戏服卸载玩家数据
-        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+        if cmd == ServerCommonCode::LineOff.into_u32() {
+            room.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+        }
     }
-
-    //如果不是战斗状态，继续处理
-    //如果是主动退出房间
-    if code == ServerCommonCode::LeaveRoom.into_u32() {
-        //校验房间状态
-        if room_state != RoomState::Await && room_state != RoomState::BattleStarted {
-            warn!(
-                "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
-                room_state, user_id, room_id
-            );
-            return Ok(());
-        }
-
-        //房间为等待状态，并且已经准备了，则不允许退出房间
-        if room_state == RoomState::Await && member_state == MemberState::Ready.into_u8() {
-            warn!(
-                "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
-                user_id
-            );
-            return Ok(());
-        }
-        need_push_self = true;
-    }
-    //处理退出房间
-    match room_type {
-        RoomType::Custom => {
-            let res = rm.custom_room.leave_room(
-                MemberLeaveNoticeType::Leave as u8,
-                &room_id,
-                &user_id,
-                need_push_self,
-            );
-            if let Err(e) = res {
-                error!("{:?}", e);
-                return Ok(());
-            }
-            info!(
-                "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
-                user_id, room_id
-            );
-            let room = rm.custom_room.rooms.get(&room_id).unwrap();
-            let owner_id = room.get_owner_id();
-            let mut need_rm_room = false;
-            if room.is_empty() {
-                need_rm_room = true;
-            } else if room.state == RoomState::BattleOvered {
-                need_rm_room = true;
-            } else if user_id == owner_id {
-                need_rm_room = true;
-            }
-            if need_rm_room {
-                for member_id in room.members.keys() {
-                    rm.player_room.remove(member_id);
-                }
-                rm.custom_room.rm_room(&room_id);
-            }
-        }
-        RoomType::Match => {
-            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
-            if room.is_empty() {
-                return Ok(());
-            }
-            let res = rm.match_room.leave(room_id, &user_id, need_push_self);
-            if let Err(e) = res {
-                error!("{:?}", e);
-                return Ok(());
-            }
-            let mut slr = S_LEAVE_ROOM::new();
-            slr.set_is_succ(true);
-            if need_push_self {
-                rm.send_2_client(
-                    ClientCode::LeaveRoom,
-                    user_id,
-                    slr.write_to_bytes().unwrap(),
-                );
-            }
-            info!(
-                "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
-                user_id, room_id
-            );
-            rm.player_room.remove(&user_id);
-            let mut need_rm_room = false;
-            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
-            if room.is_empty() {
-                need_rm_room = true;
-            } else if room.state == RoomState::BattleOvered {
-                need_rm_room = true;
-            }
-            if need_rm_room {
-                for member_id in room.members.keys() {
-                    rm.player_room.remove(member_id);
-                }
-                rm.match_room.rm_room(&room_id);
-            }
-        }
-        _ => {}
+    let res = handler_leave_room(rm, user_id, cmd);
+    if let Err(e) = res {
+        warn!("{:?}", e);
     }
     Ok(())
 }
@@ -304,7 +216,8 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let sender = rm.get_sender_clone();
     let task_sender = rm.get_task_sender_clone();
 
-    let member = Member::from(grs.take_pbp());
+    let mut member = Member::from(grs.take_pbp());
+    member.state = MemberState::AwaitConfirm;
     let room_id;
     match room_type {
         RoomType::Match => {
@@ -351,8 +264,19 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let room = room.unwrap();
+    let room_id = room.get_room_id();
+    let room_type = room.get_room_type();
+    let room_state = room.get_state();
+    //匹配房，玩家到齐了才可以准备
+    if room_type == RoomType::Match && room.get_member_count() != MEMBER_MAX as usize {
+        warn!(
+            "prepare_cancel:this room is not full,so can not prepare!room_id:{}.user_id:{}",
+            room_id, user_id
+        );
+        return Ok(());
+    }
     //校验房间是否已经开始游戏
-    if room.get_state() != RoomState::Await {
+    if room_state != RoomState::Await {
         anyhow::bail!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
@@ -479,7 +403,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         let mut member = Member::default();
         member.is_robot = true;
         member.user_id = robot_id;
-        member.state = MemberState::Ready as u8;
+        member.state = MemberState::Ready;
         member.nick_name = "robot".to_owned();
 
         //初始化选择的角色
@@ -672,7 +596,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     let member = room.get_member_ref(&user_id).unwrap();
-    if member.state == MemberState::Ready as u8 {
+    if member.state == MemberState::Ready {
         warn!("this owner is ready!,user_id:{}", user_id);
         return Ok(());
     }
@@ -832,7 +756,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
 
     let member = room.get_member_mut(&user_id).unwrap();
     //校验玩家状态
-    if member.state == MemberState::Ready as u8 {
+    if member.state == MemberState::Ready {
         warn!("this player is already prepare!user_id:{}", user_id);
         return Ok(());
     }
@@ -915,7 +839,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
 
     //校验成员状态
-    if member.state == MemberState::Ready as u8 {
+    if member.state == MemberState::Ready {
         warn!(
             "this player already ready,can not choice skill now!user_id:{}",
             user_id
@@ -971,6 +895,67 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+///确认进入房间
+pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    //校验玩家在不在房间内
+    let room = rm.get_room_mut(&user_id);
+    if let None = room {
+        warn!("this user is not in the room!");
+        return Ok(());
+    }
+    let room = room.unwrap();
+    let room_type = room.get_room_type();
+    let room_id = room.get_room_id();
+    //校验房间类型
+    if room.get_room_type() != RoomType::Match {
+        warn!(
+            "this room is not Match Room!room_type:{:?},room_id:{}",
+            room_type, room_id
+        );
+        return Ok(());
+    }
+    let room_state = room.state;
+    //校验房间状态
+    if room_state != RoomState::AwaitConfirm {
+        warn!(
+            "the Match Room state is {:?}!room_id:{}",
+            room_state, room_id
+        );
+        return Ok(());
+    }
+
+    let mut ccir = C_CONFIRM_INTO_ROOM::new();
+    let res = ccir.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let confirm = ccir.confirm;
+    //如果全部确认进入房间，就发送通知房间协议给所有客户端
+    if confirm {
+        let member = room.get_member_mut(&user_id).unwrap();
+        member.state = MemberState::NotReady;
+        let res = room.check_all_confirmed_into_room();
+        if res {
+            room.state = RoomState::Await;
+            let mut sr = S_ROOM::new();
+            sr.is_succ = true;
+            sr.set_room(room.convert_to_pt());
+            let bytes = sr.write_to_bytes().unwrap();
+            room.send_2_all_client(ClientCode::Room, bytes);
+        }
+    } else {
+        //解散房间，并通知所有客户端
+        let sircn = S_INTO_ROOM_CANCEL_NOTICE::new();
+        let bytes = sircn.write_to_bytes().unwrap();
+        room.send_2_all_client(ClientCode::IntoRoomCancelNotice, bytes);
+        rm.clear_room_without_push(user_id);
+    }
+
+    Ok(())
+}
+
 ///发送表情
 pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
@@ -980,7 +965,6 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = rm.get_room_mut(&user_id);
     if let None = room {
-        warn!("summary,the room is None!user_id:{}", user_id);
         return Ok(());
     }
     let room = room.unwrap();
@@ -1010,7 +994,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             member.chose_cter = Character::default();
             member.grade = sd.grade as u8;
             member.league.update_league_id(sd.league_score as i32);
-            member.state = MemberState::NotReady as u8;
+            member.state = MemberState::NotReady;
         }
     }
 
@@ -1032,7 +1016,7 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let member = member.unwrap();
-    if member.state != MemberState::Ready as u8 {
+    if member.state != MemberState::Ready {
         warn!(
             "this player is not ready,can not send emoji!user_id:{}",
             user_id
@@ -1072,5 +1056,129 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     //走正常逻辑
     room.emoji(user_id, emoji_id);
+    Ok(())
+}
+
+///处理离开房间
+pub fn handler_leave_room(rm: &mut RoomMgr, user_id: u32, cmd: u32) -> anyhow::Result<()> {
+    let room: &Room = rm.get_room_ref(&user_id).unwrap();
+    let room_id = room.get_room_id();
+    let member = room.members.get(&user_id);
+    if let None = member {
+        warn!(
+            "could not find member for user_id:{},room_id:{}",
+            user_id, room_id
+        );
+        return Ok(());
+    }
+    let member = member.unwrap();
+    let member_state = member.state;
+    let room_state = room.state;
+    let room_id = room.get_room_id();
+    let room_type = RoomType::from(room.get_room_type());
+    let mut need_push_self = false;
+
+    //如果战斗已经开始了,删除玩家，不要推送消息给客户端,战斗服已经处理过了
+    if room_state == RoomState::BattleStarted {
+        rm.remove_member_without_push(user_id);
+        return Ok(());
+    }
+
+    //如果不是战斗状态，继续处理
+    //如果是主动退出房间
+    if cmd == RoomCode::LeaveRoom.into_u32() {
+        //校验房间状态
+        if room_state != RoomState::Await && room_state != RoomState::BattleStarted {
+            warn!(
+                "leave_room:can not leave room in this state:{:?}!user_id:{},room_id:{:?}",
+                room_state, user_id, room_id
+            );
+            return Ok(());
+        }
+
+        //房间为等待状态，并且已经准备了，则不允许退出房间
+        if room_state == RoomState::Await && member_state == MemberState::Ready {
+            warn!(
+                "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
+                user_id
+            );
+            return Ok(());
+        }
+        need_push_self = true;
+    }
+    //处理退出房间
+    match room_type {
+        RoomType::Custom => {
+            let res = rm.custom_room.leave_room(
+                MemberLeaveNoticeType::Leave as u8,
+                &room_id,
+                &user_id,
+                need_push_self,
+            );
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return Ok(());
+            }
+            info!(
+                "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
+                user_id, room_id
+            );
+            let room = rm.custom_room.rooms.get(&room_id).unwrap();
+            let owner_id = room.get_owner_id();
+            let mut need_rm_room = false;
+            if room.is_empty() {
+                need_rm_room = true;
+            } else if room.state == RoomState::BattleOvered {
+                need_rm_room = true;
+            } else if user_id == owner_id {
+                need_rm_room = true;
+            }
+            if need_rm_room {
+                for member_id in room.members.keys() {
+                    rm.player_room.remove(member_id);
+                }
+                rm.custom_room.rm_room(&room_id);
+            }
+        }
+        RoomType::Match => {
+            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
+            if room.is_empty() {
+                return Ok(());
+            }
+            let res = rm.match_room.leave(room_id, &user_id, need_push_self);
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return Ok(());
+            }
+            let mut slr = S_LEAVE_ROOM::new();
+            slr.set_is_succ(true);
+            if need_push_self {
+                rm.send_2_client(
+                    ClientCode::LeaveRoom,
+                    user_id,
+                    slr.write_to_bytes().unwrap(),
+                );
+            }
+            info!(
+                "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
+                user_id, room_id
+            );
+            rm.player_room.remove(&user_id);
+            let mut need_rm_room = false;
+            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
+            if room.is_empty() {
+                need_rm_room = true;
+            } else if room.state == RoomState::BattleOvered {
+                need_rm_room = true;
+            }
+            if need_rm_room {
+                for member_id in room.members.keys() {
+                    rm.player_room.remove(member_id);
+                }
+                rm.match_room.rm_room(&room_id);
+            }
+        }
+        _ => {}
+    }
     Ok(())
 }

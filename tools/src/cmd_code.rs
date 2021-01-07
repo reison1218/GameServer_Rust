@@ -7,12 +7,10 @@ use num_enum::TryFromPrimitive;
 pub enum ServerCommonCode {
     //离线
     LineOff = 101,
-    //离开房间
-    LeaveRoom = 102,
     //热更新静态配置
-    ReloadTemps = 103,
+    ReloadTemps = 102,
     //更新赛季
-    UpdateSeason = 104,
+    UpdateSeason = 103,
 }
 
 impl ServerCommonCode {
@@ -65,6 +63,8 @@ pub enum RoomCode {
     Min = 20001,
     //创建房间
     CreateRoom = 20003,
+    //离开房间
+    LeaveRoom = 20004,
     //T人
     Kick = 20005,
     //换队伍
@@ -85,9 +85,11 @@ pub enum RoomCode {
     Emoji = 20013,
     //选择角色技能
     ChoiceSkill = 20014,
+    //确认进入房间，只针对匹配模式有用
+    ConfirmIntoRoom = 20015,
     //--------------------------------------以下战斗相关---------------------------
     //战斗结算
-    Summary = 20015,
+    Summary = 21000,
     //返回最大值
     Max = 30000,
 }
@@ -177,8 +179,8 @@ pub enum ClientCode {
     ChoiceRoundOrderNotice = 10026,
     //选择占位推送
     StartChoiceIndexNotice = 10027,
-    //跳过选回合顺序推送
-    SkipChoiceTurnNotice = 10028,
+    //“进入房间”取消通知
+    IntoRoomCancelNotice = 10028,
     //--------------------------------------以下战斗相关---------------------------
     //战斗开始推送
     BattleStartedNotice = 10030,

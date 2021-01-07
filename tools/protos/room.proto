@@ -2,6 +2,20 @@ syntax = "proto3";
 package protos;
 import "base.proto";
 
+// pub enum RoomState {
+//     AwaitConfirm = 0,  //等待进入 只有匹配模式才会有到壮体啊
+//     Await = 1,         //等待
+//     ChoiceIndex = 2,   //选择占位
+//     BattleStarted = 3, //战斗开始
+//     BattleOvered = 4,  //战斗结束
+// }
+
+// pub enum MemberState {
+//     AwaitConfirm = 0,
+//     NotReady = 1,
+//     Ready = 2,
+// }
+
 //创建房间请求
 //cmd:1006
 message C_CREATE_ROOM{
@@ -187,4 +201,16 @@ message S_EMOJI_NOTICE{
 message S_ROOM_MEMBER_LEAVE_NOTICE{
     uint32 notice_type = 1;//类型 1:自己离开 2:被T出去
     uint32 user_id = 2;//离开的玩家id
+}
+
+//确认进入房间  此消息没有服务器不返回
+//cmd:20015
+message C_CONFIRM_INTO_ROOM{
+    bool confirm = 1;//false为不进入房间，true为确定进入房间
+}
+
+//进入房间取消通知  此消息没有任何数据内容
+//cmd:10028
+message S_INTO_ROOM_CANCEL_NOTICE{
+    
 }

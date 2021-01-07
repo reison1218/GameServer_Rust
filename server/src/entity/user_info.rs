@@ -30,10 +30,19 @@ pub struct User {
     pub last_off_time: String, //上次离线时间
     pub last_character: u32, //上次使用对角色
     pub total_online_time: u64, //总在线时间
+    pub punish_match: PunishMatch, //匹配惩数据
     pub sync_time: u32,    //同步时间
     pub dlc: Vec<u32>,     //dlc
     #[serde(skip_serializing)]
     pub version: Cell<u32>, //数据版本号
+}
+
+///匹配惩罚数据
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PunishMatch {
+    pub start_time: u64, //开始惩罚时间
+    pub punish_id: u8,   //惩罚id
 }
 
 ///为User实现Entiry

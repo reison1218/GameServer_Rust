@@ -65,10 +65,11 @@ pub enum MemberLeaveNoticeType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomState {
-    Await = 0,         //等待
-    ChoiceIndex = 1,   //选择占位
-    BattleStarted = 2, //战斗开始
-    BattleOvered = 3,  //战斗结束
+    AwaitConfirm = 0,  //等待进入 只有匹配模式才会有到壮体啊
+    Await = 1,         //等待
+    ChoiceIndex = 2,   //选择占位
+    BattleStarted = 3, //战斗开始
+    BattleOvered = 4,  //战斗结束
 }
 
 ///房间结构体，封装房间必要信息
@@ -119,12 +120,17 @@ impl Room {
         str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
+        let mut room_state = RoomState::Await;
+        if room_type == RoomType::Match {
+            room_state = RoomState::AwaitConfirm;
+            owner.state = MemberState::AwaitConfirm;
+        }
         let mut room = Room {
             id,
             owner_id: user_id,
             members: HashMap::new(),
             member_index: [0; MEMBER_MAX as usize],
-            state: RoomState::Await,
+            state: room_state,
             setting: RoomSetting::default(),
             room_type,
             tcp_sender: sender,
@@ -159,6 +165,15 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    pub fn check_all_confirmed_into_room(&self) -> bool {
+        for member in self.members.values() {
+            if member.state == MemberState::AwaitConfirm {
+                return false;
+            }
+        }
+        true
     }
 
     ///转发到游戏中心服
@@ -226,8 +241,8 @@ impl Room {
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
         let member = self.members.get_mut(user_id).unwrap();
         match pregare_cancel {
-            true => member.state = MemberState::Ready as u8,
-            false => member.state = MemberState::NotReady as u8,
+            true => member.state = MemberState::Ready,
+            false => member.state = MemberState::NotReady,
         }
         //通知其他玩家
         let mut spc = S_PREPARE_CANCEL::new();
@@ -341,7 +356,7 @@ impl Room {
         let mut index = 0;
         let room_type = self.room_type;
         for member in self.members.values() {
-            let res = member.state == MemberState::Ready as u8;
+            let res = member.state == MemberState::Ready;
             //如果是房主，并且是自定义房间
             if member.user_id == self.owner_id && room_type == RoomType::Custom {
                 index += 1;

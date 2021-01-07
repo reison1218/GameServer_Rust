@@ -277,6 +277,7 @@ impl RoomModel for MatchRoom {
         let room_id = *room_id;
         let member_count = room.get_member_count();
         room.remove_member(notice_type, user_id, need_push_self);
+        room.state = RoomState::AwaitConfirm;
         let need_remove = room.is_empty();
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
@@ -286,7 +287,7 @@ impl RoomModel for MatchRoom {
             && now_count < member_count
         {
             room.do_cancel_prepare();
-            if room.get_state() == RoomState::Await {
+            if room.get_state() == RoomState::AwaitConfirm {
                 need_add_cache = true;
             }
         }

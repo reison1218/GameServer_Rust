@@ -8,7 +8,7 @@ use crossbeam::channel::Sender;
 use log::{info, warn};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, ClientCode, ServerCommonCode};
+use tools::cmd_code::{BattleCode, ServerCommonCode};
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet) -> anyhow::Result<()>, RandomState>;
@@ -60,20 +60,6 @@ impl BattleMgr {
 
     pub fn get_game_center_channel_mut(&mut self) -> &mut Sender<Vec<u8>> {
         self.game_center_channel.as_mut().unwrap()
-    }
-
-    ///检查玩家是否已经在房间里
-    pub fn check_player(&self, user_id: &u32) -> bool {
-        self.player_room.contains_key(user_id)
-    }
-
-    pub fn get_room_id(&self, user_id: &u32) -> Option<u32> {
-        let res = self.player_room.get(user_id);
-        if res.is_none() {
-            return None;
-        }
-        let res = res.unwrap();
-        return Some(*res);
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用

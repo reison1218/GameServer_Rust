@@ -6,11 +6,13 @@ pub mod http;
 use crate::mgr::game_center_mgr::GameCenterMgr;
 use async_std::sync::Mutex;
 use async_trait::async_trait;
-use log::warn;
+use log::{warn,error};
 use std::sync::Arc;
 use tools::cmd_code::ServerCommonCode;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RoomCode};
 use tools::util::packet::Packet;
+use async_std::task::block_on;
+use tools::tcp::Handler;
 
 #[async_trait]
 trait Forward {
@@ -33,11 +35,10 @@ trait Forward {
             let bytes = packet.build_server_bytes();
 
             //需要自己处理的数据
-            lock.handler(&packet);
+            lock.handler(&packet,gate_token);
 
             //处理公共的命令
             if cmd == ServerCommonCode::LineOff.into_u32()
-                || cmd == ServerCommonCode::LeaveRoom.into_u32()
             {
                 //发给房间中心
                 let res = lock.get_room_center_mut().send(bytes.clone());
@@ -61,11 +62,6 @@ trait Forward {
             } else if cmd > RoomCode::Min.into_u32()//转发给房间服
                 && cmd < RoomCode::Max.into_u32()
             {
-                //绑定玩家到gate
-                let user_id = packet.get_user_id();
-                if let Some(gate_token) = gate_token{
-                    lock.bound_user_w_gate(user_id,gate_token);
-                }
                 //发消息到房间服
                 let res = lock.get_room_center_mut().send(bytes);
                 if let Err(e) = res {
@@ -94,5 +90,14 @@ trait Forward {
             //玩家离开房间，解除玩家绑定
             lock.user_leave(cmd, user_id);
         }
+    }
+}
+
+
+async fn new_server_tcp(address:String,handler:impl Handler){
+    let res = block_on(tools::tcp::tcp_server::new(address, handler));
+    if let Err(e) = res {
+        error!("{:?}", e);
+        std::process::abort();
     }
 }

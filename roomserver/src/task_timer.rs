@@ -116,7 +116,7 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     if room.get_member_count() as u8 != MEMBER_MAX {
         let mut v = Vec::new();
         for member in room.members.values() {
-            if member.state == MemberState::Ready as u8 {
+            if member.state == MemberState::Ready {
                 v.push(member.user_id);
             }
         }
@@ -132,7 +132,7 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
         //满都就把未准备都玩家t出去
         let mut v = Vec::new();
         for member in room.members.values() {
-            if member.state == MemberState::NotReady as u8 {
+            if member.state == MemberState::NotReady {
                 v.push(member.user_id);
             }
         }

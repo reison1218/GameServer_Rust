@@ -144,14 +144,30 @@ impl Room {
         }
         let is_battle_over;
         let summary_protos = self.battle_data.summary();
+        //发给游戏服同步结算数据
         if summary_protos.len() > 0 {
-            let mut brs = B_R_SUMMARY::new();
             for sp in summary_protos {
-                brs.summary_datas.push(sp.get_summary_data().clone());
                 let user_id = sp.get_summary_data().user_id;
-                let bytes = sp.write_to_bytes().unwrap();
-                //发给游戏服同步结算数据
-                self.send_2_game(GameCode::Summary.into_u32(), user_id, bytes.clone());
+                let res = sp.write_to_bytes();
+                match res {
+                    Ok(bytes) => {
+                        self.send_2_game(GameCode::Summary.into_u32(), user_id, bytes.clone());
+                    }
+                    Err(e) => {
+                        error!("{:?}", e)
+                    }
+                }
+            }
+        }
+
+        //发给房间服
+        if self.state == RoomState::BattleOvered {
+            let mut brs = B_R_SUMMARY::new();
+            for spa_v in self.battle_data.summary_vec.iter_mut() {
+                for sp in spa_v.iter_mut() {
+                    let smp = sp.clone().into();
+                    brs.summary_datas.push(smp);
+                }
             }
             let bytes = brs.write_to_bytes();
             match bytes {
@@ -234,18 +250,6 @@ impl Room {
 
         //开始执行占位逻辑
         self.build_choice_index_task();
-    }
-
-    pub fn get_member_vec(&self) -> Vec<u32> {
-        let mut v = Vec::new();
-        for member in self.member_index.iter() {
-            let member_id = *member;
-            if member_id <= 0 {
-                continue;
-            }
-            v.push(member_id);
-        }
-        v
     }
 
     ///判断选择是否能选
@@ -509,23 +513,8 @@ impl Room {
         }
     }
 
-    pub fn get_member_index(&self, user_id: u32) -> i32 {
-        for i in 0..self.member_index.len() {
-            if self.member_index[i] != user_id {
-                continue;
-            }
-            return i as i32;
-        }
-        -1_i32
-    }
-
     pub fn get_state(&self) -> RoomState {
         self.state
-    }
-
-    ///获得房主ID
-    pub fn get_owner_id(&self) -> u32 {
-        self.owner_id
     }
 
     ///获得房间类型
@@ -536,16 +525,6 @@ impl Room {
     ///获取房号
     pub fn get_room_id(&self) -> u32 {
         self.id
-    }
-
-    ///判断成员是否存在
-    pub fn is_exist_member(&self, user_id: &u32) -> bool {
-        self.members.contains_key(user_id)
-    }
-
-    ///获得玩家数量
-    pub fn get_member_count(&self) -> usize {
-        self.members.len()
     }
 
     ///移除玩家

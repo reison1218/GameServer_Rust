@@ -59,21 +59,14 @@ impl BattleData {
         }
         if need_summary {
             for spa_v in self.summary_vec.iter_mut() {
-                for sp in spa_v.iter_mut() {
-                    let mut smp = SummaryDataPt::new();
-                    smp.user_id = sp.user_id;
-                    smp.cter_id = sp.cter_id;
-                    smp.rank = sp.rank as u32;
-                    smp.grade = sp.grade as u32;
-                    smp.reward_score = sp.reward_score;
-                    smp.league_score = sp.league_score as u32;
-                    smp.league_id = sp.league_id as u32;
+                for su in spa_v.iter_mut() {
+                    let smp: SummaryDataPt = su.clone().into();
                     ssn.summary_datas.push(smp.clone());
-                    if !sp.push_to_server {
+                    if !su.push_to_server {
                         let mut bg = B_G_SUMMARY::new();
                         bg.set_summary_data(smp);
                         bgs.push(bg);
-                        sp.push_to_server = true;
+                        su.push_to_server = true;
                     }
                 }
             }

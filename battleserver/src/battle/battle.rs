@@ -18,7 +18,7 @@ use crossbeam::channel::Sender;
 use log::error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use tools::protos::base::ActionUnitPt;
+use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
 
 ///物品结构体
@@ -65,6 +65,19 @@ impl From<&BattleCharacter> for SummaryUser {
         sp.grade = cter.base_attr.grade;
         sp.league_score = cter.league.score;
         sp
+    }
+}
+impl Into<SummaryDataPt> for SummaryUser {
+    fn into(self) -> SummaryDataPt {
+        let mut smp = SummaryDataPt::new();
+        smp.user_id = self.user_id;
+        smp.cter_id = self.cter_id;
+        smp.rank = self.rank as u32;
+        smp.grade = self.grade as u32;
+        smp.reward_score = self.reward_score;
+        smp.league_score = self.league_score as u32;
+        smp.league_id = self.league_id as u32;
+        smp
     }
 }
 

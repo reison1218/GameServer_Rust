@@ -44,10 +44,11 @@ pub enum RoomType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomState {
-    Await = 0,         //等待
-    ChoiceIndex = 1,   //选择占位
-    BattleStarted = 2, //战斗开始
-    BattleOvered = 3,  //战斗结束
+    AwaitConfirm = 0,  //等待进入 只有匹配模式才会有到壮体啊
+    Await = 1,         //等待
+    ChoiceIndex = 2,   //选择占位
+    BattleStarted = 3, //战斗开始
+    BattleOvered = 4,  //战斗结束
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]

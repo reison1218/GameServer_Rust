@@ -1,7 +1,6 @@
 use crate::mgr::game_center_mgr::GameCenterMgr;
-use crate::net::Forward;
+use crate::net::{Forward, new_server_tcp};
 use async_std::sync::Mutex;
-use async_std::task::block_on;
 use async_trait::async_trait;
 use log::error;
 use std::sync::Arc;
@@ -67,8 +66,6 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: String, rm: Arc<Mutex<GameCenterMgr>>) {
     let sh = GateTcpServerHandler { token:0,gm: rm };
-    let m = async move {
-        let _ = block_on(tools::tcp::tcp_server::new(address, sh));
-    };
+    let m = new_server_tcp(address,sh);
     async_std::task::spawn(m);
 }

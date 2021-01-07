@@ -13,13 +13,6 @@ pub struct Member {
     pub join_time: u64,        //玩家进入房间的时间
 }
 
-impl Member {
-    ///获得玩家id
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-}
-
 impl From<&MemberPt> for Member {
     fn from(mp: &MemberPt) -> Self {
         let mut m = Member::default();

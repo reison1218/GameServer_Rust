@@ -4,7 +4,7 @@ use crate::battle::battle_skill::Skill;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::Room;
-use crate::room::{MemberLeaveNoticeType, RoomState, RoomType};
+use crate::room::{MemberLeaveNoticeType, RoomState};
 use crate::SEASON;
 use log::{error, info, warn};
 use protobuf::Message;

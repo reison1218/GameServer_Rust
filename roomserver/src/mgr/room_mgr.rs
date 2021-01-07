@@ -1,7 +1,7 @@
 use crate::handlers::room_handler::{
-    change_team, choice_skills, choose_character, create_room, emoji, join_room, kick_member,
-    leave_room, prepare_cancel, reload_temps, room_setting, search_room, start, summary,
-    update_season,
+    change_team, choice_skills, choose_character, confirm_into_room, create_room, emoji, join_room,
+    kick_member, leave_room, off_line, prepare_cancel, reload_temps, room_setting, search_room,
+    start, summary, update_season,
 };
 use crate::room::room::Room;
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
@@ -236,12 +236,12 @@ impl RoomMgr {
         //热更静态配置
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
-        //离开房间
-        self.cmd_map
-            .insert(ServerCommonCode::LeaveRoom.into_u32(), leave_room);
         //离线
         self.cmd_map
-            .insert(ServerCommonCode::LineOff.into_u32(), leave_room);
+            .insert(ServerCommonCode::LineOff.into_u32(), off_line);
+        //离开房间
+        self.cmd_map
+            .insert(RoomCode::LeaveRoom.into_u32(), leave_room);
         //创建房间
         self.cmd_map
             .insert(RoomCode::CreateRoom.into_u32(), create_room);
@@ -271,6 +271,9 @@ impl RoomMgr {
             .insert(RoomCode::ChoiceSkill.into_u32(), choice_skills);
         //发送表情
         self.cmd_map.insert(RoomCode::Emoji.into_u32(), emoji);
+        //结算处理
+        self.cmd_map
+            .insert(RoomCode::ConfirmIntoRoom.into_u32(), confirm_into_room);
         //结算处理
         self.cmd_map.insert(RoomCode::Summary.into_u32(), summary);
         //开始游戏
