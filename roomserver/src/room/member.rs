@@ -1,8 +1,9 @@
 use crate::room::character::{Character, League};
+use log::warn;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
-use tools::protos::base::MemberPt;
+use tools::protos::base::{MemberPt, PunishMatchPt};
 use tools::protos::server_protocol::PlayerBattlePt;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -44,6 +45,7 @@ pub struct Member {
     pub is_robot: bool,                 //是否的机器人
     pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
     pub chose_cter: Character,          //玩家已经选择的角色
+    pub punish_match: PunishMatch,      //匹配惩罚数据
     pub join_time: u64,                 //玩家进入房间的时间
 }
 
@@ -51,6 +53,41 @@ impl Member {
     ///获得玩家id
     pub fn get_user_id(&self) -> u32 {
         self.user_id
+    }
+
+    ///校验是否可匹配
+    pub fn can_match(&mut self) -> bool {
+        //处理惩罚
+        self.handler_punish_match();
+        //判断是否可以进行匹配
+        if self.punish_match.punish_id == 0 {
+            return true;
+        }
+        false
+    }
+
+    ///处理匹配惩罚
+    fn handler_punish_match(&mut self) {
+        let start_time = self.punish_match.start_time;
+        let id = self.punish_match.punish_id as u32;
+        let punish_temp = crate::TEMPLATES.get_punish_temp_mgr_ref().get_temp(&id);
+        if let Err(e) = punish_temp {
+            warn!("{:?}", e);
+            return;
+        }
+        let punish_temp = punish_temp.unwrap();
+        let end_time = start_time + punish_temp.punish_time;
+        //处理跨天清0
+        let is_today = tools::util::is_today(start_time);
+        if !is_today && start_time > 0 {
+            self.punish_match.reset();
+            return;
+        }
+        //处理过期
+        let now_time = chrono::Local::now().timestamp_millis();
+        if now_time >= end_time {
+            self.punish_match.reset();
+        }
     }
 }
 
@@ -80,6 +117,7 @@ impl From<PlayerBattlePt> for Member {
             cters.insert(cter.cter_id, cter);
         }
         member.cters = cters;
+        member.punish_match = PunishMatch::from(pbp.get_punish_match());
         member
     }
 }
@@ -98,5 +136,37 @@ impl Into<MemberPt> for Member {
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
         mp
+    }
+}
+
+///匹配惩罚数据
+#[derive(Debug, Clone, Copy, Default)]
+pub struct PunishMatch {
+    pub start_time: i64, //开始惩罚时间
+    pub punish_id: u8,   //惩罚id
+}
+
+impl PunishMatch {
+    pub fn reset(&mut self) {
+        self.start_time = 0;
+        self.punish_id = 0;
+    }
+}
+
+impl Into<PunishMatchPt> for PunishMatch {
+    fn into(self) -> PunishMatchPt {
+        let mut pmp = PunishMatchPt::new();
+        pmp.punish_id = self.punish_id as u32;
+        pmp.start_time = self.start_time;
+        pmp
+    }
+}
+
+impl From<&PunishMatchPt> for PunishMatch {
+    fn from(pmp: &PunishMatchPt) -> Self {
+        let mut pm = PunishMatch::default();
+        pm.punish_id = pmp.punish_id as u8;
+        pm.start_time = pmp.start_time;
+        pm
     }
 }

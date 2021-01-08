@@ -164,6 +164,6 @@ message CellBuffPt{
 
 //惩罚数据
 message PunishMatchPt{
-    uint64 start_time = 1;           //开始时间
+    int64 start_time = 1;           //开始时间
     uint32 punish_id = 2;            //惩罚id
 }

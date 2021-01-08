@@ -111,6 +111,7 @@ pub enum BattleCode {
     Action = 30004,      //请求行动
     Pos = 30005,         //架势请求
     Emoji = 30006,       //表情符号
+    LeaveRoom = 39999,   //离开房间
     Max = 40000,
 }
 

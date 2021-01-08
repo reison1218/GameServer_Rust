@@ -1,3 +1,5 @@
+use chrono::Timelike;
+
 ///bytebuf封装，用户读写字节数组
 pub mod bytebuf {
     pub enum ReadError {
@@ -424,4 +426,19 @@ pub mod packet {
             }
         }
     }
+}
+
+///判断给定时间是不是今天
+pub fn is_today(time: i64) -> bool {
+    let mut today = chrono::Local::now();
+    today = today.with_hour(0).unwrap();
+    today = today.with_minute(0).unwrap();
+    today = today.with_second(0).unwrap();
+    today = today.with_second(0).unwrap();
+    let today = today.timestamp_millis();
+    let next_day = today + 86400 * 1000;
+    if time >= today && time <= next_day {
+        return true;
+    }
+    false
 }

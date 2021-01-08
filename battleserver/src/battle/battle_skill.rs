@@ -964,7 +964,21 @@ pub unsafe fn transform(
         return None;
     }
     //更新位置
-    cter.set_map_cell_index(index);
+    let v = battle_data
+        .as_mut()
+        .unwrap()
+        .handler_cter_move(user_id, index, au);
+
+    if let Err(e) = v {
+        warn!("{:?}", e.to_string());
+        return None;
+    }
+    let v = v.unwrap();
+    //判断玩家死了没
+    if cter.is_died() {
+        return Some(v);
+    }
+
     let skill = cter.skills.get_mut(&skill_id).unwrap();
     let consume_type = skill.skill_temp.consume_type;
     let consume_value = skill.skill_temp.consume_value;

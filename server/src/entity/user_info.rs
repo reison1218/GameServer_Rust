@@ -42,7 +42,7 @@ pub struct User {
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PunishMatch {
-    pub start_time: u64, //开始惩罚时间
+    pub start_time: i64, //开始惩罚时间
     pub punish_id: u8,   //惩罚id
 }
 

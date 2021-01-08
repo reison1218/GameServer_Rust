@@ -4984,7 +4984,7 @@ impl ::protobuf::reflect::ProtobufValue for CellBuffPt {
 #[derive(PartialEq,Clone,Default)]
 pub struct PunishMatchPt {
     // message fields
-    pub start_time: u64,
+    pub start_time: i64,
     pub punish_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -5002,10 +5002,10 @@ impl PunishMatchPt {
         ::std::default::Default::default()
     }
 
-    // uint64 start_time = 1;
+    // int64 start_time = 1;
 
 
-    pub fn get_start_time(&self) -> u64 {
+    pub fn get_start_time(&self) -> i64 {
         self.start_time
     }
     pub fn clear_start_time(&mut self) {
@@ -5013,7 +5013,7 @@ impl PunishMatchPt {
     }
 
     // Param is passed by value, moved
-    pub fn set_start_time(&mut self, v: u64) {
+    pub fn set_start_time(&mut self, v: i64) {
         self.start_time = v;
     }
 
@@ -5046,7 +5046,7 @@ impl ::protobuf::Message for PunishMatchPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint64()?;
+                    let tmp = is.read_int64()?;
                     self.start_time = tmp;
                 },
                 2 => {
@@ -5081,7 +5081,7 @@ impl ::protobuf::Message for PunishMatchPt {
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
         if self.start_time != 0 {
-            os.write_uint64(1, self.start_time)?;
+            os.write_int64(1, self.start_time)?;
         }
         if self.punish_id != 0 {
             os.write_uint32(2, self.punish_id)?;
@@ -5124,7 +5124,7 @@ impl ::protobuf::Message for PunishMatchPt {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt64>(
                 "start_time",
                 |m: &PunishMatchPt| { &m.start_time },
                 |m: &mut PunishMatchPt| { &mut m.start_time },
@@ -5233,7 +5233,7 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"\
     H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\
     \x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"K\n\rPunish\
-    MatchPt\x12\x1d\n\nstart_time\x18\x01\x20\x01(\x04R\tstartTime\x12\x1b\n\
+    MatchPt\x12\x1d\n\nstart_time\x18\x01\x20\x01(\x03R\tstartTime\x12\x1b\n\
     \tpunish_id\x18\x02\x20\x01(\rR\x08punishIdb\x06proto3\
 ";
 

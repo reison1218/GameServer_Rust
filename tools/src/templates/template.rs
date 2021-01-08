@@ -6,6 +6,7 @@ use crate::templates::constant_temp::{ConstantTemp, ConstantTempMgr};
 use crate::templates::emoji_temp::{EmojiTemp, EmojiTempMgr};
 use crate::templates::item_temp::{ItemTemp, ItemTempMgr};
 use crate::templates::league_temp::{LeagueTemp, LeagueTempMgr};
+use crate::templates::punish_temp::{PunishTemp, PunishTempMgr};
 use crate::templates::robot_temp::{RobotTemp, RobotTempMgr};
 use crate::templates::season_temp::{SeasonTemp, SeasonTempMgr};
 use crate::templates::skill_judge_temp::{SkillJudgeTemp, SkillJudgeTempMgr};
@@ -14,7 +15,7 @@ use crate::templates::skill_temp::{SkillTemp, SkillTempMgr};
 use crate::templates::summary_award_temp::{SummaryAwardTemp, SummaryAwardTempMgr};
 use crate::templates::template_name_constants::{
     BATTLE_LIMIT_TIME, BUFF, CELL_TEMPLATE, CHARACTER_TEMPLATE, CONSTANT_TEMPLATE, EMOJI_TEMPLATE,
-    ITEM_TEMPLATE, LEAGUE, ROBOT, SEASON, SKILL_JUDGE_TEMPLATE, SKILL_SCOPE_TEMPLATE,
+    ITEM_TEMPLATE, LEAGUE, PUNISH, ROBOT, SEASON, SKILL_JUDGE_TEMPLATE, SKILL_SCOPE_TEMPLATE,
     SKILL_TEMPLATE, SUMMARY_AWARD, TILE_MAP_TEMPLATE, WORLD_CELL_TEMPLATE,
 };
 use crate::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
@@ -51,6 +52,7 @@ pub struct TemplatesMgr {
     league_temp_mgr: LeagueTempMgr,                     //段位配置mgr
     summary_award_temp_mgr: SummaryAwardTempMgr,        //结算奖励配置mgr
     battle_limit_time_temp_mgr: BattleLimitTimeTempMgr, //战斗turn时间限制模版
+    punish_temp_mgr: PunishTempMgr,                     //惩罚时间
 }
 
 impl TemplatesMgr {
@@ -122,6 +124,10 @@ impl TemplatesMgr {
         self.battle_limit_time_temp_mgr.borrow()
     }
 
+    pub fn get_punish_temp_mgr_ref(&self) -> &PunishTempMgr {
+        self.punish_temp_mgr.borrow()
+    }
+
     pub fn reload_temps(&self, path: &str) -> anyhow::Result<()> {
         let mgr_ptr = self as *const TemplatesMgr as *mut TemplatesMgr;
         unsafe {
@@ -142,6 +148,7 @@ impl TemplatesMgr {
             mgr_mut.league_temp_mgr.clear();
             mgr_mut.summary_award_temp_mgr.clear();
             mgr_mut.battle_limit_time_temp_mgr.clear();
+            mgr_mut.punish_temp_mgr.clear();
             let res = read_templates_from_dir(path, mgr_mut);
             if let Err(e) = res {
                 error!("{:?}", e);
@@ -231,6 +238,9 @@ fn read_templates_from_dir<P: AsRef<Path>>(
         } else if name.eq_ignore_ascii_case(BATTLE_LIMIT_TIME) {
             let v: Vec<BattleLimitTimeTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.battle_limit_time_temp_mgr.init(v);
+        } else if name.eq_ignore_ascii_case(PUNISH) {
+            let v: Vec<PunishTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.punish_temp_mgr.init(v);
         }
     }
     Ok(())

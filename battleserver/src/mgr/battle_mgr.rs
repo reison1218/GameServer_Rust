@@ -115,15 +115,15 @@ impl BattleMgr {
         //掉线
         self.cmd_map
             .insert(ServerCommonCode::LineOff.into_u32(), leave_room);
-        //离开房间
-        self.cmd_map
-            .insert(ServerCommonCode::LeaveRoom.into_u32(), leave_room);
         //更新赛季信息
         self.cmd_map
             .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
+        //离开房间
+        self.cmd_map
+            .insert(BattleCode::LeaveRoom.into_u32(), leave_room);
         //开始战斗
         self.cmd_map.insert(BattleCode::Start.into_u32(), start);
 

@@ -1,4 +1,4 @@
-use tools::protos::base::{PlayerPt, ResourcesPt};
+use tools::protos::base::{PlayerPt, PunishMatchPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
@@ -184,7 +184,8 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     let last_character = user.get_user_info_ref().last_character;
     ppt.set_last_character(last_character);
     ppt.dlc.push(1);
-    let punish_match_pt = user.get_user_info_mut_ref().punish_match.into();
+    let mut punish_match_pt: PunishMatchPt = user.get_user_info_mut_ref().punish_match.into();
+    punish_match_pt.start_time /= 1000;
     ppt.set_punish_match(punish_match_pt);
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
     time = 0;

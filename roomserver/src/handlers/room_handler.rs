@@ -1,7 +1,7 @@
 use crate::mgr::room_mgr::RoomMgr;
 use crate::room::character::Character;
-use crate::room::member::Member;
 use crate::room::member::MemberState;
+use crate::room::member::{Member, PunishMatch};
 use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{RoomModel, RoomType, TeamId};
 use crate::SEASON;
@@ -203,7 +203,6 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-
     //校验玩家是否已经在房间里
     if rm.check_player(&user_id) {
         warn!(
@@ -218,6 +217,16 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let mut member = Member::from(grs.take_pbp());
     member.state = MemberState::AwaitConfirm;
+    member.punish_match = PunishMatch::from(grs.get_pbp().get_punish_match());
+
+    //校验是否允许匹配
+    if !member.can_match() {
+        warn!(
+            "search_room:this user could not match now!user_id:{},punish:{:?}",
+            user_id, member.punish_match
+        );
+        return Ok(());
+    }
     let room_id;
     match room_type {
         RoomType::Match => {

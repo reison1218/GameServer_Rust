@@ -60,4 +60,5 @@ chrono = "0.4.19"
 slab = "0.4.2"
 once_cell = "1.5.2"
 dhat = "0.2.1"
+time = "0.2.23"
 tools = { path = "../tools" }
