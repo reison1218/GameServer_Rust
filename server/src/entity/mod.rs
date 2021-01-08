@@ -132,7 +132,7 @@ pub trait Dao: Entity {
 ///作为trait object
 pub trait EntityData: Dao + Any {
     ///深拷贝函数
-    fn try_clone(&self) -> Box<dyn EntityData>;
+    fn try_clone_for_db(&self) -> Box<dyn EntityData>;
 }
 
 ///提供给http保存玩家数据的函数

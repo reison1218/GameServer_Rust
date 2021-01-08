@@ -11,7 +11,7 @@ use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::convert::TryFrom;
 use std::fmt::Debug;
-use tools::cmd_code::BattleCode;
+use tools::cmd_code::{BattleCode, ServerCommonCode};
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
@@ -568,7 +568,7 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         bm.rm_room(room_id);
     }
     //通知游戏服卸载玩家数据
-    if cmd == BattleCode::LeaveRoom.into_u32() {
+    if cmd == ServerCommonCode::LineOff.into_u32() {
         bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     }
     Ok(())

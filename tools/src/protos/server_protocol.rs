@@ -1805,6 +1805,180 @@ impl ::protobuf::reflect::ProtobufValue for PlayerBattlePt {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct B_R_G_PUNISH_MATCH {
+    // message fields
+    pub punish_match: ::protobuf::SingularPtrField<super::base::PunishMatchPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a B_R_G_PUNISH_MATCH {
+    fn default() -> &'a B_R_G_PUNISH_MATCH {
+        <B_R_G_PUNISH_MATCH as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl B_R_G_PUNISH_MATCH {
+    pub fn new() -> B_R_G_PUNISH_MATCH {
+        ::std::default::Default::default()
+    }
+
+    // .protos.PunishMatchPt punish_match = 1;
+
+
+    pub fn get_punish_match(&self) -> &super::base::PunishMatchPt {
+        self.punish_match.as_ref().unwrap_or_else(|| <super::base::PunishMatchPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_punish_match(&mut self) {
+        self.punish_match.clear();
+    }
+
+    pub fn has_punish_match(&self) -> bool {
+        self.punish_match.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_punish_match(&mut self, v: super::base::PunishMatchPt) {
+        self.punish_match = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_punish_match(&mut self) -> &mut super::base::PunishMatchPt {
+        if self.punish_match.is_none() {
+            self.punish_match.set_default();
+        }
+        self.punish_match.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_punish_match(&mut self) -> super::base::PunishMatchPt {
+        self.punish_match.take().unwrap_or_else(|| super::base::PunishMatchPt::new())
+    }
+}
+
+impl ::protobuf::Message for B_R_G_PUNISH_MATCH {
+    fn is_initialized(&self) -> bool {
+        for v in &self.punish_match {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.punish_match)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.punish_match.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.punish_match.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> B_R_G_PUNISH_MATCH {
+        B_R_G_PUNISH_MATCH::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::PunishMatchPt>>(
+                "punish_match",
+                |m: &B_R_G_PUNISH_MATCH| { &m.punish_match },
+                |m: &mut B_R_G_PUNISH_MATCH| { &mut m.punish_match },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<B_R_G_PUNISH_MATCH>(
+                "B_R_G_PUNISH_MATCH",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static B_R_G_PUNISH_MATCH {
+        static instance: ::protobuf::rt::LazyV2<B_R_G_PUNISH_MATCH> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(B_R_G_PUNISH_MATCH::new)
+    }
+}
+
+impl ::protobuf::Clear for B_R_G_PUNISH_MATCH {
+    fn clear(&mut self) {
+        self.punish_match.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for B_R_G_PUNISH_MATCH {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for B_R_G_PUNISH_MATCH {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"4\n\tR_B_STAR\
     T\x12'\n\x07room_pt\x18\x01\x20\x01(\x0b2\x0e.protos.RoomPtR\x06roomPt\"\
@@ -1826,7 +2000,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x05\x20\x01(\rR\x08\
     leagueId\x128\n\x0cpunish_match\x18\x06\x20\x01(\x0b2\x15.protos.PunishM\
     atchPtR\x0bpunishMatch\x12)\n\x05cters\x18\x07\x20\x03(\x0b2\x13.protos.\
-    CharacterPtR\x05ctersb\x06proto3\
+    CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_match\
+    \x18\x01\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatchb\x06prot\
+    o3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

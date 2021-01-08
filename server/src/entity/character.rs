@@ -45,8 +45,7 @@ impl Characters {
         let mut v: Vec<Box<dyn EntityData>> = Vec::new();
         for (_, cter) in self.cter_map.iter() {
             if cter.version.get() > 0 {
-                cter.version.set(0);
-                v.push(cter.try_clone());
+                v.push(cter.try_clone_for_db());
             }
         }
         v
@@ -186,8 +185,10 @@ impl Entity for Character {
 }
 
 impl EntityData for Character {
-    fn try_clone(&self) -> Box<dyn EntityData> {
-        Box::new(self.clone())
+    fn try_clone_for_db(&self) -> Box<dyn EntityData> {
+        let res = Box::new(self.clone());
+        self.version.set(0);
+        res
     }
 }
 

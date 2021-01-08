@@ -24,7 +24,7 @@ use tools::protos::battle::{
     S_BATTLE_START_NOTICE, S_CHOOSE_INDEX_NOTICE, S_MAP_REFRESH_NOTICE, S_START_NOTICE,
 };
 use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
-use tools::protos::server_protocol::B_R_SUMMARY;
+use tools::protos::server_protocol::{B_R_SUMMARY, B_R_G_PUNISH_MATCH};
 use tools::util::packet::Packet;
 
 ///房间结构体，封装房间必要信息
@@ -78,7 +78,7 @@ impl Room {
             owner_id,
             members,
             member_index,
-            state: RoomState::BattleStarted,
+            state: RoomState::ChoiceIndex,
             setting: room_setting,
             battle_data: BattleData::new(task_sender.clone(), tcp_sender.clone()),
             room_type,
@@ -88,6 +88,26 @@ impl Room {
             time,
         };
         Ok(room)
+    }
+
+    pub fn add_punish(&mut self, user_id: u32) {
+        let res = self.members.get_mut(&user_id);
+        if res.is_none(){
+            return;
+        }
+        let member = res.unwrap();
+        member.punish_match.add_punish();
+        let mut brg = B_R_G_PUNISH_MATCH::new();
+        brg.set_punish_match(member.punish_match.into());
+        let bytes = brg.write_to_bytes();
+        match bytes {
+            Ok(bytes) => {
+                self.send_2_server(GameCode::Punish.into_u32(), user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+            }
+        }
     }
 
     //随便获得一个玩家,如果玩家id==0,则代表没有玩家了
@@ -151,7 +171,7 @@ impl Room {
                 let res = sp.write_to_bytes();
                 match res {
                     Ok(bytes) => {
-                        self.send_2_game(GameCode::Summary.into_u32(), user_id, bytes.clone());
+                        self.send_2_server(GameCode::Summary.into_u32(), user_id, bytes.clone());
                     }
                     Err(e) => {
                         error!("{:?}", e)
@@ -175,7 +195,7 @@ impl Room {
                     let user_id = self.get_user();
                     if user_id > 0 {
                         //发给房间服同步结算数据
-                        self.send_2_game(RoomCode::Summary.into_u32(), user_id, bytes);
+                        self.send_2_server(RoomCode::Summary.into_u32(), user_id, bytes);
                     }
                 }
                 Err(e) => {
@@ -227,8 +247,8 @@ impl Room {
         true
     }
 
-    ///回客户端消息
-    pub fn send_2_game(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+    ///回其他服消息
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         let res = self.tcp_sender.send(bytes);
         if let Err(e) = res {
@@ -527,12 +547,26 @@ impl Room {
         self.id
     }
 
+    pub fn handler_punish(&mut self, user_id: u32) {
+        if self.room_type != RoomType::Match {
+            return;
+        }
+        let cter = self.get_battle_cter_mut_ref(&user_id).unwrap();
+        if cter.is_died() {
+            return;
+        }
+        self.add_punish(user_id);
+    }
+
     ///移除玩家
     pub fn remove_member(&mut self, notice_type: u8, user_id: &u32, need_push_self: bool) {
-        let res = self.members.get(user_id);
+        let res = self.members.get_mut(user_id);
         if res.is_none() {
             return;
         }
+
+        //处理匹配惩罚
+        self.handler_punish(*user_id);
 
         //通知客户端
         self.member_leave_notice(notice_type, user_id, need_push_self);

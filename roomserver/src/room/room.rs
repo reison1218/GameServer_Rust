@@ -1,4 +1,4 @@
-use crate::room::member::{Member, MemberState};
+use crate::room::member::{Member, MemberState, PunishMatch};
 use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::Task;
 use crate::TEMPLATES;
@@ -12,7 +12,7 @@ use rand::{thread_rng, Rng};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::str::FromStr;
-use tools::cmd_code::{BattleCode, ClientCode};
+use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
@@ -20,7 +20,7 @@ use tools::protos::room::{
     S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE,
     S_ROOM_NOTICE,
 };
-use tools::protos::server_protocol::R_B_START;
+use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -65,11 +65,9 @@ pub enum MemberLeaveNoticeType {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomState {
-    AwaitConfirm = 0,  //等待进入 只有匹配模式才会有到壮体啊
-    Await = 1,         //等待
-    ChoiceIndex = 2,   //选择占位
-    BattleStarted = 3, //战斗开始
-    BattleOvered = 4,  //战斗结束
+    AwaitConfirm = 0, //等待进入 只有匹配模式才会有到壮体啊
+    Await = 1,        //等待
+    ChoiceIndex = 2,  //选择占位
 }
 
 ///房间结构体，封装房间必要信息
@@ -165,6 +163,42 @@ impl Room {
         sr.set_room(room.convert_to_pt());
         room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         Ok(room)
+    }
+
+    ///离开房间检查是否需要添加惩罚
+    pub fn check_punish_for_leave(&mut self, user_id: u32) {
+        if self.room_type != RoomType::Match {
+            return;
+        }
+        let member_count = self.members.len();
+        //判断是否需要重制
+        let member = self.members.get_mut(&user_id);
+        if let None = member {
+            return;
+        }
+        let member = member.unwrap();
+        let mut res: Option<PunishMatch> = None;
+        //判断人满了没，满了就惩罚
+        if member_count == MEMBER_MAX as usize {
+            member.punish_match.add_punish();
+            res = Some(member.punish_match);
+        }
+        //同步到游戏服
+        if res.is_none() {
+            return;
+        }
+        let pm = res.unwrap();
+        let mut brg = B_R_G_PUNISH_MATCH::new();
+        brg.set_punish_match(pm.into());
+        let bytes = brg.write_to_bytes();
+        match bytes {
+            Ok(bytes) => {
+                self.send_2_server(GameCode::Punish.into_u32(), user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+            }
+        }
     }
 
     pub fn check_all_confirmed_into_room(&self) -> bool {
@@ -464,7 +498,7 @@ impl Room {
         }
 
         //通知客户端
-        if self.state != RoomState::BattleStarted {
+        if self.state != RoomState::ChoiceIndex {
             self.member_leave_notice(notice_type, user_id, nees_push_self);
         }
         //删除房间内玩家数据
@@ -546,7 +580,7 @@ impl Room {
     }
 
     pub fn is_started(&self) -> bool {
-        if self.state != RoomState::BattleStarted {
+        if self.state != RoomState::ChoiceIndex {
             false
         } else {
             true
@@ -555,10 +589,10 @@ impl Room {
 
     ///开始游戏
     pub fn start(&mut self) {
-        if self.state == RoomState::BattleStarted {
+        if self.state == RoomState::ChoiceIndex {
             return;
         }
-        self.state = RoomState::BattleStarted;
+        self.state = RoomState::ChoiceIndex;
         //通知战斗服务器，游戏开始战斗
         let user_id = self.owner_id;
         let mut rbs = R_B_START::new();

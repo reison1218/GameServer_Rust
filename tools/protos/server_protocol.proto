@@ -52,3 +52,8 @@ message PlayerBattlePt{
     PunishMatchPt punish_match = 6; //匹配惩罚
     repeated CharacterPt cters = 7; //玩家解锁的角色数组
 }
+
+///游戏服务器发给房间服务器，快速开始
+message B_R_G_PUNISH_MATCH{
+    PunishMatchPt punish_match = 1;//战斗服和房间服同步惩罚到游戏服
+}

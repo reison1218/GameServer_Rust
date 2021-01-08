@@ -1,16 +1,17 @@
 use crate::room::character::{Character, League};
-use tools::protos::base::MemberPt;
+use tools::protos::base::{MemberPt, PunishMatchPt};
 
 #[derive(Clone, Debug, Default)]
 pub struct Member {
-    pub user_id: u32,          //玩家id
-    pub nick_name: String,     //玩家昵称
-    pub grade: u8,             //玩家grade
-    pub league: League,        //段位数据
-    pub team_id: u8,           //玩家所属队伍id
-    pub is_robot: bool,        //是否的机器人
-    pub chose_cter: Character, //玩家已经选择的角色
-    pub join_time: u64,        //玩家进入房间的时间
+    pub user_id: u32,              //玩家id
+    pub nick_name: String,         //玩家昵称
+    pub grade: u8,                 //玩家grade
+    pub league: League,            //段位数据
+    pub team_id: u8,               //玩家所属队伍id
+    pub is_robot: bool,            //是否的机器人
+    pub chose_cter: Character,     //玩家已经选择的角色
+    pub punish_match: PunishMatch, //匹配惩罚数据
+    pub join_time: u64,            //玩家进入房间的时间
 }
 
 impl From<&MemberPt> for Member {
@@ -30,5 +31,37 @@ impl From<&MemberPt> for Member {
         m.team_id = mp.team_id as u8;
         m.chose_cter = Character::from(mp.cter.as_ref().unwrap());
         m
+    }
+}
+
+///匹配惩罚数据
+#[derive(Debug, Clone, Copy, Default)]
+pub struct PunishMatch {
+    pub start_time: i64, //开始惩罚时间
+    pub punish_id: u8,   //惩罚id
+}
+
+impl PunishMatch {
+    pub fn add_punish(&mut self) {
+        self.start_time = chrono::Local::now().timestamp_millis();
+        self.punish_id += 1;
+    }
+}
+
+impl Into<PunishMatchPt> for PunishMatch {
+    fn into(self) -> PunishMatchPt {
+        let mut pmp = PunishMatchPt::new();
+        pmp.punish_id = self.punish_id as u32;
+        pmp.start_time = self.start_time;
+        pmp
+    }
+}
+
+impl From<&PunishMatchPt> for PunishMatch {
+    fn from(pmp: &PunishMatchPt) -> Self {
+        let mut pm = PunishMatch::default();
+        pm.punish_id = pmp.punish_id as u8;
+        pm.start_time = pmp.start_time;
+        pm
     }
 }

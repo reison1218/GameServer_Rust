@@ -10,7 +10,8 @@ use tools::protos::base::PunishMatchPt;
 use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, B_G_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
+    PlayerBattlePt, B_G_SUMMARY, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
+    G_R_SEARCH_ROOM,
 };
 use tools::util::packet::Packet;
 
@@ -52,6 +53,15 @@ impl Into<PunishMatchPt> for PunishMatch {
         pmp.punish_id = self.punish_id as u32;
         pmp.start_time = self.start_time;
         pmp
+    }
+}
+
+impl From<&PunishMatchPt> for PunishMatch {
+    fn from(pmp: &PunishMatchPt) -> Self {
+        let mut pm = PunishMatch::default();
+        pm.punish_id = pmp.punish_id as u8;
+        pm.start_time = pmp.start_time;
+        pm
     }
 }
 
@@ -118,8 +128,10 @@ impl Entity for User {
 }
 
 impl EntityData for User {
-    fn try_clone(&self) -> Box<dyn EntityData> {
-        Box::new(self.clone())
+    fn try_clone_for_db(&self) -> Box<dyn EntityData> {
+        let res = Box::new(self.clone());
+        self.version.set(0);
+        res
     }
 }
 
@@ -409,6 +421,29 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+///更新玩家匹配惩罚数据
+pub fn punish_match(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+
+    let mut brg = B_R_G_PUNISH_MATCH::new();
+    let res = brg.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let user_data = gm.users.get_mut(&user_id);
+    if let None = user_data {
+        warn!("could not find UserData for user_id {}", user_id);
+        return Ok(());
+    }
+    let user_data = user_data.unwrap();
+    let user = user_data.get_user_info_mut_ref();
+    user.punish_match = PunishMatch::from(brg.get_punish_match());
+    user.add_version();
+    user_data.add_version();
+    Ok(())
+}
+
 ///匹配房间
 pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
@@ -481,5 +516,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         league.id = new_league_id;
         league.update_league_time();
     }
+    league.add_version();
+    user_data.add_version();
     Ok(())
 }

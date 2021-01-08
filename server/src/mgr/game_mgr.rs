@@ -1,6 +1,8 @@
 use crate::entity::user::UserData;
-use crate::entity::user_info::{create_room, join_room, modify_nick_name, search_room, summary};
-use crate::entity::EntityData;
+use crate::entity::user_info::{
+    create_room, join_room, modify_nick_name, punish_match, search_room, summary,
+};
+use crate::entity::{Entity, EntityData};
 use crate::SEASON;
 use chrono::Local;
 use log::{error, info};
@@ -79,14 +81,18 @@ impl GameMgr {
                 continue;
             };
             //装玩家
-            v.push(ud.get_user_info_ref().try_clone());
+            if ud.get_user_info_ref().get_version() > 0 {
+                v.push(ud.get_user_info_ref().try_clone_for_db());
+            }
             //装角色
             let c_v = ud.get_characters_mut_ref().get_need_update_array();
             for i in c_v {
                 v.push(i);
             }
             //装段位数据
-            v.push(ud.get_league_mut_ref().try_clone());
+            if ud.get_league_ref().get_version() > 0 {
+                v.push(ud.get_league_mut_ref().try_clone_for_db());
+            }
             //由于这里是深拷贝，所以在这里提前清空版本号，不然在接收方那边执行update，清空的版本号也是clone的
             ud.clear_version();
         }
@@ -132,6 +138,7 @@ impl GameMgr {
         self.cmd_map.insert(GameCode::JoinRoom as u32, join_room);
         self.cmd_map
             .insert(GameCode::SearchRoom as u32, search_room);
+        self.cmd_map.insert(GameCode::Punish as u32, punish_match);
         self.cmd_map.insert(GameCode::Summary as u32, summary);
     }
 }

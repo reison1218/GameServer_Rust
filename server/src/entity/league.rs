@@ -71,8 +71,10 @@ impl Entity for League {
 }
 
 impl EntityData for League {
-    fn try_clone(&self) -> Box<dyn EntityData> {
-        Box::new(self.clone())
+    fn try_clone_for_db(&self) -> Box<dyn EntityData> {
+        let res = Box::new(self.clone());
+        self.version.set(0);
+        res
     }
 }
 

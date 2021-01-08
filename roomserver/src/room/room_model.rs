@@ -190,7 +190,7 @@ impl RoomModel for CustomRoom {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
         room.remove_member(notice_type, user_id, need_push_self);
-        if room.state == RoomState::BattleStarted {
+        if room.state == RoomState::ChoiceIndex {
             return Ok(room_id);
         }
         let mut slr = S_LEAVE_ROOM::new();

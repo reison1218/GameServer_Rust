@@ -55,25 +55,15 @@ impl Member {
         self.user_id
     }
 
-    ///校验是否可匹配
-    pub fn can_match(&mut self) -> bool {
-        //处理惩罚
-        self.handler_punish_match();
-        //判断是否可以进行匹配
-        if self.punish_match.punish_id == 0 {
-            return true;
-        }
-        false
-    }
-
     ///处理匹配惩罚
-    fn handler_punish_match(&mut self) {
+    pub fn reset_punish_match(&mut self) -> Option<PunishMatch> {
+        //先判断是否需要重制
         let start_time = self.punish_match.start_time;
         let id = self.punish_match.punish_id as u32;
         let punish_temp = crate::TEMPLATES.get_punish_temp_mgr_ref().get_temp(&id);
         if let Err(e) = punish_temp {
             warn!("{:?}", e);
-            return;
+            return None;
         }
         let punish_temp = punish_temp.unwrap();
         let end_time = start_time + punish_temp.punish_time;
@@ -81,13 +71,15 @@ impl Member {
         let is_today = tools::util::is_today(start_time);
         if !is_today && start_time > 0 {
             self.punish_match.reset();
-            return;
+            return Some(self.punish_match);
         }
         //处理过期
         let now_time = chrono::Local::now().timestamp_millis();
         if now_time >= end_time {
             self.punish_match.reset();
+            return Some(self.punish_match);
         }
+        None
     }
 }
 
@@ -147,6 +139,10 @@ pub struct PunishMatch {
 }
 
 impl PunishMatch {
+    pub fn add_punish(&mut self) {
+        self.start_time = chrono::Local::now().timestamp_millis();
+        self.punish_id += 1;
+    }
     pub fn reset(&mut self) {
         self.start_time = 0;
         self.punish_id = 0;
