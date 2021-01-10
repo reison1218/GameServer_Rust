@@ -43,7 +43,7 @@ pub enum GameCode {
     //战斗结算
     Summary = 1009,
     //匹配惩罚同步
-    Punish = 1010,
+    SyncPunish = 1010,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值

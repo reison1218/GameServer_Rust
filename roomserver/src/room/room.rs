@@ -193,7 +193,7 @@ impl Room {
         let bytes = brg.write_to_bytes();
         match bytes {
             Ok(bytes) => {
-                self.send_2_server(GameCode::Punish.into_u32(), user_id, bytes);
+                self.send_2_server(GameCode::SyncPunish.into_u32(), user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);

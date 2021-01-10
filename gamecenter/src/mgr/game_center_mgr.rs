@@ -1,12 +1,12 @@
 use crossbeam::channel::Sender;
 use log::warn;
 use protobuf::Message;
+use serde_json::Value;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, ServerCommonCode, GameCode};
+use tools::cmd_code::{BattleCode, GameCode, ServerCommonCode};
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
-use serde_json::Value;
 
 #[derive(Default)]
 pub struct GameCenterMgr {
@@ -59,43 +59,48 @@ impl GameCenterMgr {
         packet.set_cmd(ServerCommonCode::UpdateSeason.into_u32());
         let bytes = packet.build_server_bytes();
         //通知gate(其实是通知游戏服务器)
-        for gate_client in self.gate_clients.values_mut(){
+        for gate_client in self.gate_clients.values_mut() {
             gate_client.send(bytes.clone());
         }
 
         //通知战斗服
-        for battle_client in self.battle_clients.values_mut(){
+        for battle_client in self.battle_clients.values_mut() {
             battle_client.send(bytes.clone());
         }
 
         //通知房间服
         let res = self.get_room_center_mut().send(bytes);
-        if let Err(e) = res{
+        if let Err(e) = res {
             warn!("{:?}", e);
         }
     }
 
-
-    pub fn notice_reload_temps(&mut self){
-        let bytes = Packet::build_packet_bytes(ServerCommonCode::ReloadTemps.into_u32(),0,Vec::new(),true,false);
+    pub fn notice_reload_temps(&mut self) {
+        let bytes = Packet::build_packet_bytes(
+            ServerCommonCode::ReloadTemps.into_u32(),
+            0,
+            Vec::new(),
+            true,
+            false,
+        );
         //通知gate reload_temps
-        for gate_client in self.gate_clients.values_mut(){
+        for gate_client in self.gate_clients.values_mut() {
             gate_client.send(bytes.clone());
         }
 
         //通知战斗服
-        for battle_client in self.battle_clients.values_mut(){
+        for battle_client in self.battle_clients.values_mut() {
             battle_client.send(bytes.clone());
         }
 
         //通知房间服
         let res = self.get_room_center_mut().send(bytes);
-        if let Err(e) = res{
+        if let Err(e) = res {
             warn!("{:?}", e);
         }
     }
 
-    pub fn handler(&mut self, packet: &Packet,gate_token:Option<usize>) {
+    pub fn handler(&mut self, packet: &Packet, gate_token: Option<usize>) {
         let cmd = packet.get_cmd();
         //开始战斗,负载均衡，分配战斗服务器
         if cmd == BattleCode::Start.into_u32() {
@@ -103,22 +108,32 @@ impl GameCenterMgr {
         }
         //绑定玩家到gate
         let user_id = packet.get_user_id();
-        if user_id<=0 || gate_token.is_none(){
+        if user_id <= 0 || gate_token.is_none() {
             return;
         }
         let gate_token = gate_token.unwrap();
-        self.bound_user_w_gate(user_id,gate_token);
+        self.bound_user_w_gate(user_id, gate_token);
     }
 
-    pub fn bound_user_w_gate(&mut self,user_id:u32,token:usize){
-        if user_id<=0{
+    pub fn bound_user_w_gate(&mut self, user_id: u32, token: usize) {
+        if user_id <= 0 {
             return;
         }
-        if token ==0{
+        if token == 0 {
             return;
         }
-        if !self.user_w_gate.contains_key(&user_id){
-            self.user_w_gate.insert(user_id,token);
+
+        let res = self.user_w_gate.get(&user_id);
+        match res {
+            Some(t) => {
+                let t = *t;
+                if t != token {
+                    self.user_w_gate.insert(user_id, token);
+                }
+            }
+            None => {
+                self.user_w_gate.insert(user_id, token);
+            }
         }
     }
 
@@ -149,8 +164,8 @@ impl GameCenterMgr {
     }
 
     ///玩家离开
-    pub fn user_leave(&mut self, cmd:u32,user_id:u32) {
-        if cmd == GameCode::UnloadUser.into_u32(){
+    pub fn user_leave(&mut self, cmd: u32, user_id: u32) {
+        if cmd == GameCode::UnloadUser.into_u32() {
             self.user_w_battle.remove(&user_id);
             self.user_w_gate.remove(&user_id);
         }

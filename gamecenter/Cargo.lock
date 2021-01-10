@@ -1622,6 +1622,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "byteorder",
+ "chrono",
  "crossbeam",
  "futures",
  "http-types",

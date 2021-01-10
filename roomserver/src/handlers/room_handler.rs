@@ -139,6 +139,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_id = room.get_room_id();
     let room_type = room.get_room_type();
     let member = room.get_member_ref(&user_id);
+    //如果成员不在房间，直接退出
     if let None = member {
         warn!(
             "this user is not in the room!user_id:{},room_id:{:?}",
@@ -149,7 +150,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let member = member.unwrap();
     let member_state = member.state;
 
-    //如果是匹配放，房间人满，而且未开始战斗，则不允许对出房间
+    //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::Match
         && room.get_member_count() == MEMBER_MAX as usize
         && room_state == RoomState::Await
@@ -169,9 +170,9 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    //如果战斗已经开始了,删除玩家，不要推送消息给客户端,战斗服已经处理过了
+    //如果战斗已经开始了,切是匹配房删除玩家，不要推送消息给客户端,战斗服已经处理过了
     if room_state == RoomState::ChoiceIndex {
-        if room_type != RoomType::Custom {
+        if room_type == RoomType::Match {
             rm.remove_member_without_push(user_id);
         }
         //通知战斗服进行处理
@@ -198,6 +199,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room = room.unwrap();
     let room_id = room.get_room_id();
     let room_state = room.get_state();
+    //不在房间就返回
     if !room.members.contains_key(&user_id) {
         warn!(
             "this user is not in the room!user_id:{},room_id:{:?}",
@@ -205,6 +207,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
+    //如果房间是等待状态
     if room_state == RoomState::Await {
         //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
         room.check_punish_for_leave(user_id);
@@ -268,7 +271,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let bytes = brg.write_to_bytes();
         match bytes {
             Ok(bytes) => {
-                rm.send_2_server(GameCode::Punish.into_u32(), user_id, bytes);
+                rm.send_2_server(GameCode::SyncPunish.into_u32(), user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);
