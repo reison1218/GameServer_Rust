@@ -5,6 +5,7 @@ use std::env;
 
 use tools::conf::Conf;
 use tools::templates::template::{TemplatesMgr, init_temps_mgr};
+use crate::mgr::rank_mgr::RankMgr;
 
 #[macro_use]
 extern crate lazy_static;
@@ -32,5 +33,6 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 fn main() {
-    println!("Hello, world!");
+    let mut rm = RankMgr::default();
+    rm.update_rank_info();
 }
