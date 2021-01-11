@@ -16,9 +16,9 @@ use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_PREPARE_CANCEL,
-    S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE,
-    S_ROOM_NOTICE,
+    S_CHANGE_TEAM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_MATCH_SUCCESS_NOTICE,
+    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE,
+    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
 };
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
 use tools::tcp::TcpSender;
@@ -157,11 +157,13 @@ impl Room {
         owner.join_time = Local::now().timestamp_millis() as u64;
         room.members.insert(user_id, owner);
         room.member_index[0] = user_id;
-        //返回客户端
-        let mut sr = S_ROOM::new();
-        sr.is_succ = true;
-        sr.set_room(room.convert_to_pt());
-        room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
+        if room.room_type != RoomType::Match {
+            //返回客户端
+            let mut sr = S_ROOM::new();
+            sr.is_succ = true;
+            sr.set_room(room.convert_to_pt());
+            room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
+        }
         Ok(room)
     }
 
@@ -238,13 +240,37 @@ impl Room {
         self.tcp_sender.send(bytes);
     }
 
+    pub fn push_match_success(&mut self) {
+        let mut user_id;
+        let smsn = S_MATCH_SUCCESS_NOTICE::new();
+        let bytes = smsn.write_to_bytes().unwrap();
+        for member in self.members.values() {
+            user_id = member.user_id;
+            //如果是机器人，则返回，不发送
+            if member.is_robot {
+                continue;
+            }
+            if member.state != MemberState::AwaitConfirm {
+                continue;
+            }
+            let res = Packet::build_packet_bytes(
+                ClientCode::MatchSuccessNotice.into_u32(),
+                user_id,
+                bytes.clone(),
+                true,
+                true,
+            );
+            self.tcp_sender.send(res);
+        }
+    }
+
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let mut user_id;
         for member in self.members.values() {
             user_id = member.user_id;
             //如果是机器人，则返回，不发送
             if member.is_robot {
-                return;
+                continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
             self.tcp_sender.send(bytes);
@@ -454,14 +480,17 @@ impl Room {
             break;
         }
 
-        //返回客户端消息
-        let mut sr = S_ROOM::new();
-        sr.is_succ = true;
-        sr.set_room(self.convert_to_pt());
-        self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
+        //不是匹配房就通知其他成员
+        if self.room_type != RoomType::Match {
+            //返回客户端消息
+            let mut sr = S_ROOM::new();
+            sr.is_succ = true;
+            sr.set_room(self.convert_to_pt());
+            self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
 
-        //通知房间里其他人
-        self.room_add_member_notice(&user_id);
+            //通知房间里其他人
+            self.room_add_member_notice(&user_id);
+        }
         Ok(self.id)
     }
 

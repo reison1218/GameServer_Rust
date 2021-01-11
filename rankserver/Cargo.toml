@@ -1,0 +1,23 @@
+[package]
+name = "rankserver"
+version = "0.1.0"
+authors = ["tangjian"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+protobuf="2.10.1"
+protoc-rust = "2.10.1"
+protobuf-codegen="2.10.1"
+crossbeam = "0.8"
+rayon = "1.5"
+async-trait = "0.1.41"
+futures = "0.3.9"
+log="0.4.8"
+chrono = "0.4.11"
+lazy_static = "1.4.0"
+serde = {version="1.0.105",features = ["derive"]}
+serde_json = "1.0.41"
+anyhow = "1.0.31"
+tools = { path = "../tools" }

@@ -470,18 +470,9 @@ pub struct StructTest {
 fn fn1(s: &mut String) {}
 
 fn main() -> anyhow::Result<()> {
-    let a = [0, 0, 0, 0, 0];
-    println!("{}", *a.iter().min_by(|x, y| x.cmp(y)).unwrap());
-    let mut today = chrono::Local::now();
-    today = today.with_day(31).unwrap();
-    today = today.with_day0(today.day0() + 1).unwrap();
-    today = today.with_hour(0).unwrap();
-    today = today.with_minute(0).unwrap();
-    today = today.with_second(0).unwrap();
-
-    let next_day = today.with_day(1).unwrap();
-    println!("{}", today.timestamp());
-    println!("{:?}", next_day);
+    let mut a = 10u32;
+    a.saturating_add(-100);
+    println!("{}", a);
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);

@@ -203,6 +203,12 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
     uint32 user_id = 2;//离开的玩家id
 }
 
+//匹配成功通知
+//cmd:10029
+message S_MATCH_SUCCESS_NOTICE{
+
+}
+
 //确认进入房间  此消息没有服务器不返回
 //cmd:20015
 message C_CONFIRM_INTO_ROOM{

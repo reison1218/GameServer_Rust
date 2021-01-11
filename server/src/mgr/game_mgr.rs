@@ -126,20 +126,20 @@ impl GameMgr {
     ///命令初始化
     fn cmd_init(&mut self) {
         self.cmd_map
-            .insert(ServerCommonCode::UpdateSeason as u32, update_season);
+            .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         self.cmd_map
-            .insert(ServerCommonCode::ReloadTemps as u32, reload_temps);
-        self.cmd_map.insert(SyncData as u32, sync);
-        self.cmd_map.insert(GameCode::UnloadUser as u32, off_line);
+            .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
+        self.cmd_map.insert(SyncData.into_u32(), sync);
+        self.cmd_map.insert(GameCode::UnloadUser.into_u32(), off_line);
         self.cmd_map
-            .insert(GameCode::ModifyNickName as u32, modify_nick_name);
+            .insert(GameCode::ModifyNickName.into_u32(), modify_nick_name);
         self.cmd_map
-            .insert(GameCode::CreateRoom as u32, create_room);
-        self.cmd_map.insert(GameCode::JoinRoom as u32, join_room);
+            .insert(GameCode::CreateRoom.into_u32(), create_room);
+        self.cmd_map.insert(GameCode::JoinRoom.into_u32(), join_room);
         self.cmd_map
-            .insert(GameCode::SearchRoom as u32, search_room);
-        self.cmd_map.insert(GameCode::Punish as u32, punish_match);
-        self.cmd_map.insert(GameCode::Summary as u32, summary);
+            .insert(GameCode::SearchRoom.into(), search_room);
+        self.cmd_map.insert(GameCode::SyncPunish.into_u32(), punish_match);
+        self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
     }
 }
 

@@ -60,6 +60,9 @@ impl Member {
         //先判断是否需要重制
         let start_time = self.punish_match.start_time;
         let id = self.punish_match.punish_id as u32;
+        if id == 0 {
+            return None;
+        }
         let punish_temp = crate::TEMPLATES.get_punish_temp_mgr_ref().get_temp(&id);
         if let Err(e) = punish_temp {
             warn!("{:?}", e);

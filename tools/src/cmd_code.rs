@@ -184,6 +184,8 @@ pub enum ClientCode {
     StartChoiceIndexNotice = 10027,
     //“进入房间”取消通知
     IntoRoomCancelNotice = 10028,
+    //匹配成功通知
+    MatchSuccessNotice = 10029,
     //--------------------------------------以下战斗相关---------------------------
     //战斗开始推送
     BattleStartedNotice = 10030,

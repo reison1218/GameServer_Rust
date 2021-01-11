@@ -162,6 +162,18 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
+    //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
+    if room_type == RoomType::Match
+        && room.get_member_count() == MEMBER_MAX as usize
+        && room_state == RoomState::AwaitConfirm
+    {
+        warn!(
+            "could not leave match room now! room_state:{:?},room_id:{},user_id:{}",
+            room_state, room_id, user_id
+        );
+        return Ok(());
+    }
+
     //房间为等待状态，并且已经准备了，则不允许退出房间
     if room_state == RoomState::Await && member_state == MemberState::Ready {
         warn!(
@@ -170,8 +182,9 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    //如果战斗已经开始了,切是匹配房删除玩家，不要推送消息给客户端,战斗服已经处理过了
+    //如果战斗已经开始了,交给战斗服处理
     if room_state == RoomState::ChoiceIndex {
+        //如果是匹配房，删除玩家数据，不需要推送，战斗服已经处理过了
         if room_type == RoomType::Match {
             rm.remove_member_without_push(user_id);
         }
@@ -220,6 +233,13 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     } else if room_state == RoomState::ChoiceIndex {
         rm.remove_member_without_push(user_id);
         return Ok(());
+    } else {
+        //通知游戏服卸载玩家数据
+        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+        let res = handler_leave_room(rm, user_id, false);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+        }
     }
     Ok(())
 }
@@ -983,6 +1003,24 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
         );
         return Ok(());
     }
+
+    let mut ccir = C_CONFIRM_INTO_ROOM::new();
+    let res = ccir.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let confirm = ccir.confirm;
+
+    //如果房间成员不满，不允许发这个命令
+    if room.members.len() < MEMBER_MAX as usize {
+        warn!(
+            "this room is not full,could not handler confirm!room_type:{:?},room_id:{}",
+            room_type, room_id
+        );
+        return Ok(());
+    }
+
     let room_state = room.state;
     //校验房间状态
     if room_state != RoomState::AwaitConfirm {
@@ -993,13 +1031,6 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
         return Ok(());
     }
 
-    let mut ccir = C_CONFIRM_INTO_ROOM::new();
-    let res = ccir.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return Ok(());
-    }
-    let confirm = ccir.confirm;
     //如果全部确认进入房间，就发送通知房间协议给所有客户端
     if confirm {
         let member = room.get_member_mut(&user_id).unwrap();

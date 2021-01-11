@@ -1,19 +1,17 @@
 use crate::room::member::Member;
 use crate::room::room::{MemberLeaveNoticeType, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
-use crate::task_timer::{Task, TaskCmd};
+use crate::task_timer::{build_match_room_start_task, Task};
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
-use log::{error, info, warn};
+use log::{error, info};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rayon::slice::ParallelSliceMut;
-use serde_json::{Map, Value};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomSettingPt;
 use tools::protos::room::S_LEAVE_ROOM;
@@ -413,28 +411,10 @@ impl MatchRoom {
                 //人满了就从队列里面弹出去
                 room_cache_array.pop();
                 info!("匹配房人满,将房间从匹配队列移除！room_id:{}", room_id);
-                //创建延迟任务，并发送给定时器接收方执行
-                let mut task = Task::default();
-                let time_limit = TEMPLATES
-                    .get_constant_temp_mgr_ref()
-                    .temps
-                    .get("kick_not_prepare_time");
-                if let Some(time) = time_limit {
-                    let time = u64::from_str(time.value.as_str())?;
-                    task.delay = time + 500;
-                } else {
-                    task.delay = 60000_u64;
-                    warn!("the Constant kick_not_prepare_time is None!pls check!");
-                }
-
-                task.cmd = TaskCmd::MatchRoomStart as u16;
-                let mut map = Map::new();
-                map.insert("room_id".to_owned(), Value::from(room_id));
-                task.data = Value::from(map);
-                let res = task_sender.send(task);
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                }
+                //推送匹配成功通知
+                let room_mut = self.rooms.get_mut(&room_id).unwrap();
+                room_mut.push_match_success();
+                build_match_room_start_task(room_id, task_sender);
             }
             //重新排序
             room_cache_array.par_sort_by(|a, b| b.count.cmp(&a.count));

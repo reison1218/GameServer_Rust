@@ -24,7 +24,7 @@ use tools::protos::battle::{
     S_BATTLE_START_NOTICE, S_CHOOSE_INDEX_NOTICE, S_MAP_REFRESH_NOTICE, S_START_NOTICE,
 };
 use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
-use tools::protos::server_protocol::{B_R_SUMMARY, B_R_G_PUNISH_MATCH};
+use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, B_R_SUMMARY};
 use tools::util::packet::Packet;
 
 ///房间结构体，封装房间必要信息
@@ -92,7 +92,7 @@ impl Room {
 
     pub fn add_punish(&mut self, user_id: u32) {
         let res = self.members.get_mut(&user_id);
-        if res.is_none(){
+        if res.is_none() {
             return;
         }
         let member = res.unwrap();
@@ -102,7 +102,7 @@ impl Room {
         let bytes = brg.write_to_bytes();
         match bytes {
             Ok(bytes) => {
-                self.send_2_server(GameCode::Punish.into_u32(), user_id, bytes);
+                self.send_2_server(GameCode::SyncPunish.into_u32(), user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);

@@ -6,12 +6,14 @@ use crate::SCHEDULED_MGR;
 use async_std::sync::{Arc, Mutex};
 use async_std::task::block_on;
 use chrono::Local;
-use log::{error, info};
+use crossbeam::channel::Sender;
+use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use serde_json::Value as JsonValue;
+use serde_json::{Map, Value as JsonValue};
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
+use std::str::FromStr;
 use std::time::Duration;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -180,4 +182,34 @@ fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
     }
     //执行开始逻辑
     room.start();
+}
+
+pub fn build_match_room_start_task(room_id: u32, task_sender: Sender<Task>) {
+    //创建延迟任务，并发送给定时器接收方执行
+    let mut task = Task::default();
+    let time_limit = crate::TEMPLATES
+        .get_constant_temp_mgr_ref()
+        .temps
+        .get("kick_not_prepare_time");
+    if let Some(time) = time_limit {
+        let time = u64::from_str(time.value.as_str());
+        match time {
+            Ok(time) => task.delay = time + 500,
+            Err(e) => {
+                error!("{:?}", e)
+            }
+        }
+    } else {
+        task.delay = 60000_u64;
+        warn!("the Constant kick_not_prepare_time is None!pls check!");
+    }
+
+    task.cmd = TaskCmd::MatchRoomStart as u16;
+    let mut map = Map::new();
+    map.insert("room_id".to_owned(), JsonValue::from(room_id));
+    task.data = JsonValue::from(map);
+    let res = task_sender.send(task);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
 }

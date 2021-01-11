@@ -5014,6 +5014,122 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM_MEMBER_LEAVE_NOTICE {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct S_MATCH_SUCCESS_NOTICE {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_MATCH_SUCCESS_NOTICE {
+    fn default() -> &'a S_MATCH_SUCCESS_NOTICE {
+        <S_MATCH_SUCCESS_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_MATCH_SUCCESS_NOTICE {
+    pub fn new() -> S_MATCH_SUCCESS_NOTICE {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_MATCH_SUCCESS_NOTICE {
+        S_MATCH_SUCCESS_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let fields = ::std::vec::Vec::new();
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_MATCH_SUCCESS_NOTICE>(
+                "S_MATCH_SUCCESS_NOTICE",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_MATCH_SUCCESS_NOTICE {
+        static instance: ::protobuf::rt::LazyV2<S_MATCH_SUCCESS_NOTICE> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_MATCH_SUCCESS_NOTICE::new)
+    }
+}
+
+impl ::protobuf::Clear for S_MATCH_SUCCESS_NOTICE {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_MATCH_SUCCESS_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_MATCH_SUCCESS_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct C_CONFIRM_INTO_ROOM {
     // message fields
     pub confirm: bool,
@@ -5325,9 +5441,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
     BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
-    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"/\n\x13C_CONFIRM_I\
-    NTO_ROOM\x12\x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"\x1b\n\
-    \x19S_INTO_ROOM_CANCEL_NOTICEb\x06proto3\
+    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x18\n\x16S_MATCH_\
+    SUCCESS_NOTICE\"/\n\x13C_CONFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\
+    \x20\x01(\x08R\x07confirm\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICEb\x06proto\
+    3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;
