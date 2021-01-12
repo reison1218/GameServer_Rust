@@ -470,9 +470,6 @@ pub struct StructTest {
 fn fn1(s: &mut String) {}
 
 fn main() -> anyhow::Result<()> {
-    let mut a = 10u32;
-    a.saturating_add(-100);
-    println!("{}", a);
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);
