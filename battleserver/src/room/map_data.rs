@@ -122,7 +122,8 @@ impl TileMap {
         let mut rand = rand::thread_rng();
         if room_type == RoomType::Match {
             //否则进行随机，0-1，0代表不开启世界块
-            let res = rand.gen_range(0, 2);
+            let mut res = rand.gen_range(0, 2);
+            res = 1;
             if res > 0 {
                 unsafe {
                     season_id = crate::SEASON.season_id;
@@ -203,17 +204,17 @@ impl TileMap {
             if *res != MapCellType::Valid.into_u32() {
                 continue;
             }
+            //排除世界块
+            if index == tile_map_temp.world_cell_index as usize && tile_map_temp.world_cell > 0 {
+                continue;
+            }
             empty_v.push(index);
         }
 
         //确定worldmap_cell
         if tile_map_temp.world_cell != 0 {
-            let index = rand.gen_range(0, empty_v.len());
-            let index_value = empty_v.get(index).unwrap();
-            let index_value = *index_value;
-
+            let index_value = tile_map_temp.world_cell_index as usize;
             map[index_value] = (tile_map_temp.world_cell, true);
-            empty_v.remove(index);
             tmp.world_cell_map
                 .insert(index_value as u32, tile_map_temp.world_cell);
         }

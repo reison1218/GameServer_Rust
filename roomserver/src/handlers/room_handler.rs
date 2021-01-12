@@ -220,6 +220,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
+
     //如果房间是等待状态
     if room_state == RoomState::Await {
         //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
@@ -232,6 +233,8 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     } else if room_state == RoomState::ChoiceIndex {
         rm.remove_member_without_push(user_id);
+        //通知战斗服
+        rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
         return Ok(());
     } else {
         //通知游戏服卸载玩家数据

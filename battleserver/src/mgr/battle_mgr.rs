@@ -1,8 +1,9 @@
 use crate::handlers::battle_handler::{
-    action, choice_index, emoji, leave_room, pos, reload_temps, start, update_season,
+    action, choice_index, emoji, leave_room, off_line, pos, reload_temps, start, update_season,
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
+use crate::room::{MemberLeaveNoticeType, RoomState};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{info, warn};
@@ -110,17 +111,37 @@ impl BattleMgr {
         }
     }
 
+    pub fn handler_leave(&mut self, room_id: u32, user_id: u32, need_push_self: bool) {
+        let room = self.rooms.get_mut(&room_id).unwrap();
+        let room_id = room.get_room_id();
+        room.remove_member(
+            MemberLeaveNoticeType::Kicked as u8,
+            &user_id,
+            need_push_self,
+        );
+        info!("玩家离线战斗服务!room_id={},user_id={}", room_id, user_id);
+        let mut need_rm_room = false;
+        if room.is_empty() {
+            need_rm_room = true;
+        } else if room.state == RoomState::BattleOvered {
+            need_rm_room = true;
+        }
+        if need_rm_room {
+            self.rm_room(room_id);
+        }
+    }
+
     ///命令初始化
     fn cmd_init(&mut self) {
-        //掉线
-        self.cmd_map
-            .insert(ServerCommonCode::LineOff.into_u32(), leave_room);
         //更新赛季信息
         self.cmd_map
             .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
+        //离线
+        self.cmd_map
+            .insert(BattleCode::OffLine.into_u32(), off_line);
         //离开房间
         self.cmd_map
             .insert(BattleCode::LeaveRoom.into_u32(), leave_room);

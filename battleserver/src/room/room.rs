@@ -220,11 +220,13 @@ impl Room {
             return false;
         }
 
-        let res = self.battle_data.reset_map(
-            self.room_type,
-            self.setting.season_id,
-            self.battle_data.last_map_id,
-        );
+        let room_type = self.room_type;
+        let season_id = self.setting.season_id;
+        let last_map_id = self.battle_data.last_map_id;
+
+        let res = self
+            .battle_data
+            .reset_map(room_type, season_id, last_map_id);
         if let Err(e) = res {
             error!("{:?}", e);
             return false;
@@ -742,6 +744,7 @@ impl Room {
             member_count,
             self.battle_data.last_map_id,
         )?;
+        self.battle_data.last_map_id = tmd.id;
         self.battle_data.tile_map = tmd;
         self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
         Ok(())
@@ -794,6 +797,7 @@ impl Room {
         }
         if debug {
             sbsn.map_data = self.battle_data.tile_map.to_json_for_debug().to_string();
+            println!("{:?}", sbsn.map_data);
         }
         let res = sbsn.write_to_bytes();
         if let Err(e) = res {

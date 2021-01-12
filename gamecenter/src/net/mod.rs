@@ -8,7 +8,6 @@ use async_std::sync::Mutex;
 use async_trait::async_trait;
 use log::{warn,error};
 use std::sync::Arc;
-use tools::cmd_code::ServerCommonCode;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RoomCode};
 use tools::util::packet::Packet;
 use async_std::task::block_on;
@@ -38,21 +37,7 @@ trait Forward {
             lock.handler(&packet,gate_token);
 
             //处理公共的命令
-            if cmd == ServerCommonCode::LineOff.into_u32()
-            {
-                //发给房间中心
-                let res = lock.get_room_center_mut().send(bytes.clone());
-                if let Err(e) = res {
-                    warn!("{:?}", e);
-                }
-
-                //发给战斗服
-                let res = lock.get_battle_client_mut(user_id);
-                match res {
-                    Ok(gc) => gc.send(bytes),
-                    Err(_) => {},
-                }
-            } else if cmd > ClientCode::Min.into_u32() && cmd < ClientCode::Max.into_u32() {
+            if cmd > ClientCode::Min.into_u32() && cmd < ClientCode::Max.into_u32() {
                 //发送给客户端
                 let res = lock.get_gate_client_mut(user_id);
                 match res {

@@ -237,8 +237,7 @@ impl RoomMgr {
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
         //离线
-        self.cmd_map
-            .insert(ServerCommonCode::LineOff.into_u32(), off_line);
+        self.cmd_map.insert(RoomCode::OffLine.into_u32(), off_line);
         //离开房间
         self.cmd_map
             .insert(RoomCode::LeaveRoom.into_u32(), leave_room);

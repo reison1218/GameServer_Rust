@@ -64,7 +64,7 @@ impl TileMapTempMgr {
             }
 
             let index_map = map.get_mut(&tt.member_count_key).unwrap();
-            if !index_map.contains_key(&tt.world_cell_index) {
+            if !index_map.contains_key(&(tt.world_cell_index as u32)) {
                 index_map.insert(tt.world_cell_index, Vec::new());
             }
             index_map

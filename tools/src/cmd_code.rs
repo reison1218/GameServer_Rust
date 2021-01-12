@@ -5,12 +5,10 @@ use num_enum::TryFromPrimitive;
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum ServerCommonCode {
-    //离线
-    LineOff = 101,
     //热更新静态配置
-    ReloadTemps = 102,
+    ReloadTemps = 101,
     //更新赛季
-    UpdateSeason = 103,
+    UpdateSeason = 102,
 }
 
 impl ServerCommonCode {
@@ -63,6 +61,8 @@ impl GameCode {
 pub enum RoomCode {
     //范围最小值
     Min = 20001,
+    //离开房间
+    OffLine = 20002,
     //创建房间
     CreateRoom = 20003,
     //离开房间
@@ -113,6 +113,7 @@ pub enum BattleCode {
     Action = 30004,      //请求行动
     Pos = 30005,         //架势请求
     Emoji = 30006,       //表情符号
+    OffLine = 39998,    //掉线
     LeaveRoom = 39999,   //离开房间
     Max = 40000,
 }

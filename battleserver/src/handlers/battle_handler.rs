@@ -4,14 +4,13 @@ use crate::battle::battle_skill::Skill;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::character::BattleCharacter;
 use crate::room::room::Room;
-use crate::room::{MemberLeaveNoticeType, RoomState};
+use crate::room::RoomState;
 use crate::SEASON;
 use log::{error, info, warn};
 use protobuf::Message;
 use std::borrow::{Borrow, BorrowMut};
 use std::convert::TryFrom;
 use std::fmt::Debug;
-use tools::cmd_code::{BattleCode, ServerCommonCode};
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
@@ -535,6 +534,25 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
 }
 
 ///离开房间
+pub fn off_line(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+
+    //校验用户不在战斗房间里
+    let room = bm.get_room_mut(&user_id);
+    if room.is_none() {
+        //通知游戏服卸载玩家数据
+        bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+        return Ok(());
+    }
+    let room_id = room.unwrap().get_room_id();
+    //处理玩家离开
+    bm.handler_leave(room_id, user_id, false);
+    //通知游戏服卸载玩家数据
+    bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+    Ok(())
+}
+
+///离开房间
 pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
 
@@ -543,34 +561,9 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     if room.is_none() {
         return Ok(());
     }
-
-    let cmd = packet.get_cmd();
-    let room = room.unwrap();
-    let room_id = room.get_room_id();
-    let mut need_push_self = false;
-    if cmd == BattleCode::LeaveRoom.into_u32() {
-        need_push_self = true;
-    }
-    room.remove_member(
-        MemberLeaveNoticeType::Kicked as u8,
-        &user_id,
-        need_push_self,
-    );
-
-    info!("玩家离开战斗服务!room_id={},user_id={}", room_id, user_id);
-    let mut need_rm_room = false;
-    if room.is_empty() {
-        need_rm_room = true;
-    } else if room.state == RoomState::BattleOvered {
-        need_rm_room = true;
-    }
-    if need_rm_room {
-        bm.rm_room(room_id);
-    }
-    //通知游戏服卸载玩家数据
-    if cmd == ServerCommonCode::LineOff.into_u32() {
-        bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-    }
+    let room_id = room.unwrap().get_room_id();
+    //处理玩家离开
+    bm.handler_leave(room_id, user_id, true);
     Ok(())
 }
 

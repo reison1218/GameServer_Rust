@@ -3,7 +3,7 @@ use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tools::cmd_code::ServerCommonCode;
+use tools::cmd_code::RoomCode;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 use ws::Sender as WsSender;
@@ -65,7 +65,7 @@ impl ChannelMgr {
 
     ///通知下线
     fn notice_off_line(&mut self, user_id: u32) {
-        let cmd = ServerCommonCode::LineOff.into_u32();
+        let cmd = RoomCode::OffLine.into_u32();
         //初始化包
         let mut packet = Packet::default();
         packet.set_user_id(user_id);

@@ -1,7 +1,7 @@
 use super::*;
 use async_std::sync::Mutex;
 use async_std::task::block_on;
-use tools::cmd_code::{RoomCode, ServerCommonCode};
+use tools::cmd_code::RoomCode;
 
 #[warn(dead_code)]
 pub struct ClientSender {
@@ -31,7 +31,7 @@ impl Handler for WebSocketHandler {
         lock.close_remove(&token);
         let user_id = lock.get_channels_user_id(&token);
         let mut mess = Packet::default();
-        mess.set_cmd(ServerCommonCode::LineOff.into_u32());
+        mess.set_cmd(RoomCode::OffLine.into_u32());
         mess.set_user_id(*user_id.unwrap());
         lock.write_to_game(mess);
     }
@@ -94,7 +94,7 @@ impl Handler for WebSocketHandler {
         let mut packet = Packet::default();
         packet.set_user_id(*user_id.unwrap());
 
-        let cmd = ServerCommonCode::LineOff.into_u32();
+        let cmd = RoomCode::OffLine.into_u32();
 
         packet.set_cmd(cmd);
         lock.write_to_game(packet.clone());
