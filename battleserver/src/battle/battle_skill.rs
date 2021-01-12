@@ -466,6 +466,7 @@ pub unsafe fn skill_open_map_cell(
         }
 
         let index = open_index;
+        //处理配对逻辑
         battle_data.handler_map_cell_pair(user_id, Some(index));
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
@@ -527,6 +528,8 @@ pub unsafe fn auto_pair_map_cell(
     }
     let battle_cter = battle_cter.unwrap();
     let mut pair_map_cell: Option<&mut MapCell> = None;
+    let map_cell_index = map_cell.index;
+    let mut map_cell_target_index=0;
     //找到与之匹配的地图块自动配对
     for _map_cell in map.as_mut().unwrap().iter_mut() {
         //排除自己
@@ -536,8 +539,13 @@ pub unsafe fn auto_pair_map_cell(
         if _map_cell.id != map_cell.id {
             continue;
         }
-        _map_cell.pair_index = Some(map_cell.index);
-        map_cell.pair_index = Some(_map_cell.index);
+        map_cell_target_index = _map_cell.index;
+        _map_cell.pair_index = Some(map_cell_index);
+        map_cell.pair_index = Some(map_cell_target_index);
+        //设置打开的人
+        _map_cell.open_user = user_id;
+        map_cell.open_user = user_id;
+        //设置匹配的块
         pair_map_cell = Some(_map_cell);
         break;
     }
@@ -551,9 +559,17 @@ pub unsafe fn auto_pair_map_cell(
     }
 
     let pair_map_cell = pair_map_cell.unwrap();
+    //设置配对状态
+    battle_cter.status.is_pair = true;
     //处理本turn不能攻击
     battle_cter.status.attack_state = AttackState::Locked;
     battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
+    let cter_map_cell_index = battle_cter.get_map_cell_index() as u32;
+
+    //清除已配对的
+    battle_data.tile_map.un_pair_map.remove(&map_cell_index);
+    battle_data.tile_map.un_pair_map.remove(&map_cell_target_index);
+
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(target_index as u32);
     target_pt.target_value.push(map_cell.id);
@@ -566,7 +582,7 @@ pub unsafe fn auto_pair_map_cell(
     let mut target_pt = TargetPt::new();
     target_pt
         .target_value
-        .push(battle_cter.get_map_cell_index() as u32);
+        .push(cter_map_cell_index);
     target_pt.add_buffs.push(buff_id);
     au.targets.push(target_pt);
 

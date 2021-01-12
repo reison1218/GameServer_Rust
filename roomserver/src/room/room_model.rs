@@ -275,6 +275,7 @@ impl RoomModel for MatchRoom {
         let room_id = *room_id;
         let member_count = room.get_member_count();
         room.remove_member(notice_type, user_id, need_push_self);
+        //改变房间状态
         room.state = RoomState::AwaitConfirm;
         let need_remove = room.is_empty();
         let now_count = room.get_member_count();

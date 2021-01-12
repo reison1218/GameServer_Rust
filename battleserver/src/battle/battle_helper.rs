@@ -412,6 +412,7 @@ impl BattleData {
         map_cell_mut.open_user = user_id;
         let mut is_pair = false;
         let map_cell_id = map_cell_mut.id;
+        //如果该turn第一次翻，或者已经配对了再翻，不用判断是否配对
         if battle_cter.flow_data.open_map_cell_vec.is_empty() || battle_cter.status.is_pair {
             return is_pair;
         }
@@ -458,6 +459,7 @@ impl BattleData {
         }
         is_pair
     }
+
     ///发送战斗turn推送
     pub fn send_battle_turn_notice(&mut self) {
         let mut sbtn = S_BATTLE_TURN_NOTICE::new();

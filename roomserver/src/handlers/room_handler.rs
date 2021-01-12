@@ -138,6 +138,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let room_state = room.get_state();
     let room_id = room.get_room_id();
     let room_type = room.get_room_type();
+    let member_count = room.get_member_count();
     let member = room.get_member_ref(&user_id);
     //如果成员不在房间，直接退出
     if let None = member {
@@ -152,24 +153,24 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::Match
-        && room.get_member_count() == MEMBER_MAX as usize
-        && room_state == RoomState::Await
+        && member_count == MEMBER_MAX as usize
+        && room_state == RoomState::AwaitConfirm
     {
         warn!(
-            "match room is full,could not leave room now! room_id:{},user_id:{}",
-            room_id, user_id
+            "invalid cmd:leave_room! room_state:{:?},room_id:{},user_id:{}",
+            room_state, room_id, user_id
         );
         return Ok(());
     }
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::Match
-        && room.get_member_count() == MEMBER_MAX as usize
-        && room_state == RoomState::AwaitConfirm
+        && member_count == MEMBER_MAX as usize
+        && room_state == RoomState::Await
     {
         warn!(
-            "could not leave match room now! room_state:{:?},room_id:{},user_id:{}",
-            room_state, room_id, user_id
+            "match room is full,could not leave room now! room_id:{},user_id:{}",
+            room_id, user_id
         );
         return Ok(());
     }
@@ -221,28 +222,25 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    //如果房间是等待状态
-    if room_state == RoomState::Await {
-        //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
-        room.check_punish_for_leave(user_id);
-        let res = handler_leave_room(rm, user_id, false);
-        if let Err(e) = res {
-            warn!("{:?}", e);
-        }
-        //通知游戏服卸载玩家数据
-        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-    } else if room_state == RoomState::ChoiceIndex {
+    //如果房间已经开始战斗则删除玩家不推送，然后通知战斗服
+    if room_state == RoomState::ChoiceIndex {
         rm.remove_member_without_push(user_id);
         //通知战斗服
         rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
         return Ok(());
     } else {
-        //通知游戏服卸载玩家数据
-        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+        //其他状态房间服自行处理
+        if room_state == RoomState::Await {
+            //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
+            room.check_punish_for_leave(user_id);
+        }
+        //处理离开房间
         let res = handler_leave_room(rm, user_id, false);
         if let Err(e) = res {
             warn!("{:?}", e);
         }
+        //通知游戏服卸载玩家数据
+        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     }
     Ok(())
 }

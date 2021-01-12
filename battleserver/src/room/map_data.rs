@@ -120,10 +120,10 @@ impl TileMap {
         }
         //创建随机结构体实例
         let mut rand = rand::thread_rng();
-        if room_type == RoomType::Match {
+        //如果是匹配房,第一次进行随机
+        if room_type == RoomType::Match && last_map_id == 0{
             //否则进行随机，0-1，0代表不开启世界块
-            let mut res = rand.gen_range(0, 2);
-            res = 1;
+            let res = rand.gen_range(0, 2);
             if res > 0 {
                 unsafe {
                     season_id = crate::SEASON.season_id;
