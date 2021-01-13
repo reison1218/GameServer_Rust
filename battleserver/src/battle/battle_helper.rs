@@ -112,7 +112,6 @@ impl BattleData {
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let map_cell = tile_map.as_mut().unwrap().map_cells.get_mut(index).unwrap();
         au.action_value.push(map_cell.id);
-        let last_index = battle_cter.get_map_cell_index();
         let mut is_change_index_both = false;
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
@@ -123,12 +122,11 @@ impl BattleData {
             //如果没有，则改变目标玩家的位置
             let target_cter = self.get_battle_cter_mut(Some(target_user), true).unwrap();
             target_cter.move_index(battle_cter.get_map_cell_index());
-
             let source_map_cell = tile_map_ptr
                 .as_mut()
                 .unwrap()
                 .map_cells
-                .get_mut(last_index)
+                .get_mut(battle_cter.get_map_cell_index())
                 .unwrap();
             source_map_cell.user_id = target_cter.get_user_id();
             is_change_index_both = true;
@@ -138,7 +136,7 @@ impl BattleData {
                 .as_mut()
                 .unwrap()
                 .map_cells
-                .get_mut(last_index)
+                .get_mut(battle_cter.get_map_cell_index())
                 .unwrap();
             last_map_cell.user_id = 0;
         }
@@ -292,7 +290,6 @@ impl BattleData {
     ///计算减伤
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i16 {
         let target_user = target_cter.get_user_id();
-        let target_index = target_cter.get_map_cell_index() as isize;
         let scope_temp = TEMPLATES
             .get_skill_scope_temp_mgr_ref()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
@@ -302,7 +299,7 @@ impl BattleData {
         let scope_temp = scope_temp.unwrap();
         let (_, user_v) = self.cal_scope(
             target_user,
-            target_index,
+            target_cter.get_map_cell_index() as isize,
             TargetType::None,
             None,
             Some(scope_temp),
@@ -338,9 +335,10 @@ impl BattleData {
             .as_mut()
             .unwrap()
             .get_battle_cter_mut(Some(target), true)?;
-        let target_cter_index = target_cter.get_map_cell_index();
         let target_user_id = target_cter.base_attr.user_id;
-        target_pt.target_value.push(target_cter_index as u32);
+        target_pt
+            .target_value
+            .push(target_cter.get_map_cell_index() as u32);
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -395,6 +393,7 @@ impl BattleData {
             return false;
         }
         let battle_cter = battle_cter.unwrap();
+
         let index;
         if let Some(map_index) = map_index {
             index = map_index;
@@ -438,6 +437,12 @@ impl BattleData {
                     //状态改为可以进行攻击
                     if attack_state != AttackState::Locked {
                         battle_cter.status.attack_state = AttackState::Able;
+                    } else {
+                        warn!(
+                            "could not set battle_cter'attack_state!attack_state:{:?},user_id:{}",
+                            battle_cter.status.attack_state,
+                            battle_cter.get_user_id()
+                        );
                     }
                     self.tile_map.un_pair_map.remove(&last_map_cell.index);
                     self.tile_map.un_pair_map.remove(&map_cell_mut.index);

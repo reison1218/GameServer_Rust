@@ -38,11 +38,13 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    //判断是否是轮到该玩家操作
-    let res = check_is_user_turn(room, user_id);
+
+    //校验用户
+    let res = check_user(room, user_id);
     if !res {
         return Ok(());
     }
+
     //解析protobuf
     let mut ca = C_ACTION::new();
     let res = ca.merge_from_bytes(packet.get_data());
@@ -224,12 +226,6 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         );
         return Ok(());
     }
-    //判断是否是轮到该玩家操作
-    let res = check_is_user_turn(room, user_id);
-    if !res {
-        warn!("now is not this user turn!user_id:{}", user_id);
-        return Ok(());
-    }
 
     let battle_cter = room.get_battle_cter_mut_ref(&user_id);
     if battle_cter.is_none() {
@@ -320,12 +316,6 @@ fn open_map_cell(
     target_map_cell_index: usize,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-    //校验是否轮到自己
-    if !check_is_user_turn(rm, user_id) {
-        let str = format!("is not this player'turn now!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
-    }
     let battle_data = rm.battle_data.borrow();
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
     if battle_cter.is_locked() {
@@ -442,13 +432,6 @@ fn skip_turn(
     _au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let rm = rmgr.get_room_mut(&user_id).unwrap();
-    //判断是否是轮到自己操作
-    let res = check_is_user_turn(rm, user_id);
-    if !res {
-        warn!("is not your turn!user_id:{}", user_id);
-        anyhow::bail!("")
-    }
-
     //校验现在能不能跳过
     let next_user = rm.get_turn_user(None);
     if let Err(e) = next_user {
@@ -669,8 +652,36 @@ fn unlock_oper(
     Ok(None)
 }
 
-///校验现在是不是该玩家回合
-fn check_is_user_turn(rm: &Room, user_id: u32) -> bool {
+///校验玩家
+fn check_user(rm: &Room, user_id: u32) -> bool {
+    let cter = rm.get_battle_cter_ref(&user_id);
+    if let None = cter {
+        warn!(
+            "user is not in the room!room_id:{},user_id:{}",
+            rm.get_room_id(),
+            user_id
+        );
+        return false;
+    }
+    let cter = cter.unwrap();
+    //校验角色是否死亡
+    if cter.is_died() {
+        warn!(
+            "this cter is already dead!room_id:{},user_id:{}",
+            rm.get_room_id(),
+            user_id
+        );
+        return false;
+    }
+    //校验是否选择了占位
+    if cter.index_data.map_cell_index.is_none() {
+        warn!(
+            "user is not choice index!room_id:{},user_id:{}",
+            rm.get_room_id(),
+            user_id
+        );
+        return false;
+    }
     let next_user = rm.get_turn_user(None);
     if let Err(e) = next_user {
         error!("{:?}", e);

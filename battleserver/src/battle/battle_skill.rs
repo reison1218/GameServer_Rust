@@ -310,6 +310,7 @@ pub unsafe fn add_buff(
     }
     let cter = cter.unwrap();
     let cter = cter as *mut BattleCharacter;
+    let cter_index = cter.as_mut().unwrap().get_map_cell_index();
     let skill_temp = TEMPLATES
         .get_skill_temp_mgr_ref()
         .get_temp(&skill_id)
@@ -328,9 +329,7 @@ pub unsafe fn add_buff(
                 buff_id,
                 Some(turn_index),
             );
-            target_pt
-                .target_value
-                .push(cter.as_mut().unwrap().get_map_cell_index() as u32);
+            target_pt.target_value.push(cter_index as u32);
             target_pt.add_buffs.push(buff_id);
         }
         TargetType::UnPairNullMapCell => {
@@ -451,9 +450,10 @@ pub unsafe fn skill_open_map_cell(
         }
         let open_index = *target_array.get(0).unwrap() as usize;
         let cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
+        let cter_index = cter.get_map_cell_index();
         let (map_cells, _) = battle_data.cal_scope(
             user_id,
-            cter.get_map_cell_index() as isize,
+            cter_index as isize,
             TargetType::PlayerSelf,
             None,
             None,
@@ -529,7 +529,7 @@ pub unsafe fn auto_pair_map_cell(
     let battle_cter = battle_cter.unwrap();
     let mut pair_map_cell: Option<&mut MapCell> = None;
     let map_cell_index = map_cell.index;
-    let mut map_cell_target_index=0;
+    let mut map_cell_target_index = 0;
     //找到与之匹配的地图块自动配对
     for _map_cell in map.as_mut().unwrap().iter_mut() {
         //排除自己
@@ -565,10 +565,12 @@ pub unsafe fn auto_pair_map_cell(
     battle_cter.status.attack_state = AttackState::Locked;
     battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
     let cter_map_cell_index = battle_cter.get_map_cell_index() as u32;
-
     //清除已配对的
     battle_data.tile_map.un_pair_map.remove(&map_cell_index);
-    battle_data.tile_map.un_pair_map.remove(&map_cell_target_index);
+    battle_data
+        .tile_map
+        .un_pair_map
+        .remove(&map_cell_target_index);
 
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(target_index as u32);
@@ -580,9 +582,7 @@ pub unsafe fn auto_pair_map_cell(
     au.targets.push(target_pt);
     //添加buff
     let mut target_pt = TargetPt::new();
-    target_pt
-        .target_value
-        .push(cter_map_cell_index);
+    target_pt.target_value.push(cter_map_cell_index);
     target_pt.add_buffs.push(buff_id);
     au.targets.push(target_pt);
 
@@ -657,7 +657,7 @@ pub unsafe fn skill_damage_and_cure(
 ) -> Option<Vec<ActionUnitPt>> {
     let battle_cters = &mut battle_data.battle_cter as *mut HashMap<u32, BattleCharacter>;
     let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
-    let cter_index = battle_cter.get_map_cell_index();
+    let cter_index = battle_cter.get_map_cell_index() as isize;
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let res = TEMPLATES
         .get_skill_scope_temp_mgr_ref()
@@ -667,7 +667,6 @@ pub unsafe fn skill_damage_and_cure(
         return None;
     }
     let scope_temp = res.unwrap();
-    let cter_index = cter_index as isize;
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
     let (_, v) = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
 
@@ -757,9 +756,8 @@ pub unsafe fn skill_aoe_damage(
             .unwrap();
         let damage_res;
         //判断是否中心位置
-        if cter.get_map_cell_index() == center_index as usize
-            && skill_id == SKILL_AOE_CENTER_DAMAGE_DEEP
-        {
+        let cter_index = cter.get_map_cell_index();
+        if cter_index == center_index as usize && skill_id == SKILL_AOE_CENTER_DAMAGE_DEEP {
             damage_res = par2;
         } else {
             damage_res = par1;
@@ -871,11 +869,9 @@ pub unsafe fn sub_cd(
         .unwrap();
 
     let battle_cter = battle_cter.unwrap();
-
+    let battle_cter_index = battle_cter.get_map_cell_index();
     let mut target_pt = TargetPt::new();
-    target_pt
-        .target_value
-        .push(battle_cter.get_map_cell_index() as u32);
+    target_pt.target_value.push(battle_cter_index as u32);
     let mut ep = EffectPt::new();
     ep.effect_type = EffectType::SubSkillCd as u32;
     ep.effect_value = skill_temp.par1;
@@ -902,6 +898,7 @@ pub unsafe fn scope_cure(
         .unwrap()
         .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
+    let cter_index = cter.get_map_cell_index();
     let skill = cter.skills.get(&skill_id).unwrap();
     let self_cure = skill.skill_temp.par1 as i16;
     let other_cure = skill.skill_temp.par2 as i16;
@@ -921,7 +918,7 @@ pub unsafe fn scope_cure(
     let scope_temp = scope_temp.unwrap();
     let (_, users) = battle_data.as_mut().unwrap().cal_scope(
         user_id,
-        cter.get_map_cell_index() as isize,
+        cter_index as isize,
         target_type,
         None,
         Some(scope_temp),

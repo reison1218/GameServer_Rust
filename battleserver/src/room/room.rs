@@ -223,7 +223,6 @@ impl Room {
         let room_type = self.room_type;
         let season_id = self.setting.season_id;
         let last_map_id = self.battle_data.last_map_id;
-
         let res = self
             .battle_data
             .reset_map(room_type, season_id, last_map_id);

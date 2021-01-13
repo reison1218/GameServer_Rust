@@ -241,9 +241,8 @@ impl BattleData {
                     .battle_buffs
                     .buffs
                     .insert(buff.id, buff.clone());
-                target_pt
-                    .target_value
-                    .push(last_map_cell_user.get_map_cell_index() as u32);
+                let last_map_cell_user_index = last_map_cell_user.get_map_cell_index() as u32;
+                target_pt.target_value.push(last_map_cell_user_index);
                 au.targets.push(target_pt.clone());
             }
         }
@@ -252,11 +251,10 @@ impl BattleData {
             warn!("can not find battle_cter!cter_id={}", target_user);
         }
         let battle_cter = battle_cter.unwrap();
+        let battle_cter_index = battle_cter.get_map_cell_index() as u32;
         //给自己加
         target_pt.target_value.clear();
-        target_pt
-            .target_value
-            .push(battle_cter.get_map_cell_index() as u32);
+        target_pt.target_value.push(battle_cter_index);
         au.targets.push(target_pt);
 
         battle_cter.battle_buffs.buffs.insert(buff.id, buff);
@@ -297,9 +295,7 @@ impl BattleData {
                     .for_each(|skill| skill.add_cd(buff_temp.par1 as i8));
             }
             target_pt.target_value.clear();
-            target_pt
-                .target_value
-                .push(cter.get_map_cell_index() as u32);
+            target_pt.target_value.push(cter_index as u32);
             au.targets.push(target_pt.clone());
         }
     }
@@ -370,10 +366,9 @@ impl BattleData {
         }
         let skill = skill.unwrap();
         skill.cd_times = 0;
+        let cter_index = cter.get_map_cell_index() as u32;
         let mut target_pt = TargetPt::new();
-        target_pt
-            .target_value
-            .push(cter.get_map_cell_index() as u32);
+        target_pt.target_value.push(cter_index);
         let mut tep = TriggerEffectPt::new();
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
@@ -440,10 +435,11 @@ impl BattleData {
         }
         let target_battle = self.battle_cter.get_mut(&target_user).unwrap();
         target_battle.add_energy(energy as i8);
+
+        let target_battle_index = target_battle.get_map_cell_index() as u32;
+
         let mut target_pt = TargetPt::new();
-        target_pt
-            .target_value
-            .push(target_battle.get_map_cell_index() as u32);
+        target_pt.target_value.push(target_battle_index);
 
         if from_user.is_some() && from_user.unwrap() == target_user {
             let mut tep = TriggerEffectPt::new();

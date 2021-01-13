@@ -121,7 +121,7 @@ impl TileMap {
         //创建随机结构体实例
         let mut rand = rand::thread_rng();
         //如果是匹配房,第一次进行随机
-        if room_type == RoomType::Match && last_map_id == 0{
+        if room_type == RoomType::Match && last_map_id == 0 {
             //否则进行随机，0-1，0代表不开启世界块
             let res = rand.gen_range(0, 2);
             if res > 0 {
@@ -130,9 +130,20 @@ impl TileMap {
                 }
             }
         }
-
         //拿到地图配置管理器
         let tile_map_mgr = TEMPLATES.get_tile_map_temp_mgr_ref();
+        //如果有世界块，后面一直有
+        if last_map_id != 0 {
+            let tile_map_temp = tile_map_mgr.get_temp(last_map_id);
+            if let Ok(tile_map_temp) = tile_map_temp {
+                if tile_map_temp.world_cell > 0 {
+                    unsafe {
+                        season_id = crate::SEASON.season_id;
+                    }
+                }
+            }
+        }
+
         let tile_map_temp_vec;
         //有世界块的逻辑
         if season_id > 0 {

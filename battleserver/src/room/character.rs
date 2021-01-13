@@ -125,7 +125,7 @@ pub struct TurnFlowData {
 ///角色战斗流程相关数据
 #[derive(Clone, Debug, Default)]
 pub struct IndexData {
-    map_cell_index: Option<usize>,          //角色所在位置
+    pub map_cell_index: Option<usize>,      //角色所在位置
     pub last_map_cell_index: Option<usize>, //上一次所在地图块位置
 }
 

@@ -1,9 +1,9 @@
 use crate::handlers::room_handler::{
-    change_team, choice_skills, choose_character, confirm_into_room, create_room, emoji, join_room,
-    kick_member, leave_room, off_line, prepare_cancel, reload_temps, room_setting, search_room,
-    start, summary, update_season,
+    cancel_search_room, change_team, choice_skills, choose_character, confirm_into_room,
+    create_room, emoji, join_room, kick_member, leave_room, off_line, prepare_cancel, reload_temps,
+    room_setting, search_room, start, summary, update_season,
 };
-use crate::room::room::Room;
+use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
@@ -69,42 +69,43 @@ impl RoomMgr {
             return;
         }
         let room = room.unwrap();
+        let room_type = room.get_room_type();
+        let room_id = room.get_room_id();
         room.remove_member_without_push(user_id);
         self.player_room.remove(&user_id);
         info!(
             "玩家退出房间!删除房间内玩家数据!不通知客户端!user_id:{},room_id:{}",
             user_id, room_id
         );
-        let user = room.get_user();
-        if (room.is_empty() || room.members.len() == 1) && user > 0 {
-            self.clear_room_without_push(user);
+        let need_rm_room;
+        if room.is_empty() {
+            need_rm_room = true;
+        } else if room.state == RoomState::ChoiceIndex && room.members.len() == 1 {
+            need_rm_room = true;
+        } else {
+            need_rm_room = false;
+        }
+        if need_rm_room {
+            self.clear_room_without_push(room_type, room_id);
         }
     }
 
-    pub fn clear_room_without_push(&mut self, user_id: u32) {
-        let res = self.player_room.get(&user_id);
-        if res.is_none() {
-            return;
-        }
-        let res = res.unwrap();
-        let (model, room_id) = tools::binary::separate_long_2_int(*res);
+    pub fn clear_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
         let room;
-        if model == RoomType::into_u32(RoomType::Custom) {
+        if room_type == RoomType::Custom {
             room = self.custom_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::Match) {
+        } else if room_type == RoomType::Match {
             room = self.match_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::SeasonPve) {
+        } else if room_type == RoomType::SeasonPve {
             room = None;
         } else {
             room = None;
         }
         if let None = room {
-            warn!("the room is None!user_id:{}", user_id);
+            warn!("the room is None!room_id:{}", room_id);
             return;
         }
         let room = room.unwrap();
-        let room_id = room.get_room_id();
-        let room_type = room.get_room_type();
 
         if room_type == RoomType::Match || room_type == RoomType::WorldBossPve {
             for id in room.members.keys() {
@@ -259,6 +260,9 @@ impl RoomMgr {
         //匹配房间
         self.cmd_map
             .insert(RoomCode::SearchRoom.into_u32(), search_room);
+        //取消匹配房间
+        self.cmd_map
+            .insert(RoomCode::CancelSearch.into_u32(), cancel_search_room);
         //房间设置
         self.cmd_map
             .insert(RoomCode::RoomSetting.into_u32(), room_setting);
@@ -270,7 +274,7 @@ impl RoomMgr {
             .insert(RoomCode::ChoiceSkill.into_u32(), choice_skills);
         //发送表情
         self.cmd_map.insert(RoomCode::Emoji.into_u32(), emoji);
-        //结算处理
+        //确认进入房间
         self.cmd_map
             .insert(RoomCode::ConfirmIntoRoom.into_u32(), confirm_into_room);
         //结算处理

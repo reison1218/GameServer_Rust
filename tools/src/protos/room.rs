@@ -5282,6 +5282,158 @@ impl ::protobuf::reflect::ProtobufValue for C_CONFIRM_INTO_ROOM {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct S_CONFIRM_INTO_ROOM_NOTICE {
+    // message fields
+    pub count: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_CONFIRM_INTO_ROOM_NOTICE {
+    fn default() -> &'a S_CONFIRM_INTO_ROOM_NOTICE {
+        <S_CONFIRM_INTO_ROOM_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_CONFIRM_INTO_ROOM_NOTICE {
+    pub fn new() -> S_CONFIRM_INTO_ROOM_NOTICE {
+        ::std::default::Default::default()
+    }
+
+    // uint32 count = 1;
+
+
+    pub fn get_count(&self) -> u32 {
+        self.count
+    }
+    pub fn clear_count(&mut self) {
+        self.count = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_count(&mut self, v: u32) {
+        self.count = v;
+    }
+}
+
+impl ::protobuf::Message for S_CONFIRM_INTO_ROOM_NOTICE {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.count = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.count != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.count, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.count != 0 {
+            os.write_uint32(1, self.count)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_CONFIRM_INTO_ROOM_NOTICE {
+        S_CONFIRM_INTO_ROOM_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "count",
+                |m: &S_CONFIRM_INTO_ROOM_NOTICE| { &m.count },
+                |m: &mut S_CONFIRM_INTO_ROOM_NOTICE| { &mut m.count },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CONFIRM_INTO_ROOM_NOTICE>(
+                "S_CONFIRM_INTO_ROOM_NOTICE",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_CONFIRM_INTO_ROOM_NOTICE {
+        static instance: ::protobuf::rt::LazyV2<S_CONFIRM_INTO_ROOM_NOTICE> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_CONFIRM_INTO_ROOM_NOTICE::new)
+    }
+}
+
+impl ::protobuf::Clear for S_CONFIRM_INTO_ROOM_NOTICE {
+    fn clear(&mut self) {
+        self.count = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_CONFIRM_INTO_ROOM_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_CONFIRM_INTO_ROOM_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct S_INTO_ROOM_CANCEL_NOTICE {
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -5397,6 +5549,238 @@ impl ::protobuf::reflect::ProtobufValue for S_INTO_ROOM_CANCEL_NOTICE {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct C_CANCEL_SEARCH {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_CANCEL_SEARCH {
+    fn default() -> &'a C_CANCEL_SEARCH {
+        <C_CANCEL_SEARCH as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_CANCEL_SEARCH {
+    pub fn new() -> C_CANCEL_SEARCH {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for C_CANCEL_SEARCH {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_CANCEL_SEARCH {
+        C_CANCEL_SEARCH::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let fields = ::std::vec::Vec::new();
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CANCEL_SEARCH>(
+                "C_CANCEL_SEARCH",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static C_CANCEL_SEARCH {
+        static instance: ::protobuf::rt::LazyV2<C_CANCEL_SEARCH> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(C_CANCEL_SEARCH::new)
+    }
+}
+
+impl ::protobuf::Clear for C_CANCEL_SEARCH {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_CANCEL_SEARCH {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_CANCEL_SEARCH {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_CANCEL_SEARCH {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_CANCEL_SEARCH {
+    fn default() -> &'a S_CANCEL_SEARCH {
+        <S_CANCEL_SEARCH as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_CANCEL_SEARCH {
+    pub fn new() -> S_CANCEL_SEARCH {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for S_CANCEL_SEARCH {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_CANCEL_SEARCH {
+        S_CANCEL_SEARCH::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let fields = ::std::vec::Vec::new();
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CANCEL_SEARCH>(
+                "S_CANCEL_SEARCH",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_CANCEL_SEARCH {
+        static instance: ::protobuf::rt::LazyV2<S_CANCEL_SEARCH> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_CANCEL_SEARCH::new)
+    }
+}
+
+impl ::protobuf::Clear for S_CANCEL_SEARCH {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_CANCEL_SEARCH {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_CANCEL_SEARCH {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
@@ -5443,8 +5827,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
     e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x18\n\x16S_MATCH_\
     SUCCESS_NOTICE\"/\n\x13C_CONFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\
-    \x20\x01(\x08R\x07confirm\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICEb\x06proto\
-    3\
+    \x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\
+    \x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOT\
+    ICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CANCEL_SEARCHb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

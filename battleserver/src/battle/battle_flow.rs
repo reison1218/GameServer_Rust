@@ -255,7 +255,7 @@ impl BattleData {
 
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.get_user_id();
-        let target_user_index = target_cter.get_map_cell_index();
+        let target_user_index = target_cter.get_map_cell_index() as u32;
         if target_user_id == user_id {
             warn!("the attack target can not be Self!user_id:{}", user_id);
             anyhow::bail!("")
@@ -472,12 +472,12 @@ impl BattleData {
         }
         let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
-        if user_id > 0 {
-            let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
-            if let Ok(battle_cter) = battle_cter {
-                battle_cter.turn_reset();
-            }
-        }
+        // if user_id > 0 {
+        //     let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
+        //     if let Ok(battle_cter) = battle_cter {
+        //         battle_cter.turn_reset();
+        //     }
+        // }
 
         unsafe {
             //结算玩家身上的buff
@@ -533,7 +533,10 @@ impl BattleData {
                     error!("{:?}", e);
                     return;
                 }
-                battle_cter.unwrap().set_is_can_end_turn(is_can_skip_turn);
+                //turn结算玩家
+                let battle_cter = battle_cter.unwrap();
+                battle_cter.turn_reset();
+                battle_cter.set_is_can_end_turn(is_can_skip_turn);
             }
         }
     }

@@ -18,7 +18,8 @@ use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
     C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_ROOM, S_ROOM_SETTING, S_START,
+    S_CHOOSE_SKILL, S_CONFIRM_INTO_ROOM_NOTICE, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_ROOM,
+    S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
@@ -242,6 +243,20 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //通知游戏服卸载玩家数据
         rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     }
+    Ok(())
+}
+
+///取消匹配房间
+pub fn cancel_search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let room = rm.get_room_mut(&user_id);
+    if room.is_none() {
+        warn!("this user is not matching the room!user_id:{}", user_id);
+        return Ok(());
+    }
+
+    rm.remove_member_without_push(user_id);
+    rm.send_2_client(ClientCode::CancelSearch, user_id, Vec::new());
     Ok(())
 }
 
@@ -1036,6 +1051,21 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
     if confirm {
         let member = room.get_member_mut(&user_id).unwrap();
         member.state = MemberState::NotReady;
+        let mut count = 0;
+        for member in room.members.values() {
+            if member.state != MemberState::NotReady {
+                continue;
+            }
+            count += 1;
+        }
+
+        //推送确认进入房间人数
+        let mut scirn = S_CONFIRM_INTO_ROOM_NOTICE::new();
+        scirn.set_count(count);
+        let bytes = scirn.write_to_bytes().unwrap();
+        room.send_2_all_client(ClientCode::ConfirmIntoRoomNotice, bytes);
+
+        //判断人是否满了，满了就把房间信息推送给客户端
         let res = room.check_all_confirmed_into_room();
         if res {
             room.state = RoomState::Await;
@@ -1050,7 +1080,8 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
         let sircn = S_INTO_ROOM_CANCEL_NOTICE::new();
         let bytes = sircn.write_to_bytes().unwrap();
         room.send_2_all_client(ClientCode::IntoRoomCancelNotice, bytes);
-        rm.clear_room_without_push(user_id);
+        //删除房间
+        rm.clear_room_without_push(room_type, room_id);
     }
 
     Ok(())
@@ -1069,9 +1100,10 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let room = room.unwrap();
     let room_type = room.get_room_type();
+    let room_id = room.get_room_id();
     //如果是匹配房，直接删除房间数据
     if room_type == RoomType::Match {
-        rm.clear_room_without_push(user_id);
+        rm.clear_room_without_push(room_type, room_id);
         return Ok(());
     }
     //如果是自定义房间，更新结算数据

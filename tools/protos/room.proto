@@ -215,8 +215,26 @@ message C_CONFIRM_INTO_ROOM{
     bool confirm = 1;//false为不进入房间，true为确定进入房间
 }
 
+//确认进入房间推送
+//cmd:10061
+message S_CONFIRM_INTO_ROOM_NOTICE{
+    uint32 count=1;//点击去人进入房间人的数量
+}
+
 //进入房间取消通知  此消息没有任何数据内容
 //cmd:10028
 message S_INTO_ROOM_CANCEL_NOTICE{
     
+}
+
+//取消匹配请求指令
+//cmd:20016
+message C_CANCEL_SEARCH{
+
+}
+
+//取消匹配返回指令
+//cmd:10060
+message S_CANCEL_SEARCH{
+
 }
