@@ -23,12 +23,12 @@ fn update_rank(rm: Arc<Mutex<RankMgr>>) {
         loop {
             async_std::task::sleep(Duration::from_secs(60 * 5)).await;
             let mut lock = rm.lock().await;
-            lock.rank_vec.par_sort_by(|a, b| {
+            lock.rank_vec.par_sort_unstable_by(|a, b| {
                 //如果段位等级一样
                 if a.league.get_league_id() == b.league.get_league_id() {
-                    //看时间
-                    if a.league.league_time < b.league.league_time {
-                        return Ordering::Greater;
+                    if a.league.league_time != b.league.league_time {
+                        //看时间
+                        return a.league.league_time.cmp(&b.league.league_time);
                     }
                 }
                 //段位不一样直接看分数

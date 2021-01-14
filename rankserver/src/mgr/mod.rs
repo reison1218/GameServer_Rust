@@ -2,6 +2,10 @@ use log::warn;
 use tools::templates::league_temp::LeagueTemp;
 pub mod rank_mgr;
 
+pub struct RankInfoPtr(pub *mut RankInfo);
+
+unsafe impl Send for RankInfoPtr {}
+
 ///排行榜数据结构体
 #[derive(Debug)]
 pub struct RankInfo {
@@ -12,12 +16,6 @@ pub struct RankInfo {
     pub league: League,  //段位
 }
 
-impl Drop for RankInfo {
-    fn drop(&mut self) {
-        println!("drop rankinfo");
-    }
-}
-
 impl RankInfo {
     ///获得积分
     pub fn get_score(&self) -> i32 {
@@ -26,6 +24,7 @@ impl RankInfo {
 
     pub fn new(user_id: u32, name: String) -> Self {
         let league = League::new(10).unwrap();
+
         RankInfo {
             user_id,
             name,

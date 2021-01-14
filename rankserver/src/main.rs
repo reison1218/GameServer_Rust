@@ -3,7 +3,7 @@ mod mgr;
 mod net;
 mod task_timer;
 
-use std::env;
+use std::{env, time::Duration};
 
 use crate::mgr::rank_mgr::RankMgr;
 use crate::net::tcp_server;
@@ -33,12 +33,6 @@ lazy_static! {
     };
 }
 
-static MAP: HashMap<u32, u32> = init_map();
-
-const fn init_map() -> HashMap<u32, u32> {
-    HashMap::con
-}
-
 fn init_templates_mgr() -> TemplatesMgr {
     let path = env::current_dir().unwrap();
     let str = path.as_os_str().to_str().unwrap();
@@ -47,12 +41,12 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 fn main() {
-    let mut rm = Arc::new(Mutex::new(RankMgr::default()));
-    // let res = rm.borrow_mut() as *mut RankMgr;
-    // unsafe {
-    //     res.as_mut().unwrap().update_rank_info();
-    // }
-    init_tcp_server(rm.clone());
+    let mut rm = RankMgr::new();
+    rm.update_rank_info();
+    println!("{:?}", rm.rank_vec);
+    std::thread::sleep(Duration::from_secs(5));
+    // let rm = Arc::new(Mutex::new(RankMgr::new()));
+    // init_tcp_server(rm.clone());
 }
 
 ///初始化tcp服务端

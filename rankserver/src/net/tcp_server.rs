@@ -45,16 +45,16 @@ impl tools::tcp::Handler for TcpServerHandler {
 
         for packet in packet_array {
             //异步处理业务逻辑
-            //task::spawn(handler_mess_s(self.rm.clone(), packet));
+            task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
     }
 }
 
-// ///处理客户端消息
-// async fn handler_mess_s(rm: Arc<Mutex<RankMgr>>, packet: Packet) {
-//     let mut lock = rm.lock().await;
-//     lock.invok(packet);
-// }
+///处理客户端消息
+async fn handler_mess_s(rm: Arc<Mutex<RankMgr>>, packet: Packet) {
+    let mut lock = rm.lock().await;
+    lock.invok(packet);
+}
 
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: &str, rm: Arc<Mutex<RankMgr>>) {

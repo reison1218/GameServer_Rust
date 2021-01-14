@@ -469,7 +469,19 @@ pub struct StructTest {
 
 fn fn1(s: &mut String) {}
 
+pub struct StructTestPtr(*mut StructTest);
+
+unsafe impl Send for StructTestPtr {}
 fn main() -> anyhow::Result<()> {
+    let mut st = StructTest::default();
+    let res = st.borrow_mut() as *mut StructTest;
+    let mut st_ptr = StructTestPtr(res);
+    let m = move || unsafe {
+        st_ptr.0.as_mut().unwrap().a += 1;
+        println!("{:?}", st_ptr.0.as_mut().unwrap());
+    };
+    std::thread::spawn(m);
+    std::thread::sleep(Duration::from_secs(3));
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);
