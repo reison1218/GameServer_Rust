@@ -2,6 +2,8 @@ use super::*;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::str::FromStr;
+use tools::protos::base::LeaguePt;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
@@ -20,6 +22,41 @@ pub struct League {
 unsafe impl Send for League {}
 
 unsafe impl Sync for League {}
+
+impl League {
+    pub fn get_league_time(&self) -> i64 {
+        let res = chrono::NaiveDateTime::from_str(self.league_time.as_str());
+        if let Ok(res) = res {
+            return res.timestamp_millis();
+        }
+        0
+    }
+
+    pub fn update_from_pt(&mut self, pt: &LeaguePt) {
+        self.id = pt.league_id as u8;
+        self.score = pt.league_score;
+        let res;
+        let res2;
+        if pt.get_league_time() == 0 {
+            res = 0;
+            res2 = 0;
+        } else {
+            res = pt.get_league_time() / 1000;
+            res2 = pt.get_league_time() % 1000;
+        }
+        let res = chrono::NaiveDateTime::from_timestamp(res, res2 as u32);
+        self.league_time = res.format("%Y-%m-%dT%H:%M:%S").to_string();
+        self.add_version();
+    }
+
+    pub fn into(&self) -> LeaguePt {
+        let mut lp = LeaguePt::new();
+        lp.league_id = self.id as u32;
+        lp.league_score = self.score as u32;
+        lp.league_time = self.get_league_time();
+        lp
+    }
+}
 
 impl Entity for League {
     fn set_user_id(&mut self, user_id: u32) {
@@ -99,11 +136,6 @@ impl League {
         l.name = name;
         l.update_league_time();
         l
-    }
-
-    pub fn set_score(&mut self, score: u32) {
-        self.score = score;
-        self.add_version();
     }
 
     pub fn query(table_name: &str, user_id: u32) -> Option<Self> {

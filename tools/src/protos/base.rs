@@ -803,9 +803,8 @@ pub struct MemberPt {
     pub state: u32,
     pub grade: u32,
     pub team_id: u32,
-    pub league_score: u32,
-    pub league_id: u32,
     pub join_time: u64,
+    pub league: ::protobuf::SingularPtrField<LeaguePt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -941,37 +940,7 @@ impl MemberPt {
         self.team_id = v;
     }
 
-    // uint32 league_score = 7;
-
-
-    pub fn get_league_score(&self) -> u32 {
-        self.league_score
-    }
-    pub fn clear_league_score(&mut self) {
-        self.league_score = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_score(&mut self, v: u32) {
-        self.league_score = v;
-    }
-
-    // uint32 league_id = 8;
-
-
-    pub fn get_league_id(&self) -> u32 {
-        self.league_id
-    }
-    pub fn clear_league_id(&mut self) {
-        self.league_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_id(&mut self, v: u32) {
-        self.league_id = v;
-    }
-
-    // uint64 join_time = 9;
+    // uint64 join_time = 7;
 
 
     pub fn get_join_time(&self) -> u64 {
@@ -985,11 +954,49 @@ impl MemberPt {
     pub fn set_join_time(&mut self, v: u64) {
         self.join_time = v;
     }
+
+    // .protos.LeaguePt league = 8;
+
+
+    pub fn get_league(&self) -> &LeaguePt {
+        self.league.as_ref().unwrap_or_else(|| <LeaguePt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_league(&mut self) {
+        self.league.clear();
+    }
+
+    pub fn has_league(&self) -> bool {
+        self.league.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league(&mut self, v: LeaguePt) {
+        self.league = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_league(&mut self) -> &mut LeaguePt {
+        if self.league.is_none() {
+            self.league.set_default();
+        }
+        self.league.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_league(&mut self) -> LeaguePt {
+        self.league.take().unwrap_or_else(|| LeaguePt::new())
+    }
 }
 
 impl ::protobuf::Message for MemberPt {
     fn is_initialized(&self) -> bool {
         for v in &self.cter {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.league {
             if !v.is_initialized() {
                 return false;
             }
@@ -1039,22 +1046,11 @@ impl ::protobuf::Message for MemberPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
-                    self.league_score = tmp;
-                },
-                8 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.league_id = tmp;
-                },
-                9 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
                     let tmp = is.read_uint64()?;
                     self.join_time = tmp;
+                },
+                8 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.league)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1087,14 +1083,12 @@ impl ::protobuf::Message for MemberPt {
         if self.team_id != 0 {
             my_size += ::protobuf::rt::value_size(6, self.team_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.league_score != 0 {
-            my_size += ::protobuf::rt::value_size(7, self.league_score, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.league_id != 0 {
-            my_size += ::protobuf::rt::value_size(8, self.league_id, ::protobuf::wire_format::WireTypeVarint);
-        }
         if self.join_time != 0 {
-            my_size += ::protobuf::rt::value_size(9, self.join_time, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(7, self.join_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.league.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1122,14 +1116,13 @@ impl ::protobuf::Message for MemberPt {
         if self.team_id != 0 {
             os.write_uint32(6, self.team_id)?;
         }
-        if self.league_score != 0 {
-            os.write_uint32(7, self.league_score)?;
-        }
-        if self.league_id != 0 {
-            os.write_uint32(8, self.league_id)?;
-        }
         if self.join_time != 0 {
-            os.write_uint64(9, self.join_time)?;
+            os.write_uint64(7, self.join_time)?;
+        }
+        if let Some(ref v) = self.league.as_ref() {
+            os.write_tag(8, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1199,20 +1192,15 @@ impl ::protobuf::Message for MemberPt {
                 |m: &MemberPt| { &m.team_id },
                 |m: &mut MemberPt| { &mut m.team_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_score",
-                |m: &MemberPt| { &m.league_score },
-                |m: &mut MemberPt| { &mut m.league_score },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_id",
-                |m: &MemberPt| { &m.league_id },
-                |m: &mut MemberPt| { &mut m.league_id },
-            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                 "join_time",
                 |m: &MemberPt| { &m.join_time },
                 |m: &mut MemberPt| { &mut m.join_time },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<LeaguePt>>(
+                "league",
+                |m: &MemberPt| { &m.league },
+                |m: &mut MemberPt| { &mut m.league },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<MemberPt>(
                 "MemberPt",
@@ -1236,9 +1224,8 @@ impl ::protobuf::Clear for MemberPt {
         self.state = 0;
         self.grade = 0;
         self.team_id = 0;
-        self.league_score = 0;
-        self.league_id = 0;
         self.join_time = 0;
+        self.league.clear();
         self.unknown_fields.clear();
     }
 }
@@ -4180,12 +4167,12 @@ impl ::protobuf::reflect::ProtobufValue for BuffPt {
 pub struct SummaryDataPt {
     // message fields
     pub user_id: u32,
+    pub name: ::std::string::String,
     pub cter_id: u32,
     pub grade: u32,
     pub rank: u32,
-    pub league_score: u32,
-    pub league_id: u32,
     pub reward_score: i32,
+    pub league: ::protobuf::SingularPtrField<LeaguePt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -4217,7 +4204,33 @@ impl SummaryDataPt {
         self.user_id = v;
     }
 
-    // uint32 cter_id = 2;
+    // string name = 2;
+
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+    pub fn clear_name(&mut self) {
+        self.name.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_name(&mut self) -> &mut ::std::string::String {
+        &mut self.name
+    }
+
+    // Take field
+    pub fn take_name(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.name, ::std::string::String::new())
+    }
+
+    // uint32 cter_id = 3;
 
 
     pub fn get_cter_id(&self) -> u32 {
@@ -4232,7 +4245,7 @@ impl SummaryDataPt {
         self.cter_id = v;
     }
 
-    // uint32 grade = 3;
+    // uint32 grade = 4;
 
 
     pub fn get_grade(&self) -> u32 {
@@ -4247,7 +4260,7 @@ impl SummaryDataPt {
         self.grade = v;
     }
 
-    // uint32 rank = 4;
+    // uint32 rank = 5;
 
 
     pub fn get_rank(&self) -> u32 {
@@ -4262,37 +4275,7 @@ impl SummaryDataPt {
         self.rank = v;
     }
 
-    // uint32 league_score = 5;
-
-
-    pub fn get_league_score(&self) -> u32 {
-        self.league_score
-    }
-    pub fn clear_league_score(&mut self) {
-        self.league_score = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_score(&mut self, v: u32) {
-        self.league_score = v;
-    }
-
-    // uint32 league_id = 6;
-
-
-    pub fn get_league_id(&self) -> u32 {
-        self.league_id
-    }
-    pub fn clear_league_id(&mut self) {
-        self.league_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_id(&mut self, v: u32) {
-        self.league_id = v;
-    }
-
-    // int32 reward_score = 7;
+    // int32 reward_score = 6;
 
 
     pub fn get_reward_score(&self) -> i32 {
@@ -4306,10 +4289,48 @@ impl SummaryDataPt {
     pub fn set_reward_score(&mut self, v: i32) {
         self.reward_score = v;
     }
+
+    // .protos.LeaguePt league = 7;
+
+
+    pub fn get_league(&self) -> &LeaguePt {
+        self.league.as_ref().unwrap_or_else(|| <LeaguePt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_league(&mut self) {
+        self.league.clear();
+    }
+
+    pub fn has_league(&self) -> bool {
+        self.league.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league(&mut self, v: LeaguePt) {
+        self.league = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_league(&mut self) -> &mut LeaguePt {
+        if self.league.is_none() {
+            self.league.set_default();
+        }
+        self.league.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_league(&mut self) -> LeaguePt {
+        self.league.take().unwrap_or_else(|| LeaguePt::new())
+    }
 }
 
 impl ::protobuf::Message for SummaryDataPt {
     fn is_initialized(&self) -> bool {
+        for v in &self.league {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -4325,46 +4346,38 @@ impl ::protobuf::Message for SummaryDataPt {
                     self.user_id = tmp;
                 },
                 2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.cter_id = tmp;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.name)?;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.grade = tmp;
+                    self.cter_id = tmp;
                 },
                 4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.rank = tmp;
+                    self.grade = tmp;
                 },
                 5 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.league_score = tmp;
+                    self.rank = tmp;
                 },
                 6 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
-                    self.league_id = tmp;
-                },
-                7 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
                     let tmp = is.read_int32()?;
                     self.reward_score = tmp;
+                },
+                7 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.league)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -4381,23 +4394,24 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if !self.name.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.name);
+        }
         if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.grade != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.grade, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.rank != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.rank, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.league_score != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.league_score, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.league_id != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.league_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(5, self.rank, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.reward_score != 0 {
-            my_size += ::protobuf::rt::value_size(7, self.reward_score, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(6, self.reward_score, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.league.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -4408,23 +4422,25 @@ impl ::protobuf::Message for SummaryDataPt {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
+        if !self.name.is_empty() {
+            os.write_string(2, &self.name)?;
+        }
         if self.cter_id != 0 {
-            os.write_uint32(2, self.cter_id)?;
+            os.write_uint32(3, self.cter_id)?;
         }
         if self.grade != 0 {
-            os.write_uint32(3, self.grade)?;
+            os.write_uint32(4, self.grade)?;
         }
         if self.rank != 0 {
-            os.write_uint32(4, self.rank)?;
-        }
-        if self.league_score != 0 {
-            os.write_uint32(5, self.league_score)?;
-        }
-        if self.league_id != 0 {
-            os.write_uint32(6, self.league_id)?;
+            os.write_uint32(5, self.rank)?;
         }
         if self.reward_score != 0 {
-            os.write_int32(7, self.reward_score)?;
+            os.write_int32(6, self.reward_score)?;
+        }
+        if let Some(ref v) = self.league.as_ref() {
+            os.write_tag(7, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -4469,6 +4485,11 @@ impl ::protobuf::Message for SummaryDataPt {
                 |m: &SummaryDataPt| { &m.user_id },
                 |m: &mut SummaryDataPt| { &mut m.user_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "name",
+                |m: &SummaryDataPt| { &m.name },
+                |m: &mut SummaryDataPt| { &mut m.name },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "cter_id",
                 |m: &SummaryDataPt| { &m.cter_id },
@@ -4484,20 +4505,15 @@ impl ::protobuf::Message for SummaryDataPt {
                 |m: &SummaryDataPt| { &m.rank },
                 |m: &mut SummaryDataPt| { &mut m.rank },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_score",
-                |m: &SummaryDataPt| { &m.league_score },
-                |m: &mut SummaryDataPt| { &mut m.league_score },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_id",
-                |m: &SummaryDataPt| { &m.league_id },
-                |m: &mut SummaryDataPt| { &mut m.league_id },
-            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                 "reward_score",
                 |m: &SummaryDataPt| { &m.reward_score },
                 |m: &mut SummaryDataPt| { &mut m.reward_score },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<LeaguePt>>(
+                "league",
+                |m: &SummaryDataPt| { &m.league },
+                |m: &mut SummaryDataPt| { &mut m.league },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<SummaryDataPt>(
                 "SummaryDataPt",
@@ -4516,12 +4532,12 @@ impl ::protobuf::Message for SummaryDataPt {
 impl ::protobuf::Clear for SummaryDataPt {
     fn clear(&mut self) {
         self.user_id = 0;
+        self.name.clear();
         self.cter_id = 0;
         self.grade = 0;
         self.rank = 0;
-        self.league_score = 0;
-        self.league_id = 0;
         self.reward_score = 0;
+        self.league.clear();
         self.unknown_fields.clear();
     }
 }
@@ -5168,6 +5184,228 @@ impl ::protobuf::reflect::ProtobufValue for PunishMatchPt {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct LeaguePt {
+    // message fields
+    pub league_score: u32,
+    pub league_id: u32,
+    pub league_time: i64,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a LeaguePt {
+    fn default() -> &'a LeaguePt {
+        <LeaguePt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl LeaguePt {
+    pub fn new() -> LeaguePt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 league_score = 1;
+
+
+    pub fn get_league_score(&self) -> u32 {
+        self.league_score
+    }
+    pub fn clear_league_score(&mut self) {
+        self.league_score = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_score(&mut self, v: u32) {
+        self.league_score = v;
+    }
+
+    // uint32 league_id = 2;
+
+
+    pub fn get_league_id(&self) -> u32 {
+        self.league_id
+    }
+    pub fn clear_league_id(&mut self) {
+        self.league_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_id(&mut self, v: u32) {
+        self.league_id = v;
+    }
+
+    // int64 league_time = 3;
+
+
+    pub fn get_league_time(&self) -> i64 {
+        self.league_time
+    }
+    pub fn clear_league_time(&mut self) {
+        self.league_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_league_time(&mut self, v: i64) {
+        self.league_time = v;
+    }
+}
+
+impl ::protobuf::Message for LeaguePt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.league_score = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.league_id = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int64()?;
+                    self.league_time = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.league_score != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.league_score, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.league_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.league_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.league_time != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.league_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.league_score != 0 {
+            os.write_uint32(1, self.league_score)?;
+        }
+        if self.league_id != 0 {
+            os.write_uint32(2, self.league_id)?;
+        }
+        if self.league_time != 0 {
+            os.write_int64(3, self.league_time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> LeaguePt {
+        LeaguePt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "league_score",
+                |m: &LeaguePt| { &m.league_score },
+                |m: &mut LeaguePt| { &mut m.league_score },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "league_id",
+                |m: &LeaguePt| { &m.league_id },
+                |m: &mut LeaguePt| { &mut m.league_id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt64>(
+                "league_time",
+                |m: &LeaguePt| { &m.league_time },
+                |m: &mut LeaguePt| { &mut m.league_time },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<LeaguePt>(
+                "LeaguePt",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static LeaguePt {
+        static instance: ::protobuf::rt::LazyV2<LeaguePt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(LeaguePt::new)
+    }
+}
+
+impl ::protobuf::Clear for LeaguePt {
+    fn clear(&mut self) {
+        self.league_score = 0;
+        self.league_id = 0;
+        self.league_time = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for LeaguePt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for LeaguePt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nbase.proto\x12\x06protos\"\x9f\x01\n\rRoomSettingPt\x12&\n\x0fturn_l\
     imit_time\x18\x01\x20\x01(\rR\rturnLimitTime\x12\x1b\n\tseason_id\x18\
@@ -5179,62 +5417,64 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0bpunishMatch\x12\x10\n\x03dlc\x18\x04\x20\x03(\rR\x03dlc\"C\n\x0bReso\
     urcesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\
     \x18\x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\
-    \x8b\x02\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userI\
+    \xf5\x01\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userI\
     d\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\
     \x18\x03\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05stat\
     e\x18\x04\x20\x01(\rR\x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\
-    \x05grade\x12\x17\n\x07team_id\x18\x06\x20\x01(\rR\x06teamId\x12!\n\x0cl\
-    eague_score\x18\x07\x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\
-    \x08\x20\x01(\rR\x08leagueId\x12\x1b\n\tjoin_time\x18\t\x20\x01(\x04R\
-    \x08joinTime\"G\n\x0bWorldCellPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\
-    \x05index\x12\"\n\rworld_cell_id\x18\x02\x20\x01(\rR\x0bworldCellId\"\
-    \xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\
-    \x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\x07ownerId\x12\x1b\n\troom_ty\
-    pe\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\n\x0broom_status\x18\x04\x20\
-    \x01(\rR\nroomStatus\x12/\n\x07setting\x18\x05\x20\x01(\x0b2\x15.protos.\
-    RoomSettingPtR\x07setting\x12*\n\x07members\x18\x06\x20\x03(\x0b2\x10.pr\
-    otos.MemberPtR\x07members\"\x0f\n\rHistoryMessPt\"\x0e\n\x0cNoticeMessPt\
-    \"f\n\x0bCharacterPt\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\
-    \x12&\n\x0flast_use_skills\x18\x02\x20\x03(\rR\rlastUseSkills\x12\x16\n\
-    \x06skills\x18\x03\x20\x03(\rR\x06skills\"\x8c\x02\n\x11BattleCharacterP\
-    t\x12\x17\n\x07room_id\x18\x01\x20\x01(\x04R\x06roomId\x12\x17\n\x07user\
-    _id\x18\x02\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\x03\x20\x01(\
-    \rR\x06cterId\x12\x10\n\x03atk\x18\x04\x20\x01(\rR\x03atk\x12\x0e\n\x02h\
-    p\x18\x05\x20\x01(\rR\x02hp\x12\x18\n\x07defence\x18\x06\x20\x01(\rR\x07\
-    defence\x12\x16\n\x06energy\x18\x07\x20\x01(\rR\x06energy\x12\x14\n\x05i\
-    ndex\x18\x08\x20\x01(\rR\x05index\x12\x14\n\x05buffs\x18\t\x20\x03(\rR\
-    \x05buffs\x12\x16\n\x06skills\x18\n\x20\x03(\rR\x06skills\x12\x14\n\x05i\
-    tems\x18\x0b\x20\x03(\rR\x05items\"N\n\x08EffectPt\x12\x1f\n\x0beffect_t\
-    ype\x18\x02\x20\x01(\rR\neffectType\x12!\n\x0ceffect_value\x18\x03\x20\
-    \x01(\rR\x0beffectValue\"\xb7\x02\n\x08TargetPt\x12!\n\x0ctarget_value\
-    \x18\x01\x20\x03(\rR\x0btargetValue\x12*\n\x07effects\x18\x02\x20\x03(\
-    \x0b2\x10.protos.EffectPtR\x07effects\x12\x1b\n\tadd_buffs\x18\x03\x20\
-    \x03(\rR\x08addBuffs\x12=\n\rpassiveEffect\x18\x04\x20\x03(\x0b2\x17.pro\
-    tos.TriggerEffectPtR\rpassiveEffect\x12\x1d\n\nlost_buffs\x18\x05\x20\
-    \x03(\rR\tlostBuffs\x12\x1f\n\x0blost_skills\x18\x06\x20\x03(\rR\nlostSk\
-    ills\x12@\n\x0etransform_cter\x18\x07\x20\x01(\x0b2\x19.protos.BattleCha\
-    racterPtR\rtransformCter\"T\n\x0fTriggerEffectPt\x12\x17\n\x07buff_id\
-    \x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04\
-    type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\x05value\"\xba\x01\n\x0cActi\
-    onUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\x01(\rR\x08fromUser\x12\x1f\n\
-    \x0baction_type\x18\x02\x20\x01(\rR\nactionType\x12!\n\x0caction_value\
-    \x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\x07targets\x18\x04\x20\x03(\
-    \x0b2\x10.protos.TargetPtR\x07targets\x12\x1d\n\nlost_buffs\x18\x05\x20\
-    \x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\
-    \rR\x06buffId\x12'\n\x0ftrigger_timesed\x18\x02\x20\x01(\rR\x0etriggerTi\
-    mesed\x12\x1d\n\nkeep_times\x18\x03\x20\x01(\rR\tkeepTimes\"\xce\x01\n\r\
-    SummaryDataPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\
-    \n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\x18\x03\
-    \x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x04\x20\x01(\rR\x04rank\x12!\
-    \n\x0cleague_score\x18\x05\x20\x01(\rR\x0bleagueScore\x12\x1b\n\tleague_\
-    id\x18\x06\x20\x01(\rR\x08leagueId\x12!\n\x0creward_score\x18\x07\x20\
-    \x01(\x05R\x0brewardScore\"e\n\x0cCterStatusPt\x12\x17\n\x07user_id\x18\
-    \x01\x20\x01(\rR\x06userId\x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06sk\
-    ills\x12$\n\x05buffs\x18\x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"\
-    H\n\nCellBuffPt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\
-    \x05buffs\x18\x02\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"K\n\rPunish\
-    MatchPt\x12\x1d\n\nstart_time\x18\x01\x20\x01(\x03R\tstartTime\x12\x1b\n\
-    \tpunish_id\x18\x02\x20\x01(\rR\x08punishIdb\x06proto3\
+    \x05grade\x12\x17\n\x07team_id\x18\x06\x20\x01(\rR\x06teamId\x12\x1b\n\t\
+    join_time\x18\x07\x20\x01(\x04R\x08joinTime\x12(\n\x06league\x18\x08\x20\
+    \x01(\x0b2\x10.protos.LeaguePtR\x06league\"G\n\x0bWorldCellPt\x12\x14\n\
+    \x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\x18\x02\
+    \x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07room_id\
+    \x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\x01(\rR\
+    \x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\x12\x1f\
+    \n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07setting\x18\
+    \x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\x07member\
+    s\x18\x06\x20\x03(\x0b2\x10.protos.MemberPtR\x07members\"\x0f\n\rHistory\
+    MessPt\"\x0e\n\x0cNoticeMessPt\"f\n\x0bCharacterPt\x12\x17\n\x07cter_id\
+    \x18\x01\x20\x01(\rR\x06cterId\x12&\n\x0flast_use_skills\x18\x02\x20\x03\
+    (\rR\rlastUseSkills\x12\x16\n\x06skills\x18\x03\x20\x03(\rR\x06skills\"\
+    \x8c\x02\n\x11BattleCharacterPt\x12\x17\n\x07room_id\x18\x01\x20\x01(\
+    \x04R\x06roomId\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\x12\
+    \x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x10\n\x03atk\x18\x04\
+    \x20\x01(\rR\x03atk\x12\x0e\n\x02hp\x18\x05\x20\x01(\rR\x02hp\x12\x18\n\
+    \x07defence\x18\x06\x20\x01(\rR\x07defence\x12\x16\n\x06energy\x18\x07\
+    \x20\x01(\rR\x06energy\x12\x14\n\x05index\x18\x08\x20\x01(\rR\x05index\
+    \x12\x14\n\x05buffs\x18\t\x20\x03(\rR\x05buffs\x12\x16\n\x06skills\x18\n\
+    \x20\x03(\rR\x06skills\x12\x14\n\x05items\x18\x0b\x20\x03(\rR\x05items\"\
+    N\n\x08EffectPt\x12\x1f\n\x0beffect_type\x18\x02\x20\x01(\rR\neffectType\
+    \x12!\n\x0ceffect_value\x18\x03\x20\x01(\rR\x0beffectValue\"\xb7\x02\n\
+    \x08TargetPt\x12!\n\x0ctarget_value\x18\x01\x20\x03(\rR\x0btargetValue\
+    \x12*\n\x07effects\x18\x02\x20\x03(\x0b2\x10.protos.EffectPtR\x07effects\
+    \x12\x1b\n\tadd_buffs\x18\x03\x20\x03(\rR\x08addBuffs\x12=\n\rpassiveEff\
+    ect\x18\x04\x20\x03(\x0b2\x17.protos.TriggerEffectPtR\rpassiveEffect\x12\
+    \x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\x12\x1f\n\x0blost_skil\
+    ls\x18\x06\x20\x03(\rR\nlostSkills\x12@\n\x0etransform_cter\x18\x07\x20\
+    \x01(\x0b2\x19.protos.BattleCharacterPtR\rtransformCter\"T\n\x0fTriggerE\
+    ffectPt\x12\x17\n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12\x12\n\x04\
+    type\x18\x02\x20\x01(\rR\x04type\x12\x14\n\x05value\x18\x03\x20\x01(\rR\
+    \x05value\"\xba\x01\n\x0cActionUnitPt\x12\x1b\n\tfrom_user\x18\x01\x20\
+    \x01(\rR\x08fromUser\x12\x1f\n\x0baction_type\x18\x02\x20\x01(\rR\nactio\
+    nType\x12!\n\x0caction_value\x18\x03\x20\x03(\rR\x0bactionValue\x12*\n\
+    \x07targets\x18\x04\x20\x03(\x0b2\x10.protos.TargetPtR\x07targets\x12\
+    \x1d\n\nlost_buffs\x18\x05\x20\x03(\rR\tlostBuffs\"i\n\x06BuffPt\x12\x17\
+    \n\x07buff_id\x18\x01\x20\x01(\rR\x06buffId\x12'\n\x0ftrigger_timesed\
+    \x18\x02\x20\x01(\rR\x0etriggerTimesed\x12\x1d\n\nkeep_times\x18\x03\x20\
+    \x01(\rR\tkeepTimes\"\xcc\x01\n\rSummaryDataPt\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12\x12\n\x04name\x18\x02\x20\x01(\tR\x04name\
+    \x12\x17\n\x07cter_id\x18\x03\x20\x01(\rR\x06cterId\x12\x14\n\x05grade\
+    \x18\x04\x20\x01(\rR\x05grade\x12\x12\n\x04rank\x18\x05\x20\x01(\rR\x04r\
+    ank\x12!\n\x0creward_score\x18\x06\x20\x01(\x05R\x0brewardScore\x12(\n\
+    \x06league\x18\x07\x20\x01(\x0b2\x10.protos.LeaguePtR\x06league\"e\n\x0c\
+    CterStatusPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x16\
+    \n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\x03\x20\
+    \x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\n\x05ind\
+    ex\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03(\x0b2\
+    \x0e.protos.BuffPtR\x05buffs\"K\n\rPunishMatchPt\x12\x1d\n\nstart_time\
+    \x18\x01\x20\x01(\x03R\tstartTime\x12\x1b\n\tpunish_id\x18\x02\x20\x01(\
+    \rR\x08punishId\"k\n\x08LeaguePt\x12!\n\x0cleague_score\x18\x01\x20\x01(\
+    \rR\x0bleagueScore\x12\x1b\n\tleague_id\x18\x02\x20\x01(\rR\x08leagueId\
+    \x12\x1f\n\x0bleague_time\x18\x03\x20\x01(\x03R\nleagueTimeb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

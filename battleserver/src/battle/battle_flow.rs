@@ -19,12 +19,12 @@ use std::ops::Deref;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
-use tools::protos::server_protocol::B_G_SUMMARY;
+use tools::protos::server_protocol::B_S_SUMMARY;
 
 impl BattleData {
     ///处理战斗结算核心逻辑，不管地图刷新逻辑
     /// 返回一个元组类型：是否结算，存活玩家数量，第一名的玩家列表
-    pub fn summary(&mut self) -> Vec<B_G_SUMMARY> {
+    pub fn summary(&mut self) -> Vec<B_S_SUMMARY> {
         let allive_count = self
             .battle_cter
             .values()
@@ -63,7 +63,7 @@ impl BattleData {
                     let smp: SummaryDataPt = su.clone().into();
                     ssn.summary_datas.push(smp.clone());
                     if !su.push_to_server {
-                        let mut bg = B_G_SUMMARY::new();
+                        let mut bg = B_S_SUMMARY::new();
                         bg.set_summary_data(smp);
                         bgs.push(bg);
                         su.push_to_server = true;

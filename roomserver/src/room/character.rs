@@ -33,7 +33,8 @@ impl Into<CharacterPt> for Character {
 ///段位数据
 #[derive(Clone, Debug)]
 pub struct League {
-    pub score: i32, //段位积分
+    pub score: i32,       //段位积分
+    pub league_time: i64, //进入段位时间
     pub league_temp: &'static LeagueTemp,
 }
 
@@ -42,12 +43,14 @@ impl League {
         self.league_temp.id
     }
 
-    pub fn update_league_id(&mut self, score: i32) {
+    pub fn update(&mut self, league_id: u8, league_score: i32, league_time: i64) {
         let res = crate::TEMPLATES
             .get_league_temp_mgr_ref()
-            .get_league_by_score(score)
+            .get_temp(&league_id)
             .unwrap();
         self.league_temp = res;
+        self.score = league_score;
+        self.league_time = league_time;
     }
 }
 
@@ -59,6 +62,7 @@ impl Default for League {
             .unwrap();
         League {
             score: 0,
+            league_time: 0,
             league_temp: res,
         }
     }

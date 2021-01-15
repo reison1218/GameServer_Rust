@@ -46,10 +46,8 @@ message MemberPt{
     uint32 state = 4;//玩家状态，是否已经准备 1:未准备，2：准备
     uint32 grade = 5;//角色等级
     uint32 team_id = 6;//玩家所属队伍id
-    uint32 league_score = 7;//玩家段位积分
-    uint32 league_id = 8;//玩家段位
-    uint64 join_time = 9;//玩家进入房间的时间
-
+    uint64 join_time = 7;//玩家进入房间的时间
+    LeaguePt league = 8;//段位数据
 }
 
 message WorldCellPt{
@@ -143,12 +141,12 @@ message BuffPt{
 //结算玩家
 message SummaryDataPt{
     uint32 user_id = 1;//玩家id
-    uint32 cter_id = 2;//角色id
-    uint32 grade = 3;//当前等级
-    uint32 rank = 4;//当局排名
-    uint32 league_score = 5;//玩家总积分
-    uint32 league_id = 6;//段位id
-    int32 reward_score = 7;//奖励积分
+    string name = 2;//名字
+    uint32 cter_id = 3;//角色id
+    uint32 grade = 4;//当前等级
+    uint32 rank = 5;//当局排名
+    int32 reward_score = 6;//奖励积分
+    LeaguePt league = 7;//段位数据
 }
 
 message CterStatusPt{
@@ -166,4 +164,11 @@ message CellBuffPt{
 message PunishMatchPt{
     int64 start_time = 1;           //开始时间
     uint32 punish_id = 2;            //惩罚id
+}
+
+//段位数据
+message LeaguePt{
+    uint32 league_score = 1;//玩家总积分
+    uint32 league_id = 2;//段位id
+    int64  league_time = 3;//进入段位时间
 }

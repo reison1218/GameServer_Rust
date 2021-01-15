@@ -361,8 +361,8 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
-    pbp.league_score = user_data.get_league_ref().score;
-    pbp.league_id = user_data.get_league_ref().id as u32;
+    let lp = user_data.get_league_ref().into();
+    pbp.set_league(lp);
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
     //封装角色
@@ -406,8 +406,8 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
-    pbp.league_score = user_data.get_league_ref().score;
-    pbp.league_id = user_data.get_league_ref().id as u32;
+    let lp = user_data.get_league_ref().into();
+    pbp.set_league(lp);
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
     for cter in user_data.get_characters_ref().cter_map.values() {
@@ -474,8 +474,8 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
     //封装玩家排行积分
-    pbp.league_score = user_data.get_league_ref().score;
-    pbp.league_id = user_data.get_league_ref().id as u32;
+    let lp = user_data.get_league_ref().into();
+    pbp.set_league(lp);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }
@@ -508,15 +508,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     user_info.set_grade(summary_data.get_grade());
     //更新段位积分
     let league = &mut user_data.league;
-    let league_id = league.id;
-    let new_league_id = summary_data.league_id as u8;
-    league.set_score(summary_data.league_score);
-    //更新进入段位时间
-    if new_league_id != league_id {
-        league.id = new_league_id;
-        league.update_league_time();
-    }
-    league.add_version();
+    league.update_from_pt(summary_data.get_league());
     user_data.add_version();
     Ok(())
 }

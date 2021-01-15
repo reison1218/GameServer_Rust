@@ -473,15 +473,12 @@ pub struct StructTestPtr(*mut StructTest);
 
 unsafe impl Send for StructTestPtr {}
 fn main() -> anyhow::Result<()> {
-    let mut st = StructTest::default();
-    let res = st.borrow_mut() as *mut StructTest;
-    let mut st_ptr = StructTestPtr(res);
-    let m = move || unsafe {
-        st_ptr.0.as_mut().unwrap().a += 1;
-        println!("{:?}", st_ptr.0.as_mut().unwrap());
-    };
-    std::thread::spawn(m);
-    std::thread::sleep(Duration::from_secs(3));
+    let mut a = 1610696194123i64;
+    let b = a % 1000;
+    a /= 1000;
+    println!("{}", b);
+    let res = chrono::NaiveDateTime::from_timestamp(a, 0);
+    println!("{:?}", res);
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);

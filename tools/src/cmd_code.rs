@@ -127,6 +127,22 @@ impl BattleCode {
     }
 }
 
+///排行服专属命令号段枚举 40001-50000
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
+pub enum RankCode {
+    Min = 40001,
+    UpdateRank = 40002,       //更新排行榜
+    Max = 50000,
+}
+
+impl RankCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
+        res
+    }
+}
+
 ///客户端专属命令号段枚举 10001-20000
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]

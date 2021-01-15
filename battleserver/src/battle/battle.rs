@@ -10,7 +10,7 @@ use crate::battle::battle_skill::{
     show_map_cell, single_skill_damage, skill_aoe_damage, skill_damage_and_cure,
     skill_damage_opened_element, skill_open_map_cell, sub_cd, transform,
 };
-use crate::room::character::BattleCharacter;
+use crate::room::character::{BattleCharacter, League};
 use crate::room::map_data::TileMap;
 use crate::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
@@ -48,11 +48,11 @@ type SkillFn = HashMap<
 #[derive(Clone, Default)]
 pub struct SummaryUser {
     pub user_id: u32,         //玩家id
+    pub name: String,         //名称
     pub cter_id: u32,         //角色id
     pub grade: u8,            //玩家等级
-    pub rank: u8,             //玩家当局排名
-    pub league_score: i32,    //段位总积分
-    pub league_id: u8,        //段位
+    pub summary_rank: u8,     //玩家当局排名
+    pub league: League,       //段位数据
     pub reward_score: i32,    //当局奖励积分
     pub push_to_server: bool, //是否推送过给游戏服务器
 }
@@ -61,9 +61,10 @@ impl From<&BattleCharacter> for SummaryUser {
     fn from(cter: &BattleCharacter) -> Self {
         let mut sp = SummaryUser::default();
         sp.user_id = cter.get_user_id();
+        sp.name = cter.base_attr.name.clone();
         sp.cter_id = cter.get_cter_id();
         sp.grade = cter.base_attr.grade;
-        sp.league_score = cter.league.score;
+        sp.league = cter.league.clone();
         sp
     }
 }
@@ -71,12 +72,13 @@ impl Into<SummaryDataPt> for SummaryUser {
     fn into(self) -> SummaryDataPt {
         let mut smp = SummaryDataPt::new();
         smp.user_id = self.user_id;
+        smp.name = self.name;
         smp.cter_id = self.cter_id;
-        smp.rank = self.rank as u32;
+        smp.rank = self.summary_rank as u32;
         smp.grade = self.grade as u32;
         smp.reward_score = self.reward_score;
-        smp.league_score = self.league_score as u32;
-        smp.league_id = self.league_id as u32;
+        let lp = self.league.into_pt();
+        smp.set_league(lp);
         smp
     }
 }

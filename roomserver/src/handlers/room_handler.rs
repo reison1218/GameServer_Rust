@@ -1125,7 +1125,9 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             let member = member.unwrap();
             member.chose_cter = Character::default();
             member.grade = sd.grade as u8;
-            member.league.update_league_id(sd.league_score as i32);
+            member
+                .league
+                .update(sd.league_id as u8, sd.league_score as i32, sd.league_time);
             member.state = MemberState::NotReady;
         }
     }
@@ -1142,6 +1144,11 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let room = res.unwrap();
+    //如果战斗已经开始,则转发给战斗服
+    if room.is_started() {
+        room.send_2_server(BattleCode::Emoji.into_u32(), user_id, packet.get_data_vec());
+        return Ok(());
+    }
     let member = room.get_member_mut(&user_id);
     if member.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);

@@ -469,8 +469,6 @@ impl TriggerEvent for BattleData {
         }
         let cter = cter.unwrap();
         let self_league = cter.league.get_league_id();
-        let self_league_temp_score = cter.league.get_temp_score();
-        let self_league_score = cter.league.score;
         let mut punishment_score = -50;
         let mut reward_score;
         let con_temp = crate::TEMPLATES
@@ -491,7 +489,7 @@ impl TriggerEvent for BattleData {
         let mut sp = SummaryUser::default();
         sp.user_id = user_id;
         sp.cter_id = cter.get_cter_id();
-        sp.league_score = cter.league.score;
+        sp.league = cter.league.clone();
         sp.grade = cter.base_attr.grade;
         let rank_vec_temp = &mut self.summary_vec_temp;
         rank_vec_temp.push(sp);
@@ -510,7 +508,6 @@ impl TriggerEvent for BattleData {
             let rank_vec = res.unwrap();
             let count = rank_vec_temp.len();
             let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
-            let league_temp_mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
             let con_temp_mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
             let res = con_temp_mgr.temps.get("max_grade");
             let mut max_grade = 2;
@@ -529,13 +526,13 @@ impl TriggerEvent for BattleData {
                 }
             }
             for sp in rank_vec_temp.iter_mut() {
-                sp.rank = index as u8;
+                sp.summary_rank = index as u8;
                 //进行结算
                 if is_punishment {
                     reward_score = punishment_score;
                 } else {
                     //计算基础分
-                    let mut rank = sp.rank + 1;
+                    let mut rank = sp.summary_rank + 1;
                     if rank == 1 {
                         sp.grade += 1;
                         if sp.grade > 2 {
@@ -578,27 +575,10 @@ impl TriggerEvent for BattleData {
                     reward_score = (base_score + unstable as i16) as i32;
                 }
                 sp.reward_score = reward_score;
-
-                sp.league_score += reward_score;
-                if sp.league_score < 0 {
-                    sp.league_score = 0;
+                let res = sp.league.update_score(reward_score);
+                if res == 0 {
                     sp.reward_score = 0;
                 }
-                //不允许掉段位
-                let res = league_temp_mgr.get_league_by_score(sp.league_score);
-                match res {
-                    Ok(res) => {
-                        if res.id < self_league {
-                            sp.reward_score = self_league_score - self_league_temp_score;
-                            sp.league_score = self_league_temp_score;
-                        }
-                    }
-                    Err(_) => {}
-                }
-                let league_temp = league_temp_mgr
-                    .get_league_by_score(sp.league_score)
-                    .unwrap();
-                sp.league_id = league_temp.id;
             }
             rank_vec.extend_from_slice(&rank_vec_temp[..]);
             rank_vec_temp.clear();

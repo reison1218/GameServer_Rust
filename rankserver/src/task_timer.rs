@@ -1,9 +1,7 @@
 use crate::mgr::rank_mgr::RankMgr;
 use async_std::sync::Mutex;
-use async_std::task;
 use log::info;
 use rayon::slice::ParallelSliceMut;
-use std::cmp::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
@@ -34,6 +32,7 @@ fn update_rank(rm: Arc<Mutex<RankMgr>>) {
                 //段位不一样直接看分数
                 b.get_score().cmp(&a.get_score())
             })
+            //todo 重新排行之后下发到游戏服
         }
     };
     async_std::task::spawn(m);

@@ -1,10 +1,20 @@
-use log::warn;
-use tools::templates::league_temp::LeagueTemp;
+use tools::protos::base::{LeaguePt, SummaryDataPt};
+
 pub mod rank_mgr;
 
 pub struct RankInfoPtr(pub *mut RankInfo);
 
 unsafe impl Send for RankInfoPtr {}
+
+impl RankInfoPtr {
+    pub fn update(&mut self, sd_pt: &SummaryDataPt) {
+        unsafe {
+            let res = self.0.as_mut().unwrap();
+            res.name = sd_pt.name.clone();
+            res.league = League::from(sd_pt.get_league());
+        }
+    }
+}
 
 ///排行榜数据结构体
 #[derive(Debug)]
@@ -21,75 +31,41 @@ impl RankInfo {
     pub fn get_score(&self) -> i32 {
         self.league.league_score
     }
+}
 
-    pub fn new(user_id: u32, name: String) -> Self {
-        let league = League::new(10).unwrap();
-
+impl From<&SummaryDataPt> for RankInfo {
+    fn from(sd_pt: &SummaryDataPt) -> Self {
+        let league = League::from(sd_pt.get_league());
         RankInfo {
-            user_id,
-            name,
+            user_id: sd_pt.user_id,
+            name: sd_pt.name.clone(),
             rank: 0,
             cters: Vec::new(),
             league,
-        }
-    }
-
-    ///获得段位数据
-    pub fn get_league_id(&self) -> u8 {
-        self.league.temp.id
-    }
-
-    ///更新积分
-    pub fn update(&mut self, add_score: i32) {
-        let before_score = self.get_score();
-        let mut res_score = self.league.league_score;
-        res_score = res_score.saturating_add(add_score);
-        if res_score < 0 {
-            res_score = 0;
-        }
-        if res_score < before_score && res_score < self.league.temp.score {
-            self.league.league_score = self.league.temp.score;
-            return;
-        } else if res_score > before_score {
-            let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-            let res = mgr.get_league_by_score(res_score);
-            if let Err(e) = res {
-                warn!("{:?}", e);
-                return;
-            }
-            let temp = res.unwrap();
-            if self.get_league_id() != temp.id {
-                self.league.temp = temp;
-            }
-            self.league.league_score = res_score;
         }
     }
 }
 
 #[derive(Debug)]
 pub struct League {
-    pub temp: &'static LeagueTemp, //段位id
-    pub league_score: i32,         //段位积分
-    pub league_time: u64,          //进入段位的时间
+    pub id: u8,            //段位id
+    pub league_score: i32, //段位积分
+    pub league_time: i64,  //进入段位的时间
 }
 
 impl League {
-    pub fn new(league_score: i32) -> anyhow::Result<Self> {
-        let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-        let res = mgr.get_league_by_score(league_score);
-        if let Err(e) = res {
-            anyhow::bail!("{:?}", e)
-        }
-        let temp = res.unwrap();
-        let res = League {
-            temp,
-            league_score,
-            league_time: 0,
-        };
-        Ok(res)
-    }
-
     pub fn get_league_id(&self) -> u8 {
-        self.temp.id
+        self.id
+    }
+}
+
+impl From<&LeaguePt> for League {
+    fn from(l_pt: &LeaguePt) -> Self {
+        let league_id = l_pt.get_league_id() as u8;
+        League {
+            id: league_id,
+            league_time: l_pt.league_time,
+            league_score: l_pt.league_score as i32,
+        }
     }
 }

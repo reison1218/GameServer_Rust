@@ -18,12 +18,7 @@ impl From<&MemberPt> for Member {
     fn from(mp: &MemberPt) -> Self {
         let mut m = Member::default();
         m.user_id = mp.user_id;
-        let mut league = League::default();
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_temp(&(mp.league_id as u8));
-        league.score = mp.league_score as i32;
-        league.league_temp = res.unwrap();
+        let league = League::from(mp.get_league());
         m.league = league;
         m.grade = mp.grade as u8;
         m.nick_name = mp.nick_name.clone();

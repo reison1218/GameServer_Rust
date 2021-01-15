@@ -17,7 +17,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode, RoomCode};
+use tools::cmd_code::{ClientCode, GameCode, RankCode, RoomCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{RoomPt, WorldCellPt};
 use tools::protos::battle::{
@@ -64,9 +64,9 @@ impl Room {
         let mut members = HashMap::new();
         let mut member_index: [u32; MEMBER_MAX as usize] = [0; MEMBER_MAX as usize];
         let mut index = 0;
-        for member in rp.members.iter() {
-            members.insert(member.user_id, Member::from(member));
-            member_index[index] = member.user_id;
+        for member_pt in rp.members.iter() {
+            members.insert(member_pt.user_id, Member::from(member_pt));
+            member_index[index] = member_pt.user_id;
             index += 1;
         }
         let room_setting = RoomSetting::from(rp.setting.as_ref().unwrap());
@@ -172,6 +172,7 @@ impl Room {
                 match res {
                     Ok(bytes) => {
                         self.send_2_server(GameCode::Summary.into_u32(), user_id, bytes.clone());
+                        self.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
                     }
                     Err(e) => {
                         error!("{:?}", e)

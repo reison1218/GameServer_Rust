@@ -15,7 +15,7 @@ use crossbeam::channel::Sender;
 use log::{error, warn};
 use std::collections::HashMap;
 use tools::macros::GetMutRef;
-use tools::protos::base::{BattleCharacterPt, CharacterPt, TargetPt};
+use tools::protos::base::{BattleCharacterPt, CharacterPt, LeaguePt, TargetPt};
 use tools::templates::character_temp::CharacterTemp;
 use tools::templates::league_temp::LeagueTemp;
 
@@ -52,6 +52,7 @@ impl Into<CharacterPt> for Character {
 pub struct BaseAttr {
     pub user_id: u32,   //玩家id
     pub cter_id: u32,   //角色的配置id
+    pub name: String,   //名称
     pub grade: u8,      //等级
     pub atk: u8,        //攻击力
     pub hp: i16,        //角色血量
@@ -66,7 +67,8 @@ pub struct BaseAttr {
 ///段位数据
 #[derive(Clone, Debug)]
 pub struct League {
-    pub score: i32, //段位积分
+    pub score: i32,       //段位积分
+    pub league_time: i64, //进入段位时间
     pub league_temp: &'static LeagueTemp,
 }
 
@@ -75,8 +77,45 @@ impl League {
         self.league_temp.id
     }
 
-    pub fn get_temp_score(&self) -> i32 {
-        self.league_temp.score
+    pub fn into_pt(&self) -> LeaguePt {
+        let mut lp = LeaguePt::new();
+        lp.league_id = self.get_league_id() as u32;
+        lp.league_score = self.score as u32;
+        lp.league_time = self.league_time;
+        lp
+    }
+
+    pub fn update_score(&mut self, score: i32) -> i32 {
+        self.score += score;
+        if self.score < 0 {
+            self.score = 0;
+            return 0;
+        }
+        //掉分了不能掉段位
+        if self.score < self.league_temp.score {
+            self.score = self.league_temp.score;
+            return self.score;
+        }
+        let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+        let temp = mgr.get_league_by_score(self.score).unwrap();
+        if temp.id != self.get_league_id() {
+            self.league_temp = temp;
+        }
+        self.score
+    }
+}
+
+impl From<&LeaguePt> for League {
+    fn from(pt: &LeaguePt) -> Self {
+        let mut l = League::default();
+        l.league_time = pt.league_time;
+        l.score = pt.league_score as i32;
+        let res = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_temp(&(pt.league_id as u8))
+            .unwrap();
+        l.league_temp = res;
+        l
     }
 }
 
@@ -88,6 +127,7 @@ impl Default for League {
             .unwrap();
         League {
             score: 0,
+            league_time: 0,
             league_temp: res,
         }
     }
@@ -160,6 +200,7 @@ impl BattleCharacter {
         battle_cter.base_attr.user_id = member.user_id;
         battle_cter.base_attr.cter_id = cter_id;
         battle_cter.base_attr.grade = member.grade;
+        battle_cter.base_attr.name = member.nick_name.clone();
         let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
         let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
         for skill_id in cter.skills.iter() {

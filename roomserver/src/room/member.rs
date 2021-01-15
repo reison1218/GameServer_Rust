@@ -99,8 +99,10 @@ impl From<PlayerBattlePt> for Member {
             .get_league_temp_mgr_ref()
             .get_league_by_score(score)
             .unwrap();
+        let league_time = pbp.league_time;
         league.score = score;
         league.league_temp = res;
+        league.league_time = league_time;
         member.league = league;
         let mut cters = HashMap::new();
         let res = pbp.take_cters();

@@ -3,15 +3,15 @@ mod mgr;
 mod net;
 mod task_timer;
 
-use std::{env, time::Duration};
+use std::env;
 
 use crate::mgr::rank_mgr::RankMgr;
 use crate::net::tcp_server;
 use async_std::sync::Mutex;
-use std::borrow::BorrowMut;
-use std::collections::HashMap;
 use std::sync::Arc;
+use task_timer::init_timer;
 use tools::conf::Conf;
+use tools::my_log::init_log;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 
 #[macro_use]
@@ -41,12 +41,15 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 fn main() {
-    let mut rm = RankMgr::new();
-    rm.update_rank_info();
-    println!("{:?}", rm.rank_vec);
-    std::thread::sleep(Duration::from_secs(5));
-    // let rm = Arc::new(Mutex::new(RankMgr::new()));
-    // init_tcp_server(rm.clone());
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    //初始化日志模块
+    init_log(info_log, error_log);
+    let rm = Arc::new(Mutex::new(RankMgr::new()));
+    //初始化定时器
+    init_timer(rm.clone());
+    //初始化网络
+    init_tcp_server(rm.clone());
 }
 
 ///初始化tcp服务端

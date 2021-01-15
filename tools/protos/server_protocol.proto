@@ -25,8 +25,8 @@ message G_R_SEARCH_ROOM{
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 
-///游戏服务器发给房间服务器，快速开始
-message B_G_SUMMARY{
+///战斗服结算转发消息
+message B_S_SUMMARY{
     SummaryDataPt summary_data = 1;//结算数据
 }
 
@@ -47,10 +47,9 @@ message PlayerBattlePt{
     uint32 user_id = 1;             //玩家id
     string nick_name = 2;           //玩家昵称
     uint32 grade = 3;               //等级
-    uint32 league_score = 4;        //段位积分
-    uint32 league_id = 5;           //段位id
-    PunishMatchPt punish_match = 6; //匹配惩罚
-    repeated CharacterPt cters = 7; //玩家解锁的角色数组
+    LeaguePt league = 4;            //段位数据
+    PunishMatchPt punish_match = 5; //匹配惩罚
+    repeated CharacterPt cters = 6; //玩家解锁的角色数组
 }
 
 ///游戏服务器发给房间服务器，快速开始

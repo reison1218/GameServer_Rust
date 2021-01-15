@@ -1,9 +1,8 @@
-use std::{cmp::Ordering, collections::HashMap, time::Duration};
+use std::collections::HashMap;
 
 use super::{RankInfo, RankInfoPtr};
 use crate::handler::update_rank;
 use log::warn;
-use rayon::slice::ParallelSliceMut;
 use std::collections::hash_map::RandomState;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -44,29 +43,5 @@ impl RankMgr {
             return;
         }
         let _ = f.unwrap()(self, packet);
-    }
-
-    ///更新排行榜
-    pub fn update_rank_info(&mut self) {
-        let mut a = RankInfo::new(1, "1".to_owned());
-        a.league.league_time = 123456;
-        a.league.league_score = 1;
-        self.rank_vec.push(a);
-        std::thread::sleep(Duration::from_secs(1));
-        let mut b = RankInfo::new(2, "2".to_owned());
-        b.league.league_time = 123456;
-        b.league.league_score = 2;
-        self.rank_vec.push(b);
-        self.rank_vec.par_sort_unstable_by(|a, b| {
-            //如果段位等级一样
-            if a.league.get_league_id() == b.league.get_league_id() {
-                if a.league.league_time != b.league.league_time {
-                    //看时间
-                    return a.league.league_time.cmp(&b.league.league_time);
-                }
-            }
-            //段位不一样直接看分数
-            b.get_score().cmp(&a.get_score())
-        })
     }
 }
