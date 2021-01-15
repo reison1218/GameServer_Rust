@@ -2,7 +2,8 @@ use super::*;
 use async_trait::async_trait;
 use crossbeam::channel::{Receiver, Sender};
 use net2::TcpStreamExt;
-use std::io::Read;
+use std::io;
+use std::io::{Read, Write};
 use std::marker::{Send, Sync};
 use std::net::Shutdown;
 use std::net::TcpStream;
@@ -33,7 +34,7 @@ pub struct TcpSender {
 }
 
 impl TcpSender {
-    pub fn write(&mut self, bytes: Vec<u8>) {
+    pub fn send(&mut self, bytes: Vec<u8>) {
         let res = self.sender.send(Data {
             bytes,
             token: self.token,
@@ -56,6 +57,12 @@ pub struct Data {
 
 unsafe impl Send for Data {}
 unsafe impl Sync for Data {}
+
+///系统错误码35:代表OSX内核下的socket unactually
+const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
+
+///错误码11代表linux内核的socket unactually
+const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
 ///TCP server module, just need impl Handler, and call the new function, can run the TCP server program,
 /// each client corresponds to a separate handler for client requests. The following is an example.
@@ -98,23 +105,17 @@ pub mod tcp_server {
     use std::str::FromStr;
     use std::sync::{Arc, RwLock};
 
-    ///OS error code 35:mean socket unactually of OSX.
-    const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
-
-    ///OS error code 11:mean socket unactually of linux
-    const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
-
-    ///the unique mark of tcp event
+    ///事件的唯一标示
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub async fn new(addr: &str, handler: impl Handler) -> io::Result<()> {
+    pub async fn new(addr: String, handler: impl Handler) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
         let mut events = Events::with_capacity(5120);
         // tcp listenner address
-        let address = SocketAddr::from_str(addr).unwrap();
+        let address = SocketAddr::from_str(addr.as_str()).unwrap();
         // Setup the TCP server socket.
         let mut server = MioTcpListener::bind(address)?;
         // Map of `Token` -> `TcpStream`.
@@ -308,8 +309,8 @@ pub mod tcp_server {
                         if status.is_some() {
                             res = status.unwrap();
                         }
-                        //handler OS error code,35 mean OSX's socket unactually,11 mean linux's socket unactually
-                        //just break the loop,wait for next time read.
+                        //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
+                        //直接跳出token读取事件，待下次actually再进行读取
                         if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
                             || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
                         {
@@ -366,49 +367,46 @@ pub mod tcp_server {
         }
         match addr {
             Ok(add) => {
-                info!(
-                    "{:?} client disconnect!so remove client peer:{:?}",
-                    err_str, add
-                );
+                info!("client disconnect!so remove client peer:{:?}", add);
             }
             Err(_) => {
-                info!("{:?},then remove client", err_str);
+                warn!("{:?},then remove client", err_str);
             }
         }
         let _ = connect.shutdown(Shutdown::Both);
         block_on(handler.on_close());
     }
+}
 
-    fn would_block(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::WouldBlock
-    }
+pub fn would_block(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::WouldBlock
+}
 
-    fn interrupted(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::Interrupted
-    }
+pub fn interrupted(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::Interrupted
+}
 
-    fn aborted(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::ConnectionAborted
-    }
+pub fn time_out(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::TimedOut
+}
 
-    fn reset(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::ConnectionReset
-    }
+pub fn aborted(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::ConnectionAborted
+}
 
-    fn time_out(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::TimedOut
-    }
+pub fn reset(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::ConnectionReset
+}
 
-    fn other(err: &io::Error) -> bool {
-        err.kind() == io::ErrorKind::Other
-    }
+pub fn other(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::Other
 }
 
 ///TCP client handler, used to extend TCP events
 #[async_trait]
 pub trait ClientHandler: Send + Sync {
     ///Called when the connection  open
-    async fn on_open(&mut self, ts: TcpStream);
+    async fn on_open(&mut self, sender: Sender<Vec<u8>>);
     ///called when connection was closed
     async fn on_close(&mut self);
     ///called when have mess from server
@@ -427,41 +425,114 @@ pub trait ClientHandler: Send + Sync {
             return;
         }
         let write = write.unwrap();
-
+        let (sender, rec) = crossbeam::channel::bounded(102400);
         //trigger socket open event
-        self.on_open(write).await;
+        self.on_open(sender.clone()).await;
+        //start reading the sender message
+        read_sender_mess_client(rec, write);
         //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
         loop {
             //start read
             let size = read.read(&mut read_bytes);
-            if let Err(e) = size {
-                error!("TCP-CLIENT:{:?}", e);
-                self.on_close().await;
-                break;
-            }
 
-            let size = size.unwrap();
-            if size == 0 {
-                info!("tcp客户端断开链接！尝试链接服务器！");
-                self.on_close().await;
-                break;
-            }
-            //if size >0,trigger handler's on_message
-            if size > 0 {
-                //读取到字节交给handler处理来处理
-                let mut v = Vec::new();
-                v.extend_from_slice(&read_bytes[..size]);
-                self.on_message(v).await;
+            match size {
+                Ok(size) => {
+                    if size == 0 {
+                        info!("tcp客户端断开链接！尝试链接服务器！");
+                        self.on_close().await;
+                        break;
+                    }
+                    //如果读取到的字节数大于0则交给handler
+                    if size > 0 {
+                        //读取到字节交给handler处理来处理
+                        let mut v = Vec::new();
+                        v.extend_from_slice(&read_bytes[..size]);
+                        self.on_message(v).await;
+                    }
+                }
+                Err(ref err) if would_block(err) => {
+                    let status = err.raw_os_error();
+                    let mut res = 0;
+                    if status.is_some() {
+                        res = status.unwrap();
+                    }
+                    //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
+                    //直接跳出token读取事件，待下次actually再进行读取
+                    if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                        || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
+                    {
+                        //just continue,get up this packet
+                        continue;
+                    } else {
+                        warn!("{:?}", err.to_string());
+                    }
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if interrupted(err) => {
+                    warn!("{:?}", err);
+                    continue;
+                }
+                Err(ref err) if time_out(err) => {
+                    //warn!("{:?}",err);
+                    continue;
+                }
+                Err(ref err) if reset(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if aborted(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if other(err) => {
+                    warn!("{:?}", err);
+                    continue;
+                }
+                // Other errors we'll consider fatal.
+                Err(err) => {
+                    error!("TCP-CLIENT:{:?}", err);
+                    self.on_close().await;
+                    break;
+                }
             }
         }
     }
 }
 
+///Read the data from the sender of the handler
+fn read_sender_mess_client(rec: Receiver<Vec<u8>>, tcp_stream: std::net::TcpStream) {
+    let mut tcp_stream = tcp_stream;
+    let m = move || loop {
+        let result = rec.recv();
+        match result {
+            Ok(data) => {
+                let bytes = data;
+                let write = tcp_stream.write(&bytes[..]);
+                if let Err(e) = write {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let res = tcp_stream.flush();
+                if let Err(e) = res {
+                    error!("{:?}", e);
+                }
+            }
+            Err(e) => {
+                error!("{:?}", e);
+                break;
+            }
+        }
+    };
+
+    std::thread::spawn(m);
+}
+
 ///new tcp client
 #[warn(unused_assignments)]
-pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
+fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
     let mut ts: Option<std::io::Result<TcpStream>>;
     let result: Option<TcpStream>;
     let dur = Duration::from_secs(5);
@@ -479,9 +550,9 @@ pub fn new_tcp_client(address: &str) -> anyhow::Result<TcpStream> {
     }
 
     let result = result.unwrap();
-    //setting the params
+    //设置参数
     set_tream_param(&result)?;
-    info!("connect to server success!{:?}", address);
+    info!("连接服务器成功！{:?}", address);
     Ok(result)
 }
 

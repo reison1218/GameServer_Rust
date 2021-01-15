@@ -18,7 +18,7 @@ impl MyData {
     }
 
     pub fn write_2_client(&mut self, data: Vec<u8>) {
-        self.sender.as_mut().unwrap().write(data);
+        self.sender.as_mut().unwrap().send(data);
     }
 }
 
@@ -60,7 +60,7 @@ async fn handler_mess(data: Arc<RwLock<MyData>>, mess: Vec<u8>) {
 
 fn main() {
     let address = "127.0.0.1:8080";
-    let res = tcp_server::new(address, ServerHandler::default());
+    let res = tcp_server::new(address.to_string(), ServerHandler::default());
     let res = block_on(res);
     if let Err(e) = res {
         error!("{:?}", e);
