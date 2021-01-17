@@ -57,10 +57,15 @@ message B_R_G_PUNISH_MATCH{
     PunishMatchPt punish_match = 1;//战斗服和房间服同步惩罚到游戏服
 }
 
+///排行榜服务器同步给游戏服排行榜信息
+message R_G_SYNC_RANK{
+    repeated RankInfoPt ranks = 1;//排行信息
+}
+
 message RankInfoPt{
     uint32 user_id = 1;             //玩家id
     string name = 2;                //名字
-    uint32 rank=3;                  //排名
+    int32 rank=3;                  //排名
     repeated uint32 cters=4;        //最常用的三个角色
     uint32 league_id = 5;           //段位id
     int32 reward_score = 6;         //奖励积分

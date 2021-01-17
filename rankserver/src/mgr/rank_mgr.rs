@@ -14,6 +14,7 @@ pub struct RankMgr {
     pub rank_vec: Vec<RankInfo>, //排行榜数据
     pub update_map: HashMap<u32, RankInfoPtr>,
     pub cmd_map: CmdFn,        //命令管理 key:cmd,value:函数指针
+    pub need_rank: bool,       //是否需要排序
     sender: Option<TcpSender>, //tcp channel的发送方
 }
 

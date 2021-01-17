@@ -134,6 +134,7 @@ impl League {
         l.id = 1;
         l.user_id = user_id;
         l.name = name;
+        l.rank = -1;
         l.update_league_time();
         l
     }

@@ -18,6 +18,7 @@ pub fn update_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let res = rm.update_map.get_mut(&user_id);
     match res {
         Some(rank_ptr) => {
+            rm.need_rank = true;
             rank_ptr.update(sd);
         }
         None => {
