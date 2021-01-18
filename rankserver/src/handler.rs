@@ -15,14 +15,15 @@ pub fn update_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let sd = bss.get_summary_data();
+    let cters = bss.cters.clone();
     let res = rm.update_map.get_mut(&user_id);
     match res {
         Some(rank_ptr) => {
             rm.need_rank = true;
-            rank_ptr.update(sd);
+            rank_ptr.update(sd, cters);
         }
         None => {
-            let ri = RankInfo::from(sd);
+            let ri = RankInfo::new(sd, cters);
             rm.rank_vec.push(ri);
             let len = rm.rank_vec.len();
             let ri_mut = rm.rank_vec.get_mut(len - 1).unwrap();

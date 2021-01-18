@@ -10,9 +10,10 @@ use tools::util::packet::Packet;
 
 #[derive(Default)]
 pub struct GameCenterMgr {
+    pub rank_server: Option<Sender<Vec<u8>>>,         //排行榜服
     pub room_center: Option<Sender<Vec<u8>>>,         //房间中心
-    pub gate_clients: HashMap<usize, GateClient>,     //gate路由服客户端
-    pub battle_clients: HashMap<usize, BattleClient>, //战斗服客户端
+    pub gate_clients: HashMap<usize, GateClient>,     //gate路由服客户端,key:token,value:GateClient
+    pub battle_clients: HashMap<usize, BattleClient>, //战斗服客户端,key:token,value:BattleClient
     pub user_w_gate: HashMap<u32, usize>,             //玩家对应gate
     pub user_w_battle: HashMap<u32, usize>,           //玩家对应战斗服
 }
@@ -205,6 +206,10 @@ impl GameCenterMgr {
 
     pub fn set_room_sender(&mut self, sender: Sender<Vec<u8>>) {
         self.room_center = Some(sender);
+    }
+
+    pub fn set_rank_sender(&mut self, sender: Sender<Vec<u8>>) {
+        self.rank_server = Some(sender);
     }
 
     pub fn add_gate_client(&mut self, sender: TcpSender) {

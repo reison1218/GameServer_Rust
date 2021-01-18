@@ -1,17 +1,19 @@
 use crate::room::character::{Character, League};
+use std::collections::HashMap;
 use tools::protos::base::{MemberPt, PunishMatchPt};
 
 #[derive(Clone, Debug, Default)]
 pub struct Member {
-    pub user_id: u32,              //玩家id
-    pub nick_name: String,         //玩家昵称
-    pub grade: u8,                 //玩家grade
-    pub league: League,            //段位数据
-    pub team_id: u8,               //玩家所属队伍id
-    pub is_robot: bool,            //是否的机器人
-    pub chose_cter: Character,     //玩家已经选择的角色
-    pub punish_match: PunishMatch, //匹配惩罚数据
-    pub join_time: u64,            //玩家进入房间的时间
+    pub user_id: u32,                   //玩家id
+    pub nick_name: String,              //玩家昵称
+    pub grade: u8,                      //玩家grade
+    pub league: League,                 //段位数据
+    pub team_id: u8,                    //玩家所属队伍id
+    pub is_robot: bool,                 //是否的机器人
+    pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
+    pub chose_cter: Character,          //玩家已经选择的角色
+    pub punish_match: PunishMatch,      //匹配惩罚数据
+    pub join_time: u64,                 //玩家进入房间的时间
 }
 
 impl From<&MemberPt> for Member {

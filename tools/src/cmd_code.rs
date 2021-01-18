@@ -42,6 +42,10 @@ pub enum GameCode {
     Summary = 1009,
     //匹配惩罚同步
     SyncPunish = 1010,
+    //同步排行榜快照
+    SyncRank = 1011,
+    //展示排行榜(客户端请求指令)
+    ShowRank = 1012,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值
@@ -223,6 +227,8 @@ pub enum ClientCode {
     CancelSearch = 10060,
     //确认进入房间推送
     ConfirmIntoRoomNotice = 10061,
+    //展示排行榜
+    ShowRank = 10081,
     //最大命令号
     Max = 20000,
 }

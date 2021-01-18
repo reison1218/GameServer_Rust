@@ -1,17 +1,20 @@
 use super::*;
 use crate::helper::redis_helper::modify_redis_user;
+use crate::mgr::RoomType;
 use chrono::Local;
 use protobuf::Message;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::convert::TryFrom;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, RankCode, RoomCode};
 use tools::protos::base::PunishMatchPt;
-use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME};
+use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME, S_SHOW_RANK};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, B_G_SUMMARY, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
-    G_R_SEARCH_ROOM,
+    PlayerBattlePt, B_R_G_PUNISH_MATCH, B_S_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
+    G_R_SEARCH_ROOM, R_G_SYNC_RANK,
 };
 use tools::util::packet::Packet;
 
@@ -372,7 +375,11 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
     gr.set_pbp(pbp);
     //发给房间
-    gm.send_2_room(RoomCode::CreateRoom, user_id, gr.write_to_bytes().unwrap());
+    gm.send_2_server(
+        RoomCode::CreateRoom.into_u32(),
+        user_id,
+        gr.write_to_bytes().unwrap(),
+    );
     Ok(())
 }
 
@@ -417,7 +424,57 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     grj.set_room_id(cjr.room_id);
     grj.set_pbp(pbp);
     //发给房间
-    gm.send_2_room(RoomCode::JoinRoom, user_id, grj.write_to_bytes()?);
+    gm.send_2_server(
+        RoomCode::JoinRoom.into_u32(),
+        user_id,
+        grj.write_to_bytes()?,
+    );
+    Ok(())
+}
+
+///同步排行榜快照
+pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    if gm.rank.is_empty() {
+        warn!("the rank is empty!");
+        return Ok(());
+    }
+
+    let user_data = gm.users.get_mut(&user_id);
+    if user_data.is_none() {
+        warn!("could not find user_data for user_id {}", user_id);
+        return Ok(());
+    }
+    let mut ssr = S_SHOW_RANK::new();
+    //封装自己的
+    let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
+    if let Some(res) = res {
+        ssr.set_self_rank(res.clone());
+    }
+    //封装另外100个
+    for rank in gm.rank[0..100].iter() {
+        ssr.ranks.push(rank.clone());
+    }
+    let bytes = ssr.write_to_bytes();
+    if let Err(e) = bytes {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let bytes = bytes.unwrap();
+    gm.send_2_client(ClientCode::ShowRank, user_id, bytes);
+    Ok(())
+}
+
+///同步排行榜快照
+pub fn sync_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let mut rgsr = R_G_SYNC_RANK::new();
+    let res = rgsr.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let rank = rgsr.ranks.to_vec();
+    gm.rank = rank;
     Ok(())
 }
 
@@ -483,32 +540,51 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     grs.set_room_type(csr.get_room_type());
     grs.set_pbp(pbp);
     //发给房间
-    gm.send_2_room(RoomCode::SearchRoom, user_id, grs.write_to_bytes()?);
+    gm.send_2_server(
+        RoomCode::SearchRoom.into_u32(),
+        user_id,
+        grs.write_to_bytes()?,
+    );
     Ok(())
 }
 
 ///房间战斗结算
 pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
-    let mut bgs = B_G_SUMMARY::new();
+    let mut bgs = B_S_SUMMARY::new();
     let res = bgs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return Ok(());
     }
+    let room_type = RoomType::try_from(bgs.room_type as u8);
+    if let Err(e) = room_type {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let room_type = room_type.unwrap();
     let summary_data = bgs.get_summary_data();
     let user_id = summary_data.user_id;
+    let cter_id = summary_data.cter_id;
+    let grade = summary_data.get_grade();
     let res = gm.users.get_mut(&user_id);
     if let None = res {
         error! {"summary!UserData is not find! user_id:{}",user_id};
         return Ok(());
     }
     let user_data = res.unwrap();
-    let user_info = user_data.get_user_info_mut_ref();
-    //第一名就加grade
-    user_info.set_grade(summary_data.get_grade());
-    //更新段位积分
-    let league = &mut user_data.league;
-    league.update_from_pt(summary_data.get_league());
+    //处理统计
+    let cters = user_data.get_characters_mut_ref().add_use_times(cter_id);
+    //处理持久化到数据库
     user_data.add_version();
+    //如果是匹配房
+    if room_type == RoomType::Match {
+        //更新段位积分
+        user_data.league.update_from_pt(summary_data.get_league());
+        //第一名就加grade
+        user_data.user_info.set_grade(grade);
+        bgs.cters.extend_from_slice(cters.as_slice());
+        //更新排行榜
+        gm.send_2_server(RankCode::UpdateRank.into_u32(), 0, bgs.write_to_bytes()?);
+    }
     Ok(())
 }

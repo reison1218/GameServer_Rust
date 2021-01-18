@@ -12,7 +12,7 @@ use crate::battle::battle_skill::{
 };
 use crate::room::character::{BattleCharacter, League};
 use crate::room::map_data::TileMap;
-use crate::room::MEMBER_MAX;
+use crate::room::{RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crossbeam::channel::Sender;
 use log::error;
@@ -86,6 +86,7 @@ impl Into<SummaryDataPt> for SummaryUser {
 ///房间战斗数据封装
 #[derive(Clone)]
 pub struct BattleData {
+    pub room_type: RoomType,
     pub tile_map: TileMap,                          //地图数据
     pub next_turn_index: usize,                     //下个turn的下标
     pub turn_orders: [u32; MEMBER_MAX as usize],    //turn行动队列，里面放玩家id
@@ -132,12 +133,17 @@ impl BattleData {
     }
 
     ///初始化战斗数据
-    pub fn new(task_sender: Sender<Task>, tcp_sender: Sender<Vec<u8>>) -> Self {
+    pub fn new(
+        room_type: RoomType,
+        task_sender: Sender<Task>,
+        tcp_sender: Sender<Vec<u8>>,
+    ) -> Self {
         let mut v = Vec::new();
         for _ in 0..MEMBER_MAX {
             v.push(Vec::new());
         }
         let mut bd = BattleData {
+            room_type,
             tile_map: TileMap::default(),
             next_turn_index: 0,
             turn_orders: [0; MEMBER_MAX as usize],

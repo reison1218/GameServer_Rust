@@ -25,12 +25,14 @@ message G_R_SEARCH_ROOM{
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
 }
 
-///战斗服结算转发消息
+///战斗服结算转发消息，发给游戏服，排行榜服
 message B_S_SUMMARY{
-    SummaryDataPt summary_data = 1;//结算数据
+    uint32 room_type = 1;//房间类型
+    repeated uint32 cters = 2;//使用排名前三的角色
+    SummaryDataPt summary_data = 3;//结算数据
 }
 
-///游戏服务器发给房间服务器，快速开始
+///游戏服务器发给房间服务器，战斗结算
 message B_R_SUMMARY{
     repeated SummaryDataPt summary_datas = 1;//结算数据
 }
@@ -62,12 +64,5 @@ message R_G_SYNC_RANK{
     repeated RankInfoPt ranks = 1;//排行信息
 }
 
-message RankInfoPt{
-    uint32 user_id = 1;             //玩家id
-    string name = 2;                //名字
-    int32 rank=3;                  //排名
-    repeated uint32 cters=4;        //最常用的三个角色
-    uint32 league_id = 5;           //段位id
-    int32 reward_score = 6;         //奖励积分
-}
+
 

@@ -93,16 +93,8 @@ impl From<PlayerBattlePt> for Member {
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady;
         member.grade = pbp.grade as u8;
-        let mut league = League::default();
-        let score = pbp.league_score as i32;
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_league_by_score(score)
-            .unwrap();
-        let league_time = pbp.league_time;
-        league.score = score;
-        league.league_temp = res;
-        league.league_time = league_time;
+
+        let league = League::from(pbp.get_league());
         member.league = league;
         let mut cters = HashMap::new();
         let res = pbp.take_cters();
@@ -128,8 +120,7 @@ impl Into<MemberPt> for Member {
         mp.nick_name = self.nick_name.clone();
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;
-        mp.league_score = self.league.score as u32;
-        mp.league_id = self.league.get_league_id() as u32;
+        mp.set_league(self.league.into_pt());
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
         mp

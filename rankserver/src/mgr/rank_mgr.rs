@@ -25,6 +25,12 @@ impl RankMgr {
         rm
     }
 
+    ///转发到游戏中心服
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_push_packet_bytes(cmd, user_id, bytes, true, false);
+        self.sender.as_mut().unwrap().send(bytes);
+    }
+
     pub fn set_sender(&mut self, sender: TcpSender) {
         self.sender = Some(sender);
     }

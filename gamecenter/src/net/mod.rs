@@ -2,13 +2,14 @@ pub mod battle_tcp_server;
 pub mod gate_tcp_server;
 pub mod room_tcp_client;
 pub mod http;
+pub mod rank_tcp_client;
 
 use crate::mgr::game_center_mgr::GameCenterMgr;
 use async_std::sync::Mutex;
 use async_trait::async_trait;
 use log::{warn,error};
 use std::sync::Arc;
-use tools::cmd_code::{BattleCode, ClientCode, GameCode, RoomCode};
+use tools::cmd_code::{BattleCode, ClientCode, GameCode, RankCode, RoomCode};
 use tools::util::packet::Packet;
 use async_std::task::block_on;
 use tools::tcp::Handler;
@@ -55,13 +56,28 @@ trait Forward {
             } else if cmd > GameCode::Min.into_u32()//转发给游戏服
                 && cmd < GameCode::Max.into_u32()
             {
-                let res = lock.get_gate_client_mut(user_id);
-                match res {
-                    Ok(gc) => gc.send(bytes),
-                    Err(e) => warn!("{:?},cmd:{}", e,cmd),
+                if packet.is_broad(){
+                    for gate_client in lock.gate_clients.values_mut(){
+                        gate_client.send(bytes.clone());
+                    }
+                }else{
+                    let res = lock.get_gate_client_mut(user_id);
+                    match res {
+                        Ok(gc) => gc.send(bytes),
+                        Err(e) => warn!("{:?},cmd:{}", e,cmd),
+                    }
                 }
+                
             } else if cmd > BattleCode::Min.into_u32()//转发给战斗服
                 && cmd < BattleCode::Max.into_u32()
+            {
+                let res = lock.get_battle_client_mut(user_id);
+                match res {
+                    Ok(gc) => gc.send(bytes),
+                    Err(e) => warn!("{:?},cmd:{:?}", e,cmd),
+                }
+            }else if cmd > RankCode::Min.into_u32()//转发给排行榜服
+                && cmd < RankCode::Max.into_u32()
             {
                 let res = lock.get_battle_client_mut(user_id);
                 match res {

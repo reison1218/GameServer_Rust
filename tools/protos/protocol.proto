@@ -54,3 +54,17 @@ message S_MODIFY_NICK_NAME{
   bool is_succ = 1;//是否成功;
   string err_mess = 2;//错误信息;
 }
+
+//请求排行榜
+//cmd:1012
+message C_SHOW_RANK{
+
+}
+
+//请求排行榜返回
+//cmd:10081
+message S_SHOW_RANK{
+  RankInfoPt self_rank = 1;//自己的排行榜信息，如果在排行榜里面就有数据，不在就没有
+  repeated RankInfoPt ranks = 2;//排行榜信息
+
+}

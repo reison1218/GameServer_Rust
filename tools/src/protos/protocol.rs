@@ -1586,6 +1586,345 @@ impl ::protobuf::reflect::ProtobufValue for S_MODIFY_NICK_NAME {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct C_SHOW_RANK {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_SHOW_RANK {
+    fn default() -> &'a C_SHOW_RANK {
+        <C_SHOW_RANK as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_SHOW_RANK {
+    pub fn new() -> C_SHOW_RANK {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for C_SHOW_RANK {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_SHOW_RANK {
+        C_SHOW_RANK::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let fields = ::std::vec::Vec::new();
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SHOW_RANK>(
+                "C_SHOW_RANK",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static C_SHOW_RANK {
+        static instance: ::protobuf::rt::LazyV2<C_SHOW_RANK> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(C_SHOW_RANK::new)
+    }
+}
+
+impl ::protobuf::Clear for C_SHOW_RANK {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_SHOW_RANK {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_SHOW_RANK {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_SHOW_RANK {
+    // message fields
+    pub self_rank: ::protobuf::SingularPtrField<super::base::RankInfoPt>,
+    pub ranks: ::protobuf::RepeatedField<super::base::RankInfoPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_SHOW_RANK {
+    fn default() -> &'a S_SHOW_RANK {
+        <S_SHOW_RANK as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_SHOW_RANK {
+    pub fn new() -> S_SHOW_RANK {
+        ::std::default::Default::default()
+    }
+
+    // .protos.RankInfoPt self_rank = 1;
+
+
+    pub fn get_self_rank(&self) -> &super::base::RankInfoPt {
+        self.self_rank.as_ref().unwrap_or_else(|| <super::base::RankInfoPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_self_rank(&mut self) {
+        self.self_rank.clear();
+    }
+
+    pub fn has_self_rank(&self) -> bool {
+        self.self_rank.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_self_rank(&mut self, v: super::base::RankInfoPt) {
+        self.self_rank = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_self_rank(&mut self) -> &mut super::base::RankInfoPt {
+        if self.self_rank.is_none() {
+            self.self_rank.set_default();
+        }
+        self.self_rank.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_self_rank(&mut self) -> super::base::RankInfoPt {
+        self.self_rank.take().unwrap_or_else(|| super::base::RankInfoPt::new())
+    }
+
+    // repeated .protos.RankInfoPt ranks = 2;
+
+
+    pub fn get_ranks(&self) -> &[super::base::RankInfoPt] {
+        &self.ranks
+    }
+    pub fn clear_ranks(&mut self) {
+        self.ranks.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<super::base::RankInfoPt>) {
+        self.ranks = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        &mut self.ranks
+    }
+
+    // Take field
+    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        ::std::mem::replace(&mut self.ranks, ::protobuf::RepeatedField::new())
+    }
+}
+
+impl ::protobuf::Message for S_SHOW_RANK {
+    fn is_initialized(&self) -> bool {
+        for v in &self.self_rank {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.ranks {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.self_rank)?;
+                },
+                2 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.ranks)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.self_rank.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        for value in &self.ranks {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.self_rank.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        for v in &self.ranks {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_SHOW_RANK {
+        S_SHOW_RANK::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
+                "self_rank",
+                |m: &S_SHOW_RANK| { &m.self_rank },
+                |m: &mut S_SHOW_RANK| { &mut m.self_rank },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
+                "ranks",
+                |m: &S_SHOW_RANK| { &m.ranks },
+                |m: &mut S_SHOW_RANK| { &mut m.ranks },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_SHOW_RANK>(
+                "S_SHOW_RANK",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_SHOW_RANK {
+        static instance: ::protobuf::rt::LazyV2<S_SHOW_RANK> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_SHOW_RANK::new)
+    }
+}
+
+impl ::protobuf::Clear for S_SHOW_RANK {
+    fn clear(&mut self) {
+        self.self_rank.clear();
+        self.ranks.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_SHOW_RANK {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_SHOW_RANK {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"'\n\x0cC_USER_LOGIN\
     \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\xb4\x02\n\x0cS_USE\
@@ -1604,7 +1943,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     rMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08syncTime\"1\n\x12C_MOD\
     IFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickName\"H\n\
     \x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
-    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMessb\x06proto3\
+    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\r\n\x0bC_SHOW\
+    _RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tself_rank\x18\x01\x20\x01(\x0b2\x12.pr\
+    otos.RankInfoPtR\x08selfRank\x12(\n\x05ranks\x18\x02\x20\x03(\x0b2\x12.p\
+    rotos.RankInfoPtR\x05ranksb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -1,10 +1,11 @@
 use crate::mgr::rank_mgr::RankMgr;
 use async_std::sync::Mutex;
-use log::info;
+use log::{error, info};
+use protobuf::Message;
 use rayon::prelude::*;
-use rayon::slice::ParallelSliceMut;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
+use tools::cmd_code::GameCode;
 use tools::protos::server_protocol::R_G_SYNC_RANK;
 
 ///初始化定时器任务函数
@@ -45,23 +46,29 @@ fn update_rank(rm: Arc<Mutex<RankMgr>>) {
                 "执行排行定时器结束!-耗时:{:?}",
                 take_time.elapsed().unwrap()
             );
-            //todo 重新排行之后下发到游戏服
+            //重新排行之后下发到游戏服
             info!("更新rank并下发排行榜快照到游戏服开始！");
             let take_time = std::time::SystemTime::now();
             let mut rgsr = R_G_SYNC_RANK::new();
             lock.rank_vec
-                .par_iter_mut()
+                .iter_mut()
                 .enumerate()
-                .for_each(move |(index, ri)| {
-                    let index = index as i32;
-                    if ri.rank != index {
+                .for_each(|(index, ri)| {
+                    if ri.rank != index as i32 {
                         ri.rank = index as i32;
                         //todo 更新数据库
                     }
                     let res = ri.into_rank_pt();
                     rgsr.ranks.push(res);
                 });
+            let bytes = rgsr.write_to_bytes();
+            if let Err(e) = bytes {
+                error!("{:?}", e);
+                continue;
+            }
+            let bytes = bytes.unwrap();
             //todo 下发到游戏服务器
+            lock.send_2_server(GameCode::SyncRank.into_u32(), 0, bytes);
             info!(
                 "更新rank并下发排行榜快照到游戏服结束！耗时{:?}",
                 take_time.elapsed().unwrap()

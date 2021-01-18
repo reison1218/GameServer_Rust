@@ -80,7 +80,7 @@ impl Room {
             member_index,
             state: RoomState::ChoiceIndex,
             setting: room_setting,
-            battle_data: BattleData::new(task_sender.clone(), tcp_sender.clone()),
+            battle_data: BattleData::new(room_type, task_sender.clone(), tcp_sender.clone()),
             room_type,
             tcp_sender,
             task_sender,

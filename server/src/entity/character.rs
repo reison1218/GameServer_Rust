@@ -1,5 +1,6 @@
 use super::*;
 use crate::TEMPLATES;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::collections::HashMap;
@@ -15,6 +16,31 @@ pub struct Characters {
 }
 
 impl Characters {
+    pub fn add_use_times(&mut self, cter_id: u32) -> Vec<u32> {
+        let res = self.cter_map.get_mut(&cter_id);
+        if res.is_none() {
+            return Vec::new();
+        }
+        let cter = res.unwrap();
+        cter.use_times += 1;
+        cter.add_version();
+        let mut v = Vec::new();
+        self.cter_map.iter().for_each(|(cter_id, cter)| {
+            v.push((*cter_id, cter.use_times));
+        });
+        v.par_sort_unstable_by(|a, b| b.1.cmp(&a.1));
+        self.add_version();
+        let mut res_v = Vec::new();
+        for (cter_id, _) in v {
+            res_v.push(cter_id);
+        }
+        res_v
+    }
+    fn add_version(&self) {
+        let res = self.version.get() + 1;
+        self.version.set(res);
+    }
+
     pub fn get_frist(&self) -> u32 {
         let mut cter_id = 1001_u32;
         for i in self.cter_map.iter() {
@@ -88,6 +114,7 @@ impl Characters {
 pub struct Character {
     pub user_id: u32,              //玩家id
     pub character_id: u32,         //角色id
+    pub use_times: u32,            //角色使用次数
     pub skills: Vec<Group>,        //技能
     pub last_use_skills: Vec<u32>, //上次使用的技能
     #[serde(skip_serializing)]

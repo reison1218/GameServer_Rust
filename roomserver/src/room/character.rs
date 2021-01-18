@@ -1,4 +1,4 @@
-use tools::protos::base::CharacterPt;
+use tools::protos::base::{CharacterPt, LeaguePt};
 use tools::templates::league_temp::LeagueTemp;
 
 #[derive(Clone, Debug, Default)]
@@ -38,9 +38,32 @@ pub struct League {
     pub league_temp: &'static LeagueTemp,
 }
 
+impl From<&LeaguePt> for League {
+    fn from(lp: &LeaguePt) -> Self {
+        let mut l = League::default();
+        l.score = lp.get_league_score() as i32;
+        l.league_time = lp.league_time;
+        let league_id = lp.league_id as u8;
+        let temp = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_temp(&league_id)
+            .unwrap();
+        l.league_temp = temp;
+        l
+    }
+}
+
 impl League {
     pub fn get_league_id(&self) -> u8 {
         self.league_temp.id
+    }
+
+    pub fn into_pt(&self) -> LeaguePt {
+        let mut lpt = LeaguePt::new();
+        lpt.set_league_id(self.get_league_id() as u32);
+        lpt.set_league_score(self.score as u32);
+        lpt.set_league_time(self.league_time);
+        lpt
     }
 
     pub fn update(&mut self, league_id: u8, league_score: i32, league_time: i64) {

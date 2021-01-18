@@ -827,6 +827,8 @@ impl ::protobuf::reflect::ProtobufValue for G_R_SEARCH_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct B_S_SUMMARY {
     // message fields
+    pub room_type: u32,
+    pub cters: ::std::vec::Vec<u32>,
     pub summary_data: ::protobuf::SingularPtrField<super::base::SummaryDataPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -844,7 +846,47 @@ impl B_S_SUMMARY {
         ::std::default::Default::default()
     }
 
-    // .protos.SummaryDataPt summary_data = 1;
+    // uint32 room_type = 1;
+
+
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
+    }
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
+    }
+
+    // repeated uint32 cters = 2;
+
+
+    pub fn get_cters(&self) -> &[u32] {
+        &self.cters
+    }
+    pub fn clear_cters(&mut self) {
+        self.cters.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cters(&mut self, v: ::std::vec::Vec<u32>) {
+        self.cters = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_cters(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.cters
+    }
+
+    // Take field
+    pub fn take_cters(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.cters, ::std::vec::Vec::new())
+    }
+
+    // .protos.SummaryDataPt summary_data = 3;
 
 
     pub fn get_summary_data(&self) -> &super::base::SummaryDataPt {
@@ -893,6 +935,16 @@ impl ::protobuf::Message for B_S_SUMMARY {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.cters)?;
+                },
+                3 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.summary_data)?;
                 },
                 _ => {
@@ -907,6 +959,12 @@ impl ::protobuf::Message for B_S_SUMMARY {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        for value in &self.cters {
+            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
         if let Some(ref v) = self.summary_data.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -917,8 +975,14 @@ impl ::protobuf::Message for B_S_SUMMARY {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
+        }
+        for v in &self.cters {
+            os.write_uint32(2, *v)?;
+        };
         if let Some(ref v) = self.summary_data.as_ref() {
-            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
@@ -960,6 +1024,16 @@ impl ::protobuf::Message for B_S_SUMMARY {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "room_type",
+                |m: &B_S_SUMMARY| { &m.room_type },
+                |m: &mut B_S_SUMMARY| { &mut m.room_type },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "cters",
+                |m: &B_S_SUMMARY| { &m.cters },
+                |m: &mut B_S_SUMMARY| { &mut m.cters },
+            ));
             fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
                 "summary_data",
                 |m: &B_S_SUMMARY| { &m.summary_data },
@@ -981,6 +1055,8 @@ impl ::protobuf::Message for B_S_SUMMARY {
 
 impl ::protobuf::Clear for B_S_SUMMARY {
     fn clear(&mut self) {
+        self.room_type = 0;
+        self.cters.clear();
         self.summary_data.clear();
         self.unknown_fields.clear();
     }
@@ -1969,7 +2045,7 @@ impl ::protobuf::reflect::ProtobufValue for B_R_G_PUNISH_MATCH {
 #[derive(PartialEq,Clone,Default)]
 pub struct R_G_SYNC_RANK {
     // message fields
-    pub ranks: ::protobuf::RepeatedField<RankInfoPt>,
+    pub ranks: ::protobuf::RepeatedField<super::base::RankInfoPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1989,7 +2065,7 @@ impl R_G_SYNC_RANK {
     // repeated .protos.RankInfoPt ranks = 1;
 
 
-    pub fn get_ranks(&self) -> &[RankInfoPt] {
+    pub fn get_ranks(&self) -> &[super::base::RankInfoPt] {
         &self.ranks
     }
     pub fn clear_ranks(&mut self) {
@@ -1997,17 +2073,17 @@ impl R_G_SYNC_RANK {
     }
 
     // Param is passed by value, moved
-    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<RankInfoPt>) {
+    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<super::base::RankInfoPt>) {
         self.ranks = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<RankInfoPt> {
+    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<super::base::RankInfoPt> {
         &mut self.ranks
     }
 
     // Take field
-    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<RankInfoPt> {
+    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<super::base::RankInfoPt> {
         ::std::mem::replace(&mut self.ranks, ::protobuf::RepeatedField::new())
     }
 }
@@ -2094,7 +2170,7 @@ impl ::protobuf::Message for R_G_SYNC_RANK {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<RankInfoPt>>(
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
                 "ranks",
                 |m: &R_G_SYNC_RANK| { &m.ranks },
                 |m: &mut R_G_SYNC_RANK| { &mut m.ranks },
@@ -2132,346 +2208,6 @@ impl ::protobuf::reflect::ProtobufValue for R_G_SYNC_RANK {
     }
 }
 
-#[derive(PartialEq,Clone,Default)]
-pub struct RankInfoPt {
-    // message fields
-    pub user_id: u32,
-    pub name: ::std::string::String,
-    pub rank: i32,
-    pub cters: ::std::vec::Vec<u32>,
-    pub league_id: u32,
-    pub reward_score: i32,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a RankInfoPt {
-    fn default() -> &'a RankInfoPt {
-        <RankInfoPt as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl RankInfoPt {
-    pub fn new() -> RankInfoPt {
-        ::std::default::Default::default()
-    }
-
-    // uint32 user_id = 1;
-
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
-    }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
-    }
-
-    // string name = 2;
-
-
-    pub fn get_name(&self) -> &str {
-        &self.name
-    }
-    pub fn clear_name(&mut self) {
-        self.name.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-
-    // Mutable pointer to the field.
-    // If field is not initialized, it is initialized with default value first.
-    pub fn mut_name(&mut self) -> &mut ::std::string::String {
-        &mut self.name
-    }
-
-    // Take field
-    pub fn take_name(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.name, ::std::string::String::new())
-    }
-
-    // int32 rank = 3;
-
-
-    pub fn get_rank(&self) -> i32 {
-        self.rank
-    }
-    pub fn clear_rank(&mut self) {
-        self.rank = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_rank(&mut self, v: i32) {
-        self.rank = v;
-    }
-
-    // repeated uint32 cters = 4;
-
-
-    pub fn get_cters(&self) -> &[u32] {
-        &self.cters
-    }
-    pub fn clear_cters(&mut self) {
-        self.cters.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_cters(&mut self, v: ::std::vec::Vec<u32>) {
-        self.cters = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_cters(&mut self) -> &mut ::std::vec::Vec<u32> {
-        &mut self.cters
-    }
-
-    // Take field
-    pub fn take_cters(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.cters, ::std::vec::Vec::new())
-    }
-
-    // uint32 league_id = 5;
-
-
-    pub fn get_league_id(&self) -> u32 {
-        self.league_id
-    }
-    pub fn clear_league_id(&mut self) {
-        self.league_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_id(&mut self, v: u32) {
-        self.league_id = v;
-    }
-
-    // int32 reward_score = 6;
-
-
-    pub fn get_reward_score(&self) -> i32 {
-        self.reward_score
-    }
-    pub fn clear_reward_score(&mut self) {
-        self.reward_score = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_reward_score(&mut self, v: i32) {
-        self.reward_score = v;
-    }
-}
-
-impl ::protobuf::Message for RankInfoPt {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
-                },
-                2 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.name)?;
-                },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.rank = tmp;
-                },
-                4 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.cters)?;
-                },
-                5 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.league_id = tmp;
-                },
-                6 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.reward_score = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if !self.name.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.name);
-        }
-        if self.rank != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.rank, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.cters {
-            my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
-        };
-        if self.league_id != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.league_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.reward_score != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.reward_score, ::protobuf::wire_format::WireTypeVarint);
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
-        }
-        if !self.name.is_empty() {
-            os.write_string(2, &self.name)?;
-        }
-        if self.rank != 0 {
-            os.write_int32(3, self.rank)?;
-        }
-        for v in &self.cters {
-            os.write_uint32(4, *v)?;
-        };
-        if self.league_id != 0 {
-            os.write_uint32(5, self.league_id)?;
-        }
-        if self.reward_score != 0 {
-            os.write_int32(6, self.reward_score)?;
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> RankInfoPt {
-        RankInfoPt::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
-        descriptor.get(|| {
-            let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "user_id",
-                |m: &RankInfoPt| { &m.user_id },
-                |m: &mut RankInfoPt| { &mut m.user_id },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                "name",
-                |m: &RankInfoPt| { &m.name },
-                |m: &mut RankInfoPt| { &mut m.name },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                "rank",
-                |m: &RankInfoPt| { &m.rank },
-                |m: &mut RankInfoPt| { &mut m.rank },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "cters",
-                |m: &RankInfoPt| { &m.cters },
-                |m: &mut RankInfoPt| { &mut m.cters },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_id",
-                |m: &RankInfoPt| { &m.league_id },
-                |m: &mut RankInfoPt| { &mut m.league_id },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                "reward_score",
-                |m: &RankInfoPt| { &m.reward_score },
-                |m: &mut RankInfoPt| { &mut m.reward_score },
-            ));
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<RankInfoPt>(
-                "RankInfoPt",
-                fields,
-                file_descriptor_proto()
-            )
-        })
-    }
-
-    fn default_instance() -> &'static RankInfoPt {
-        static instance: ::protobuf::rt::LazyV2<RankInfoPt> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(RankInfoPt::new)
-    }
-}
-
-impl ::protobuf::Clear for RankInfoPt {
-    fn clear(&mut self) {
-        self.user_id = 0;
-        self.name.clear();
-        self.rank = 0;
-        self.cters.clear();
-        self.league_id = 0;
-        self.reward_score = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for RankInfoPt {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RankInfoPt {
-    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
-        ::protobuf::reflect::ReflectValueRef::Message(self)
-    }
-}
-
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"4\n\tR_B_STAR\
     T\x12'\n\x07room_pt\x18\x01\x20\x01(\x0b2\x0e.protos.RoomPtR\x06roomPt\"\
@@ -2481,26 +2217,23 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\
     X\n\x0fG_R_SEARCH_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomT\
     ype\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pb\
-    p\"G\n\x0bB_S_SUMMARY\x128\n\x0csummary_data\x18\x01\x20\x01(\x0b2\x15.p\
-    rotos.SummaryDataPtR\x0bsummaryData\"I\n\x0bB_R_SUMMARY\x12:\n\rsummary_\
-    datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"\
-    \x87\x01\n\x14UPDATE_SEASON_NOTICE\x12\x1b\n\tseason_id\x18\x01\x20\x01(\
-    \rR\x08seasonId\x12(\n\x10last_update_time\x18\x02\x20\x01(\tR\x0elastUp\
-    dateTime\x12(\n\x10next_update_time\x18\x03\x20\x01(\tR\x0enextUpdateTim\
-    e\"\xeb\x01\n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\
-    \n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12(\n\x06league\x18\x04\x20\
-    \x01(\x0b2\x10.protos.LeaguePtR\x06league\x128\n\x0cpunish_match\x18\x05\
-    \x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05cters\
-    \x18\x06\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PU\
-    NISH_MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.Punis\
-    hMatchPtR\x0bpunishMatch\"9\n\rR_G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\
-    \x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"\xa3\x01\n\nRankInfoPt\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\n\x04name\x18\
-    \x02\x20\x01(\tR\x04name\x12\x12\n\x04rank\x18\x03\x20\x01(\x05R\x04rank\
-    \x12\x14\n\x05cters\x18\x04\x20\x03(\rR\x05cters\x12\x1b\n\tleague_id\
-    \x18\x05\x20\x01(\rR\x08leagueId\x12!\n\x0creward_score\x18\x06\x20\x01(\
-    \x05R\x0brewardScoreb\x06proto3\
+    p\"z\n\x0bB_S_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomTy\
+    pe\x12\x14\n\x05cters\x18\x02\x20\x03(\rR\x05cters\x128\n\x0csummary_dat\
+    a\x18\x03\x20\x01(\x0b2\x15.protos.SummaryDataPtR\x0bsummaryData\"I\n\
+    \x0bB_R_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.S\
+    ummaryDataPtR\x0csummaryDatas\"\x87\x01\n\x14UPDATE_SEASON_NOTICE\x12\
+    \x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10last_update_\
+    time\x18\x02\x20\x01(\tR\x0elastUpdateTime\x12(\n\x10next_update_time\
+    \x18\x03\x20\x01(\tR\x0enextUpdateTime\"\xeb\x01\n\x0ePlayerBattlePt\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\
+    \x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05g\
+    rade\x12(\n\x06league\x18\x04\x20\x01(\x0b2\x10.protos.LeaguePtR\x06leag\
+    ue\x128\n\x0cpunish_match\x18\x05\x20\x01(\x0b2\x15.protos.PunishMatchPt\
+    R\x0bpunishMatch\x12)\n\x05cters\x18\x06\x20\x03(\x0b2\x13.protos.Charac\
+    terPtR\x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_match\x18\
+    \x01\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"9\n\rR_G_SY\
+    NC_RANK\x12(\n\x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05\
+    ranksb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

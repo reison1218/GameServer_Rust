@@ -9,7 +9,7 @@ use std::cell::Cell;
 #[derive(Debug, Clone, Default)]
 pub struct UserData {
     ///玩家基本数据
-    user_info: User,
+    pub user_info: User,
     ///玩家角色
     character: Characters,
     ///玩家段位数据

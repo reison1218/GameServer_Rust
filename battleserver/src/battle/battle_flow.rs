@@ -64,6 +64,7 @@ impl BattleData {
                     ssn.summary_datas.push(smp.clone());
                     if !su.push_to_server {
                         let mut bg = B_S_SUMMARY::new();
+                        bg.set_room_type(self.room_type.into_u32());
                         bg.set_summary_data(smp);
                         bgs.push(bg);
                         su.push_to_server = true;

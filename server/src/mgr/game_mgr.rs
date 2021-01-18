@@ -1,6 +1,7 @@
 use crate::entity::user::UserData;
 use crate::entity::user_info::{
-    create_room, join_room, modify_nick_name, punish_match, search_room, summary,
+    create_room, join_room, modify_nick_name, punish_match, search_room, show_rank, summary,
+    sync_rank,
 };
 use crate::entity::{Entity, EntityData};
 use crate::SEASON;
@@ -10,7 +11,8 @@ use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::GameCode::SyncData;
-use tools::cmd_code::{ClientCode, GameCode, RoomCode, ServerCommonCode};
+use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::protos::base::RankInfoPt;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
@@ -19,6 +21,7 @@ use tools::util::packet::Packet;
 ///gameMgr结构体
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
+    pub rank: Vec<RankInfoPt>,         //排行榜快照，从排行榜服务器那边过来的
     sender: Option<TcpSender>,         //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
@@ -30,6 +33,7 @@ impl GameMgr {
         let mut gm = GameMgr {
             users,
             sender: None,
+            rank: Vec::new(),
             cmd_map: HashMap::new(),
         };
         //初始化命令
@@ -50,7 +54,7 @@ impl GameMgr {
         self.get_sender_mut().send(bytes);
     }
 
-    pub fn send_2_room(&mut self, cmd: RoomCode, user_id: u32, bytes: Vec<u8>) {
+    pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, false);
         self.get_sender_mut().send(bytes);
     }
@@ -130,15 +134,22 @@ impl GameMgr {
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
         self.cmd_map.insert(SyncData.into_u32(), sync);
-        self.cmd_map.insert(GameCode::UnloadUser.into_u32(), off_line);
+        self.cmd_map
+            .insert(GameCode::UnloadUser.into_u32(), off_line);
         self.cmd_map
             .insert(GameCode::ModifyNickName.into_u32(), modify_nick_name);
         self.cmd_map
             .insert(GameCode::CreateRoom.into_u32(), create_room);
-        self.cmd_map.insert(GameCode::JoinRoom.into_u32(), join_room);
+        self.cmd_map
+            .insert(GameCode::JoinRoom.into_u32(), join_room);
         self.cmd_map
             .insert(GameCode::SearchRoom.into(), search_room);
-        self.cmd_map.insert(GameCode::SyncPunish.into_u32(), punish_match);
+        self.cmd_map
+            .insert(GameCode::SyncPunish.into_u32(), punish_match);
+        self.cmd_map
+            .insert(GameCode::SyncRank.into_u32(), sync_rank);
+        self.cmd_map
+            .insert(GameCode::ShowRank.into_u32(), show_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
     }
 }

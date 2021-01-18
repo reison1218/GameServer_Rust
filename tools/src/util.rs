@@ -425,6 +425,25 @@ pub mod packet {
                 packet.build_client_bytes()
             }
         }
+
+        ///构建一个用于通信返回的bytes数组
+        pub fn build_push_packet_bytes(
+            cmd: u32,
+            user_id: u32,
+            data: Vec<u8>,
+            is_server: bool,
+            is_2_client: bool,
+        ) -> Vec<u8> {
+            let mut packet = Packet::new(cmd, (16 + data.len()) as u32, user_id);
+            packet.set_data_from_vec(data);
+            packet.packet_des.is_client = is_2_client;
+            packet.set_is_broad(true);
+            if is_server {
+                packet.build_server_bytes()
+            } else {
+                packet.build_client_bytes()
+            }
+        }
     }
 }
 
