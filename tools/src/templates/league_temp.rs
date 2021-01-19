@@ -4,7 +4,7 @@ use std::collections::HashMap;
 ///段位配置
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct LeagueTemp {
-    pub id: u8,
+    pub id: i8,
     pub score: i32,
 }
 
@@ -12,7 +12,7 @@ impl Template for LeagueTemp {}
 
 #[derive(Debug, Default, Clone)]
 pub struct LeagueTempMgr {
-    pub temps: HashMap<u8, LeagueTemp>, //key:id value:itemtemp
+    pub temps: HashMap<i8, LeagueTemp>, //key:id value:itemtemp
 }
 
 impl TemplateMgrTrait for LeagueTempMgr {
@@ -27,7 +27,7 @@ impl TemplateMgrTrait for LeagueTempMgr {
 
 impl LeagueTempMgr {
     #[warn(unreachable_code)]
-    pub fn get_temp(&self, id: &u8) -> anyhow::Result<&LeagueTemp> {
+    pub fn get_temp(&self, id: &i8) -> anyhow::Result<&LeagueTemp> {
         let res = self.temps.get(id);
         if res.is_none() {
             let str = format!("LeagueTemp is none for id:{}", id);

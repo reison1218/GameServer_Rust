@@ -5188,7 +5188,7 @@ impl ::protobuf::reflect::ProtobufValue for PunishMatchPt {
 pub struct LeaguePt {
     // message fields
     pub league_score: i32,
-    pub league_id: u32,
+    pub league_id: i32,
     pub league_time: i64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -5221,10 +5221,10 @@ impl LeaguePt {
         self.league_score = v;
     }
 
-    // uint32 league_id = 2;
+    // int32 league_id = 2;
 
 
-    pub fn get_league_id(&self) -> u32 {
+    pub fn get_league_id(&self) -> i32 {
         self.league_id
     }
     pub fn clear_league_id(&mut self) {
@@ -5232,7 +5232,7 @@ impl LeaguePt {
     }
 
     // Param is passed by value, moved
-    pub fn set_league_id(&mut self, v: u32) {
+    pub fn set_league_id(&mut self, v: i32) {
         self.league_id = v;
     }
 
@@ -5272,7 +5272,7 @@ impl ::protobuf::Message for LeaguePt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_int32()?;
                     self.league_id = tmp;
                 },
                 3 => {
@@ -5313,7 +5313,7 @@ impl ::protobuf::Message for LeaguePt {
             os.write_int32(1, self.league_score)?;
         }
         if self.league_id != 0 {
-            os.write_uint32(2, self.league_id)?;
+            os.write_int32(2, self.league_id)?;
         }
         if self.league_time != 0 {
             os.write_int64(3, self.league_time)?;
@@ -5361,7 +5361,7 @@ impl ::protobuf::Message for LeaguePt {
                 |m: &LeaguePt| { &m.league_score },
                 |m: &mut LeaguePt| { &mut m.league_score },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                 "league_id",
                 |m: &LeaguePt| { &m.league_id },
                 |m: &mut LeaguePt| { &mut m.league_id },
@@ -5813,13 +5813,13 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0e.protos.BuffPtR\x05buffs\"K\n\rPunishMatchPt\x12\x1d\n\nstart_time\
     \x18\x01\x20\x01(\x03R\tstartTime\x12\x1b\n\tpunish_id\x18\x02\x20\x01(\
     \rR\x08punishId\"k\n\x08LeaguePt\x12!\n\x0cleague_score\x18\x01\x20\x01(\
-    \x05R\x0bleagueScore\x12\x1b\n\tleague_id\x18\x02\x20\x01(\rR\x08leagueI\
-    d\x12\x1f\n\x0bleague_time\x18\x03\x20\x01(\x03R\nleagueTime\"\xa3\x01\n\
-    \nRankInfoPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\
-    \n\x04name\x18\x02\x20\x01(\tR\x04name\x12\x12\n\x04rank\x18\x03\x20\x01\
-    (\x05R\x04rank\x12\x1b\n\tleague_id\x18\x04\x20\x01(\rR\x08leagueId\x12!\
-    \n\x0cleague_score\x18\x05\x20\x01(\x05R\x0bleagueScore\x12\x14\n\x05cte\
-    rs\x18\x06\x20\x03(\rR\x05ctersb\x06proto3\
+    \x05R\x0bleagueScore\x12\x1b\n\tleague_id\x18\x02\x20\x01(\x05R\x08leagu\
+    eId\x12\x1f\n\x0bleague_time\x18\x03\x20\x01(\x03R\nleagueTime\"\xa3\x01\
+    \n\nRankInfoPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
+    \x12\n\x04name\x18\x02\x20\x01(\tR\x04name\x12\x12\n\x04rank\x18\x03\x20\
+    \x01(\x05R\x04rank\x12\x1b\n\tleague_id\x18\x04\x20\x01(\rR\x08leagueId\
+    \x12!\n\x0cleague_score\x18\x05\x20\x01(\x05R\x0bleagueScore\x12\x14\n\
+    \x05cters\x18\x06\x20\x03(\rR\x05ctersb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

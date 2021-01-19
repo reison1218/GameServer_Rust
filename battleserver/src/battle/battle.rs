@@ -95,7 +95,7 @@ pub struct BattleData {
     pub summary_vec: Vec<Vec<SummaryUser>>,         //排名  user_id
     pub summary_vec_temp: Vec<SummaryUser>,         //同一批挂掉的人
     pub leave_user: (u32, bool),                    //离开玩家id,是否惩罚
-    pub leave_map: HashMap<u32, u8>,                //段位快照
+    pub leave_map: HashMap<u32, i8>,                //段位快照
     pub turn_limit_time: u64,                       //战斗turn时间限制
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数

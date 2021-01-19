@@ -1160,8 +1160,8 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             member.chose_cter = Character::default();
             member.grade = sd.grade as u8;
             member.league.update(
-                sd.get_league().get_league_id() as u8,
-                sd.get_league().league_score as i32,
+                sd.get_league().get_league_id() as i8,
+                sd.get_league().league_score,
                 sd.get_league().league_time,
             );
             member.state = MemberState::NotReady;

@@ -43,7 +43,7 @@ impl RankInfo {
                 ri.cters.push(cter_id);
             }
         }
-        ri.league.id = js["id"].as_i64().unwrap() as u8;
+        ri.league.id = js["id"].as_i64().unwrap() as i8;
         ri.league.league_score = js["score"].as_i64().unwrap() as i32;
         let res = chrono::NaiveDateTime::from_str(js["league_time"].as_str().unwrap());
         if let Err(e) = res {
@@ -84,7 +84,7 @@ impl RankInfo {
 
 #[derive(Default, Debug)]
 pub struct League {
-    pub id: u8,            //段位id
+    pub id: i8,            //段位id
     pub league_score: i32, //段位积分
     pub league_time: i64,  //进入段位的时间
 }
@@ -92,18 +92,18 @@ pub struct League {
 unsafe impl Send for League {}
 
 impl League {
-    pub fn get_league_id(&self) -> u8 {
+    pub fn get_league_id(&self) -> i8 {
         self.id
     }
 }
 
 impl From<&LeaguePt> for League {
     fn from(l_pt: &LeaguePt) -> Self {
-        let league_id = l_pt.get_league_id() as u8;
+        let league_id = l_pt.get_league_id() as i8;
         League {
             id: league_id,
             league_time: l_pt.league_time,
-            league_score: l_pt.league_score as i32,
+            league_score: l_pt.league_score,
         }
     }
 }

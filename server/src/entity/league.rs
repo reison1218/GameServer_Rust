@@ -7,7 +7,7 @@ use tools::protos::base::LeaguePt;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct League {
-    pub id: u8,              //段位id
+    pub id: i8,              //段位id
     pub user_id: u32,        //玩家id
     pub name: String,        //玩家名称
     pub score: i32,          //积分
@@ -23,15 +23,14 @@ unsafe impl Send for League {}
 unsafe impl Sync for League {}
 
 impl League {
-
-    pub fn round_reset(&mut self){
+    pub fn round_reset(&mut self) {
         let old_id = self.id;
-        self.id-=1;
-        if self.id <=0{
-            self.id=0;
+        self.id -= 1;
+        if self.id <= 0 {
+            self.id = 0;
             self.rank = -1;
             self.league_time = String::new();
-        }else{
+        } else {
             let res = crate::TEMPLATES
                 .get_league_temp_mgr_ref()
                 .get_temp(&self.id)
@@ -52,7 +51,7 @@ impl League {
     }
 
     pub fn update_from_pt(&mut self, pt: &LeaguePt) {
-        self.id = pt.league_id as u8;
+        self.id = pt.league_id as i8;
         self.score = pt.league_score;
         let res;
         let res2;
@@ -70,8 +69,8 @@ impl League {
 
     pub fn into(&self) -> LeaguePt {
         let mut lp = LeaguePt::new();
-        lp.league_id = self.id as u32;
-        lp.league_score = self.score ;
+        lp.league_id = self.id as i32;
+        lp.league_score = self.score;
         lp.league_time = self.get_league_time();
         lp
     }
@@ -145,7 +144,7 @@ impl League {
         let mut l = League::default();
         l.user_id = user_id;
         l.name = name;
-        l.rank =-1;
+        l.rank = -1;
         l
     }
 

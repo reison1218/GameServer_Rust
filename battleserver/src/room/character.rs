@@ -17,7 +17,6 @@ use std::collections::HashMap;
 use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, CharacterPt, LeaguePt, TargetPt};
 use tools::templates::character_temp::CharacterTemp;
-use tools::templates::league_temp::LeagueTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -69,18 +68,34 @@ pub struct BaseAttr {
 pub struct League {
     pub score: i32,       //段位积分
     pub league_time: i64, //进入段位时间
-    pub league_temp: &'static LeagueTemp,
+    pub league_id: i8,    //段位id
 }
 
 impl League {
-    pub fn get_league_id(&self) -> u8 {
-        self.league_temp.id
+    pub fn season_round_reset(&mut self) {
+        let old_id = self.get_league_id();
+        if old_id == 0 || old_id - 1 == 0 {
+            self.league_id = 0;
+            self.league_time = 0;
+        } else {
+            let res = crate::TEMPLATES
+                .get_league_temp_mgr_ref()
+                .get_temp(&self.league_id)
+                .unwrap();
+            if old_id != self.league_id {
+                self.score = res.score;
+                self.league_time = 0;
+            }
+        }
+    }
+    pub fn get_league_id(&self) -> i8 {
+        self.league_id
     }
 
     pub fn into_pt(&self) -> LeaguePt {
         let mut lp = LeaguePt::new();
-        lp.league_id = self.get_league_id() as u32;
-        lp.league_score = self.score as u32;
+        lp.league_id = self.get_league_id() as i32;
+        lp.league_score = self.score;
         lp.league_time = self.league_time;
         lp
     }
@@ -91,16 +106,24 @@ impl League {
             self.score = 0;
             return 0;
         }
+        let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+        let league_temp = mgr.get_temp(&self.league_id);
+        if let Err(_) = league_temp {
+            self.league_id = 0;
+        }
+
+        let league_temp = mgr.get_league_by_score(self.score).unwrap();
+
         //掉分了不能掉段位
-        if self.score < self.league_temp.score {
-            self.score = self.league_temp.score;
+        if self.score < league_temp.score {
+            self.score = league_temp.score;
             return self.score;
         }
-        let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-        let temp = mgr.get_league_by_score(self.score).unwrap();
-        if temp.id != self.get_league_id() {
-            self.league_temp = temp;
+
+        if league_temp.id != self.get_league_id() {
+            self.league_id = league_temp.id;
         }
+
         self.score
     }
 }
@@ -109,26 +132,18 @@ impl From<&LeaguePt> for League {
     fn from(pt: &LeaguePt) -> Self {
         let mut l = League::default();
         l.league_time = pt.league_time;
-        l.score = pt.league_score as i32;
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_temp(&(pt.league_id as u8))
-            .unwrap();
-        l.league_temp = res;
+        l.score = pt.league_score;
+        l.league_id = pt.league_id as i8;
         l
     }
 }
 
 impl Default for League {
     fn default() -> Self {
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_league_by_score(0)
-            .unwrap();
         League {
             score: 0,
             league_time: 0,
-            league_temp: res,
+            league_id: 0,
         }
     }
 }
