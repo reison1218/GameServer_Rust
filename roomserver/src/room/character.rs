@@ -1,5 +1,4 @@
 use tools::protos::base::{CharacterPt, LeaguePt};
-use tools::templates::league_temp::LeagueTemp;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -33,9 +32,9 @@ impl Into<CharacterPt> for Character {
 ///段位数据
 #[derive(Clone, Debug)]
 pub struct League {
+    pub league_id: u8,    //段位id
     pub score: i32,       //段位积分
     pub league_time: i64, //进入段位时间
-    pub league_temp: &'static LeagueTemp,
 }
 
 impl From<&LeaguePt> for League {
@@ -44,34 +43,40 @@ impl From<&LeaguePt> for League {
         l.score = lp.get_league_score() as i32;
         l.league_time = lp.league_time;
         let league_id = lp.league_id as u8;
-        let temp = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_temp(&league_id)
-            .unwrap();
-        l.league_temp = temp;
+        l.league_id = league_id;
         l
     }
 }
 
 impl League {
-    pub fn get_league_id(&self) -> u8 {
-        self.league_temp.id
+    pub fn round_reset(&mut self) {
+        let old_id = self.league_id;
+        self.league_id -= 1;
+        if self.league_id <= 0 {
+            self.league_id = 0;
+            self.league_time = 0;
+        } else {
+            let res = crate::TEMPLATES
+                .get_league_temp_mgr_ref()
+                .get_temp(&self.league_id)
+                .unwrap();
+            if old_id != self.league_id {
+                self.score = res.score;
+                self.league_time = 0;
+            }
+        }
     }
 
     pub fn into_pt(&self) -> LeaguePt {
         let mut lpt = LeaguePt::new();
-        lpt.set_league_id(self.get_league_id() as u32);
-        lpt.set_league_score(self.score as u32);
+        lpt.set_league_id(self.league_id as u32);
+        lpt.set_league_score(self.score);
         lpt.set_league_time(self.league_time);
         lpt
     }
 
     pub fn update(&mut self, league_id: u8, league_score: i32, league_time: i64) {
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_temp(&league_id)
-            .unwrap();
-        self.league_temp = res;
+        self.league_id = league_id;
         self.score = league_score;
         self.league_time = league_time;
     }
@@ -79,14 +84,10 @@ impl League {
 
 impl Default for League {
     fn default() -> Self {
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_league_by_score(0)
-            .unwrap();
         League {
             score: 0,
             league_time: 0,
-            league_temp: res,
+            league_id: 0,
         }
     }
 }

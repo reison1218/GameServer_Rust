@@ -4,11 +4,10 @@ use async_std::sync::Mutex;
 use futures::executor::block_on;
 use log::error;
 use std::sync::Arc;
-
 pub mod dbtool;
 
 pub fn init_rank(rm: Arc<Mutex<RankMgr>>) {
-    let sql = "select * from t_u_league";
+    let sql = "select * from t_u_league where ";
     let res = crate::DB_POOL.exe_sql(sql, None);
     if let Err(e) = res {
         error!("{:?}", e);

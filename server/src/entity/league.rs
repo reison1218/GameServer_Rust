@@ -1,5 +1,4 @@
 use super::*;
-use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::str::FromStr;
@@ -11,7 +10,7 @@ pub struct League {
     pub id: u8,              //段位id
     pub user_id: u32,        //玩家id
     pub name: String,        //玩家名称
-    pub score: u32,          //积分
+    pub score: i32,          //积分
     pub rank: i32,           //排名
     pub cters: Vec<u32>,     //常用的三个角色
     pub league_time: String, //进入段位时间
@@ -24,6 +23,26 @@ unsafe impl Send for League {}
 unsafe impl Sync for League {}
 
 impl League {
+
+    pub fn round_reset(&mut self){
+        let old_id = self.id;
+        self.id-=1;
+        if self.id <=0{
+            self.id=0;
+            self.rank = -1;
+            self.league_time = String::new();
+        }else{
+            let res = crate::TEMPLATES
+                .get_league_temp_mgr_ref()
+                .get_temp(&self.id)
+                .unwrap();
+            if old_id != self.id {
+                self.score = res.score;
+                self.league_time = String::new();
+            }
+        }
+        self.clear_version();
+    }
     pub fn get_league_time(&self) -> i64 {
         let res = chrono::NaiveDateTime::from_str(self.league_time.as_str());
         if let Ok(res) = res {
@@ -52,7 +71,7 @@ impl League {
     pub fn into(&self) -> LeaguePt {
         let mut lp = LeaguePt::new();
         lp.league_id = self.id as u32;
-        lp.league_score = self.score as u32;
+        lp.league_score = self.score ;
         lp.league_time = self.get_league_time();
         lp
     }
@@ -122,20 +141,11 @@ impl Dao for League {
 }
 
 impl League {
-    pub(crate) fn update_league_time(&mut self) {
-        let time = Local::now();
-        let res = time.naive_local().format("%Y-%m-%dT%H:%M:%S").to_string();
-        self.league_time = res;
-        self.add_version();
-    }
-
     pub fn new(user_id: u32, name: String) -> Self {
         let mut l = League::default();
-        l.id = 1;
         l.user_id = user_id;
         l.name = name;
-        l.rank = -1;
-        l.update_league_time();
+        l.rank =-1;
         l
     }
 

@@ -168,7 +168,7 @@ message PunishMatchPt{
 
 //段位数据
 message LeaguePt{
-    uint32 league_score = 1;//玩家总积分
+    int32 league_score = 1;//玩家总积分
     uint32 league_id = 2;//段位id
     int64  league_time = 3;//进入段位时间
 }

@@ -79,9 +79,10 @@ trait Forward {
             }else if cmd > RankCode::Min.into_u32()//转发给排行榜服
                 && cmd < RankCode::Max.into_u32()
             {
-                let res = lock.get_battle_client_mut(user_id);
+                let rs = lock.get_rank_center_mut();
+                let res = rs.send(bytes);
                 match res {
-                    Ok(gc) => gc.send(bytes),
+                    Ok(_) => {},
                     Err(e) => warn!("{:?},cmd:{:?}", e,cmd),
                 }
             }else{

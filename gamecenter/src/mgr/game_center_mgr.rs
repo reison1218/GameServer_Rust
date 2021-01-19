@@ -70,7 +70,13 @@ impl GameCenterMgr {
         }
 
         //通知房间服
-        let res = self.get_room_center_mut().send(bytes);
+        let res = self.get_room_center_mut().send(bytes.clone());
+        if let Err(e) = res {
+            warn!("{:?}", e);
+        }
+
+        //通知排行榜服
+        let res = self.get_rank_center_mut().send(bytes);
         if let Err(e) = res {
             warn!("{:?}", e);
         }
@@ -174,6 +180,10 @@ impl GameCenterMgr {
 
     pub fn get_room_center_mut(&mut self) -> &mut Sender<Vec<u8>> {
         self.room_center.as_mut().unwrap()
+    }
+
+    pub fn get_rank_center_mut(&mut self) -> &mut Sender<Vec<u8>> {
+        self.rank_server.as_mut().unwrap()
     }
 
     pub fn get_gate_client_mut(&mut self, user_id: u32) -> anyhow::Result<&mut GateClient> {

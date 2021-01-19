@@ -473,12 +473,6 @@ pub struct StructTestPtr(*mut StructTest);
 
 unsafe impl Send for StructTestPtr {}
 fn main() -> anyhow::Result<()> {
-    let mut a = 1610696194123i64;
-    let b = a % 1000;
-    a /= 1000;
-    println!("{}", b);
-    let res = chrono::NaiveDateTime::from_timestamp(a, 0);
-    println!("{:?}", res);
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);

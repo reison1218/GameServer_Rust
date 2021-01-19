@@ -6,6 +6,7 @@ use crate::mgr::game_center_mgr::GameCenterMgr;
 use crate::net::room_tcp_client::RoomTcpClientHandler;
 use crate::net::{battle_tcp_server, gate_tcp_server};
 use async_std::sync::Mutex;
+use net::rank_tcp_client::RankTcpClientHandler;
 use std::env;
 use std::sync::Arc;
 use tools::conf::Conf;
@@ -55,8 +56,14 @@ fn init_tcp_server(gm: Arc<Mutex<GameCenterMgr>>) {
 
 ///初始化tcp客户端
 fn init_tcp_client(gm: Arc<Mutex<GameCenterMgr>>) {
-    let mut rth = RoomTcpClientHandler { gm };
+    let mut rth = RoomTcpClientHandler { gm:gm.clone() };
     let address: &str = CONF_MAP.get_str("room_port");
+    let m =  async move{
+        rth.on_read(address.to_string()).await;
+    };
+    async_std::task::spawn(m);
+    let address: &str = CONF_MAP.get_str("rank_port");
+    let mut rth = RankTcpClientHandler{gm};
     let res = rth.on_read(address.to_string());
     async_std::task::block_on(res);
 }

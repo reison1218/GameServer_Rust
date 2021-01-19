@@ -14,7 +14,7 @@ codegen-units = 1
 ws="0.9.1"
 #postgres ={version="0.15.2"}
 num_cpus="1.10.1"
-protobuf="2.14.0"
+protobuf="2.20.0"
 threadpool="1.7.1"
 log="0.4.8"
 chrono = "0.4.9"

@@ -12,6 +12,7 @@ use protobuf::Message;
 use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
+use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
@@ -46,13 +47,14 @@ pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
 }
 
 ///更新赛季
-pub fn update_season(_: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return Ok(());
     }
+    let season_id = usn.get_season_id();
     unsafe {
         SEASON.season_id = usn.get_season_id();
         let str = usn.get_last_update_time();
@@ -65,6 +67,38 @@ pub fn update_season(_: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             .timestamp() as u64;
         SEASON.last_update_time = last_update_time;
         SEASON.next_update_time = next_update_time;
+    }
+
+    //处理更新内存
+    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let round_season_id = mgr.temps.get("round_season_id");
+    if let None = round_season_id {
+        warn!("the constant temp is None!key:round_season_id");
+        return Ok(());
+    }
+    let round_season_id = round_season_id.unwrap();
+    let res = u32::from_str(round_season_id.value.as_str());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let round_season_id = res.unwrap();
+    if round_season_id != season_id {
+        return Ok(());
+    }
+    //更新所有内存数据
+    for user_id in rm.player_room.clone().keys() {
+        let room = rm.get_room_mut(&user_id);
+        if room.is_none() {
+            continue;
+        }
+        let room = room.unwrap();
+        let member = room.get_member_mut(&user_id);
+        if member.is_none() {
+            continue;
+        }
+        let member = member.unwrap();
+        member.league.round_reset();
     }
     Ok(())
 }

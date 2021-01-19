@@ -6,7 +6,7 @@ use crate::entity::user_info::{
 use crate::entity::{Entity, EntityData};
 use crate::SEASON;
 use chrono::Local;
-use log::{error, info};
+use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
@@ -17,6 +17,7 @@ use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+use std::str::FromStr;
 
 ///gameMgr结构体
 pub struct GameMgr {
@@ -173,15 +174,16 @@ pub fn reload_temps(_: &mut GameMgr, _: Packet) -> anyhow::Result<()> {
 }
 
 ///更新赛季
-pub fn update_season(_: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return Ok(());
     }
+    let season_id = usn.get_season_id();
     unsafe {
-        SEASON.season_id = usn.get_season_id();
+        SEASON.season_id = season_id;
         let str = usn.get_last_update_time();
         let last_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
             .unwrap()
@@ -192,6 +194,27 @@ pub fn update_season(_: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
             .timestamp() as u64;
         SEASON.last_update_time = last_update_time;
         SEASON.next_update_time = next_update_time;
+    }
+    //处理更新内存
+    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let round_season_id = mgr.temps.get("round_season_id");
+    if let None = round_season_id {
+        warn!("the constant temp is None!key:round_season_id");
+        return Ok(());
+    }
+    let round_season_id = round_season_id.unwrap();
+    let res = u32::from_str(round_season_id.value.as_str());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let round_season_id = res.unwrap();
+    if round_season_id != season_id{
+        return Ok(());
+    }
+    //更新所有内存数据
+    for user in gm.users.values_mut(){
+        user.league.round_reset();
     }
     Ok(())
 }
