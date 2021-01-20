@@ -34,7 +34,9 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     async fn on_open(&mut self, sender: TcpSender) {
-        self.gm.lock().await.set_sender(sender);
+        let mut lock = self.gm.lock().await;
+        lock.set_sender(sender);
+        lock.init_rank();
     }
 
     async fn on_close(&mut self) {

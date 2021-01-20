@@ -10,14 +10,14 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use tools::cmd_code::GameCode::SyncData;
+use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::cmd_code::{GameCode::SyncData, RankCode};
 use tools::protos::base::RankInfoPt;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
-use std::str::FromStr;
 
 ///gameMgr结构体
 pub struct GameMgr {
@@ -40,6 +40,11 @@ impl GameMgr {
         //初始化命令
         gm.cmd_init();
         gm
+    }
+
+    ///初始化排行榜
+    pub fn init_rank(&mut self) {
+        self.send_2_server(RankCode::GetRank.into_u32(), 0, Vec::new());
     }
 
     pub fn set_sender(&mut self, sender: TcpSender) {
@@ -209,11 +214,11 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let round_season_id = res.unwrap();
-    if round_season_id != season_id{
+    if round_season_id != season_id {
         return Ok(());
     }
     //更新所有内存数据
-    for user in gm.users.values_mut(){
+    for user in gm.users.values_mut() {
         user.league.round_reset();
     }
     Ok(())

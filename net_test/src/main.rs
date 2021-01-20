@@ -469,10 +469,16 @@ pub struct StructTest {
 
 fn fn1(s: &mut String) {}
 
-pub struct StructTestPtr(*mut StructTest);
+pub struct ZZ {
+    c: u16,
+    a: u64,
+    b: u16,
+    d: u8,
+}
 
-unsafe impl Send for StructTestPtr {}
 fn main() -> anyhow::Result<()> {
+    println!("{}", std::mem::size_of::<ZZ>());
+
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);
