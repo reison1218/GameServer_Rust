@@ -29,10 +29,10 @@ trait Forward {
 
         let lock = self.get_game_center_mut();
         let mut lock = lock.lock().await;
-        for packet in packet_array {
+        for mut packet in packet_array {
             let cmd = packet.get_cmd();
             let user_id = packet.get_user_id();
-            let bytes = packet.build_server_bytes();
+            let mut bytes = packet.build_server_bytes();
 
             //需要自己处理的数据
             lock.handler(&packet,gate_token);
@@ -48,6 +48,10 @@ trait Forward {
             } else if cmd > RoomCode::Min.into_u32()//转发给房间服
                 && cmd < RoomCode::Max.into_u32()
             {
+                if let Some(token) = gate_token{
+                    packet.set_server_token(token as u32);
+                        bytes = packet.build_server_bytes();
+                }
                 //发消息到房间服
                 let res = lock.get_room_center_mut().send(bytes);
                 if let Err(e) = res {
@@ -56,7 +60,18 @@ trait Forward {
             } else if cmd > GameCode::Min.into_u32()//转发给游戏服
                 && cmd < GameCode::Max.into_u32()
             {
-                if packet.is_broad(){
+                let server_token = packet.get_server_token() as usize;
+                if server_token>0{
+                    let gate_client = lock.gate_clients.get_mut(&server_token);
+                    match gate_client{
+                        Some(gate_client)=>{
+                            gate_client.send(bytes);
+                        },
+                        None=>{
+                            warn!("could not find gate client by token:{}!",server_token);
+                        }
+                    }
+                }else if packet.is_broad(){
                     for gate_client in lock.gate_clients.values_mut(){
                         gate_client.send(bytes.clone());
                     }
@@ -79,6 +94,7 @@ trait Forward {
             }else if cmd > RankCode::Min.into_u32()//转发给排行榜服
                 && cmd < RankCode::Max.into_u32()
             {
+
                 let rs = lock.get_rank_center_mut();
                 let res = rs.send(bytes);
                 match res {

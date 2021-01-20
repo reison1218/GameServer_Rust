@@ -108,12 +108,8 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
                 b.get_score().cmp(&a.get_score())
             });
             lock.need_rank = false;
-            info!(
-                "执行排行定时器结束!-耗时:{:?}",
-                take_time.elapsed().unwrap()
-            );
+            info!("执行排行定时器结束!耗时:{:?}", take_time.elapsed().unwrap());
             //重新排行之后下发到游戏服
-            info!("更新rank并下发排行榜快照到游戏服开始！");
             let take_time = std::time::SystemTime::now();
             let mut rgsr = R_G_SYNC_RANK::new();
             let sender = lock.task_sender.clone().unwrap();
@@ -123,7 +119,7 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
                 .for_each(|(index, ri)| {
                     if ri.rank != index as i32 {
                         ri.rank = index as i32;
-                        //todo 更新数据库
+                        // 更新数据库
                         let sql = format!(
                             r#"update t_u_league set content = JSON_SET(content, "$.rank", {}) where user_id = {}"#,
                             ri.rank, ri.user_id
@@ -146,10 +142,8 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
             let bytes = bytes.unwrap();
             //下发到游戏服务器
             lock.send_2_server(GameCode::SyncRank.into_u32(), 0, bytes);
-            info!(
-                "更新rank并下发排行榜快照到游戏服结束！耗时{:?}",
-                take_time.elapsed().unwrap()
-            );
+            let res = take_time.elapsed().unwrap();
+            info!("更新rank并下发排行榜快照到游戏服结束!耗时{:?}", res);
         }
     };
     async_std::task::spawn(m);

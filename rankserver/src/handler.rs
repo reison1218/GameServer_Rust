@@ -4,8 +4,26 @@ use crate::task_timer::Task;
 use log::{error, warn};
 use protobuf::Message;
 use std::str::FromStr;
-use tools::protos::server_protocol::{B_S_SUMMARY, UPDATE_SEASON_NOTICE};
+use tools::cmd_code::GameCode;
+use tools::protos::server_protocol::{B_S_SUMMARY, R_G_SYNC_RANK, UPDATE_SEASON_NOTICE};
 use tools::util::packet::Packet;
+
+pub fn get_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
+    let server_token = packet.get_server_token();
+    let mut rgsr = R_G_SYNC_RANK::new();
+    for ri in rm.rank_vec.iter() {
+        let res = ri.into_rank_pt();
+        rgsr.ranks.push(res);
+    }
+    let bytes = rgsr.write_to_bytes();
+    if let Err(e) = bytes {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let bytes = bytes.unwrap();
+    rm.send_2_server_direction(GameCode::SyncRank.into_u32(), 0, bytes, server_token);
+    Ok(())
+}
 
 pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let mut usn = UPDATE_SEASON_NOTICE::new();

@@ -177,8 +177,9 @@ pub mod packet {
         cmd: u32,
         len: u32,
         user_id: u32,
-        is_broad: bool,  //是否需要广播
-        is_client: bool, //是否客户端
+        is_broad: bool,    //是否需要广播
+        is_client: bool,   //是否客户端
+        server_token: u32, //服务器对应的token
     }
 
     #[derive(Debug, Default, Clone)]
@@ -195,6 +196,7 @@ pub mod packet {
                 user_id,
                 is_broad: false,
                 is_client: true,
+                server_token: 0,
             }
         }
     }
@@ -225,6 +227,15 @@ pub mod packet {
             self.packet_des.is_broad = is_broad;
         }
 
+        pub fn set_server_token(&mut self, server_token: u32) {
+            self.packet_des.server_token = server_token;
+        }
+
+        ///获得server token
+        pub fn get_server_token(&self) -> u32 {
+            self.packet_des.server_token
+        }
+
         pub fn set_is_client(&mut self, is_client: bool) {
             self.packet_des.is_client = is_client;
         }
@@ -242,12 +253,14 @@ pub mod packet {
                 let user_id = bb.read_u32()?;
                 let is_client = bb.read_u8()? != 0;
                 let is_broad = bb.read_u8()? != 0;
-                let body_size = len - 14;
+                let server_token = bb.read_u32()?;
+                let body_size = len - 18;
                 let mut packet = Packet::new(cmd, len, user_id);
                 packet.set_user_id(user_id);
                 packet.set_cmd(cmd);
                 packet.set_is_client(is_client);
                 packet.set_is_broad(is_broad);
+                packet.set_server_token(server_token);
                 if body_size > 0 {
                     packet.set_data(bb.read_bytes_size(body_size as usize)?);
                 }
@@ -285,9 +298,11 @@ pub mod packet {
             let user_id = bb.read_u32()?;
             let is_client = bb.read_u8()? != 0;
             let is_broad = bb.read_u8()? != 0;
+            let server_token = bb.read_u32()?;
             let mut packet = Packet::new(cmd, 0, user_id);
             packet.set_is_client(is_client);
             packet.set_is_broad(is_broad);
+            packet.set_server_token(server_token);
             packet.set_data(bb.read_bytes_size(len as usize)?);
             Ok(packet)
         }
@@ -388,10 +403,11 @@ pub mod packet {
         pub fn to_server_bytebuf(&self) -> ByteBuf {
             let mut bb = ByteBuf::new();
             bb.push_u32(self.get_cmd());
-            bb.push_u32(14 + self.get_data().len() as u32);
+            bb.push_u32(18 + self.get_data().len() as u32);
             bb.push_u32(self.get_user_id());
             bb.push(self.is_client() as u8);
             bb.push(self.is_broad() as u8);
+            bb.push_u32(self.get_server_token());
             bb.push_array(self.get_data());
             bb
         }
@@ -416,8 +432,28 @@ pub mod packet {
             is_server: bool,
             is_2_client: bool,
         ) -> Vec<u8> {
-            let mut packet = Packet::new(cmd, (16 + data.len()) as u32, user_id);
+            let mut packet = Packet::new(cmd, 0, user_id);
             packet.set_data_from_vec(data);
+            packet.packet_des.is_client = is_2_client;
+            if is_server {
+                packet.build_server_bytes()
+            } else {
+                packet.build_client_bytes()
+            }
+        }
+
+        ///构建一个用于通信返回的bytes数组
+        pub fn build_packet_bytes_direction(
+            cmd: u32,
+            user_id: u32,
+            data: Vec<u8>,
+            is_server: bool,
+            is_2_client: bool,
+            server_token: u32,
+        ) -> Vec<u8> {
+            let mut packet = Packet::new(cmd, 0, user_id);
+            packet.set_data_from_vec(data);
+            packet.set_server_token(server_token);
             packet.packet_des.is_client = is_2_client;
             if is_server {
                 packet.build_server_bytes()
@@ -434,7 +470,7 @@ pub mod packet {
             is_server: bool,
             is_2_client: bool,
         ) -> Vec<u8> {
-            let mut packet = Packet::new(cmd, (16 + data.len()) as u32, user_id);
+            let mut packet = Packet::new(cmd, 0, user_id);
             packet.set_data_from_vec(data);
             packet.packet_des.is_client = is_2_client;
             packet.set_is_broad(true);

@@ -137,6 +137,7 @@ impl BattleCode {
 pub enum RankCode {
     Min = 40001,
     UpdateRank = 40002,       //更新排行榜
+    GetRank = 40003,          //获得排行榜
     Max = 50000,
 }
 
