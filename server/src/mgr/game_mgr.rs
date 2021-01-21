@@ -187,17 +187,9 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     let season_id = usn.get_season_id();
+    let next_update_time = usn.get_next_update_time();
     unsafe {
         SEASON.season_id = season_id;
-        let str = usn.get_last_update_time();
-        let last_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
-            .unwrap()
-            .timestamp() as u64;
-        let str = usn.get_next_update_time();
-        let next_update_time = chrono::NaiveDateTime::parse_from_str(str, "%Y-%m-%d %H:%M:%S")
-            .unwrap()
-            .timestamp() as u64;
-        SEASON.last_update_time = last_update_time;
         SEASON.next_update_time = next_update_time;
     }
     //处理更新内存

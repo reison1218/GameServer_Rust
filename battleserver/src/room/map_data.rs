@@ -126,7 +126,7 @@ impl TileMap {
             let res = rand.gen_range(0, 2);
             if res > 0 {
                 unsafe {
-                    season_id = crate::SEASON.season_id;
+                    season_id = crate::SEASON.season_id
                 }
             }
         }

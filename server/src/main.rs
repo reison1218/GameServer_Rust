@@ -13,9 +13,10 @@ use async_std::sync::Mutex;
 use std::sync::Arc;
 
 use crate::mgr::timer_mgr::init_timer;
-use log::{error, info};
+use log::{error, info, warn};
 use serde_json::Value;
 use std::env;
+use std::str::FromStr;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
@@ -80,24 +81,21 @@ const REDIS_INDEX_GAME_SEASON: u32 = 1;
 
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 
-///赛季结构体
-#[derive(Default)]
+///赛季信息
+pub static mut SEASON: Season = Season::new();
+
 pub struct Season {
     season_id: u32,
-    last_update_time: u64,
     next_update_time: u64,
 }
 
-///赛季信息
-pub static mut SEASON: Season = new_season();
-
-pub const fn new_season() -> Season {
-    let res = Season {
-        season_id: 0,
-        last_update_time: 0,
-        next_update_time: 0,
-    };
-    res
+impl Season {
+    const fn new() -> Self {
+        Season {
+            season_id: 0,
+            next_update_time: 0,
+        }
+    }
 }
 
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
@@ -135,24 +133,50 @@ fn init_season() {
             error!("redis do not has season data about game:{}", 101);
             return;
         }
-
         let str = res.unwrap();
-        let value: Value = serde_json::from_str(str.as_str()).unwrap();
-        let map = value.as_object().unwrap();
-        let season_id = map.get("season_id").unwrap().as_u64().unwrap() as u32;
-        let last_update_time: &str = map.get("last_update_time").unwrap().as_str().unwrap();
-        let next_update_time: &str = map.get("next_update_time").unwrap().as_str().unwrap();
-        let last_update_time =
-            chrono::NaiveDateTime::parse_from_str(last_update_time, "%Y-%m-%d %H:%M:%S")
-                .unwrap()
-                .timestamp() as u64;
+        let value = serde_json::from_str(str.as_str());
+        if let Err(e) = value {
+            error!("{:?}", e);
+            return;
+        }
+        let value: Value = value.unwrap();
+        let map = value.as_object();
+        if map.is_none() {
+            return;
+        }
+        let map = map.unwrap();
 
-        let next_update_time =
-            chrono::NaiveDateTime::parse_from_str(next_update_time, "%Y-%m-%d %H:%M:%S")
-                .unwrap()
-                .timestamp() as u64;
-        SEASON.season_id = season_id;
-        SEASON.last_update_time = last_update_time;
+        let season_id = map.get("season_id");
+        if season_id.is_none() {
+            warn!("the season_id is None!");
+            return;
+        }
+        let season_id = season_id.unwrap();
+        let season_id = season_id.as_u64();
+        if season_id.is_none() {
+            warn!("the season_id is None!");
+            return;
+        }
+        let season_id = season_id.unwrap();
+        SEASON.season_id = season_id as u32;
+        let next_update_time = map.get("next_update_time");
+        if next_update_time.is_none() {
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+        let next_update_time = next_update_time.as_str();
+        if next_update_time.is_none() {
+            warn!("the next_update_time could not to &str!");
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+        let next_update_time = chrono::NaiveDateTime::from_str(next_update_time);
+        if let Err(e) = next_update_time {
+            error!("{:?}", e);
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+        let next_update_time = next_update_time.timestamp_millis() as u64;
         SEASON.next_update_time = next_update_time;
     }
 }
