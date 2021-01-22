@@ -509,7 +509,6 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("could not find user_data for user_id {}", user_id);
         return Ok(());
     }
-    let user_data = user_data.unwrap();
 
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
