@@ -47,10 +47,12 @@ message UPDATE_SEASON_NOTICE{
 message PlayerBattlePt{
     uint32 user_id = 1;             //玩家id
     string nick_name = 2;           //玩家昵称
-    uint32 grade = 3;               //等级
-    LeaguePt league = 4;            //段位数据
-    PunishMatchPt punish_match = 5; //匹配惩罚
-    repeated CharacterPt cters = 6; //玩家解锁的角色数组
+    uint32 grade = 3;//grade
+    uint32 grade_frame = 4;//grade像框
+    uint32 soul = 5;//灵魂头像
+    LeaguePt league = 6;            //段位数据
+    PunishMatchPt punish_match = 7; //匹配惩罚
+    repeated CharacterPt cters = 8; //玩家解锁的角色数组
 }
 
 ///游戏服务器发给房间服务器，快速开始

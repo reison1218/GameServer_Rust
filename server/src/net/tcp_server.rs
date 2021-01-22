@@ -2,7 +2,9 @@ use tools::protos::base::{PlayerPt, PunishMatchPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
+use crate::entity::grade_frame::GradeFrame;
 use crate::entity::league::League;
+use crate::entity::soul::Soul;
 use crate::entity::user::{insert_characters, insert_league, insert_user, UserData};
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
@@ -155,9 +157,19 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         //玩家段位数据
         let league = League::new(user.user_id, user.nick_name.clone());
         user.set_last_character(c.get_frist());
+        //grade相框
+        let grade_frame = GradeFrame::new(user.user_id);
+        //灵魂头像
+        let soul = Soul::new(user.user_id);
 
         //封装到userdata里
-        ud = Some(UserData::new(user.clone(), c.clone(), league.clone()));
+        ud = Some(UserData::new(
+            user.clone(),
+            c.clone(),
+            league.clone(),
+            grade_frame.clone(),
+            soul.clone(),
+        ));
 
         //异步持久化到db
         async_std::task::spawn(insert_user(user));
@@ -177,18 +189,22 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     //     let mut sign_in_Time = str.parse::<NaiveDateTime>();
     //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
     // }
-
-    let mut time = user.get_user_info_mut_ref().sync_time;
+    let user_info = user.get_user_info_ref();
+    let mut time = user_info.sync_time;
     lr.sync_time = time;
     let mut ppt = PlayerPt::new();
-    let nick_name = user.get_user_info_mut_ref().nick_name.as_str();
+    let nick_name = user_info.nick_name.as_str();
     ppt.set_nick_name(nick_name.to_string());
-    let last_character = user.get_user_info_ref().last_character;
+    let last_character = user_info.last_character;
     ppt.set_last_character(last_character);
     ppt.dlc.push(1);
-    let mut punish_match_pt: PunishMatchPt = user.get_user_info_mut_ref().punish_match.into();
-    punish_match_pt.start_time /= 1000;
+    let punish_match_pt: PunishMatchPt = user_info.punish_match.into();
     ppt.set_punish_match(punish_match_pt);
+    ppt.set_grade(user_info.grade);
+    ppt.set_grade_frame(user_info.grade_frame);
+    ppt.set_soul(user_info.soul);
+    ppt.set_league(user.league.into_league_pt());
+
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
     time = 0;
     let res =
@@ -221,6 +237,12 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     }
     let res = protobuf::RepeatedField::from(c_v);
     lr.set_cters(res);
+
+    //封装grade相框
+    lr.grade_frames
+        .extend_from_slice(user.grade_frame.grade_frames.as_slice());
+    //封装soul头像
+    lr.souls.extend_from_slice(user.soul.souls.as_slice());
     lr
 }
 

@@ -28,7 +28,11 @@ message PlayerPt{
     string nick_name = 1;//昵称
     uint32 last_character = 2;//最近一次使用到角色id
     PunishMatchPt punish_match = 3; //匹配惩罚
-	repeated uint32 dlc = 4;//dlc
+    uint32 grade = 4;//grade
+    uint32 grade_frame = 5;//grade像框
+    uint32 soul = 6;//灵魂头像
+    LeaguePt  league = 7;//玩家段位数据
+	repeated uint32 dlc = 8;//dlc
 }
 
 // 资源封装
@@ -45,9 +49,11 @@ message MemberPt{
     CharacterPt cter = 3;//玩家已经选择的角色数据
     uint32 state = 4;//玩家状态，是否已经准备 1:未准备，2：准备
     uint32 grade = 5;//角色等级
-    uint32 team_id = 6;//玩家所属队伍id
-    uint64 join_time = 7;//玩家进入房间的时间
-    LeaguePt league = 8;//段位数据
+    uint32 grade_frame = 6;//grade像框
+    uint32 soul = 7;//灵魂头像
+    uint32 team_id = 8;//玩家所属队伍id
+    uint64 join_time = 9;//玩家进入房间的时间
+    LeaguePt league = 10;//段位数据
 }
 
 message WorldCellPt{
@@ -162,7 +168,7 @@ message CellBuffPt{
 
 //惩罚数据
 message PunishMatchPt{
-    int64 start_time = 1;           //开始时间
+    int64 start_time = 1;           //开始时间(unix时间戳，毫秒数)
     uint32 punish_id = 2;            //惩罚id
 }
 
@@ -170,7 +176,7 @@ message PunishMatchPt{
 message LeaguePt{
     int32 league_score = 1;//玩家总积分
     int32 league_id = 2;//段位id
-    int64  league_time = 3;//进入段位时间
+    int64  league_time = 3;//进入段位时间(客户端不要管这个属性)
 }
 
 message RankInfoPt{

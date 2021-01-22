@@ -14,7 +14,6 @@ use log::{error, info, warn};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;
 use std::env;
-use std::str::FromStr;
 use std::sync::atomic::AtomicU32;
 use tools::conf::Conf;
 use tools::my_log::init_log;
@@ -120,6 +119,7 @@ fn init_season() {
         let value: Value = value.unwrap();
         let map = value.as_object();
         if map.is_none() {
+            warn!("the map is None for JsonValue!");
             return;
         }
         let map = map.unwrap();
@@ -139,22 +139,16 @@ fn init_season() {
         SEASON.season_id = season_id as u32;
         let next_update_time = map.get("next_update_time");
         if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
             return;
         }
         let next_update_time = next_update_time.unwrap();
-        let next_update_time = next_update_time.as_str();
+        let next_update_time = next_update_time.as_u64();
         if next_update_time.is_none() {
-            warn!("the next_update_time could not to &str!");
+            warn!("the next_update_time is None!");
             return;
         }
         let next_update_time = next_update_time.unwrap();
-        let next_update_time = chrono::NaiveDateTime::from_str(next_update_time);
-        if let Err(e) = next_update_time {
-            error!("{:?}", e);
-            return;
-        }
-        let next_update_time = next_update_time.unwrap();
-        let next_update_time = next_update_time.timestamp_millis() as u64;
         SEASON.next_update_time = next_update_time;
     }
 }

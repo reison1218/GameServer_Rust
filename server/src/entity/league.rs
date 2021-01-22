@@ -2,17 +2,18 @@ use super::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::str::FromStr;
-use tools::protos::base::LeaguePt;
+use tools::protos::base::{LeaguePt, RankInfoPt};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct League {
-    pub id: i8,              //段位id
-    pub user_id: u32,        //玩家id
-    pub name: String,        //玩家名称
-    pub score: i32,          //积分
-    pub rank: i32,           //排名
-    pub cters: Vec<u32>,     //常用的三个角色
+    pub id: i8,       //段位id
+    pub user_id: u32, //玩家id
+    pub name: String, //玩家名称
+    pub score: i32,   //积分
+    #[serde(skip_serializing)]
+    pub rank: i32, //排名
+    pub cters: Vec<u32>, //常用的三个角色
     pub league_time: String, //进入段位时间
     #[serde(skip_serializing)]
     pub version: Cell<u32>, //版本号
@@ -67,12 +68,26 @@ impl League {
         self.add_version();
     }
 
-    pub fn into(&self) -> LeaguePt {
+    pub fn into_league_pt(&self) -> LeaguePt {
         let mut lp = LeaguePt::new();
         lp.league_id = self.id as i32;
         lp.league_score = self.score;
         lp.league_time = self.get_league_time();
         lp
+    }
+
+    pub fn into_rank_pt(&self) -> RankInfoPt {
+        if self.rank < 0 || self.id == 0 {
+            return RankInfoPt::new();
+        }
+        let mut ri = RankInfoPt::new();
+        ri.user_id = self.user_id;
+        ri.league_id = self.id as u32;
+        ri.league_score = self.score;
+        ri.cters.extend_from_slice(self.cters.as_slice());
+        ri.rank = self.rank;
+        ri.name = self.name.clone();
+        ri
     }
 }
 

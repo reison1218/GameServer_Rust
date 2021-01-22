@@ -16,7 +16,6 @@ use crate::mgr::timer_mgr::init_timer;
 use log::{error, info, warn};
 use serde_json::Value;
 use std::env;
-use std::str::FromStr;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
 use tools::my_log::init_log;
@@ -133,6 +132,7 @@ fn init_season() {
             error!("redis do not has season data about game:{}", 101);
             return;
         }
+        let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
         let str = res.unwrap();
         let value = serde_json::from_str(str.as_str());
         if let Err(e) = value {
@@ -142,6 +142,7 @@ fn init_season() {
         let value: Value = value.unwrap();
         let map = value.as_object();
         if map.is_none() {
+            warn!("the map is None for JsonValue!");
             return;
         }
         let map = map.unwrap();
@@ -161,22 +162,16 @@ fn init_season() {
         SEASON.season_id = season_id as u32;
         let next_update_time = map.get("next_update_time");
         if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
             return;
         }
         let next_update_time = next_update_time.unwrap();
-        let next_update_time = next_update_time.as_str();
+        let next_update_time = next_update_time.as_u64();
         if next_update_time.is_none() {
-            warn!("the next_update_time could not to &str!");
+            warn!("the next_update_time is None!");
             return;
         }
         let next_update_time = next_update_time.unwrap();
-        let next_update_time = chrono::NaiveDateTime::from_str(next_update_time);
-        if let Err(e) = next_update_time {
-            error!("{:?}", e);
-            return;
-        }
-        let next_update_time = next_update_time.unwrap();
-        let next_update_time = next_update_time.timestamp_millis() as u64;
         SEASON.next_update_time = next_update_time;
     }
 }

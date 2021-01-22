@@ -39,6 +39,13 @@ impl RankMgr {
         self.sender.as_mut().unwrap().send(bytes);
     }
 
+    ///转发到游戏中心服,然后推送给所有特定服务器
+    ///比如cmd是游戏服要处理的命令，那么就会推送给全部游戏服
+    pub fn push_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let bytes = Packet::build_push_packet_bytes(cmd, user_id, bytes, true, false);
+        self.sender.as_mut().unwrap().send(bytes);
+    }
+
     ///转发到游戏中心服
     pub fn send_2_server_direction(
         &mut self,

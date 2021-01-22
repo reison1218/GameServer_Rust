@@ -1433,6 +1433,8 @@ pub struct PlayerBattlePt {
     pub user_id: u32,
     pub nick_name: ::std::string::String,
     pub grade: u32,
+    pub grade_frame: u32,
+    pub soul: u32,
     pub league: ::protobuf::SingularPtrField<super::base::LeaguePt>,
     pub punish_match: ::protobuf::SingularPtrField<super::base::PunishMatchPt>,
     pub cters: ::protobuf::RepeatedField<super::base::CharacterPt>,
@@ -1508,7 +1510,37 @@ impl PlayerBattlePt {
         self.grade = v;
     }
 
-    // .protos.LeaguePt league = 4;
+    // uint32 grade_frame = 4;
+
+
+    pub fn get_grade_frame(&self) -> u32 {
+        self.grade_frame
+    }
+    pub fn clear_grade_frame(&mut self) {
+        self.grade_frame = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade_frame(&mut self, v: u32) {
+        self.grade_frame = v;
+    }
+
+    // uint32 soul = 5;
+
+
+    pub fn get_soul(&self) -> u32 {
+        self.soul
+    }
+    pub fn clear_soul(&mut self) {
+        self.soul = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_soul(&mut self, v: u32) {
+        self.soul = v;
+    }
+
+    // .protos.LeaguePt league = 6;
 
 
     pub fn get_league(&self) -> &super::base::LeaguePt {
@@ -1541,7 +1573,7 @@ impl PlayerBattlePt {
         self.league.take().unwrap_or_else(|| super::base::LeaguePt::new())
     }
 
-    // .protos.PunishMatchPt punish_match = 5;
+    // .protos.PunishMatchPt punish_match = 7;
 
 
     pub fn get_punish_match(&self) -> &super::base::PunishMatchPt {
@@ -1574,7 +1606,7 @@ impl PlayerBattlePt {
         self.punish_match.take().unwrap_or_else(|| super::base::PunishMatchPt::new())
     }
 
-    // repeated .protos.CharacterPt cters = 6;
+    // repeated .protos.CharacterPt cters = 8;
 
 
     pub fn get_cters(&self) -> &[super::base::CharacterPt] {
@@ -1642,12 +1674,26 @@ impl ::protobuf::Message for PlayerBattlePt {
                     self.grade = tmp;
                 },
                 4 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.league)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.grade_frame = tmp;
                 },
                 5 => {
-                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.punish_match)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.soul = tmp;
                 },
                 6 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.league)?;
+                },
+                7 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.punish_match)?;
+                },
+                8 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
                 },
                 _ => {
@@ -1670,6 +1716,12 @@ impl ::protobuf::Message for PlayerBattlePt {
         }
         if self.grade != 0 {
             my_size += ::protobuf::rt::value_size(3, self.grade, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.grade_frame != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.grade_frame, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.soul != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.soul, ::protobuf::wire_format::WireTypeVarint);
         }
         if let Some(ref v) = self.league.as_ref() {
             let len = v.compute_size();
@@ -1698,18 +1750,24 @@ impl ::protobuf::Message for PlayerBattlePt {
         if self.grade != 0 {
             os.write_uint32(3, self.grade)?;
         }
+        if self.grade_frame != 0 {
+            os.write_uint32(4, self.grade_frame)?;
+        }
+        if self.soul != 0 {
+            os.write_uint32(5, self.soul)?;
+        }
         if let Some(ref v) = self.league.as_ref() {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
         if let Some(ref v) = self.punish_match.as_ref() {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(7, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
         for v in &self.cters {
-            os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(8, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -1766,6 +1824,16 @@ impl ::protobuf::Message for PlayerBattlePt {
                 |m: &PlayerBattlePt| { &m.grade },
                 |m: &mut PlayerBattlePt| { &mut m.grade },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "grade_frame",
+                |m: &PlayerBattlePt| { &m.grade_frame },
+                |m: &mut PlayerBattlePt| { &mut m.grade_frame },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "soul",
+                |m: &PlayerBattlePt| { &m.soul },
+                |m: &mut PlayerBattlePt| { &mut m.soul },
+            ));
             fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::LeaguePt>>(
                 "league",
                 |m: &PlayerBattlePt| { &m.league },
@@ -1800,6 +1868,8 @@ impl ::protobuf::Clear for PlayerBattlePt {
         self.user_id = 0;
         self.nick_name.clear();
         self.grade = 0;
+        self.grade_frame = 0;
+        self.soul = 0;
         self.league.clear();
         self.punish_match.clear();
         self.cters.clear();
@@ -2174,16 +2244,17 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0bB_R_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.S\
     ummaryDataPtR\x0csummaryDatas\"]\n\x14UPDATE_SEASON_NOTICE\x12\x1b\n\tse\
     ason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10next_update_time\x18\
-    \x02\x20\x01(\x04R\x0enextUpdateTime\"\xeb\x01\n\x0ePlayerBattlePt\x12\
+    \x02\x20\x01(\x04R\x0enextUpdateTime\"\xa0\x02\n\x0ePlayerBattlePt\x12\
     \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\
     \x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05g\
-    rade\x12(\n\x06league\x18\x04\x20\x01(\x0b2\x10.protos.LeaguePtR\x06leag\
-    ue\x128\n\x0cpunish_match\x18\x05\x20\x01(\x0b2\x15.protos.PunishMatchPt\
-    R\x0bpunishMatch\x12)\n\x05cters\x18\x06\x20\x03(\x0b2\x13.protos.Charac\
-    terPtR\x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_match\x18\
-    \x01\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"9\n\rR_G_SY\
-    NC_RANK\x12(\n\x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05\
-    ranksb\x06proto3\
+    rade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\x01(\rR\ngradeFrame\x12\x12\n\
+    \x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\n\x06league\x18\x06\x20\x01(\
+    \x0b2\x10.protos.LeaguePtR\x06league\x128\n\x0cpunish_match\x18\x07\x20\
+    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05cters\x18\
+    \x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH\
+    _MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.PunishMat\
+    chPtR\x0bpunishMatch\"9\n\rR_G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\x03\
+    (\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

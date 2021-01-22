@@ -1,7 +1,9 @@
 use super::*;
-use crate::db::table_contants::{CHARACTER, LEAGUE, USER};
+use crate::db::table_contants::{CHARACTER, GRADE_FRAME, LEAGUE, SOUL, USER};
 use crate::entity::character::{Character, Characters};
+use crate::entity::grade_frame::GradeFrame;
 use crate::entity::league::League;
+use crate::entity::soul::Soul;
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::Cell;
 
@@ -14,6 +16,10 @@ pub struct UserData {
     character: Characters,
     ///玩家段位数据
     pub league: League,
+    ///玩家grade相框
+    pub grade_frame: GradeFrame,
+    ///灵魂头像
+    pub soul: Soul,
     ///版本号（大于0代表有修改，需要update到db）
     version: Cell<u32>,
 }
@@ -30,11 +36,19 @@ impl UserData {
     }
 
     ///构造函数，创建一个新的userdata结构体
-    pub fn new(user_info: User, character: Characters, league: League) -> UserData {
+    pub fn new(
+        user_info: User,
+        character: Characters,
+        league: League,
+        grade_frame: GradeFrame,
+        soul: Soul,
+    ) -> UserData {
         UserData {
             user_info,
             character,
             league,
+            grade_frame,
+            soul,
             version: Cell::new(0),
         }
     }
@@ -54,6 +68,20 @@ impl UserData {
             league = Some(res);
         }
 
+        let mut gf = GradeFrame::query(GRADE_FRAME, user_id);
+        //grade相框数据
+        if gf.is_none() {
+            let res = GradeFrame::new(user.user_id);
+            async_std::task::spawn(insert_grade_frame(res.clone()));
+            gf = Some(res);
+        }
+        let mut soul = Soul::query(SOUL, user_id);
+        //soul头像数据
+        if soul.is_none() {
+            let res = Soul::new(user.user_id);
+            async_std::task::spawn(insert_soul(res.clone()));
+            soul = Some(res);
+        }
         //初始化玩家角色数据
         let mut cters = Characters::query(CHARACTER, user_id);
         if cters.is_none() {
@@ -61,7 +89,13 @@ impl UserData {
             async_std::task::spawn(insert_characters(c.clone()));
             cters = Some(c);
         }
-        let ud = UserData::new(user, cters.unwrap(), league.unwrap());
+        let ud = UserData::new(
+            user,
+            cters.unwrap(),
+            league.unwrap(),
+            gf.unwrap(),
+            soul.unwrap(),
+        );
         Some(ud)
     }
     ///获得玩家id
@@ -170,6 +204,25 @@ pub async fn insert_characters(cter: Characters) {
 pub async fn insert_league(league: League) {
     info!("玩家段位数据不存在,现在创建玩家段位数据:{}", league.user_id);
     let res = League::insert(&league);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
+}
+
+pub async fn insert_grade_frame(grade_frame: GradeFrame) {
+    info!(
+        "玩家grade frame数据不存在,现在创建玩家grade frame数据:{}",
+        grade_frame.user_id
+    );
+    let res = GradeFrame::insert(&grade_frame);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
+}
+
+pub async fn insert_soul(soul: Soul) {
+    info!("玩家soul数据不存在,现在创建玩家soul数据:{}", soul.user_id);
+    let res = Soul::insert(&soul);
     if let Err(e) = res {
         error!("{:?}", e);
     }

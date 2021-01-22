@@ -43,7 +43,7 @@ use crate::test_async::async_main;
 use crate::web::test_http_client;
 use crate::web::{test_faster, test_http_server};
 use actix::{Actor, ContextFutureSpawner, SyncArbiter};
-use chrono::{Datelike, Local, Timelike, TimeZone, NaiveDateTime, Utc, DateTime};
+use chrono::{Datelike, Local, Timelike};
 use crossbeam::atomic::{AtomicCell, AtomicConsume};
 use crossbeam::sync::ShardedLock;
 use envmnt::{ExpandOptions, ExpansionType};
@@ -478,17 +478,9 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
-    println!("{}", std::mem::size_of::<ZZ>());
-    let str="2021-01-25 00:00:00";
-    let res = chrono::NaiveDateTime::parse_from_str(str,"%Y-%m-%d %H:%M:%S").unwrap();
-
-    println!("{:?}",res);
-
-
-
-
-    // res.datetime_from_str(&res,str,"%Y-%m-%d %H:%M:%S").unwrap();
-    // println!("{}",res.timestamp());
+    let v = vec![12, 3, 4];
+    println!("{:?}", v);
+    // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
     // calc_n2(50);

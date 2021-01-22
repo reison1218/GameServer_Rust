@@ -46,6 +46,8 @@ pub enum GameCode {
     SyncRank = 1011,
     //展示排行榜(客户端请求指令)
     ShowRank = 1012,
+    //修改grade相框和soul头像
+    ModifyGradeFrameAndSoul = 1013,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值
@@ -230,6 +232,8 @@ pub enum ClientCode {
     ConfirmIntoRoomNotice = 10061,
     //展示排行榜
     ShowRank = 10081,
+    //修改grade相框和soul头像
+    ModifyGradeFrameAndSoul = 10082,
     //最大命令号
     Max = 20000,
 }

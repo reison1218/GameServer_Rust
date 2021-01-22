@@ -141,7 +141,7 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
             }
             let bytes = bytes.unwrap();
             //下发到游戏服务器
-            lock.send_2_server(GameCode::SyncRank.into_u32(), 0, bytes);
+            lock.push_2_server(GameCode::SyncRank.into_u32(), 0, bytes);
             let res = take_time.elapsed().unwrap();
             info!("更新rank并下发排行榜快照到游戏服结束!耗时{:?}", res);
         }

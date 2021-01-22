@@ -186,6 +186,8 @@ pub struct S_USER_LOGIN {
     pub player_pt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
     pub resp: ::protobuf::RepeatedField<super::base::ResourcesPt>,
     pub cters: ::protobuf::RepeatedField<super::base::CharacterPt>,
+    pub grade_frames: ::std::vec::Vec<u32>,
+    pub souls: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -370,6 +372,56 @@ impl S_USER_LOGIN {
     pub fn take_cters(&mut self) -> ::protobuf::RepeatedField<super::base::CharacterPt> {
         ::std::mem::replace(&mut self.cters, ::protobuf::RepeatedField::new())
     }
+
+    // repeated uint32 grade_frames = 9;
+
+
+    pub fn get_grade_frames(&self) -> &[u32] {
+        &self.grade_frames
+    }
+    pub fn clear_grade_frames(&mut self) {
+        self.grade_frames.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade_frames(&mut self, v: ::std::vec::Vec<u32>) {
+        self.grade_frames = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_grade_frames(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.grade_frames
+    }
+
+    // Take field
+    pub fn take_grade_frames(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.grade_frames, ::std::vec::Vec::new())
+    }
+
+    // repeated uint32 souls = 10;
+
+
+    pub fn get_souls(&self) -> &[u32] {
+        &self.souls
+    }
+    pub fn clear_souls(&mut self) {
+        self.souls.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_souls(&mut self, v: ::std::vec::Vec<u32>) {
+        self.souls = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_souls(&mut self) -> &mut ::std::vec::Vec<u32> {
+        &mut self.souls
+    }
+
+    // Take field
+    pub fn take_souls(&mut self) -> ::std::vec::Vec<u32> {
+        ::std::mem::replace(&mut self.souls, ::std::vec::Vec::new())
+    }
 }
 
 impl ::protobuf::Message for S_USER_LOGIN {
@@ -436,6 +488,12 @@ impl ::protobuf::Message for S_USER_LOGIN {
                 8 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
                 },
+                9 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.grade_frames)?;
+                },
+                10 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.souls)?;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -475,6 +533,12 @@ impl ::protobuf::Message for S_USER_LOGIN {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
+        for value in &self.grade_frames {
+            my_size += ::protobuf::rt::value_size(9, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
+        for value in &self.souls {
+            my_size += ::protobuf::rt::value_size(10, *value, ::protobuf::wire_format::WireTypeVarint);
+        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -510,6 +574,12 @@ impl ::protobuf::Message for S_USER_LOGIN {
             os.write_tag(8, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
+        };
+        for v in &self.grade_frames {
+            os.write_uint32(9, *v)?;
+        };
+        for v in &self.souls {
+            os.write_uint32(10, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -589,6 +659,16 @@ impl ::protobuf::Message for S_USER_LOGIN {
                 |m: &S_USER_LOGIN| { &m.cters },
                 |m: &mut S_USER_LOGIN| { &mut m.cters },
             ));
+            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "grade_frames",
+                |m: &S_USER_LOGIN| { &m.grade_frames },
+                |m: &mut S_USER_LOGIN| { &mut m.grade_frames },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "souls",
+                |m: &S_USER_LOGIN| { &m.souls },
+                |m: &mut S_USER_LOGIN| { &mut m.souls },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_USER_LOGIN>(
                 "S_USER_LOGIN",
                 fields,
@@ -613,6 +693,8 @@ impl ::protobuf::Clear for S_USER_LOGIN {
         self.player_pt.clear();
         self.resp.clear();
         self.cters.clear();
+        self.grade_frames.clear();
+        self.souls.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1925,9 +2007,390 @@ impl ::protobuf::reflect::ProtobufValue for S_SHOW_RANK {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct C_MODIFY_GRADE_FRAME_AND_SOUL {
+    // message fields
+    pub soul: u32,
+    pub grade_frame: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn default() -> &'a C_MODIFY_GRADE_FRAME_AND_SOUL {
+        <C_MODIFY_GRADE_FRAME_AND_SOUL as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_MODIFY_GRADE_FRAME_AND_SOUL {
+    pub fn new() -> C_MODIFY_GRADE_FRAME_AND_SOUL {
+        ::std::default::Default::default()
+    }
+
+    // uint32 soul = 1;
+
+
+    pub fn get_soul(&self) -> u32 {
+        self.soul
+    }
+    pub fn clear_soul(&mut self) {
+        self.soul = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_soul(&mut self, v: u32) {
+        self.soul = v;
+    }
+
+    // uint32 grade_frame = 2;
+
+
+    pub fn get_grade_frame(&self) -> u32 {
+        self.grade_frame
+    }
+    pub fn clear_grade_frame(&mut self) {
+        self.grade_frame = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_grade_frame(&mut self, v: u32) {
+        self.grade_frame = v;
+    }
+}
+
+impl ::protobuf::Message for C_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.soul = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.grade_frame = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.soul != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.soul, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.grade_frame != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.grade_frame, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.soul != 0 {
+            os.write_uint32(1, self.soul)?;
+        }
+        if self.grade_frame != 0 {
+            os.write_uint32(2, self.grade_frame)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_MODIFY_GRADE_FRAME_AND_SOUL {
+        C_MODIFY_GRADE_FRAME_AND_SOUL::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "soul",
+                |m: &C_MODIFY_GRADE_FRAME_AND_SOUL| { &m.soul },
+                |m: &mut C_MODIFY_GRADE_FRAME_AND_SOUL| { &mut m.soul },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "grade_frame",
+                |m: &C_MODIFY_GRADE_FRAME_AND_SOUL| { &m.grade_frame },
+                |m: &mut C_MODIFY_GRADE_FRAME_AND_SOUL| { &mut m.grade_frame },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_MODIFY_GRADE_FRAME_AND_SOUL>(
+                "C_MODIFY_GRADE_FRAME_AND_SOUL",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static C_MODIFY_GRADE_FRAME_AND_SOUL {
+        static instance: ::protobuf::rt::LazyV2<C_MODIFY_GRADE_FRAME_AND_SOUL> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(C_MODIFY_GRADE_FRAME_AND_SOUL::new)
+    }
+}
+
+impl ::protobuf::Clear for C_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn clear(&mut self) {
+        self.soul = 0;
+        self.grade_frame = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_MODIFY_GRADE_FRAME_AND_SOUL {
+    // message fields
+    pub is_succ: bool,
+    pub err_mess: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn default() -> &'a S_MODIFY_GRADE_FRAME_AND_SOUL {
+        <S_MODIFY_GRADE_FRAME_AND_SOUL as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_MODIFY_GRADE_FRAME_AND_SOUL {
+    pub fn new() -> S_MODIFY_GRADE_FRAME_AND_SOUL {
+        ::std::default::Default::default()
+    }
+
+    // bool is_succ = 1;
+
+
+    pub fn get_is_succ(&self) -> bool {
+        self.is_succ
+    }
+    pub fn clear_is_succ(&mut self) {
+        self.is_succ = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_is_succ(&mut self, v: bool) {
+        self.is_succ = v;
+    }
+
+    // string err_mess = 2;
+
+
+    pub fn get_err_mess(&self) -> &str {
+        &self.err_mess
+    }
+    pub fn clear_err_mess(&mut self) {
+        self.err_mess.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_mess(&mut self, v: ::std::string::String) {
+        self.err_mess = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_err_mess(&mut self) -> &mut ::std::string::String {
+        &mut self.err_mess
+    }
+
+    // Take field
+    pub fn take_err_mess(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for S_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.is_succ = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.is_succ != false {
+            my_size += 2;
+        }
+        if !self.err_mess.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.err_mess);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.is_succ != false {
+            os.write_bool(1, self.is_succ)?;
+        }
+        if !self.err_mess.is_empty() {
+            os.write_string(2, &self.err_mess)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_MODIFY_GRADE_FRAME_AND_SOUL {
+        S_MODIFY_GRADE_FRAME_AND_SOUL::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                "is_succ",
+                |m: &S_MODIFY_GRADE_FRAME_AND_SOUL| { &m.is_succ },
+                |m: &mut S_MODIFY_GRADE_FRAME_AND_SOUL| { &mut m.is_succ },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "err_mess",
+                |m: &S_MODIFY_GRADE_FRAME_AND_SOUL| { &m.err_mess },
+                |m: &mut S_MODIFY_GRADE_FRAME_AND_SOUL| { &mut m.err_mess },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_MODIFY_GRADE_FRAME_AND_SOUL>(
+                "S_MODIFY_GRADE_FRAME_AND_SOUL",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_MODIFY_GRADE_FRAME_AND_SOUL {
+        static instance: ::protobuf::rt::LazyV2<S_MODIFY_GRADE_FRAME_AND_SOUL> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_MODIFY_GRADE_FRAME_AND_SOUL::new)
+    }
+}
+
+impl ::protobuf::Clear for S_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn clear(&mut self) {
+        self.is_succ = false;
+        self.err_mess.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_MODIFY_GRADE_FRAME_AND_SOUL {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"'\n\x0cC_USER_LOGIN\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\xb4\x02\n\x0cS_USE\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\xed\x02\n\x0cS_USE\
     R_LOGIN\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
     \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\
     \x20\x01(\rR\x08syncTime\x12&\n\x0flast_login_time\x18\x04\x20\x01(\rR\r\
@@ -1935,18 +2398,24 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ffTime\x12-\n\tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08p\
     layerPt\x12'\n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04\
     resp\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ct\
-    ers\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\x20\x01(\x04R\x07sysT\
-    ime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\x20\x01(\x0b2\x10.prot\
-    os.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\x20\x03(\x0b2\x13.protos\
-    .ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\x17\n\x07is_succ\x18\x01\
-    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
-    rMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08syncTime\"1\n\x12C_MOD\
-    IFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickName\"H\n\
-    \x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
-    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\r\n\x0bC_SHOW\
-    _RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tself_rank\x18\x01\x20\x01(\x0b2\x12.pr\
-    otos.RankInfoPtR\x08selfRank\x12(\n\x05ranks\x18\x02\x20\x03(\x0b2\x12.p\
-    rotos.RankInfoPtR\x05ranksb\x06proto3\
+    ers\x12!\n\x0cgrade_frames\x18\t\x20\x03(\rR\x0bgradeFrames\x12\x14\n\
+    \x05souls\x18\n\x20\x03(\rR\x05souls\"'\n\nHEART_BEAT\x12\x19\n\x08sys_t\
+    ime\x18\x01\x20\x01(\x04R\x07sysTime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_\
+    pt\x18\x01\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\
+    \x18\x02\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DA\
+    TA\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
+    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\
+    \x01(\rR\x08syncTime\"1\n\x12C_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\
+    \x01\x20\x01(\tR\x08nickName\"H\n\x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_\
+    succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\
+    \x01(\tR\x07errMess\"\r\n\x0bC_SHOW_RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tsel\
+    f_rank\x18\x01\x20\x01(\x0b2\x12.protos.RankInfoPtR\x08selfRank\x12(\n\
+    \x05ranks\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"T\n\x1d\
+    C_MODIFY_GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\rR\x04s\
+    oul\x12\x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\n\x1dS_M\
+    ODIFY_GRADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
+    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMessb\x06prot\
+    o3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

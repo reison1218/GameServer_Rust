@@ -19,6 +19,9 @@ message S_USER_LOGIN {
    PlayerPt player_pt = 6;//玩家记录信息
    repeated ResourcesPt resp= 7; //玩家资源
    repeated CharacterPt cters = 8;//玩家角色
+   repeated uint32 grade_frames = 9;//玩家grade相框
+   repeated uint32 souls = 10;//玩家soul头像
+
 }
 
 //心跳包请求，返回同一个，请求需要带参数
@@ -67,4 +70,18 @@ message S_SHOW_RANK{
   RankInfoPt self_rank = 1;//自己的排行榜信息，如果在排行榜里面就有数据，不在就没有
   repeated RankInfoPt ranks = 2;//排行榜信息
 
+}
+
+//请求修改grade相框和soul头像
+//cmd:1013
+message C_MODIFY_GRADE_FRAME_AND_SOUL{
+  uint32 soul = 1;//灵魂头像
+  uint32 grade_frame = 2;//grade相框
+}
+
+//请求修改grade相框和soul头像返回
+//cmd:1013
+message S_MODIFY_GRADE_FRAME_AND_SOUL{
+  bool is_succ = 1;//是否成功;
+  string err_mess = 2;//错误信息;
 }

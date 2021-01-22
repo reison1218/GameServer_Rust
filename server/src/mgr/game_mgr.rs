@@ -1,7 +1,7 @@
 use crate::entity::user::UserData;
 use crate::entity::user_info::{
-    create_room, join_room, modify_nick_name, punish_match, search_room, show_rank, summary,
-    sync_rank,
+    create_room, join_room, modify_grade_frame_and_soul, modify_nick_name, punish_match,
+    search_room, show_rank, summary, sync_rank,
 };
 use crate::entity::{Entity, EntityData};
 use crate::SEASON;
@@ -103,6 +103,14 @@ impl GameMgr {
             if ud.get_league_ref().get_version() > 0 {
                 v.push(ud.get_league_mut_ref().try_clone_for_db());
             }
+            //grade相框数据
+            if ud.grade_frame.get_version() > 0 {
+                v.push(ud.grade_frame.try_clone_for_db());
+            }
+            //soul头像数据
+            if ud.soul.get_version() > 0 {
+                v.push(ud.soul.try_clone_for_db());
+            }
             //由于这里是深拷贝，所以在这里提前清空版本号，不然在接收方那边执行update，清空的版本号也是clone的
             ud.clear_version();
         }
@@ -156,6 +164,10 @@ impl GameMgr {
             .insert(GameCode::SyncRank.into_u32(), sync_rank);
         self.cmd_map
             .insert(GameCode::ShowRank.into_u32(), show_rank);
+        self.cmd_map.insert(
+            GameCode::ModifyGradeFrameAndSoul.into_u32(),
+            modify_grade_frame_and_soul,
+        );
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
     }
 }

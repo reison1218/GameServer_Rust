@@ -39,6 +39,8 @@ pub struct Member {
     pub user_id: u32,                   //玩家id
     pub nick_name: String,              //玩家昵称
     pub grade: u8,                      //玩家grade
+    pub grade_frame: u32,               //玩家grade相框
+    pub soul: u32,                      //灵魂
     pub league: League,                 //段位数据
     pub state: MemberState,             //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
@@ -93,6 +95,8 @@ impl From<PlayerBattlePt> for Member {
         member.user_id = pbp.user_id;
         member.state = MemberState::NotReady;
         member.grade = pbp.grade as u8;
+        member.grade_frame = pbp.grade_frame;
+        member.soul = pbp.soul;
 
         let league = League::from(pbp.get_league());
         member.league = league;
@@ -117,6 +121,8 @@ impl Into<MemberPt> for Member {
         mp.user_id = self.get_user_id();
         mp.state = self.state as u32;
         mp.grade = self.grade as u32;
+        mp.grade_frame = self.grade_frame;
+        mp.soul = self.soul;
         mp.nick_name = self.nick_name.clone();
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;

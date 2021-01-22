@@ -10,7 +10,10 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RankCode, RoomCode};
 use tools::protos::base::PunishMatchPt;
-use tools::protos::protocol::{C_MODIFY_NICK_NAME, S_MODIFY_NICK_NAME, S_SHOW_RANK};
+use tools::protos::protocol::{
+    C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_MODIFY_GRADE_FRAME_AND_SOUL,
+    S_MODIFY_NICK_NAME, S_SHOW_RANK,
+};
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
     PlayerBattlePt, B_R_G_PUNISH_MATCH, B_S_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
@@ -29,6 +32,8 @@ pub struct User {
     pub ol: bool,          //是否在线
     pub nick_name: String, //玩家昵称
     pub grade: u32,        //玩家等级
+    pub soul: u32,         //灵魂头像
+    pub grade_frame: u32,  //grade像框
     #[serde(skip_serializing_if = "String::is_empty")]
     pub last_login_time: String, //上次登陆时间
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -363,8 +368,10 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    pbp.set_grade_frame(user_info.grade_frame);
+    pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into();
+    let lp = user_data.get_league_ref().into_league_pt();
     pbp.set_league(lp);
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
@@ -412,8 +419,10 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    pbp.set_grade_frame(user_info.grade_frame);
+    pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into();
+    let lp = user_data.get_league_ref().into_league_pt();
     pbp.set_league(lp);
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
@@ -432,6 +441,61 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+///修改grade相框和soul头像
+pub fn modify_grade_frame_and_soul(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let user_data = gm.users.get_mut(&user_id);
+    if user_data.is_none() {
+        warn!("could not find user_data for user_id {}", user_id);
+        return Ok(());
+    }
+    let user_data = user_data.unwrap();
+    let mut proto = C_MODIFY_GRADE_FRAME_AND_SOUL::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    let grade_frame = proto.get_grade_frame();
+    let soul = proto.soul;
+    let mut res_proto = S_MODIFY_GRADE_FRAME_AND_SOUL::new();
+    res_proto.is_succ = true;
+    if grade_frame == 0 && soul == 0 {
+        res_proto.is_succ = false;
+        res_proto.err_mess = "params is invalid!".to_owned();
+        warn!("params is invalid!");
+    }
+
+    if grade_frame > 0 && !user_data.grade_frame.grade_frames.contains(&grade_frame) {
+        let str = format!("this player do not have this grade_frame:{}!", grade_frame);
+        res_proto.is_succ = false;
+        res_proto.err_mess = str.clone();
+        warn!("{:?}", str.as_str());
+    } else {
+        let res = user_data.get_user_info_mut_ref();
+        res.grade_frame = grade_frame;
+    }
+
+    if soul > 0 && !user_data.soul.souls.contains(&soul) {
+        let str = format!("this player do not have this soul:{}!", soul);
+        res_proto.is_succ = false;
+        res_proto.err_mess = str.clone();
+        warn!("{:?}", str.as_str());
+    } else {
+        let res = user_data.get_user_info_mut_ref();
+        res.soul = soul;
+    }
+    //返回客户端
+    let bytes = res_proto.write_to_bytes();
+    match bytes {
+        Ok(bytes) => gm.send_2_client(ClientCode::ModifyGradeFrameAndSoul, user_id, bytes),
+        Err(e) => {
+            error!("{:?}", e)
+        }
+    }
+    return Ok(());
+}
+
 ///同步排行榜快照
 pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
@@ -445,12 +509,16 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("could not find user_data for user_id {}", user_id);
         return Ok(());
     }
+    let user_data = user_data.unwrap();
+
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
+    //ssr.set_self_rank(user_data.league.into_rank_pt());
     let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
     if let Some(res) = res {
         ssr.set_self_rank(res.clone());
     }
+
     //封装另外100个
     for rank in gm.rank[0..100].iter() {
         ssr.ranks.push(rank.clone());
@@ -530,8 +598,10 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     pbp.set_user_id(user_id);
     pbp.set_nick_name(user_info.get_nick_name().to_owned());
     pbp.set_grade(user_info.grade);
+    pbp.set_grade_frame(user_info.grade_frame);
+    pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into();
+    let lp = user_data.get_league_ref().into_league_pt();
     pbp.set_league(lp);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());

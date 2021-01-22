@@ -1,5 +1,7 @@
 pub mod character;
+pub mod grade_frame;
 pub mod league;
+pub mod soul;
 pub mod user;
 pub mod user_info;
 

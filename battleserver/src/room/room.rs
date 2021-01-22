@@ -833,7 +833,7 @@ impl Room {
                     task.delay = time + 500;
                 }
                 Err(e) => {
-                    task.delay = 5000_u64;
+                    task.delay = 20000_u64;
                     error!("{:?}", e);
                 }
             }
