@@ -31,7 +31,13 @@ impl Characters {
         v.par_sort_unstable_by(|a, b| b.1.cmp(&a.1));
         self.add_version();
         let mut res_v = Vec::new();
-        for (cter_id, _) in v {
+        for (cter_id, use_count) in v {
+            if use_count<=0{
+                continue;
+            }
+            if res_v.len()>=3{
+                break;
+            }
             res_v.push(cter_id);
         }
         res_v

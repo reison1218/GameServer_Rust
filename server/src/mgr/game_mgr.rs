@@ -19,10 +19,15 @@ use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
+
+pub struct RankInfoPtPtr(pub *const RankInfoPt);
+unsafe impl Send for RankInfoPtPtr {}
+unsafe impl Sync for RankInfoPtPtr {}
 ///gameMgr结构体
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
     pub rank: Vec<RankInfoPt>,         //排行榜快照，从排行榜服务器那边过来的
+    pub user_rank:HashMap<u32,RankInfoPtPtr>,//玩家对应的排行榜数据，为了避免遍历
     sender: Option<TcpSender>,         //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
@@ -35,6 +40,7 @@ impl GameMgr {
             users,
             sender: None,
             rank: Vec::new(),
+            user_rank:HashMap::new(),
             cmd_map: HashMap::new(),
         };
         //初始化命令

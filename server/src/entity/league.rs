@@ -1,20 +1,18 @@
 use super::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use std::str::FromStr;
-use tools::protos::base::{LeaguePt, RankInfoPt};
+use tools::protos::base::LeaguePt;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct League {
-    pub id: i8,       //段位id
-    pub user_id: u32, //玩家id
-    pub name: String, //玩家名称
-    pub score: i32,   //积分
-    #[serde(skip_serializing)]
-    pub rank: i32, //排名
-    pub cters: Vec<u32>, //常用的三个角色
-    pub league_time: String, //进入段位时间
+    pub id: i8,              //段位id
+    pub user_id: u32,        //玩家id
+    pub name: String,        //玩家名称
+    pub score: i32,          //积分
+    pub rank: i32,           //排名
+    pub cters: Vec<u32>,     //常用的三个角色
+    pub league_time: i64,    //进入段位时间
     #[serde(skip_serializing)]
     pub version: Cell<u32>, //版本号
 }
@@ -24,13 +22,18 @@ unsafe impl Send for League {}
 unsafe impl Sync for League {}
 
 impl League {
+    pub fn set_cters(&mut self, cters: Vec<u32>) {
+        self.cters = cters;
+        self.add_version();
+    }
+
     pub fn round_reset(&mut self) {
         let old_id = self.id;
         self.id -= 1;
         if self.id <= 0 {
             self.id = 0;
             self.rank = -1;
-            self.league_time = String::new();
+            self.league_time = 0;
         } else {
             let res = crate::TEMPLATES
                 .get_league_temp_mgr_ref()
@@ -38,33 +41,17 @@ impl League {
                 .unwrap();
             if old_id != self.id {
                 self.score = res.score;
-                self.league_time = String::new();
+                self.league_time = 0;
             }
         }
         self.clear_version();
     }
-    pub fn get_league_time(&self) -> i64 {
-        let res = chrono::NaiveDateTime::from_str(self.league_time.as_str());
-        if let Ok(res) = res {
-            return res.timestamp_millis();
-        }
-        0
-    }
+
 
     pub fn update_from_pt(&mut self, pt: &LeaguePt) {
         self.id = pt.league_id as i8;
         self.score = pt.league_score;
-        let res;
-        let res2;
-        if pt.get_league_time() == 0 {
-            res = 0;
-            res2 = 0;
-        } else {
-            res = pt.get_league_time() / 1000;
-            res2 = pt.get_league_time() % 1000;
-        }
-        let res = chrono::NaiveDateTime::from_timestamp(res, res2 as u32);
-        self.league_time = res.format("%Y-%m-%dT%H:%M:%S").to_string();
+        self.league_time = pt.league_time;
         self.add_version();
     }
 
@@ -72,22 +59,8 @@ impl League {
         let mut lp = LeaguePt::new();
         lp.league_id = self.id as i32;
         lp.league_score = self.score;
-        lp.league_time = self.get_league_time();
+        lp.league_time = self.league_time;
         lp
-    }
-
-    pub fn into_rank_pt(&self) -> RankInfoPt {
-        if self.rank < 0 || self.id == 0 {
-            return RankInfoPt::new();
-        }
-        let mut ri = RankInfoPt::new();
-        ri.user_id = self.user_id;
-        ri.league_id = self.id as u32;
-        ri.league_score = self.score;
-        ri.cters.extend_from_slice(self.cters.as_slice());
-        ri.rank = self.rank;
-        ri.name = self.name.clone();
-        ri
     }
 }
 
@@ -152,6 +125,28 @@ impl Dao for League {
     fn get_table_name(&self) -> &str {
         "t_u_league"
     }
+
+    fn update(&self) -> Result<u32, String> {
+        let mut v: Vec<Value> = Vec::new();
+        v.push(self.user_id.to_value());
+        let mut sql = String::new();
+        sql.push_str("update ");
+        sql.push_str(self.get_table_name());
+        sql.push_str(self.get_update_sql().as_str());
+        sql.push_str(" where user_id=:user_id ");
+        let tem_id = self.get_tem_id();
+        if tem_id.is_some() {
+            sql.push_str("and tem_id=:tem_id");
+        }
+        let qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        if qr.is_err() {
+            let err = qr.err().unwrap();
+            error!("{:?}", err);
+            return Err(err.to_string());
+        }
+        self.clear_version();
+        Ok(1)
+    }
 }
 
 impl League {
@@ -161,6 +156,14 @@ impl League {
         l.name = name;
         l.rank = -1;
         l
+    }
+
+    pub fn get_update_sql(&self)->String{
+        let mut res = format!(r#" set content=JSON_REPLACE(content,"$.name",{:?}),content= JSON_REPLACE(content, "$.cters", JSON_ARRAY({:?})),content=JSON_REPLACE(content,"$.score",{}),content=JSON_REPLACE(content,"$.league_time",{:?})"#,self.name,self.cters.as_slice(),self.score,self.league_time);
+        res = res.replace("[", "");
+        res = res.replace("]", "");
+        res
+
     }
 
     pub fn query(table_name: &str, user_id: u32) -> Option<Self> {

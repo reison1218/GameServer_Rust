@@ -54,7 +54,7 @@ fn update_db(rm: Arc<Mutex<RankMgr>>) {
     let task_v_clone = task_v.clone();
     let m = async move {
         loop {
-            async_std::task::sleep(Duration::from_millis(60 * 5)).await;
+            async_std::task::sleep(Duration::from_millis(60 * 1000 * 5)).await;
             let mut lock = task_v_clone.lock().await;
             for sql in lock.iter() {
                 let res = crate::DB_POOL.exe_sql(sql.as_str(), None);
@@ -85,7 +85,6 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
         }
         None => time = 60 * 1000 * 10,
     }
-
     let m = async move {
         loop {
             async_std::task::sleep(Duration::from_millis(time)).await;
@@ -117,7 +116,7 @@ fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
                 .iter_mut()
                 .enumerate()
                 .for_each(|(index, ri)| {
-                    if ri.rank != index as i32 {
+                    if ri.rank != index as i32 && ri.league.id>0 {
                         ri.rank = index as i32;
                         // 更新数据库
                         let sql = format!(

@@ -478,8 +478,6 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
-    let v = vec![12, 3, 4];
-    println!("{:?}", v);
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};

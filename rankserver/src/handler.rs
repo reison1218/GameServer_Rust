@@ -54,28 +54,28 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let mut remove_v = Vec::new();
     //掉段处理
     rm.rank_vec.iter_mut().for_each(|x| {
-        let old_id = x.league.id;
         x.league.id -= 1;
+        let sql_res;
+        let mut task = Task::default();
         if x.league.id <= 0 {
             x.league.id = 0;
             x.rank = -1;
             x.league.league_time = 0;
-            let mut task = Task::default();
-            let res = format!(r#"update t_u_league set content = JSON_SET(content, "$.rank", -1,"$.score",0,"$.id",0,"$.league_time",'') where user_id = {}"#,x.user_id);
-            task.sql = res;
-            let _=task_task.send(task);
+            x.league.league_score = 0;
+            sql_res = format!(r#"update t_u_league set content = JSON_SET(content, "$.rank", -1),content=JSON_SET(content,"&.score",0),content=JSON_SET(content,"$.league_time",0),content=JSON_SET(content,"$.id",0) where user_id = {}"#,x.user_id);
             remove_v.push(x.user_id);
         }else {
             let res = crate::TEMPLATES
                 .get_league_temp_mgr_ref()
                 .get_temp(&x.league.id)
                 .unwrap();
-            if old_id != x.league.id {
-                let time = chrono::Local::now();
-                x.league.league_score = res.score;
-                x.league.league_time = time.timestamp_millis();
-            }
+            let time = chrono::Local::now();
+            x.league.league_score = res.score;
+            x.league.league_time = time.timestamp_millis();
+            sql_res = format!(r#"update t_u_league set content=JSON_SET(content,"&.score",{}),content=JSON_SET(content,"$.league_time",{}),content=JSON_SET(content,"$.id",{}) where user_id = {}"#,x.league.league_score,x.league.league_time,x.league.id,x.user_id);
         }
+        task.sql = sql_res;
+        let _=task_task.send(task);
     });
 
     //清除0段位处理
@@ -92,7 +92,7 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
-///更新赛季
+///更新排行榜请求指令
 pub fn update_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
     let mut bss = B_S_SUMMARY::new();

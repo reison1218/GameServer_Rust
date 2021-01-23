@@ -1,6 +1,7 @@
 use super::*;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::RoomType;
+use crate::mgr::game_mgr::RankInfoPtPtr;
 use chrono::Local;
 use protobuf::Message;
 use rayon::prelude::*;
@@ -9,7 +10,7 @@ use std::cell::Cell;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RankCode, RoomCode};
-use tools::protos::base::PunishMatchPt;
+use tools::protos::base::{PunishMatchPt, RankInfoPt};
 use tools::protos::protocol::{
     C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_MODIFY_GRADE_FRAME_AND_SOUL,
     S_MODIFY_NICK_NAME, S_SHOW_RANK,
@@ -512,10 +513,21 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
 
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
-    //ssr.set_self_rank(user_data.league.into_rank_pt());
-    let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
+    if !gm.user_rank.contains_key(&user_id){
+        let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
+        if let Some(res) = res {
+            let rip = RankInfoPtPtr(res as *const RankInfoPt);
+            gm.user_rank.insert(user_id, rip);
+        }
+    }
+    let res = gm.user_rank.get(&user_id);
     if let Some(res) = res {
-        ssr.set_self_rank(res.clone());
+        unsafe{
+            let res = res.0.as_ref();
+            if let Some(res) = res{
+                ssr.set_self_rank(res.clone());
+            }
+        }
     }
 
     //封装另外100个
@@ -542,6 +554,7 @@ pub fn sync_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let rank = rgsr.ranks.to_vec();
     gm.rank = rank;
+    gm.user_rank.clear();
     Ok(())
 }
 
@@ -643,6 +656,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_data = res.unwrap();
     //处理统计
     let cters = user_data.get_characters_mut_ref().add_use_times(cter_id);
+    user_data.league.set_cters(cters.clone());
     //处理持久化到数据库
     user_data.add_version();
     //如果是匹配房

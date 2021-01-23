@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use tools::protos::base::{LeaguePt, RankInfoPt, SummaryDataPt};
 
 pub mod rank_mgr;
@@ -45,12 +44,9 @@ impl RankInfo {
         }
         ri.league.id = js["id"].as_i64().unwrap() as i8;
         ri.league.league_score = js["score"].as_i64().unwrap() as i32;
-        let res = chrono::NaiveDateTime::from_str(js["league_time"].as_str().unwrap());
-        if let Err(e) = res {
-            anyhow::bail!("{:?}", e)
-        }
-        let time = res.unwrap();
-        ri.league.league_time = time.timestamp();
+
+        let time = js["league_time"].as_i64().unwrap();
+        ri.league.league_time = time;
         Ok(ri)
     }
 
@@ -75,7 +71,7 @@ impl RankInfo {
         RankInfo {
             user_id: sd_pt.user_id,
             name: sd_pt.name.clone(),
-            rank: 0,
+            rank: -1,
             cters,
             league,
         }
