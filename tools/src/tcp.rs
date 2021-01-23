@@ -160,18 +160,6 @@ pub mod tcp_server {
                             continue;
                         }
                         let token = next(&mut unique_token);
-                        //clone a handler for tcpstream
-                        let mut hd = handler.try_clone().await;
-
-                        //trigger the open event
-                        let res = hd.on_open(TcpSender {
-                            sender: sender.clone(),
-                            token: token.0,
-                        });
-                        block_on(res);
-
-                        //save the handler
-                        handler_map.insert(token.0, hd);
 
                         //register event for every tcpstream
                         let res = poll.registry().register(
@@ -185,6 +173,19 @@ pub mod tcp_server {
                         }
                         conn_map.write().unwrap().insert(token.0, connection);
                         info!("Accepted connection from: {}", client_address);
+
+                        //clone a handler for tcpstream
+                        let mut hd = handler.try_clone().await;
+
+                        //trigger the open event
+                        let res = hd.on_open(TcpSender {
+                            sender: sender.clone(),
+                            token: token.0,
+                        });
+                        block_on(res);
+
+                        //save the handler
+                        handler_map.insert(token.0, hd);
                     }
                     token => {
                         // (maybe) received an event for a TCP connection.
@@ -426,10 +427,10 @@ pub trait ClientHandler: Send + Sync {
         }
         let write = write.unwrap();
         let (sender, rec) = crossbeam::channel::bounded(102400);
-        //trigger socket open event
-        self.on_open(sender.clone()).await;
         //start reading the sender message
         read_sender_mess_client(rec, write);
+        //trigger socket open event
+        self.on_open(sender.clone()).await;
         //u8 array,for read data from socket client
         let mut read_bytes: [u8; 51200] = [0; 51200];
         info!("start read from {:?}", address);
