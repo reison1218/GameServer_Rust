@@ -153,6 +153,7 @@ pub mod tcp_server {
                             error!("{:?}", e);
                             continue;
                         }
+
                         let (mut connection, client_address) = result.unwrap();
                         let res = connection.set_nodelay(true);
                         if let Err(e) = res {
