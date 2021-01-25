@@ -103,10 +103,22 @@ pub unsafe fn change_map_cell_index(
 
     let map_ptr = battle_data.tile_map.map_cells.borrow_mut() as *mut [MapCell; 30];
     let source_map_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
+    let source_user_id = source_map_cell.user_id;
+    let (s_x, s_y) = (source_map_cell.x, source_map_cell.y);
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
+    let target_user_id = target_map_cell.user_id;
+    let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
 
-    //比较替换数据
+    //保留玩家数据和位置数据
     std::mem::swap(source_map_cell, target_map_cell);
+    source_map_cell.index = source_index;
+    source_map_cell.x = s_x;
+    source_map_cell.y = s_y;
+    target_map_cell.index = target_index;
+    target_map_cell.x = t_x;
+    target_map_cell.x = t_y;
+    source_map_cell.user_id = source_user_id;
+    target_map_cell.user_id = target_user_id;
 
     //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
     battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);

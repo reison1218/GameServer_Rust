@@ -12,6 +12,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 
+///保存玩家数据
 pub struct SavePlayerHttpHandler {
     gm: Arc<Mutex<GameMgr>>,
 }
@@ -34,17 +35,17 @@ impl HttpServerHandler for SavePlayerHttpHandler {
     }
 }
 
-pub struct StopPlayerHttpHandler {
+pub struct StopServerHttpHandler {
     gm: Arc<Mutex<GameMgr>>,
 }
 
-impl StopPlayerHttpHandler {
+impl StopServerHttpHandler {
     pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
-        StopPlayerHttpHandler { gm }
+        StopServerHttpHandler { gm }
     }
 }
 
-impl HttpServerHandler for StopPlayerHttpHandler {
+impl HttpServerHandler for StopServerHttpHandler {
     fn get_path(&self) -> &str {
         "exit"
     }

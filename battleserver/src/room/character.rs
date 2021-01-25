@@ -84,7 +84,8 @@ impl League {
                 .unwrap();
             if old_id != self.league_id {
                 self.score = res.score;
-                self.league_time = 0;
+                let time = chrono::Local::now();
+                self.league_time = time.timestamp_millis();
             }
         }
     }
@@ -107,9 +108,11 @@ impl League {
             return 0;
         }
         let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
-        let league_temp = mgr.get_temp(&self.league_id);
-        if let Err(_) = league_temp {
-            self.league_id = 0;
+        if score < 0 {
+            let league_temp = mgr.get_temp(&self.league_id);
+            if let Err(_) = league_temp {
+                self.league_id = 0;
+            }
         }
 
         let league_temp = mgr.get_league_by_score(self.score).unwrap();
@@ -122,10 +125,10 @@ impl League {
 
         if league_temp.id != self.get_league_id() {
             self.league_id = league_temp.id;
+        } else if self.get_league_id() > 0 && self.league_time == 0 {
             let time = chrono::Local::now();
             self.league_time = time.timestamp_millis();
         }
-
         self.score
     }
 }

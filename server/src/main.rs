@@ -5,7 +5,7 @@ mod mgr;
 mod net;
 use crate::db::dbtool::DbPool;
 use crate::mgr::game_mgr::GameMgr;
-use crate::net::http::{SavePlayerHttpHandler, StopPlayerHttpHandler};
+use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
 use tools::thread_pool::MyThreadPool;
 
@@ -187,7 +187,7 @@ fn init_temps() {
 fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
-    http_vec.push(Box::new(StopPlayerHttpHandler::new(gm.clone())));
+    http_vec.push(Box::new(StopServerHttpHandler::new(gm.clone())));
     let http_port: &str = CONF_MAP.get_str("http_port");
     async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }

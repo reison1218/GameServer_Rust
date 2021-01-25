@@ -6,13 +6,13 @@ use tools::protos::base::LeaguePt;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct League {
-    pub id: i8,              //段位id
-    pub user_id: u32,        //玩家id
-    pub name: String,        //玩家名称
-    pub score: i32,          //积分
-    pub rank: i32,           //排名
-    pub cters: Vec<u32>,     //常用的三个角色
-    pub league_time: i64,    //进入段位时间
+    pub id: i8,           //段位id
+    pub user_id: u32,     //玩家id
+    pub name: String,     //玩家名称
+    pub score: i32,       //积分
+    pub rank: i32,        //排名
+    pub cters: Vec<u32>,  //常用的三个角色
+    pub league_time: i64, //进入段位时间
     #[serde(skip_serializing)]
     pub version: Cell<u32>, //版本号
 }
@@ -41,12 +41,12 @@ impl League {
                 .unwrap();
             if old_id != self.id {
                 self.score = res.score;
-                self.league_time = 0;
+                let time = chrono::Local::now();
+                self.league_time = time.timestamp_millis();
             }
         }
         self.clear_version();
     }
-
 
     pub fn update_from_pt(&mut self, pt: &LeaguePt) {
         self.id = pt.league_id as i8;
@@ -158,12 +158,18 @@ impl League {
         l
     }
 
-    pub fn get_update_sql(&self)->String{
-        let mut res = format!(r#" set content=JSON_REPLACE(content,"$.name",{:?}),content= JSON_REPLACE(content, "$.cters", JSON_ARRAY({:?})),content=JSON_REPLACE(content,"$.score",{}),content=JSON_REPLACE(content,"$.league_time",{:?})"#,self.name,self.cters.as_slice(),self.score,self.league_time);
+    pub fn get_update_sql(&self) -> String {
+        let mut res = format!(
+            r#" set content=JSON_REPLACE(content,"$.id",{}),content=JSON_REPLACE(content,"$.name",{:?}),content= JSON_REPLACE(content, "$.cters", JSON_ARRAY({:?})),content=JSON_REPLACE(content,"$.score",{}),content=JSON_REPLACE(content,"$.league_time",{:?})"#,
+            self.id,
+            self.name,
+            self.cters.as_slice(),
+            self.score,
+            self.league_time
+        );
         res = res.replace("[", "");
         res = res.replace("]", "");
         res
-
     }
 
     pub fn query(table_name: &str, user_id: u32) -> Option<Self> {

@@ -62,7 +62,8 @@ impl League {
                 .unwrap();
             if old_id != self.league_id {
                 self.score = res.score;
-                self.league_time = 0;
+                let time = chrono::Local::now();
+                self.league_time = time.timestamp_millis();
             }
         }
     }
