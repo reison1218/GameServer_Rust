@@ -125,10 +125,9 @@ impl League {
 
         if league_temp.id != self.get_league_id() {
             self.league_id = league_temp.id;
-        } else if self.get_league_id() > 0 && self.league_time == 0 {
             let time = chrono::Local::now();
             self.league_time = time.timestamp_millis();
-        }
+        } 
         self.score
     }
 }

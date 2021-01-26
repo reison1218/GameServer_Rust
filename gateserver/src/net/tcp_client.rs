@@ -4,7 +4,7 @@ use async_std::task::block_on;
 use async_trait::async_trait;
 use crossbeam::channel::Sender;
 use log::error;
-use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
+use tools::cmd_code::{ClientCode, RankCode, RoomCode, ServerCommonCode};
 
 pub enum TcpClientType {
     GameServer,
@@ -49,7 +49,9 @@ impl TcpClientHandler {
             return;
         }
         //转发到房间服
-        if cmd >= RoomCode::Min as u32 && cmd <= RoomCode::Max as u32 {
+        if (cmd >= RoomCode::Min.into_u32() && cmd <= RoomCode::Max.into_u32())
+            || (cmd >= RankCode::Min.into_u32() && cmd <= RankCode::Max.into_u32())
+        {
             lock.write_to_game_center(packet);
             return;
         }

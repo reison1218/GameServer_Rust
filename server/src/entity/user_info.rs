@@ -666,8 +666,10 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         //第一名就加grade
         user_data.user_info.set_grade(grade);
         bgs.cters.extend_from_slice(cters.as_slice());
-        //更新排行榜
-        gm.send_2_server(RankCode::UpdateRank.into_u32(), 0, bgs.write_to_bytes()?);
+        if user_data.league.id > 0{
+            //更新排行榜
+            gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bgs.write_to_bytes()?);
+        }
     }
     Ok(())
 }

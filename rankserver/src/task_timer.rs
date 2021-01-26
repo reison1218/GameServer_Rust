@@ -53,8 +53,9 @@ fn update_db(rm: Arc<Mutex<RankMgr>>) {
     async_std::task::spawn(m);
     let task_v_clone = task_v.clone();
     let m = async move {
+        let time = 60 * 1000 * 5;
         loop {
-            async_std::task::sleep(Duration::from_millis(60 * 1000 * 5)).await;
+            async_std::task::sleep(Duration::from_millis(time)).await;
             let mut lock = task_v_clone.lock().await;
             for sql in lock.iter() {
                 let res = crate::DB_POOL.exe_sql(sql.as_str(), None);

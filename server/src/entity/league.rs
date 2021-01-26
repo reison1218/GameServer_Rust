@@ -160,7 +160,7 @@ impl League {
 
     pub fn get_update_sql(&self) -> String {
         let mut res = format!(
-            r#" set content=JSON_REPLACE(content,"$.id",{}),content=JSON_REPLACE(content,"$.name",{:?}),content= JSON_REPLACE(content, "$.cters", JSON_ARRAY({:?})),content=JSON_REPLACE(content,"$.score",{}),content=JSON_REPLACE(content,"$.league_time",{:?})"#,
+            r#" set content=JSON_REPLACE(content,"$.id",{}),content=JSON_REPLACE(content,"$.name",{:?}),content= JSON_REPLACE(content, "$.cters", JSON_ARRAY({:?})),content=JSON_REPLACE(content,"$.score",{}),content=JSON_REPLACE(content,"$.league_time",{})"#,
             self.id,
             self.name,
             self.cters.as_slice(),

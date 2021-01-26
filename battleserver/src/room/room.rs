@@ -17,7 +17,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode, RankCode, RoomCode};
+use tools::cmd_code::{ClientCode, GameCode,  RoomCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{RoomPt, WorldCellPt};
 use tools::protos::battle::{
@@ -171,8 +171,7 @@ impl Room {
                 let res = sp.write_to_bytes();
                 match res {
                     Ok(bytes) => {
-                        self.send_2_server(GameCode::Summary.into_u32(), user_id, bytes.clone());
-                        self.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
+                        self.send_2_server(GameCode::Summary.into_u32(), user_id, bytes);
                     }
                     Err(e) => {
                         error!("{:?}", e)
