@@ -7,6 +7,11 @@ use crate::db::dbtool::DbPool;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
+use entity::league::League;
+use entity::Entity;
+use mysql::QueryResult;
+use rayon::slice::ParallelSliceMut;
+use tools::protos::base::RankInfoPt;
 use tools::thread_pool::MyThreadPool;
 
 use async_std::sync::Mutex;
@@ -114,7 +119,7 @@ fn main() {
     init_timer(game_mgr.clone());
 
     //初始化赛季
-    init_season();
+    init_season(game_mgr.clone());
 
     //初始化http服务端
     init_http_server(game_mgr.clone());
@@ -124,7 +129,8 @@ fn main() {
 }
 
 ///初始化赛季信息
-fn init_season() {
+fn init_season(gm: Arc<Mutex<GameMgr>>) {
+    query_last_season_rank(gm);
     let mut lock = REDIS_POOL.lock().unwrap();
     unsafe {
         let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
@@ -196,4 +202,25 @@ fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
 fn init_tcp_server(gm: Arc<Mutex<GameMgr>>) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, gm);
+}
+
+pub fn query_last_season_rank(gm: Arc<Mutex<GameMgr>>) {
+    let mut sql = String::new();
+    sql.push_str("select * from t_u_last_season_rank");
+
+    let q: Result<QueryResult, mysql::error::Error> = DB_POOL.exe_sql(sql.as_str(), None);
+    if q.is_err() {
+        error!("{:?}", q.err().unwrap());
+        return;
+    }
+    let q = q.unwrap();
+    let mut v = Vec::new();
+    for _qr in q {
+        let (_, data): (u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
+        let c = League::init(data);
+        v.push(c.into());
+    }
+    v.par_sort_by(|a: &RankInfoPt, b: &RankInfoPt| a.rank.cmp(&b.rank));
+    let mut lock = async_std::task::block_on(gm.lock());
+    lock.last_season_rank = v;
 }

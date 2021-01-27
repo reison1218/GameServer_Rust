@@ -13,10 +13,10 @@ use tools::cmd_code::{ClientCode, RankCode, RoomCode};
 use tools::protos::base::{PunishMatchPt, RankInfoPt};
 use tools::protos::protocol::{
     C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_MODIFY_GRADE_FRAME_AND_SOUL,
-    S_MODIFY_NICK_NAME, S_SHOW_RANK,
+    S_MODIFY_NICK_NAME, S_SHOW_RANK,S_GET_LAST_SEASON_RANK
 };
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
-use tools::protos::server_protocol::{
+use tools::protos::server_protocol::{R_G_UPDATE_LAST_SEASON_RANK,
     PlayerBattlePt, B_R_G_PUNISH_MATCH, B_S_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
     G_R_SEARCH_ROOM, R_G_SYNC_RANK,
 };
@@ -442,6 +442,21 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     Ok(())
 }
 
+
+///修改grade相框和soul头像
+pub fn update_last_season_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    //先清空历史数据
+    gm.last_season_rank.clear();
+    let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return Ok(());
+    }
+    gm.last_season_rank.extend_from_slice(proto.ranks.as_slice());
+    Ok(())
+}
+
 ///修改grade相框和soul头像
 pub fn modify_grade_frame_and_soul(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user_id = packet.get_user_id();
@@ -627,6 +642,20 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         user_id,
         grs.write_to_bytes()?,
     );
+    Ok(())
+}
+
+///获得上此排行榜
+pub fn get_last_season_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+    let user_id = packet.get_user_id();
+    let mut proto = S_GET_LAST_SEASON_RANK::new();
+
+    for ri_pt in gm.last_season_rank.iter(){
+        proto.ranks.push(ri_pt.clone());
+    }
+    
+    let bytes = proto.write_to_bytes().unwrap();
+    gm.send_2_client(ClientCode::GetLastSeasonRank, user_id, bytes);
     Ok(())
 }
 

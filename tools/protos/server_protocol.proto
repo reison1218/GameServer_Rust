@@ -65,5 +65,10 @@ message R_G_SYNC_RANK{
     repeated RankInfoPt ranks = 1;//排行信息
 }
 
+///通知游戏服更新上一赛季的排行榜数据
+message R_G_UPDATE_LAST_SEASON_RANK{
+    repeated RankInfoPt ranks = 1;//排行信息
+}
+
 
 

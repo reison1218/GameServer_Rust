@@ -30,6 +30,31 @@ pub struct RankInfo {
 unsafe impl Send for RankInfo {}
 
 impl RankInfo {
+    pub fn get_insert_sql_str(&self) -> String {
+        let mut map = serde_json::Map::new();
+        map.insert("id".to_owned(), serde_json::Value::from(self.league.id));
+        map.insert(
+            "name".to_owned(),
+            serde_json::Value::from(self.name.clone()),
+        );
+        map.insert("rank".to_owned(), serde_json::Value::from(self.rank));
+        map.insert(
+            "cters".to_owned(),
+            serde_json::Value::from(self.cters.as_slice()),
+        );
+        map.insert(
+            "score".to_owned(),
+            serde_json::Value::from(self.get_score()),
+        );
+        map.insert("user_id".to_owned(), serde_json::Value::from(self.user_id));
+        let json = serde_json::Value::from(map);
+        let res = format!(
+            "insert into t_u_last_season_rank(user_id,content) values({},{:?})",
+            self.user_id,
+            json.to_string()
+        );
+        res
+    }
     pub fn init_from_json(js: serde_json::Value) -> anyhow::Result<Self> {
         let mut ri = RankInfo::default();
         ri.user_id = js["user_id"].as_i64().unwrap() as u32;

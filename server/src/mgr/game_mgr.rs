@@ -1,8 +1,5 @@
 use crate::entity::user::UserData;
-use crate::entity::user_info::{
-    create_room, join_room, modify_grade_frame_and_soul, modify_nick_name, punish_match,
-    search_room, show_rank, summary, sync_rank,
-};
+use crate::entity::user_info::{create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name, punish_match, search_room, show_rank, summary, sync_rank, update_last_season_rank};
 use crate::entity::{Entity, EntityData};
 use crate::SEASON;
 use chrono::Local;
@@ -28,6 +25,7 @@ pub struct GameMgr {
     pub users: HashMap<u32, UserData>, //玩家数据
     pub rank: Vec<RankInfoPt>,         //排行榜快照，从排行榜服务器那边过来的
     pub user_rank:HashMap<u32,RankInfoPtPtr>,//玩家对应的排行榜数据，为了避免遍历
+    pub last_season_rank:Vec<RankInfoPt>,//上一赛季排行榜
     sender: Option<TcpSender>,         //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
@@ -41,6 +39,7 @@ impl GameMgr {
             sender: None,
             rank: Vec::new(),
             user_rank:HashMap::new(),
+            last_season_rank:Vec::new(),
             cmd_map: HashMap::new(),
         };
         //初始化命令
@@ -174,6 +173,11 @@ impl GameMgr {
             GameCode::ModifyGradeFrameAndSoul.into_u32(),
             modify_grade_frame_and_soul,
         );
+        self.cmd_map.insert(
+            GameCode::UpdateLastSeasonRankPush.into_u32(),
+            update_last_season_rank,
+        );
+        self.cmd_map.insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
     }
 }

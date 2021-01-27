@@ -2388,6 +2388,288 @@ impl ::protobuf::reflect::ProtobufValue for S_MODIFY_GRADE_FRAME_AND_SOUL {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct C_GET_LAST_SEASON_RANK {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a C_GET_LAST_SEASON_RANK {
+    fn default() -> &'a C_GET_LAST_SEASON_RANK {
+        <C_GET_LAST_SEASON_RANK as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl C_GET_LAST_SEASON_RANK {
+    pub fn new() -> C_GET_LAST_SEASON_RANK {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for C_GET_LAST_SEASON_RANK {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> C_GET_LAST_SEASON_RANK {
+        C_GET_LAST_SEASON_RANK::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let fields = ::std::vec::Vec::new();
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_GET_LAST_SEASON_RANK>(
+                "C_GET_LAST_SEASON_RANK",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static C_GET_LAST_SEASON_RANK {
+        static instance: ::protobuf::rt::LazyV2<C_GET_LAST_SEASON_RANK> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(C_GET_LAST_SEASON_RANK::new)
+    }
+}
+
+impl ::protobuf::Clear for C_GET_LAST_SEASON_RANK {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for C_GET_LAST_SEASON_RANK {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for C_GET_LAST_SEASON_RANK {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct S_GET_LAST_SEASON_RANK {
+    // message fields
+    pub ranks: ::protobuf::RepeatedField<super::base::RankInfoPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_GET_LAST_SEASON_RANK {
+    fn default() -> &'a S_GET_LAST_SEASON_RANK {
+        <S_GET_LAST_SEASON_RANK as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_GET_LAST_SEASON_RANK {
+    pub fn new() -> S_GET_LAST_SEASON_RANK {
+        ::std::default::Default::default()
+    }
+
+    // repeated .protos.RankInfoPt ranks = 2;
+
+
+    pub fn get_ranks(&self) -> &[super::base::RankInfoPt] {
+        &self.ranks
+    }
+    pub fn clear_ranks(&mut self) {
+        self.ranks.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<super::base::RankInfoPt>) {
+        self.ranks = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        &mut self.ranks
+    }
+
+    // Take field
+    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        ::std::mem::replace(&mut self.ranks, ::protobuf::RepeatedField::new())
+    }
+}
+
+impl ::protobuf::Message for S_GET_LAST_SEASON_RANK {
+    fn is_initialized(&self) -> bool {
+        for v in &self.ranks {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                2 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.ranks)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        for value in &self.ranks {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        for v in &self.ranks {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_GET_LAST_SEASON_RANK {
+        S_GET_LAST_SEASON_RANK::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
+                "ranks",
+                |m: &S_GET_LAST_SEASON_RANK| { &m.ranks },
+                |m: &mut S_GET_LAST_SEASON_RANK| { &mut m.ranks },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_GET_LAST_SEASON_RANK>(
+                "S_GET_LAST_SEASON_RANK",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_GET_LAST_SEASON_RANK {
+        static instance: ::protobuf::rt::LazyV2<S_GET_LAST_SEASON_RANK> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_GET_LAST_SEASON_RANK::new)
+    }
+}
+
+impl ::protobuf::Clear for S_GET_LAST_SEASON_RANK {
+    fn clear(&mut self) {
+        self.ranks.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_GET_LAST_SEASON_RANK {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_GET_LAST_SEASON_RANK {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"'\n\x0cC_USER_LOGIN\
     \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\xed\x02\n\x0cS_USE\
@@ -2414,8 +2696,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     C_MODIFY_GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\rR\x04s\
     oul\x12\x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\n\x1dS_M\
     ODIFY_GRADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
-    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMessb\x06prot\
-    o3\
+    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x18\n\
+    \x16C_GET_LAST_SEASON_RANK\"B\n\x16S_GET_LAST_SEASON_RANK\x12(\n\x05rank\
+    s\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

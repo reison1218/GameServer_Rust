@@ -48,6 +48,10 @@ pub enum GameCode {
     ShowRank = 1012,
     //修改grade相框和soul头像
     ModifyGradeFrameAndSoul = 1013,
+    //更新上赛季排行榜通知
+    UpdateLastSeasonRankPush = 1014,
+    //获得上赛季排行榜信息
+    GetLastSeasonRank = 1015,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值
@@ -121,7 +125,7 @@ pub enum BattleCode {
     Action = 30004,      //请求行动
     Pos = 30005,         //架势请求
     Emoji = 30006,       //表情符号
-    OffLine = 39998,    //掉线
+    OffLine = 39998,     //掉线
     LeaveRoom = 39999,   //离开房间
     Max = 40000,
 }
@@ -138,8 +142,8 @@ impl BattleCode {
 #[repr(u32)]
 pub enum RankCode {
     Min = 40001,
-    UpdateRank = 40002,       //更新排行榜
-    GetRank = 40003,          //获得排行榜
+    UpdateRank = 40002, //更新排行榜
+    GetRank = 40003,    //获得排行榜
     Max = 50000,
 }
 
@@ -234,6 +238,8 @@ pub enum ClientCode {
     ShowRank = 10081,
     //修改grade相框和soul头像
     ModifyGradeFrameAndSoul = 10082,
+    //获得上赛季排行榜返回
+    GetLastSeasonRank = 10083,
     //最大命令号
     Max = 20000,
 }

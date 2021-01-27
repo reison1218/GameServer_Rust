@@ -2229,6 +2229,172 @@ impl ::protobuf::reflect::ProtobufValue for R_G_SYNC_RANK {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct R_G_UPDATE_LAST_SEASON_RANK {
+    // message fields
+    pub ranks: ::protobuf::RepeatedField<super::base::RankInfoPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a R_G_UPDATE_LAST_SEASON_RANK {
+    fn default() -> &'a R_G_UPDATE_LAST_SEASON_RANK {
+        <R_G_UPDATE_LAST_SEASON_RANK as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl R_G_UPDATE_LAST_SEASON_RANK {
+    pub fn new() -> R_G_UPDATE_LAST_SEASON_RANK {
+        ::std::default::Default::default()
+    }
+
+    // repeated .protos.RankInfoPt ranks = 1;
+
+
+    pub fn get_ranks(&self) -> &[super::base::RankInfoPt] {
+        &self.ranks
+    }
+    pub fn clear_ranks(&mut self) {
+        self.ranks.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<super::base::RankInfoPt>) {
+        self.ranks = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        &mut self.ranks
+    }
+
+    // Take field
+    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<super::base::RankInfoPt> {
+        ::std::mem::replace(&mut self.ranks, ::protobuf::RepeatedField::new())
+    }
+}
+
+impl ::protobuf::Message for R_G_UPDATE_LAST_SEASON_RANK {
+    fn is_initialized(&self) -> bool {
+        for v in &self.ranks {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.ranks)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        for value in &self.ranks {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        for v in &self.ranks {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> R_G_UPDATE_LAST_SEASON_RANK {
+        R_G_UPDATE_LAST_SEASON_RANK::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
+                "ranks",
+                |m: &R_G_UPDATE_LAST_SEASON_RANK| { &m.ranks },
+                |m: &mut R_G_UPDATE_LAST_SEASON_RANK| { &mut m.ranks },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_UPDATE_LAST_SEASON_RANK>(
+                "R_G_UPDATE_LAST_SEASON_RANK",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static R_G_UPDATE_LAST_SEASON_RANK {
+        static instance: ::protobuf::rt::LazyV2<R_G_UPDATE_LAST_SEASON_RANK> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(R_G_UPDATE_LAST_SEASON_RANK::new)
+    }
+}
+
+impl ::protobuf::Clear for R_G_UPDATE_LAST_SEASON_RANK {
+    fn clear(&mut self) {
+        self.ranks.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for R_G_UPDATE_LAST_SEASON_RANK {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for R_G_UPDATE_LAST_SEASON_RANK {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"4\n\tR_B_STAR\
     T\x12'\n\x07room_pt\x18\x01\x20\x01(\x0b2\x0e.protos.RoomPtR\x06roomPt\"\
@@ -2254,7 +2420,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH\
     _MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.PunishMat\
     chPtR\x0bpunishMatch\"9\n\rR_G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\x03\
-    (\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
+    (\x0b2\x12.protos.RankInfoPtR\x05ranks\"G\n\x1bR_G_UPDATE_LAST_SEASON_RA\
+    NK\x12(\n\x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\
+    b\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

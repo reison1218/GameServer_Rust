@@ -1,7 +1,7 @@
 use super::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use tools::protos::base::LeaguePt;
+use tools::protos::base::{LeaguePt, RankInfoPt};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
@@ -20,6 +20,19 @@ pub struct League {
 unsafe impl Send for League {}
 
 unsafe impl Sync for League {}
+
+impl Into<RankInfoPt> for League {
+    fn into(self) -> RankInfoPt {
+        let mut ri = RankInfoPt::new();
+        ri.set_user_id(self.user_id);
+        ri.set_name(self.name.clone());
+        ri.set_rank(self.rank);
+        ri.set_league_id(self.id as u32);
+        ri.set_cters(self.cters.clone());
+        ri.set_league_score(self.score);
+        ri
+    }
+}
 
 impl League {
     pub fn set_cters(&mut self, cters: Vec<u32>) {

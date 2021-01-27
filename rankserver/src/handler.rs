@@ -5,7 +5,9 @@ use log::{error, warn};
 use protobuf::Message;
 use std::str::FromStr;
 use tools::cmd_code::GameCode;
-use tools::protos::server_protocol::{B_S_SUMMARY, R_G_SYNC_RANK, UPDATE_SEASON_NOTICE};
+use tools::protos::server_protocol::{
+    B_S_SUMMARY, R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK, UPDATE_SEASON_NOTICE,
+};
 use tools::util::packet::Packet;
 
 pub fn get_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
@@ -23,6 +25,41 @@ pub fn get_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let bytes = bytes.unwrap();
     rm.send_2_server_direction(GameCode::SyncRank.into_u32(), 0, bytes, server_token);
     Ok(())
+}
+
+///处理上一赛季
+///先清空上一赛季数据库，然后插入当前赛季数据
+pub fn process_last_season_rank(rm: &mut RankMgr) {
+    //先清空上一赛季的排行榜数据
+    let delete_sql = "delete from t_u_last_season_rank";
+    let res = crate::DB_POOL.exe_sql(delete_sql, None);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
+    let mut size = 99;
+    let len = rm.rank_vec.len();
+    if len < size {
+        size = len - 1;
+    }
+    let res = &rm.rank_vec[0..size];
+    //再插入新数据
+    let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
+    for ri in res {
+        let insert_sql = ri.get_insert_sql_str();
+        let res = crate::DB_POOL.exe_sql(insert_sql.as_ref(), None);
+        if let Err(e) = res {
+            error!("{:?}", e)
+        }
+        proto.ranks.push(ri.into_rank_pt())
+    }
+    let bytes = proto.write_to_bytes();
+    if let Err(e) = bytes {
+        error!("{:?}", e);
+        return;
+    }
+    let bytes = bytes.unwrap();
+    //通知所有游戏服更新上一赛季排行榜信息
+    rm.push_2_server(GameCode::UpdateLastSeasonRankPush.into_u32(), 0, bytes);
 }
 
 pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
@@ -50,6 +87,11 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     if round_season_id != season_id {
         return Ok(());
     }
+
+    //先处理上一赛季排行榜问题
+    process_last_season_rank(rm);
+
+    //处理当前赛季数据
     let task_task = rm.task_sender.clone().unwrap();
     let mut remove_v = Vec::new();
     //掉段处理

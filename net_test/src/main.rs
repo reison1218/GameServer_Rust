@@ -16,6 +16,7 @@ use protobuf::Message;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 use std::time::{Duration, Instant, SystemTime};
+use tools::protos::base::RankInfoPt;
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -478,6 +479,20 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
+    let v = vec![12, 3];
+    let mut map = serde_json::Map::new();
+    map.insert("id".to_owned(), serde_json::Value::from(1));
+    map.insert("user_id".to_owned(), serde_json::Value::from(1));
+    map.insert(
+        "name".to_owned(),
+        serde_json::Value::from("self.name.clone()".to_string()),
+    );
+    map.insert("rank".to_owned(), serde_json::Value::from(1));
+    map.insert("cters".to_owned(), serde_json::Value::from(v.as_slice()));
+    map.insert("score".to_owned(), serde_json::Value::from(1));
+    let json = serde_json::Value::from(map);
+    println!("{:?}", json.to_string());
+
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};

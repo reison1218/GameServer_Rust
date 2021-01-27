@@ -85,3 +85,15 @@ message S_MODIFY_GRADE_FRAME_AND_SOUL{
   bool is_succ = 1;//是否成功;
   string err_mess = 2;//错误信息;
 }
+
+//请求上赛季排行榜
+//cmd:1015
+message C_GET_LAST_SEASON_RANK{
+  
+}
+
+//请求上赛季排行榜返回
+//cmd:10083
+message S_GET_LAST_SEASON_RANK{
+  repeated RankInfoPt ranks = 2;//排行榜信息
+}
