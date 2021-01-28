@@ -90,6 +90,11 @@ impl ChannelMgr {
         }
     }
 
+    ///停服
+    pub fn stop_server(&mut self) {
+        self.kick_all();
+    }
+
     ///写到游戏中心服
     #[warn(unused_must_use)]
     pub fn write_to_game_center(&mut self, packet: Packet) {

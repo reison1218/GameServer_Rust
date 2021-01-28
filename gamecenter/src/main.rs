@@ -6,6 +6,7 @@ use crate::mgr::game_center_mgr::GameCenterMgr;
 use crate::net::room_tcp_client::RoomTcpClientHandler;
 use crate::net::{battle_tcp_server, gate_tcp_server};
 use async_std::sync::Mutex;
+use net::http::StopAllServerHandler;
 use net::rank_tcp_client::RankTcpClientHandler;
 use std::env;
 use std::sync::Arc;
@@ -74,6 +75,7 @@ fn init_http_server(gm: Arc<Mutex<GameCenterMgr>>) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(ReloadTempsHandler::new(gm.clone())));
     http_vec.push(Box::new(UpdateSeasonHandler::new(gm.clone())));
+    http_vec.push(Box::new(StopAllServerHandler::new(gm.clone())));
     let http_port: &str = CONF_MAP.get_str("http_port");
     async_std::task::spawn(tools::http::http_server(http_port, http_vec));
 }

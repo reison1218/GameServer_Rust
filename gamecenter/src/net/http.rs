@@ -6,6 +6,33 @@ use http_types::Error as HttpTypesError;
 use serde_json::{json, Value};
 use tools::http::HttpServerHandler;
 
+pub struct StopAllServerHandler {
+    gm: Arc<Mutex<GameCenterMgr>>,
+}
+
+impl StopAllServerHandler {
+    pub fn new(gm: Arc<Mutex<GameCenterMgr>>) -> Self {
+        StopAllServerHandler { gm }
+    }
+}
+
+
+impl HttpServerHandler for StopAllServerHandler {
+    fn get_path(&self) -> &str {
+        "reload_temps"
+    }
+
+    fn execute(
+        &mut self,
+        _: Option<Value>,
+    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+        let mut lock = block_on(self.gm.lock());
+        lock.stop_all_server_handler();
+        let value = json!({ "status":"OK" });
+        Ok(value)
+    }
+}
+
 pub struct ReloadTempsHandler {
     gm: Arc<Mutex<GameCenterMgr>>,
 }

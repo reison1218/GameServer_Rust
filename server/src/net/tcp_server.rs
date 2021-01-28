@@ -5,7 +5,7 @@ use crate::entity::character::Characters;
 use crate::entity::grade_frame::GradeFrame;
 use crate::entity::league::League;
 use crate::entity::soul::Soul;
-use crate::entity::user::{insert_characters, insert_league, insert_user, UserData};
+use crate::entity::user::{UserData, insert_characters, insert_grade_frame, insert_league, insert_soul, insert_user};
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
@@ -175,6 +175,8 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         async_std::task::spawn(insert_user(user));
         async_std::task::spawn(insert_characters(c));
         async_std::task::spawn(insert_league(league));
+        async_std::task::spawn(insert_soul(soul));
+        async_std::task::spawn(insert_grade_frame(grade_frame));
     }
     Ok(ud.unwrap())
 }

@@ -154,6 +154,22 @@ impl RankCode {
     }
 }
 
+///排行服专属命令号段枚举 50001-60000
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u32)]
+pub enum GateCode {
+    Min = 50001,
+    StopServer = 50002, //停服
+    Max = 60000,
+}
+
+impl GateCode {
+    pub fn into_u32(self) -> u32 {
+        let res: u32 = self.into();
+        res
+    }
+}
+
 ///客户端专属命令号段枚举 10001-20000
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]

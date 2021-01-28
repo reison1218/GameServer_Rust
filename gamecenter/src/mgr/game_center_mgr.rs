@@ -3,7 +3,7 @@ use log::warn;
 use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, GameCode, ServerCommonCode};
+use tools::cmd_code::{BattleCode, GateCode,GameCode, ServerCommonCode};
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -79,6 +79,14 @@ impl GameCenterMgr {
         let res = self.get_rank_center_mut().send(bytes);
         if let Err(e) = res {
             warn!("{:?}", e);
+        }
+    }
+
+    ///停服
+    pub fn stop_all_server_handler(&mut self) {
+        let bytes = Packet::build_packet_bytes(GateCode::StopServer.into_u32(), 0, Vec::new(), true, false);
+        for gate_client in self.gate_clients.values_mut(){
+            gate_client.send(bytes.clone());
         }
     }
 

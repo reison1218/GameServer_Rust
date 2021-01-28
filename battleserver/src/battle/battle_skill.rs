@@ -510,7 +510,7 @@ pub unsafe fn auto_pair_map_cell(
     //将1个地图块自动配对。本回合内不能攻击。
     let target_index = *target_array.get(0).unwrap() as usize;
     let next_turn_index = battle_data.next_turn_index;
-    let res = battle_data.check_choice_index(target_index, false, true, true, true, false);
+    let res = battle_data.check_choice_index(target_index, false, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;

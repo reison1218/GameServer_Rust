@@ -201,19 +201,8 @@ pub async fn insert_characters(cter: Characters) {
     }
 }
 
-pub async fn insert_league(league: League) {
-    info!("玩家段位数据不存在,现在创建玩家段位数据:{}", league.user_id);
-    let res = League::insert(&league);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
-}
-
 pub async fn insert_grade_frame(grade_frame: GradeFrame) {
-    info!(
-        "玩家grade frame数据不存在,现在创建玩家grade frame数据:{}",
-        grade_frame.user_id
-    );
+    info!("玩家grade头像框数据不存在,现在创建玩家段位数据:{}", grade_frame.user_id);
     let res = GradeFrame::insert(&grade_frame);
     if let Err(e) = res {
         error!("{:?}", e);
@@ -221,8 +210,16 @@ pub async fn insert_grade_frame(grade_frame: GradeFrame) {
 }
 
 pub async fn insert_soul(soul: Soul) {
-    info!("玩家soul数据不存在,现在创建玩家soul数据:{}", soul.user_id);
+    info!("玩家Soul数据不存在,现在创建玩家段位数据:{}", soul.user_id);
     let res = Soul::insert(&soul);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
+}
+
+pub async fn insert_league(league: League) {
+    info!("玩家段位数据不存在,现在创建玩家段位数据:{}", league.user_id);
+    let res = League::insert(&league);
     if let Err(e) = res {
         error!("{:?}", e);
     }
