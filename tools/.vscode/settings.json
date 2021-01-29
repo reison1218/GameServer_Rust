@@ -1,3 +1,5 @@
 {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "debug.inlineValues": true,
+    "rust-analyzer.cargo.allFeatures": true
 }
