@@ -3,7 +3,13 @@ mod tests {
     #[test]
     fn it_works() {
         //crate::redis_pool::test_api("redis://localhost/","reison");
-        crate::protos::proto();
+        //crate::protos::proto();
+        let m = || {
+            crate::rpc_server::test_rpc_server();
+        };
+        std::thread::spawn(m);
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        crate::rpc_client::test_rpc_client();
     }
 }
 pub mod binary;
@@ -14,6 +20,8 @@ pub mod macros;
 pub mod my_log;
 pub mod protos;
 pub mod redis_pool;
+pub mod rpc_client;
+pub mod rpc_server;
 pub mod tcp;
 pub mod templates;
 pub mod thread_pool;

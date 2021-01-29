@@ -34,10 +34,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a00410c-fdea-4176-b301-520e9756777d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/protos/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/mod.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,6 +150,11 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Cargo.Run net_test" />
@@ -240,6 +248,7 @@
       <workItem from="1605605138607" duration="3269000" />
       <workItem from="1609207499849" duration="61000" />
       <workItem from="1609207577879" duration="1026000" />
+      <workItem from="1611904201963" duration="3312000" />
     </task>
     <servers />
   </component>
@@ -257,52 +266,6 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="2846" y="432" key="#com.intellij.ide.util.MemberChooser" timestamp="1601456215652">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state x="2846" y="432" key="#com.intellij.ide.util.MemberChooser/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601456215652" />
-    <state width="1852" height="142" key="GridCell.Tab.0.bottom" timestamp="1605607657808">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1852" height="142" key="GridCell.Tab.0.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607657808" />
-    <state width="1852" height="142" key="GridCell.Tab.0.center" timestamp="1605607657807">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1852" height="142" key="GridCell.Tab.0.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607657807" />
-    <state width="1852" height="142" key="GridCell.Tab.0.left" timestamp="1605607657807">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1852" height="142" key="GridCell.Tab.0.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607657807" />
-    <state width="1852" height="142" key="GridCell.Tab.0.right" timestamp="1605607657808">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1852" height="142" key="GridCell.Tab.0.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605607657808" />
-    <state width="1806" height="435" key="GridCell.Tab.1.bottom" timestamp="1601460987141">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1806" height="435" key="GridCell.Tab.1.bottom/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987141" />
-    <state width="1806" height="435" key="GridCell.Tab.1.center" timestamp="1601460987141">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1806" height="435" key="GridCell.Tab.1.center/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987141" />
-    <state width="1806" height="435" key="GridCell.Tab.1.left" timestamp="1601460987141">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1806" height="435" key="GridCell.Tab.1.left/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987141" />
-    <state width="1806" height="435" key="GridCell.Tab.1.right" timestamp="1601460987141">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state width="1806" height="435" key="GridCell.Tab.1.right/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1601460987141" />
-    <state x="2712" y="373" width="1256" height="835" key="find.popup" timestamp="1605593901215">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state x="2712" y="373" width="1256" height="835" key="find.popup/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605593901215" />
-    <state x="2673" y="437" width="672" height="678" key="search.everywhere.popup" timestamp="1605597267770">
-      <screen x="2048" y="194" width="1920" height="1057" />
-    </state>
-    <state x="2673" y="437" width="672" height="678" key="search.everywhere.popup/2048.194.1920.1057/0.23.2048.1086@2048.194.1920.1057" timestamp="1605597267770" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

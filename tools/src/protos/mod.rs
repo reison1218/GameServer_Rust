@@ -3,6 +3,7 @@ pub mod battle;
 pub mod protocol;
 pub mod robot;
 pub mod room;
+pub mod rpc;
 pub mod server_protocol;
 
 use log::error;
@@ -26,7 +27,10 @@ pub fn proto() {
             return;
         }
         let dir_entry = dir_entry.unwrap();
-        if !dir_entry.file_name().to_str().unwrap().ends_with(".proto") {
+        let file_name = dir_entry.file_name();
+        let file_name = file_name.to_str();
+        let file_name = file_name.as_ref().unwrap();
+        if !file_name.ends_with(".proto") || file_name.ends_with("rpc.proto") {
             continue;
         }
         let mut proto_file = String::from("protos/");
@@ -39,5 +43,10 @@ pub fn proto() {
         .include("protos")
         .run()
         .expect("Running protoc failed!");
+    //处理rpc proto
+    let b = tonic_build::configure();
+    let b = b.out_dir("src/protos");
+    b.compile(&["protos/rpc.proto"], &["protos"])
+        .expect("rpc proto failed!");
     println!("protobuf generate success!")
 }

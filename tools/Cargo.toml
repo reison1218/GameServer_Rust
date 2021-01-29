@@ -10,6 +10,14 @@ opt-level = 3 #release
 lto = true
 codegen-units = 1
 
+#[[bin]] # 用来运行 HelloWorld gRPC 服务器的可执行文件
+#name = "helloworld-server"
+#path = "src/rpc_server.rs"
+
+#[[bin]] # 用来运行 HelloWorld gRPC 客户端的可执行文件
+#name = "helloworld-client"
+#path = "src/rpc_client.rs"
+
 [dependencies]
 num_cpus="1.10.1"
 threadpool="1.8.1"
@@ -34,4 +42,10 @@ rayon = "1.3.1"
 num_enum = "0.5.1"
 async-trait = "0.1.41"
 chrono = "0.4"
+tonic = "0.4"
+prost = "0.7"
+tonic-build = "0.4"
 mio = {version="0.7",features = ["os-poll", "tcp"]}
+tokio = "1.1"
+[build-dependencies]
+tonic-build = "0.4"

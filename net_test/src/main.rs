@@ -54,7 +54,6 @@ use futures::join;
 use futures::SinkExt;
 use rand::prelude::*;
 use rayon::prelude::ParallelSliceMut;
-use serde::private::de::IdentifierDeserializer;
 use serde_json::Value;
 use std::alloc::System;
 use std::any::Any;
@@ -479,20 +478,7 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
-    let v = vec![12, 3];
-    let mut map = serde_json::Map::new();
-    map.insert("id".to_owned(), serde_json::Value::from(1));
-    map.insert("user_id".to_owned(), serde_json::Value::from(1));
-    map.insert(
-        "name".to_owned(),
-        serde_json::Value::from("self.name.clone()".to_string()),
-    );
-    map.insert("rank".to_owned(), serde_json::Value::from(1));
-    map.insert("cters".to_owned(), serde_json::Value::from(v.as_slice()));
-    map.insert("score".to_owned(), serde_json::Value::from(1));
-    let json = serde_json::Value::from(map);
-    println!("{:?}", json.to_string());
-
+    // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
     // println!{"{}",a};
