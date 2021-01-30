@@ -3,13 +3,15 @@ mod tests {
     #[test]
     fn it_works() {
         //crate::redis_pool::test_api("redis://localhost/","reison");
-        //crate::protos::proto();
-        let m = || {
-            crate::rpc_server::test_rpc_server();
-        };
-        std::thread::spawn(m);
-        std::thread::sleep(std::time::Duration::from_secs(2));
-        crate::rpc_client::test_rpc_client();
+        crate::protos::proto();
+        // let m = || {
+        //     crate::rpc_server::test_rpc_server();
+        // };
+        // std::thread::spawn(m);
+        // std::thread::sleep(std::time::Duration::from_secs(2));
+        // let time = std::time::SystemTime::now();
+        // crate::rpc_client::test_rpc_client();
+        // println!("{:?}", time.elapsed().unwrap());
     }
 }
 pub mod binary;
