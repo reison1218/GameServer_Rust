@@ -1,11 +1,12 @@
 syntax = "proto3";
 package rpc;
 
-service Greeter {
+service  Greeter {
     // SayHello rpc 接受 HelloRequests 并返回 HelloReplies
     rpc SayHello (HelloRequest) returns (HelloReply);
-}
 
+    rpc Test (HelloRequest) returns (HelloReply);
+}
 
 message HelloRequest {
     // 请求消息中包含要问候的名称

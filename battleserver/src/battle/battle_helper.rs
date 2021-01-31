@@ -109,11 +109,13 @@ impl BattleData {
     ) -> anyhow::Result<Vec<ActionUnitPt>> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let battle_cter_index = battle_cter.get_map_cell_index();
         let tile_map = self.tile_map.borrow_mut() as *mut TileMap;
         let map_cell = tile_map.as_mut().unwrap().map_cells.get_mut(index).unwrap();
         au.action_value.push(map_cell.id);
         let mut is_change_index_both = false;
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
+        let title_map_mut = tile_map_ptr.as_mut().unwrap();
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
         if map_cell.user_id > 0 {
             let target_user = map_cell.user_id;
@@ -121,28 +123,18 @@ impl BattleData {
             self.before_moved_trigger(user_id, target_user)?;
             //如果没有，则改变目标玩家的位置
             let target_cter = self.get_battle_cter_mut(Some(target_user), true).unwrap();
-            target_cter.move_index(battle_cter.get_map_cell_index());
-            let source_map_cell = tile_map_ptr
-                .as_mut()
-                .unwrap()
-                .map_cells
-                .get_mut(battle_cter.get_map_cell_index())
-                .unwrap();
+            target_cter.move_index(battle_cter_index);
+            let source_map_cell = title_map_mut.map_cells.get_mut(battle_cter_index).unwrap();
             source_map_cell.user_id = target_cter.get_user_id();
             is_change_index_both = true;
         } else {
             //重制之前地图块上的玩家id
-            let last_map_cell = tile_map_ptr
-                .as_mut()
-                .unwrap()
-                .map_cells
-                .get_mut(battle_cter.get_map_cell_index())
-                .unwrap();
+            let last_map_cell = title_map_mut.map_cells.get_mut(battle_cter_index).unwrap();
             last_map_cell.user_id = 0;
         }
         //改变角色位置
         battle_cter.move_index(index);
-        map_cell.user_id = battle_cter.get_user_id();
+        map_cell.user_id = user_id;
 
         let index = index as isize;
         //移动位置后触发事件
@@ -385,9 +377,7 @@ impl BattleData {
 
     ///处理地图块配对逻辑
     pub unsafe fn handler_map_cell_pair(&mut self, user_id: u32, map_index: Option<usize>) -> bool {
-        let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
-
-        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
+        let battle_cter = self.battle_cter.get_mut(&user_id);
         if let None = battle_cter {
             error!("cter is not find!user_id:{}", user_id);
             return false;

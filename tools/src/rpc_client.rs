@@ -4,8 +4,8 @@ use crate::protos::rpc::HelloRequest;
 pub fn test_rpc_client() {
     let mut builder = tokio::runtime::Builder::new_current_thread();
     builder.enable_io();
-    let mut res = builder.build().unwrap();
-    res.block_on(start_client());
+    let res = builder.build().unwrap();
+    let _ = res.block_on(start_client());
 }
 
 async fn start_client() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,9 +15,8 @@ async fn start_client() -> Result<(), Box<dyn std::error::Error>> {
         name: "Tonic".into(),
     });
 
-    let response = client.say_hello(request).await?;
+    let response = client.test(request).await?;
 
     println!("RESPONSE={:?}", response.get_ref().message);
-
     Ok(())
 }

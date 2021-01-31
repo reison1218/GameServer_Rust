@@ -58,6 +58,20 @@ pub mod greeter_client {
             let path = http::uri::PathAndQuery::from_static("/rpc.Greeter/SayHello");
             self.inner.unary(request.into_request(), path, codec).await
         }
+        pub async fn test(
+            &mut self,
+            request: impl tonic::IntoRequest<super::HelloRequest>,
+        ) -> Result<tonic::Response<super::HelloReply>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/rpc.Greeter/Test");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
     }
     impl<T: Clone> Clone for GreeterClient<T> {
         fn clone(&self) -> Self {
@@ -81,6 +95,10 @@ pub mod greeter_server {
     pub trait Greeter: Send + Sync + 'static {
         #[doc = " SayHello rpc 接受 HelloRequests 并返回 HelloReplies"]
         async fn say_hello(
+            &self,
+            request: tonic::Request<super::HelloRequest>,
+        ) -> Result<tonic::Response<super::HelloReply>, tonic::Status>;
+        async fn test(
             &self,
             request: tonic::Request<super::HelloRequest>,
         ) -> Result<tonic::Response<super::HelloReply>, tonic::Status>;
@@ -137,6 +155,37 @@ pub mod greeter_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = SayHelloSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/rpc.Greeter/Test" => {
+                    #[allow(non_camel_case_types)]
+                    struct TestSvc<T: Greeter>(pub Arc<T>);
+                    impl<T: Greeter> tonic::server::UnaryService<super::HelloRequest> for TestSvc<T> {
+                        type Response = super::HelloReply;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::HelloRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).test(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = TestSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)

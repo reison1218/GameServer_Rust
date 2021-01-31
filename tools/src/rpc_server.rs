@@ -3,7 +3,7 @@ use tonic::{transport::Server, Request, Response, Status};
 use crate::protos::rpc::greeter_server::{Greeter, GreeterServer};
 use crate::protos::rpc::{HelloReply, HelloRequest};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MyGreeter {}
 
 #[tonic::async_trait]
@@ -17,6 +17,13 @@ impl Greeter for MyGreeter {
         let reply = HelloReply {
             message: format!("Hello {}!", request.into_inner().name).into(),
         };
+        Ok(Response::new(reply))
+    }
+
+    async fn test(&self, request: Request<HelloRequest>) -> Result<Response<HelloReply>, Status> {
+        let reply = HelloReply {
+            message: format!("test {}!", request.into_inner().name).into(),
+        };
 
         Ok(Response::new(reply))
     }
@@ -25,18 +32,17 @@ impl Greeter for MyGreeter {
 pub fn test_rpc_server() {
     let mut builder = tokio::runtime::Builder::new_current_thread();
     builder.enable_io();
-    let mut res = builder.build().unwrap();
-    res.block_on(start_server());
+    let res = builder.build().unwrap();
+    let _ = res.block_on(start_server());
 }
 
 async fn start_server() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "[::1]:50051".parse()?;
     let greeter = MyGreeter::default();
-
-    Server::builder()
+    let mut server_builder = Server::builder();
+    server_builder
         .add_service(GreeterServer::new(greeter))
         .serve(addr)
         .await?;
-
     Ok(())
 }
