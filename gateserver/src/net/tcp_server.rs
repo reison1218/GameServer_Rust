@@ -1,5 +1,4 @@
 use super::*;
-use crate::net::http::notice_user_center;
 use async_std::sync::{Mutex, MutexGuard};
 use async_std::task::block_on;
 use async_trait::async_trait;
@@ -112,9 +111,7 @@ impl TcpServerHandler {
                 self.write_to_client(packet.build_client_bytes());
                 return;
             }
-            lock.add_gate_user(u_id, None, self.tcp.clone());
-            //通知用户中心
-            async_std::task::spawn(notice_user_center(u_id, "login"));
+            lock.temp_channels.insert(u_id, self.tcp.clone());
         } else {
             u_id = *user_id.unwrap();
         }
@@ -186,7 +183,6 @@ fn handle_login(bytes: &[u8], lock: &mut MutexGuard<ChannelMgr>) -> anyhow::Resu
     let mem_res = check_mem_online(&c_login.get_user_id(), lock);
     //如果用户中心登陆了或者本地内存登陆了，直接错误返回
     if uc_res || mem_res {
-        // modify_redis_user(c_login.get_user_id(), false);
         let str = format!(
             "this account already login!uc_res:{},mem_res:{},user_id:{}",
             uc_res,

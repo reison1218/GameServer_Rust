@@ -94,30 +94,28 @@ impl ClientHandler for TcpClientHandler {
         let packet_array = packet_array.unwrap();
 
         for mut packet in packet_array {
+            let user_id = packet.get_user_id();
+            let cmd = packet.get_cmd();
             //判断是否是发给客户端消息
             if packet.is_client() && packet.get_cmd() > 0 {
                 let mut lock = block_on(self.cp.lock());
-                let gate_user = lock.get_mut_user_channel_channel(&packet.get_user_id());
+                if packet.get_cmd() == ClientCode::Login.into_u32() {
+                    //封装成gateuser到管理器中
+                    lock.temp_channel_2_gate_user(user_id);
+                }
+                let gate_user = lock.get_mut_user_channel_channel(&user_id);
                 match gate_user {
                     Some(user) => {
                         user.get_tcp_mut_ref().send(packet.build_client_bytes());
-                        info!(
-                            "回给客户端消息,user_id:{},cmd:{}",
-                            packet.get_user_id(),
-                            packet.get_cmd(),
-                        );
+                        info!("回给客户端消息,user_id:{},cmd:{}", user_id, cmd,);
                     }
                     None => {
-                        if packet.get_cmd() == ClientCode::LeaveRoom.into_u32()
-                            || packet.get_cmd() == ClientCode::MemberLeaveNotice.into_u32()
+                        if cmd == ClientCode::LeaveRoom.into_u32()
+                            || cmd == ClientCode::MemberLeaveNotice.into_u32()
                         {
                             continue;
                         }
-                        warn!(
-                            "user data is null,id:{},cmd:{}",
-                            &packet.get_user_id(),
-                            packet.get_cmd()
-                        );
+                        warn!("user data is null,id:{},cmd:{}", &user_id, cmd);
                     }
                 }
             } else {

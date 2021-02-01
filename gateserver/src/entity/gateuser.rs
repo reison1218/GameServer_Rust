@@ -1,4 +1,3 @@
-use crate::net::http::notice_user_center;
 use std::sync::Arc;
 use tools::tcp::TcpSender;
 use ws::CloseCode;
@@ -25,9 +24,6 @@ impl GateUser {
             self.get_ws_ref().close(CloseCode::Invalid).unwrap();
         }
         if self.tcp.is_some() {}
-
-        //通知用户中心
-        async_std::task::spawn(notice_user_center(self.get_user_id(), "off_line"));
     }
 
     pub fn get_user_id(&self) -> u32 {

@@ -388,17 +388,14 @@ pub unsafe fn add_buff(
 }
 
 ///对翻开指定元素地图块上对玩家造成技能伤害
-pub unsafe fn skill_damage_opened_element(
+pub fn skill_damage_opened_element(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
     _: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    let battle_data_ptr = battle_data as *mut BattleData;
-    let cter = battle_data_ptr
-        .as_mut()
-        .unwrap()
+    let cter = battle_data
         .get_battle_cter_mut(Some(user_id), true)
         .unwrap();
     let skill = cter.skills.get(&skill_id);
@@ -413,10 +410,7 @@ pub unsafe fn skill_damage_opened_element(
     let skill = skill.unwrap();
     let skill_damage = skill.skill_temp.par1 as i16;
 
-    let target_array = battle_data_ptr
-        .as_mut()
-        .unwrap()
-        .get_target_array(user_id, skill_id);
+    let target_array = battle_data.get_target_array(user_id, skill_id);
     if let Err(e) = target_array {
         warn!("{:?}", e);
         return None;
@@ -425,24 +419,27 @@ pub unsafe fn skill_damage_opened_element(
     let mut is_last_one = false;
 
     //计算技能伤害
-    for index_temp in 0..target_array.len() {
-        let index = target_array.get(index_temp).unwrap();
-        let index = *index;
-        if index_temp == target_array.len() - 1 {
-            is_last_one = true;
+    unsafe {
+        for index_temp in 0..target_array.len() {
+            let index = target_array.get(index_temp).unwrap();
+            let index = *index;
+            if index_temp == target_array.len() - 1 {
+                is_last_one = true;
+            }
+            let map_cell = battle_data.tile_map.map_cells.get(index);
+            if let None = map_cell {
+                continue;
+            }
+            let target_id = map_cell.unwrap().user_id;
+            let target_pt =
+                battle_data.deduct_hp(user_id, target_id, Some(skill_damage), is_last_one);
+            if let Err(e) = target_pt {
+                warn!("{:?}", e);
+                continue;
+            }
+            let target_pt = target_pt.unwrap();
+            au.targets.push(target_pt);
         }
-        let map_cell = battle_data.tile_map.map_cells.get(index);
-        if let None = map_cell {
-            continue;
-        }
-        let target_id = map_cell.unwrap().user_id;
-        let target_pt = battle_data.deduct_hp(user_id, target_id, Some(skill_damage), is_last_one);
-        if let Err(e) = target_pt {
-            warn!("{:?}", e);
-            continue;
-        }
-        let target_pt = target_pt.unwrap();
-        au.targets.push(target_pt);
     }
     None
 }

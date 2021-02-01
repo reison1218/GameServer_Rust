@@ -38,7 +38,7 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
         anyhow::bail!("this user_id is invalid!user_id:{}", user_id)
     }
     let pid = pid.unwrap();
-    let res: Option<String> = redis_write.hget(0, "users", pid.as_str());
+    let res: Option<String> = redis_write.hget(0, REDIS_KEY_USERS, pid.as_str());
     if res.is_none() {
         anyhow::bail!("this user_id is invalid!user_id:{}", user_id)
     }
@@ -69,44 +69,4 @@ fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
         res = true;
     }
     res
-}
-
-fn modify_redis_user(user_id: u32, is_login: bool) {
-    let mut redis_write = REDIS_POOL.lock().unwrap();
-    let pid: Option<String> = redis_write.hget(
-        REDIS_INDEX_USERS,
-        REDIS_KEY_UID_2_PID,
-        user_id.to_string().as_str(),
-    );
-    if pid.is_none() {
-        return;
-    }
-    let pid = pid.unwrap();
-    let res: Option<String> = redis_write.hget(REDIS_INDEX_USERS, REDIS_KEY_USERS, pid.as_str());
-    if res.is_none() {
-        return;
-    }
-    let res = res.unwrap();
-    let json = Value::from_str(res.as_str());
-
-    match json {
-        Ok(mut json_value) => {
-            let json_res = json_value.as_object_mut();
-            if json_res.is_some() {
-                json_res
-                    .unwrap()
-                    .insert("on_line".to_owned(), Value::from(is_login));
-
-                let _: Option<u32> = redis_write.hset(
-                    0,
-                    "users",
-                    pid.to_string().as_str(),
-                    json_value.to_string().as_str(),
-                );
-            }
-        }
-        Err(e) => {
-            error!("{:?}", e);
-        }
-    }
 }

@@ -1,5 +1,4 @@
 use crate::entity::save_player_http;
-use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::game_mgr::GameMgr;
 use crate::CONF_MAP;
 use async_std::sync::Mutex;
@@ -10,7 +9,13 @@ use serde_json::Value;
 use serde_json::{json, Map};
 use std::sync::Arc;
 use std::time::Duration;
-use tools::http::HttpServerHandler;
+use tools::http::{HttpMethod, HttpServerHandler};
+
+///通知用户中心类型
+pub enum UserCenterNoticeType {
+    Login,
+    OffLine,
+}
 
 ///保存玩家数据
 pub struct SavePlayerHttpHandler {
@@ -67,23 +72,27 @@ impl HttpServerHandler for StopServerHttpHandler {
 }
 
 ///异步通知用户中心
-#[allow(dead_code)]
-pub async fn notice_user_center(user_id: u32, _type: &str) {
-    let mut login = false;
-    if _type.eq("login") {
-        login = true;
+pub async fn notice_user_center(user_id: u32, notice_type: UserCenterNoticeType) {
+    let is_login;
+    match notice_type {
+        UserCenterNoticeType::Login => is_login = true,
+        UserCenterNoticeType::OffLine => is_login = false,
     }
-    modify_redis_user(user_id, "on_line".to_string(), Value::from(login));
     //通知用户中心
     let http_port: &str = CONF_MAP.get_str("user_center_state");
     let game_id: usize = CONF_MAP.get_usize("game_id");
     let mut map: Map<String, JsonValue> = Map::new();
     map.insert("user_id".to_owned(), JsonValue::from(user_id));
     map.insert("game_id".to_owned(), JsonValue::from(game_id));
-    map.insert("type".to_owned(), JsonValue::from(_type));
+    map.insert("type".to_owned(), JsonValue::from(is_login));
     let value = JsonValue::from(map);
-    let res =
-        tools::http::send_http_request(http_port, "center/user_state", "post", Some(value)).await;
+    let res = tools::http::send_http_request(
+        http_port,
+        "center/user_state",
+        HttpMethod::POST,
+        Some(value),
+    )
+    .await;
     match res {
         Err(e) => {
             error!("{:?}", e.to_string());

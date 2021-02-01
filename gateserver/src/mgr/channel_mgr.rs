@@ -20,6 +20,8 @@ pub struct ChannelMgr {
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
     pub channels: HashMap<usize, u32>,
+    //临时会话map
+    pub temp_channels: HashMap<u32, Option<TcpSender>>,
 }
 
 impl ChannelMgr {
@@ -32,6 +34,7 @@ impl ChannelMgr {
             game_center_client_channel: None,
             user_channel: players,
             channels: HashMap::new(),
+            temp_channels: HashMap::new(),
         };
         cm
     }
@@ -96,7 +99,6 @@ impl ChannelMgr {
     }
 
     ///写到游戏中心服
-    #[warn(unused_must_use)]
     pub fn write_to_game_center(&mut self, packet: Packet) {
         if self.game_center_client_channel.is_none() {
             error!("disconnect with Game-Center,pls connect Game-Center before send packet!");
@@ -107,6 +109,19 @@ impl ChannelMgr {
         if let Err(e) = size {
             error!("{:?}", e);
         }
+    }
+
+    ///将临时到tcpsender转化到gateuser
+    pub fn temp_channel_2_gate_user(&mut self, user_id: u32) {
+        let res = self.temp_channels.remove(&user_id);
+        if let None = res {
+            error!(
+                "temp_channels could not find tcpsender for user_id:{}",
+                user_id
+            );
+        }
+        let res = res.unwrap();
+        self.add_gate_user(user_id, None, res);
     }
 
     //添加gateuser

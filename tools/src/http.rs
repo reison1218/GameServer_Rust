@@ -7,6 +7,11 @@ use async_std::task;
 use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
 use serde_json::{Error, Value};
 
+pub enum HttpMethod {
+    POST,
+    GET,
+}
+
 pub trait HttpServerHandler: Send + Sync {
     fn get_path(&self) -> &str;
     fn execute(
@@ -132,14 +137,13 @@ async fn accept(
 pub async fn send_http_request(
     ip_port: &str,
     path: &str,
-    method: &str,
+    method: HttpMethod,
     params: Option<Value>,
 ) -> Result<Value, HttpTypesError> {
     let http_method: Option<Method>;
     match method {
-        "post" => http_method = Some(Method::Post),
-        "get" => http_method = Some(Method::Get),
-        _ => http_method = Some(Method::Post),
+        HttpMethod::POST => http_method = Some(Method::Post),
+        HttpMethod::GET => http_method = Some(Method::Get),
     }
     let stream = TcpStream::connect(ip_port).await?;
     let peer_addr = stream.peer_addr()?;

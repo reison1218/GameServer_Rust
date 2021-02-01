@@ -1,6 +1,10 @@
 use crate::entity::user::UserData;
-use crate::entity::user_info::{create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name, punish_match, search_room, show_rank, summary, sync_rank, update_last_season_rank};
+use crate::entity::user_info::{
+    create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name,
+    punish_match, search_room, show_rank, summary, sync_rank, update_last_season_rank,
+};
 use crate::entity::{Entity, EntityData};
+use crate::net::http::{notice_user_center, UserCenterNoticeType};
 use crate::SEASON;
 use chrono::Local;
 use log::{error, info, warn};
@@ -16,17 +20,16 @@ use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
-
 pub struct RankInfoPtPtr(pub *const RankInfoPt);
 unsafe impl Send for RankInfoPtPtr {}
 unsafe impl Sync for RankInfoPtPtr {}
 ///gameMgr结构体
 pub struct GameMgr {
-    pub users: HashMap<u32, UserData>, //玩家数据
-    pub rank: Vec<RankInfoPt>,         //排行榜快照，从排行榜服务器那边过来的
-    pub user_rank:HashMap<u32,RankInfoPtPtr>,//玩家对应的排行榜数据，为了避免遍历
-    pub last_season_rank:Vec<RankInfoPt>,//上一赛季排行榜
-    sender: Option<TcpSender>,         //tcpchannel
+    pub users: HashMap<u32, UserData>,          //玩家数据
+    pub rank: Vec<RankInfoPt>,                  //排行榜快照，从排行榜服务器那边过来的
+    pub user_rank: HashMap<u32, RankInfoPtPtr>, //玩家对应的排行榜数据，为了避免遍历
+    pub last_season_rank: Vec<RankInfoPt>,      //上一赛季排行榜
+    sender: Option<TcpSender>,                  //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
 }
 
@@ -38,8 +41,8 @@ impl GameMgr {
             users,
             sender: None,
             rank: Vec::new(),
-            user_rank:HashMap::new(),
-            last_season_rank:Vec::new(),
+            user_rank: HashMap::new(),
+            last_season_rank: Vec::new(),
             cmd_map: HashMap::new(),
         };
         //初始化命令
@@ -49,6 +52,9 @@ impl GameMgr {
 
     ///初始化排行榜
     pub fn init_rank(&mut self) {
+        if self.rank.len() > 0 {
+            return;
+        }
         self.send_2_server(RankCode::GetRank.into_u32(), 0, Vec::new());
     }
 
@@ -177,7 +183,8 @@ impl GameMgr {
             GameCode::UpdateLastSeasonRankPush.into_u32(),
             update_last_season_rank,
         );
-        self.cmd_map.insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
+        self.cmd_map
+            .insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
     }
 }
@@ -289,6 +296,8 @@ fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let user = gm.users.remove(&user_id);
     if let Some(mut user_data) = user {
         user_data.update_off();
+        //通知用户中心
+        async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
         info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
     }
     Ok(())

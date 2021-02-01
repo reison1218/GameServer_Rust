@@ -69,11 +69,11 @@ fn main() {
     //创建核心结构体，channel管理器，因为涉及到多线程异步，所以创建结构体的arc引用计数器指针
     let cm = Arc::new(Mutex::new(ChannelMgr::new()));
 
-    //连接游戏服务器
-    init_game_tcp_connect(cm.clone());
-
     //连接游戏中心服
     init_game_center_tcp_connect(cm.clone());
+
+    //连接游戏服务器
+    init_game_tcp_connect(cm.clone());
 
     //初始化http服务
     init_http_server(cm.clone());
@@ -114,6 +114,7 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
 ///初始化游戏服务器tcp客户端链接
 fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
     let game = async {
+        async_std::task::sleep(Duration::from_millis(50)).await;
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("game_port");
         info!("开始链接游戏服:{:?}...", address);

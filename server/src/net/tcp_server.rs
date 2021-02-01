@@ -5,7 +5,9 @@ use crate::entity::character::Characters;
 use crate::entity::grade_frame::GradeFrame;
 use crate::entity::league::League;
 use crate::entity::soul::Soul;
-use crate::entity::user::{UserData, insert_characters, insert_grade_frame, insert_league, insert_soul, insert_user};
+use crate::entity::user::{
+    insert_characters, insert_grade_frame, insert_league, insert_soul, insert_user, UserData,
+};
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
@@ -19,6 +21,8 @@ use std::sync::Arc;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 use tools::util::packet::Packet;
+
+use super::http::{notice_user_center, UserCenterNoticeType};
 
 #[derive(Clone)]
 struct TcpServerHandler {
@@ -121,7 +125,8 @@ async fn login(gm: Arc<Mutex<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
 
     let user = user_data.get_user_info_mut_ref();
     user.update_login();
-
+    //通知用户中心
+    async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
     //返回客户端
     let lr = user2proto(user_data);
     gm_lock.send_2_client(ClientCode::Login, user_id, lr.write_to_bytes()?);

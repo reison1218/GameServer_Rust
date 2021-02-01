@@ -130,6 +130,7 @@ impl GameCenterMgr {
         self.bound_user_w_gate(user_id, gate_token);
     }
 
+    ///将玩家绑定到路由服
     pub fn bound_user_w_gate(&mut self, user_id: u32, token: usize) {
         if user_id <= 0 {
             return;

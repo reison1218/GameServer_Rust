@@ -227,7 +227,7 @@ impl BattleData {
 
         //如果要删除
         if need_remove {
-            //处理技能状态
+            //处理玩家技能状态
             if buff.from_user.is_some() {
                 let from_user = buff.from_user.unwrap();
                 let from_cter = cters.as_mut().unwrap().get_mut(&from_user);
@@ -240,7 +240,6 @@ impl BattleData {
                     }
                 }
             }
-
             //如果是玩家身上的
             if let Some(cter) = cter_res {
                 cter.remove_buff(buff_id);

@@ -114,6 +114,7 @@ impl Handler for WebSocketHandler {
 }
 
 impl WebSocketHandler {
+    #[warn(dead_code)]
     fn handle_binary(&mut self, mut packet: Packet) -> anyhow::Result<()> {
         let token = self.ws.token().0;
         let mut lock = block_on(self.cm.lock());
@@ -140,7 +141,7 @@ impl WebSocketHandler {
                 //校验内存
                 let res = check_mem_online(&c_login.get_user_id(), &mut lock);
                 if !res {
-                    modify_redis_user(c_login.get_user_id(), false);
+                    //todo
                 } else {
                     let mut res = S_USER_LOGIN::new();
                     res.set_is_succ(false);

@@ -135,6 +135,14 @@ impl UserData {
         if let Err(e) = res {
             error!("{:?}", e);
         }
+        let res = self.soul.update();
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
+        let res = self.grade_frame.update();
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
         self.clear_version();
     }
 
