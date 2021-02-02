@@ -1,4 +1,5 @@
 {
     "rust-analyzer.lens.methodReferences": true,
-    "rust-analyzer.lens.references": true
+    "rust-analyzer.lens.references": true,
+    "editor.formatOnSave": true
 }

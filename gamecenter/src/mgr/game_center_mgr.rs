@@ -115,7 +115,7 @@ impl GameCenterMgr {
         }
     }
 
-    pub fn handler(&mut self, packet: &Packet, gate_token: Option<usize>) {
+    pub fn handler(&mut self, packet: &Packet, gate_token: usize) {
         let cmd = packet.get_cmd();
         //开始战斗,负载均衡，分配战斗服务器
         if cmd == BattleCode::Start.into_u32() {
@@ -123,10 +123,9 @@ impl GameCenterMgr {
         }
         //绑定玩家到gate
         let user_id = packet.get_user_id();
-        if user_id <= 0 || gate_token.is_none() {
+        if user_id <= 0 || gate_token<=0 {
             return;
         }
-        let gate_token = gate_token.unwrap();
         self.bound_user_w_gate(user_id, gate_token);
     }
 

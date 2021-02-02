@@ -47,6 +47,8 @@ impl RoomMgr {
         rm
     }
 
+    ///删除房间成员，不推送给客户端
+    ///user_id:玩家id
     pub fn remove_member_without_push(&mut self, user_id: u32) {
         let res = self.player_room.get(&user_id);
         if res.is_none() {

@@ -132,39 +132,39 @@ fn main() {
 fn init_season(gm: Arc<Mutex<GameMgr>>) {
     query_last_season_rank(gm);
     let mut lock = REDIS_POOL.lock().unwrap();
-    unsafe {
-        let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
-        if let None = res {
-            error!("redis do not has season data about game:{}", 101);
-            return;
-        }
-        let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
-        let str = res.unwrap();
-        let value = serde_json::from_str(str.as_str());
-        if let Err(e) = value {
-            error!("{:?}", e);
-            return;
-        }
-        let value: Value = value.unwrap();
-        let map = value.as_object();
-        if map.is_none() {
-            warn!("the map is None for JsonValue!");
-            return;
-        }
-        let map = map.unwrap();
+    let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
+    if let None = res {
+        error!("redis do not has season data about game:{}", 101);
+        return;
+    }
+    let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
+    let str = res.unwrap();
+    let value = serde_json::from_str(str.as_str());
+    if let Err(e) = value {
+        error!("{:?}", e);
+        return;
+    }
+    let value: Value = value.unwrap();
+    let map = value.as_object();
+    if map.is_none() {
+        warn!("the map is None for JsonValue!");
+        return;
+    }
+    let map = map.unwrap();
 
-        let season_id = map.get("season_id");
-        if season_id.is_none() {
-            warn!("the season_id is None!");
-            return;
-        }
-        let season_id = season_id.unwrap();
-        let season_id = season_id.as_u64();
-        if season_id.is_none() {
-            warn!("the season_id is None!");
-            return;
-        }
-        let season_id = season_id.unwrap();
+    let season_id = map.get("season_id");
+    if season_id.is_none() {
+        warn!("the season_id is None!");
+        return;
+    }
+    let season_id = season_id.unwrap();
+    let season_id = season_id.as_u64();
+    if season_id.is_none() {
+        warn!("the season_id is None!");
+        return;
+    }
+    let season_id = season_id.unwrap();
+    unsafe {
         SEASON.season_id = season_id as u32;
         let next_update_time = map.get("next_update_time");
         if next_update_time.is_none() {
