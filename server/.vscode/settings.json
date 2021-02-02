@@ -1,3 +1,6 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "editor.formatOnSave": true,
+    "rust-analyzer.lens.methodReferences": true,
+    "rust-analyzer.lens.references": true
 }
