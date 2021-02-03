@@ -1,3 +1,5 @@
+use crate::robot::RobotActionType;
+
 use super::*;
 use tools::cmd_code::BattleCode;
 
@@ -54,7 +56,7 @@ impl RobotStatusAction for AttackRobotAction {
         }
         //创建机器人任务执行普通攻击
         let mut robot_task = RobotTask::default();
-        robot_task.cmd = ActionType::Attack.into();
+        robot_task.cmd = RobotActionType::Attack;
         let mut map = Map::new();
         map.insert("user_id".to_owned(), Value::from(self.robot_id));
         map.insert("target_index".to_owned(), Value::from(target_index));

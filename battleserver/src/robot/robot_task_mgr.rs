@@ -7,17 +7,18 @@ use log::error;
 use log::info;
 use protobuf::Message;
 use serde_json::Value as JsonValue;
-use std::convert::TryFrom;
 use std::time::Duration;
 use tools::macros::GetMutRef;
 use tools::protos::battle::C_ACTION;
 use tools::util::packet::Packet;
 
+use super::RobotActionType;
+
 #[derive(Debug, Clone, Default)]
 pub struct RobotTask {
-    pub cmd: u8,         //要执行的命令
-    pub delay: u64,      //要延迟执行的时间
-    pub data: JsonValue, //数据
+    pub cmd: RobotActionType, //要执行的命令
+    pub delay: u64,           //要延迟执行的时间
+    pub data: JsonValue,      //数据
 }
 
 ///初始化定时执行任务
@@ -37,14 +38,15 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
             let task = res.unwrap();
             let delay = task.delay;
 
-            let task_cmd = ActionType::try_from(task.cmd).unwrap();
+            let task_cmd = task.cmd;
             let rm_clone = rm.clone();
             let fnc = match task_cmd {
-                ActionType::Attack => attack,
-                ActionType::Skill => use_skill,
-                ActionType::Open => open_cell,
-                ActionType::Skip => skip_turn,
-                ActionType::UseItem => use_item,
+                RobotActionType::Attack => attack,
+                RobotActionType::Skill => use_skill,
+                RobotActionType::Open => open_cell,
+                RobotActionType::Skip => skip_turn,
+                RobotActionType::UseItem => use_item,
+                RobotActionType::ChoiceIndex => attack,
                 _ => attack,
             };
             let m = move || fnc(rm_clone, task);
@@ -57,6 +59,18 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
         error!("{:?}", e);
     }
     info!("初始化定时器任务执行器成功!");
+}
+
+pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
+    let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 }
 
 ///普通攻击

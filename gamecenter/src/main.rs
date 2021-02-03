@@ -3,6 +3,7 @@ mod mgr;
 mod net;
 
 use crate::mgr::game_center_mgr::GameCenterMgr;
+use crate::net::http::{ReloadTempsHandler, UpdateSeasonHandler};
 use crate::net::room_tcp_client::RoomTcpClientHandler;
 use crate::net::{battle_tcp_server, gate_tcp_server};
 use async_std::sync::Mutex;
@@ -10,12 +11,10 @@ use net::http::StopAllServerHandler;
 use net::rank_tcp_client::RankTcpClientHandler;
 use std::env;
 use std::sync::Arc;
-use tools::conf::Conf;
-use tools::my_log::init_log;
-use tools::tcp::ClientHandler;
-use crate::net::http::{ReloadTempsHandler, UpdateSeasonHandler};
-use tools::http::HttpServerHandler;
 use std::time::Duration;
+use tools::conf::Conf;
+use tools::http::HttpServerHandler;
+use tools::tcp::ClientHandler;
 
 #[macro_use]
 extern crate lazy_static;
@@ -34,16 +33,24 @@ lazy_static! {
 
 fn main() {
     let game_center = Arc::new(Mutex::new(GameCenterMgr::new()));
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
+
     //初始化日志模块
-    init_log(info_log, error_log);
+    init_log();
+
     //初始化tcp服务端
     init_tcp_server(game_center.clone());
+
     //初始化http服务器
     init_http_server(game_center.clone());
+
     //初始化tcp客户端
     init_tcp_client(game_center);
+}
+
+fn init_log() {
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化tcp服务端
@@ -57,14 +64,14 @@ fn init_tcp_server(gm: Arc<Mutex<GameCenterMgr>>) {
 
 ///初始化tcp客户端
 fn init_tcp_client(gm: Arc<Mutex<GameCenterMgr>>) {
-    let mut rth = RoomTcpClientHandler { gm:gm.clone() };
+    let mut rth = RoomTcpClientHandler { gm: gm.clone() };
     let address: &str = CONF_MAP.get_str("room_port");
-    let m =  async move{
+    let m = async move {
         rth.on_read(address.to_string()).await;
     };
     async_std::task::spawn(m);
     let address: &str = CONF_MAP.get_str("rank_port");
-    let mut rth = RankTcpClientHandler{gm};
+    let mut rth = RankTcpClientHandler { gm };
     let res = rth.on_read(address.to_string());
     async_std::task::block_on(res);
 }

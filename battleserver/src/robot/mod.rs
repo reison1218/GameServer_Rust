@@ -12,8 +12,42 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use std::collections::VecDeque;
 use tools::macros::GetMutRef;
+
+pub const MAX_MEMORY_SIZE: usize = 5;
+
+///回合行为类型
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
+pub enum RobotActionType {
+    ///无效值
+    None,
+    ///选择位置
+    ChoiceIndex,
+    ///普通攻击
+    Attack,
+    ///使用道具
+    UseItem,
+    ///跳过turn
+    Skip,
+    ///翻块
+    Open,
+    ///使用技能
+    Skill,
+    ///触发buff
+    Buff,
+    ///结束展示地图块(解锁玩家状态)
+    EndShowMapCell,
+}
+
+impl Default for RobotActionType {
+    fn default() -> Self {
+        RobotActionType::None
+    }
+}
 
 ///记忆地图块结构体
 #[derive(Default, Clone)]

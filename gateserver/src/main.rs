@@ -16,7 +16,6 @@ use crate::net::tcp_server;
 use std::env;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
-use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
 use tools::tcp::ClientHandler;
 use tools::thread_pool::MyThreadPool;
@@ -59,15 +58,11 @@ const REDIS_KEY_USERS: &str = "users";
 const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
 
 fn main() {
-    //获得日志配置
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-
-    //初始化日志
-    init_log(info_log, error_log);
-
     //创建核心结构体，channel管理器，因为涉及到多线程异步，所以创建结构体的arc引用计数器指针
     let cm = Arc::new(Mutex::new(ChannelMgr::new()));
+
+    //初始化日志
+    init_log();
 
     //连接游戏中心服
     init_game_center_tcp_connect(cm.clone());
@@ -80,6 +75,12 @@ fn main() {
 
     //初始化与客户端通信的模块
     init_net_server(cm);
+}
+
+fn init_log() {
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化http服务端

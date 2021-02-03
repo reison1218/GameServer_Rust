@@ -14,7 +14,6 @@ use db::dbtool::DbPool;
 use std::sync::Arc;
 use task_timer::init_timer;
 use tools::conf::Conf;
-use tools::my_log::init_log;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 
 #[macro_use]
@@ -51,17 +50,25 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 fn main() {
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-    //初始化日志模块
-    init_log(info_log, error_log);
     let rm = Arc::new(Mutex::new(RankMgr::new()));
+
+    //初始化日志模块
+    init_log();
+
     //初始化排行榜
     init_rank(rm.clone());
+
     //初始化定时器
     init_timer(rm.clone());
+
     //初始化网络
     init_tcp_server(rm.clone());
+}
+
+fn init_log() {
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化tcp服务端

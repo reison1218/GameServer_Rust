@@ -7,27 +7,27 @@ use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde_json::Value as JsonValue;
-use std::convert::TryFrom;
 use std::time::Duration;
 
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
 pub enum TaskCmd {
-    MatchRoomStart = 101,     //匹配房间开始任务
-    ChoiceIndex = 102,        //选择占位
-    BattleTurnTime = 103,     //战斗时间回合限制
-    MaxBattleTurnTimes = 104, //战斗turn达到最大
+    None,               //没有任何意义,默认值
+    MatchRoomStart,     //匹配房间开始任务
+    ChoiceIndex,        //选择占位
+    BattleTurnTime,     //战斗时间回合限制
+    MaxBattleTurnTimes, //战斗turn达到最大
 }
 
-impl TaskCmd {
-    pub fn from(value: u16) -> Self {
-        TaskCmd::try_from(value).unwrap()
+impl Default for TaskCmd {
+    fn default() -> Self {
+        TaskCmd::None
     }
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Task {
-    pub cmd: u16,        //要执行的命令
+    pub cmd: TaskCmd,    //要执行的命令
     pub delay: u64,      //要延迟执行的时间
     pub data: JsonValue, //数据
 }

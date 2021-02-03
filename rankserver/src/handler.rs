@@ -97,23 +97,15 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     //掉段处理
     rm.rank_vec.iter_mut().for_each(|x| {
         x.league.id -= 1;
+        let league_id = x.league.id;
         let sql_res;
         let mut task = Task::default();
         if x.league.id <= 0 {
-            x.league.id = 0;
-            x.rank = -1;
-            x.league.league_time = 0;
-            x.league.league_score = 0;
+            x.reset();
             sql_res = format!(r#"update t_u_league set content = JSON_SET(content, "$.rank", -1),content=JSON_SET(content,"&.score",0),content=JSON_SET(content,"$.league_time",0),content=JSON_SET(content,"$.id",0) where user_id = {}"#,x.user_id);
             remove_v.push(x.user_id);
         }else {
-            let res = crate::TEMPLATES
-                .get_league_temp_mgr_ref()
-                .get_temp(&x.league.id)
-                .unwrap();
-            let time = chrono::Local::now();
-            x.league.league_score = res.score;
-            x.league.league_time = time.timestamp_millis();
+            x.update_league(league_id);
             sql_res = format!(r#"update t_u_league set content=JSON_SET(content,"&.score",{}),content=JSON_SET(content,"$.league_time",{}),content=JSON_SET(content,"$.id",{}) where user_id = {}"#,x.league.league_score,x.league.league_time,x.league.id,x.user_id);
         }
         task.sql = sql_res;

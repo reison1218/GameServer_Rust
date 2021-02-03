@@ -23,7 +23,6 @@ use serde_json::Value;
 use std::env;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
-use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 
@@ -106,11 +105,8 @@ impl Season {
 fn main() {
     let game_mgr = Arc::new(Mutex::new(GameMgr::new()));
 
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-
     //初始化日志模块
-    init_log(info_log, error_log);
+    init_log();
 
     //初始化配置
     init_temps();
@@ -126,6 +122,12 @@ fn main() {
 
     //初始化tcp服务端
     init_tcp_server(game_mgr.clone());
+}
+
+fn init_log() {
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化赛季信息

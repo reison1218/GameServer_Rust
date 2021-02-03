@@ -16,7 +16,6 @@ use serde_json::Value;
 use std::env;
 use std::sync::atomic::AtomicU32;
 use tools::conf::Conf;
-use tools::my_log::init_log;
 use tools::redis_pool::RedisPoolTool;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
 
@@ -89,20 +88,29 @@ fn init_templates_mgr() -> TemplatesMgr {
 }
 
 fn main() {
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
-    //初始化日志模块
-    init_log(info_log, error_log);
-    //初始化配置
-    init_temps();
     //初始化room_mgr多线程饮用计数器指针
     let room_mgr = Arc::new(Mutex::new(RoomMgr::new()));
+
+    //初始化日志模块
+    init_log();
+
+    //初始化配置
+    init_temps();
+
     //初始化定时器任务
     init_timer(room_mgr.clone());
+
     //初始化赛季
     init_season();
+
     //初始化tcp服务
     init_tcp_server(room_mgr.clone());
+}
+
+fn init_log() {
+    let info_log = CONF_MAP.get_str("info_log_path");
+    let error_log = CONF_MAP.get_str("error_log_path");
+    tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化赛季信息

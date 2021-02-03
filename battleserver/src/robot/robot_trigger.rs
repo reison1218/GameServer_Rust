@@ -3,6 +3,8 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use tools::macros::GetMutRef;
 
+use super::MAX_MEMORY_SIZE;
+
 ///触发器类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -28,7 +30,7 @@ impl RobotData {
     pub fn trigger_see_map_cell(&self, rc: RememberCell) {
         let self_mut_ref = self.get_mut_ref();
         //如果数量大于5则忘记尾端
-        if self_mut_ref.remember_map_cell.len() > 5 {
+        if self_mut_ref.remember_map_cell.len() > MAX_MEMORY_SIZE {
             self_mut_ref.remember_map_cell.pop_back();
         }
         //如果这个块已经被记忆，则刷新位置

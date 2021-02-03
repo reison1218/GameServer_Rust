@@ -254,7 +254,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         return Ok(());
     }
     //校验操作类型
-    if pos_type < PosType::ChangePos as u32 || pos_type > PosType::CancelPos as u32 {
+    if pos_type < PosType::ChangePos.into_u32() || pos_type > PosType::CancelPos.into_u32() {
         warn!(
             "the pos_type is error!user_id:{},pos_type:{}",
             user_id, pos_type
@@ -579,7 +579,7 @@ pub fn update_season(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let season_id = usn.get_season_id();
     let next_update_time = usn.get_next_update_time();
     unsafe {
-        SEASON.season_id=season_id;
+        SEASON.season_id = season_id;
         SEASON.next_update_time = next_update_time;
     }
 

@@ -782,7 +782,7 @@ impl BattleData {
         let time_limit = self.turn_limit_time;
         let mut task = Task::default();
         task.delay = time_limit;
-        task.cmd = TaskCmd::BattleTurnTime as u16;
+        task.cmd = TaskCmd::BattleTurnTime;
 
         let mut map = serde_json::Map::new();
         map.insert("user_id".to_owned(), serde_json::Value::from(*user_id));

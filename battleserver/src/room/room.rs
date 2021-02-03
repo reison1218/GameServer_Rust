@@ -17,7 +17,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, GameCode,  RoomCode};
+use tools::cmd_code::{ClientCode, GameCode, RoomCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{RoomPt, WorldCellPt};
 use tools::protos::battle::{
@@ -840,7 +840,7 @@ impl Room {
             task.delay = 5000_u64;
             warn!("the choice_index_time of Constant config is None!pls check!");
         }
-        task.cmd = TaskCmd::ChoiceIndex as u16;
+        task.cmd = TaskCmd::ChoiceIndex;
 
         let mut map = serde_json::Map::new();
         map.insert("user_id".to_owned(), serde_json::Value::from(user_id));

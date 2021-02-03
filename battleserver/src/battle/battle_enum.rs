@@ -15,11 +15,11 @@ pub const TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
 ///技能限制类型
 pub mod skill_judge_type {
     ///hp限定：大于
-    pub static HP_LIMIT_GT: u32 = 1;
+    pub const HP_LIMIT_GT: u32 = 1;
     ///回合限制
-    pub static LIMIT_ROUND_TIMES: u32 = 2;
+    pub const LIMIT_ROUND_TIMES: u32 = 2;
     ///turn限制
-    pub static LIMIT_TURN_TIMES: u32 = 3;
+    pub const LIMIT_TURN_TIMES: u32 = 3;
 }
 
 ///技能类型
@@ -142,6 +142,13 @@ pub mod buff_type {
 pub enum PosType {
     ChangePos = 1, //切换架势
     CancelPos = 2, //取消架势
+}
+
+impl PosType {
+    pub fn into_u32(self) -> u32 {
+        let value: u8 = self.into();
+        value as u32
+    }
 }
 
 ///效果类型

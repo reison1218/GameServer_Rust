@@ -3,7 +3,6 @@ pub mod open_cell_action;
 pub mod robot_status;
 
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::ActionType;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_status::robot_status::RobotStatus;
 use crate::robot::robot_task_mgr::RobotTask;

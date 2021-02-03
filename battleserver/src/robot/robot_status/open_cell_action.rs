@@ -1,4 +1,5 @@
 use super::*;
+use crate::robot::RobotActionType;
 use crate::room::character::BattleCharacter;
 use log::error;
 use std::borrow::Borrow;
@@ -60,7 +61,7 @@ impl RobotStatusAction for OpenCellRobotAction {
 
         let robot_id = self.robot_id;
         let battle_cter = battle_data.battle_cter.get(&robot_id).unwrap();
-        let mut action_type = ActionType::Open.into_u8();
+        let mut action_type = RobotActionType::Open;
 
         //剩余翻块次数
         let residue_open_times = battle_cter.flow_data.residue_open_times;
@@ -106,7 +107,7 @@ impl RobotStatusAction for OpenCellRobotAction {
                     index = rand.gen_range(0, v.len());
                 } else {
                     //跳过turn
-                    action_type = ActionType::Skip.into_u8();
+                    action_type = RobotActionType::Skip;
                 }
             }
         }

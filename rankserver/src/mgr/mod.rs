@@ -30,6 +30,24 @@ pub struct RankInfo {
 unsafe impl Send for RankInfo {}
 
 impl RankInfo {
+    pub fn reset(&mut self) {
+        self.rank = -1;
+        self.league.id = 0;
+        self.league.league_time = 0;
+        self.league.league_score = 0;
+    }
+
+    pub fn update_league(&mut self, id: i8) {
+        let res = crate::TEMPLATES
+            .get_league_temp_mgr_ref()
+            .get_temp(&id)
+            .unwrap();
+        self.league.id = res.id;
+        let time = chrono::Local::now();
+        self.league.league_score = res.score;
+        self.league.league_time = time.timestamp_millis();
+    }
+
     pub fn get_insert_sql_str(&self) -> String {
         let mut map = serde_json::Map::new();
         map.insert("id".to_owned(), serde_json::Value::from(self.league.id));
