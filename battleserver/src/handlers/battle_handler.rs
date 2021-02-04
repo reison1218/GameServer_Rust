@@ -150,6 +150,10 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     unsafe {
         let cter = room.battle_data.get_battle_cter(None, false).unwrap();
         let current_cter_is_died = cter.is_died();
+        //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
+        if !current_cter_is_died || cter.robot_data.is_some() {
+            cter.robot_start_action();
+        }
         //判断是否进行结算
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
         if !is_summary && current_cter_is_died {

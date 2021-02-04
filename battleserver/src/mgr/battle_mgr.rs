@@ -51,6 +51,18 @@ impl BattleMgr {
     }
 
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let room = self.get_room_ref(&user_id);
+        match room {
+            Some(room) => {
+                let cter = room.get_battle_cter_ref(&user_id);
+                if let Some(cter) = cter {
+                    if cter.is_robot() {
+                        return;
+                    }
+                }
+            }
+            None => {}
+        }
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         let res = self.get_game_center_channel_mut();
         let size = res.send(bytes);

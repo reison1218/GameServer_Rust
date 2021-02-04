@@ -127,7 +127,7 @@ impl League {
             self.league_id = league_temp.id;
             let time = chrono::Local::now();
             self.league_time = time.timestamp_millis();
-        } 
+        }
         self.score
     }
 }
@@ -273,6 +273,15 @@ impl BattleCharacter {
             battle_cter.robot_data = Some(robot_data);
         }
         Ok(battle_cter)
+    }
+
+    pub fn can_use_skill(&self) -> bool {
+        for skill in self.skills.values() {
+            if skill.cd_times > 0 {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn get_robot_data_ref(&self) -> anyhow::Result<&RobotData> {

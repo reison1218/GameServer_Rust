@@ -3,7 +3,7 @@ use crate::robot::RobotActionType;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
-pub struct AttackRobotAction {
+pub struct ChoiceIndexRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
     pub battle_data: Option<*const BattleData>,
@@ -11,22 +11,22 @@ pub struct AttackRobotAction {
     pub sender: Option<Sender<RobotTask>>,
 }
 
-get_mut_ref!(AttackRobotAction);
+get_mut_ref!(ChoiceIndexRobotAction);
 
-impl AttackRobotAction {
+impl ChoiceIndexRobotAction {
     pub fn get_battle_data_ref(&self) -> &BattleData {
         unsafe { self.battle_data.unwrap().as_ref().unwrap() }
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
-        let mut attack_action = AttackRobotAction::default();
+        let mut attack_action = ChoiceIndexRobotAction::default();
         attack_action.battle_data = Some(battle_data);
         attack_action.sender = Some(sender);
         attack_action
     }
 }
 
-impl RobotStatusAction for AttackRobotAction {
+impl RobotStatusAction for ChoiceIndexRobotAction {
     fn set_sender(&self, sender: Sender<RobotTask>) {
         self.get_mut_ref().sender = Some(sender);
     }
@@ -41,19 +41,17 @@ impl RobotStatusAction for AttackRobotAction {
     }
 
     fn execute(&self) {
-        let res = self.get_battle_data_ref();
-        let mut target_index: usize = 0;
-        let mut cter_hp_max: i16 = 0;
-        for cter in res.battle_cter.values() {
-            if cter.get_cter_id() == self.cter_id {
-                continue;
-            }
-            if cter.base_attr.hp > cter_hp_max {
-                cter_hp_max = cter.base_attr.hp;
-                target_index = cter.get_map_cell_index();
-            }
+        let battle_data = self.get_battle_data_ref();
+        let mut v = Vec::new();
+        let size = battle_data.tile_map.un_pair_map.len();
+        for i in battle_data.tile_map.un_pair_map.keys() {
+            v.push(*i);
         }
-        self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0, size);
+
+        //创建机器人任务执行选择站位
+        self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
     }
 
     fn exit(&self) {

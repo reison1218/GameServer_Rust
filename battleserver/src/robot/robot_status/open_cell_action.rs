@@ -111,18 +111,7 @@ impl RobotStatusAction for OpenCellRobotAction {
                 }
             }
         }
-
-        //创建机器人任务执行普通攻击
-        let mut robot_task = RobotTask::default();
-        robot_task.cmd = action_type;
-        let mut map = Map::new();
-        map.insert("user_id".to_owned(), Value::from(self.robot_id));
-        map.insert("value".to_owned(), Value::from(index));
-        map.insert("cmd".to_owned(), Value::from(BattleCode::Action.into_u32()));
-        let res = self.sender.as_ref().unwrap().send(robot_task);
-        if let Err(e) = res {
-            error!("{:?}", e);
-        }
+        self.send_2_battle(index, action_type, BattleCode::Action);
     }
 
     fn exit(&self) {
@@ -131,6 +120,14 @@ impl RobotStatusAction for OpenCellRobotAction {
 
     fn get_status(&self) -> RobotStatus {
         self.status
+    }
+
+    fn get_robot_id(&self) -> u32 {
+        self.robot_id
+    }
+
+    fn get_sender(&self) -> &Sender<RobotTask> {
+        self.sender.as_ref().unwrap()
     }
 }
 

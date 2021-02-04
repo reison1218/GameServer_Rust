@@ -517,6 +517,15 @@ impl BattleData {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+        let cter = self.get_battle_cter(Some(user_id), false);
+        match cter {
+            Ok(cter) => {
+                if cter.is_robot() {
+                    return;
+                }
+            }
+            Err(_) => {}
+        }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
         let res = self.get_sender_mut().send(bytes);
         if let Err(e) = res {

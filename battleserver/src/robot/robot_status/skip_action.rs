@@ -3,7 +3,7 @@ use crate::robot::RobotActionType;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
-pub struct AttackRobotAction {
+pub struct SkipRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
     pub battle_data: Option<*const BattleData>,
@@ -11,22 +11,22 @@ pub struct AttackRobotAction {
     pub sender: Option<Sender<RobotTask>>,
 }
 
-get_mut_ref!(AttackRobotAction);
+get_mut_ref!(SkipRobotAction);
 
-impl AttackRobotAction {
+impl SkipRobotAction {
     pub fn get_battle_data_ref(&self) -> &BattleData {
         unsafe { self.battle_data.unwrap().as_ref().unwrap() }
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
-        let mut attack_action = AttackRobotAction::default();
+        let mut attack_action = SkipRobotAction::default();
         attack_action.battle_data = Some(battle_data);
         attack_action.sender = Some(sender);
         attack_action
     }
 }
 
-impl RobotStatusAction for AttackRobotAction {
+impl RobotStatusAction for SkipRobotAction {
     fn set_sender(&self, sender: Sender<RobotTask>) {
         self.get_mut_ref().sender = Some(sender);
     }
@@ -53,7 +53,8 @@ impl RobotStatusAction for AttackRobotAction {
                 target_index = cter.get_map_cell_index();
             }
         }
-        self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);
+        //创建机器人任务执行普通攻击
+        self.send_2_battle(target_index, RobotActionType::Skip, BattleCode::Action);
     }
 
     fn exit(&self) {

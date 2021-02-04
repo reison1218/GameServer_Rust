@@ -9,16 +9,16 @@ use protobuf::Message;
 use serde_json::Value as JsonValue;
 use std::time::Duration;
 use tools::macros::GetMutRef;
-use tools::protos::battle::C_ACTION;
+use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX};
 use tools::util::packet::Packet;
 
 use super::RobotActionType;
 
 #[derive(Debug, Clone, Default)]
 pub struct RobotTask {
-    pub cmd: RobotActionType, //要执行的命令
-    pub delay: u64,           //要延迟执行的时间
-    pub data: JsonValue,      //数据
+    pub action_type: RobotActionType, //要执行的命令
+    pub delay: u64,                   //要延迟执行的时间
+    pub data: JsonValue,              //数据
 }
 
 ///初始化定时执行任务
@@ -38,7 +38,7 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
             let task = res.unwrap();
             let delay = task.delay;
 
-            let task_cmd = task.cmd;
+            let task_cmd = task.action_type;
             let rm_clone = rm.clone();
             let fnc = match task_cmd {
                 RobotActionType::Attack => attack,
@@ -46,7 +46,7 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
                 RobotActionType::Open => open_cell,
                 RobotActionType::Skip => skip_turn,
                 RobotActionType::UseItem => use_item,
-                RobotActionType::ChoiceIndex => attack,
+                RobotActionType::ChoiceIndex => choice_index,
                 _ => attack,
             };
             let m = move || fnc(rm_clone, task);
@@ -61,6 +61,7 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
     info!("初始化定时器任务执行器成功!");
 }
 
+///机器人选择站位函数
 pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
@@ -71,6 +72,20 @@ pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
     let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
+
+    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut proto = C_CHOOSE_INDEX::new();
+    proto.set_index(target_index);
+    packet.set_data(proto.write_to_bytes().unwrap().as_slice());
+
+    let lock = block_on(rm.lock());
+    //拿到BattleMgr的可变指针
+    let rm_mut_ref = lock.get_mut_ref();
+    let func = lock.cmd_map.get(&cmd).unwrap();
+    let res = func(rm_mut_ref, packet);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
 }
 
 ///普通攻击

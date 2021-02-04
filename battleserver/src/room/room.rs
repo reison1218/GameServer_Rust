@@ -250,6 +250,15 @@ impl Room {
 
     ///回其他服消息
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
+        let cter = self.get_battle_cter_ref(&user_id);
+        match cter {
+            Some(cter) => {
+                if cter.is_robot() {
+                    return;
+                }
+            }
+            _ => {}
+        }
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         let res = self.tcp_sender.send(bytes);
         if let Err(e) = res {
@@ -258,6 +267,9 @@ impl Room {
     }
 
     ///开始选择占位
+    ///修改房间状态为RoomState::ChoiceIndex
+    ///将角色转换成战斗角色
+    ///创建选择下标检测任务
     pub fn start_choice_index(&mut self) {
         self.state = RoomState::ChoiceIndex;
         //把cter转换成battle_cter
@@ -427,13 +439,15 @@ impl Room {
                 index_v.remove(remove_index);
             }
         }
-
+        //开始选择下标
+        self.start_choice_index();
+        //行动turn索引从0开始
         self.set_next_turn_index(0);
+        //如果第一个玩家是0,则跳过到下一个
         let next_turn_user = self.get_turn_user(None).unwrap();
         if next_turn_user == 0 {
             self.add_next_turn_index();
         }
-        self.start_choice_index();
     }
 
     pub fn turn_order_contains(&self, user_id: &u32) -> bool {

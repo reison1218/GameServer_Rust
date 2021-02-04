@@ -6,6 +6,8 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
 
+use super::goal_evaluator::choice_index_evaluator::ChoiceIndexGoalEvaluator;
+
 #[derive(Default)]
 pub struct GoalThink {
     goal_evaluators: Vec<Box<dyn GoalEvaluator>>,
@@ -22,8 +24,10 @@ impl GoalThink {
         let mut gt = GoalThink::default();
         let attack = Box::new(AttackTargetGoalEvaluator::default());
         let open_cell = Box::new(OpenCellGoalEvaluator::default());
+        let choice_index = Box::new(ChoiceIndexGoalEvaluator::default());
         gt.goal_evaluators.push(attack);
         gt.goal_evaluators.push(open_cell);
+        gt.goal_evaluators.push(choice_index);
         gt
     }
 
