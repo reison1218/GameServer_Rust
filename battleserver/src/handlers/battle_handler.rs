@@ -22,12 +22,12 @@ use tools::util::packet::Packet;
 
 ///行动请求
 #[track_caller]
-pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn action(bm: &mut BattleMgr, packet: Packet) {
     let rm_ptr = bm as *mut BattleMgr;
     let user_id = packet.get_user_id();
     let res = bm.get_room_mut(&user_id);
     if let None = res {
-        return Ok(());
+        return;
     }
     let room = res.unwrap();
     //校验房间状态
@@ -37,13 +37,13 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             room.get_room_id(),
             room.state
         );
-        return Ok(());
+        return;
     }
 
     //校验用户
     let res = check_user(room, user_id);
     if !res {
-        return Ok(());
+        return;
     }
 
     //解析protobuf
@@ -51,7 +51,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let res = ca.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     //客户端请求的actiontype
     let action_type = ca.get_action_type();
@@ -72,7 +72,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         //无意义分支
         ActionType::None => {
             warn!("action_type is 0!");
-            return Ok(());
+            return;
         }
         //使用道具
         ActionType::UseItem => {
@@ -108,13 +108,13 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         }
         _ => {
             warn!("action_type is error!action_type:{:?}", action_type);
-            return Ok(());
+            return;
         }
     }
 
     //如果有问题就返回
     if let Err(_) = res {
-        return Ok(());
+        return;
     }
 
     //回给客户端,添加action主动方
@@ -134,7 +134,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let bytes = san.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let bytes = bytes.unwrap();
     //处理只用推送给自己的技能
@@ -160,7 +160,6 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             room.battle_data.next_turn();
         }
     }
-    Ok(())
 }
 
 ///处理战斗结算
@@ -185,12 +184,12 @@ pub unsafe fn process_summary(bm: &mut BattleMgr, room: &mut Room) -> bool {
 }
 
 ///开始战斗
-pub fn start(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn start(bm: &mut BattleMgr, packet: Packet) {
     let mut rbs = R_B_START::new();
     let res = rbs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         warn!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     let rt = rbs.get_room_pt();
@@ -201,7 +200,7 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let room = Room::new(rt, tcp_sender, task_sender, robot_task_sender);
     if let Err(e) = room {
         error!("create battle room fail!{:?}", e);
-        return Ok(());
+        return;
     }
     let mut room = room.unwrap();
     //开始战斗
@@ -211,16 +210,14 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         bm.player_room.insert(*user_id, room_id);
     }
     bm.rooms.insert(room.get_room_id(), room);
-
-    Ok(())
 }
 
 ///处理pos
-pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn pos(rm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
     if let None = res {
-        return Ok(());
+        return;
     }
     let room = res.unwrap();
     //校验房间状态
@@ -229,13 +226,13 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             "room state is not battle_started!room_id:{}",
             room.get_room_id()
         );
-        return Ok(());
+        return;
     }
 
     let battle_cter = room.get_battle_cter_mut_ref(&user_id);
     if battle_cter.is_none() {
         warn!("battle_cter is not find!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let battle_cter = battle_cter.unwrap();
 
@@ -243,7 +240,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let res = cp.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let skill_id = cp.skill_id;
     let pos_type = cp.field_type;
@@ -255,7 +252,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             battle_cter.get_cter_id(),
             skill_id
         );
-        return Ok(());
+        return;
     }
     //校验操作类型
     if pos_type < PosType::ChangePos.into_u32() || pos_type > PosType::CancelPos.into_u32() {
@@ -263,7 +260,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             "the pos_type is error!user_id:{},pos_type:{}",
             user_id, pos_type
         );
-        return Ok(());
+        return;
     }
     let mut spn = S_POS_NOTICE::new();
     spn.set_user_id(user_id);
@@ -271,7 +268,6 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     spn.set_skill_id(skill_id);
     let bytes = spn.write_to_bytes().unwrap();
     room.send_2_all_client(ClientCode::PosNotice, bytes);
-    Ok(())
 }
 
 ///使用道具
@@ -473,18 +469,18 @@ fn skip_turn(
 }
 
 ///发送表情
-pub fn emoji(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn emoji(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let res = bm.get_room_mut(&user_id);
     if res.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = res.unwrap();
     let cter = room.battle_data.battle_cter.get(&user_id);
     if let None = cter {
         warn!("can not find cter!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let cter = cter.unwrap();
     let cter_id = cter.base_attr.cter_id;
@@ -493,7 +489,7 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let res = ce.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let emoji_id = ce.emoji_id;
     let res: Option<&EmojiTemp> = crate::TEMPLATES
@@ -502,27 +498,26 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         .get(&emoji_id);
     if res.is_none() {
         warn!("there is no temp for emoji_id:{}", emoji_id);
-        return Ok(());
+        return;
     }
     //校验表情是否需要解锁和角色表情
     let emoji = res.unwrap();
     if emoji.condition != 0 {
         warn!("this emoji need unlock!emoji_id:{}", emoji_id);
-        return Ok(());
+        return;
     } else if emoji.condition == 0 && emoji.cter_id > 0 && emoji.cter_id != cter_id {
         warn!(
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
             cter_id, emoji_id
         );
-        return Ok(());
+        return;
     }
     //走正常逻辑
     room.emoji(user_id, emoji_id);
-    Ok(())
 }
 
 ///离开房间
-pub fn off_line(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn off_line(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     //校验用户不在战斗房间里
@@ -530,55 +525,58 @@ pub fn off_line(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     if room.is_none() {
         //通知游戏服卸载玩家数据
         bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-        return Ok(());
+        return;
     }
     let room_id = room.unwrap().get_room_id();
     //处理玩家离开
     bm.handler_leave(room_id, user_id, false);
     //通知游戏服卸载玩家数据
     bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-    Ok(())
 }
 
 ///离开房间
-pub fn leave_room(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn leave_room(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     //校验用户不在战斗房间里
     let room = bm.get_room_mut(&user_id);
     if room.is_none() {
-        return Ok(());
+        return;
     }
     let room_id = room.unwrap().get_room_id();
     //处理玩家离开
     bm.handler_leave(room_id, user_id, true);
-    Ok(())
 }
 
-pub fn reload_temps(_: &mut BattleMgr, _: Packet) -> anyhow::Result<()> {
+pub fn reload_temps(_: &mut BattleMgr, _: Packet) {
     let path = std::env::current_dir();
     if let Err(e) = path {
-        anyhow::bail!("{:?}", e)
+        error!("{:?}", e);
+        return;
     }
     let path = path.unwrap();
     let str = path.as_os_str().to_str();
     if let None = str {
-        anyhow::bail!("reload_temps can not path to_str!")
+        error!("reload_temps can not path to_str!");
+        return;
     }
     let str = str.unwrap();
     let res = str.to_string() + "/template";
-    crate::TEMPLATES.reload_temps(res.as_str())?;
+    let res = crate::TEMPLATES.reload_temps(res.as_str());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
     info!("reload_temps success!");
-    Ok(())
 }
 
 ///更新赛季
-pub fn update_season(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(rm: &mut BattleMgr, packet: Packet) {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let season_id = usn.get_season_id();
     let next_update_time = usn.get_next_update_time();
@@ -592,17 +590,17 @@ pub fn update_season(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");
-        return Ok(());
+        return;
     }
     let round_season_id = round_season_id.unwrap();
     let res = u32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let round_season_id = res.unwrap();
     if round_season_id != season_id {
-        return Ok(());
+        return;
     }
     //更新所有内存数据
     for user_id in rm.player_room.clone().keys() {
@@ -618,20 +616,23 @@ pub fn update_season(rm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
         let member = member.unwrap();
         member.league.season_round_reset();
     }
-    Ok(())
 }
 
 ///选择初始占位
-pub fn choice_index(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn choice_index(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut ccl = C_CHOOSE_INDEX::new();
-    ccl.merge_from_bytes(packet.get_data())?;
+    let res = ccl.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
     let index = ccl.index;
 
     let room = bm.get_room_mut(&user_id);
     if room.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
 
@@ -643,7 +644,7 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
             room.get_next_turn_index(),
             room.battle_data.turn_orders
         );
-        return Ok(());
+        return;
     }
 
     let res = room
@@ -652,17 +653,16 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) -> anyhow::Result<()> {
     //校验参数
     if let Err(e) = res {
         warn!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     //校验他选过没有
     let member = room.get_battle_cter_ref(&user_id).unwrap();
     if member.map_cell_index_is_choiced() {
         warn!("this player is already choice index!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     room.choice_index(user_id, index);
-    Ok(())
 }
 
 ///结束操作

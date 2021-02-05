@@ -6,7 +6,9 @@ use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
 
-use super::goal_evaluator::choice_index_evaluator::ChoiceIndexGoalEvaluator;
+use super::goal_evaluator::choice_index_goal_evaluator::ChoiceIndexGoalEvaluator;
+use crate::robot::goal_evaluator::skip_goal_evaluator::SkipGoalEvaluator;
+use crate::robot::goal_evaluator::use_skill_goal_evaluator::UseSkillGoalEvaluator;
 
 #[derive(Default)]
 pub struct GoalThink {
@@ -22,12 +24,16 @@ impl Clone for GoalThink {
 impl GoalThink {
     pub fn new() -> Self {
         let mut gt = GoalThink::default();
-        let attack = Box::new(AttackTargetGoalEvaluator::default());
-        let open_cell = Box::new(OpenCellGoalEvaluator::default());
-        let choice_index = Box::new(ChoiceIndexGoalEvaluator::default());
-        gt.goal_evaluators.push(attack);
-        gt.goal_evaluators.push(open_cell);
-        gt.goal_evaluators.push(choice_index);
+        gt.goal_evaluators
+            .push(Box::new(AttackTargetGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(OpenCellGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(ChoiceIndexGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(SkipGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(UseSkillGoalEvaluator::default()));
         gt
     }
 

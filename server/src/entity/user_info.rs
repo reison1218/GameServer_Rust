@@ -1,7 +1,7 @@
 use super::*;
 use crate::helper::redis_helper::modify_redis_user;
-use crate::mgr::RoomType;
 use crate::mgr::game_mgr::RankInfoPtPtr;
+use crate::mgr::RoomType;
 use chrono::Local;
 use protobuf::Message;
 use rayon::prelude::*;
@@ -12,13 +12,13 @@ use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RankCode, RoomCode};
 use tools::protos::base::{PunishMatchPt, RankInfoPt};
 use tools::protos::protocol::{
-    C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_MODIFY_GRADE_FRAME_AND_SOUL,
-    S_MODIFY_NICK_NAME, S_SHOW_RANK,S_GET_LAST_SEASON_RANK
+    C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_GET_LAST_SEASON_RANK,
+    S_MODIFY_GRADE_FRAME_AND_SOUL, S_MODIFY_NICK_NAME, S_SHOW_RANK,
 };
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
-use tools::protos::server_protocol::{R_G_UPDATE_LAST_SEASON_RANK,
+use tools::protos::server_protocol::{
     PlayerBattlePt, B_R_G_PUNISH_MATCH, B_S_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
-    G_R_SEARCH_ROOM, R_G_SYNC_RANK,
+    G_R_SEARCH_ROOM, R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK,
 };
 use tools::util::packet::Packet;
 
@@ -297,13 +297,13 @@ impl User {
 
 ///请求修改昵称
 #[warn(unreachable_code)]
-pub fn modify_nick_name(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn modify_nick_name(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         let str = format!("user data is null for id:{}", user_id);
         error!("{:?}", str.as_str());
-        anyhow::bail!(str)
+        return;
     }
     let mut s_s_d = S_MODIFY_NICK_NAME::new();
     let mut cmn = C_MODIFY_NICK_NAME::new();
@@ -337,11 +337,10 @@ pub fn modify_nick_name(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> 
         s_s_d.write_to_bytes().unwrap(),
     );
     info!("执行修改昵称函数!");
-    Ok(())
 }
 
 ///创建房间
-pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn create_room(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -353,12 +352,16 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
         gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes().unwrap());
-        return Ok(());
+        return;
     }
 
     //解析客户端发过来的参数
     let mut cr = C_CREATE_ROOM::new();
-    cr.merge_from_bytes(packet.get_data())?;
+    let res = cr.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        warn!("{:?}", e);
+        return;
+    }
     let room_type = cr.get_room_type();
     //封装proto发送给房间服
     let mut gr = G_R_CREATE_ROOM::new();
@@ -388,11 +391,10 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         user_id,
         gr.write_to_bytes().unwrap(),
     );
-    Ok(())
 }
 
 ///创建房间
-pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn join_room(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -403,15 +405,24 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes()?);
-        anyhow::bail!(str)
+        let res = s_r.write_to_bytes();
+        match res {
+            Ok(bytes) => {
+                gm.send_2_client(ClientCode::Room, user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+                return;
+            }
+        }
+        return;
     }
 
     let mut cjr = C_JOIN_ROOM::new();
     let res = cjr.merge_from_bytes(packet.get_data());
     if res.is_err() {
         error!("{:?}", res.err().unwrap());
-        return Ok(());
+        return;
     }
 
     let user_data = user_data.unwrap();
@@ -433,44 +444,46 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let mut grj = G_R_JOIN_ROOM::new();
     grj.set_room_id(cjr.room_id);
     grj.set_pbp(pbp);
-    //发给房间
-    gm.send_2_server(
-        RoomCode::JoinRoom.into_u32(),
-        user_id,
-        grj.write_to_bytes()?,
-    );
-    Ok(())
+    let res = grj.write_to_bytes();
+    match res {
+        Ok(bytes) => {
+            //发给房间
+            gm.send_2_server(RoomCode::JoinRoom.into_u32(), user_id, bytes);
+        }
+        Err(e) => {
+            warn!("{:?}", e)
+        }
+    }
 }
 
-
 ///修改grade相框和soul头像
-pub fn update_last_season_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_last_season_rank(gm: &mut GameMgr, packet: Packet) {
     //先清空历史数据
     gm.last_season_rank.clear();
     let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
     let res = proto.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
-    gm.last_season_rank.extend_from_slice(proto.ranks.as_slice());
-    Ok(())
+    gm.last_season_rank
+        .extend_from_slice(proto.ranks.as_slice());
 }
 
 ///修改grade相框和soul头像
-pub fn modify_grade_frame_and_soul(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn modify_grade_frame_and_soul(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let user_data = gm.users.get_mut(&user_id);
     if user_data.is_none() {
         warn!("could not find user_data for user_id {}", user_id);
-        return Ok(());
+        return;
     }
     let user_data = user_data.unwrap();
     let mut proto = C_MODIFY_GRADE_FRAME_AND_SOUL::new();
     let res = proto.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let grade_frame = proto.get_grade_frame();
     let soul = proto.soul;
@@ -509,26 +522,25 @@ pub fn modify_grade_frame_and_soul(gm: &mut GameMgr, packet: Packet) -> anyhow::
             error!("{:?}", e)
         }
     }
-    return Ok(());
 }
 
 ///同步排行榜快照
-pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn show_rank(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     if gm.rank.is_empty() {
         warn!("the rank is empty!");
-        return Ok(());
+        return;
     }
 
     let user_data = gm.users.get_mut(&user_id);
     if user_data.is_none() {
         warn!("could not find user_data for user_id {}", user_id);
-        return Ok(());
+        return;
     }
 
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
-    if !gm.user_rank.contains_key(&user_id){
+    if !gm.user_rank.contains_key(&user_id) {
         let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
         if let Some(res) = res {
             let rip = RankInfoPtPtr(res as *const RankInfoPt);
@@ -537,9 +549,9 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     }
     let res = gm.user_rank.get(&user_id);
     if let Some(res) = res {
-        unsafe{
+        unsafe {
             let res = res.0.as_ref();
-            if let Some(res) = res{
+            if let Some(res) = res {
                 ssr.set_self_rank(res.clone());
             }
         }
@@ -552,52 +564,49 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let bytes = ssr.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let bytes = bytes.unwrap();
     gm.send_2_client(ClientCode::ShowRank, user_id, bytes);
-    Ok(())
 }
 
 ///同步排行榜快照
-pub fn sync_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn sync_rank(gm: &mut GameMgr, packet: Packet) {
     let mut rgsr = R_G_SYNC_RANK::new();
     let res = rgsr.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let rank = rgsr.ranks.to_vec();
     gm.rank = rank;
     gm.user_rank.clear();
-    Ok(())
 }
 
 ///更新玩家匹配惩罚数据
-pub fn punish_match(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn punish_match(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     let mut brg = B_R_G_PUNISH_MATCH::new();
     let res = brg.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let user_data = gm.users.get_mut(&user_id);
     if let None = user_data {
         warn!("could not find UserData for user_id {}", user_id);
-        return Ok(());
+        return;
     }
     let user_data = user_data.unwrap();
     let user = user_data.get_user_info_mut_ref();
     user.punish_match = PunishMatch::from(brg.get_punish_match());
     user.add_version();
     user_data.add_version();
-    Ok(())
 }
 
 ///匹配房间
-pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn search_room(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     let user_data = gm.users.get(&user_id);
@@ -608,15 +617,23 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         warn!("{:?}", str.as_str());
         s_r.is_succ = false;
         s_r.err_mess = str.clone();
-        gm.send_2_client(ClientCode::Room, user_id, s_r.write_to_bytes()?);
-        anyhow::bail!(str)
+        let res = s_r.write_to_bytes();
+        match res {
+            Ok(bytes) => {
+                gm.send_2_client(ClientCode::Room, user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e)
+            }
+        }
+        return;
     }
 
     let mut csr = C_SEARCH_ROOM::new();
     let res = csr.merge_from_bytes(packet.get_data());
     if res.is_err() {
         error!("{:?}", res.err().unwrap());
-        return Ok(());
+        return;
     }
 
     let user_data = user_data.unwrap();
@@ -636,41 +653,43 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let mut grs = G_R_SEARCH_ROOM::new();
     grs.set_room_type(csr.get_room_type());
     grs.set_pbp(pbp);
-    //发给房间
-    gm.send_2_server(
-        RoomCode::SearchRoom.into_u32(),
-        user_id,
-        grs.write_to_bytes()?,
-    );
-    Ok(())
+    let res = grs.write_to_bytes();
+    match res {
+        Ok(bytes) => {
+            //发给房间
+            gm.send_2_server(RoomCode::SearchRoom.into_u32(), user_id, bytes);
+        }
+        Err(e) => {
+            warn!("{:?}", e)
+        }
+    }
 }
 
 ///获得上此排行榜
-pub fn get_last_season_rank(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn get_last_season_rank(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut proto = S_GET_LAST_SEASON_RANK::new();
 
-    for ri_pt in gm.last_season_rank.iter(){
+    for ri_pt in gm.last_season_rank.iter() {
         proto.ranks.push(ri_pt.clone());
     }
-    
+
     let bytes = proto.write_to_bytes().unwrap();
     gm.send_2_client(ClientCode::GetLastSeasonRank, user_id, bytes);
-    Ok(())
 }
 
 ///房间战斗结算
-pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn summary(gm: &mut GameMgr, packet: Packet) {
     let mut bgs = B_S_SUMMARY::new();
     let res = bgs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let room_type = RoomType::try_from(bgs.room_type as u8);
     if let Err(e) = room_type {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let room_type = room_type.unwrap();
     let summary_data = bgs.get_summary_data();
@@ -680,7 +699,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let res = gm.users.get_mut(&user_id);
     if let None = res {
         error! {"summary!UserData is not find! user_id:{}",user_id};
-        return Ok(());
+        return;
     }
     let user_data = res.unwrap();
     //处理统计
@@ -695,10 +714,17 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         //第一名就加grade
         user_data.user_info.set_grade(grade);
         bgs.cters.extend_from_slice(cters.as_slice());
-        if user_data.league.id > 0{
-            //更新排行榜
-            gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bgs.write_to_bytes()?);
+        if user_data.league.id > 0 {
+            let res = bgs.write_to_bytes();
+            match res {
+                Ok(bytes) => {
+                    //更新排行榜
+                    gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
+                }
+                Err(e) => {
+                    warn!("{:?}", e)
+                }
+            }
         }
     }
-    Ok(())
 }

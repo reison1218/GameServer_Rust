@@ -1,4 +1,4 @@
-use crate::robot::robot_status::robot_status::RobotStatus;
+use crate::robot::robot_status::RobotStatus;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotActionType;
 use crossbeam::channel::Sender;

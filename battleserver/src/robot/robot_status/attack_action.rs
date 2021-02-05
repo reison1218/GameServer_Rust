@@ -36,7 +36,7 @@ impl RobotStatusAction for AttackRobotAction {
     }
 
     fn enter(&self) {
-        info!("robot:{} 进入攻击状态！", self.cter_id);
+        info!("robot:{} 进入攻击状态！", self.robot_id);
         self.execute();
     }
 

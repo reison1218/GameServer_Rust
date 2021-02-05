@@ -43,6 +43,7 @@ impl RobotStatusAction for OpenCellRobotAction {
     }
 
     fn enter(&self) {
+        info!("robot:{},进入翻地图块状态", self.robot_id);
         self.execute();
     }
 

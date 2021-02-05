@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, ServerCommonCode};
 use tools::util::packet::Packet;
 
-type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet) -> anyhow::Result<()>, RandomState>;
+type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet), RandomState>;
 
 ///战斗管理器
 #[derive(Default)]

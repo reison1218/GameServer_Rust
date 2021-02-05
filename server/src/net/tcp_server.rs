@@ -92,13 +92,7 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
         }
     } else {
         //不登录就执行其他命令
-        let res = gm.lock().await.invok(packet);
-        match res {
-            Ok(_) => {}
-            Err(e) => {
-                error!("{:?}", e.to_string());
-            }
-        }
+        gm.lock().await.invok(packet);
     }
 }
 

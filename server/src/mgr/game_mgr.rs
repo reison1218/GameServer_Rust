@@ -30,7 +30,7 @@ pub struct GameMgr {
     pub user_rank: HashMap<u32, RankInfoPtPtr>, //玩家对应的排行榜数据，为了避免遍历
     pub last_season_rank: Vec<RankInfoPt>,      //上一赛季排行榜
     sender: Option<TcpSender>,                  //tcpchannel
-    pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet) -> anyhow::Result<()>, RandomState>, //命令管理
+    pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet), RandomState>, //命令管理
 }
 
 impl GameMgr {
@@ -143,13 +143,15 @@ impl GameMgr {
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
-    pub fn invok(&mut self, packet: Packet) -> anyhow::Result<()> {
+    pub fn invok(&mut self, packet: Packet) {
         let cmd = packet.get_cmd();
         let f = self.cmd_map.get_mut(&cmd);
-        if f.is_none() {
-            anyhow::bail!("there is no cmd:{}", cmd)
+        match f {
+            Some(func) => func(self, packet),
+            None => {
+                error!("there is no cmd:{}", cmd);
+            }
         }
-        f.unwrap()(self, packet)
     }
 
     ///命令初始化
@@ -190,30 +192,38 @@ impl GameMgr {
 }
 
 ///热更新配置文件
-pub fn reload_temps(_: &mut GameMgr, _: Packet) -> anyhow::Result<()> {
+pub fn reload_temps(_: &mut GameMgr, _: Packet) {
     let path = std::env::current_dir();
     if let Err(e) = path {
-        anyhow::bail!("{:?}", e)
+        warn!("{:?}", e);
+        return;
     }
     let path = path.unwrap();
     let str = path.as_os_str().to_str();
     if let None = str {
-        anyhow::bail!("reload_temps can not path to_str!")
+        warn!("reload_temps can not path to_str!");
+        return;
     }
     let str = str.unwrap();
     let res = str.to_string() + "/template";
-    crate::TEMPLATES.reload_temps(res.as_str())?;
-    info!("reload_temps success!");
-    Ok(())
+    let res = crate::TEMPLATES.reload_temps(res.as_str());
+    match res {
+        Ok(_) => {
+            info!("reload_temps success!");
+        }
+        Err(e) => {
+            warn!("{:?}", e);
+        }
+    }
 }
 
 ///更新赛季
-pub fn update_season(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(gm: &mut GameMgr, packet: Packet) {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let season_id = usn.get_season_id();
     let next_update_time = usn.get_next_update_time();
@@ -226,33 +236,32 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");
-        return Ok(());
+        return;
     }
     let round_season_id = round_season_id.unwrap();
     let res = u32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let round_season_id = res.unwrap();
     if round_season_id != season_id {
-        return Ok(());
+        return;
     }
     //更新所有内存数据
     for user in gm.users.values_mut() {
         user.league.round_reset();
     }
-    Ok(())
 }
 
 ///同步数据
-fn sync(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+fn sync(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let user = gm.users.get_mut(&user_id);
     if user.is_none() {
         let str = format!("user data is null for id:{}", user_id);
         error!("{:?}", str.as_str());
-        anyhow::bail!(str);
+        return;
     }
     let user = user.unwrap();
 
@@ -265,7 +274,7 @@ fn sync(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
             e.to_string()
         );
         error!("{:?}", str.as_str());
-        anyhow::bail!(str);
+        return;
     }
 
     if csd.player_pt.is_some() {
@@ -287,11 +296,10 @@ fn sync(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         s_s_d.write_to_bytes().unwrap(),
     );
     info!("执行同步函数");
-    Ok(())
 }
 
 ///玩家离线
-fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
+fn off_line(gm: &mut GameMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let user = gm.users.remove(&user_id);
     if let Some(mut user_data) = user {
@@ -300,5 +308,4 @@ fn off_line(gm: &mut GameMgr, packet: Packet) -> anyhow::Result<()> {
         async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
         info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
     }
-    Ok(())
 }

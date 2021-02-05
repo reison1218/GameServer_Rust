@@ -14,10 +14,6 @@ pub struct SkipRobotAction {
 get_mut_ref!(SkipRobotAction);
 
 impl SkipRobotAction {
-    pub fn get_battle_data_ref(&self) -> &BattleData {
-        unsafe { self.battle_data.unwrap().as_ref().unwrap() }
-    }
-
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
         let mut attack_action = SkipRobotAction::default();
         attack_action.battle_data = Some(battle_data);
@@ -36,25 +32,13 @@ impl RobotStatusAction for SkipRobotAction {
     }
 
     fn enter(&self) {
-        info!("robot:{} 进入攻击状态！", self.cter_id);
+        info!("robot:{} 进入跳过状态！", self.robot_id);
         self.execute();
     }
 
     fn execute(&self) {
-        let res = self.get_battle_data_ref();
-        let mut target_index: usize = 0;
-        let mut cter_hp_max: i16 = 0;
-        for cter in res.battle_cter.values() {
-            if cter.get_cter_id() == self.cter_id {
-                continue;
-            }
-            if cter.base_attr.hp > cter_hp_max {
-                cter_hp_max = cter.base_attr.hp;
-                target_index = cter.get_map_cell_index();
-            }
-        }
-        //创建机器人任务执行普通攻击
-        self.send_2_battle(target_index, RobotActionType::Skip, BattleCode::Action);
+        //创建机器人任务执行结束turn
+        self.send_2_battle(0, RobotActionType::Skip, BattleCode::Action);
     }
 
     fn exit(&self) {

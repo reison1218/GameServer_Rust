@@ -14,7 +14,7 @@ use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
-type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState>;
+type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>;
 
 ///房间服管理器
 pub struct RoomMgr {
@@ -30,8 +30,7 @@ tools::get_mut_ref!(RoomMgr);
 
 impl RoomMgr {
     pub fn new() -> RoomMgr {
-        let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet) -> anyhow::Result<()>, RandomState> =
-            HashMap::new();
+        let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet), RandomState> = HashMap::new();
         let custom_room = CustomRoom::default();
         let match_rooms = MatchRoom::default();
         let player_room: HashMap<u32, u64> = HashMap::new();

@@ -29,30 +29,35 @@ use tools::protos::server_protocol::{
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
 
-pub fn reload_temps(_: &mut RoomMgr, _: Packet) -> anyhow::Result<()> {
+pub fn reload_temps(_: &mut RoomMgr, _: Packet) {
     let path = std::env::current_dir();
     if let Err(e) = path {
-        anyhow::bail!("{:?}", e)
+        warn!("{:?}", e);
+        return;
     }
     let path = path.unwrap();
     let str = path.as_os_str().to_str();
     if let None = str {
-        anyhow::bail!("reload_temps can not path to_str!")
+        warn!("reload_temps can not path to_str!");
+        return;
     }
     let str = str.unwrap();
     let res = str.to_string() + "/template";
-    crate::TEMPLATES.reload_temps(res.as_str())?;
+    let res = crate::TEMPLATES.reload_temps(res.as_str());
+    if let Err(e) = res {
+        warn!("{:?}", e);
+        return;
+    }
     info!("reload_temps success!");
-    Ok(())
 }
 
 ///更新赛季
-pub fn update_season(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let season_id = usn.get_season_id();
     let next_update_time = usn.get_next_update_time();
@@ -66,17 +71,17 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");
-        return Ok(());
+        return;
     }
     let round_season_id = round_season_id.unwrap();
     let res = u32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let round_season_id = res.unwrap();
     if round_season_id != season_id {
-        return Ok(());
+        return;
     }
     //更新所有内存数据
     for user_id in rm.player_room.clone().keys() {
@@ -92,19 +97,22 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let member = member.unwrap();
         member.league.round_reset();
     }
-    Ok(())
 }
 
 ///创建房间
-pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     //解析gameserver过来的protobuf
     let mut grc = G_R_CREATE_ROOM::new();
-    grc.merge_from_bytes(packet.get_data())?;
+    let res = grc.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
 
     let room_type = RoomType::try_from(grc.get_room_type() as u8);
     if let Err(e) = room_type {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let room_type = room_type.unwrap();
     let user_id = packet.get_user_id();
@@ -118,20 +126,20 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                     "this user already in the room,can not create room! user_id:{},room_id:{}",
                     user_id, room_id
                 );
-                return Ok(());
+                return;
             }
         }
         RoomType::SeasonPve => {
             warn!("this function is not open yet!");
-            return Ok(());
+            return;
         }
         RoomType::WorldBossPve => {
             warn!("this function is not open yet!");
-            return Ok(());
+            return;
         }
         _ => {
             warn!("could not create room,the room_type is invalid!");
-            return Ok(());
+            return;
         }
     }
 
@@ -141,27 +149,33 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //创建房间
     match room_type {
         RoomType::Custom => {
-            room_id = rm.custom_room.create_room(
+            let res = rm.custom_room.create_room(
                 owner,
                 rm.get_sender_clone(),
                 rm.get_task_sender_clone(),
-            )?;
+            );
+            match res {
+                Ok(id) => room_id = id,
+                Err(e) => {
+                    warn!("{:?}", e);
+                    return;
+                }
+            }
         }
         _ => {}
     }
 
     let res = tools::binary::combine_int_2_long(room_type as u32, room_id);
     rm.player_room.insert(packet.get_user_id(), res);
-    Ok(())
 }
 
 //离开房间
-pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
         warn!("could not find room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
     let room_state = room.get_state();
@@ -175,7 +189,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this user is not in the room!user_id:{},room_id:{:?}",
             user_id, room_id
         );
-        return Ok(());
+        return;
     }
     let member = member.unwrap();
     let member_state = member.state;
@@ -189,7 +203,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "invalid cmd:leave_room! room_state:{:?},room_id:{},user_id:{}",
             room_state, room_id, user_id
         );
-        return Ok(());
+        return;
     }
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
@@ -201,7 +215,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "match room is full,could not leave room now! room_id:{},user_id:{}",
             room_id, user_id
         );
-        return Ok(());
+        return;
     }
 
     //房间为等待状态，并且已经准备了，则不允许退出房间
@@ -210,7 +224,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
     //如果战斗已经开始了,交给战斗服处理
     if room_state == RoomState::ChoiceIndex {
@@ -220,24 +234,23 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         }
         //通知战斗服进行处理
         rm.send_2_server(BattleCode::LeaveRoom.into_u32(), user_id, Vec::new());
-        return Ok(());
+        return;
     }
     let res = handler_leave_room(rm, user_id, true);
     if let Err(e) = res {
         warn!("{:?}", e);
     }
-    Ok(())
 }
 
 ///玩家离线
-pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     //校验房间是否存在
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
         //通知游戏服卸载玩家数据
         rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
     let room_id = room.get_room_id();
@@ -248,7 +261,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this user is not in the room!user_id:{},room_id:{:?}",
             user_id, room_id
         );
-        return Ok(());
+        return;
     }
 
     //如果房间已经开始战斗则删除玩家不推送，然后通知战斗服
@@ -256,7 +269,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         rm.remove_member_without_push(user_id);
         //通知战斗服
         rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
-        return Ok(());
+        return;
     } else {
         //其他状态房间服自行处理
         if room_state == RoomState::Await {
@@ -271,36 +284,34 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         //通知游戏服卸载玩家数据
         rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     }
-    Ok(())
 }
 
 ///取消匹配房间
-pub fn cancel_search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn cancel_search_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
         warn!("this user is not matching the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     rm.remove_member_without_push(user_id);
     rm.send_2_client(ClientCode::CancelSearch, user_id, Vec::new());
-    Ok(())
 }
 
 ///寻找房间并加入房间
-pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
     let mut grs = G_R_SEARCH_ROOM::new();
     let res = grs.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     let room_type = RoomType::try_from(grs.get_room_type() as u8);
     if let Err(e) = room_type {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let room_type = room_type.unwrap();
     let room_type_u8 = room_type.into_u8();
@@ -311,7 +322,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "search_room:this room type is invaild!room_type:{:?}",
             room_type
         );
-        return Ok(());
+        return;
     }
     //校验玩家是否已经在房间里
     if rm.check_player(&user_id) {
@@ -319,7 +330,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "search_room:this player already in the room!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
     //执行正常流程
     let sender = rm.get_sender_clone();
@@ -348,7 +359,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "search_room:this user could not match now!user_id:{},punish:{:?}",
             user_id, member.punish_match
         );
-        return Ok(());
+        return;
     }
     let room_id;
     match room_type {
@@ -358,7 +369,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             //返回错误信息
             if let Err(e) = res {
                 warn!("{:?}", e);
-                return Ok(());
+                return;
             };
             room_id = res.unwrap();
         }
@@ -372,17 +383,16 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     let value = tools::binary::combine_int_2_long(RoomType::Match as u32, room_id);
     rm.player_room.insert(user_id, value);
-    Ok(())
 }
 
 ///准备
-pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut cpc = C_PREPARE_CANCEL::new();
     let res = cpc.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let prepare = cpc.prepare;
     let room = rm.get_room_mut(&packet.get_user_id());
@@ -392,7 +402,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "prepare_cancel:this player not in the room!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     let room = room.unwrap();
@@ -405,20 +415,21 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "prepare_cancel:this room is not full,so can not prepare!room_id:{}.user_id:{}",
             room_id, user_id
         );
-        return Ok(());
+        return;
     }
     //校验房间是否已经开始游戏
     if room_state != RoomState::Await {
-        anyhow::bail!(
+        warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        )
+        );
+        return;
     }
     //校验玩家是否选了角色
     let member = room.members.get(&user_id);
     if let None = member {
         error!("prepare_cancel: this player is None!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let member = member.unwrap();
     let cter_id = member.chose_cter.cter_id;
@@ -427,7 +438,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "prepare_cancel: this player has not choose character yet!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     let cter_temp = crate::TEMPLATES
@@ -442,36 +453,36 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "prepare_cancel: this player has not choose character'skill yet!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
     room.prepare_cancel(&user_id, prepare);
-    Ok(())
 }
 
 ///开始游戏
-pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn start(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     //校验房间
     let room = rm.get_mut_ref().get_room_mut(&user_id);
     if let None = room {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        anyhow::bail!(
+        warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        )
+        );
+        return;
     }
 
     //校验准备状态
     if !room.check_ready() {
         warn!("there is player not ready,can not start game!");
-        return Ok(());
+        return;
     }
     //校验是否加载机器人
     check_add_robot(rm.get_mut_ref(), room);
@@ -481,7 +492,6 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let mut ss = S_START::new();
     ss.is_succ = true;
     room.send_2_client(ClientCode::Start, user_id, ss.write_to_bytes().unwrap());
-    Ok(())
 }
 
 ///检查添加机器人
@@ -578,54 +588,54 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
 }
 
 ///换队伍
-pub fn change_team(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn change_team(rm: &mut RoomMgr, packet: Packet) {
     let user_id = &packet.get_user_id();
 
     let mut cct = C_CHANGE_TEAM::new();
     let res = cct.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let team_id = cct.get_target_team_id();
     if team_id < TeamId::Min as u32 || team_id > TeamId::Max as u32 {
         warn!("target_team_id:{} is invaild!", team_id);
-        return Ok(());
+        return;
     }
     let room_id = rm.get_room_id(user_id);
     if let None = room_id {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room_id = room_id.unwrap();
     let room = rm.custom_room.rooms.get_mut(&room_id);
     if let None = room {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        anyhow::bail!(
+        warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        )
+        );
+        return;
     }
     room.change_team(user_id, &(team_id as u8));
-    Ok(())
 }
 
 ///T人
-pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     let mut ckm = C_KICK_MEMBER::new();
     let res = ckm.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let target_id = ckm.target_id;
     //校验房间
@@ -635,7 +645,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "kick_member:this player is not in the room!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     //校验操作人是不是房主
@@ -643,10 +653,11 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        anyhow::bail!(
+        warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        )
+        );
+        return;
     }
 
     if room.get_room_type() != RoomType::Custom {
@@ -654,12 +665,12 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "kick_member:this room is not custom room,can not kick member!room_id:{}",
             room.get_room_id()
         );
-        return Ok(());
+        return;
     }
 
     if room.get_owner_id() != user_id {
         warn!("kick_member:this player is not host!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     //校验房间是否存在target_id这个成员
@@ -668,7 +679,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "kick_member:this target player is not in the room!target_user_id:{}",
             target_id
         );
-        return Ok(());
+        return;
     }
 
     let res = room.kick_member(&user_id, &target_id);
@@ -678,14 +689,13 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         }
         Err(e) => {
             warn!("{:?}", e);
-            return Ok(());
+            return;
         }
     }
-    Ok(())
 }
 
 ///房间设置
-pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let room = rm.get_room_mut(&user_id);
     let mut srs = S_ROOM_SETTING::new();
@@ -695,27 +705,30 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "room_setting:this player is not in the room,room_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.get_state() != RoomState::Await {
-        anyhow::bail!(
+        warn!(
             "can not setting room!room_id:{},room_state:{:?}",
             room.get_room_id(),
             room.get_state()
-        )
+        );
     }
 
     //校验房间是否存在这个玩家
-    if !room.is_exist_member(&user_id) {
+    let member = room.get_member_ref(&user_id);
+    if member.is_none() {
         warn!(
             "room_setting:this player is not in the room,room_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
+
+    let member = member.unwrap();
 
     //校验玩家是否是房主
     if room.get_owner_id() != user_id {
@@ -724,34 +737,34 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             user_id,
             room.get_room_id()
         );
-        return Ok(());
+        return;
     }
-
-    let member = room.get_member_ref(&user_id).unwrap();
+    //校验角色状态
     if member.state == MemberState::Ready {
         warn!("this owner is ready!,user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     //走正常逻辑
     if srs.is_succ {
         let mut rs = C_ROOM_SETTING::new();
+        let proto_value = rs.get_value();
         let res = rs.merge_from_bytes(packet.get_data());
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
-            return Ok(());
+            return;
         }
         let set_type = rs.get_set_type();
         let room_set_type = RoomSettingType::from(set_type);
         match room_set_type {
             RoomSettingType::IsOpenAI => {
-                room.setting.is_open_ai = rs.get_value() == 1;
+                room.setting.is_open_ai = proto_value == 1;
             }
             RoomSettingType::SeasonId => {
-                room.setting.season_id = rs.get_value();
+                room.setting.season_id = proto_value;
             }
             RoomSettingType::TurnLimitTime => {
-                let id = rs.get_value() as u8;
+                let id = proto_value as u8;
                 let limit_time_mgr = crate::TEMPLATES.get_battle_limit_time_temp_mgr_ref();
                 let res = limit_time_mgr.get_temp(&id);
                 match res {
@@ -764,7 +777,10 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                     }
                 }
             }
-            _ => {}
+            _ => {
+                warn!("room_setting:the proto' value is invalid!");
+                return;
+            }
         }
     }
 
@@ -775,17 +791,16 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         srs.write_to_bytes().unwrap(),
     );
     room.room_notice();
-    Ok(())
 }
 
 ///加入房间
-pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut grj = G_R_JOIN_ROOM::new();
     let res = grj.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     let room_id = grj.room_id;
@@ -793,24 +808,25 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     let res = rm.check_player(&user_id);
     if res {
         warn!("this player already in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     //校验改房间是否存在
     let room = rm.custom_room.get_mut_room_by_room_id(&room_id);
     if let Err(e) = room {
         warn!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
     if room.is_started() {
-        anyhow::bail!(
+        warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
-        )
+        );
+        return;
     }
 
     let room_type = room.get_room_type();
@@ -821,13 +837,13 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             room.get_room_id(),
             room_type,
         );
-        return Ok(());
+        return;
     }
 
     //校验房间人数
     if room.members.len() >= MEMBER_MAX as usize {
         warn!("this room already have max player num!,room_id:{}", room_id);
-        return Ok(());
+        return;
     }
 
     // 校验玩家是否在房间里
@@ -838,36 +854,35 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             packet.get_user_id(),
             room_id
         );
-        return Ok(());
+        return;
     }
     let member = Member::from(grj.take_pbp());
     //将玩家加入到房间
     let res = room.add_member(member);
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let room_id = res.unwrap();
     let value = tools::binary::combine_int_2_long(room.get_room_type() as u32, room_id);
     rm.player_room.insert(user_id, value);
-    Ok(())
 }
 
 ///选择角色
-pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
 
     //校验玩家在不在房间
     if res.is_none() {
         warn!("this player is not in room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = res.unwrap();
     //校验房间状态
     if room.is_started() {
         warn!("this room already started!room_id:{}", room.get_room_id());
-        return Ok(());
+        return;
     }
 
     //解析protobuf
@@ -875,7 +890,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     let res = ccc.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let cter_id = ccc.cter_id;
 
@@ -883,14 +898,14 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     let res = room.check_character(cter_id);
     if let Err(e) = res {
         warn!("{:?}", e);
-        return Ok(());
+        return;
     }
 
     let member = room.get_member_mut(&user_id).unwrap();
     //校验玩家状态
     if member.state == MemberState::Ready {
         warn!("this player is already prepare!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     let cter = member.cters.get(&cter_id);
@@ -900,7 +915,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
             "this player do not have this character!user_id:{},cter_id:{}",
             user_id, cter_id
         );
-        return Ok(());
+        return;
     }
     if cter.is_some() {
         let cter = cter.unwrap();
@@ -929,24 +944,23 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> 
     for member_id in room.members.keys() {
         room_mut_ref.send_2_client(ClientCode::ChoiceCharacterNotice, *member_id, bytes.clone());
     }
-    Ok(())
 }
 
 ///选择技能
-pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut ccs = C_CHOOSE_SKILL::new();
     let res = ccs.merge_from_bytes(packet.get_data());
     if res.is_err() {
         error!("{:?}", res.err().unwrap());
-        return Ok(());
+        return;
     }
     let skills = ccs.get_skills();
 
     let room = rm.get_room_mut(&user_id);
     if room.is_none() {
         warn!("this player is not in room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
 
     let room = room.unwrap();
@@ -957,7 +971,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this player not choice cter yet!can not choice skill of cter!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     let cter_id = member.chose_cter.cter_id;
@@ -967,7 +981,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验房间壮体啊
     if room_state != RoomState::Await {
         warn!("can not choice skill now!");
-        return Ok(());
+        return;
     }
 
     //校验成员状态
@@ -976,7 +990,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this player already ready,can not choice skill now!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     let cter_temp = crate::TEMPLATES
@@ -986,7 +1000,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //校验技能数量
     if skills.len() > cter_temp.usable_skill_count as usize {
         warn!("this cter's skill count is error! cter_id:{}", cter_id);
-        return Ok(());
+        return;
     }
     //校验技能有效性
     for skill in skills.iter() {
@@ -995,7 +1009,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
                 "this cter do not have this skill!user_id:{},cter_id:{},skill_id:{}",
                 user_id, cter_id, *skill
             );
-            return Ok(());
+            return;
         }
     }
 
@@ -1009,7 +1023,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             count += 1;
             if count >= 2 {
                 warn!("the skill group is error!user_id:{}", user_id);
-                return Ok(());
+                return;
             }
         }
     }
@@ -1024,17 +1038,16 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         user_id,
         scs.write_to_bytes().unwrap(),
     );
-    Ok(())
 }
 
 ///确认进入房间
-pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     //校验玩家在不在房间内
     let room = rm.get_room_mut(&user_id);
     if let None = room {
         warn!("this user is not in the room!");
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
     let room_type = room.get_room_type();
@@ -1045,14 +1058,14 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
             "this room is not Match Room!room_type:{:?},room_id:{}",
             room_type, room_id
         );
-        return Ok(());
+        return;
     }
 
     let mut ccir = C_CONFIRM_INTO_ROOM::new();
     let res = ccir.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let confirm = ccir.confirm;
 
@@ -1062,7 +1075,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
             "this room is not full,could not handler confirm!room_type:{:?},room_id:{}",
             room_type, room_id
         );
-        return Ok(());
+        return;
     }
 
     let room_state = room.state;
@@ -1072,7 +1085,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
             "the Match Room state is {:?}!room_id:{}",
             room_state, room_id
         );
-        return Ok(());
+        return;
     }
 
     //如果全部确认进入房间，就发送通知房间协议给所有客户端
@@ -1111,20 +1124,18 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()>
         //删除房间
         rm.clear_room_without_push(room_type, room_id);
     }
-
-    Ok(())
 }
 
 ///结算
-pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn summary(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     if user_id == 0 {
         warn!("summary,the user_id is 0!");
-        return Ok(());
+        return;
     }
     let room = rm.get_room_mut(&user_id);
     if let None = room {
-        return Ok(());
+        return;
     }
     let room = room.unwrap();
     let room_type = room.get_room_type();
@@ -1132,7 +1143,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
     //如果是匹配房，直接删除房间数据
     if room_type == RoomType::Match {
         rm.clear_room_without_push(room_type, room_id);
-        return Ok(());
+        return;
     }
     //如果是自定义房间，更新结算数据
     if room_type == RoomType::Custom {
@@ -1142,7 +1153,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         let res = brs.merge_from_bytes(packet.get_data());
         if let Err(e) = res {
             error!("{:?}", e);
-            return Ok(());
+            return;
         }
         for sd in brs.summary_datas.iter() {
             let user_id = sd.user_id;
@@ -1161,28 +1172,26 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             member.state = MemberState::NotReady;
         }
     }
-
-    Ok(())
 }
 
 ///发送表情
-pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn emoji(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let res = rm.get_room_mut(&user_id);
     if res.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let room = res.unwrap();
     //如果战斗已经开始,则转发给战斗服
     if room.is_started() {
         room.send_2_server(BattleCode::Emoji.into_u32(), user_id, packet.get_data_vec());
-        return Ok(());
+        return;
     }
     let member = room.get_member_mut(&user_id);
     if member.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);
-        return Ok(());
+        return;
     }
     let member = member.unwrap();
     if member.state != MemberState::Ready {
@@ -1190,14 +1199,14 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this player is not ready,can not send emoji!user_id:{}",
             user_id
         );
-        return Ok(());
+        return;
     }
 
     let mut ce = C_EMOJI::new();
     let res = ce.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let emoji_id = ce.emoji_id;
     let res: Option<&EmojiTemp> = crate::TEMPLATES
@@ -1206,13 +1215,13 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
         .get(&emoji_id);
     if res.is_none() {
         warn!("there is no temp for emoji_id:{}", emoji_id);
-        return Ok(());
+        return;
     }
     //校验表情是否需要解锁和角色表情
     let emoji = res.unwrap();
     if emoji.condition != 0 {
         warn!("this emoji need unlock!emoji_id:{}", emoji_id);
-        return Ok(());
+        return;
     } else if emoji.condition == 0
         && emoji.cter_id > 0
         && emoji.cter_id != member.chose_cter.cter_id
@@ -1221,11 +1230,10 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) -> anyhow::Result<()> {
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
             member.chose_cter.cter_id, emoji_id
         );
-        return Ok(());
+        return;
     }
     //走正常逻辑
     room.emoji(user_id, emoji_id);
-    Ok(())
 }
 
 ///处理离开房间

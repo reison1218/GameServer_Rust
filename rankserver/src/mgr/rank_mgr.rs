@@ -10,7 +10,7 @@ use tools::cmd_code::{RankCode, ServerCommonCode};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
-type CmdFn = HashMap<u32, fn(&mut RankMgr, Packet) -> anyhow::Result<()>, RandomState>;
+type CmdFn = HashMap<u32, fn(&mut RankMgr, Packet), RandomState>;
 ///排行榜管理器
 #[derive(Default)]
 pub struct RankMgr {

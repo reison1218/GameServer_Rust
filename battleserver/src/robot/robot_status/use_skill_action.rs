@@ -1,9 +1,10 @@
 use super::*;
 use crate::robot::RobotActionType;
+use log::warn;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
-pub struct ChoiceIndexRobotAction {
+pub struct UseSkillRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
     pub battle_data: Option<*const BattleData>,
@@ -11,22 +12,22 @@ pub struct ChoiceIndexRobotAction {
     pub sender: Option<Sender<RobotTask>>,
 }
 
-get_mut_ref!(ChoiceIndexRobotAction);
+get_mut_ref!(UseSkillRobotAction);
 
-impl ChoiceIndexRobotAction {
+impl UseSkillRobotAction {
     pub fn get_battle_data_ref(&self) -> &BattleData {
         unsafe { self.battle_data.unwrap().as_ref().unwrap() }
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
-        let mut attack_action = ChoiceIndexRobotAction::default();
-        attack_action.battle_data = Some(battle_data);
-        attack_action.sender = Some(sender);
-        attack_action
+        let mut use_skill_action = UseSkillRobotAction::default();
+        use_skill_action.battle_data = Some(battle_data);
+        use_skill_action.sender = Some(sender);
+        use_skill_action
     }
 }
 
-impl RobotStatusAction for ChoiceIndexRobotAction {
+impl RobotStatusAction for UseSkillRobotAction {
     fn set_sender(&self, sender: Sender<RobotTask>) {
         self.get_mut_ref().sender = Some(sender);
     }
@@ -36,28 +37,26 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
     }
 
     fn enter(&self) {
-        info!("robot:{} 进入选择站位状态！", self.robot_id);
+        info!("robot:{} 进入使用技能状态！", self.robot_id);
         self.execute();
     }
 
     fn execute(&self) {
         let battle_data = self.get_battle_data_ref();
-        let mut v = Vec::new();
-        let size = battle_data.tile_map.un_pair_map.len();
-        let mut index;
-        for i in battle_data.tile_map.un_pair_map.keys() {
-            index = *i;
-            let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-            if map_cell.user_id > 0 {
-                continue;
-            }
-            v.push(index);
+        let cter = battle_data.battle_cter.get(&self.robot_id);
+        if let None = cter {
+            warn!("robot's cter is None!robot_id:{}", self.robot_id);
+            return;
         }
-        let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0, size);
-
+        let cter = cter.unwrap();
+        if cter.is_died() {
+            return;
+        }
+        for skill in cter.skills.values() {
+            //todo 选择技能释放
+        }
         //创建机器人任务执行选择站位
-        self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
+        // self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
     }
 
     fn exit(&self) {

@@ -1,6 +1,7 @@
 pub mod goal_evaluator;
 pub mod goal_think;
 pub mod robot_action;
+pub mod robot_skill;
 pub mod robot_status;
 pub mod robot_task_mgr;
 pub mod robot_trigger;

@@ -478,6 +478,16 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
+    let mut res = vec![];
+    let mut v1 = vec![];
+    v1.push(1);
+    let mut v2 = vec![];
+    v2.push(1);
+    v2.push(1);
+    res.push(v1);
+    res.push(v2);
+    let r = res.iter().max().unwrap();
+    println!("{:?}", r);
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();

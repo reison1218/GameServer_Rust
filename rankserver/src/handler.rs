@@ -10,7 +10,7 @@ use tools::protos::server_protocol::{
 };
 use tools::util::packet::Packet;
 
-pub fn get_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn get_rank(rm: &mut RankMgr, packet: Packet) {
     let server_token = packet.get_server_token();
     let mut rgsr = R_G_SYNC_RANK::new();
     for ri in rm.rank_vec.iter() {
@@ -20,11 +20,10 @@ pub fn get_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let bytes = rgsr.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let bytes = bytes.unwrap();
     rm.send_2_server_direction(GameCode::SyncRank.into_u32(), 0, bytes, server_token);
-    Ok(())
 }
 
 ///处理上一赛季
@@ -62,12 +61,12 @@ pub fn process_last_season_rank(rm: &mut RankMgr) {
     rm.push_2_server(GameCode::UpdateLastSeasonRankPush.into_u32(), 0, bytes);
 }
 
-pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_season(rm: &mut RankMgr, packet: Packet) {
     let mut usn = UPDATE_SEASON_NOTICE::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let season_id = usn.get_season_id();
 
@@ -75,17 +74,17 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");
-        return Ok(());
+        return;
     }
     let round_season_id = round_season_id.unwrap();
     let res = u32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let round_season_id = res.unwrap();
     if round_season_id != season_id {
-        return Ok(());
+        return;
     }
 
     //先处理上一赛季排行榜问题
@@ -123,17 +122,16 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
         }
         rm.rank_vec.remove(index);
     }
-    Ok(())
 }
 
 ///更新排行榜请求指令
-pub fn update_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
+pub fn update_rank(rm: &mut RankMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let mut bss = B_S_SUMMARY::new();
     let res = bss.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
-        return Ok(());
+        return;
     }
     let sd = bss.get_summary_data();
     let cters = bss.cters.clone();
@@ -152,5 +150,4 @@ pub fn update_rank(rm: &mut RankMgr, packet: Packet) -> anyhow::Result<()> {
         }
     }
     rm.need_rank = true;
-    Ok(())
 }

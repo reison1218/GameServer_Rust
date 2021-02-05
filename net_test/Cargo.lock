@@ -1641,6 +1641,7 @@ dependencies = [
  "num_cpus",
  "num_enum",
  "once_cell",
+ "parking_lot",
  "piston-ai_behavior",
  "protobuf",
  "rand 0.7.3",

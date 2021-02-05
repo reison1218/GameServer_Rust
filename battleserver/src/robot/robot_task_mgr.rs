@@ -82,10 +82,7 @@ pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     //拿到BattleMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    let res = func(rm_mut_ref, packet);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
+    func(rm_mut_ref, packet);
 }
 
 ///普通攻击
@@ -110,10 +107,7 @@ pub fn attack(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     //拿到BattleMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    let res = func(rm_mut_ref, packet);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
+    func(rm_mut_ref, packet);
 }
 
 ///打开地图块
@@ -138,10 +132,7 @@ pub fn open_cell(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     //拿到BattleMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    let res = func(rm_mut_ref, packet);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
+    func(rm_mut_ref, packet);
 }
 
 ///跳过回合
@@ -164,10 +155,7 @@ pub fn skip_turn(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
     //拿到BattleMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();
     let func = lock.cmd_map.get(&cmd).unwrap();
-    let res = func(rm_mut_ref, packet);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
+    func(rm_mut_ref, packet);
 }
 
 ///使用技能
