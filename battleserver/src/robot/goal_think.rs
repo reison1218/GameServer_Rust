@@ -8,6 +8,7 @@ use crossbeam::channel::Sender;
 
 use super::goal_evaluator::choice_index_goal_evaluator::ChoiceIndexGoalEvaluator;
 use crate::robot::goal_evaluator::skip_goal_evaluator::SkipGoalEvaluator;
+use crate::robot::goal_evaluator::use_item_goal_evaluator::UseItemGoalEvaluator;
 use crate::robot::goal_evaluator::use_skill_goal_evaluator::UseSkillGoalEvaluator;
 
 #[derive(Default)]
@@ -34,6 +35,8 @@ impl GoalThink {
             .push(Box::new(SkipGoalEvaluator::default()));
         gt.goal_evaluators
             .push(Box::new(UseSkillGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(UseItemGoalEvaluator::default()));
         gt
     }
 

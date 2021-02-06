@@ -2,6 +2,7 @@ pub mod attack_goal_evaluator;
 pub mod choice_index_goal_evaluator;
 pub mod open_cell_goal_evaluator;
 pub mod skip_goal_evaluator;
+pub mod use_item_goal_evaluator;
 pub mod use_skill_goal_evaluator;
 use crate::battle::battle::BattleData;
 use crate::robot::robot_task_mgr::RobotTask;
