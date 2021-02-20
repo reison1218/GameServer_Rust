@@ -507,6 +507,8 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     }
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.get_robot_temp_mgr_ref();
+    //角色模版管理器
+    let cter_temp_mgr = crate::TEMPLATES.get_character_temp_mgr_ref();
     //克隆一份机器人角色数组
     let mut cters_res = robot_temp_mgr.cters.clone();
     let mut cters_c = Vec::new();
@@ -536,6 +538,19 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         //随机出下标
         let index = rand.gen_range(0, cters_res.len());
         let cter_id = cters_res.remove(index);
+        let cter_temp = cter_temp_mgr.get_temp_ref(&cter_id);
+        if cter_temp.is_none() {
+            error!("could not find this cter!cter_id={}", cter_id);
+            continue;
+        }
+        let cter_temp = cter_temp.unwrap();
+
+        let robot_temp = robot_temp_mgr.get_temp_ref(&cter_id);
+        if let None = robot_temp {
+            warn!("can not find robot_temp!cter_id:{}", cter_id);
+            continue;
+        }
+        let robot_temp = robot_temp.unwrap();
 
         //机器人id自增
         crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
@@ -551,29 +566,21 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         //初始化选择的角色
         let mut cter = Character::default();
         cter.user_id = robot_id;
-        cter.is_robot = true;
         cter.cter_id = cter_id;
 
         //初始化角色技能
-        let robot_temp = robot_temp_mgr.get_temp_ref(&cter_id);
-        if let None = robot_temp {
-            warn!("can not find cter_temp!cter_id:{}", cter_id);
-            continue;
+        let skill_count = cter_temp.usable_skill_count;
+        for i in 0..skill_count {
+            let skill_group = robot_temp.skills.get(i as usize);
+            if skill_group.is_none() {
+                error!("can not find skill!group:{}", i);
+                continue;
+            }
+            let skill_group = skill_group.unwrap();
+            let index = rand.gen_range(0, skill_group.group.len());
+            let skill_id = skill_group.group.get(index).unwrap();
+            cter.skills.push(*skill_id);
         }
-        let robot_temp = robot_temp.unwrap();
-        let skill_group1 = robot_temp.skills.get(0);
-        let skill_group2 = robot_temp.skills.get(1);
-        if skill_group1.is_none() || skill_group2.is_none() {
-            continue;
-        }
-        let skill_group1 = skill_group1.unwrap();
-        let skill_group2 = skill_group2.unwrap();
-        let index = rand.gen_range(0, skill_group1.group.len());
-        let skill_id = skill_group1.group.get(index).unwrap();
-        cter.skills.push(*skill_id);
-        let index = rand.gen_range(0, skill_group2.group.len());
-        let skill_id = skill_group2.group.get(index).unwrap();
-        cter.skills.push(*skill_id);
         //将角色加入到成员里
         member.chose_cter = cter;
         let res = room.add_member(member);

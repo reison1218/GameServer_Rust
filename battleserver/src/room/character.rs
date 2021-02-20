@@ -213,6 +213,7 @@ impl BattleCharacter {
         battle_data: &BattleData,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
+        let is_robot = member.is_robot;
         let cter = &member.chose_cter;
         let mut battle_cter = BattleCharacter::default();
         let cter_id = cter.cter_id;
@@ -264,7 +265,7 @@ impl BattleCharacter {
 
         battle_cter.reset_residue_open_times();
         //处理机器人部分
-        if cter.is_robot {
+        if is_robot {
             let robot_data = RobotData::new(
                 battle_cter.get_user_id(),
                 battle_data as *const BattleData,

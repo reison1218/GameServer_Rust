@@ -296,7 +296,8 @@ impl Room {
         id == user_id
     }
 
-    pub fn add_next_turn_index(&mut self) {
+    ///推进下一个人，并检测状态，如果都选择完了展位，切换到战斗已经开始状态
+    pub fn check_next_choice_index(&mut self) {
         self.battle_data.add_next_turn_index();
         if self.state == RoomState::BattleStarted {
             return;
@@ -388,13 +389,13 @@ impl Room {
         }
 
         //添加下个turnindex
-        self.add_next_turn_index();
+        self.check_next_choice_index();
 
         //选完了就进入战斗
         let res = self.check_index_over();
         //都选择完了占位，进入选择回合顺序
         if res {
-            self.battle_start();
+            self.push_start_battle();
         } else {
             //没选择完，继续选
             self.build_choice_index_task();
@@ -422,7 +423,7 @@ impl Room {
         }
         let mut rand = rand::thread_rng();
 
-        //如果是最后一个，直接给所有未选的玩家进行随机
+        //检测出场顺位，没有选的，系统进行随机
         let room = self as *mut Room;
         unsafe {
             for member_id in room.as_ref().unwrap().members.keys() {
@@ -439,15 +440,15 @@ impl Room {
                 index_v.remove(remove_index);
             }
         }
-        //开始选择下标
-        self.start_choice_index();
         //行动turn索引从0开始
         self.set_next_turn_index(0);
-        //如果第一个玩家是0,则跳过到下一个
+        //如果第一个玩家是0,则跳过到下一个,主要是避免刷新地图的时候出bug
         let next_turn_user = self.get_turn_user(None).unwrap();
         if next_turn_user == 0 {
-            self.add_next_turn_index();
+            self.check_next_choice_index();
         }
+        //开始选择下标
+        self.start_choice_index();
     }
 
     pub fn turn_order_contains(&self, user_id: &u32) -> bool {
@@ -639,12 +640,12 @@ impl Room {
             self.set_next_turn_index(0);
             let next_turn_user = self.get_turn_user(None).unwrap();
             if next_turn_user == 0 {
-                self.add_next_turn_index();
+                self.check_next_choice_index();
             }
-            self.battle_start();
+            self.push_start_battle();
         } else {
             //不是最后一个就轮到下一个
-            self.add_next_turn_index();
+            self.check_next_choice_index();
             self.build_choice_index_task();
         }
     }
@@ -764,7 +765,7 @@ impl Room {
     }
 
     ///战斗开始
-    pub fn battle_start(&mut self) {
+    pub fn push_start_battle(&mut self) {
         //判断是否有世界块,有的话，
         if !self.battle_data.tile_map.world_cell_map.is_empty()
             && !self.battle_data.reflash_map_turn.is_some()

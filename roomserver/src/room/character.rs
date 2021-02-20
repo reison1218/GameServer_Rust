@@ -4,7 +4,6 @@ use tools::protos::base::{CharacterPt, LeaguePt};
 pub struct Character {
     pub user_id: u32,              //玩家id
     pub cter_id: u32,              //角色的配置id
-    pub is_robot: bool,            //是否是机器人
     pub skills: Vec<u32>,          //玩家次角色所有已解锁的技能id,
     pub last_use_skills: Vec<u32>, //上次使用的技能
 }

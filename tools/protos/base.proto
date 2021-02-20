@@ -54,6 +54,7 @@ message MemberPt{
     uint32 team_id = 8;//玩家所属队伍id
     uint64 join_time = 9;//玩家进入房间的时间
     LeaguePt league = 10;//段位数据
+    bool is_robot = 11;//是否机器人
 }
 
 message WorldCellPt{

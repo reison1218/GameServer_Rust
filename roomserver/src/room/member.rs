@@ -127,6 +127,7 @@ impl Into<MemberPt> for Member {
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;
         mp.set_league(self.league.into_pt());
+        mp.is_robot = self.is_robot;
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
         mp

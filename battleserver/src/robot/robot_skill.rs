@@ -1,5 +1,106 @@
-use crate::battle::battle::BattleData;
-use crate::room::map_data::MapCellType;
+use log::warn;
+use rand::Rng;
+
+use crate::{
+    battle::battle_enum::skill_type::SKILL_OPEN_NEAR_CELL,
+    room::{character::BattleCharacter, map_data::MapCellType},
+};
+use crate::{
+    battle::{battle::BattleData, battle_skill::Skill},
+    room::map_data::TileMap,
+};
+
+use super::RobotData;
+
+///判断释放条件
+pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotData) -> bool {
+    let skill_id = skill.id;
+    let mut can_use = false;
+    if skill.cd_times == 0 {
+        can_use = true;
+    }
+    //特殊使用条件
+
+    true
+}
+
+pub fn skill_target(battle_data: &BattleData, skill: &Skill, robot: &RobotData) -> Vec<usize> {
+    let skill_id = skill.id;
+    let robot_id = robot.robot_id;
+    let cter = battle_data.get_battle_cter(Some(robot_id), true).unwrap();
+    let mut targets = vec![];
+    //匹配技能id进行不同的目标选择
+    match skill_id {
+        //目标是自己
+        i if [211, 313, 321].contains(&i) => {
+            targets.push(cter.index_data.map_cell_index.unwrap());
+        }
+        //除自己外最大血量的目标
+        i if [123, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
+            let res = get_hp_max_cter(battle_data, robot_id);
+            if res.is_none() {
+                warn!("get_hp_max_cter res is None!");
+                return targets;
+            }
+            targets.push(res.unwrap());
+        }
+        _ => {}
+    }
+    targets
+}
+
+///获得除robot_id生命值最高的角色位置
+pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize> {
+    let mut res = (0, 0);
+    for cter in battle_data.battle_cter.values() {
+        //排除死掉的
+        if cter.is_died() {
+            continue;
+        }
+        //排除给定robot_id的
+        if cter.base_attr.user_id == robot_id {
+            continue;
+        }
+        //对比血量
+        if cter.base_attr.hp > res.0 {
+            res.0 = cter.base_attr.hp;
+            res.1 = cter.index_data.map_cell_index.unwrap();
+        }
+    }
+    //校验返回结果
+    if res.1 == 0 {
+        return None;
+    }
+    Some(res.1)
+}
+
+///检测是否匹配了
+pub fn check_pair(cter: &BattleCharacter) -> bool {
+    cter.status.is_pair
+}
+
+///检测是否还有位置地图块，有就随机一块出来并返回
+pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<usize> {
+    let mut v = vec![];
+    for map_cell in tile_map.map_cells.iter() {
+        if map_cell.is_world {
+            continue;
+        }
+        let index = map_cell.index;
+        for rem_map_cell in robot.remember_map_cell.iter() {
+            if rem_map_cell.cell_index == index {
+                continue;
+            }
+            v.push(index);
+        }
+    }
+    if v.len() == 0 {
+        return None;
+    }
+    let rand_index = rand::thread_rng().gen_range(0, v.len());
+    let &index = v.get(rand_index).unwrap();
+    Some(index)
+}
 
 ///获得圆形范围aoe范围
 pub fn get_roundness_aoe(

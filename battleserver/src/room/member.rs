@@ -27,6 +27,7 @@ impl From<&MemberPt> for Member {
         m.join_time = mp.join_time;
         m.team_id = mp.team_id as u8;
         m.chose_cter = Character::from(mp.cter.as_ref().unwrap());
+        m.is_robot = mp.is_robot;
         m
     }
 }

@@ -488,6 +488,7 @@ fn main() -> anyhow::Result<()> {
     res.push(v2);
     let r = res.iter().max().unwrap();
     println!("{:?}", r);
+
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
