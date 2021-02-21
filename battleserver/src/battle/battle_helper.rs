@@ -603,8 +603,8 @@ impl BattleData {
             //任意玩家
             TargetType::AnyPlayer => {
                 let mut v = Vec::new();
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     v.push(cter.get_user_id());
                     break;
                 }
@@ -614,8 +614,8 @@ impl BattleData {
                 if target_array.len() > 1 {
                     anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                 }
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     if cter.get_user_id() != user_id {
                         anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                     }
@@ -624,16 +624,16 @@ impl BattleData {
             //全图玩家
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     v.push(cter.get_user_id());
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             }
             TargetType::OtherAllPlayer => {
                 let mut v = Vec::new();
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     v.push(cter.get_user_id());
                 }
                 //除自己所有玩家
@@ -641,8 +641,8 @@ impl BattleData {
             } //除自己外任意玩家
             TargetType::OtherAnyPlayer => {
                 let mut v = Vec::new();
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     v.push(cter.get_user_id());
                     break;
                 }
@@ -651,8 +651,8 @@ impl BattleData {
             }
             TargetType::SelfScopeOthers => {
                 let mut v = Vec::new();
-                for index in target_array {
-                    let cter = self.get_battle_cter_by_map_cell_index(*index as usize)?;
+                for &index in target_array {
+                    let cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
                     v.push(cter.get_user_id());
                     break;
                 }
@@ -662,36 +662,36 @@ impl BattleData {
             //地图块
             TargetType::MapCell => {
                 //校验地图块下标有效性
-                for index in target_array {
-                    let index = *index as usize;
+                for &index in target_array {
+                    let index = index as usize;
                     self.check_choice_index(index, false, false, false, false, false)?;
                 }
             }
             //未翻开的地图块
             TargetType::UnOpenMapCell => {
-                for index in target_array {
-                    self.check_choice_index(*index as usize, true, true, true, false, false)?;
+                for &index in target_array {
+                    self.check_choice_index(index as usize, true, true, true, false, false)?;
                 }
             } //未配对的地图块
             TargetType::UnPairMapCell => {
-                for index in target_array {
-                    self.check_choice_index(*index as usize, false, true, true, true, false)?;
+                for &index in target_array {
+                    self.check_choice_index(index as usize, false, true, true, true, false)?;
                 }
             } //空的地图块
             TargetType::NullMapCell => {
-                for index in target_array {
-                    self.check_choice_index(*index as usize, false, true, true, false, true)?;
+                for &index in target_array {
+                    self.check_choice_index(index as usize, false, true, true, false, true)?;
                 }
             } //空的地图块，上面没人
             TargetType::UnPairNullMapCell => {
-                for index in target_array {
-                    let index = *index as usize;
+                for &index in target_array {
+                    let index = index as usize;
                     self.check_choice_index(index, false, false, false, false, true)?;
                 }
             }
             TargetType::OpenedMapCell => {
-                for index in target_array {
-                    let index = *index as usize;
+                for &index in target_array {
+                    let index = index as usize;
                     self.check_choice_index(index, true, true, true, false, false)?;
                 }
             }
@@ -699,15 +699,15 @@ impl BattleData {
             TargetType::MapCellOtherPlayer => {}
             //未翻开，且未锁定
             TargetType::UnOpenMapCellAndUnLock => {
-                for index in target_array {
-                    let index = *index as usize;
+                for &index in target_array {
+                    let index = index as usize;
                     self.check_choice_index(index, true, false, true, true, false)?;
                 }
             }
             //未锁定空地图块
             TargetType::UnLockNullMapCell => {
-                for index in target_array {
-                    let index = *index as usize;
+                for &index in target_array {
+                    let index = index as usize;
                     self.check_choice_index(index, false, false, true, true, true)?;
                 }
             }

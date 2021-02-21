@@ -14,10 +14,6 @@ pub struct UseItemRobotAction {
 get_mut_ref!(UseItemRobotAction);
 
 impl UseItemRobotAction {
-    pub fn get_battle_data_ref(&self) -> &BattleData {
-        unsafe { self.battle_data.unwrap().as_ref().unwrap() }
-    }
-
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
         let mut use_item_action = UseItemRobotAction::default();
         use_item_action.battle_data = Some(battle_data);

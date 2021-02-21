@@ -1,7 +1,6 @@
 use super::*;
-use crate::robot::RobotActionType;
+use crate::robot::robot_skill::robot_use_skill;
 use log::warn;
-use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
 pub struct UseSkillRobotAction {
@@ -52,11 +51,10 @@ impl RobotStatusAction for UseSkillRobotAction {
         if cter.is_died() {
             return;
         }
+        let robot = cter.robot_data.as_ref().unwrap();
         for skill in cter.skills.values() {
-            //todo 选择技能释放
+            let _ = robot_use_skill(battle_data, skill, robot);
         }
-        //创建机器人任务执行选择站位
-        // self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
     }
 
     fn exit(&self) {

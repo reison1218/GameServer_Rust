@@ -1618,7 +1618,7 @@ dependencies = [
  "async-h1",
  "async-std",
  "async-trait",
- "bytes 0.6.0",
+ "bytes 1.0.1",
  "chrono",
  "concurrent-queue",
  "crossbeam",

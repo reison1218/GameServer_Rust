@@ -5,6 +5,7 @@ use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crossbeam::channel::Sender;
+use log::info;
 
 use super::goal_evaluator::choice_index_goal_evaluator::ChoiceIndexGoalEvaluator;
 use crate::robot::goal_evaluator::skip_goal_evaluator::SkipGoalEvaluator;
@@ -47,12 +48,13 @@ impl GoalThink {
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
-        println!("开始执行仲裁");
+        info!("开始执行仲裁");
         let mut best_desirabilty = 0;
         let mut best_index = 0;
         if self.goal_evaluators.len() == 0 {
             return;
         }
+        //开始执行仲裁
         for index in 0..self.goal_evaluators.len() {
             let ge = self.goal_evaluators.get(index).unwrap();
             let desirabilty = ge.calculate_desirability(cter);
@@ -61,8 +63,9 @@ impl GoalThink {
                 best_index = index;
             }
         }
-
+        //获得仲裁结果
         let best_goal_evaluator = self.goal_evaluators.get(best_index).unwrap();
+        //设置状态
         best_goal_evaluator.set_status(cter, sender, battle_data);
     }
 }

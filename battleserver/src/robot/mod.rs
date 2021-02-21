@@ -108,6 +108,7 @@ impl RobotData {
         }
     }
 
+    ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
     pub fn thinking_do_something(&self) {
         let cter = self.get_battle_cter_mut_ref();
         self.goal_think
