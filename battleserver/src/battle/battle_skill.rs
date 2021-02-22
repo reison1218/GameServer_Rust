@@ -445,7 +445,7 @@ pub fn skill_damage_opened_element(
 }
 
 ///使用技能翻地图块
-pub unsafe fn skill_open_map_cell(
+pub fn skill_open_map_cell(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
@@ -609,7 +609,7 @@ pub unsafe fn auto_pair_map_cell(
 }
 
 ///移动玩家
-pub unsafe fn move_user(
+pub fn move_user(
     battle_data: &mut BattleData,
     user_id: u32,
     skill_id: u32,
@@ -642,18 +642,19 @@ pub unsafe fn move_user(
     let target_user = target_cter.get_user_id();
 
     //处理移动后事件
-    let v = battle_data.handler_cter_move(target_user, target_index, au);
-    if let Err(e) = v {
-        warn!("{:?}", e);
-        return None;
+    unsafe {
+        let v = battle_data.handler_cter_move(target_user, target_index, au);
+        if let Err(e) = v {
+            warn!("{:?}", e);
+            return None;
+        }
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(target_user_index as u32);
+        target_pt.target_value.push(target_index as u32);
+        au.targets.push(target_pt);
+        let v = v.unwrap();
+        Some(v)
     }
-    let mut target_pt = TargetPt::new();
-    target_pt.target_value.push(target_user_index as u32);
-    target_pt.target_value.push(target_index as u32);
-    au.targets.push(target_pt);
-    let v = v.unwrap();
-
-    Some(v)
 }
 
 ///对相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。

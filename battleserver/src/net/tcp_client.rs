@@ -48,10 +48,14 @@ impl ClientHandler for TcpClientHandler {
                 warn!("cmd is invalid!cmd = {}", cmd);
                 continue;
             }
-            let mut lock = block_on(self.bm.lock());
-            lock.invok(packet);
+            async_std::task::spawn(handler_mess_s(self.bm.clone(), packet));
         }
     }
+}
+
+async fn handler_mess_s(bm: Arc<Mutex<BattleMgr>>, packet: Packet) {
+    let mut lock = bm.lock().await;
+    lock.invok(packet);
 }
 
 ///创建新的tcp服务器,如果有问题，终端进程

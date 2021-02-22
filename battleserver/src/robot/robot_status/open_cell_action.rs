@@ -1,7 +1,7 @@
 use super::*;
 use crate::robot::RobotActionType;
 use crate::room::character::BattleCharacter;
-use log::error;
+use log::{error, warn};
 use std::borrow::Borrow;
 use tools::cmd_code::BattleCode;
 
@@ -15,11 +15,12 @@ pub struct OpenCellRobotAction {
 }
 
 impl OpenCellRobotAction {
-    pub fn get_battle_data_ref(&self) -> &BattleData {
+    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
         unsafe {
-            let ptr = self.battle_data.as_ref().unwrap().as_ref();
-            let battle_data_ref = ptr.as_ref().unwrap();
-            battle_data_ref
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
+            Some(self.battle_data.unwrap().as_ref().unwrap())
         }
     }
 
@@ -49,6 +50,11 @@ impl RobotStatusAction for OpenCellRobotAction {
 
     fn execute(&self) {
         let battle_data = self.get_battle_data_ref();
+        if battle_data.is_none() {
+            warn!("the point *const BattleData is null!");
+            return;
+        }
+        let battle_data = battle_data.unwrap();
         //校验为配对的地图块数量
         if battle_data.tile_map.un_pair_map.is_empty() {
             return;

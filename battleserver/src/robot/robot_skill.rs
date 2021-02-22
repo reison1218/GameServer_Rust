@@ -19,7 +19,7 @@ pub fn robot_use_skill(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     //先判断技能释放条件
     let res = skill_condition(battle_data, skill, robot);
     //可以释放就往下走
-    if res {
+    if !res {
         return false;
     }
     //获取技能释放目标
@@ -176,20 +176,24 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
 
     let mut not_c_v = vec![];
     let mut v = vec![];
+
     for map_cell in tile_map.map_cells.iter() {
+        //过滤世界块
         if map_cell.is_world {
             continue;
         }
+        //过滤无效块
         if map_cell.id <= MapCellType::UnUse.into_u32() {
             continue;
         }
         let mut is_con = false;
         for rem_map_cell in remember_map_cell.iter() {
-            if map_cell.index == rem_map_cell.cell_index {
-                is_con = true;
+            //过滤掉记忆队列的地图块
+            if map_cell.index != rem_map_cell.cell_index {
                 continue;
             }
-            is_con = false;
+            is_con = true;
+            break;
         }
         if !is_con {
             not_c_v.push(map_cell.index);
@@ -449,8 +453,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
     }
 
     let mut res_v = vec![];
-    for index in v.iter() {
-        let index = *index;
+    for &index in v.iter() {
         let map = battle_data.tile_map.map_cells.get(index).unwrap();
         //从六个方向计算
         for i in 0..6 {

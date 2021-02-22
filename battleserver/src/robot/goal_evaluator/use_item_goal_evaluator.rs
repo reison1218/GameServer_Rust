@@ -3,12 +3,11 @@ use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::use_item_action::UseItemRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
-use crossbeam::atomic::AtomicCell;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
 pub struct UseItemGoalEvaluator {
-    desirability: AtomicCell<u32>,
+    // desirability: AtomicCell<u32>,
 }
 
 impl GoalEvaluator for UseItemGoalEvaluator {

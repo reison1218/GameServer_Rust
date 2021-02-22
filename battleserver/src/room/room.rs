@@ -241,8 +241,8 @@ impl Room {
         }
         let bytes = smrn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
-        for id in self.member_index.iter() {
-            self_mut_ref.send_2_client(ClientCode::MapRefreshNotice, *id, bytes.clone());
+        for &id in self.member_index.iter() {
+            self_mut_ref.send_2_client(ClientCode::MapRefreshNotice, id, bytes.clone());
         }
         self.start_choice_index();
         true

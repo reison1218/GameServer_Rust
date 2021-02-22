@@ -15,8 +15,6 @@ use crate::room::character::BattleCharacter;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
-use std::borrow::BorrowMut;
-use std::collections::HashMap;
 use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
@@ -24,7 +22,7 @@ use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 ///触发事件trait
 pub trait TriggerEvent {
     ///翻开地图块时候触发
-    unsafe fn open_map_cell_buff_trigger(
+    fn open_map_cell_buff_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
@@ -148,14 +146,14 @@ impl BattleData {
 }
 
 impl TriggerEvent for BattleData {
-    unsafe fn open_map_cell_buff_trigger(
+    fn open_map_cell_buff_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) -> anyhow::Result<Option<ActionUnitPt>> {
-        let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
-        let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
+        // let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
+        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
         let index = battle_cter.get_map_cell_index();
         //匹配玩家身上的
         self.trigger_open_map_cell_buff(None, user_id, au, is_pair);

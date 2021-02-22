@@ -479,27 +479,6 @@ pub struct ZZ {
 }
 
 fn main() -> anyhow::Result<()> {
-    // let mut res = vec![];
-    // let mut v1 = vec![];
-    // v1.push(1);
-    // let mut v2 = vec![];
-    // v2.push(1);
-    // v2.push(1);
-    // res.push(v1);
-    // res.push(v2);
-    // let r = res.iter().max().unwrap();
-    // println!("{:?}", r);
-
-    let mut bb = ByteBuf::new();
-    let time = std::time::SystemTime::now();
-    for _ in 0..9999999 {
-        bb.push_u32(1);
-    }
-
-    for _ in 0..9999999 {
-        let _ = bb.read_u32();
-    }
-    println!("{:?}", time.elapsed().unwrap());
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();

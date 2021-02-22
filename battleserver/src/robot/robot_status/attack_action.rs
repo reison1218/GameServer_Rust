@@ -1,5 +1,6 @@
 use super::*;
 use crate::robot::RobotActionType;
+use log::warn;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
@@ -14,8 +15,13 @@ pub struct AttackRobotAction {
 get_mut_ref!(AttackRobotAction);
 
 impl AttackRobotAction {
-    pub fn get_battle_data_ref(&self) -> &BattleData {
-        unsafe { self.battle_data.unwrap().as_ref().unwrap() }
+    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
+            Some(self.battle_data.unwrap().as_ref().unwrap())
+        }
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
@@ -42,6 +48,11 @@ impl RobotStatusAction for AttackRobotAction {
 
     fn execute(&self) {
         let res = self.get_battle_data_ref();
+        if res.is_none() {
+            warn!("the *const BattleData is null!");
+            return;
+        }
+        let res = res.unwrap();
         let mut target_index: usize = 0;
         let mut cter_hp_max: i16 = 0;
         for cter in res.battle_cter.values() {

@@ -14,8 +14,13 @@ pub struct UseSkillRobotAction {
 get_mut_ref!(UseSkillRobotAction);
 
 impl UseSkillRobotAction {
-    pub fn get_battle_data_ref(&self) -> &BattleData {
-        unsafe { self.battle_data.unwrap().as_ref().unwrap() }
+    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
+            Some(self.battle_data.unwrap().as_ref().unwrap())
+        }
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
@@ -42,6 +47,11 @@ impl RobotStatusAction for UseSkillRobotAction {
 
     fn execute(&self) {
         let battle_data = self.get_battle_data_ref();
+        if battle_data.is_none() {
+            warn!("the point *const BattleData is null!");
+            return;
+        }
+        let battle_data = battle_data.unwrap();
         let cter = battle_data.battle_cter.get(&self.robot_id);
         if let None = cter {
             warn!("robot's cter is None!robot_id:{}", self.robot_id);

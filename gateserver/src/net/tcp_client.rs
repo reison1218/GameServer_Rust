@@ -26,35 +26,6 @@ impl TcpClientHandler {
         };
         tch
     }
-
-    ///数据包转发
-    fn arrange_packet(&mut self, packet: Packet) {
-        let cmd = packet.get_cmd();
-        let mut lock = block_on(self.cp.lock());
-        //转发到游戏服
-        if (cmd == ServerCommonCode::ReloadTemps.into_u32()
-            || cmd == ServerCommonCode::UpdateSeason.into_u32())
-            || (cmd >= GameCode::Min.into_u32() && cmd <= GameCode::Max.into_u32())
-        {
-            if cmd == GameCode::UnloadUser.into_u32() {
-                let user_id = packet.get_user_id();
-                let gate = lock.get_user_channel(&user_id);
-                if let Some(gate) = gate {
-                    let token = gate.get_token();
-                    //关闭连接
-                    lock.close_remove(&token);
-                }
-            }
-            lock.write_to_game(packet);
-        } else if (cmd >= RoomCode::Min.into_u32() && cmd <= RoomCode::Max.into_u32())
-            || (cmd >= RankCode::Min.into_u32() && cmd <= RankCode::Max.into_u32())
-        {
-            //转发到房间服
-            lock.write_to_game_center(packet);
-        } else if cmd >= GateCode::Min.into_u32() && cmd <= GateCode::Max.into_u32() {
-            lock.stop_server();
-        }
-    }
 }
 
 #[async_trait]
@@ -92,36 +63,68 @@ impl ClientHandler for TcpClientHandler {
             return;
         }
         let packet_array = packet_array.unwrap();
+        async_std::task::spawn(handler_mess_s(self.cp.clone(), packet_array));
+    }
+}
 
-        for mut packet in packet_array {
+async fn handler_mess_s(cp: Arc<Mutex<ChannelMgr>>, packet_array: Vec<Packet>) {
+    for mut packet in packet_array {
+        let mut lock = cp.lock().await;
+        let user_id = packet.get_user_id();
+        let cmd = packet.get_cmd();
+        //判断是否是发给客户端消息
+        if packet.is_client() && cmd > 0 {
+            if cmd == ClientCode::Login.into_u32() {
+                //封装成gateuser到管理器中
+                lock.temp_channel_2_gate_user(user_id);
+            }
+            let gate_user = lock.get_mut_user_channel_channel(&user_id);
+            match gate_user {
+                Some(user) => {
+                    user.get_tcp_mut_ref().send(packet.build_client_bytes());
+                    info!("回给客户端消息,user_id:{},cmd:{}", user_id, cmd,);
+                }
+                None => {
+                    if cmd == ClientCode::LeaveRoom.into_u32()
+                        || cmd == ClientCode::MemberLeaveNotice.into_u32()
+                    {
+                        continue;
+                    }
+                    warn!("user data is null,id:{},cmd:{}", &user_id, cmd);
+                }
+            }
+        } else {
+            //判断是否要转发到其他服务器进程消息
+            arrange_packet(lock, packet);
+        }
+    }
+}
+
+///数据包转发
+fn arrange_packet(cp: async_std::sync::MutexGuard<ChannelMgr>, packet: Packet) {
+    let cmd = packet.get_cmd();
+    let mut lock = cp;
+    //转发到游戏服
+    if (cmd == ServerCommonCode::ReloadTemps.into_u32()
+        || cmd == ServerCommonCode::UpdateSeason.into_u32())
+        || (cmd >= GameCode::Min.into_u32() && cmd <= GameCode::Max.into_u32())
+    {
+        if cmd == GameCode::UnloadUser.into_u32() {
             let user_id = packet.get_user_id();
-            let cmd = packet.get_cmd();
-            //判断是否是发给客户端消息
-            if packet.is_client() && packet.get_cmd() > 0 {
-                let mut lock = block_on(self.cp.lock());
-                if packet.get_cmd() == ClientCode::Login.into_u32() {
-                    //封装成gateuser到管理器中
-                    lock.temp_channel_2_gate_user(user_id);
-                }
-                let gate_user = lock.get_mut_user_channel_channel(&user_id);
-                match gate_user {
-                    Some(user) => {
-                        user.get_tcp_mut_ref().send(packet.build_client_bytes());
-                        info!("回给客户端消息,user_id:{},cmd:{}", user_id, cmd,);
-                    }
-                    None => {
-                        if cmd == ClientCode::LeaveRoom.into_u32()
-                            || cmd == ClientCode::MemberLeaveNotice.into_u32()
-                        {
-                            continue;
-                        }
-                        warn!("user data is null,id:{},cmd:{}", &user_id, cmd);
-                    }
-                }
-            } else {
-                //判断是否要转发到其他服务器进程消息
-                self.arrange_packet(packet);
+            let gate = lock.get_user_channel(&user_id);
+            if let Some(gate) = gate {
+                let token = gate.get_token();
+                //关闭连接
+                lock.close_remove(&token);
             }
         }
+        lock.write_to_game(packet);
+    } else if (cmd >= RoomCode::Min.into_u32() && cmd <= RoomCode::Max.into_u32())
+        || (cmd >= RankCode::Min.into_u32() && cmd <= RankCode::Max.into_u32())
+    {
+        //转发到房间服
+        lock.write_to_game_center(packet);
+    } else if cmd >= GateCode::Min.into_u32() && cmd <= GateCode::Max.into_u32() {
+        lock.stop_server();
     }
 }

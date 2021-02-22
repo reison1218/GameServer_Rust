@@ -473,16 +473,10 @@ impl BattleData {
         }
         let battle_data = self as *mut BattleData;
         let user_id = user_id.unwrap();
-        // if user_id > 0 {
-        //     let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
-        //     if let Ok(battle_cter) = battle_cter {
-        //         battle_cter.turn_reset();
-        //     }
-        // }
-
         unsafe {
+            let self_mut = self;
             //结算玩家身上的buff
-            for cter in battle_data.as_mut().unwrap().battle_cter.values_mut() {
+            for cter in self_mut.battle_cter.values_mut() {
                 for buff in cter.battle_buffs.buffs.values() {
                     //如果是永久buff,则跳过
                     if buff.permanent {
@@ -499,7 +493,7 @@ impl BattleData {
             }
 
             //结算该玩家加在地图块上的buff
-            for map_cell in battle_data.as_mut().unwrap().tile_map.map_cells.iter_mut() {
+            for map_cell in self_mut.tile_map.map_cells.iter_mut() {
                 for buff in map_cell.buffs.values() {
                     if buff.permanent {
                         continue;
@@ -517,8 +511,8 @@ impl BattleData {
             //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
             if user_id > 0 {
                 let mut is_can_skip_turn: bool = true;
-                for index in battle_data.as_mut().unwrap().tile_map.un_pair_map.keys() {
-                    let map_cell = battle_data.as_mut().unwrap().tile_map.map_cells.get(*index);
+                for &index in self_mut.tile_map.un_pair_map.keys() {
+                    let map_cell = self_mut.tile_map.map_cells.get(index);
                     if let None = map_cell {
                         continue;
                     }
@@ -529,7 +523,7 @@ impl BattleData {
                     is_can_skip_turn = false;
                     break;
                 }
-                let battle_cter = self.get_battle_cter_mut(Some(user_id), true);
+                let battle_cter = self_mut.get_battle_cter_mut(Some(user_id), true);
                 if let Err(e) = battle_cter {
                     error!("{:?}", e);
                     return;
