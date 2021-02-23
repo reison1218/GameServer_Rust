@@ -5,7 +5,7 @@ use crate::battle::battle_enum::skill_type::{
     SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
     SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
 };
-use crate::battle::battle_enum::{AttackState, EffectType, ElementType, TargetType};
+use crate::battle::battle_enum::{EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::character::BattleCharacter;
@@ -29,7 +29,7 @@ pub struct Skill {
     pub is_active: bool, //是否激活
 }
 impl Skill {
-    ///增加技能cd
+    ///加减技能cd,
     pub fn add_cd(&mut self, value: i8) {
         self.cd_times += value;
         if self.cd_times < 0 {
@@ -458,15 +458,12 @@ pub fn skill_open_map_cell(
             return None;
         }
         let open_index = *target_array.get(0).unwrap() as usize;
-        let cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
-        let cter_index = cter.get_map_cell_index();
-        let (map_cells, _) = battle_data.cal_scope(
-            user_id,
-            cter_index as isize,
-            TargetType::PlayerSelf,
-            None,
-            None,
-        );
+        let cter = battle_data
+            .get_battle_cter_mut(Some(user_id), true)
+            .unwrap();
+        let cter_index = cter.get_map_cell_index() as isize;
+        let (map_cells, _) =
+            battle_data.cal_scope(user_id, cter_index, TargetType::PlayerSelf, None, None);
 
         //校验目标位置
         if !map_cells.contains(&open_index) {
@@ -477,6 +474,11 @@ pub fn skill_open_map_cell(
         let index = open_index;
         //处理配对逻辑
         battle_data.handler_map_cell_pair(user_id, Some(index));
+        let cter = battle_data
+            .get_battle_cter_mut(Some(user_id), true)
+            .unwrap();
+        //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
+        cter.update_open_map_cell_vec(index, false);
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(index as u32);
@@ -571,7 +573,7 @@ pub unsafe fn auto_pair_map_cell(
     //设置配对状态
     battle_cter.status.is_pair = true;
     //处理本turn不能攻击
-    battle_cter.status.attack_state = AttackState::Locked;
+    battle_cter.change_attack_locked();
     battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
     let cter_map_cell_index = battle_cter.get_map_cell_index() as u32;
     //清除已配对的

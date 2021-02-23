@@ -26,6 +26,6 @@ impl GoalEvaluator for OpenCellGoalEvaluator {
         battle_data: *const BattleData,
     ) {
         let oa = OpenCellRobotAction::new(battle_data, sender);
-        cter.change_status(Box::new(oa));
+        cter.change_robot_status(Box::new(oa));
     }
 }

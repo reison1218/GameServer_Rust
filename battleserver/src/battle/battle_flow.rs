@@ -2,7 +2,7 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{AttackState, BattleCterState, SkillConsumeType};
+use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
@@ -333,7 +333,7 @@ impl BattleData {
                 }
             }
         }
-        cter.status.attack_state = AttackState::None;
+        cter.pair_attack_reward_open_count();
         Ok(())
     }
 
@@ -427,18 +427,11 @@ impl BattleData {
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }
-
             //更新翻的地图块下标
-            battle_cter.flow_data.open_map_cell_vec.push(index);
-            //翻块次数-1
-            battle_cter.flow_data.residue_open_times -= 1;
-
+            battle_cter.update_open_map_cell_vec(index, true);
             //玩家技能cd-1
-            battle_cter.skills.values_mut().for_each(|skill| {
-                if !skill.is_active {
-                    skill.add_cd(-1)
-                }
-            });
+            battle_cter.sub_skill_cd(None);
+            //设置是否可以结束turn状态
             battle_cter.set_is_can_end_turn(true);
             let robot_trigger_type;
             if is_pair {

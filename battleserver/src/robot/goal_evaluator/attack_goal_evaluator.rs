@@ -26,6 +26,6 @@ impl GoalEvaluator for AttackTargetGoalEvaluator {
         battle_data: *const BattleData,
     ) {
         let aa = AttackRobotAction::new(battle_data, sender);
-        cter.change_status(Box::new(aa));
+        cter.change_robot_status(Box::new(aa));
     }
 }

@@ -25,6 +25,6 @@ impl GoalEvaluator for UseItemGoalEvaluator {
         battle_data: *const BattleData,
     ) {
         let aa = UseItemRobotAction::new(battle_data, sender);
-        cter.change_status(Box::new(aa));
+        cter.change_robot_status(Box::new(aa));
     }
 }

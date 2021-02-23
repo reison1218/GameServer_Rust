@@ -27,6 +27,6 @@ impl GoalEvaluator for SkipGoalEvaluator {
         battle_data: *const BattleData,
     ) {
         let aa = SkipRobotAction::new(battle_data, sender);
-        cter.change_status(Box::new(aa));
+        cter.change_robot_status(Box::new(aa));
     }
 }

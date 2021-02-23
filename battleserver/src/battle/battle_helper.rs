@@ -425,15 +425,15 @@ impl BattleData {
                         map_cell_mut.pair_index = Some(opened_cell_index);
                         last_map_cell.pair_index = Some(index);
                         is_pair = true;
-                        battle_cter.status.is_pair = true;
-                        let attack_state = battle_cter.status.attack_state;
+                        battle_cter.status.is_pair = is_pair;
+                        let attack_state = battle_cter.get_attack_state();
                         //状态改为可以进行攻击
                         if attack_state != AttackState::Locked {
-                            battle_cter.status.attack_state = AttackState::Able;
+                            battle_cter.change_attack_able();
                         } else {
                             warn!(
                                 "could not set battle_cter'attack_state!attack_state:{:?},user_id:{}",
-                                battle_cter.status.attack_state,
+                                battle_cter.get_attack_state(),
                                 battle_cter.get_user_id()
                             );
                         }

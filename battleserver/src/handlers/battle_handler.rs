@@ -338,7 +338,7 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
 
-    //校验本turn是否翻过
+    //校验本turn是否翻过目标地图块
     if battle_cter
         .flow_data
         .open_map_cell_vec

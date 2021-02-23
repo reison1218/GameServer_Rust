@@ -43,6 +43,6 @@ impl GoalEvaluator for UseSkillGoalEvaluator {
         battle_data: *const BattleData,
     ) {
         let aa = UseSkillRobotAction::new(battle_data, sender);
-        cter.change_status(Box::new(aa));
+        cter.change_robot_status(Box::new(aa));
     }
 }

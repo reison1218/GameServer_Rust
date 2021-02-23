@@ -14,6 +14,7 @@ use crate::TEMPLATES;
 use crossbeam::channel::Sender;
 use log::{error, warn};
 use std::collections::HashMap;
+use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, CharacterPt, LeaguePt, TargetPt};
 use tools::templates::character_temp::CharacterTemp;
@@ -155,12 +156,13 @@ impl Default for League {
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
 pub struct BattleStatus {
-    pub is_pair: bool,             //最近一次翻块是否匹配
-    pub is_attacked: bool,         //一轮有没有受到攻击伤害
-    is_can_end_turn: bool,         //是否可以结束turn
-    pub locked_oper: u32,          //锁住的操作，如果有值，玩家什么都做不了
-    pub state: BattleCterState,    //角色状态
-    pub attack_state: AttackState, //是否可以攻击
+    pub is_pair: bool,                //最近一次翻块是否匹配
+    pub is_attacked: bool,            //一轮有没有受到攻击伤害
+    is_can_end_turn: bool,            //是否可以结束turn
+    pub locked_oper: u32,             //锁住的操作，如果有值，玩家什么都做不了
+    pub state: BattleCterState,       //角色状态
+    attack_state: AttackState,        //是否可以攻击
+    pub pair_attack_open_count: bool, //配对攻击后奖励翻地图块次数,表示是否奖励过翻拍次数
 }
 
 ///角色战斗buff
@@ -276,6 +278,64 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
+    ///更新翻地图块队列
+    pub fn update_open_map_cell_vec(&mut self, index: usize, is_sub_residue_open_times: bool) {
+        //将翻的地图块放到翻开的队列
+        self.flow_data.open_map_cell_vec.push(index);
+        //翻块次数-1
+        if is_sub_residue_open_times {
+            self.flow_data.residue_open_times -= 1;
+        }
+    }
+
+    pub fn sub_skill_cd(&mut self, value: Option<i8>) {
+        self.skills.values_mut().for_each(|x| {
+            let res;
+            match value {
+                Some(value) => res = value,
+                None => {
+                    res = -1;
+                }
+            }
+            x.add_cd(res);
+        })
+    }
+
+    ///奖励翻块次数
+    pub fn pair_attack_reward_open_count(&mut self) {
+        self.change_attack_none();
+        if !self.status.is_pair {
+            return;
+        }
+        if self.status.pair_attack_open_count {
+            return;
+        }
+        self.status.pair_attack_open_count = true;
+        let temp = TEMPLATES.get_constant_temp_mgr_ref();
+        let res = temp.temps.get("turn_default_open_cell_times");
+        let reward_count;
+        match res {
+            Some(res) => {
+                let res = u8::from_str(res.value.as_str());
+                match res {
+                    Ok(res) => {
+                        reward_count = res;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                        reward_count = 2;
+                    }
+                }
+            }
+            None => {
+                warn!("ConstantTemp could not find!the key is 'turn_default_open_cell_times'");
+                reward_count = 2;
+            }
+        }
+
+        self.flow_data.residue_open_times += reward_count;
+    }
+
     pub fn can_use_skill(&self) -> bool {
         for skill in self.skills.values() {
             if skill.cd_times > 0 {
@@ -321,7 +381,7 @@ impl BattleCharacter {
         self_mut_ref.robot_data.as_mut().unwrap().robot_status = Some(action);
     }
 
-    pub fn change_status(&self, robot_action: Box<dyn RobotStatusAction>) {
+    pub fn change_robot_status(&self, robot_action: Box<dyn RobotStatusAction>) {
         let res = self.get_robot_action();
         res.exit();
         self.set_robot_action(robot_action);
@@ -364,6 +424,22 @@ impl BattleCharacter {
 
     pub fn is_can_attack(&self) -> bool {
         self.status.attack_state == AttackState::Able
+    }
+
+    pub fn change_attack_able(&mut self) {
+        self.status.attack_state = AttackState::Able;
+    }
+
+    pub fn change_attack_locked(&mut self) {
+        self.status.attack_state = AttackState::Locked;
+    }
+
+    pub fn change_attack_none(&mut self) {
+        self.status.attack_state = AttackState::None;
+    }
+
+    pub fn get_attack_state(&self) -> AttackState {
+        self.status.attack_state
     }
 
     pub fn is_robot(&self) -> bool {
@@ -426,7 +502,7 @@ impl BattleCharacter {
         let residue_open_times = self.flow_data.residue_open_times;
         let is_can_end_turn = self.status.is_can_end_turn;
         let hp = self.base_attr.hp;
-        let attack_state = self.status.attack_state;
+        let attack_state = self.get_attack_state();
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
         let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
@@ -472,7 +548,7 @@ impl BattleCharacter {
         let residue_open_times = self.flow_data.residue_open_times;
         let hp = self.base_attr.hp;
         let is_can_end_turn = self.status.is_can_end_turn;
-        let attack_state = self.status.attack_state;
+        let attack_state = self.get_attack_state();
         let map_cell_index = self.index_data.map_cell_index;
         let energy = self.base_attr.energy;
         let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
@@ -574,7 +650,8 @@ impl BattleCharacter {
     ///重制角色数据
     pub fn round_reset(&mut self) {
         self.status.is_attacked = false;
-        self.status.attack_state = AttackState::None;
+        self.change_attack_none();
+        self.status.pair_attack_open_count = false;
         self.index_data.map_cell_index = None;
         self.flow_data.open_map_cell_vec.clear();
         self.index_data.last_map_cell_index = None;
@@ -735,9 +812,11 @@ impl BattleCharacter {
         //重制剩余翻块地处
         self.reset_residue_open_times();
         //重制是否可以攻击
-        self.status.attack_state = AttackState::None;
+        self.change_attack_none();
         //重制匹配状态
         self.status.is_pair = false;
+        //重制配对攻击奖励翻地图块次数
+        self.status.pair_attack_open_count = false;
         //重制是否翻过地图块
         self.flow_data.open_map_cell_vec.clear();
         //清空turn限制
