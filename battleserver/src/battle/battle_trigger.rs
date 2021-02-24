@@ -41,7 +41,7 @@ pub trait TriggerEvent {
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
-    ) -> Vec<ActionUnitPt>;
+    ) -> (bool, Vec<ActionUnitPt>);
 
     ///使用技能后触发
     fn after_use_skill_trigger(
@@ -196,7 +196,7 @@ impl TriggerEvent for BattleData {
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
-    ) -> Vec<ActionUnitPt> {
+    ) -> (bool, Vec<ActionUnitPt>) {
         let mut v = Vec::new();
         let self_mut = self.get_mut_ref();
         //触发陷阱
@@ -204,6 +204,7 @@ impl TriggerEvent for BattleData {
         if let Some(res) = res {
             v.extend_from_slice(res.as_slice());
         }
+        let mut is_died = false;
         //触发别人的范围
         for other_cter in self.battle_cter.values() {
             if other_cter.is_died() {
@@ -249,6 +250,7 @@ impl TriggerEvent for BattleData {
                     }
                 }
                 if battle_cter.is_died() {
+                    is_died = true;
                     break;
                 }
             }
@@ -289,7 +291,7 @@ impl TriggerEvent for BattleData {
             //     need_rank = false;
             // }
         }
-        v
+        (is_died, v)
     }
 
     ///使用技能后触发

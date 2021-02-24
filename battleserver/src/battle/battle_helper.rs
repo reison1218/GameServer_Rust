@@ -100,13 +100,13 @@ impl BattleData {
         }
     }
 
-    ///处理角色移动之后的事件
+    ///处理角色移动之后的事件,返回元组类型，第一个表示移动角色死了没，第二个封装proto
     pub unsafe fn handler_cter_move(
         &mut self,
         user_id: u32,
         index: usize,
         au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Vec<ActionUnitPt>> {
+    ) -> anyhow::Result<(bool, Vec<ActionUnitPt>)> {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let battle_cter_index = battle_cter.get_map_cell_index();
@@ -142,8 +142,8 @@ impl BattleData {
 
         let index = index as isize;
         //移动位置后触发事件
-        let v = self.after_move_trigger(battle_cter, index, is_change_index_both);
-        Ok(v)
+        let res = self.after_move_trigger(battle_cter, index, is_change_index_both);
+        Ok(res)
     }
 
     ///消耗buff
@@ -489,6 +489,7 @@ impl BattleData {
 
         self.send_2_all_client(ClientCode::BattleTurnNotice, bytes);
     }
+
     ///获得战斗角色可变借用指针
     pub fn get_battle_cter_mut(
         &mut self,

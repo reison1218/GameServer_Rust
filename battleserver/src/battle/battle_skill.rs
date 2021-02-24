@@ -479,6 +479,7 @@ pub fn skill_open_map_cell(
             .unwrap();
         //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
         cter.update_open_map_cell_vec(index, false);
+        //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(index as u32);
@@ -486,13 +487,17 @@ pub fn skill_open_map_cell(
         au.targets.push(target_pt);
         //处理配对触发逻辑
         let res = battle_data.open_map_cell_buff_trigger(user_id, au, false);
-        if let Err(e) = res {
-            warn!("{:?}", e);
-            return None;
-        }
-        let res = res.unwrap();
-        if let Some(res) = res {
-            return Some(vec![res]);
+
+        match res {
+            Ok(res) => {
+                if let Some(res) = res {
+                    return Some(vec![res]);
+                }
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+                return None;
+            }
         }
     }
     None
@@ -537,7 +542,6 @@ pub unsafe fn auto_pair_map_cell(
         error!("{:?}", e);
         return None;
     }
-    let battle_cter = battle_cter.unwrap();
     let mut pair_map_cell: Option<&mut MapCell> = None;
     let map_cell_index = map_cell.index;
     let mut map_cell_target_index = 0;
@@ -570,6 +574,7 @@ pub unsafe fn auto_pair_map_cell(
     }
 
     let pair_map_cell = pair_map_cell.unwrap();
+    let battle_cter = battle_cter.unwrap();
     //设置配对状态
     battle_cter.status.is_pair = true;
     //处理本turn不能攻击
@@ -654,7 +659,7 @@ pub fn move_user(
         target_pt.target_value.push(target_user_index as u32);
         target_pt.target_value.push(target_index as u32);
         au.targets.push(target_pt);
-        let v = v.unwrap();
+        let (_, v) = v.unwrap();
         Some(v)
     }
 }
@@ -998,9 +1003,9 @@ pub unsafe fn transform(
         warn!("{:?}", e.to_string());
         return None;
     }
-    let v = v.unwrap();
+    let (is_died, v) = v.unwrap();
     //判断玩家死了没
-    if cter.is_died() {
+    if is_died {
         return Some(v);
     }
 

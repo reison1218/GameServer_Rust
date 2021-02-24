@@ -362,19 +362,15 @@ impl BattleData {
                     continue;
                 }
                 cter.round_reset();
-                let cter = cter as *mut BattleCharacter;
-                for buff in cter.as_mut().unwrap().battle_buffs.buffs.values_mut() {
+                let cter_ptr = cter as *mut BattleCharacter;
+                for &buff_id in cter_ptr.as_mut().unwrap().battle_buffs.buffs.keys() {
                     //刷新地图增加攻击力
-                    if RESET_MAP_ADD_ATTACK.contains(&buff.id) {
-                        cter.as_mut().unwrap().trigger_add_damage_buff(buff.id);
+                    if RESET_MAP_ADD_ATTACK.contains(&buff_id) {
+                        cter.trigger_add_damage_buff(buff_id);
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
-                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
-                        cter.as_mut()
-                            .unwrap()
-                            .battle_buffs
-                            .add_damage_buffs
-                            .remove(&buff.id);
+                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_id) {
+                        cter.battle_buffs.add_damage_buffs.remove(&buff_id);
                     }
                 }
             }
@@ -414,9 +410,9 @@ impl BattleData {
                 warn!("{:?}", e);
                 anyhow::bail!("{:?}", str.as_str())
             }
-            let v = v.unwrap();
+            let (is_died, v) = v.unwrap();
             //判断玩家死了没
-            if battle_cter.is_died() {
+            if is_died {
                 return Ok(Some(v));
             }
             //再配对
