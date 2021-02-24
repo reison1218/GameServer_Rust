@@ -100,7 +100,7 @@ impl Season {
         }
     }
 }
-
+type Lock = Arc<Mutex<GameMgr>>;
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
 fn main() {
     let game_mgr = Arc::new(Mutex::new(GameMgr::new()));
@@ -131,7 +131,7 @@ fn init_log() {
 }
 
 ///初始化赛季信息
-fn init_season(gm: Arc<Mutex<GameMgr>>) {
+fn init_season(gm: Lock) {
     query_last_season_rank(gm);
     let mut lock = REDIS_POOL.lock().unwrap();
     let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
@@ -192,7 +192,7 @@ fn init_temps() {
 }
 
 ///初始化http服务端
-fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
+fn init_http_server(gm: Lock) {
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(SavePlayerHttpHandler::new(gm.clone())));
     http_vec.push(Box::new(StopServerHttpHandler::new(gm.clone())));
@@ -201,12 +201,12 @@ fn init_http_server(gm: Arc<Mutex<GameMgr>>) {
 }
 
 ///init tcp server
-fn init_tcp_server(gm: Arc<Mutex<GameMgr>>) {
+fn init_tcp_server(gm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, gm);
 }
 
-pub fn query_last_season_rank(gm: Arc<Mutex<GameMgr>>) {
+pub fn query_last_season_rank(gm: Lock) {
     let mut sql = String::new();
     sql.push_str("select * from t_u_last_season_rank");
 

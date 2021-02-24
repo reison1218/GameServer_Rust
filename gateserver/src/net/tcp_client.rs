@@ -18,7 +18,7 @@ pub struct TcpClientHandler {
 }
 
 impl TcpClientHandler {
-    pub fn new(cp: Arc<Mutex<ChannelMgr>>, client_type: TcpClientType) -> TcpClientHandler {
+    pub fn new(cp: Lock, client_type: TcpClientType) -> TcpClientHandler {
         let tch = TcpClientHandler {
             ts: None,
             cp,
@@ -67,7 +67,7 @@ impl ClientHandler for TcpClientHandler {
     }
 }
 
-async fn handler_mess_s(cp: Arc<Mutex<ChannelMgr>>, packet_array: Vec<Packet>) {
+async fn handler_mess_s(cp: Lock, packet_array: Vec<Packet>) {
     for mut packet in packet_array {
         let mut lock = cp.lock().await;
         let user_id = packet.get_user_id();

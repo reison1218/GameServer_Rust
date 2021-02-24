@@ -1,21 +1,19 @@
-use super::*;
+use crate::Lock;
 
-use async_std::sync::Mutex;
 use async_std::task::block_on;
 use http_types::Error as HttpTypesError;
 use serde_json::{json, Value};
 use tools::http::HttpServerHandler;
 
 pub struct StopAllServerHandler {
-    gm: Arc<Mutex<GameCenterMgr>>,
+    gm: Lock,
 }
 
 impl StopAllServerHandler {
-    pub fn new(gm: Arc<Mutex<GameCenterMgr>>) -> Self {
+    pub fn new(gm: Lock) -> Self {
         StopAllServerHandler { gm }
     }
 }
-
 
 impl HttpServerHandler for StopAllServerHandler {
     fn get_path(&self) -> &str {
@@ -34,15 +32,14 @@ impl HttpServerHandler for StopAllServerHandler {
 }
 
 pub struct ReloadTempsHandler {
-    gm: Arc<Mutex<GameCenterMgr>>,
+    gm: Lock,
 }
 
 impl ReloadTempsHandler {
-    pub fn new(gm: Arc<Mutex<GameCenterMgr>>) -> Self {
+    pub fn new(gm: Lock) -> Self {
         ReloadTempsHandler { gm }
     }
 }
-
 
 impl HttpServerHandler for ReloadTempsHandler {
     fn get_path(&self) -> &str {
@@ -61,11 +58,11 @@ impl HttpServerHandler for ReloadTempsHandler {
 }
 
 pub struct UpdateSeasonHandler {
-    gm: Arc<Mutex<GameCenterMgr>>,
+    gm: Lock,
 }
 
 impl UpdateSeasonHandler {
-    pub fn new(gm: Arc<Mutex<GameCenterMgr>>) -> Self {
+    pub fn new(gm: Lock) -> Self {
         UpdateSeasonHandler { gm }
     }
 }

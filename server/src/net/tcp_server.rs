@@ -10,14 +10,12 @@ use crate::entity::user::{
 };
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
-use crate::mgr::game_mgr::GameMgr;
-use async_std::sync::Mutex;
+use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
 use std::str::FromStr;
-use std::sync::Arc;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 use tools::util::packet::Packet;
@@ -26,7 +24,7 @@ use super::http::{notice_user_center, UserCenterNoticeType};
 
 #[derive(Clone)]
 struct TcpServerHandler {
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Lock,
 }
 
 unsafe impl Send for TcpServerHandler {}
@@ -65,7 +63,7 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
+async fn handler_mess_s(gm: Lock, packet: Packet) {
     //如果为空，什么都不执行
     if packet.get_cmd() != GameCode::Login.into_u32()
         && packet.get_cmd() != GameCode::UnloadUser.into_u32()
@@ -97,7 +95,7 @@ async fn handler_mess_s(gm: Arc<Mutex<GameMgr>>, packet: Packet) {
 }
 
 //登录函数，执行登录
-async fn login(gm: Arc<Mutex<GameMgr>>, packet: Packet) -> anyhow::Result<()> {
+async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     //玩家id
     let user_id = packet.get_user_id();
     let mut gm_lock = gm.lock().await;
@@ -247,7 +245,7 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     lr
 }
 
-pub fn new(address: &str, gm: Arc<Mutex<GameMgr>>) {
+pub fn new(address: &str, gm: Lock) {
     let sh = TcpServerHandler { gm };
     let res = tools::tcp::tcp_server::new(address.to_string(), sh);
     let res = block_on(res);

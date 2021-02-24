@@ -87,6 +87,8 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 
+type Lock = Arc<Mutex<RoomMgr>>;
+
 fn main() {
     //初始化room_mgr多线程饮用计数器指针
     let room_mgr = Arc::new(Mutex::new(RoomMgr::new()));
@@ -169,7 +171,7 @@ fn init_temps() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(rm: Arc<Mutex<RoomMgr>>) {
+fn init_tcp_server(rm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, rm);
 }

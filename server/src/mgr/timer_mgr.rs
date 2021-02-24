@@ -1,14 +1,13 @@
-use crate::mgr::game_mgr::GameMgr;
-use async_std::sync::Mutex;
 use async_std::task::block_on;
 use chrono::{Local, Timelike};
 use log::{error, info};
-use std::sync::Arc;
 use std::time::Duration;
 use std::time::SystemTime;
 
+use crate::Lock;
+
 ///初始化定时器任务函数
-pub fn init_timer(gm: Arc<Mutex<GameMgr>>) {
+pub fn init_timer(gm: Lock) {
     let time = SystemTime::now();
     //每日零点任务
     zero_day(gm.clone());
@@ -21,7 +20,7 @@ pub fn init_timer(gm: Arc<Mutex<GameMgr>>) {
 }
 
 ///每日零点执行的任务
-fn zero_day(gm: Arc<Mutex<GameMgr>>) {
+fn zero_day(gm: Lock) {
     let mut next_time_tmp: i64 = 0;
     //每天0点执行
     let zero_day = move || loop {
@@ -57,7 +56,7 @@ fn zero_day(gm: Arc<Mutex<GameMgr>>) {
 }
 
 ///保存玩家数据的定时器任务函数
-fn save_timer(gm: Arc<Mutex<GameMgr>>) {
+fn save_timer(gm: Lock) {
     let (sender, rec) = crossbeam::channel::bounded(1024);
 
     let m = move || loop {

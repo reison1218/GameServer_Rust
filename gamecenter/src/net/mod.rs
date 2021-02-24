@@ -4,12 +4,10 @@ pub mod http;
 pub mod rank_tcp_client;
 pub mod room_tcp_client;
 
-use crate::mgr::game_center_mgr::GameCenterMgr;
-use async_std::sync::Mutex;
+use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, warn};
-use std::sync::Arc;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RankCode, RoomCode};
 use tools::tcp::Handler;
 use tools::util::packet::Packet;
@@ -20,7 +18,7 @@ trait Forward {
 
     fn get_gate_token(&self) -> Option<usize>;
 
-    fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>>;
+    fn get_game_center_mut(&mut self) -> &mut Lock;
 
     ///数据包转发
     async fn forward_packet(&mut self, packet_array: Vec<Packet>) {

@@ -7,15 +7,13 @@ pub mod user_info;
 
 use crate::entity::user_info::User;
 use crate::mgr::game_mgr::GameMgr;
-use crate::DB_POOL;
-use async_std::sync::Mutex;
+use crate::{Lock, DB_POOL};
 use async_std::task::block_on;
 use log::{error, info, warn};
 use mysql::prelude::ToValue;
 use mysql::{Error, QueryResult, Value};
 use serde_json::Value as JsonValue;
 use std::any::Any;
-use std::sync::Arc;
 
 ///关于结构体转换的trait
 pub trait Entity: Send {
@@ -138,7 +136,7 @@ pub trait EntityData: Dao + Any {
 }
 
 ///提供给http保存玩家数据的函数
-pub fn save_player_http(gm: Arc<Mutex<GameMgr>>) {
+pub fn save_player_http(gm: Lock) {
     let mut gm = block_on(gm.lock());
     gm.save_user_http();
 }

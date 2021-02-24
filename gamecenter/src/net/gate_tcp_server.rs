@@ -1,9 +1,7 @@
-use crate::mgr::game_center_mgr::GameCenterMgr;
-use crate::net::{Forward, new_server_tcp};
-use async_std::sync::Mutex;
+use crate::net::{new_server_tcp, Forward};
+use crate::Lock;
 use async_trait::async_trait;
 use log::error;
-use std::sync::Arc;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -11,7 +9,7 @@ use tools::util::packet::Packet;
 #[derive(Clone)]
 pub struct GateTcpServerHandler {
     pub token: usize,
-    pub gm: Arc<Mutex<GameCenterMgr>>,
+    pub gm: Lock,
 }
 
 unsafe impl Send for GateTcpServerHandler {}
@@ -27,7 +25,7 @@ impl Forward for GateTcpServerHandler {
         Some(self.token)
     }
 
-    fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>> {
+    fn get_game_center_mut(&mut self) -> &mut Lock {
         &mut self.gm
     }
 }
@@ -64,8 +62,8 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 }
 
 ///创建新的tcp服务器,如果有问题，终端进程
-pub fn new(address: String, rm: Arc<Mutex<GameCenterMgr>>) {
-    let sh = GateTcpServerHandler { token:0,gm: rm };
-    let m = new_server_tcp(address,sh);
+pub fn new(address: String, rm: Lock) {
+    let sh = GateTcpServerHandler { token: 0, gm: rm };
+    let m = new_server_tcp(address, sh);
     async_std::task::spawn(m);
 }

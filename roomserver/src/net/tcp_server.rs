@@ -1,5 +1,4 @@
-use crate::mgr::room_mgr::RoomMgr;
-use async_std::sync::{Arc, Mutex};
+use crate::Lock;
 use async_std::task;
 use async_std::task::block_on;
 use async_trait::async_trait;
@@ -11,7 +10,7 @@ use tools::util::packet::Packet;
 ///处理客户端所有请求,每个客户端单独分配一个handler
 #[derive(Clone)]
 pub struct TcpServerHandler {
-    pub rm: Arc<Mutex<RoomMgr>>,
+    pub rm: Lock,
 }
 
 unsafe impl Send for TcpServerHandler {}
@@ -52,13 +51,13 @@ impl tools::tcp::Handler for TcpServerHandler {
 }
 
 ///处理客户端消息
-async fn handler_mess_s(rm: Arc<Mutex<RoomMgr>>, packet: Packet) {
+async fn handler_mess_s(rm: Lock, packet: Packet) {
     let mut lock = rm.lock().await;
     lock.invok(packet);
 }
 
 ///创建新的tcp服务器,如果有问题，终端进程
-pub fn new(address: &str, rm: Arc<Mutex<RoomMgr>>) {
+pub fn new(address: &str, rm: Lock) {
     let sh = TcpServerHandler { rm };
     let res = block_on(tcp_server::new(address.to_string(), sh));
     if let Err(e) = res {

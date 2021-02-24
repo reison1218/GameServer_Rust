@@ -1,9 +1,7 @@
-use crate::mgr::room_mgr::RoomMgr;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{MatchRoom, RoomModel};
-use crate::SCHEDULED_MGR;
-use async_std::sync::{Arc, Mutex};
+use crate::{Lock, SCHEDULED_MGR};
 use async_std::task::block_on;
 use chrono::Local;
 use crossbeam::channel::Sender;
@@ -36,7 +34,7 @@ pub struct Task {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
+pub fn init_timer(rm: Lock) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
         let mut lock = block_on(rm.lock());
@@ -71,7 +69,7 @@ pub fn init_timer(rm: Arc<Mutex<RoomMgr>>) {
 }
 
 ///执行匹配房间任务
-fn match_room_start(rm: Arc<Mutex<RoomMgr>>, task: Task) {
+fn match_room_start(rm: Lock, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {

@@ -90,6 +90,8 @@ const REDIS_INDEX_GAME_SEASON: u32 = 1;
 
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 
+type Lock = Arc<Mutex<BattleMgr>>;
+
 fn main() {
     let bm = Arc::new(Mutex::new(BattleMgr::new()));
 
@@ -126,7 +128,7 @@ fn init_temps() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_client(bm: Arc<Mutex<BattleMgr>>) {
+fn init_tcp_client(bm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_client::new(tcp_port, bm);
 }

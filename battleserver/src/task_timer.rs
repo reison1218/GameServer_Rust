@@ -1,6 +1,6 @@
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::{MemberLeaveNoticeType, RoomState};
-use crate::SCHEDULED_MGR;
+use crate::{Lock, SCHEDULED_MGR};
 use async_std::sync::{Arc, Mutex};
 use async_std::task::block_on;
 use log::{error, info, warn};
@@ -33,7 +33,7 @@ pub struct Task {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Arc<Mutex<BattleMgr>>) {
+pub fn init_timer(rm: Lock) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
         let mut lock = block_on(rm.lock());

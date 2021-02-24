@@ -1,7 +1,5 @@
 use crate::battle::battle_enum::ActionType;
-use crate::mgr::battle_mgr::BattleMgr;
-use crate::ROBOT_SCHEDULED_MGR;
-use async_std::sync::{Arc, Mutex};
+use crate::{Lock, ROBOT_SCHEDULED_MGR};
 use async_std::task::block_on;
 use log::error;
 use log::info;
@@ -22,7 +20,7 @@ pub struct RobotTask {
 }
 
 ///初始化定时执行任务
-pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
+pub fn robot_init_timer(rm: Lock) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
         let mut lock = block_on(rm.lock());
@@ -62,7 +60,7 @@ pub fn robot_init_timer(rm: Arc<Mutex<BattleMgr>>) {
 }
 
 ///机器人选择站位函数
-pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
+pub fn choice_index(rm: Lock, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -86,7 +84,7 @@ pub fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
 }
 
 ///普通攻击
-pub fn attack(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
+pub fn attack(rm: Lock, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -111,7 +109,7 @@ pub fn attack(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
 }
 
 ///打开地图块
-pub fn open_cell(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
+pub fn open_cell(rm: Lock, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -136,7 +134,7 @@ pub fn open_cell(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
 }
 
 ///跳过回合
-pub fn skip_turn(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
+pub fn skip_turn(rm: Lock, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -159,7 +157,7 @@ pub fn skip_turn(rm: Arc<Mutex<BattleMgr>>, task: RobotTask) {
 }
 
 ///使用技能
-pub fn use_skill(_: Arc<Mutex<BattleMgr>>, _: RobotTask) {}
+pub fn use_skill(_: Lock, _: RobotTask) {}
 
 ///使用道具
-pub fn use_item(_: Arc<Mutex<BattleMgr>>, _: RobotTask) {}
+pub fn use_item(_: Lock, _: RobotTask) {}

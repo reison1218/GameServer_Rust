@@ -21,9 +21,11 @@ use tools::util::packet::Packet;
 use tools::cmd_code::GameCode;
 use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
 
-use async_std::sync::MutexGuard;
+use async_std::sync::{Mutex, MutexGuard};
 use serde_json::Value;
 use std::str::FromStr;
+
+type Lock = Arc<Mutex<ChannelMgr>>;
 
 ///校验用户中心是否在线
 fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {

@@ -1,13 +1,10 @@
 use crate::entity::save_player_http;
-use crate::mgr::game_mgr::GameMgr;
-use crate::CONF_MAP;
-use async_std::sync::Mutex;
+use crate::{Lock, CONF_MAP};
 use http_types::Error as HttpTypesError;
 use log::{error, info};
 use serde_json::value::Value as JsonValue;
 use serde_json::Value;
 use serde_json::{json, Map};
-use std::sync::Arc;
 use std::time::Duration;
 use tools::http::{HttpMethod, HttpServerHandler};
 
@@ -19,11 +16,11 @@ pub enum UserCenterNoticeType {
 
 ///保存玩家数据
 pub struct SavePlayerHttpHandler {
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Lock,
 }
 
 impl SavePlayerHttpHandler {
-    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
+    pub fn new(gm: Lock) -> Self {
         SavePlayerHttpHandler { gm }
     }
 }
@@ -41,11 +38,11 @@ impl HttpServerHandler for SavePlayerHttpHandler {
 }
 
 pub struct StopServerHttpHandler {
-    gm: Arc<Mutex<GameMgr>>,
+    gm: Lock,
 }
 
 impl StopServerHttpHandler {
-    pub fn new(gm: Arc<Mutex<GameMgr>>) -> Self {
+    pub fn new(gm: Lock) -> Self {
         StopServerHttpHandler { gm }
     }
 }

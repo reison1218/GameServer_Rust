@@ -1,5 +1,4 @@
-use crate::mgr::battle_mgr::BattleMgr;
-use async_std::sync::{Arc, Mutex};
+use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use crossbeam::channel::Sender;
@@ -10,11 +9,11 @@ use tools::util::packet::Packet;
 ///处理客户端所有请求,每个客户端单独分配一个handler
 #[derive(Clone)]
 pub struct TcpClientHandler {
-    pub bm: Arc<Mutex<BattleMgr>>,
+    pub bm: Lock,
 }
 
 impl TcpClientHandler {
-    pub fn new(bm: Arc<Mutex<BattleMgr>>) -> Self {
+    pub fn new(bm: Lock) -> Self {
         let tch = TcpClientHandler { bm };
         tch
     }
@@ -53,13 +52,13 @@ impl ClientHandler for TcpClientHandler {
     }
 }
 
-async fn handler_mess_s(bm: Arc<Mutex<BattleMgr>>, packet: Packet) {
+async fn handler_mess_s(bm: Lock, packet: Packet) {
     let mut lock = bm.lock().await;
     lock.invok(packet);
 }
 
 ///创建新的tcp服务器,如果有问题，终端进程
-pub fn new(address: &str, bm: Arc<Mutex<BattleMgr>>) {
+pub fn new(address: &str, bm: Lock) {
     let mut tch = TcpClientHandler::new(bm);
     let res = tch.on_read(address.to_string());
     async_std::task::block_on(res);

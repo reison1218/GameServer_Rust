@@ -163,7 +163,7 @@ impl TcpServerHandler {
 }
 
 ///创建新的tcpserver并开始监听
-pub fn new(address: &str, cm: Arc<Mutex<ChannelMgr>>) {
+pub fn new(address: &str, cm: Lock) {
     let sh = TcpServerHandler { tcp: None, cm };
     let res = tools::tcp::tcp_server::new(address.to_string(), sh);
     let res = block_on(res);

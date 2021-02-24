@@ -49,6 +49,7 @@ fn init_templates_mgr() -> TemplatesMgr {
     let conf = init_temps_mgr(res.as_str());
     conf
 }
+type Lock = Arc<Mutex<RankMgr>>;
 fn main() {
     let rm = Arc::new(Mutex::new(RankMgr::new()));
 
@@ -72,7 +73,7 @@ fn init_log() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(rm: Arc<Mutex<RankMgr>>) {
+fn init_tcp_server(rm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, rm);
 }

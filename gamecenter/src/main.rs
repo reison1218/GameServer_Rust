@@ -31,6 +31,8 @@ lazy_static! {
     };
 }
 
+type Lock = Arc<Mutex<GameCenterMgr>>;
+
 fn main() {
     let game_center = Arc::new(Mutex::new(GameCenterMgr::new()));
 
@@ -54,7 +56,7 @@ fn init_log() {
 }
 
 ///初始化tcp服务端
-fn init_tcp_server(gm: Arc<Mutex<GameCenterMgr>>) {
+fn init_tcp_server(gm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port_gate");
     gate_tcp_server::new(tcp_port.to_string(), gm.clone());
 
@@ -63,7 +65,7 @@ fn init_tcp_server(gm: Arc<Mutex<GameCenterMgr>>) {
 }
 
 ///初始化tcp客户端
-fn init_tcp_client(gm: Arc<Mutex<GameCenterMgr>>) {
+fn init_tcp_client(gm: Lock) {
     let mut rth = RoomTcpClientHandler { gm: gm.clone() };
     let address: &str = CONF_MAP.get_str("room_port");
     let m = async move {
@@ -77,7 +79,7 @@ fn init_tcp_client(gm: Arc<Mutex<GameCenterMgr>>) {
 }
 
 ///初始化http服务端
-fn init_http_server(gm: Arc<Mutex<GameCenterMgr>>) {
+fn init_http_server(gm: Lock) {
     std::thread::sleep(Duration::from_millis(10));
     let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
     http_vec.push(Box::new(ReloadTempsHandler::new(gm.clone())));

@@ -1,13 +1,14 @@
-use crate::mgr::rank_mgr::RankMgr;
 use async_std::sync::Mutex;
 use log::{error, info};
 use protobuf::Message;
-use rayon::prelude::*;
+use rayon::slice::ParallelSliceMut;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use tools::cmd_code::GameCode;
 use tools::protos::server_protocol::R_G_SYNC_RANK;
+
+use crate::Lock;
 
 #[derive(Default)]
 pub struct Task {
@@ -15,7 +16,7 @@ pub struct Task {
 }
 
 ///初始化定时器任务函数
-pub fn init_timer(rm: Arc<Mutex<RankMgr>>) {
+pub fn init_timer(rm: Lock) {
     let time = SystemTime::now();
 
     //每5分钟保存玩家数据
@@ -30,7 +31,7 @@ pub fn init_timer(rm: Arc<Mutex<RankMgr>>) {
     )
 }
 
-fn update_db(rm: Arc<Mutex<RankMgr>>) {
+fn update_db(rm: Lock) {
     let (sender, receive) = crossbeam::channel::bounded(128);
     let mut lock = async_std::task::block_on(rm.lock());
     lock.set_task_sender(sender.clone());
@@ -69,7 +70,7 @@ fn update_db(rm: Arc<Mutex<RankMgr>>) {
     async_std::task::spawn(m);
 }
 
-fn sort_rank(rm: Arc<Mutex<RankMgr>>) {
+fn sort_rank(rm: Lock) {
     let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
     let update_time = mgr.temps.get("rank_update_time");
     let time;

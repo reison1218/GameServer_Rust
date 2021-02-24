@@ -236,7 +236,7 @@ impl BattleCharacter {
             let skill = Skill::from(skill_temp);
             battle_cter.skills.insert(*skill_id, skill);
         }
-        let cter_temp: Option<&CharacterTemp> = TEMPLATES
+        let cter_temp = TEMPLATES
             .get_character_temp_mgr_ref()
             .get_temp_ref(&cter_id);
         if cter_temp.is_none() {

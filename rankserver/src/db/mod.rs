@@ -1,12 +1,10 @@
-use crate::mgr::rank_mgr::RankMgr;
 use crate::mgr::{RankInfo, RankInfoPtr};
-use async_std::sync::Mutex;
+use crate::Lock;
 use futures::executor::block_on;
 use log::error;
-use std::sync::Arc;
 pub mod dbtool;
 
-pub fn init_rank(rm: Arc<Mutex<RankMgr>>) {
+pub fn init_rank(rm: Lock) {
     let sql = "select * from t_u_league";
     let res = crate::DB_POOL.exe_sql(sql, None);
     if let Err(e) = res {

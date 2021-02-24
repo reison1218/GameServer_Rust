@@ -1,6 +1,5 @@
-use crate::mgr::game_center_mgr::GameCenterMgr;
 use crate::net::Forward;
-use async_std::sync::{Arc, Mutex};
+use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use crossbeam::channel::Sender;
@@ -11,7 +10,7 @@ use tools::util::packet::Packet;
 ///处理排行榜服所有请求,每个客户端单独分配一个handler
 #[derive(Clone)]
 pub struct RankTcpClientHandler {
-    pub gm: Arc<Mutex<GameCenterMgr>>,
+    pub gm: Lock,
 }
 
 impl Forward for RankTcpClientHandler {
@@ -23,7 +22,7 @@ impl Forward for RankTcpClientHandler {
         None
     }
 
-    fn get_game_center_mut(&mut self) -> &mut Arc<Mutex<GameCenterMgr>> {
+    fn get_game_center_mut(&mut self) -> &mut Lock {
         &mut self.gm
     }
 }
