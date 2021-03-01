@@ -21,8 +21,8 @@ use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
 ///触发事件trait
 pub trait TriggerEvent {
-    ///翻开地图块时候触发
-    fn open_map_cell_buff_trigger(
+    ///翻开地图块时候触发,主要触发buff和游戏机制上的东西
+    fn open_map_cell_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
@@ -146,7 +146,7 @@ impl BattleData {
 }
 
 impl TriggerEvent for BattleData {
-    fn open_map_cell_buff_trigger(
+    fn open_map_cell_trigger(
         &mut self,
         user_id: u32,
         au: &mut ActionUnitPt,
@@ -155,10 +155,35 @@ impl TriggerEvent for BattleData {
         // let battle_cters = self.battle_cter.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
         let index = battle_cter.get_map_cell_index();
-        //匹配玩家身上的
+        //匹配玩家身上的buff
         self.trigger_open_map_cell_buff(None, user_id, au, is_pair);
-        //匹配地图块的
+        //匹配地图块的buff
         self.trigger_open_map_cell_buff(Some(index), user_id, au, is_pair);
+        let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+        //配对了加金币
+        if is_pair {
+            let res;
+            let temp = crate::TEMPLATES
+                .get_constant_temp_mgr_ref()
+                .temps
+                .get("reward_gold_pair_cell");
+            match temp {
+                Some(temp) => {
+                    let value = u32::from_str(temp.value.as_str());
+                    match value {
+                        Ok(value) => res = value,
+                        Err(e) => {
+                            error!("{:?}", e);
+                            res = 2;
+                        }
+                    }
+                }
+                None => {
+                    res = 2;
+                }
+            }
+            battle_cter.add_gold(res as i32);
+        }
         Ok(None)
     }
 

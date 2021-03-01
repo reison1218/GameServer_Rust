@@ -1,6 +1,48 @@
 use crate::templates::template::{Template, TemplateMgrTrait};
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 use std::borrow::Borrow;
 use std::collections::HashMap;
+
+///变身继承类型
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    Debug,
+    Copy,
+    Clone,
+    Eq,
+    PartialEq,
+    TryFromPrimitive,
+    IntoPrimitive,
+)]
+#[repr(u8)]
+pub enum TransformInheritType {
+    None = 0,
+    Other = 1,
+    Hp = 2,
+    Attack = 3,
+    ResidueOpenTimes = 4,
+    AttackState = 5,
+    MapIndex = 6,
+    Energy = 7,
+    Gold = 8,
+    Mission = 9,
+    Buff = 10,
+}
+
+impl TransformInheritType {
+    pub fn into_u8(self) -> u8 {
+        let value: u8 = self.into();
+        value
+    }
+}
+
+impl Default for TransformInheritType {
+    fn default() -> Self {
+        TransformInheritType::None
+    }
+}
 
 ///角色配置结构体
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
@@ -19,6 +61,7 @@ pub struct CharacterTemp {
     pub is_init: u8,
     pub usable_skill_count: u8,
     pub usable_item_count: u8,
+    pub transform_inherit: Vec<u8>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]

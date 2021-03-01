@@ -415,16 +415,19 @@ impl BattleData {
             if is_died {
                 return Ok(Some(v));
             }
+
+            //打开地图块
+            self.exec_open_map_cell(user_id, index, true);
+
             //再配对
-            is_pair = self.handler_map_cell_pair(user_id, None);
+            is_pair = self.handler_map_cell_pair(user_id);
 
             //处理翻地图块触发buff
-            let res = self.open_map_cell_buff_trigger(user_id, au, is_pair);
+            let res = self.open_map_cell_trigger(user_id, au, is_pair);
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }
-            //更新翻的地图块下标
-            battle_cter.update_open_map_cell_vec(index, true);
+
             //玩家技能cd-1
             battle_cter.sub_skill_cd(None);
             //设置是否可以结束turn状态

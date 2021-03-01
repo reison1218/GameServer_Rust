@@ -64,7 +64,7 @@ use std::collections::binary_heap::PeekMut;
 use std::collections::btree_map::Entry::Vacant;
 use std::collections::btree_map::Range;
 use std::collections::BTreeMap;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::env;
 use std::fmt::{Debug, Display};
 use std::fs::File;
@@ -468,17 +468,15 @@ pub struct StructTest {
     c: Vec<u32>,
 }
 
-fn fn1(s: &mut String) {}
-
 #[derive(Default, Debug)]
-pub struct ZZ {
-    c: u16,
-    a: u64,
-    b: u16,
-    d: u8,
+pub struct ZZ<T> {
+    e: T,
 }
 
 fn main() -> anyhow::Result<()> {
+    // let s = serde_json::Value::try_from(1).unwrap();
+    // s.as_f64()
+
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();

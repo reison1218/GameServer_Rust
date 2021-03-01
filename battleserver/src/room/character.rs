@@ -14,10 +14,11 @@ use crate::TEMPLATES;
 use crossbeam::channel::Sender;
 use log::{error, warn};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, CharacterPt, LeaguePt, TargetPt};
-use tools::templates::character_temp::CharacterTemp;
+use tools::templates::character_temp::{CharacterTemp, TransformInheritType};
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -60,7 +61,6 @@ pub struct BaseAttr {
     pub energy: u8,     //角色能量
     pub max_energy: u8, //能量上限
     pub element: u8,    //角色元素
-    pub hp_max: i16,    //血上限
     pub item_max: u8,   //道具数量上限
 }
 
@@ -199,6 +199,7 @@ pub struct BattleCharacter {
     pub battle_buffs: BattleBuff,                          //战斗buff
     pub flow_data: TurnFlowData,                           //战斗流程相关数据
     pub index_data: IndexData,                             //角色位置数据
+    pub gold: i32,                                         //金币
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub robot_data: Option<RobotData>, //机器人数据;如果有值，则是机器人，没有则是玩家
@@ -252,7 +253,6 @@ impl BattleCharacter {
         battle_cter.base_attr.element = cter_temp.element;
         battle_cter.base_attr.energy = cter_temp.start_energy;
         battle_cter.base_attr.max_energy = cter_temp.max_energy;
-        battle_cter.base_attr.hp_max = cter_temp.hp;
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
         battle_cter.league = member.league.clone();
         cter_temp.passive_buff.iter().for_each(|buff_id| {
@@ -278,14 +278,12 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
-    ///更新翻地图块队列
-    pub fn update_open_map_cell_vec(&mut self, index: usize, is_sub_residue_open_times: bool) {
-        //将翻的地图块放到翻开的队列
-        self.flow_data.open_map_cell_vec.push(index);
-        //翻块次数-1
-        if is_sub_residue_open_times {
-            self.flow_data.residue_open_times -= 1;
+    pub fn add_gold(&mut self, value: i32) -> i32 {
+        self.gold += value;
+        if self.gold < 0 {
+            self.gold = 0;
         }
+        self.gold
     }
 
     pub fn sub_skill_cd(&mut self, value: Option<i8>) {
@@ -455,7 +453,6 @@ impl BattleCharacter {
         self.base_attr.element = cter_temp.element;
         self.base_attr.grade = 1;
         self.base_attr.hp = cter_temp.hp;
-        self.base_attr.hp_max = cter_temp.hp;
         self.base_attr.energy = cter_temp.start_energy;
         self.base_attr.max_energy = cter_temp.max_energy;
         self.base_attr.item_max = cter_temp.usable_item_count;
@@ -498,24 +495,15 @@ impl BattleCharacter {
             is_self_transform = false;
         }
 
-        //先复制需要继承的属性
-        let residue_open_times = self.flow_data.residue_open_times;
-        let is_can_end_turn = self.status.is_can_end_turn;
-        let hp = self.base_attr.hp;
-        let attack_state = self.get_attack_state();
-        let map_cell_index = self.index_data.map_cell_index;
-        let energy = self.base_attr.energy;
-        let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
+        //拷贝需要继承的属性
+        let transform_inherits = transform_inherit_copy(self, clone.base_attr.cter_id);
+
         //开始数据转换
         let _ = std::mem::replace(self, *clone);
+
         //处理保留数据
-        self.base_attr.hp = hp;
-        self.status.is_can_end_turn = is_can_end_turn;
-        self.base_attr.energy = energy;
-        self.status.attack_state = attack_state;
-        self.index_data.map_cell_index = map_cell_index;
-        self.flow_data.residue_open_times = residue_open_times;
-        self.flow_data.open_map_cell_vec = open_map_cell_vec;
+        self.transform_inherit(transform_inherits);
+
         //如果是从自己变身的角色变回去，则清空自己变身角色
         if is_self_transform {
             self.self_transform_cter = None;
@@ -527,6 +515,43 @@ impl BattleCharacter {
         let cter_pt = self.convert_to_battle_cter_pt();
         target_pt.set_transform_cter(cter_pt);
         target_pt
+    }
+
+    pub fn transform_inherit(&mut self, transform_inherits: Vec<TransformInherit>) {
+        for ti in transform_inherits {
+            let ti_type = ti.0;
+            match ti_type {
+                TransformInheritType::Other => {
+                    let (open_map_cell_vec, is_can_end_turn) = ti.1.as_other().unwrap();
+                    self.status.is_can_end_turn = is_can_end_turn;
+                    self.flow_data.open_map_cell_vec = open_map_cell_vec;
+                }
+                TransformInheritType::Hp => {
+                    self.base_attr.hp = ti.1.as_usize().unwrap() as i16;
+                }
+                TransformInheritType::Attack => {
+                    self.base_attr.atk = ti.1.as_usize().unwrap() as u8;
+                }
+                TransformInheritType::ResidueOpenTimes => {
+                    self.flow_data.residue_open_times = ti.1.as_usize().unwrap() as u8;
+                }
+                TransformInheritType::AttackState => {
+                    let res = ti.1.as_usize().unwrap() as u8;
+                    let attack_state = AttackState::try_from(res).unwrap();
+                    self.status.attack_state = attack_state;
+                }
+                TransformInheritType::MapIndex => {
+                    self.index_data.map_cell_index = Some(ti.1.as_usize().unwrap());
+                }
+                TransformInheritType::Energy => {
+                    self.base_attr.energy = ti.1.as_usize().unwrap() as u8;
+                }
+                TransformInheritType::Gold => {
+                    self.gold = ti.1.as_usize().unwrap() as i32;
+                }
+                _ => {}
+            }
+        }
     }
 
     ///变身
@@ -544,14 +569,8 @@ impl BattleCharacter {
             anyhow::bail!("cter_temp can not find!cter_id:{}", cter_id)
         }
         let cter_temp = cter_temp.unwrap();
-        //需要继承的属性
-        let residue_open_times = self.flow_data.residue_open_times;
-        let hp = self.base_attr.hp;
-        let is_can_end_turn = self.status.is_can_end_turn;
-        let attack_state = self.get_attack_state();
-        let map_cell_index = self.index_data.map_cell_index;
-        let energy = self.base_attr.energy;
-        let open_map_cell_vec = self.flow_data.open_map_cell_vec.clone();
+        //拷贝需要继承的属性
+        let transform_inherits = transform_inherit_copy(self, cter_id);
 
         //保存原本角色
         if self.self_cter.is_none() {
@@ -559,14 +578,10 @@ impl BattleCharacter {
         }
         //初始化数据成另外一个角色
         self.init_from_temp(cter_temp);
+
         //将继承属性给当前角色
-        self.flow_data.residue_open_times = residue_open_times;
-        self.base_attr.hp = hp;
-        self.status.is_can_end_turn = is_can_end_turn;
-        self.status.attack_state = attack_state;
-        self.index_data.map_cell_index = map_cell_index;
-        self.base_attr.energy = energy;
-        self.flow_data.open_map_cell_vec = open_map_cell_vec;
+        self.transform_inherit(transform_inherits);
+
         //给新变身加变身buff
         let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
         if let Err(e) = buff_temp {
@@ -852,9 +867,7 @@ impl BattleCharacter {
     ///加血
     pub fn add_hp(&mut self, hp: i16) -> bool {
         self.base_attr.hp += hp;
-        if self.base_attr.hp > self.base_attr.hp_max {
-            self.base_attr.hp = self.base_attr.hp_max;
-        } else if self.base_attr.hp <= 0 {
+        if self.base_attr.hp <= 0 {
             self.base_attr.hp = 0;
             self.status.state = BattleCterState::Die;
         }
@@ -871,6 +884,7 @@ impl BattleCharacter {
         battle_cter_pt.atk = self.base_attr.atk as u32;
         battle_cter_pt.energy = self.base_attr.energy as u32;
         battle_cter_pt.index = self.get_map_cell_index() as u32;
+        battle_cter_pt.gold = self.gold as u32;
         self.battle_buffs
             .buffs
             .values()
@@ -883,4 +897,82 @@ impl BattleCharacter {
             .for_each(|item_id| battle_cter_pt.items.push(*item_id));
         battle_cter_pt
     }
+}
+
+pub enum TransformInheritValue {
+    None,
+    Int(usize),
+    Other((Vec<usize>, bool)),
+}
+impl TransformInheritValue {
+    pub fn as_usize(&self) -> Option<usize> {
+        match self {
+            TransformInheritValue::Int(ref n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn as_other(&self) -> Option<(Vec<usize>, bool)> {
+        match self {
+            TransformInheritValue::Other(ref n) => Some(n.clone()),
+            _ => None,
+        }
+    }
+}
+
+pub struct TransformInherit(TransformInheritType, TransformInheritValue);
+
+pub fn transform_inherit_copy(
+    battle_cter: &BattleCharacter,
+    target_cter: u32,
+) -> Vec<TransformInherit> {
+    let target_cter_temp = crate::TEMPLATES
+        .get_character_temp_mgr_ref()
+        .get_temp_ref(&target_cter)
+        .unwrap();
+    let transform_inherit = target_cter_temp.transform_inherit.clone();
+    let mut v = vec![];
+    for &ti in transform_inherit.iter() {
+        let ti_type = TransformInheritType::try_from(ti);
+        if let Err(e) = ti_type {
+            error!("{:?}", e);
+            continue;
+        }
+        let ti_type = ti_type.unwrap();
+        let res = match ti_type {
+            TransformInheritType::Hp => {
+                TransformInheritValue::Int(battle_cter.base_attr.hp as usize)
+            }
+            TransformInheritType::Attack => {
+                TransformInheritValue::Int(battle_cter.base_attr.atk as usize)
+            }
+            TransformInheritType::ResidueOpenTimes => {
+                TransformInheritValue::Int(battle_cter.flow_data.residue_open_times as usize)
+            }
+            TransformInheritType::AttackState => {
+                TransformInheritValue::Int(battle_cter.get_attack_state().into_u8() as usize)
+            }
+            TransformInheritType::MapIndex => {
+                TransformInheritValue::Int(battle_cter.index_data.map_cell_index.unwrap())
+            }
+            TransformInheritType::Energy => {
+                TransformInheritValue::Int(battle_cter.base_attr.energy as usize)
+            }
+            TransformInheritType::Gold => TransformInheritValue::Int(battle_cter.gold as usize),
+            TransformInheritType::Buff => {
+                TransformInheritValue::Int(battle_cter.base_attr.hp as usize)
+            }
+            _ => TransformInheritValue::None,
+        };
+        v.push(TransformInherit(ti_type, res));
+    }
+    let res = TransformInherit(
+        TransformInheritType::Other,
+        TransformInheritValue::Other((
+            battle_cter.flow_data.open_map_cell_vec.clone(),
+            battle_cter.get_is_can_end_turn(),
+        )),
+    );
+    v.push(res);
+    v
 }

@@ -16,6 +16,7 @@ use protobuf::Message;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_BATTLE_TURN_NOTICE;
@@ -378,21 +379,64 @@ impl BattleData {
         Ok(target_pt)
     }
 
+    ///更新翻地图块队列
+    pub fn exec_open_map_cell(
+        &mut self,
+        user_id: u32,
+        index: usize,
+        is_sub_residue_open_times: bool,
+    ) {
+        let cter = self.battle_cter.get_mut(&user_id).unwrap();
+        //将翻的地图块放到翻开的队列
+        cter.flow_data.open_map_cell_vec.push(index);
+
+        //更新地图块打开人
+        let map_cell = self.tile_map.map_cells.get_mut(index).unwrap();
+        map_cell.open_user = user_id;
+
+        //翻块次数-1
+        if is_sub_residue_open_times {
+            cter.flow_data.residue_open_times -= 1;
+        }
+        let res;
+        let temp = crate::TEMPLATES
+            .get_constant_temp_mgr_ref()
+            .temps
+            .get("reward_gold_open_cell");
+        match temp {
+            Some(temp) => {
+                let value = u32::from_str(temp.value.as_str());
+                match value {
+                    Ok(value) => res = value,
+                    Err(e) => {
+                        error!("{:?}", e);
+                        res = 1;
+                    }
+                }
+            }
+            None => {
+                res = 1;
+            }
+        }
+        //加金币
+        cter.add_gold(res as i32);
+    }
+
     ///处理地图块配对逻辑
-    pub fn handler_map_cell_pair(&mut self, user_id: u32, map_index: Option<usize>) -> bool {
+    pub fn handler_map_cell_pair(&mut self, user_id: u32) -> bool {
         let battle_cter = self.battle_cter.get_mut(&user_id);
         if let None = battle_cter {
             error!("cter is not find!user_id:{}", user_id);
             return false;
         }
         let battle_cter = battle_cter.unwrap();
+        let size = battle_cter.flow_data.open_map_cell_vec.len();
+        let index = *battle_cter
+            .flow_data
+            .open_map_cell_vec
+            .get(size - 1)
+            .unwrap();
 
-        let index;
-        if let Some(map_index) = map_index {
-            index = map_index;
-        } else {
-            index = battle_cter.get_map_cell_index();
-        }
         let map_cell = self.tile_map.map_cells.get_mut(index);
         if let None = map_cell {
             error!("map_cell is not find!map_cell_index:{}", index);
@@ -401,12 +445,11 @@ impl BattleData {
         let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
         unsafe {
             let map_cell_mut = map_cell_ptr.as_mut().unwrap();
-            //设置翻开的人
-            map_cell_mut.open_user = user_id;
             let mut is_pair = false;
             let map_cell_id = map_cell_mut.id;
+
             //如果该turn第一次翻，或者已经配对了再翻，不用判断是否配对
-            if battle_cter.flow_data.open_map_cell_vec.is_empty() || battle_cter.status.is_pair {
+            if battle_cter.flow_data.open_map_cell_vec.len() == 1 || battle_cter.status.is_pair {
                 return is_pair;
             }
             let mut opened_cell_index = 0;
@@ -421,7 +464,9 @@ impl BattleData {
                 //如果配对了，则修改地图块配对的下标
                 if let Some(id) = last_map_cell_id {
                     opened_cell_index = opened_index;
-                    if map_cell_id == id {
+                    if map_cell_id == id && index == opened_cell_index {
+                        continue;
+                    } else if map_cell_id == id {
                         map_cell_mut.pair_index = Some(opened_cell_index);
                         last_map_cell.pair_index = Some(index);
                         is_pair = true;

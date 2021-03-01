@@ -457,7 +457,7 @@ pub fn skill_open_map_cell(
             warn!("{:?}", "target_array is empty");
             return None;
         }
-        let open_index = *target_array.get(0).unwrap() as usize;
+        let index = *target_array.get(0).unwrap() as usize;
         let cter = battle_data
             .get_battle_cter_mut(Some(user_id), true)
             .unwrap();
@@ -466,19 +466,17 @@ pub fn skill_open_map_cell(
             battle_data.cal_scope(user_id, cter_index, TargetType::PlayerSelf, None, None);
 
         //校验目标位置
-        if !map_cells.contains(&open_index) {
+        if !map_cells.contains(&index) {
             warn!("{:?}", "target_index is invalid!");
             return None;
         }
 
-        let index = open_index;
-        //处理配对逻辑
-        battle_data.handler_map_cell_pair(user_id, Some(index));
-        let cter = battle_data
-            .get_battle_cter_mut(Some(user_id), true)
-            .unwrap();
         //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
-        cter.update_open_map_cell_vec(index, false);
+        battle_data.exec_open_map_cell(user_id, index, false);
+
+        //处理配对逻辑
+        battle_data.handler_map_cell_pair(user_id);
+
         //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let mut target_pt = TargetPt::new();
@@ -486,7 +484,7 @@ pub fn skill_open_map_cell(
         target_pt.target_value.push(map_cell.id);
         au.targets.push(target_pt);
         //处理配对触发逻辑
-        let res = battle_data.open_map_cell_buff_trigger(user_id, au, false);
+        let res = battle_data.open_map_cell_trigger(user_id, au, false);
 
         match res {
             Ok(res) => {
@@ -603,7 +601,7 @@ pub unsafe fn auto_pair_map_cell(
     au.targets.push(target_pt);
 
     //处理配对触发逻辑
-    let res = battle_data.open_map_cell_buff_trigger(user_id, au, true);
+    let res = battle_data.open_map_cell_trigger(user_id, au, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
