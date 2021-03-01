@@ -475,7 +475,7 @@ pub fn skill_open_map_cell(
         battle_data.exec_open_map_cell(user_id, index, false);
 
         //处理配对逻辑
-        battle_data.handler_map_cell_pair(user_id);
+        let is_pair = battle_data.handler_map_cell_pair(user_id);
 
         //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -484,7 +484,7 @@ pub fn skill_open_map_cell(
         target_pt.target_value.push(map_cell.id);
         au.targets.push(target_pt);
         //处理配对触发逻辑
-        let res = battle_data.open_map_cell_trigger(user_id, au, false);
+        let res = battle_data.open_map_cell_trigger(user_id, au, is_pair);
 
         match res {
             Ok(res) => {

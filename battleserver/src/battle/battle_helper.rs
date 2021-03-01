@@ -431,6 +431,10 @@ impl BattleData {
         }
         let battle_cter = battle_cter.unwrap();
         let size = battle_cter.flow_data.open_map_cell_vec.len();
+        //如果该turn第一次翻，或者已经配对了再翻，不用判断是否配对
+        if size <= 1 {
+            return false;
+        }
         let index = *battle_cter
             .flow_data
             .open_map_cell_vec
@@ -444,58 +448,50 @@ impl BattleData {
         }
         let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
         unsafe {
+            let is_pair;
+
+            //最近一次翻开的地图块
             let map_cell_mut = map_cell_ptr.as_mut().unwrap();
-            let mut is_pair = false;
             let map_cell_id = map_cell_mut.id;
 
-            //如果该turn第一次翻，或者已经配对了再翻，不用判断是否配对
-            if battle_cter.flow_data.open_map_cell_vec.len() == 1 || battle_cter.status.is_pair {
-                return is_pair;
-            }
-            let mut opened_cell_index = 0;
-            for &opened_index in battle_cter.flow_data.open_map_cell_vec.iter() {
-                let res = self.tile_map.map_cells.get_mut(opened_index);
-                if let None = res {
-                    error!("map_cell not find!map_cell_index:{}", opened_index);
-                    continue;
-                }
-                let last_map_cell = res.unwrap();
-                let last_map_cell_id: Option<u32> = Some(last_map_cell.id);
-                //如果配对了，则修改地图块配对的下标
-                if let Some(id) = last_map_cell_id {
-                    opened_cell_index = opened_index;
-                    if map_cell_id == id && index == opened_cell_index {
-                        continue;
-                    } else if map_cell_id == id {
-                        map_cell_mut.pair_index = Some(opened_cell_index);
-                        last_map_cell.pair_index = Some(index);
-                        is_pair = true;
-                        battle_cter.status.is_pair = is_pair;
-                        let attack_state = battle_cter.get_attack_state();
-                        //状态改为可以进行攻击
-                        if attack_state != AttackState::Locked {
-                            battle_cter.change_attack_able();
-                        } else {
-                            warn!(
-                                "could not set battle_cter'attack_state!attack_state:{:?},user_id:{}",
-                                battle_cter.get_attack_state(),
-                                battle_cter.get_user_id()
-                            );
-                        }
-                        self.tile_map.un_pair_map.remove(&last_map_cell.index);
-                        self.tile_map.un_pair_map.remove(&map_cell_mut.index);
-                    }
-                    break;
+            //拿到上一个翻开的地图块
+            let last_map_cell = *battle_cter
+                .flow_data
+                .open_map_cell_vec
+                .get(size - 2)
+                .unwrap();
+            let last_map_cell = self.tile_map.map_cells.get_mut(last_map_cell).unwrap();
+            let last_map_cell_id = last_map_cell.id;
+            let last_map_cell_index = last_map_cell.index;
+
+            //校验是否配对了
+            if map_cell_id == last_map_cell_id {
+                map_cell_mut.pair_index = Some(last_map_cell_index);
+                last_map_cell.pair_index = Some(index);
+                is_pair = true;
+                battle_cter.status.is_pair = is_pair;
+                let attack_state = battle_cter.get_attack_state();
+                //状态改为可以进行攻击
+                if attack_state != AttackState::Locked {
+                    battle_cter.change_attack_able();
                 } else {
-                    is_pair = false;
+                    warn!(
+                        "could not set battle_cter'attack_state!attack_state:{:?},user_id:{}",
+                        battle_cter.get_attack_state(),
+                        battle_cter.get_user_id()
+                    );
                 }
+                self.tile_map.un_pair_map.remove(&last_map_cell.index);
+                self.tile_map.un_pair_map.remove(&map_cell_mut.index);
+            } else {
+                is_pair = false;
             }
             //配对了就封装
             if is_pair {
                 info!(
                     "user:{} open map_cell pair! last_map_cell:{},now_map_cell:{}",
                     battle_cter.get_user_id(),
-                    opened_cell_index,
+                    last_map_cell_index,
                     index
                 );
             }
