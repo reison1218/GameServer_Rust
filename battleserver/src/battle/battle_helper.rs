@@ -23,6 +23,8 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
+use super::mission::MissionCompleteType;
+
 impl BattleData {
     ///检测地图刷新
     pub fn check_refresh_map(&mut self) -> bool {
@@ -287,7 +289,7 @@ impl BattleData {
     pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattleCharacter) -> i16 {
         let target_user = target_cter.get_user_id();
         let scope_temp = TEMPLATES
-            .get_skill_scope_temp_mgr_ref()
+            .skill_scope_temp_mgr()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
         if let Err(_) = scope_temp {
             return target_cter.base_attr.defence as i16;
@@ -400,7 +402,7 @@ impl BattleData {
         }
         let res;
         let temp = crate::TEMPLATES
-            .get_constant_temp_mgr_ref()
+            .constant_temp_mgr()
             .temps
             .get("reward_gold_open_cell");
         match temp {
@@ -420,6 +422,9 @@ impl BattleData {
         }
         //加金币
         cter.add_gold(res as i32);
+        if let Some(mission) = cter.mission.as_mut() {
+            mission.add_progress(1, MissionCompleteType::OpenCellTimes, (0, 0));
+        }
     }
 
     ///处理地图块配对逻辑
@@ -596,7 +601,7 @@ impl BattleData {
 
     ///获取目标数组
     pub fn get_target_array(&self, user_id: u32, skill_id: u32) -> anyhow::Result<Vec<usize>> {
-        let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+        let res = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
         if let Err(_) = res {
             anyhow::bail!("could not find skill temp of {}", skill_id)
         }
@@ -810,7 +815,7 @@ impl BattleData {
         if is_check_pair && map_cell.pair_index.is_some() {
             anyhow::bail!("this map_cell already pair!index:{}", map_cell.index)
         }
-        if is_check_world && map_cell.is_world {
+        if is_check_world && map_cell.is_world() {
             anyhow::bail!("world_map_cell can not be choice!index:{}", map_cell.index)
         }
         if is_check_locked && map_cell.check_is_locked() {
@@ -894,7 +899,7 @@ impl BattleData {
         let center_map_cell = self.tile_map.map_cells.get(center_index as usize).unwrap();
         if targets.is_none() && scope_temp.is_none() {
             let res = TEMPLATES
-                .get_skill_scope_temp_mgr_ref()
+                .skill_scope_temp_mgr()
                 .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
             if let Err(e) = res {
                 warn!("{:?}", e);
@@ -1015,9 +1020,7 @@ impl BattleData {
         if skill_judge == 0 {
             return Ok(());
         }
-        let judge_temp = TEMPLATES
-            .get_skill_judge_temp_mgr_ref()
-            .get_temp(&skill_judge)?;
+        let judge_temp = TEMPLATES.skill_judge_temp_mgr().get_temp(&skill_judge)?;
         let target_type = TargetType::try_from(judge_temp.target);
         if let Err(e) = target_type {
             anyhow::bail!("{:?}", e)

@@ -67,7 +67,7 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //处理更新内存
-    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let mgr = crate::TEMPLATES.constant_temp_mgr();
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");
@@ -118,7 +118,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     match room_type {
-        RoomType::Custom => {
+        RoomType::OneVOneVOneVOneCustom => {
             //校验这个用户在不在房间内
             let res = rm.get_room_id(&packet.get_user_id());
             if let Some(room_id) = res {
@@ -129,11 +129,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
                 return;
             }
         }
-        RoomType::SeasonPve => {
-            warn!("this function is not open yet!");
-            return;
-        }
-        RoomType::WorldBossPve => {
+        RoomType::WorldBossCustom => {
             warn!("this function is not open yet!");
             return;
         }
@@ -148,7 +144,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     let room_type = RoomType::from(room_type);
     //创建房间
     match room_type {
-        RoomType::Custom => {
+        RoomType::OneVOneVOneVOneCustom => {
             let res = rm.custom_room.create_room(
                 owner,
                 rm.get_sender_clone(),
@@ -195,7 +191,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     let member_state = member.state;
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
-    if room_type == RoomType::Match
+    if room_type == RoomType::OneVOneVOneVOneMatch
         && member_count == MEMBER_MAX as usize
         && room_state == RoomState::AwaitConfirm
     {
@@ -207,7 +203,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
-    if room_type == RoomType::Match
+    if room_type == RoomType::OneVOneVOneVOneMatch
         && member_count == MEMBER_MAX as usize
         && room_state == RoomState::Await
     {
@@ -229,7 +225,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     //如果战斗已经开始了,交给战斗服处理
     if room_state == RoomState::ChoiceIndex {
         //如果是匹配房，删除玩家数据，不需要推送，战斗服已经处理过了
-        if room_type == RoomType::Match {
+        if room_type == RoomType::OneVOneVOneVOneMatch {
             rm.remove_member_without_push(user_id);
         }
         //通知战斗服进行处理
@@ -317,7 +313,9 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
     let room_type_u8 = room_type.into_u8();
     let user_id = packet.get_user_id();
     //校验模式
-    if room_type_u8 < RoomType::Match.into_u8() || room_type_u8 > RoomType::WorldBossPve.into_u8() {
+    if room_type_u8 < RoomType::OneVOneVOneVOneMatch.into_u8()
+        || room_type_u8 > RoomType::WorldBossCustom.into_u8()
+    {
         warn!(
             "search_room:this room type is invaild!room_type:{:?}",
             room_type
@@ -363,7 +361,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
     }
     let room_id;
     match room_type {
-        RoomType::Match => {
+        RoomType::OneVOneVOneVOneMatch => {
             let match_room = rm.match_room.borrow_mut();
             let res = match_room.quickly_start(member, sender, task_sender);
             //返回错误信息
@@ -373,7 +371,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
             };
             room_id = res.unwrap();
         }
-        RoomType::WorldBossPve => {
+        RoomType::WorldBossCustom => {
             room_id = 0;
         }
         _ => {
@@ -381,7 +379,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         }
     }
 
-    let value = tools::binary::combine_int_2_long(RoomType::Match as u32, room_id);
+    let value = tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneMatch as u32, room_id);
     rm.player_room.insert(user_id, value);
 }
 
@@ -410,7 +408,8 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_state = room.get_state();
     //匹配房，玩家到齐了才可以准备
-    if room_type == RoomType::Match && room.get_member_count() != MEMBER_MAX as usize {
+    if room_type == RoomType::OneVOneVOneVOneMatch && room.get_member_count() != MEMBER_MAX as usize
+    {
         warn!(
             "prepare_cancel:this room is not full,so can not prepare!room_id:{}.user_id:{}",
             room_id, user_id
@@ -442,7 +441,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let cter_temp = crate::TEMPLATES
-        .get_character_temp_mgr_ref()
+        .character_temp_mgr()
         .temps
         .get(&cter_id)
         .unwrap();
@@ -506,9 +505,9 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         return;
     }
     //机器人模版管理器
-    let robot_temp_mgr = crate::TEMPLATES.get_robot_temp_mgr_ref();
+    let robot_temp_mgr = crate::TEMPLATES.robot_temp_mgr();
     //角色模版管理器
-    let cter_temp_mgr = crate::TEMPLATES.get_character_temp_mgr_ref();
+    let cter_temp_mgr = crate::TEMPLATES.character_temp_mgr();
     //克隆一份机器人角色数组
     let mut cters_res = robot_temp_mgr.cters.clone();
     let mut cters_c = Vec::new();
@@ -589,7 +588,8 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
             return;
         }
         let room_id = room.get_room_id();
-        let value = tools::binary::combine_int_2_long(RoomType::Custom as u32, room_id);
+        let value =
+            tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
         rm.player_room.insert(robot_id, value);
     }
 }
@@ -667,7 +667,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
 
-    if room.get_room_type() != RoomType::Custom {
+    if room.get_room_type() != RoomType::OneVOneVOneVOneCustom {
         warn!(
             "kick_member:this room is not custom room,can not kick member!room_id:{}",
             room.get_room_id()
@@ -772,7 +772,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
             }
             RoomSettingType::TurnLimitTime => {
                 let id = proto_value as u8;
-                let limit_time_mgr = crate::TEMPLATES.get_battle_limit_time_temp_mgr_ref();
+                let limit_time_mgr = crate::TEMPLATES.battle_limit_time_temp_mgr();
                 let res = limit_time_mgr.get_temp(&id);
                 match res {
                     Ok(temp) => {
@@ -838,7 +838,9 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
 
     let room_type = room.get_room_type();
     //校验房间类型
-    if room_type.into_u8() > RoomType::WorldBossPve.into_u8() || room_type == RoomType::Match {
+    if room_type.into_u8() > RoomType::WorldBossCustom.into_u8()
+        || room_type == RoomType::OneVOneVOneVOneMatch
+    {
         warn!(
             "this room can not join in!room_id:{},room_type:{:?}!",
             room.get_room_id(),
@@ -1001,7 +1003,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let cter_temp = crate::TEMPLATES
-        .get_character_temp_mgr_ref()
+        .character_temp_mgr()
         .get_temp_ref(&cter_id)
         .unwrap();
     //校验技能数量
@@ -1060,7 +1062,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //校验房间类型
-    if room.get_room_type() != RoomType::Match {
+    if room.get_room_type() != RoomType::OneVOneVOneVOneMatch {
         warn!(
             "this room is not Match Room!room_type:{:?},room_id:{}",
             room_type, room_id
@@ -1148,12 +1150,12 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //如果是匹配房，直接删除房间数据
-    if room_type == RoomType::Match {
+    if room_type == RoomType::OneVOneVOneVOneMatch {
         rm.clear_room_without_push(room_type, room_id);
         return;
     }
     //如果是自定义房间，更新结算数据
-    if room_type == RoomType::Custom {
+    if room_type == RoomType::OneVOneVOneVOneCustom {
         //如果是自定义房间
         room.state = RoomState::Await;
         let mut brs = B_R_SUMMARY::new();
@@ -1216,10 +1218,7 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let emoji_id = ce.emoji_id;
-    let res: Option<&EmojiTemp> = crate::TEMPLATES
-        .get_emoji_temp_mgr_ref()
-        .temps
-        .get(&emoji_id);
+    let res: Option<&EmojiTemp> = crate::TEMPLATES.emoji_temp_mgr().temps.get(&emoji_id);
     if res.is_none() {
         warn!("there is no temp for emoji_id:{}", emoji_id);
         return;
@@ -1255,7 +1254,7 @@ pub fn handler_leave_room(
 
     //处理退出房间
     match room_type {
-        RoomType::Custom => {
+        RoomType::OneVOneVOneVOneCustom => {
             let res = rm.custom_room.leave_room(
                 MemberLeaveNoticeType::Leave as u8,
                 &room_id,
@@ -1285,7 +1284,7 @@ pub fn handler_leave_room(
                 rm.custom_room.rm_room(&room_id);
             }
         }
-        RoomType::Match => {
+        RoomType::OneVOneVOneVOneMatch => {
             let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
             if room.is_empty() {
                 return Ok(());

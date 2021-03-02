@@ -29,6 +29,12 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
+use super::market_temp::MarketTemp;
+use super::market_temp::MarketTempMgr;
+use super::merchandise_temp::{MerchandiseTemp, MerchandiseTempMgr};
+use super::mission_temp::{MissionTemp, MissionTempMgr};
+use super::template_name_constants::{MARKET, MERCHANDISE, MISSION};
+
 pub trait Template {}
 
 pub trait TemplateMgrTrait: Send + Sync {
@@ -58,87 +64,14 @@ pub struct TemplatesMgr {
     punish_temp_mgr: PunishTempMgr,                     //惩罚时间
     grade_frame_temp_mgr: GradeFrameTempMgr,            //gradeframe
     soul_temp_mgr: SoulTempMgr,                         //灵魂头像
+    market_temp_mgr: MarketTempMgr,                     //市场配置
+    merchandise_temp_mgr: MerchandiseTempMgr,           //商品配置
+    mission_temp_mgr: MissionTempMgr,                   //任务配置
 }
 
 impl TemplatesMgr {
     pub fn execute_init(&self) {
-        self.get_constant_temp_mgr_ref();
-    }
-
-    pub fn get_character_temp_mgr_ref(&self) -> &CharacterTempMgr {
-        self.character_temp_mgr.borrow()
-    }
-
-    pub fn get_tile_map_temp_mgr_ref(&self) -> &TileMapTempMgr {
-        self.tile_map_temp_mgr.borrow()
-    }
-
-    pub fn get_emoji_temp_mgr_ref(&self) -> &EmojiTempMgr {
-        self.emoji_temp_mgr.borrow()
-    }
-
-    pub fn get_constant_temp_mgr_ref(&self) -> &ConstantTempMgr {
-        self.constant_temp_mgr.borrow()
-    }
-
-    pub fn get_world_cell_temp_mgr_ref(&self) -> &WorldCellTempMgr {
-        self.world_cell_temp_mgr.borrow()
-    }
-
-    pub fn get_cell_temp_mgr_ref(&self) -> &CellTempMgr {
-        self.cell_temp_mgr.borrow()
-    }
-
-    pub fn get_skill_temp_mgr_ref(&self) -> &SkillTempMgr {
-        self.skill_temp_mgr.borrow()
-    }
-
-    pub fn get_skill_scope_temp_mgr_ref(&self) -> &SkillScopeTempMgr {
-        self.skill_scope_temp_mgr.borrow()
-    }
-
-    pub fn get_item_temp_mgr_ref(&self) -> &ItemTempMgr {
-        self.item_temp_mgr.borrow()
-    }
-
-    pub fn get_buff_temp_mgr_ref(&self) -> &BuffTempMgr {
-        self.buff_temp_mgr.borrow()
-    }
-
-    pub fn get_skill_judge_temp_mgr_ref(&self) -> &SkillJudgeTempMgr {
-        self.skill_judge_temp_mgr.borrow()
-    }
-
-    pub fn get_season_temp_mgr_ref(&self) -> &SeasonTempMgr {
-        self.season_temp_mgr.borrow()
-    }
-
-    pub fn get_robot_temp_mgr_ref(&self) -> &RobotTempMgr {
-        self.robot_temp_mgr.borrow()
-    }
-
-    pub fn get_league_temp_mgr_ref(&self) -> &LeagueTempMgr {
-        self.league_temp_mgr.borrow()
-    }
-
-    pub fn get_summary_award_temp_mgr_ref(&self) -> &SummaryAwardTempMgr {
-        self.summary_award_temp_mgr.borrow()
-    }
-
-    pub fn get_battle_limit_time_temp_mgr_ref(&self) -> &BattleLimitTimeTempMgr {
-        self.battle_limit_time_temp_mgr.borrow()
-    }
-
-    pub fn get_punish_temp_mgr_ref(&self) -> &PunishTempMgr {
-        self.punish_temp_mgr.borrow()
-    }
-
-    pub fn get_grade_frame_temp_mgr_ref(&self) -> &GradeFrameTempMgr {
-        self.grade_frame_temp_mgr.borrow()
-    }
-
-    pub fn get_soul_temp_mgr_ref(&self) -> &SoulTempMgr {
-        self.soul_temp_mgr.borrow()
+        self.constant_temp_mgr();
     }
 
     pub fn reload_temps(&self, path: &str) -> anyhow::Result<()> {
@@ -164,6 +97,9 @@ impl TemplatesMgr {
             mgr_mut.punish_temp_mgr.clear();
             mgr_mut.grade_frame_temp_mgr.clear();
             mgr_mut.soul_temp_mgr.clear();
+            mgr_mut.market_temp_mgr.clear();
+            mgr_mut.merchandise_temp_mgr.clear();
+            mgr_mut.mission_temp_mgr.clear();
             let res = read_templates_from_dir(path, mgr_mut);
             if let Err(e) = res {
                 error!("{:?}", e);
@@ -171,6 +107,116 @@ impl TemplatesMgr {
             }
         }
         Ok(())
+    }
+
+    /// Get a reference to the templates mgr's character temp mgr.
+    pub fn character_temp_mgr(&self) -> &CharacterTempMgr {
+        &self.character_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's tile map temp mgr.
+    pub fn tile_map_temp_mgr(&self) -> &TileMapTempMgr {
+        &self.tile_map_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's emoji temp mgr.
+    pub fn emoji_temp_mgr(&self) -> &EmojiTempMgr {
+        &self.emoji_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's constant temp mgr.
+    pub fn constant_temp_mgr(&self) -> &ConstantTempMgr {
+        &self.constant_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's world cell temp mgr.
+    pub fn world_cell_temp_mgr(&self) -> &WorldCellTempMgr {
+        &self.world_cell_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's cell temp mgr.
+    pub fn cell_temp_mgr(&self) -> &CellTempMgr {
+        &self.cell_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's skill temp mgr.
+    pub fn skill_temp_mgr(&self) -> &SkillTempMgr {
+        &self.skill_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's item temp mgr.
+    pub fn item_temp_mgr(&self) -> &ItemTempMgr {
+        &self.item_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's skill scope temp mgr.
+    pub fn skill_scope_temp_mgr(&self) -> &SkillScopeTempMgr {
+        &self.skill_scope_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's buff temp mgr.
+    pub fn buff_temp_mgr(&self) -> &BuffTempMgr {
+        &self.buff_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's skill judge temp mgr.
+    pub fn skill_judge_temp_mgr(&self) -> &SkillJudgeTempMgr {
+        &self.skill_judge_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's season temp mgr.
+    pub fn season_temp_mgr(&self) -> &SeasonTempMgr {
+        &self.season_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's robot temp mgr.
+    pub fn robot_temp_mgr(&self) -> &RobotTempMgr {
+        &self.robot_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's league temp mgr.
+    pub fn league_temp_mgr(&self) -> &LeagueTempMgr {
+        &self.league_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's summary award temp mgr.
+    pub fn summary_award_temp_mgr(&self) -> &SummaryAwardTempMgr {
+        &self.summary_award_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's battle limit time temp mgr.
+    pub fn battle_limit_time_temp_mgr(&self) -> &BattleLimitTimeTempMgr {
+        &self.battle_limit_time_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's punish temp mgr.
+    pub fn punish_temp_mgr(&self) -> &PunishTempMgr {
+        &self.punish_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's grade frame temp mgr.
+    pub fn grade_frame_temp_mgr(&self) -> &GradeFrameTempMgr {
+        &self.grade_frame_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's soul temp mgr.
+    pub fn soul_temp_mgr(&self) -> &SoulTempMgr {
+        &self.soul_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's market temp mgr.
+    pub fn market_temp_mgr(&self) -> &MarketTempMgr {
+        &self.market_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's merchandise temp mgr.
+    pub fn merchandise_temp_mgr(&self) -> &MerchandiseTempMgr {
+        &self.merchandise_temp_mgr
+    }
+
+    /// Get a reference to the templates mgr's mession temp mgr.
+    pub fn mission_temp_mgr(&self) -> &MissionTempMgr {
+        &self.mission_temp_mgr
     }
 }
 
@@ -262,6 +308,15 @@ fn read_templates_from_dir<P: AsRef<Path>>(
         } else if name.eq_ignore_ascii_case(SOUL) {
             let v: Vec<SoulTemp> = serde_json::from_str(string.as_ref()).unwrap();
             temps_mgr.soul_temp_mgr.init(v);
+        } else if name.eq_ignore_ascii_case(MARKET) {
+            let v: Vec<MarketTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.market_temp_mgr.init(v);
+        } else if name.eq_ignore_ascii_case(MERCHANDISE) {
+            let v: Vec<MerchandiseTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.merchandise_temp_mgr.init(v);
+        } else if name.eq_ignore_ascii_case(MISSION) {
+            let v: Vec<MissionTemp> = serde_json::from_str(string.as_ref()).unwrap();
+            temps_mgr.mission_temp_mgr.init(v);
         }
     }
     Ok(())

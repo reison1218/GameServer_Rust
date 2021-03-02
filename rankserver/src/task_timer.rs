@@ -71,7 +71,7 @@ fn update_db(rm: Lock) {
 }
 
 fn sort_rank(rm: Lock) {
-    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let mgr = crate::TEMPLATES.constant_temp_mgr();
     let update_time = mgr.temps.get("rank_update_time");
     let time;
     match update_time {

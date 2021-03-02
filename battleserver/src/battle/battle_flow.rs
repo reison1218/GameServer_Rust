@@ -162,7 +162,7 @@ impl BattleData {
             let mut skill_s;
             let skill;
             if is_item {
-                let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+                let res = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
                 if let Err(e) = res {
                     error!("{:?}", e);
                     anyhow::bail!("")
@@ -290,13 +290,13 @@ impl BattleData {
         au.targets.push(target_pt);
         //检查aoebuff
         if let Some(buff) = aoe_buff {
-            let buff = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff);
+            let buff = TEMPLATES.buff_temp_mgr().get_temp(&buff);
             if let Err(e) = buff {
                 warn!("{:?}", e);
                 anyhow::bail!("")
             }
             let scope_temp = TEMPLATES
-                .get_skill_scope_temp_mgr_ref()
+                .skill_scope_temp_mgr()
                 .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
             if let Err(e) = scope_temp {
                 warn!("{:?}", e);

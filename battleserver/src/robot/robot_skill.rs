@@ -179,7 +179,7 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
 
     for map_cell in tile_map.map_cells.iter() {
         //过滤世界块
-        if map_cell.is_world {
+        if map_cell.is_world() {
             continue;
         }
         //过滤无效块
@@ -285,7 +285,7 @@ pub fn no_near_user(battle_data: &BattleData, robot_id: u32) -> bool {
 pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<usize> {
     let mut v = vec![];
     for map_cell in tile_map.map_cells.iter() {
-        if map_cell.is_world {
+        if map_cell.is_world() {
             continue;
         }
         let index = map_cell.index;
@@ -319,7 +319,7 @@ pub fn get_roundness_aoe(
             continue;
         }
         //检查世界块
-        if is_check_world_cell && map_cell.is_world {
+        if is_check_world_cell && map_cell.is_world() {
             continue;
         }
         //检查是否有锁
@@ -532,7 +532,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
                 let map_cell = battle_data.tile_map.map_cells.get(index);
                 match map_cell {
                     Some(map_cell) => {
-                        if map_cell.is_world {
+                        if map_cell.is_world() {
                             continue;
                         }
                         if map_cell.user_id <= 0 || map_cell.user_id == user_id {

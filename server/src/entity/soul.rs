@@ -84,7 +84,7 @@ impl Soul {
     pub fn new(user_id: u32) -> Self {
         let mut gf = Soul::default();
         let default_soul = crate::TEMPLATES
-            .get_constant_temp_mgr_ref()
+            .constant_temp_mgr()
             .temps
             .get("default_soul")
             .unwrap();

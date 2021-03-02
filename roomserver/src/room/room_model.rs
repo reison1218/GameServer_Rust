@@ -31,11 +31,11 @@ pub enum TeamId {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomType {
-    None = 0,         //无效
-    Custom = 1,       //自定义房间
-    Match = 2,        //匹配房间
-    SeasonPve = 3,    //赛季PVE房间
-    WorldBossPve = 4, //世界boss房间
+    None = 0,                  //无效
+    OneVOneVOneVOneCustom = 1, //1v1v1v1自定义房间
+    OneVOneVOneVOneMatch = 2,  //1v1v1v1匹配房间
+    WorldBossCustom = 3,       //世界boss自定义房间
+    WorldBoseMatch = 4,        //世界boss匹配房间
 }
 
 impl RoomType {
@@ -147,7 +147,7 @@ pub struct CustomRoom {
 
 impl RoomModel for CustomRoom {
     fn get_room_type(&self) -> RoomType {
-        RoomType::Custom
+        RoomType::OneVOneVOneVOneCustom
     }
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
@@ -168,7 +168,12 @@ impl RoomModel for CustomRoom {
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(owner.clone(), RoomType::Custom, sender, task_sender)?;
+        let room = Room::new(
+            owner.clone(),
+            RoomType::OneVOneVOneVOneCustom,
+            sender,
+            task_sender,
+        )?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
@@ -225,7 +230,7 @@ pub struct MatchRoom {
 
 impl RoomModel for MatchRoom {
     fn get_room_type(&self) -> RoomType {
-        RoomType::Match
+        RoomType::OneVOneVOneVOneMatch
     }
 
     fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
@@ -253,7 +258,7 @@ impl RoomModel for MatchRoom {
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
-        let room = Room::new(owner, RoomType::Match, sender, task_sender)?;
+        let room = Room::new(owner, RoomType::OneVOneVOneVOneMatch, sender, task_sender)?;
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();
@@ -385,7 +390,7 @@ impl MatchRoom {
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
-            let room_tmp_ref: &TileMapTempMgr = TEMPLATES.get_tile_map_temp_mgr_ref();
+            let room_tmp_ref: &TileMapTempMgr = TEMPLATES.tile_map_temp_mgr();
             if room_tmp_ref.is_empty() {
                 anyhow::bail!("TileMapTempMgr is None")
             }

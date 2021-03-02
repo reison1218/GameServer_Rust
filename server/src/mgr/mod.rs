@@ -7,11 +7,11 @@ use num_enum::TryFromPrimitive;
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomType {
-    None = 0,         //无效
-    Custom = 1,       //自定义房间
-    Match = 2,        //匹配房间
-    SeasonPve = 3,    //赛季PVE房间
-    WorldBossPve = 4, //世界boss房间
+    None = 0,                  //无效
+    OneVOneVOneVOneCustom = 1, //1v1v1v1自定义房间
+    OneVOneVOneVOneMatch = 2,  //1v1v1v1匹配房间
+    WorldBossCustom = 3,       //世界boss自定义房间
+    WorldBoseMatch = 4,        //世界boss匹配房间
 }
 
 impl RoomType {

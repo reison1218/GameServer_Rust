@@ -6,6 +6,7 @@ use crate::battle::battle_enum::buff_type::{
 };
 use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
+use crate::battle::mission::Mission;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
@@ -80,7 +81,7 @@ impl League {
             self.league_time = 0;
         } else {
             let res = crate::TEMPLATES
-                .get_league_temp_mgr_ref()
+                .league_temp_mgr()
                 .get_temp(&self.league_id)
                 .unwrap();
             if old_id != self.league_id {
@@ -108,7 +109,7 @@ impl League {
             self.score = 0;
             return 0;
         }
-        let mgr = crate::TEMPLATES.get_league_temp_mgr_ref();
+        let mgr = crate::TEMPLATES.league_temp_mgr();
         if score < 0 {
             let league_temp = mgr.get_temp(&self.league_id);
             if let Err(_) = league_temp {
@@ -200,6 +201,7 @@ pub struct BattleCharacter {
     pub flow_data: TurnFlowData,                           //战斗流程相关数据
     pub index_data: IndexData,                             //角色位置数据
     pub gold: i32,                                         //金币
+    pub mission: Option<Mission>,                          //任务
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub robot_data: Option<RobotData>, //机器人数据;如果有值，则是机器人，没有则是玩家
@@ -224,8 +226,8 @@ impl BattleCharacter {
         battle_cter.base_attr.cter_id = cter_id;
         battle_cter.base_attr.grade = member.grade;
         battle_cter.base_attr.name = member.nick_name.clone();
-        let skill_ref = TEMPLATES.get_skill_temp_mgr_ref();
-        let buff_ref = TEMPLATES.get_buff_temp_mgr_ref();
+        let skill_ref = TEMPLATES.skill_temp_mgr();
+        let buff_ref = TEMPLATES.buff_temp_mgr();
         for skill_id in cter.skills.iter() {
             let res = skill_ref.temps.get(skill_id);
             if res.is_none() {
@@ -237,9 +239,7 @@ impl BattleCharacter {
             let skill = Skill::from(skill_temp);
             battle_cter.skills.insert(*skill_id, skill);
         }
-        let cter_temp = TEMPLATES
-            .get_character_temp_mgr_ref()
-            .get_temp_ref(&cter_id);
+        let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_id);
         if cter_temp.is_none() {
             let str = format!("cter_temp is none for cter_id:{}!", cter_id);
             warn!("{:?}", str.as_str());
@@ -309,7 +309,7 @@ impl BattleCharacter {
             return;
         }
         self.status.pair_attack_open_count = true;
-        let temp = TEMPLATES.get_constant_temp_mgr_ref();
+        let temp = TEMPLATES.constant_temp_mgr();
         let res = temp.temps.get("turn_default_open_cell_times");
         let reward_count;
         match res {
@@ -462,7 +462,7 @@ impl BattleCharacter {
         self.league = League::default();
         for skill_group in cter_temp.skills.iter() {
             for skill_id in skill_group.group.iter() {
-                let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+                let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
                 if let Err(e) = skill_temp {
                     warn!("{:?}", e);
                     continue;
@@ -473,7 +473,7 @@ impl BattleCharacter {
             }
         }
         cter_temp.passive_buff.iter().for_each(|buff_id| {
-            let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(buff_id);
+            let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(buff_id);
             if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
                 self.add_buff(Some(self.get_user_id()), None, buff.id, None);
@@ -562,9 +562,7 @@ impl BattleCharacter {
         buff_id: u32,
         next_turn_index: usize,
     ) -> anyhow::Result<TargetPt> {
-        let cter_temp = TEMPLATES
-            .get_character_temp_mgr_ref()
-            .get_temp_ref(&cter_id);
+        let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_id);
         if cter_temp.is_none() {
             anyhow::bail!("cter_temp can not find!cter_id:{}", cter_id)
         }
@@ -583,7 +581,7 @@ impl BattleCharacter {
         self.transform_inherit(transform_inherits);
 
         //给新变身加变身buff
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             warn!("{:?}", e);
             anyhow::bail!("")
@@ -628,9 +626,9 @@ impl BattleCharacter {
 
     ///添加道具
     pub fn add_item(&mut self, item_id: u32) -> anyhow::Result<()> {
-        let item_temp = TEMPLATES.get_item_temp_mgr_ref().get_temp(&item_id)?;
+        let item_temp = TEMPLATES.item_temp_mgr().get_temp(&item_id)?;
         let skill_id = item_temp.trigger_skill;
-        let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id)?;
+        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id)?;
         let item = Item {
             id: item_id,
             skill_temp,
@@ -741,7 +739,7 @@ impl BattleCharacter {
         buff_id: u32,
         turn_index: Option<usize>,
     ) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -802,7 +800,7 @@ impl BattleCharacter {
             if CHANGE_SKILL.contains(&buff.id) {
                 let skill_id = buff.buff_temp.par1;
 
-                let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().temps.get(&skill_id);
+                let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);
                 match skill_temp {
                     None => {
                         error!(
@@ -927,7 +925,7 @@ pub fn transform_inherit_copy(
     target_cter: u32,
 ) -> Vec<TransformInherit> {
     let target_cter_temp = crate::TEMPLATES
-        .get_character_temp_mgr_ref()
+        .character_temp_mgr()
         .get_temp_ref(&target_cter)
         .unwrap();
     let transform_inherit = target_cter_temp.transform_inherit.clone();

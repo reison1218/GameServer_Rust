@@ -35,3 +35,9 @@ pub const PUNISH: &str = "Punish";
 pub const GRADE_FRAME: &str = "GradeFrame";
 
 pub const SOUL: &str = "Soul";
+
+pub const MARKET: &str = "Market";
+
+pub const MISSION: &str = "Mission";
+
+pub const MERCHANDISE: &str = "Merchandise";

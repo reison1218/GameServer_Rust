@@ -56,12 +56,10 @@ impl RoomMgr {
         let res = res.unwrap();
         let (model, room_id) = tools::binary::separate_long_2_int(*res);
         let room;
-        if model == RoomType::into_u32(RoomType::Custom) {
+        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
             room = self.custom_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::Match) {
+        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
             room = self.match_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::SeasonPve) {
-            room = None;
         } else {
             room = None;
         }
@@ -93,12 +91,10 @@ impl RoomMgr {
 
     pub fn clear_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
         let room;
-        if room_type == RoomType::Custom {
+        if room_type == RoomType::OneVOneVOneVOneCustom {
             room = self.custom_room.get_room_mut(&room_id);
-        } else if room_type == RoomType::Match {
+        } else if room_type == RoomType::OneVOneVOneVOneMatch {
             room = self.match_room.get_room_mut(&room_id);
-        } else if room_type == RoomType::SeasonPve {
-            room = None;
         } else {
             room = None;
         }
@@ -108,15 +104,15 @@ impl RoomMgr {
         }
         let room = room.unwrap();
 
-        if room_type == RoomType::Match || room_type == RoomType::WorldBossPve {
+        if room_type == RoomType::OneVOneVOneVOneMatch || room_type == RoomType::WorldBossCustom {
             for id in room.members.keys() {
                 self.player_room.remove(id);
             }
         }
-        if room_type == RoomType::Match {
+        if room_type == RoomType::OneVOneVOneVOneMatch {
             self.match_room.rooms.remove(&room_id);
         }
-        if room_type == RoomType::WorldBossPve {
+        if room_type == RoomType::WorldBossCustom {
             //预留代码
         }
         info!(
@@ -185,12 +181,10 @@ impl RoomMgr {
         let res = res.unwrap();
         let (model, room_id) = tools::binary::separate_long_2_int(*res);
 
-        if model == RoomType::into_u32(RoomType::Custom) {
+        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
             return self.custom_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::Match) {
+        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
             return self.match_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::SeasonPve) {
-            return None;
         }
         None
     }
@@ -204,12 +198,10 @@ impl RoomMgr {
         let res = res.unwrap();
         let (model, room_id) = tools::binary::separate_long_2_int(*res);
 
-        if model == RoomType::into_u32(RoomType::Custom) {
+        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
             return self.custom_room.get_room_ref(&room_id);
-        } else if model == RoomType::into_u32(RoomType::Match) {
+        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
             return self.match_room.get_room_ref(&room_id);
-        } else if model == RoomType::into_u32(RoomType::SeasonPve) {
-            return None;
         }
         None
     }
@@ -217,10 +209,10 @@ impl RoomMgr {
     ///删除房间
     pub fn rm_room(&mut self, room_id: u32, room_type: RoomType, member_v: Vec<u32>) {
         match room_type {
-            RoomType::Match => {
+            RoomType::OneVOneVOneVOneMatch => {
                 self.match_room.rm_room(&room_id);
             }
-            RoomType::Custom => {
+            RoomType::OneVOneVOneVOneCustom => {
                 self.custom_room.rm_room(&room_id);
             }
             _ => {}

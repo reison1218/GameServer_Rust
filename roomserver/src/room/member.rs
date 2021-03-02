@@ -65,7 +65,7 @@ impl Member {
         if id == 0 {
             return None;
         }
-        let punish_temp = crate::TEMPLATES.get_punish_temp_mgr_ref().get_temp(&id);
+        let punish_temp = crate::TEMPLATES.punish_temp_mgr().get_temp(&id);
         if let Err(e) = punish_temp {
             warn!("{:?}", e);
             return None;

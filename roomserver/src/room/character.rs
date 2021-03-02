@@ -56,7 +56,7 @@ impl League {
             self.league_time = 0;
         } else {
             let res = crate::TEMPLATES
-                .get_league_temp_mgr_ref()
+                .league_temp_mgr()
                 .get_temp(&self.league_id)
                 .unwrap();
             if old_id != self.league_id {

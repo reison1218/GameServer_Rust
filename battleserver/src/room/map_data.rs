@@ -6,6 +6,7 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
+use std::convert::TryFrom;
 use std::slice::Iter;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -14,6 +15,14 @@ pub enum MapCellType {
     InValid = 0,
     UnUse = 1,
     Valid = 2,
+    WorldCell = 3,
+    StoreCell = 4,
+}
+
+impl Default for MapCellType {
+    fn default() -> Self {
+        MapCellType::InValid
+    }
 }
 
 impl MapCellType {
@@ -34,7 +43,8 @@ pub struct TileMap {
     pub id: u32,                                   //地图id
     pub map_cells: [MapCell; 30],                  //地图格子vec
     pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
-    pub world_cell_map: HashMap<u32, u32>,         //世界块map，index，map_cellid
+    pub world_cell: (usize, u32),                  //世界块 index,世界块id
+    pub store_cell: (usize, u32),                  //商店 index,世界块id
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
 }
 
@@ -58,7 +68,7 @@ pub struct MapCell {
     pub id: u32,                   //块的配置id
     pub index: usize,              //块的下标
     pub buffs: HashMap<u32, Buff>, //块的效果
-    pub is_world: bool,            //是否世界块
+    pub cell_type: MapCellType,    //地图块类型
     pub element: u8,               //地图块的属性
     pub passive_buffs: Vec<u32>,   //额外玩家对其添加的buff
     pub user_id: u32,              //这个地图块上面的玩家
@@ -69,6 +79,9 @@ pub struct MapCell {
 }
 
 impl MapCell {
+    pub fn is_world(&self) -> bool {
+        self.cell_type == MapCellType::WorldCell
+    }
     pub fn check_is_locked(&self) -> bool {
         for buff in self.buffs.values() {
             if buff.id == LOCKED {
@@ -121,17 +134,15 @@ impl TileMap {
         //创建随机结构体实例
         let mut rand = rand::thread_rng();
         //如果是匹配房,第一次进行随机
-        if room_type == RoomType::Match && last_map_id == 0 {
+        if room_type == RoomType::OneVOneVOneVOneMatch && last_map_id == 0 {
             //否则进行随机，0-1，0代表不开启世界块
             let res = rand.gen_range(0, 2);
             if res > 0 {
-                unsafe {
-                    season_id = crate::SEASON.season_id
-                }
+                unsafe { season_id = crate::SEASON.season_id }
             }
         }
         //拿到地图配置管理器
-        let tile_map_mgr = TEMPLATES.get_tile_map_temp_mgr_ref();
+        let tile_map_mgr = TEMPLATES.tile_map_temp_mgr();
         //如果有世界块，后面一直有
         if last_map_id != 0 {
             let tile_map_temp = tile_map_mgr.get_temp(last_map_id);
@@ -163,16 +174,20 @@ impl TileMap {
             let world_cell_index;
             //计算处世界块位置，如果上次id不为0，则拿上次的世界块位置
             let tile_map_temp = tile_map_mgr.get_temp(last_map_id);
-            if let Ok(tile_map_temp) = tile_map_temp {
-                world_cell_index = tile_map_temp.world_cell_index;
-            } else {
-                //如果为0，则随机从位置里面拿一个出来
-                let mut index_v = Vec::new();
-                for cell_index in tile_map_temp_map.keys() {
-                    index_v.push(*cell_index);
+
+            match tile_map_temp {
+                Ok(tile_map_temp) => {
+                    world_cell_index = tile_map_temp.world_cell_index;
                 }
-                let index = rand.gen_range(0, index_v.len());
-                world_cell_index = *index_v.get(index).unwrap();
+                Err(_) => {
+                    //如果为0，则随机从位置里面拿一个出来
+                    let mut index_v = Vec::new();
+                    for cell_index in tile_map_temp_map.keys() {
+                        index_v.push(*cell_index);
+                    }
+                    let index = rand.gen_range(0, index_v.len());
+                    world_cell_index = *index_v.get(index).unwrap();
+                }
             }
             //拿到世界地图块位置的所有配置
             tile_map_temp_vec = tile_map_temp_map.get(&world_cell_index).unwrap();
@@ -198,43 +213,46 @@ impl TileMap {
         let mut tmp = TileMap::default();
         tmp.id = tile_map_temp.id;
 
-        let mut map = [(0, false); 30];
+        let mut map = [(0, MapCellType::default()); 30];
         tile_map_temp.map.iter().enumerate().for_each(|i| {
             let index = i.0;
-            let value = i.1;
+            let &value = i.1;
             let mut map_cell = MapCell::default();
+            let map_cell_type = MapCellType::try_from(value as u8).unwrap();
             map_cell.index = index;
-            map[index] = (*value, false);
+            map[index] = (value, map_cell_type);
         });
 
         let mut empty_v = Vec::new();
 
         //填充空的格子占位下标
         for index in 0..tile_map_temp.map.len() {
-            let res = tile_map_temp.map.get(index).unwrap();
-            if *res != MapCellType::Valid.into_u32() {
-                continue;
-            }
-            //排除世界块
-            if index == tile_map_temp.world_cell_index as usize && tile_map_temp.world_cell > 0 {
+            let &map_cell_type = tile_map_temp.map.get(index).unwrap();
+            let map_cell_type = MapCellType::try_from(map_cell_type as u8).unwrap();
+            if map_cell_type != MapCellType::Valid {
                 continue;
             }
             empty_v.push(index);
         }
 
-        //确定worldmap_cell
+        //确定世界块
         if tile_map_temp.world_cell != 0 {
-            let index_value = tile_map_temp.world_cell_index as usize;
-            map[index_value] = (tile_map_temp.world_cell, true);
-            tmp.world_cell_map
-                .insert(index_value as u32, tile_map_temp.world_cell);
+            let index_value = tile_map_temp.world_cell_index;
+            map[index_value] = (tile_map_temp.world_cell, MapCellType::WorldCell);
+            tmp.world_cell = (index_value, tile_map_temp.world_cell);
+        }
+        //确定商店
+        if tile_map_temp.market_id != 0 {
+            let index_value = tile_map_temp.market_index;
+            map[index_value] = (tile_map_temp.world_cell, MapCellType::StoreCell);
+            tmp.store_cell = (index_value, tile_map_temp.world_cell);
         }
         //这里是为了去重，进行拷贝
-        let mut random_vec = TEMPLATES.get_cell_temp_mgr_ref().type_vec.clone();
+        let mut random_vec = TEMPLATES.cell_temp_mgr().type_vec.clone();
         //然后就是rare_map_cell
         for map_cell_rare in tile_map_temp.cell_rare.iter() {
-            let type_vec = TEMPLATES
-                .get_cell_temp_mgr_ref()
+            let element_vec = TEMPLATES
+                .cell_temp_mgr()
                 .rare_map
                 .get(&map_cell_rare.rare)
                 .unwrap()
@@ -244,12 +262,12 @@ impl TileMap {
                 if size >= map_cell_rare.count {
                     break 'out;
                 }
-                for map_cell_type in type_vec.iter() {
+                for element_type in element_vec.iter() {
                     if size >= map_cell_rare.count {
                         break 'out;
                     }
                     //先随出map_celltype列表中的一个
-                    let mut map_cell_v = hs_2_v(&random_vec.get(map_cell_type).unwrap());
+                    let mut map_cell_v = hs_2_v(&random_vec.get(element_type).unwrap());
                     if map_cell_v.len() == 0 {
                         continue;
                     }
@@ -259,14 +277,14 @@ impl TileMap {
                         //然后再随机放入地图里
                         let index = rand.gen_range(0, empty_v.len());
                         let index_value = empty_v.get(index).unwrap();
-                        map[*index_value] = (map_cell_id, false);
+                        map[*index_value].0 = map_cell_id;
                         empty_v.remove(index);
                         size += 1;
                     }
                     map_cell_v.remove(index);
                     //删掉选中的，进行去重
                     random_vec
-                        .get_mut(map_cell_type)
+                        .get_mut(element_type)
                         .unwrap()
                         .remove(&map_cell_id);
                 }
@@ -275,7 +293,7 @@ impl TileMap {
         let mut index = 0;
         let mut x = 0_isize;
         let mut y = 0_isize;
-        for (map_cell_id, is_world) in map.iter() {
+        for (map_cell_id, cell_type) in map.iter() {
             if x > 5 {
                 x = 0;
                 y += 1;
@@ -287,25 +305,21 @@ impl TileMap {
             let mut map_cell = MapCell::default();
             map_cell.id = *map_cell_id;
             map_cell.index = index;
-            map_cell.is_world = *is_world;
+            map_cell.cell_type = *cell_type;
             map_cell.x = x;
             map_cell.y = y;
             tmp.coord_map.insert((x, y), index);
             x += 1;
             let mut buffs: Option<Iter<u32>> = None;
-            if map_cell.is_world {
+            if map_cell.is_world() {
                 let world_map_cell = TEMPLATES
-                    .get_world_cell_temp_mgr_ref()
+                    .world_cell_temp_mgr()
                     .temps
                     .get(map_cell_id)
                     .unwrap();
                 buffs = Some(world_map_cell.buff.iter());
-            } else if map_cell_id > &MapCellType::Valid.into_u32() {
-                let map_cell_temp = TEMPLATES
-                    .get_cell_temp_mgr_ref()
-                    .temps
-                    .get(map_cell_id)
-                    .unwrap();
+            } else if map_cell.cell_type == MapCellType::Valid {
+                let map_cell_temp = TEMPLATES.cell_temp_mgr().temps.get(map_cell_id).unwrap();
                 buffs = Some(map_cell_temp.buff.iter());
                 map_cell.element = map_cell_temp.element;
                 tmp.un_pair_map.insert(index, map_cell.id);
@@ -313,10 +327,7 @@ impl TileMap {
             if let Some(buffs) = buffs {
                 let mut buff_map = HashMap::new();
                 for buff_id in buffs {
-                    let buff_temp = crate::TEMPLATES
-                        .get_buff_temp_mgr_ref()
-                        .get_temp(buff_id)
-                        .unwrap();
+                    let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
                     buff_map.insert(buff.id, buff);
                     map_cell.passive_buffs.push(*buff_id);

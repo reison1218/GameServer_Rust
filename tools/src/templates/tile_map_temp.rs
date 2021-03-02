@@ -10,8 +10,10 @@ pub struct TileMapTemp {
     pub world_cell: u32,
     pub member_count: Vec<u32>,
     pub season_id: u32,
-    pub world_cell_index: u32,
+    pub world_cell_index: usize,
     pub member_count_key: u8,
+    pub market_index: usize,
+    pub market_id: u32,
 }
 
 impl Template for TileMapTemp {}
@@ -28,7 +30,7 @@ pub struct TileMapTempMgr {
     ///key:member_count key:is_has_world_cell
     pub member_temps: HashMap<u8, HashMap<bool, Vec<TileMapTemp>>>,
     ///key:赛季id key:人数 keu:位置 value:vec<TileMapTemp>
-    pub season_temps: HashMap<u32, HashMap<u8, HashMap<u32, Vec<TileMapTemp>>>>,
+    pub season_temps: HashMap<u32, HashMap<u8, HashMap<usize, Vec<TileMapTemp>>>>,
 }
 
 impl TileMapTempMgr {
@@ -64,7 +66,7 @@ impl TileMapTempMgr {
             }
 
             let index_map = map.get_mut(&tt.member_count_key).unwrap();
-            if !index_map.contains_key(&(tt.world_cell_index as u32)) {
+            if !index_map.contains_key(&(tt.world_cell_index)) {
                 index_map.insert(tt.world_cell_index, Vec::new());
             }
             index_map

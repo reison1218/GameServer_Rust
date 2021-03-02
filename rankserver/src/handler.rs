@@ -70,7 +70,7 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
     }
     let season_id = usn.get_season_id();
 
-    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let mgr = crate::TEMPLATES.constant_temp_mgr();
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");

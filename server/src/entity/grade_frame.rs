@@ -84,7 +84,7 @@ impl GradeFrame {
     pub fn new(user_id: u32) -> Self {
         let mut gf = GradeFrame::default();
         let default_grade_frame = crate::TEMPLATES
-            .get_constant_temp_mgr_ref()
+            .constant_temp_mgr()
             .temps
             .get("default_grade_frame")
             .unwrap();

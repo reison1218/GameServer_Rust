@@ -94,7 +94,7 @@ impl BattleData {
                 //判断是否是上buff的陷阱
                 if TRAP_ADD_BUFF.contains(&buff.id) {
                     let buff_id = buff.buff_temp.par1;
-                    let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+                    let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
                     if let Err(e) = buff_temp {
                         warn!("{:?}", e);
                         continue;
@@ -164,7 +164,7 @@ impl TriggerEvent for BattleData {
         if is_pair {
             let res;
             let temp = crate::TEMPLATES
-                .get_constant_temp_mgr_ref()
+                .constant_temp_mgr()
                 .temps
                 .get("reward_gold_pair_cell");
             match temp {
@@ -337,7 +337,7 @@ impl TriggerEvent for BattleData {
         let mut skill_s;
         let skill;
         if is_item {
-            let res = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+            let res = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
             if let Err(e) = res {
                 error!("{:?}", e);
                 return;
@@ -354,9 +354,7 @@ impl TriggerEvent for BattleData {
         }
         //替换技能,水炮
         if skill.id == WATER_TURRET {
-            let skill_temp = TEMPLATES
-                .get_skill_temp_mgr_ref()
-                .get_temp(&skill.skill_temp.par2);
+            let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
             cter.skills.remove(&skill_id);
             if let Err(e) = skill_temp {
                 error!("{:?}", e);
@@ -384,10 +382,7 @@ impl TriggerEvent for BattleData {
         }
 
         //添加技能限制条件
-        let skill_temp = TEMPLATES
-            .get_skill_temp_mgr_ref()
-            .get_temp(&skill_id)
-            .unwrap();
+        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
         if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
             cter.flow_data.turn_limit_skills.push(skill_id);
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
@@ -497,7 +492,7 @@ impl TriggerEvent for BattleData {
         let mut punishment_score = -50;
         let mut reward_score;
         let con_temp = crate::TEMPLATES
-            .get_constant_temp_mgr_ref()
+            .constant_temp_mgr()
             .temps
             .get("punishment_summary");
         if let Some(con_temp) = con_temp {
@@ -532,8 +527,8 @@ impl TriggerEvent for BattleData {
             }
             let rank_vec = res.unwrap();
             let count = rank_vec_temp.len();
-            let summary_award_temp_mgr = crate::TEMPLATES.get_summary_award_temp_mgr_ref();
-            let con_temp_mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+            let summary_award_temp_mgr = crate::TEMPLATES.summary_award_temp_mgr();
+            let con_temp_mgr = crate::TEMPLATES.constant_temp_mgr();
             let res = con_temp_mgr.temps.get("max_grade");
             let mut max_grade = 2;
             match res {

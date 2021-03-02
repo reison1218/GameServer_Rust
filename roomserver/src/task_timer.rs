@@ -186,7 +186,7 @@ pub fn build_match_room_start_task(room_id: u32, task_sender: Sender<Task>) {
     //创建延迟任务，并发送给定时器接收方执行
     let mut task = Task::default();
     let time_limit = crate::TEMPLATES
-        .get_constant_temp_mgr_ref()
+        .constant_temp_mgr()
         .temps
         .get("kick_not_prepare_time");
     if let Some(time) = time_limit {

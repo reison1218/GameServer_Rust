@@ -253,7 +253,7 @@ pub fn show_map_cell(
         let element = map_cell.element;
         let map_cell_id = map_cell.id;
         let map_cell_index = map_cell.index;
-        let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
         if let Err(e) = skill_temp {
             warn!("{:?}", e);
             return None;
@@ -323,10 +323,7 @@ pub unsafe fn add_buff(
     let cter = cter.unwrap();
     let cter = cter as *mut BattleCharacter;
     let cter_index = cter.as_mut().unwrap().get_map_cell_index();
-    let skill_temp = TEMPLATES
-        .get_skill_temp_mgr_ref()
-        .get_temp(&skill_id)
-        .unwrap();
+    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
 
@@ -353,10 +350,7 @@ pub unsafe fn add_buff(
                 return None;
             }
             let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
-            let buff_temp = TEMPLATES
-                .get_buff_temp_mgr_ref()
-                .get_temp(&buff_id)
-                .unwrap();
+            let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
             let buff = Buff::new(
                 buff_temp,
                 Some(battle_data.next_turn_index),
@@ -517,7 +511,7 @@ pub unsafe fn auto_pair_map_cell(
         warn!("{:?}", e);
         return None;
     }
-    let skill_temp = TEMPLATES.get_skill_temp_mgr_ref().get_temp(&skill_id);
+    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
     if let Err(e) = skill_temp {
         warn!("{:?}", e);
         return None;
@@ -525,7 +519,7 @@ pub unsafe fn auto_pair_map_cell(
     let skill_temp = skill_temp.unwrap();
     let buff_id = skill_temp.buff;
 
-    let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+    let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
     if let Err(e) = buff_temp {
         warn!("{:?}", e);
         return None;
@@ -675,7 +669,7 @@ pub unsafe fn skill_damage_and_cure(
     let cter_index = battle_cter.get_map_cell_index() as isize;
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let res = TEMPLATES
-        .get_skill_scope_temp_mgr_ref()
+        .skill_scope_temp_mgr()
         .get_temp(&skill.skill_temp.scope);
     if let Err(e) = res {
         error!("{:?}", e);
@@ -738,7 +732,7 @@ pub unsafe fn skill_aoe_damage(
     let par2 = skill.skill_temp.par2 as i16;
     let par3 = skill.skill_temp.par3 as i16;
     let scope_id = skill.skill_temp.scope;
-    let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
+    let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         error!("{:?}", e);
         return None;
@@ -832,10 +826,7 @@ pub unsafe fn single_skill_damage(
     }
     let skill_damage;
 
-    let skill_temp = TEMPLATES
-        .get_skill_temp_mgr_ref()
-        .get_temp(&skill_id)
-        .unwrap();
+    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //目标在附近伤害加深
     if skill_id == SKILL_DAMAGE_NEAR_DEEP {
         let (_, users) = battle_data.cal_scope(
@@ -878,10 +869,7 @@ pub unsafe fn sub_cd(
         return None;
     }
 
-    let skill_temp = TEMPLATES
-        .get_skill_temp_mgr_ref()
-        .get_temp(&skill_id)
-        .unwrap();
+    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
 
     let battle_cter = battle_cter.unwrap();
     let battle_cter_index = battle_cter.get_map_cell_index();
@@ -924,7 +912,7 @@ pub unsafe fn scope_cure(
         return None;
     }
     let target_type = target_type.unwrap();
-    let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
+    let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         warn!("{:?}", e);
         return None;
@@ -1021,7 +1009,7 @@ pub unsafe fn transform(
 
     //计算范围
     let scope_id = skill.skill_temp.scope;
-    let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&scope_id);
+    let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         warn!("{:?}", e);
         return None;

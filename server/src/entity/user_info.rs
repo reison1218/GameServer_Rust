@@ -163,10 +163,7 @@ impl User {
         let mut grade = res as usize;
         grade += 1;
         let mut max_grade = 2_u32;
-        let max_grade_temp = crate::TEMPLATES
-            .get_constant_temp_mgr_ref()
-            .temps
-            .get("max_grade");
+        let max_grade_temp = crate::TEMPLATES.constant_temp_mgr().temps.get("max_grade");
         match max_grade_temp {
             Some(max_grade_temp) => {
                 let res = u32::from_str(max_grade_temp.value.as_str());
@@ -708,7 +705,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) {
     //处理持久化到数据库
     user_data.add_version();
     //如果是匹配房
-    if room_type == RoomType::Match {
+    if room_type == RoomType::OneVOneVOneVOneMatch {
         //更新段位积分
         user_data.league.update_from_pt(summary_data.get_league());
         //第一名就加grade

@@ -32,10 +32,10 @@ impl Characters {
         self.add_version();
         let mut res_v = Vec::new();
         for (cter_id, use_count) in v {
-            if use_count<=0{
+            if use_count <= 0 {
                 continue;
             }
-            if res_v.len()>=3{
+            if res_v.len() >= 3 {
                 break;
             }
             res_v.push(cter_id);
@@ -233,7 +233,7 @@ impl Dao for Character {
 
 fn get_init_characters(user_id: u32) -> Result<Vec<Character>, String> {
     let mut v: Vec<Character> = Vec::new();
-    let cter_temp: &CharacterTempMgr = TEMPLATES.get_character_temp_mgr_ref();
+    let cter_temp: &CharacterTempMgr = TEMPLATES.character_temp_mgr();
     if cter_temp.is_empty() {
         error!("there are no Character templates!");
         return Err("there are no Character templates!".to_string());

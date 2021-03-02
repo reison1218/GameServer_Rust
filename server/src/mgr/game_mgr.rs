@@ -232,7 +232,7 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) {
         SEASON.next_update_time = next_update_time;
     }
     //处理更新内存
-    let mgr = crate::TEMPLATES.get_constant_temp_mgr_ref();
+    let mgr = crate::TEMPLATES.constant_temp_mgr();
     let round_season_id = mgr.temps.get("round_season_id");
     if let None = round_season_id {
         warn!("the constant temp is None!key:round_season_id");

@@ -38,10 +38,7 @@ impl RankInfo {
     }
 
     pub fn update_league(&mut self, id: i8) {
-        let res = crate::TEMPLATES
-            .get_league_temp_mgr_ref()
-            .get_temp(&id)
-            .unwrap();
+        let res = crate::TEMPLATES.league_temp_mgr().get_temp(&id).unwrap();
         self.league.id = res.id;
         let time = chrono::Local::now();
         self.league.league_score = res.score;

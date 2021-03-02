@@ -73,7 +73,7 @@ impl From<&'static BuffTemp> for Buff {
             turn_index: None,
         };
         let mut v = Vec::new();
-        let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&bt.scope);
+        let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&bt.scope);
         if let Ok(scope_temp) = scope_temp {
             if !scope_temp.scope.is_empty() {
                 for direction in scope_temp.scope.iter() {
@@ -99,7 +99,7 @@ impl BattleData {
         last_map_cell_user_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -170,7 +170,7 @@ impl BattleData {
         last_map_cell_user_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -212,13 +212,13 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) {
         let mut target_pt = TargetPt::new();
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
         }
         let buff_temp = buff_temp.unwrap();
-        let new_buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_temp.par1);
+        let new_buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_temp.par1);
         if let Err(e) = new_buff_temp {
             error!("{:?}", e);
             return;
@@ -262,7 +262,7 @@ impl BattleData {
 
     ///给附近的人添加技能cd
     fn near_add_cd(&mut self, user_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -302,16 +302,14 @@ impl BattleData {
 
     ///附近造成技能伤害
     fn near_skill_damage(&mut self, user_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
         }
         let buff_temp = buff_temp.unwrap();
 
-        let scope_temp = TEMPLATES
-            .get_skill_scope_temp_mgr_ref()
-            .get_temp(&buff_temp.scope);
+        let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&buff_temp.scope);
         if let Err(e) = scope_temp {
             error!("{:?}", e);
             return;
@@ -370,7 +368,7 @@ impl BattleData {
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(cter_index);
         let mut tep = TriggerEffectPt::new();
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             warn!("{:?}", e);
             return;
@@ -396,7 +394,7 @@ impl BattleData {
         if map_cell_element != battle_cter.base_attr.element {
             return;
         }
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;
@@ -423,7 +421,7 @@ impl BattleData {
         is_pair: bool,
         au: &mut ActionUnitPt,
     ) {
-        let buff_temp = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
             return;

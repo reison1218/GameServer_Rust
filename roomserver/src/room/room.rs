@@ -119,7 +119,7 @@ impl Room {
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
         let mut room_state = RoomState::Await;
-        if room_type == RoomType::Match {
+        if room_type == RoomType::OneVOneVOneVOneMatch {
             room_state = RoomState::AwaitConfirm;
             owner.state = MemberState::AwaitConfirm;
         }
@@ -135,9 +135,9 @@ impl Room {
             task_sender,
             time,
         };
-        if room.room_type == RoomType::Match {
+        if room.room_type == RoomType::OneVOneVOneVOneMatch {
             let limit_time = TEMPLATES
-                .get_constant_temp_mgr_ref()
+                .constant_temp_mgr()
                 .temps
                 .get("battle_turn_limit_time");
             if let Some(limit_time) = limit_time {
@@ -157,7 +157,7 @@ impl Room {
         owner.join_time = Local::now().timestamp_millis() as u64;
         room.members.insert(user_id, owner);
         room.member_index[0] = user_id;
-        if room.room_type != RoomType::Match {
+        if room.room_type != RoomType::OneVOneVOneVOneMatch {
             //返回客户端
             let mut sr = S_ROOM::new();
             sr.is_succ = true;
@@ -169,7 +169,7 @@ impl Room {
 
     ///离开房间检查是否需要添加惩罚
     pub fn check_punish_for_leave(&mut self, user_id: u32) {
-        if self.room_type != RoomType::Match {
+        if self.room_type != RoomType::OneVOneVOneVOneMatch {
             return;
         }
         let member_count = self.members.len();
@@ -313,7 +313,7 @@ impl Room {
             *user_id,
             spc.write_to_bytes().unwrap(),
         );
-        if self.check_ready() && self.room_type == RoomType::Match {
+        if self.check_ready() && self.room_type == RoomType::OneVOneVOneVOneMatch {
             self.start();
         }
     }
@@ -418,7 +418,7 @@ impl Room {
         for member in self.members.values() {
             let res = member.state == MemberState::Ready;
             //如果是房主，并且是自定义房间
-            if member.user_id == self.owner_id && room_type == RoomType::Custom {
+            if member.user_id == self.owner_id && room_type == RoomType::OneVOneVOneVOneCustom {
                 index += 1;
             }
             if !res {
@@ -481,7 +481,7 @@ impl Room {
         }
 
         //不是匹配房就通知其他成员
-        if self.room_type != RoomType::Match {
+        if self.room_type != RoomType::OneVOneVOneVOneMatch {
             //返回客户端消息
             let mut sr = S_ROOM::new();
             sr.is_succ = true;

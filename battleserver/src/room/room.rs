@@ -1,6 +1,7 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::BattleCterState;
 use crate::battle::battle_trigger::TriggerEvent;
+use crate::battle::mission::random_mission;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
@@ -233,10 +234,10 @@ impl Room {
         let mut smrn = S_MAP_REFRESH_NOTICE::new();
         smrn.room_status = self.state as u32;
         smrn.tile_map_id = self.battle_data.tile_map.id;
-        for (world_index, world_id) in self.battle_data.tile_map.world_cell_map.iter() {
+        if self.battle_data.tile_map.world_cell.1 > 0 {
             let mut wcp = WorldCellPt::new();
-            wcp.index = *world_index;
-            wcp.world_cell_id = *world_id;
+            wcp.index = self.battle_data.tile_map.world_cell.0 as u32;
+            wcp.world_cell_id = self.battle_data.tile_map.world_cell.1;
             smrn.world_cell.push(wcp);
         }
         let bytes = smrn.write_to_bytes().unwrap();
@@ -391,6 +392,10 @@ impl Room {
         //添加下个turnindex
         self.check_next_choice_index();
 
+        //给玩家随机任务
+        let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
+        random_mission(member);
+
         //选完了就进入战斗
         let res = self.check_index_over();
         //都选择完了占位，进入选择回合顺序
@@ -499,10 +504,10 @@ impl Room {
         ssn.set_room_status(self.state.clone() as u32);
         ssn.set_tile_map_id(self.battle_data.tile_map.id);
         //封装世界块
-        for (index, id) in self.battle_data.tile_map.world_cell_map.iter() {
+        if self.battle_data.tile_map.world_cell.1 > 0 {
             let mut wcp = WorldCellPt::default();
-            wcp.set_index(*index);
-            wcp.set_world_cell_id(*id);
+            wcp.set_index(self.battle_data.tile_map.world_cell.0 as u32);
+            wcp.set_world_cell_id(self.battle_data.tile_map.world_cell.1);
             ssn.world_cell.push(wcp);
         }
         //封装turn order
@@ -564,7 +569,7 @@ impl Room {
     }
 
     pub fn handler_punish(&mut self, user_id: u32) {
-        if self.room_type != RoomType::Match {
+        if self.room_type != RoomType::OneVOneVOneVOneMatch {
             return;
         }
         let cter = self.get_battle_cter_mut_ref(&user_id).unwrap();
@@ -767,38 +772,31 @@ impl Room {
     ///战斗开始
     pub fn push_start_battle(&mut self) {
         //判断是否有世界块,有的话，
-        if !self.battle_data.tile_map.world_cell_map.is_empty()
+        if !self.battle_data.tile_map.world_cell.1 > 0
             && !self.battle_data.reflash_map_turn.is_some()
         {
-            for world_cell_id in self.battle_data.tile_map.world_cell_map.values() {
-                let world_cell_temp = TEMPLATES
-                    .get_world_cell_temp_mgr_ref()
-                    .temps
-                    .get(world_cell_id);
-                if world_cell_temp.is_none() {
-                    error!(
-                        "world_cell_temp is None! world_map_cell_id:{}",
-                        world_cell_id
-                    );
+            let world_cell_id = self.battle_data.tile_map.world_cell.1;
+            let world_cell_temp = TEMPLATES
+                .world_cell_temp_mgr()
+                .temps
+                .get(&world_cell_id)
+                .unwrap();
+
+            for buff_id in world_cell_temp.buff.iter() {
+                let buff = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
+                if let Err(e) = buff {
+                    error!("{:?}", e);
                     continue;
                 }
-                let world_cell_temp = world_cell_temp.unwrap();
-                for buff_id in world_cell_temp.buff.iter() {
-                    let buff = TEMPLATES.get_buff_temp_mgr_ref().get_temp(&buff_id);
-                    if let Err(e) = buff {
-                        error!("{:?}", e);
-                        continue;
-                    }
-                    let buff = buff.unwrap();
-                    if buff.par1 > 0 {
-                        for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                            battle_cter.add_buff(
-                                None,
-                                None,
-                                buff.par1,
-                                Some(self.battle_data.next_turn_index),
-                            );
-                        }
+                let buff = buff.unwrap();
+                if buff.par1 > 0 {
+                    for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
+                        battle_cter.add_buff(
+                            None,
+                            None,
+                            buff.par1,
+                            Some(self.battle_data.next_turn_index),
+                        );
                     }
                 }
             }
@@ -835,10 +833,7 @@ impl Room {
             return;
         }
         let user_id = user_id.unwrap();
-        let time_limit = TEMPLATES
-            .get_constant_temp_mgr_ref()
-            .temps
-            .get("choice_index_time");
+        let time_limit = TEMPLATES.constant_temp_mgr().temps.get("choice_index_time");
         let mut task = Task::default();
         if let Some(time) = time_limit {
             let time = u64::from_str(time.value.as_str());
