@@ -1,4 +1,3 @@
-use crate::battle::battle::{BattleData, Item};
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
@@ -7,6 +6,10 @@ use crate::battle::battle_enum::buff_type::{
 use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
 use crate::battle::battle_skill::Skill;
 use crate::battle::mission::Mission;
+use crate::battle::{
+    battle::{BattleData, Item},
+    mission::MissionCompleteType,
+};
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
@@ -276,6 +279,21 @@ impl BattleCharacter {
             battle_cter.robot_data = Some(robot_data);
         }
         Ok(battle_cter)
+    }
+
+    pub fn add_mission_progress(
+        &mut self,
+        value: u16,
+        mission_type: MissionCompleteType,
+        mission_parm: (u32, u32),
+    ) {
+        if let Some(mission) = self.mission.as_mut() {
+            let res = mission.add_progress(value, mission_type, mission_parm);
+            if res.0 {
+                self.add_gold(res.1 as i32);
+                //todo
+            }
+        }
     }
 
     pub fn add_gold(&mut self, value: i32) -> i32 {

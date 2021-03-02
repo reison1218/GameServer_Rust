@@ -19,6 +19,8 @@ use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
+use super::mission::MissionCompleteType;
+
 ///触发事件trait
 pub trait TriggerEvent {
     ///翻开地图块时候触发,主要触发buff和游戏机制上的东西
@@ -183,6 +185,8 @@ impl TriggerEvent for BattleData {
                 }
             }
             battle_cter.add_gold(res as i32);
+            battle_cter.add_mission_progress(1, MissionCompleteType::PairTimes, (0, 0));
+            battle_cter.add_mission_progress(1, MissionCompleteType::TurnPairTimes, (0, 0));
         }
         Ok(None)
     }

@@ -423,7 +423,10 @@ impl BattleData {
         //加金币
         cter.add_gold(res as i32);
         if let Some(mission) = cter.mission.as_mut() {
-            mission.add_progress(1, MissionCompleteType::OpenCellTimes, (0, 0));
+            let res = mission.add_progress(1, MissionCompleteType::OpenCellTimes, (0, 0));
+            if res.0 {
+                cter.add_gold(res.1 as i32);
+            }
         }
     }
 
