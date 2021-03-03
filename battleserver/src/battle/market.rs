@@ -2,8 +2,12 @@ use std::convert::TryFrom;
 
 use super::battle::BattleData;
 use super::mission::random_mission;
+use log::error;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use protobuf::Message;
+use tools::cmd_code::ClientCode;
+use tools::protos::battle::S_BUY_NOTICE;
 
 ///商品类型
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -42,6 +46,18 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
         }
         MerchandisType::Mission => {
             random_mission(battle_data, user_id);
+        }
+    }
+    let mut proto = S_BUY_NOTICE::new();
+    proto.set_user_id(user_id);
+    proto.set_merchandise_id(merchandise_id);
+    let bytes = proto.write_to_bytes();
+    match bytes {
+        Ok(bytes) => {
+            battle_data.send_2_all_client(ClientCode::BuyNoice, bytes);
+        }
+        Err(e) => {
+            error!("{:?}", e);
         }
     }
 }
