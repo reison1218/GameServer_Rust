@@ -71,7 +71,7 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut action_type = RobotActionType::Open;
 
         //剩余翻块次数
-        let residue_open_times = battle_cter.flow_data.residue_open_times;
+        let residue_open_times = battle_cter.flow_data.residue_movement_points;
 
         //剩余次数等于0，则啥也不干，直接返回
         if residue_open_times == 0 {

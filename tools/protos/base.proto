@@ -101,9 +101,17 @@ message BattleCharacterPt{
     uint32 energy = 7;                  //角色当前能量
     uint32 index = 8;                   //角色当前位置
     uint32 gold = 9;                    //玩家金币数量
-    repeated uint32 buffs = 10;          //角色身上的buff
-    repeated uint32 skills = 11;         //玩家选择的技能
-    repeated uint32 items = 12;          //玩家身上的道具
+    MissionPt mission = 10;             //任务 如果任务id为0代表没有任务，当角色初始化当时候，此结构体里面的任务id为0
+    repeated uint32 buffs = 11;          //角色身上的buff
+    repeated uint32 skills = 12;         //玩家选择的技能
+    repeated uint32 items = 13;          //玩家身上的道具
+}
+
+//任务
+message MissionPt{
+    uint32 mission_id = 1;              //任务id
+    uint32 progress = 2;                //任务进度
+    bool complete = 3;                  //任务是否已经完成
 }
 
 message EffectPt{

@@ -13,7 +13,9 @@ pub struct SkipGoalEvaluator {
 impl GoalEvaluator for SkipGoalEvaluator {
     fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
         //如果什么都干不了了，则结束turn期望值拉满
-        if cter.flow_data.residue_open_times == 0 && !cter.is_can_attack() && !cter.can_use_skill()
+        if cter.flow_data.residue_movement_points == 0
+            && !cter.is_can_attack()
+            && !cter.can_use_skill()
         {
             return 100;
         }

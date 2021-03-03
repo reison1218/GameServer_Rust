@@ -23,7 +23,7 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
-use super::mission::MissionCompleteType;
+use super::mission::{trigger_mission, MissionTriggerType};
 
 impl BattleData {
     ///检测地图刷新
@@ -382,12 +382,7 @@ impl BattleData {
     }
 
     ///更新翻地图块队列
-    pub fn exec_open_map_cell(
-        &mut self,
-        user_id: u32,
-        index: usize,
-        is_sub_residue_open_times: bool,
-    ) {
+    pub fn exec_open_map_cell(&mut self, user_id: u32, index: usize) {
         let cter = self.battle_cter.get_mut(&user_id).unwrap();
         //将翻的地图块放到翻开的队列
         cter.flow_data.open_map_cell_vec.push(index);
@@ -395,11 +390,6 @@ impl BattleData {
         //更新地图块打开人
         let map_cell = self.tile_map.map_cells.get_mut(index).unwrap();
         map_cell.open_user = user_id;
-
-        //翻块次数-1
-        if is_sub_residue_open_times {
-            cter.flow_data.residue_open_times -= 1;
-        }
         let res;
         let temp = crate::TEMPLATES
             .constant_temp_mgr()
@@ -422,12 +412,8 @@ impl BattleData {
         }
         //加金币
         cter.add_gold(res as i32);
-        if let Some(mission) = cter.mission.as_mut() {
-            let res = mission.add_progress(1, MissionCompleteType::OpenCellTimes, (0, 0));
-            if res.0 {
-                cter.add_gold(res.1 as i32);
-            }
-        }
+        //触发任务
+        trigger_mission(self, user_id, vec![MissionTriggerType::OpenCell], 1, (0, 0));
     }
 
     ///处理地图块配对逻辑

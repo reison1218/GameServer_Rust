@@ -1,8 +1,8 @@
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
-///默认每个turn翻地图块次数
-pub const TURN_DEFAULT_OPEN_CELL_TIMES: u8 = 2;
+///默认每个turn移动点数
+pub const TURN_DEFAULT_MOVEMENT_POINTS: u8 = 2;
 
 ///最大turn次数限制
 pub const LIMIT_TOTAL_TURN_TIMES: u16 = 999;
@@ -107,8 +107,8 @@ pub mod buff_type {
     pub const PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
     ///当地图重制，+攻击力
     pub const RESET_MAP_ADD_ATTACK: [u32; 1] = [1002];
-    /// 翻开地图块干点啥，配对又干点啥
-    pub const OPEN_CELL_AND_PAIR_ADD_ENERGY: [u32; 1] = [1004];
+    /// 移动干点啥，配对又干点啥
+    pub const MANUAL_MOVE_AND_PAIR_ADD_ENERGY: [u32; 1] = [1004];
     /// 无法被移动
     pub const CAN_NOT_MOVED: u32 = 10002;
     ///锁buff

@@ -14,7 +14,7 @@ use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use protobuf::Message;
 use rand::Rng;
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -393,8 +393,7 @@ impl Room {
         self.check_next_choice_index();
 
         //给玩家随机任务
-        let member = self.get_battle_cter_mut_ref(&user_id).unwrap();
-        random_mission(member);
+        random_mission(self.battle_data.borrow_mut(), user_id);
 
         //选完了就进入战斗
         let res = self.check_index_over();

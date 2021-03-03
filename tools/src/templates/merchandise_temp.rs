@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct MerchandiseTemp {
     pub id: u32,                 //商品id
-    pub price: u32,              //价格
+    pub price: i32,              //价格
     pub effect_type: u8,         //效果类型
     pub effect_value: i32,       //效果类型
     pub room_type: Vec<u8>,      //房间模式

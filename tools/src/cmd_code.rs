@@ -125,6 +125,7 @@ pub enum BattleCode {
     Action = 30004,      //请求行动
     Pos = 30005,         //架势请求
     Emoji = 30006,       //表情符号
+    Buy = 30007,         //购买
     OffLine = 39998,     //掉线
     LeaveRoom = 39999,   //离开房间
     Max = 40000,
@@ -256,6 +257,10 @@ pub enum ClientCode {
     ModifyGradeFrameAndSoul = 10082,
     //获得上赛季排行榜返回
     GetLastSeasonRank = 10083,
+    //任务推送
+    MissionNoice = 10101,
+    //购买推送
+    BuyNoice = 10102,
     //最大命令号
     Max = 20000,
 }

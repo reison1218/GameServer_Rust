@@ -466,7 +466,7 @@ pub fn skill_open_map_cell(
         }
 
         //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
-        battle_data.exec_open_map_cell(user_id, index, false);
+        battle_data.exec_open_map_cell(user_id, index);
 
         //处理配对逻辑
         let is_pair = battle_data.handler_map_cell_pair(user_id);

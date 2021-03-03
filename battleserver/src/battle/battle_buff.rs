@@ -1,7 +1,7 @@
 use crate::battle::battle::{BattleData, Direction};
 use crate::battle::battle_enum::buff_type::{
-    AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, OPEN_CELL_AND_PAIR_ADD_ENERGY,
-    PAIR_CLEAN_SKILL_CD, PAIR_CURE, PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
+    AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, PAIR_CLEAN_SKILL_CD, PAIR_CURE,
+    PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
 };
 use crate::battle::battle_enum::EffectType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -412,8 +412,8 @@ impl BattleData {
         }
     }
 
-    ///打开块和匹配
-    fn open_map_cell_and_pair(
+    ///移动和匹配
+    pub fn manual_move_and_pair(
         &mut self,
         from_user: Option<u32>,
         target_user: u32,
@@ -540,10 +540,6 @@ impl BattleData {
                         let skill_id = buff.buff_temp.par1;
                         self.pair_clean_skill_cd(open_user, buff.id, skill_id, au);
                     }
-                }
-                //翻开地图块加能量，配对加能量
-                if OPEN_CELL_AND_PAIR_ADD_ENERGY.contains(&buff.id) {
-                    self.open_map_cell_and_pair(from_user, match_user, buff.id, is_pair, au);
                 }
             }
 

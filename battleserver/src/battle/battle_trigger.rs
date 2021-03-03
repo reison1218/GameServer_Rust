@@ -19,7 +19,7 @@ use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
-use super::mission::MissionCompleteType;
+use super::mission::{trigger_mission, MissionTriggerType};
 
 ///触发事件trait
 pub trait TriggerEvent {
@@ -185,8 +185,20 @@ impl TriggerEvent for BattleData {
                 }
             }
             battle_cter.add_gold(res as i32);
-            battle_cter.add_mission_progress(1, MissionCompleteType::PairTimes, (0, 0));
-            battle_cter.add_mission_progress(1, MissionCompleteType::TurnPairTimes, (0, 0));
+            let map_cell = self.tile_map.map_cells.get(index).unwrap();
+            let element = map_cell.element as u32;
+            //触发翻地图块任务;触发获得金币;触发配对任务
+            trigger_mission(
+                self,
+                user_id,
+                vec![
+                    MissionTriggerType::OpenCell,
+                    MissionTriggerType::GetGold,
+                    MissionTriggerType::Pair,
+                ],
+                1,
+                (element, 0),
+            );
         }
         Ok(None)
     }
@@ -392,6 +404,8 @@ impl TriggerEvent for BattleData {
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
             cter.flow_data.round_limit_skills.push(skill_id);
         }
+        //触发翻地图块任务
+        trigger_mission(self, user_id, vec![MissionTriggerType::UseSkill], 1, (0, 0));
     }
 
     fn before_use_skill_trigger(&mut self, user_id: u32) -> anyhow::Result<()> {

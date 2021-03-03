@@ -5,4 +5,5 @@ pub mod battle_flow;
 pub mod battle_helper;
 pub mod battle_skill;
 pub mod battle_trigger;
+pub mod market;
 pub mod mission;

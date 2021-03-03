@@ -44,7 +44,7 @@ pub struct TileMap {
     pub map_cells: [MapCell; 30],                  //地图格子vec
     pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
     pub world_cell: (usize, u32),                  //世界块 index,世界块id
-    pub store_cell: (usize, u32),                  //商店 index,世界块id
+    pub market_cell: (usize, u32),                 //商店 index,世界块id
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
 }
 
@@ -245,7 +245,7 @@ impl TileMap {
         if tile_map_temp.market_id != 0 {
             let index_value = tile_map_temp.market_index;
             map[index_value] = (tile_map_temp.world_cell, MapCellType::StoreCell);
-            tmp.store_cell = (index_value, tile_map_temp.world_cell);
+            tmp.market_cell = (index_value, tile_map_temp.world_cell);
         }
         //这里是为了去重，进行拷贝
         let mut random_vec = TEMPLATES.cell_temp_mgr().type_vec.clone();

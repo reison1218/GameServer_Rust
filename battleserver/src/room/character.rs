@@ -3,9 +3,9 @@ use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
 };
-use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_OPEN_CELL_TIMES};
+use crate::battle::battle_enum::{AttackState, BattleCterState, TURN_DEFAULT_MOVEMENT_POINTS};
 use crate::battle::battle_skill::Skill;
-use crate::battle::mission::Mission;
+use crate::battle::mission::MissionData;
 use crate::battle::{
     battle::{BattleData, Item},
     mission::MissionCompleteType,
@@ -181,7 +181,7 @@ pub struct BattleBuff {
 ///角色战斗流程相关数据
 #[derive(Clone, Debug, Default)]
 pub struct TurnFlowData {
-    pub residue_open_times: u8,        //剩余翻地图块次数
+    pub residue_movement_points: u8,   //剩余移动点数
     pub open_map_cell_vec: Vec<usize>, //最近一次turn翻过的地图块
     pub turn_limit_skills: Vec<u32>,   //turn限制技能
     pub round_limit_skills: Vec<u32>,  //round限制技能
@@ -204,7 +204,8 @@ pub struct BattleCharacter {
     pub flow_data: TurnFlowData,                           //战斗流程相关数据
     pub index_data: IndexData,                             //角色位置数据
     pub gold: i32,                                         //金币
-    pub mission: Option<Mission>,                          //任务
+    pub revenge_user_id: u32,                              //复仇玩家
+    pub mission_data: MissionData,                         //任务数据
     pub skills: HashMap<u32, Skill>,                       //玩家选择的主动技能id
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub robot_data: Option<RobotData>, //机器人数据;如果有值，则是机器人，没有则是玩家
@@ -286,14 +287,15 @@ impl BattleCharacter {
         value: u16,
         mission_type: MissionCompleteType,
         mission_parm: (u32, u32),
-    ) {
-        if let Some(mission) = self.mission.as_mut() {
-            let res = mission.add_progress(value, mission_type, mission_parm);
-            if res.0 {
-                self.add_gold(res.1 as i32);
-                //todo
-            }
+    ) -> bool {
+        let res = self
+            .mission_data
+            .add_progress(value, mission_type, mission_parm);
+        if res.0 {
+            self.add_gold(res.1 as i32);
+            return true;
         }
+        false
     }
 
     pub fn add_gold(&mut self, value: i32) -> i32 {
@@ -317,8 +319,8 @@ impl BattleCharacter {
         })
     }
 
-    ///奖励翻块次数
-    pub fn pair_attack_reward_open_count(&mut self) {
+    ///奖励移动点数
+    pub fn pair_attack_reward_movement_points(&mut self) {
         self.change_attack_none();
         if !self.status.is_pair {
             return;
@@ -349,7 +351,7 @@ impl BattleCharacter {
             }
         }
 
-        self.flow_data.residue_open_times += reward_count;
+        self.flow_data.residue_movement_points += reward_count;
     }
 
     pub fn can_use_skill(&self) -> bool {
@@ -551,7 +553,7 @@ impl BattleCharacter {
                     self.base_attr.atk = ti.1.as_usize().unwrap() as u8;
                 }
                 TransformInheritType::ResidueOpenTimes => {
-                    self.flow_data.residue_open_times = ti.1.as_usize().unwrap() as u8;
+                    self.flow_data.residue_movement_points = ti.1.as_usize().unwrap() as u8;
                 }
                 TransformInheritType::AttackState => {
                     let res = ti.1.as_usize().unwrap() as u8;
@@ -809,7 +811,7 @@ impl BattleCharacter {
 
     ///重制翻块次数
     pub fn reset_residue_open_times(&mut self) {
-        self.flow_data.residue_open_times = TURN_DEFAULT_OPEN_CELL_TIMES;
+        self.flow_data.residue_movement_points = TURN_DEFAULT_MOVEMENT_POINTS;
     }
 
     ///回合开始触发
@@ -901,6 +903,7 @@ impl BattleCharacter {
         battle_cter_pt.energy = self.base_attr.energy as u32;
         battle_cter_pt.index = self.get_map_cell_index() as u32;
         battle_cter_pt.gold = self.gold as u32;
+        battle_cter_pt.set_mission(self.mission_data.into_mission_pt());
         self.battle_buffs
             .buffs
             .values()
@@ -963,7 +966,7 @@ pub fn transform_inherit_copy(
                 TransformInheritValue::Int(battle_cter.base_attr.atk as usize)
             }
             TransformInheritType::ResidueOpenTimes => {
-                TransformInheritValue::Int(battle_cter.flow_data.residue_open_times as usize)
+                TransformInheritValue::Int(battle_cter.flow_data.residue_movement_points as usize)
             }
             TransformInheritType::AttackState => {
                 TransformInheritValue::Int(battle_cter.get_attack_state().into_u8() as usize)

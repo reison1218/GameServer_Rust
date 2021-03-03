@@ -162,3 +162,23 @@ message S_SUMMARY_NOTICE{
     repeated SummaryDataPt summary_datas = 1;//数据
 }
 
+//任务推送
+//cmd=10101
+message S_MISSION_NOTICE{
+    uint32 user_id= 1;          //玩家id
+    uint32 mission_id = 2;      //任务id
+    uint32 notice_type = 3;     //推送类型 1:玩家获得新任务,2:玩家完成任务（当为这个值的时候，所有玩家都会收到消息）
+}
+
+//购买
+//cmd=30007
+message C_BUY{
+    uint32 merchandise_id = 1;      //商品id
+}
+
+//购买推送
+//cmd=10102
+message S_BUY_NOTICE{
+    uint32 user_id = 1;             //玩家id
+    uint32 merchandise_id = 2;      //商品id
+}

@@ -13,7 +13,7 @@ pub struct OpenCellGoalEvaluator {
 impl GoalEvaluator for OpenCellGoalEvaluator {
     fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
         //如果可以翻地图块，则返回期望值10
-        if cter.flow_data.residue_open_times > 0 {
+        if cter.flow_data.residue_movement_points > 0 {
             return 10;
         }
         0

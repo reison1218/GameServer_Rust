@@ -1,8 +1,10 @@
 use crate::battle::battle_enum::skill_type::PUSH_SELF;
 use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
 use crate::battle::battle_skill::Skill;
+use crate::battle::market::handler_buy;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::character::BattleCharacter;
+use crate::room::map_data::MapCellType;
 use crate::room::room::Room;
 use crate::room::RoomState;
 use crate::SEASON;
@@ -14,11 +16,90 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::ActionUnitPt;
+use tools::protos::battle::C_BUY;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
 use tools::protos::room::C_EMOJI;
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
+
+///购买
+pub fn buy(bm: &mut BattleMgr, packet: Packet) {
+    let user_id = packet.get_user_id();
+    let mut buy_proto = C_BUY::new();
+    let res = buy_proto.merge_from_bytes(packet.get_data());
+    if let Err(err) = res {
+        error!("{:?}", err);
+        return;
+    }
+    let room = bm.get_room_mut(&user_id);
+    if let None = room {
+        error!("this player is not in the room!user_id:{}", user_id);
+        return;
+    }
+    let merchandise_id = buy_proto.merchandise_id;
+    let room = room.unwrap();
+    if room.state != RoomState::BattleStarted {
+        error!(
+            "battle is not start!could not buy!user_id:{},room_state:{:?}",
+            user_id, room.state
+        );
+        return;
+    }
+    let battle_data = &mut room.battle_data;
+    let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+    //校验玩家死了没
+    if cter.is_died() {
+        return;
+    }
+    //校验选了站位没
+    let cter_index = cter.index_data.map_cell_index;
+    if cter_index.is_none() {
+        error!("this player index is None!user_id:{}", user_id);
+        return;
+    }
+    //校验玩家位置
+    let cter_index = cter_index.unwrap();
+    if cter_index != battle_data.tile_map.market_cell.0 {
+        error!("this player index is not market!user_id:{}", user_id);
+        return;
+    }
+    let merchandise_temp = crate::TEMPLATES.merchandise_temp_mgr();
+    let temp = merchandise_temp.get_temp(&merchandise_id);
+    if let Err(e) = temp {
+        error!("{:?}", e);
+        return;
+    }
+    let temp = temp.unwrap();
+    let room_type = battle_data.room_type.into_u8();
+    let element = cter.base_attr.element;
+    //校验房间类型
+    if !temp.room_type.contains(&room_type) {
+        error!(
+            "the room_type is error!config of room_type:{:?},this room_type:{}",
+            temp.room_type, room_type
+        );
+        return;
+    }
+    //校验角色类型
+    if !temp.character_type.contains(&element) {
+        error!(
+            "the character_type is error!config of character_type:{:?},this element:{}",
+            temp.character_type, element
+        );
+        return;
+    }
+    //校验金币是否足够
+    if cter.gold < temp.price {
+        warn!(
+            "this player's gold is not enough!merchandis:{}'s price is {},player's gold is {}",
+            temp.id, temp.price, cter.gold
+        );
+        return;
+    }
+    //执行购买
+    handler_buy(battle_data, user_id, merchandise_id);
+}
 
 ///行动请求
 #[track_caller]
@@ -319,6 +400,7 @@ fn open_map_cell(
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let battle_data = rm.battle_data.borrow();
     let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    let cter_index = battle_cter.get_map_cell_index();
     if battle_cter.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
@@ -332,7 +414,7 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验剩余翻块次数
-    if battle_cter.flow_data.residue_open_times <= 0 {
+    if battle_cter.flow_data.residue_movement_points <= 0 {
         let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
@@ -348,6 +430,19 @@ fn open_map_cell(
             "this player already has open this map_cell!user_id:{},open_map_cell_vec:{:?},index:{}",
             user_id, battle_cter.flow_data.open_map_cell_vec, target_map_cell_index
         );
+        warn!("{:?}", str.as_str());
+        anyhow::bail!(str)
+    }
+    let map_cell = battle_data
+        .tile_map
+        .map_cells
+        .get(target_map_cell_index)
+        .unwrap();
+    let map_cell_type = map_cell.cell_type;
+    let map_cell = battle_data.tile_map.map_cells.get(cter_index).unwrap();
+    //如果是在同一个位置，然后又是商店则返回
+    if map_cell.index == target_map_cell_index && map_cell_type == MapCellType::StoreCell {
+        let str = "this player already at the market!".to_owned();
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }

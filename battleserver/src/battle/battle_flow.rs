@@ -1,6 +1,7 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK_AND_AOE, PAIR_SAME_ELEMENT_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
+    ADD_ATTACK_AND_AOE, MANUAL_MOVE_AND_PAIR_ADD_ENERGY, PAIR_SAME_ELEMENT_ADD_ATTACK,
+    RESET_MAP_ADD_ATTACK,
 };
 use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
@@ -8,6 +9,7 @@ use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::character::BattleCharacter;
+use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
 use crate::room::RoomType;
 use crate::TEMPLATES;
@@ -20,6 +22,8 @@ use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
 use tools::protos::server_protocol::B_S_SUMMARY;
+
+use super::mission::{trigger_mission, MissionTriggerType};
 
 impl BattleData {
     ///处理战斗结算核心逻辑，不管地图刷新逻辑
@@ -333,7 +337,15 @@ impl BattleData {
                 }
             }
         }
-        cter.pair_attack_reward_open_count();
+        cter.pair_attack_reward_movement_points();
+        //触发翻地图块任务
+        trigger_mission(
+            self,
+            user_id,
+            vec![MissionTriggerType::Attack],
+            1,
+            (target_user_id, 0),
+        );
         Ok(())
     }
 
@@ -394,7 +406,7 @@ impl BattleData {
             "open_map_cell fail!user_id:{},index:{}",
             user_id, self.next_turn_index
         );
-        let is_pair;
+        let mut is_pair = false;
         unsafe {
             let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
             let battle_cter = battle_cters.as_mut().unwrap().get_mut(&user_id);
@@ -410,17 +422,41 @@ impl BattleData {
                 warn!("{:?}", e);
                 anyhow::bail!("{:?}", str.as_str())
             }
+
             let (is_died, v) = v.unwrap();
             //判断玩家死了没
             if is_died {
                 return Ok(Some(v));
             }
+            //减去移动点数
+            battle_cter.flow_data.residue_movement_points -= 1;
+            //玩家技能cd-1
+            battle_cter.sub_skill_cd(None);
+            //设置是否可以结束turn状态
+            battle_cter.set_is_can_end_turn(true);
 
-            //打开地图块
-            self.exec_open_map_cell(user_id, index, true);
+            //判断是否商店
+            let map_cell = self.tile_map.map_cells.get(index).unwrap();
+            let is_market = map_cell.cell_type == MapCellType::StoreCell;
+            if !is_market {
+                //打开地图块
+                self.exec_open_map_cell(user_id, index);
 
-            //再配对
-            is_pair = self.handler_map_cell_pair(user_id);
+                //再配对
+                is_pair = self.handler_map_cell_pair(user_id);
+            }
+            //消耗移动点干点什么，配对了又干点什么
+            for buff_id in battle_cter.battle_buffs.buffs.keys() {
+                //移动加能量，配对加能量
+                if MANUAL_MOVE_AND_PAIR_ADD_ENERGY.contains(&buff_id) {
+                    self.manual_move_and_pair(Some(user_id), user_id, *buff_id, is_pair, au);
+                }
+            }
+
+            //如果是商店不要往下走
+            if is_market {
+                return Ok(Some(v));
+            }
 
             //处理翻地图块触发buff
             let res = self.open_map_cell_trigger(user_id, au, is_pair);
@@ -428,10 +464,6 @@ impl BattleData {
                 anyhow::bail!("{:?}", e)
             }
 
-            //玩家技能cd-1
-            battle_cter.sub_skill_cd(None);
-            //设置是否可以结束turn状态
-            battle_cter.set_is_can_end_turn(true);
             let robot_trigger_type;
             if is_pair {
                 robot_trigger_type = RobotTriggerType::MapCellPair;

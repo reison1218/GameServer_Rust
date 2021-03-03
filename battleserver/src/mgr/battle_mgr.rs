@@ -1,5 +1,5 @@
 use crate::handlers::battle_handler::{
-    action, choice_index, emoji, leave_room, off_line, pos, reload_temps, start, update_season,
+    action, buy, choice_index, emoji, leave_room, off_line, pos, reload_temps, start, update_season,
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
@@ -172,5 +172,6 @@ impl BattleMgr {
 
         //请求pos
         self.cmd_map.insert(BattleCode::Pos.into_u32(), pos);
+        self.cmd_map.insert(BattleCode::Buy.into_u32(), buy);
     }
 }
