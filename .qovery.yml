@@ -1,0 +1,18 @@
+---
+application:
+  name: "gameserver-rust"
+  project: "gameserver"
+  organization: "QoveryCommunity"
+databases:
+- type: "MYSQL"
+  name: "game_data"
+  version: "8"
+- type: "REDIS"
+  name: "data_center"
+  version: "6"
+routers:
+- name: "main-gameserver-rust"
+  routes:
+  - application_name: "gameserver-rust"
+    paths:
+    - "/*"
