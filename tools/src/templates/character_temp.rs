@@ -62,6 +62,7 @@ pub struct CharacterTemp {
     pub usable_skill_count: u8,
     pub usable_item_count: u8,
     pub transform_inherit: Vec<u8>,
+    pub character_type: Vec<u8>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]

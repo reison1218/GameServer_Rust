@@ -1,17 +1,17 @@
-use std::env;
-use std::collections::{HashMap, HashSet};
-use tools::templates::tile_map_temp::TileMapTempMgr;
-use rand::{random, Rng};
-use std::borrow::Borrow;
-use tools::templates::template::TemplatesMgr;
-use tools::templates::buff_temp::BuffTemp;
 use crate::TEMPLATES;
-use std::slice::Iter;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use rand::{random, Rng};
+use std::borrow::Borrow;
+use std::collections::{HashMap, HashSet};
+use std::env;
+use std::slice::Iter;
+use tools::templates::buff_temp::BuffTemp;
+use tools::templates::template::TemplatesMgr;
+use tools::templates::tile_map_temp::TileMapTempMgr;
 
-pub fn generate_map(){
-    TileMap::init(RoomType::Custom,4001,4,4001).unwrap();
+pub fn generate_map() {
+    TileMap::init(RoomType::Custom, 4001, 4, 4001).unwrap();
 }
 
 ///房间类型
@@ -94,7 +94,6 @@ impl Buff {
         let target_type = TargetType::from(self.buff_temp.target);
         target_type
     }
-    
 
     pub(crate) fn sub_trigger_timesed(&mut self) {
         self.trigger_timesed -= 1;
@@ -123,7 +122,7 @@ impl From<&'static BuffTemp> for Buff {
             user_id: 0,
         };
         let mut v = Vec::new();
-        let scope_temp = TEMPLATES.get_skill_scope_temp_mgr_ref().get_temp(&bt.scope);
+        let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&bt.scope);
         if let Ok(scope_temp) = scope_temp {
             if !scope_temp.scope.is_empty() {
                 for direction in scope_temp.scope.iter() {
@@ -197,10 +196,9 @@ impl MapCell {
 }
 
 impl TileMap {
-
     pub fn get_able_cells(&self) -> Vec<u32> {
         let mut v = Vec::new();
-        let tile_map_mgr = crate::TEMPLATES.get_tile_map_temp_mgr_ref();
+        let tile_map_mgr = crate::TEMPLATES.tile_map_temp_mgr();
         let tile_map_temp = tile_map_mgr.temps.get(&4001_u32).unwrap();
         //填充空的格子占位下标
         for index in 0..tile_map_temp.map.len() {
@@ -214,11 +212,12 @@ impl TileMap {
     }
 
     ///初始化战斗地图数据
-    pub fn init(room_type: RoomType,
+    pub fn init(
+        room_type: RoomType,
         mut season_id: u32,
         mut member_count: u8,
-        last_map_id: u32,) -> anyhow::Result<Self> {
-
+        last_map_id: u32,
+    ) -> anyhow::Result<Self> {
         //先算人数
         if member_count == 3 {
             member_count += 1;
@@ -236,7 +235,7 @@ impl TileMap {
         }
 
         //拿到地图配置管理器
-        let tile_map_mgr = TEMPLATES.get_tile_map_temp_mgr_ref();
+        let tile_map_mgr = TEMPLATES.tile_map_temp_mgr();
         let tile_map_temp_vec;
         //有世界块的逻辑
         if season_id > 0 {
@@ -323,11 +322,11 @@ impl TileMap {
                 .insert(index_value as u32, tile_map_temp.world_cell);
         }
         //这里是为了去重，进行拷贝
-        let mut random_vec = TEMPLATES.get_cell_temp_mgr_ref().type_vec.clone();
+        let mut random_vec = TEMPLATES.cell_temp_mgr().type_vec.clone();
         //然后就是rare_map_cell
         for map_cell_rare in tile_map_temp.cell_rare.iter() {
             let type_vec = TEMPLATES
-                .get_cell_temp_mgr_ref()
+                .cell_temp_mgr()
                 .rare_map
                 .get(&map_cell_rare.rare)
                 .unwrap()
@@ -388,27 +387,20 @@ impl TileMap {
             let mut buffs: Option<Iter<u32>> = None;
             if map_cell.is_world {
                 let world_map_cell = TEMPLATES
-                    .get_world_cell_temp_mgr_ref()
+                    .world_cell_temp_mgr()
                     .temps
                     .get(map_cell_id)
                     .unwrap();
                 buffs = Some(world_map_cell.buff.iter());
             } else if map_cell_id > &MapCellType::Valid.into_u32() {
-                let map_cell_temp = TEMPLATES
-                    .get_cell_temp_mgr_ref()
-                    .temps
-                    .get(map_cell_id)
-                    .unwrap();
+                let map_cell_temp = TEMPLATES.cell_temp_mgr().temps.get(map_cell_id).unwrap();
                 buffs = Some(map_cell_temp.buff.iter());
                 map_cell.element = map_cell_temp.element;
             }
             if let Some(buffs) = buffs {
                 let mut buff_map = HashMap::new();
                 for buff_id in buffs {
-                    let buff_temp = crate::TEMPLATES
-                        .get_buff_temp_mgr_ref()
-                        .get_temp(buff_id)
-                        .unwrap();
+                    let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
                     buff_map.insert(buff.id, buff);
                     map_cell.passive_buffs.push(*buff_id);

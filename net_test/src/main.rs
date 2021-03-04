@@ -1,4 +1,3 @@
-mod behavior_test;
 mod map;
 mod mio_test;
 mod sig_rec;
@@ -460,6 +459,14 @@ pub struct PinTest {
     str: String,
     s: Option<&'static mut str>,
 }
+impl TestTrait for PinTest {}
+#[derive(Default)]
+pub struct OtherStruct;
+
+impl TestTrait for OtherStruct {}
+pub trait TestTrait {
+    fn test() {}
+}
 
 #[derive(Default, Debug)]
 pub struct StructTest {
@@ -468,12 +475,22 @@ pub struct StructTest {
     c: Vec<u32>,
 }
 
+impl TestTrait for StructTest {}
+
 #[derive(Default, Debug)]
-pub struct ZZ<T> {
+pub struct ZZ<T: TestTrait = StructTest> {
     e: T,
 }
 
 fn main() -> anyhow::Result<()> {
+    let a = ZZ {
+        e: StructTest::default(),
+    };
+
+    let b = ZZ {
+        e: OtherStruct::default(),
+    };
+
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
 

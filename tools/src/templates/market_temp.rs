@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct MarketTemp {
-    pub id: u32,           //技能id
-    pub market_count: u32, //商品数量
+    pub id: u32,                //技能id
+    pub merchandise_count: u32, //商品数量
 }
 
 impl Template for MarketTemp {}

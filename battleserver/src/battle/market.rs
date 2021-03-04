@@ -13,11 +13,16 @@ use tools::protos::battle::S_BUY_NOTICE;
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum MerchandisType {
-    Hp = 1,      //加HP
-    Attack = 2,  //加攻击力
-    SkillCd = 3, //所有技能减CD
-    Energy = 4,  //加能量
-    Mission = 5, //获得一个新任务
+    ///加HP
+    Hp = 1,
+    ///加攻击力
+    Attack = 2,
+    ///所有技能减CD
+    SkillCd = 3,
+    ///加能量
+    Energy = 4,
+    ///获得一个新任务
+    Mission = 5,
 }
 
 ///购物

@@ -244,8 +244,8 @@ impl TileMap {
         //确定商店
         if tile_map_temp.market_id != 0 {
             let index_value = tile_map_temp.market_index;
-            map[index_value] = (tile_map_temp.world_cell, MapCellType::StoreCell);
-            tmp.market_cell = (index_value, tile_map_temp.world_cell);
+            map[index_value] = (tile_map_temp.market_id, MapCellType::StoreCell);
+            tmp.market_cell = (index_value, tile_map_temp.market_id);
         }
         //这里是为了去重，进行拷贝
         let mut random_vec = TEMPLATES.cell_temp_mgr().type_vec.clone();

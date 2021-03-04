@@ -39,6 +39,7 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     }
     let merchandise_id = buy_proto.merchandise_id;
     let room = room.unwrap();
+    //校验房间状态
     if room.state != RoomState::BattleStarted {
         error!(
             "battle is not start!could not buy!user_id:{},room_state:{:?}",
@@ -48,6 +49,7 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     }
     let battle_data = &mut room.battle_data;
     let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let cter_id = cter.base_attr.cter_id;
     //校验玩家死了没
     if cter.is_died() {
         return;
@@ -70,30 +72,36 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
         error!("{:?}", e);
         return;
     }
-    let temp = temp.unwrap();
+    let merchandise_temp = temp.unwrap();
+    let price = merchandise_temp.price;
     let room_type = battle_data.room_type.into_u8();
-    let element = cter.base_attr.element;
     //校验房间类型
-    if !temp.room_type.contains(&room_type) {
-        error!(
-            "the room_type is error!config of room_type:{:?},this room_type:{}",
-            temp.room_type, room_type
+    if !merchandise_temp.room_type.contains(&room_type) {
+        warn!(
+            "the room_type is error!merchandis_id:{},room_type:{:?};cter_id:{} room_type:{}",
+            merchandise_id, merchandise_temp.room_type, cter.base_attr.cter_id, room_type
         );
         return;
     }
-    //校验角色类型
-    if !temp.character_type.contains(&element) {
-        error!(
-            "the character_type is error!config of character_type:{:?},this element:{}",
-            temp.character_type, element
+    let cter_temp_mgr = crate::TEMPLATES.character_temp_mgr();
+    let cter_temp = cter_temp_mgr.temps.get(&cter_id).unwrap();
+
+    //匹配角色类型是否相同
+    if !is_same(
+        merchandise_temp.character_type.as_slice(),
+        cter_temp.character_type.as_slice(),
+    ) {
+        warn!(
+            "the character_type is error! merchandis_id:{} ,character_type:{:?};cter_id:{},character_type:{:?}",
+            merchandise_id,merchandise_temp.character_type, cter_id,cter_temp.character_type
         );
         return;
     }
     //校验金币是否足够
-    if cter.gold < temp.price {
+    if cter.gold < price {
         warn!(
-            "this player's gold is not enough!merchandis:{}'s price is {},player's gold is {}",
-            temp.id, temp.price, cter.gold
+            "this player's gold is not enough!merchandis_id:{}'s price is {},player's gold is {}",
+            merchandise_id, price, cter.gold
         );
         return;
     }
@@ -887,4 +895,16 @@ impl Delete<Skill> for Vec<Skill> {
             break;
         }
     }
+}
+
+///判断两个vec是否相同
+pub fn is_same(vec1: &[u8], vec2: &[u8]) -> bool {
+    for &i in vec1.iter() {
+        for &j in vec2.iter() {
+            if i != j {
+                return false;
+            }
+        }
+    }
+    true
 }
