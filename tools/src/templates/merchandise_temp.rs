@@ -4,13 +4,14 @@ use std::collections::HashMap;
 ///商品模版
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct MerchandiseTemp {
-    pub id: u32,                 //商品id
-    pub price: i32,              //价格
-    pub effect_type: u8,         //效果类型
-    pub effect_value: i32,       //效果类型
-    pub room_type: Vec<u8>,      //房间模式
-    pub character_type: Vec<u8>, //角色类型
-    pub other_condition: u32,    //其他条件
+    pub id: u32,                  //商品id
+    pub price: i32,               //价格
+    pub effect_type: u8,          //效果类型
+    pub effect_value: i32,        //效果类型
+    pub room_type: Vec<u8>,       //房间模式
+    pub character_type: Vec<u8>,  //角色类型
+    pub other_condition: u32,     //其他条件
+    pub turn_limit_buy_times: u8, //每个turn限制购买次数
 }
 
 impl Template for MerchandiseTemp {}

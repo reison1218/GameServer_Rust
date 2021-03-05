@@ -32,6 +32,8 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
     let temp = merchandise_temp.get_temp(&merchandise_id).unwrap();
     //扣金币
     cter.add_gold(-temp.price);
+    //添加购买次数
+    cter.merchandise_data.add_buy_times(merchandise_id);
     let effect_value = temp.effect_value;
     //开始执行给玩家商品
     let mt = MerchandisType::try_from(temp.effect_type).unwrap();
@@ -53,6 +55,8 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
             random_mission(battle_data, user_id);
         }
     }
+
+    //返回客户端
     let mut proto = S_BUY_NOTICE::new();
     proto.set_user_id(user_id);
     proto.set_merchandise_id(merchandise_id);

@@ -194,6 +194,46 @@ pub struct IndexData {
     pub last_map_cell_index: Option<usize>, //上一次所在地图块位置
 }
 
+///商品数据
+#[derive(Clone, Debug, Default)]
+pub struct MerchandiseData {
+    buy_map: HashMap<u32, u8>,      //购买商品次数
+    buy_history: HashMap<u32, u16>, //购买记录
+}
+
+impl MerchandiseData {
+    pub fn get_turn_buy_times(&self, merchandise_id: u32) -> u8 {
+        let times = self.buy_map.get(&merchandise_id);
+        let res = match times {
+            Some(times) => *times,
+            None => 0,
+        };
+        res
+    }
+
+    pub fn add_buy_times(&mut self, merchandise_id: u32) {
+        let times = self.buy_map.get(&merchandise_id);
+        let mut res = match times {
+            Some(times) => *times,
+            None => 0,
+        };
+        res += 1;
+        self.buy_map.insert(merchandise_id, res);
+
+        let times = self.buy_history.get(&merchandise_id);
+        let mut res = match times {
+            Some(times) => *times,
+            None => 0,
+        };
+        res += 1;
+        self.buy_history.insert(merchandise_id, res);
+    }
+
+    pub fn clear_turn_buy_times(&mut self) {
+        self.buy_map.clear();
+    }
+}
+
 ///角色战斗数据
 #[derive(Clone, Default)]
 pub struct BattleCharacter {
@@ -203,6 +243,7 @@ pub struct BattleCharacter {
     pub battle_buffs: BattleBuff,                          //战斗buff
     pub flow_data: TurnFlowData,                           //战斗流程相关数据
     pub index_data: IndexData,                             //角色位置数据
+    pub merchandise_data: MerchandiseData,                 //商品数据
     pub gold: i32,                                         //金币
     pub revenge_user_id: u32,                              //复仇玩家
     pub mission_data: MissionData,                         //任务数据
@@ -434,6 +475,10 @@ impl BattleCharacter {
 
     pub fn set_is_can_end_turn(&mut self, value: bool) {
         self.status.is_can_end_turn = value;
+    }
+
+    pub fn clear_turn_buy_times(&mut self) {
+        self.merchandise_data.clear_turn_buy_times();
     }
 
     pub fn get_is_can_end_turn(&self) -> bool {
@@ -856,6 +901,8 @@ impl BattleCharacter {
         self.flow_data.turn_limit_skills.clear();
         //重制可结束turn状态
         self.set_is_can_end_turn(false);
+        //重制商品购买次数
+        self.clear_turn_buy_times();
     }
 
     ///触发抵挡攻击伤害

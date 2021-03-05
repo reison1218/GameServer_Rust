@@ -73,6 +73,14 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let merchandise_temp = temp.unwrap();
+    let turn_limit_buy_times = merchandise_temp.turn_limit_buy_times;
+    //校验是否可以购买
+    let buy_times = cter.merchandise_data.get_turn_buy_times(merchandise_id);
+    if buy_times >= turn_limit_buy_times {
+        warn!("could not buy this merchandise!turn_limit_buy_times:{},user_id:{},user_turn_buy_times:{}",user_id,turn_limit_buy_times,buy_times);
+        return;
+    }
+
     let price = merchandise_temp.price;
     let room_type = battle_data.room_type.into_u8();
     //校验房间类型

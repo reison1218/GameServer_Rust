@@ -16,7 +16,7 @@ use protobuf::Message;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 use std::time::{Duration, Instant, SystemTime};
-use tools::protos::base::RankInfoPt;
+use tools::protos::base::{RankInfoPt, WorldCellPt};
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -483,14 +483,6 @@ pub struct ZZ<T: TestTrait = StructTest> {
 }
 
 fn main() -> anyhow::Result<()> {
-    let a = ZZ {
-        e: StructTest::default(),
-    };
-
-    let b = ZZ {
-        e: OtherStruct::default(),
-    };
-
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
 
