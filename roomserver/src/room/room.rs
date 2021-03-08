@@ -115,7 +115,7 @@ impl Room {
         //转换成tilemap数据
         let user_id = owner.user_id;
         let mut str = Local::now().timestamp_subsec_micros().to_string();
-        str.push_str(thread_rng().gen_range(1, 999).to_string().as_str());
+        str.push_str(thread_rng().gen_range(1..999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
         let mut room_state = RoomState::Await;

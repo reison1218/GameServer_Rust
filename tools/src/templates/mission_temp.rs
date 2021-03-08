@@ -39,7 +39,7 @@ impl MissionTempMgr {
     pub fn init(&mut self, t: Vec<MissionTemp>) {
         for tt in t {
             self.temps.insert(tt.id, tt.clone());
-            if tt.complete_condition == 0 {
+            if tt.appear_condition == 0 {
                 self.no_condition_mission.push(tt.clone());
             } else {
                 self.condition_mission.push(tt)

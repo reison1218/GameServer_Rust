@@ -1574,7 +1574,7 @@ dependencies = [
  "protobuf",
  "protobuf-codegen",
  "protoc-rust",
- "rand 0.7.3",
+ "rand 0.8.3",
  "rayon",
  "scheduled-thread-pool",
  "serde",

@@ -65,7 +65,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
             v.push(index);
         }
         let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0, size);
+        let index = rand.gen_range(0..size);
 
         //创建机器人任务执行选择站位
         self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);

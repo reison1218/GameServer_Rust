@@ -535,7 +535,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     //生成机器人
     for _ in 0..need_num {
         //随机出下标
-        let index = rand.gen_range(0, cters_res.len());
+        let index = rand.gen_range(0..cters_res.len());
         let cter_id = cters_res.remove(index);
         let cter_temp = cter_temp_mgr.get_temp_ref(&cter_id);
         if cter_temp.is_none() {
@@ -576,7 +576,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
                 continue;
             }
             let skill_group = skill_group.unwrap();
-            let index = rand.gen_range(0, skill_group.group.len());
+            let index = rand.gen_range(0..skill_group.group.len());
             let skill_id = skill_group.group.get(index).unwrap();
             cter.skills.push(*skill_id);
         }

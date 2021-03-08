@@ -231,14 +231,17 @@ pub fn show_map_cell(
         let index;
         if let Some(nature_index) = nature_index {
             index = nature_index;
-        } else {
+        } else if !v.is_empty() {
             let mut rand = rand::thread_rng();
-            index = rand.gen_range(0, v.len());
+            index = rand.gen_range(0..v.len());
             let res = v.get(index);
             if let None = res {
                 warn!("there is no map_cell can show!");
                 return None;
             }
+        } else {
+            warn!("there is no nature_index and v_vec is empty!");
+            return None;
         }
         show_index = index;
         let map_cell = v.get(index).unwrap();

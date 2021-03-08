@@ -186,6 +186,10 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
         if map_cell.id <= MapCellType::UnUse.into_u32() {
             continue;
         }
+        //过滤商店
+        if map_cell.cell_type == MapCellType::MarketCell {
+            continue;
+        }
         let mut is_con = false;
         for rem_map_cell in remember_map_cell.iter() {
             //过滤掉记忆队列的地图块
@@ -204,19 +208,20 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
 
     let mut index;
     if !not_c_v.is_empty() {
-        index = rand.gen_range(0, not_c_v.len());
+        index = rand.gen_range(0..not_c_v.len());
         index = *not_c_v.get(index).unwrap();
     } else {
-        index = rand.gen_range(0, v.len());
+        index = rand.gen_range(0..v.len());
         index = *v.get(index).unwrap();
     }
     index
 }
 
+///从记忆队列随机一个地图块
 pub fn rand_remember_map_cell(robot_data: &RobotData) -> usize {
     //如果记忆队列中小于1个，直接返回
     let remember_map_cell = &robot_data.remember_map_cell;
-    if remember_map_cell.len() < 1 {
+    if remember_map_cell.is_empty() {
         return 0;
     }
     let mut v = vec![];
@@ -237,7 +242,7 @@ pub fn rand_remember_map_cell(robot_data: &RobotData) -> usize {
     //如果没找到可以配对的，直接从记忆队列中随机取一个出来
     if pair_index.is_none() {
         let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0, v.len());
+        let index = rand.gen_range(0..v.len());
         return *v.get(index).unwrap();
     }
     pair_index.unwrap()
@@ -299,7 +304,7 @@ pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<us
     if v.len() == 0 {
         return None;
     }
-    let rand_index = rand::thread_rng().gen_range(0, v.len());
+    let rand_index = rand::thread_rng().gen_range(0..v.len());
     let &index = v.get(rand_index).unwrap();
     Some(index)
 }

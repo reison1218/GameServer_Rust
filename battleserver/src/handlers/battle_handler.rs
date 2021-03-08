@@ -457,7 +457,7 @@ fn open_map_cell(
     let map_cell_type = map_cell.cell_type;
     let map_cell = battle_data.tile_map.map_cells.get(cter_index).unwrap();
     //如果是在同一个位置，然后又是商店则返回
-    if map_cell.index == target_map_cell_index && map_cell_type == MapCellType::StoreCell {
+    if map_cell.index == target_map_cell_index && map_cell_type == MapCellType::MarketCell {
         let str = "this player already at the market!".to_owned();
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

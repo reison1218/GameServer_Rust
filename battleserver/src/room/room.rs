@@ -278,7 +278,7 @@ impl Room {
             self.cter_2_battle_cter();
         }
         info!(
-            "choice_turn finish!turn_order:{:?}",
+            "start_choice_index!turn_order:{:?}",
             self.battle_data.turn_orders
         );
 
@@ -437,7 +437,7 @@ impl Room {
                     continue;
                 }
                 //系统帮忙选
-                let remove_index = rand.gen_range(0, index_v.len());
+                let remove_index = rand.gen_range(0..index_v.len());
                 let index = index_v.get(remove_index).unwrap();
                 let turn_order = *index as usize;
                 self.insert_turn_orders(turn_order, member_id);

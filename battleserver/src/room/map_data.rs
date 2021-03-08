@@ -16,7 +16,7 @@ pub enum MapCellType {
     UnUse = 1,
     Valid = 2,
     WorldCell = 3,
-    StoreCell = 4,
+    MarketCell = 4,
 }
 
 impl Default for MapCellType {
@@ -136,7 +136,7 @@ impl TileMap {
         //如果是匹配房,第一次进行随机
         if room_type == RoomType::OneVOneVOneVOneMatch && last_map_id == 0 {
             //否则进行随机，0-1，0代表不开启世界块
-            let res = rand.gen_range(0, 2);
+            let res = rand.gen_range(0..2);
             if res > 0 {
                 unsafe { season_id = crate::SEASON.season_id }
             }
@@ -185,7 +185,7 @@ impl TileMap {
                     for cell_index in tile_map_temp_map.keys() {
                         index_v.push(*cell_index);
                     }
-                    let index = rand.gen_range(0, index_v.len());
+                    let index = rand.gen_range(0..index_v.len());
                     world_cell_index = *index_v.get(index).unwrap();
                 }
             }
@@ -208,7 +208,7 @@ impl TileMap {
             tile_map_temp_v.push(tmt.clone());
         }
 
-        let map_random_index = rand.gen_range(0, tile_map_temp_v.len());
+        let map_random_index = rand.gen_range(0..tile_map_temp_v.len());
         let tile_map_temp = tile_map_temp_v.get(map_random_index).unwrap();
         let mut tmp = TileMap::default();
         tmp.id = tile_map_temp.id;
@@ -244,7 +244,7 @@ impl TileMap {
         //确定商店
         if tile_map_temp.market_id != 0 {
             let index_value = tile_map_temp.market_index;
-            map[index_value] = (tile_map_temp.market_id, MapCellType::StoreCell);
+            map[index_value] = (tile_map_temp.market_id, MapCellType::MarketCell);
             tmp.market_cell = (index_value, tile_map_temp.market_id);
         }
         //这里是为了去重，进行拷贝
@@ -271,11 +271,11 @@ impl TileMap {
                     if map_cell_v.len() == 0 {
                         continue;
                     }
-                    let index = rand.gen_range(0, map_cell_v.len());
+                    let index = rand.gen_range(0..map_cell_v.len());
                     let map_cell_id = *map_cell_v.get(index).unwrap();
                     for _ in 1..=2 {
                         //然后再随机放入地图里
-                        let index = rand.gen_range(0, empty_v.len());
+                        let index = rand.gen_range(0..empty_v.len());
                         let index_value = empty_v.get(index).unwrap();
                         map[*index_value].0 = map_cell_id;
                         empty_v.remove(index);

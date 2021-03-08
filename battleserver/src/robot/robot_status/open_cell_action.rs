@@ -90,7 +90,7 @@ impl RobotStatusAction for OpenCellRobotAction {
             if let Some(element_index) = element_index {
                 index = element_index;
             } else {
-                index = rand.gen_range(0, pair_v.len());
+                index = rand.gen_range(0..pair_v.len());
                 index = *pair_v.get(index).unwrap();
             }
         } else if pair_v.len() == 1 {
@@ -106,12 +106,12 @@ impl RobotStatusAction for OpenCellRobotAction {
             }
             //如果有技能cd的话就随机在地图里面翻开一个地图块
             if is_cd {
-                index = rand.gen_range(0, v.len());
+                index = rand.gen_range(0..v.len());
             } else {
                 //否则
-                let res = rand.gen_range(0, 101);
+                let res = rand.gen_range(0..101);
                 if res >= 0 && res <= 60 {
-                    index = rand.gen_range(0, v.len());
+                    index = rand.gen_range(0..v.len());
                 } else {
                     //跳过turn
                     action_type = RobotActionType::Skip;

@@ -33,10 +33,10 @@ pub struct Task {
 }
 
 ///初始化定时执行任务
-pub fn init_timer(rm: Lock) {
+pub fn init_timer(bm: Lock) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
-        let mut lock = block_on(rm.lock());
+        let mut lock = block_on(bm.lock());
         lock.task_sender = Some(sender);
         std::mem::drop(lock);
 
@@ -50,7 +50,7 @@ pub fn init_timer(rm: Lock) {
             let delay = task.delay;
 
             let task_cmd = TaskCmd::from(task.cmd);
-            let rm_clone = rm.clone();
+            let rm_clone = bm.clone();
             let f = match task_cmd {
                 TaskCmd::ChoiceIndex => choice_index,
                 TaskCmd::BattleTurnTime => battle_turn_time,

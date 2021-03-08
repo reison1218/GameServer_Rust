@@ -20,10 +20,10 @@ pub struct RobotTask {
 }
 
 ///初始化定时执行任务
-pub fn robot_init_timer(rm: Lock) {
+pub fn robot_init_timer(bm: Lock) {
     let m = move || {
         let (sender, rec) = crossbeam::channel::bounded(1024);
-        let mut lock = block_on(rm.lock());
+        let mut lock = block_on(bm.lock());
         lock.robot_task_sender = Some(sender);
         std::mem::drop(lock);
 
@@ -37,7 +37,7 @@ pub fn robot_init_timer(rm: Lock) {
             let delay = task.delay;
 
             let task_cmd = task.action_type;
-            let rm_clone = rm.clone();
+            let rm_clone = bm.clone();
             let fnc = match task_cmd {
                 RobotActionType::Attack => attack,
                 RobotActionType::Skill => use_skill,

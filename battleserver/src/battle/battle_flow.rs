@@ -437,7 +437,7 @@ impl BattleData {
 
             //判断是否商店
             let map_cell = self.tile_map.map_cells.get(index).unwrap();
-            let is_market = map_cell.cell_type == MapCellType::StoreCell;
+            let is_market = map_cell.cell_type == MapCellType::MarketCell;
             if !is_market {
                 //打开地图块
                 self.exec_open_map_cell(user_id, index);

@@ -178,11 +178,11 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
     let mut history_size = 0;
 
     //先排除已经接过的任务
-    for history in cter.mission_data.history_list.iter() {
+    cter.mission_data.history_list.iter().for_each(|history| {
         if mission_list.contains(history) {
             history_size += 1;
         }
-    }
+    });
 
     //如果任务都接过了,只过滤上一次都任务就行了
     if history_size == mission_list.len() {
@@ -194,7 +194,7 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
     }
 
     //随机一个出来
-    let index = random.gen_range(0, res_list.len());
+    let index = random.gen_range(0..res_list.len());
     let &temp_id = res_list.get(index).unwrap();
     let temp = mission_temp_mgr.get_temp(temp_id).unwrap();
     cter.mission_data.new_mission(temp);

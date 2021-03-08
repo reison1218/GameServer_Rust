@@ -485,7 +485,6 @@ pub struct ZZ<T: TestTrait = StructTest> {
 fn main() -> anyhow::Result<()> {
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
-
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
     // println!("{}", std::mem::size_of::<ZZ>());
     // let StructTest{a,..} = StructTest::default();
