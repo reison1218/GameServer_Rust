@@ -31,6 +31,14 @@ impl MissionNoticeType {
     }
 }
 
+///任务重制类型
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
+pub enum MissionResetType {
+    Trun = 1,
+    Round = 2,
+}
+
 ///任务完成条件枚举
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -105,6 +113,23 @@ impl MissionData {
         match mission {
             Some(mission) => mission.is_complete,
             None => false,
+        }
+    }
+
+    pub fn reset(&mut self, reset_type: MissionResetType) {
+        if self.mission.is_none() {
+            return;
+        }
+        let mission = self.mission.as_mut().unwrap();
+        let complete_type =
+            MissionCompleteType::try_from(mission.mission_temp.complete_condition).unwrap();
+        match reset_type {
+            MissionResetType::Trun => {
+                if complete_type == MissionCompleteType::TurnPairTimes {
+                    mission.progress = 0;
+                }
+            }
+            MissionResetType::Round => {}
         }
     }
 

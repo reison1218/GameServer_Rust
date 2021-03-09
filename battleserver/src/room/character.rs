@@ -1,4 +1,3 @@
-use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
 use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
@@ -10,6 +9,7 @@ use crate::battle::{
     battle::{BattleData, Item},
     mission::MissionCompleteType,
 };
+use crate::battle::{battle_buff::Buff, mission::MissionResetType};
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
@@ -481,6 +481,10 @@ impl BattleCharacter {
         self.merchandise_data.clear_turn_buy_times();
     }
 
+    pub fn reset_mission(&mut self, reset_type: MissionResetType) {
+        self.mission_data.reset(reset_type);
+    }
+
     pub fn get_is_can_end_turn(&self) -> bool {
         self.status.is_can_end_turn
     }
@@ -903,6 +907,8 @@ impl BattleCharacter {
         self.set_is_can_end_turn(false);
         //重制商品购买次数
         self.clear_turn_buy_times();
+        //重制任务
+        self.reset_mission(MissionResetType::Trun);
     }
 
     ///触发抵挡攻击伤害
