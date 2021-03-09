@@ -771,8 +771,7 @@ impl Room {
     ///战斗开始
     pub fn push_start_battle(&mut self) {
         //判断是否有世界块,有的话，
-        if !self.battle_data.tile_map.world_cell.1 > 0
-            && !self.battle_data.reflash_map_turn.is_some()
+        if self.battle_data.tile_map.world_cell.1 > 0 && self.battle_data.reflash_map_turn.is_none()
         {
             let world_cell_id = self.battle_data.tile_map.world_cell.1;
             let world_cell_temp = TEMPLATES

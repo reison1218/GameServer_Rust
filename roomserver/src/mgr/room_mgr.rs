@@ -181,12 +181,14 @@ impl RoomMgr {
         let res = res.unwrap();
         let (model, room_id) = tools::binary::separate_long_2_int(*res);
 
-        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
-            return self.custom_room.get_room_mut(&room_id);
+        let room = if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
+            self.custom_room.get_room_mut(&room_id)
         } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
-            return self.match_room.get_room_mut(&room_id);
-        }
-        None
+            self.match_room.get_room_mut(&room_id)
+        } else {
+            None
+        };
+        room
     }
 
     #[allow(dead_code)]

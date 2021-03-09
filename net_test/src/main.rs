@@ -475,7 +475,17 @@ pub struct StructTest {
     c: Vec<u32>,
 }
 
+impl Drop for StructTest {
+    fn drop(&mut self) {
+        println!("drop");
+    }
+}
+
 impl TestTrait for StructTest {}
+
+pub struct TestDrop {
+    s: StructTest,
+}
 
 #[derive(Default, Debug)]
 pub struct ZZ<T: TestTrait = StructTest> {
@@ -483,6 +493,14 @@ pub struct ZZ<T: TestTrait = StructTest> {
 }
 
 fn main() -> anyhow::Result<()> {
+    let mut t = TestDrop {
+        s: StructTest::default(),
+    };
+    {
+        println!("int");
+        t.s = StructTest::default();
+    }
+    println!("out");
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();

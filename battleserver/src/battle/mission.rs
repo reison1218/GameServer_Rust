@@ -98,6 +98,8 @@ impl MissionData {
         self.mission = Some(mission);
         self.history_list.push(mission_temp.id);
     }
+
+    ///是否完成
     pub fn is_complete(&self) -> bool {
         let mission = self.mission.as_ref();
         match mission {
@@ -165,41 +167,37 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
     let mut random = rand::thread_rng();
     let no_condition_missions = mission_temp_mgr.no_condition_mission();
     let mut mission_list = vec![];
-
+    let history_list = &cter.mission_data.history_list;
+    let last_mission_id = cter.mission_data.get_last_mission();
     //先添加无需条件都任务
     for mission_temp in no_condition_missions.iter() {
+        if history_list.contains(&mission_temp.id) {
+            continue;
+        }
         mission_list.push(mission_temp.id);
     }
 
-    //最终接过任务列表
-    let mut res_list = vec![];
-
-    //接过的任务长度
-    let mut history_size = 0;
-
-    //先排除已经接过的任务
-    cter.mission_data.history_list.iter().for_each(|history| {
-        if mission_list.contains(history) {
-            history_size += 1;
-        }
-    });
+    //todo 再添加需要条件的
 
     //如果任务都接过了,只过滤上一次都任务就行了
-    if history_size == mission_list.len() {
-        let s: Vec<&u32> = mission_list
-            .iter()
-            .filter(|&&x| x != cter.mission_data.get_last_mission())
-            .collect();
-        res_list.extend_from_slice(s.as_slice());
+    if mission_list.is_empty() {
+        let mut temp_id;
+        for temp in no_condition_missions.iter() {
+            temp_id = temp.id;
+            if temp_id == last_mission_id {
+                continue;
+            }
+            mission_list.push(temp_id);
+        }
     }
 
     //随机一个出来
-    let index = random.gen_range(0..res_list.len());
-    let &temp_id = res_list.get(index).unwrap();
-    let temp = mission_temp_mgr.get_temp(temp_id).unwrap();
+    let index = random.gen_range(0..mission_list.len());
+    let &temp_id = mission_list.get(index).unwrap();
+    let temp = mission_temp_mgr.get_temp(&temp_id).unwrap();
     cter.mission_data.new_mission(temp);
-    let missoin_id = cter.mission_data.mission.as_ref().unwrap().mission_temp.id;
-    //任务完成了，通知客户端
+    let missoin_id = cter.mission_data.get_last_mission();
+    //封装proto，通知客户端
     let mut proto = S_MISSION_NOTICE::new();
     proto.set_user_id(cter.get_user_id());
     proto.set_mission_id(missoin_id);
