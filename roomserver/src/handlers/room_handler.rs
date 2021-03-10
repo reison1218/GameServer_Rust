@@ -261,24 +261,26 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //如果房间已经开始战斗则删除玩家不推送，然后通知战斗服
-    if room_state == RoomState::ChoiceIndex {
-        rm.remove_member_without_push(user_id);
-        //通知战斗服
-        rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
-        return;
-    } else {
-        //其他状态房间服自行处理
-        if room_state == RoomState::Await {
-            //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
-            room.check_punish_for_leave(user_id);
+    match room_state {
+        RoomState::ChoiceIndex => {
+            rm.remove_member_without_push(user_id);
+            //通知战斗服
+            rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
         }
-        //处理离开房间
-        let res = handler_leave_room(rm, user_id, false);
-        if let Err(e) = res {
-            warn!("{:?}", e);
+        _ => {
+            //其他状态房间服自行处理
+            if room_state == RoomState::Await {
+                //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
+                room.check_punish_for_leave(user_id);
+            }
+            //处理离开房间
+            let res = handler_leave_room(rm, user_id, false);
+            if let Err(e) = res {
+                warn!("{:?}", e);
+            }
+            //通知游戏服卸载玩家数据
+            rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
         }
-        //通知游戏服卸载玩家数据
-        rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
     }
 }
 
@@ -385,15 +387,15 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
 
 ///准备
 pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
-    let user_id = packet.get_user_id();
     let mut cpc = C_PREPARE_CANCEL::new();
     let res = cpc.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return;
     }
+    let user_id = packet.get_user_id();
     let prepare = cpc.prepare;
-    let room = rm.get_room_mut(&packet.get_user_id());
+    let room = rm.get_room_mut(&user_id);
     //校验玩家房间
     if let None = room {
         warn!(
@@ -1149,37 +1151,40 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
     let room = room.unwrap();
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
-    //如果是匹配房，直接删除房间数据
-    if room_type == RoomType::OneVOneVOneVOneMatch {
-        rm.clear_room_without_push(room_type, room_id);
-        return;
-    }
-    //如果是自定义房间，更新结算数据
-    if room_type == RoomType::OneVOneVOneVOneCustom {
-        //如果是自定义房间
-        room.state = RoomState::Await;
-        let mut brs = B_R_SUMMARY::new();
-        let res = brs.merge_from_bytes(packet.get_data());
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return;
+
+    match room_type {
+        //如果是匹配房，直接删除房间数据
+        RoomType::OneVOneVOneVOneMatch => {
+            rm.clear_room_without_push(room_type, room_id);
         }
-        for sd in brs.summary_datas.iter() {
-            let user_id = sd.user_id;
-            let member = room.get_member_mut(&user_id);
-            if let None = member {
-                continue;
+        //如果是自定义房间，更新结算数据
+        RoomType::OneVOneVOneVOneCustom => {
+            //如果是自定义房间
+            room.state = RoomState::Await;
+            let mut brs = B_R_SUMMARY::new();
+            let res = brs.merge_from_bytes(packet.get_data());
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return;
             }
-            let member = member.unwrap();
-            member.chose_cter = Character::default();
-            member.grade = sd.grade as u8;
-            member.league.update(
-                sd.get_league().get_league_id() as i8,
-                sd.get_league().league_score,
-                sd.get_league().league_time,
-            );
-            member.state = MemberState::NotReady;
+            for sd in brs.summary_datas.iter() {
+                let user_id = sd.user_id;
+                let member = room.get_member_mut(&user_id);
+                if let None = member {
+                    continue;
+                }
+                let member = member.unwrap();
+                member.chose_cter = Character::default();
+                member.grade = sd.grade as u8;
+                member.league.update(
+                    sd.get_league().get_league_id() as i8,
+                    sd.get_league().league_score,
+                    sd.get_league().league_time,
+                );
+                member.state = MemberState::NotReady;
+            }
         }
+        _ => {}
     }
 }
 

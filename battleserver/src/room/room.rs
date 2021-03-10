@@ -281,7 +281,8 @@ impl Room {
             "start_choice_index!turn_order:{:?}",
             self.battle_data.turn_orders
         );
-
+        //增加round
+        self.battle_data.round += 1;
         //开始执行占位逻辑
         self.build_choice_index_task();
     }
@@ -299,7 +300,7 @@ impl Room {
 
     ///推进下一个人，并检测状态，如果都选择完了展位，切换到战斗已经开始状态
     pub fn check_next_choice_index(&mut self) {
-        self.battle_data.add_next_turn_index();
+        self.battle_data.add_next_turn();
         if self.state == RoomState::BattleStarted {
             return;
         }
@@ -393,7 +394,7 @@ impl Room {
         self.check_next_choice_index();
 
         //给玩家随机任务
-        random_mission(self.battle_data.borrow_mut(), user_id);
+        random_mission(self.battle_data.borrow_mut(), true, user_id);
 
         //选完了就进入战斗
         let res = self.check_index_over();

@@ -310,7 +310,7 @@ impl BattleCharacter {
                 .insert(*buff_id, buff);
         });
 
-        battle_cter.reset_residue_open_times();
+        battle_cter.reset_residue_movement_points();
         //处理机器人部分
         if is_robot {
             let robot_data = RobotData::new(
@@ -371,7 +371,7 @@ impl BattleCharacter {
         }
         self.status.pair_attack_open_count = true;
         let temp = TEMPLATES.constant_temp_mgr();
-        let res = temp.temps.get("turn_default_open_cell_times");
+        let res = temp.temps.get("turn_default_movement_points");
         let reward_count;
         match res {
             Some(res) => {
@@ -387,7 +387,7 @@ impl BattleCharacter {
                 }
             }
             None => {
-                warn!("ConstantTemp could not find!the key is 'turn_default_open_cell_times'");
+                warn!("ConstantTemp could not find!the key is 'turn_default_movement_points'");
                 reward_count = 2;
             }
         }
@@ -741,7 +741,7 @@ impl BattleCharacter {
     }
 
     pub fn clean_all(&mut self) {
-        self.turn_reset();
+        self.turn_start_reset();
         self.round_reset();
         self.skills.clear();
         self.battle_buffs.buffs.clear();
@@ -859,7 +859,7 @@ impl BattleCharacter {
     }
 
     ///重制翻块次数
-    pub fn reset_residue_open_times(&mut self) {
+    pub fn reset_residue_movement_points(&mut self) {
         self.flow_data.residue_movement_points = TURN_DEFAULT_MOVEMENT_POINTS;
     }
 
@@ -888,27 +888,30 @@ impl BattleCharacter {
     }
 
     ///回合结算
-    pub fn turn_reset(&mut self) {
+    pub fn turn_start_reset(&mut self) {
         //回合开始触发buff
         self.trigger_turn_start();
-        //重制剩余翻块地处
-        self.reset_residue_open_times();
-        //重制是否可以攻击
-        self.change_attack_none();
-        //重制匹配状态
-        self.status.is_pair = false;
+    }
+
+    pub fn turn_end_reset(&mut self) {
+        //重制剩余移动点数
+        self.reset_residue_movement_points();
         //重制配对攻击奖励翻地图块次数
         self.status.pair_attack_open_count = false;
         //重制是否翻过地图块
         self.flow_data.open_map_cell_vec.clear();
         //清空turn限制
         self.flow_data.turn_limit_skills.clear();
-        //重制可结束turn状态
-        self.set_is_can_end_turn(false);
+        //重制是否可以攻击
+        self.change_attack_none();
+        //重制匹配状态
+        self.status.is_pair = false;
         //重制商品购买次数
         self.clear_turn_buy_times();
         //重制任务
         self.reset_mission(MissionResetType::Trun);
+        //重制可结束turn状态
+        self.set_is_can_end_turn(false);
     }
 
     ///触发抵挡攻击伤害

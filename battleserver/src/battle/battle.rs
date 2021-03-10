@@ -97,6 +97,7 @@ pub struct BattleData {
     pub leave_user: (u32, bool),                    //离开玩家id,是否惩罚
     pub leave_map: HashMap<u32, i8>,                //段位快照
     pub turn_limit_time: u64,                       //战斗turn时间限制
+    pub round: u16,                                 //round
     pub skill_cmd_map: SkillFn,                     //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
@@ -154,6 +155,7 @@ impl BattleData {
             leave_user: (0, false),
             leave_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
+            round: 0,
             skill_cmd_map: HashMap::new(),
             total_turn_times: 0,
             last_map_id: 0,
@@ -191,17 +193,15 @@ impl BattleData {
     ///得到当前turn玩家的id
     /// 当找不到的时候就返回错误信息
     /// 找的到到时候范围Ok(user_id)
-    pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
-        let index;
-        if let Some(_index) = _index {
-            index = _index;
+    pub fn get_turn_user(&self, index: Option<usize>) -> anyhow::Result<u32> {
+        let index_res;
+        if let Some(index) = index {
+            index_res = index;
         } else {
-            index = self.next_turn_index;
+            index_res = self.next_turn_index
         }
-        let res = self.turn_orders.get(index);
-        if res.is_none() {
-            anyhow::bail!("get_next_turn_user is none for index:{} ", index)
-        }
+        let res = self.turn_orders.get(index_res);
+        if res.is_none() {}
         let user_id = *res.unwrap();
         Ok(user_id)
     }

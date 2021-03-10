@@ -186,7 +186,11 @@ impl MissionData {
 }
 
 ///随机任务
-pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
+pub fn random_mission(battle_data: &mut BattleData, is_choice_index: bool, user_id: u32) {
+    //如果是选择站位，必须是在第一次round时候
+    if is_choice_index || battle_data.round > 1 {
+        return;
+    }
     let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
     let mission_temp_mgr = crate::TEMPLATES.mission_temp_mgr();
     let mut random = rand::thread_rng();

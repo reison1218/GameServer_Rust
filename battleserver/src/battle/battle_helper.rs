@@ -66,7 +66,7 @@ impl BattleData {
     }
 
     ///下一个
-    pub fn add_next_turn_index(&mut self) {
+    pub fn add_next_turn(&mut self) {
         self.next_turn_index += 1;
         self.add_total_turn_times();
         let index = self.next_turn_index;
@@ -79,7 +79,7 @@ impl BattleData {
         let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {
             if user_id == 0 {
-                self.add_next_turn_index();
+                self.add_next_turn();
                 return;
             }
 
@@ -87,7 +87,7 @@ impl BattleData {
             match cter_res {
                 Ok(cter) => {
                     if cter.is_died() {
-                        self.add_next_turn_index();
+                        self.add_next_turn();
                         return;
                     }
                     if cter.robot_data.is_some() {
@@ -787,15 +787,19 @@ impl BattleData {
             anyhow::bail!("this map_cell is not find!index:{}", index)
         }
         let map_cell = res.unwrap();
+        let res = match map_cell.cell_type {
+            MapCellType::Valid => true,
+            MapCellType::MarketCell => true,
+            _ => false,
+        };
 
-        if map_cell.id < MapCellType::Valid.into_u32() {
+        if !res {
             anyhow::bail!(
                 "this is map_cell can not be choice!index:{}",
                 map_cell.index
             )
         }
 
-        let map_cell = res.unwrap();
         if is_check_open && map_cell.open_user > 0 {
             anyhow::bail!("this map_cell already opened!index:{}", map_cell.index)
         } else if is_check_open && map_cell.pair_index.is_some() {

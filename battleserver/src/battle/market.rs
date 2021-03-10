@@ -52,7 +52,7 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
             cter.add_energy(effect_value as i8);
         }
         MerchandisType::Mission => {
-            random_mission(battle_data, user_id);
+            random_mission(battle_data, false, user_id);
         }
     }
 

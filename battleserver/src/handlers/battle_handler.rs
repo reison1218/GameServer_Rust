@@ -630,14 +630,11 @@ pub fn off_line(bm: &mut BattleMgr, packet: Packet) {
 
     //校验用户不在战斗房间里
     let room = bm.get_room_mut(&user_id);
-    if room.is_none() {
-        //通知游戏服卸载玩家数据
-        bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
-        return;
+    if let Some(room) = room {
+        let room_id = room.get_room_id();
+        //处理玩家离开
+        bm.handler_leave(room_id, user_id, false);
     }
-    let room_id = room.unwrap().get_room_id();
-    //处理玩家离开
-    bm.handler_leave(room_id, user_id, false);
     //通知游戏服卸载玩家数据
     bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
 }

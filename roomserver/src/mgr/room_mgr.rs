@@ -90,14 +90,11 @@ impl RoomMgr {
     }
 
     pub fn clear_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
-        let room;
-        if room_type == RoomType::OneVOneVOneVOneCustom {
-            room = self.custom_room.get_room_mut(&room_id);
-        } else if room_type == RoomType::OneVOneVOneVOneMatch {
-            room = self.match_room.get_room_mut(&room_id);
-        } else {
-            room = None;
-        }
+        let room = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            _ => None,
+        };
         if let None = room {
             warn!("the room is None!room_id:{}", room_id);
             return;
@@ -109,11 +106,12 @@ impl RoomMgr {
                 self.player_room.remove(id);
             }
         }
-        if room_type == RoomType::OneVOneVOneVOneMatch {
-            self.match_room.rooms.remove(&room_id);
-        }
-        if room_type == RoomType::WorldBossCustom {
-            //预留代码
+
+        match room_type {
+            RoomType::OneVOneVOneVOneMatch => {
+                self.match_room.rooms.remove(&room_id);
+            }
+            _ => {}
         }
         info!(
             "删除房间，释放内存,不推送给客户端!room_type:{:?},room_id:{}",

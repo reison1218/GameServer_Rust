@@ -478,14 +478,27 @@ impl BattleData {
 
     ///下个turn
     pub fn next_turn(&mut self) {
-        //清空翻开地图玩家id
-        self.clear_open_cells();
+        //本回合结束
+        self.turn_end();
         //计算下一个回合
-        self.add_next_turn_index();
+        self.add_next_turn();
         //给客户端推送战斗turn推送
         self.send_battle_turn_notice();
         //创建战斗turn定时器任务
         self.build_battle_turn_task();
+    }
+
+    ///本turn结束,结算一些回合结束该干的事情
+    pub fn turn_end(&mut self) {
+        //清空翻开地图玩家id
+        self.clear_open_cells();
+        let cter = self.get_battle_cter_mut(None, true);
+        if cter.is_err() {
+            return;
+        }
+        let cter = cter.unwrap();
+        //turn结束重制
+        cter.turn_end_reset();
     }
 
     ///回合开始触发
@@ -554,7 +567,7 @@ impl BattleData {
                 }
                 //turn结算玩家
                 let battle_cter = battle_cter.unwrap();
-                battle_cter.turn_reset();
+                battle_cter.turn_start_reset();
                 battle_cter.set_is_can_end_turn(is_can_skip_turn);
             }
         }
