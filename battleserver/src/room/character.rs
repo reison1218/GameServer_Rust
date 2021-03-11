@@ -185,6 +185,7 @@ pub struct TurnFlowData {
     pub open_map_cell_vec: Vec<usize>, //最近一次turn翻过的地图块
     pub turn_limit_skills: Vec<u32>,   //turn限制技能
     pub round_limit_skills: Vec<u32>,  //round限制技能
+    pub pair_limit_skills: Vec<u32>,   //配对限制技能
 }
 
 ///角色战斗流程相关数据
@@ -303,7 +304,7 @@ impl BattleCharacter {
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.add_buff(Some(battle_cter.get_user_id()), None, buff.id, None);
+            battle_cter.add_buff(Some(battle_cter.get_user_id()), None, *buff_id, None);
             battle_cter
                 .battle_buffs
                 .passive_buffs
@@ -351,7 +352,7 @@ impl BattleCharacter {
         self.skills.values_mut().for_each(|x| {
             let res;
             match value {
-                Some(value) => res = value,
+                Some(value) => res = value * -1,
                 None => {
                     res = -1;
                 }
@@ -545,7 +546,7 @@ impl BattleCharacter {
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(buff_id);
             if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
-                self.add_buff(Some(self.get_user_id()), None, buff.id, None);
+                self.add_buff(Some(self.get_user_id()), None, buff.get_id(), None);
                 self.battle_buffs.passive_buffs.insert(*buff_id, buff);
             }
         });
@@ -657,7 +658,7 @@ impl BattleCharacter {
         }
         let buff_temp = buff_temp.unwrap();
         let buff = Buff::new(buff_temp, Some(next_turn_index), None, None);
-        self.battle_buffs.buffs.insert(buff.id, buff);
+        self.battle_buffs.buffs.insert(buff.get_id(), buff);
         //保存自己变身的角色
         if self.base_attr.user_id == from_user {
             self.self_transform_cter = Some(Box::new(self.clone()));
@@ -790,7 +791,7 @@ impl BattleCharacter {
                 continue;
             }
             let buff = buff.unwrap();
-            if buff.id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
+            if buff.function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
                 continue;
             }
             for _ in 0..*times {
@@ -814,19 +815,20 @@ impl BattleCharacter {
             return;
         }
         let buff_temp = buff_temp.unwrap();
+        let buff_function_id = buff_temp.function_id;
 
         let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
 
         //增伤
-        if ADD_ATTACK.contains(&buff_id) {
+        if ADD_ATTACK.contains(&buff_function_id) {
             self.trigger_add_damage_buff(buff_id);
         }
         //减伤
-        if SUB_ATTACK_DAMAGE.contains(&buff_id) {
+        if SUB_ATTACK_DAMAGE.contains(&buff_function_id) {
             self.trigger_sub_damage_buff(buff_id);
         }
 
-        self.battle_buffs.buffs.insert(buff.id, buff);
+        self.battle_buffs.buffs.insert(buff.get_id(), buff);
     }
 
     ///移除buff
@@ -866,7 +868,7 @@ impl BattleCharacter {
     ///回合开始触发
     pub fn trigger_turn_start(&mut self) {
         for buff in self.battle_buffs.buffs.values() {
-            if CHANGE_SKILL.contains(&buff.id) {
+            if CHANGE_SKILL.contains(&buff.function_id) {
                 let skill_id = buff.buff_temp.par1;
 
                 let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);
@@ -924,7 +926,7 @@ impl BattleCharacter {
         }
         let gd_buff = gd_buff.unwrap();
 
-        buff_id = gd_buff.id;
+        buff_id = gd_buff.get_id();
         self.consume_buff(buff_id, false);
         let gd_buff = self.battle_buffs.buffs.get_mut(&buff_id).unwrap();
         if gd_buff.trigger_timesed <= 0 || gd_buff.keep_times <= 0 {
@@ -963,7 +965,7 @@ impl BattleCharacter {
         self.battle_buffs
             .buffs
             .values()
-            .for_each(|buff| battle_cter_pt.buffs.push(buff.id));
+            .for_each(|buff| battle_cter_pt.buffs.push(buff.get_id()));
         self.skills
             .keys()
             .for_each(|skill_id| battle_cter_pt.skills.push(*skill_id));

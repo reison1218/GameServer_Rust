@@ -84,7 +84,7 @@ impl MapCell {
     }
     pub fn check_is_locked(&self) -> bool {
         for buff in self.buffs.values() {
-            if buff.id == LOCKED {
+            if buff.function_id == LOCKED {
                 return true;
             }
         }
@@ -329,7 +329,7 @@ impl TileMap {
                 for buff_id in buffs {
                     let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(buff_id).unwrap();
                     let buff = Buff::from(buff_temp);
-                    buff_map.insert(buff.id, buff);
+                    buff_map.insert(buff.get_id(), buff);
                     map_cell.passive_buffs.push(*buff_id);
                 }
                 map_cell.buffs = buff_map;

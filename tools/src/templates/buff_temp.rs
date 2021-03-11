@@ -4,6 +4,7 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct BuffTemp {
     pub id: u32,           //技能id
+    pub function_id: u32,  //功能id
     pub target: u8,        //目标类型
     pub keep_time: u8,     //持续时间
     pub trigger_times: u8, //触发次数

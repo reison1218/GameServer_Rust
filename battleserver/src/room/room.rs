@@ -112,7 +112,7 @@ impl Room {
     }
 
     //随便获得一个玩家,如果玩家id==0,则代表没有玩家了
-    pub fn get_user(&self) -> u32 {
+    pub fn random_user_id(&self) -> u32 {
         let mut res = 0;
         for member in self.members.values() {
             if member.is_robot {
@@ -193,7 +193,7 @@ impl Room {
             let bytes = brs.write_to_bytes();
             match bytes {
                 Ok(bytes) => {
-                    let user_id = self.get_user();
+                    let user_id = self.random_user_id();
                     if user_id > 0 {
                         //发给房间服同步结算数据
                         self.send_2_server(RoomCode::Summary.into_u32(), user_id, bytes);
@@ -393,8 +393,8 @@ impl Room {
         //添加下个turnindex
         self.check_next_choice_index();
 
-        //给玩家随机任务
-        random_mission(self.battle_data.borrow_mut(), true, user_id);
+        //下一个人初始化任务
+        self.init_mission_for_choice_index();
 
         //选完了就进入战斗
         let res = self.check_index_over();
@@ -496,6 +496,20 @@ impl Room {
                 error!("{:?}", e);
             }
         }
+    }
+
+    pub fn init_mission_for_choice_index(&mut self) {
+        let cter = self.battle_data.get_battle_cter_mut(None, false);
+        if let Err(e) = cter {
+            error!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
+        if cter.mission_data.mission.is_some() {
+            return;
+        }
+        let user_id = cter.get_user_id();
+        random_mission(self.battle_data.borrow_mut(), user_id);
     }
 
     //战斗通知
@@ -609,8 +623,8 @@ impl Room {
         &self.battle_data.turn_orders[..]
     }
 
-    pub fn get_turn_user(&self, _index: Option<usize>) -> anyhow::Result<u32> {
-        self.battle_data.get_turn_user(_index)
+    pub fn get_turn_user(&self, index: Option<usize>) -> anyhow::Result<u32> {
+        self.battle_data.get_turn_user(index)
     }
 
     ///处理选择占位时候的离开
@@ -744,6 +758,8 @@ impl Room {
         self.init_turn_order();
         //下发通知
         self.start_notice();
+        //初始化玩家任务
+        self.init_mission_for_choice_index();
     }
 
     pub fn init_league_map(&mut self) {

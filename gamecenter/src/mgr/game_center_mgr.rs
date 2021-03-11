@@ -3,7 +3,7 @@ use log::warn;
 use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, GateCode,GameCode, ServerCommonCode};
+use tools::cmd_code::{BattleCode, GameCode, GateCode, ServerCommonCode};
 use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -84,8 +84,9 @@ impl GameCenterMgr {
 
     ///停服
     pub fn stop_all_server_handler(&mut self) {
-        let bytes = Packet::build_packet_bytes(GateCode::StopServer.into_u32(), 0, Vec::new(), true, false);
-        for gate_client in self.gate_clients.values_mut(){
+        let bytes =
+            Packet::build_packet_bytes(GateCode::StopServer.into_u32(), 0, Vec::new(), true, false);
+        for gate_client in self.gate_clients.values_mut() {
             gate_client.send(bytes.clone());
         }
     }
@@ -123,7 +124,7 @@ impl GameCenterMgr {
         }
         //绑定玩家到gate
         let user_id = packet.get_user_id();
-        if user_id <= 0 || gate_token<=0 {
+        if user_id <= 0 || gate_token <= 0 {
             return;
         }
         self.bound_user_w_gate(user_id, gate_token);

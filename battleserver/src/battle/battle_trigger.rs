@@ -19,6 +19,8 @@ use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
+use super::battle_enum::buff_type::ATTACKED_SUB_CD;
+use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
 use super::mission::{trigger_mission, MissionTriggerType};
 
 ///触发事件trait
@@ -57,7 +59,7 @@ pub trait TriggerEvent {
     fn before_use_skill_trigger(&mut self, user_id: u32) -> anyhow::Result<()>;
 
     ///受到攻击后触发
-    fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
+    fn attacked_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
 
     ///地图刷新时候触发buff
     fn before_map_refresh_buff_trigger(&mut self);
@@ -87,14 +89,15 @@ impl BattleData {
         let map_cell = map_cell.unwrap() as *mut MapCell;
         unsafe {
             for buff in map_cell.as_ref().unwrap().buffs.values() {
-                let buff_id = buff.id;
+                let buff_id = buff.get_id();
+                let function_id = buff.function_id;
                 //先判断是否是陷阱类buff
-                if !TRAPS.contains(&buff.id) {
+                if !TRAPS.contains(&function_id) {
                     continue;
                 }
                 let mut target_pt = None;
                 //判断是否是上buff的陷阱
-                if TRAP_ADD_BUFF.contains(&buff.id) {
+                if TRAP_ADD_BUFF.contains(&function_id) {
                     let buff_id = buff.buff_temp.par1;
                     let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
                     if let Err(e) = buff_temp {
@@ -103,7 +106,10 @@ impl BattleData {
                     }
                     let buff_temp = buff_temp.unwrap();
                     let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
-                    battle_cter.battle_buffs.buffs.insert(buff_add.id, buff_add);
+                    battle_cter
+                        .battle_buffs
+                        .buffs
+                        .insert(buff_add.get_id(), buff_add);
 
                     let mut target_pt_tmp = TargetPt::new();
                     target_pt_tmp
@@ -111,7 +117,7 @@ impl BattleData {
                         .push(battle_cter.get_map_cell_index() as u32);
                     target_pt_tmp.add_buffs.push(buff_id);
                     target_pt = Some(target_pt_tmp);
-                } else if TRAP_SKILL_DAMAGE.contains(&buff.id) {
+                } else if TRAP_SKILL_DAMAGE.contains(&function_id) {
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
                     let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
@@ -137,7 +143,7 @@ impl BattleData {
                 }
                 aup.from_user = buff.from_user.unwrap();
                 aup.action_type = ActionType::Buff as u32;
-                aup.action_value.push(buff.id);
+                aup.action_value.push(buff.get_id());
                 aup.targets.push(target_pt);
                 au_v.push(aup);
             }
@@ -164,6 +170,18 @@ impl TriggerEvent for BattleData {
         let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
         //配对了加金币
         if is_pair {
+            //把配对可用的技能加入
+            let mut skill_function_id;
+            let mut skill_id;
+            for skill in battle_cter.skills.values() {
+                skill_function_id = skill.function_id;
+                skill_id = skill.id;
+                if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
+                    continue;
+                }
+                battle_cter.flow_data.pair_limit_skills.push(skill_id);
+            }
+            //配对了奖励金币
             let res;
             let temp = crate::TEMPLATES
                 .constant_temp_mgr()
@@ -246,6 +264,8 @@ impl TriggerEvent for BattleData {
             v.extend_from_slice(res.as_slice());
         }
         let mut is_died = false;
+        let mut function_id;
+        let mut buff_id;
         //触发别人的范围
         for other_cter in self.battle_cter.values() {
             if other_cter.is_died() {
@@ -255,7 +275,9 @@ impl TriggerEvent for BattleData {
 
             //踩到别人到范围
             for buff in other_cter.battle_buffs.buffs.values() {
-                if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff.id) {
+                function_id = buff.function_id;
+                buff_id = buff.get_id();
+                if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&function_id) {
                     continue;
                 }
                 //换位置不触发"DEFENSE_NEAR_MOVE_SKILL_DAMAGE"
@@ -281,7 +303,7 @@ impl TriggerEvent for BattleData {
                                 let mut other_aupt = ActionUnitPt::new();
                                 other_aupt.from_user = other_cter.base_attr.user_id;
                                 other_aupt.action_type = ActionType::Buff as u32;
-                                other_aupt.action_value.push(buff.id);
+                                other_aupt.action_value.push(buff_id);
                                 other_aupt.targets.push(target_pt);
                                 v.push(other_aupt);
                                 break;
@@ -369,7 +391,7 @@ impl TriggerEvent for BattleData {
             skill = res.unwrap();
         }
         //替换技能,水炮
-        if skill.id == WATER_TURRET {
+        if skill.function_id == WATER_TURRET {
             let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
             cter.skills.remove(&skill_id);
             if let Err(e) = skill_temp {
@@ -414,16 +436,19 @@ impl TriggerEvent for BattleData {
             anyhow::bail!("{:?}", e)
         }
         let cter = cter.unwrap();
-        for buff_id in cter.battle_buffs.buffs.keys() {
-            if LOCK_SKILLS.contains(buff_id) {
-                anyhow::bail!("this cter can not use skill!cter's buff:{}", buff_id)
+        for buff in cter.battle_buffs.buffs.values() {
+            if LOCK_SKILLS.contains(&buff.function_id) {
+                anyhow::bail!(
+                    "this cter can not use skill!was locked!cter's buff:{}",
+                    buff.get_id()
+                )
             }
         }
         Ok(())
     }
 
     ///受到普通攻击触发的buff
-    fn attacked_buffs_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
+    fn attacked_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let battle_data = self as *mut BattleData;
         let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
@@ -432,10 +457,14 @@ impl TriggerEvent for BattleData {
         }
         let cter = cter.unwrap();
         let max_energy = cter.base_attr.max_energy;
+        let mut buff_id;
+        let mut buff_function_id;
         for buff in cter.battle_buffs.buffs.clone().values() {
-            let buff_id = buff.id;
+            buff_id = buff.get_id();
+            buff_function_id = buff.function_id;
+
             //被攻击打断技能
-            if CHANGE_SKILL.contains(&buff_id) {
+            if CHANGE_SKILL.contains(&buff_function_id) {
                 unsafe {
                     battle_data
                         .as_mut()
@@ -446,12 +475,20 @@ impl TriggerEvent for BattleData {
             }
 
             //被攻击增加能量
-            if ATTACKED_ADD_ENERGY.contains(&buff_id) && max_energy > 0 {
+            if ATTACKED_ADD_ENERGY.contains(&buff_function_id) && max_energy > 0 {
                 let mut tep = TriggerEffectPt::new();
                 tep.set_field_type(EffectType::AddEnergy.into_u32());
                 tep.set_buff_id(buff_id);
                 tep.set_value(buff.buff_temp.par1);
                 cter.add_energy(buff.buff_temp.par1 as i8);
+                target_pt.passiveEffect.push(tep);
+            }
+            if ATTACKED_SUB_CD == buff_function_id {
+                let mut tep = TriggerEffectPt::new();
+                tep.set_field_type(EffectType::SubSkillCd.into_u32());
+                tep.set_buff_id(buff_id);
+                tep.set_value(buff.buff_temp.par1);
+                cter.sub_skill_cd(Some(buff.buff_temp.par1 as i8));
                 target_pt.passiveEffect.push(tep);
             }
         }
@@ -492,9 +529,12 @@ impl TriggerEvent for BattleData {
             error!("{:?}", e);
             return;
         }
+
+        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+
         let cter = cter.unwrap();
         //如果是变身buff,那就变回来
-        if TRANSFORM_BUFF.contains(&buff_id) {
+        if TRANSFORM_BUFF.contains(&buff_temp.function_id) {
             cter.transform_back();
         }
     }

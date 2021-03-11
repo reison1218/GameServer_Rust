@@ -97,8 +97,9 @@ pub struct BattleData {
     pub leave_user: (u32, bool),                    //离开玩家id,是否惩罚
     pub leave_map: HashMap<u32, i8>,                //段位快照
     pub turn_limit_time: u64,                       //战斗turn时间限制
+    pub turn: u32,                                  //turn
     pub round: u16,                                 //round
-    pub skill_cmd_map: SkillFn,                     //技能函数指针map
+    pub skill_function_cmd_map: SkillFn,            //技能函数指针map
     pub total_turn_times: u16,                      //总的turn次数
     pub last_map_id: u32,                           //上次地图id
     pub task_sender: Sender<Task>,                  //任务sender
@@ -155,8 +156,9 @@ impl BattleData {
             leave_user: (0, false),
             leave_map: HashMap::new(),
             turn_limit_time: 60000, //默认一分钟
+            turn: 0,
             round: 0,
-            skill_cmd_map: HashMap::new(),
+            skill_function_cmd_map: HashMap::new(),
             total_turn_times: 0,
             last_map_id: 0,
             task_sender,
@@ -164,29 +166,33 @@ impl BattleData {
         };
 
         //初始化函数指针，封装到map里
-        bd.skill_cmd_map
+        bd.skill_function_cmd_map
             .insert(&AUTO_PAIR_MAP_CELL[..], auto_pair_map_cell);
-        bd.skill_cmd_map.insert(&ADD_BUFF[..], add_buff);
-        bd.skill_cmd_map
+        bd.skill_function_cmd_map.insert(&ADD_BUFF[..], add_buff);
+        bd.skill_function_cmd_map
             .insert(&CHANGE_MAP_CELL_INDEX[..], change_map_cell_index);
-        bd.skill_cmd_map.insert(&SHOW_MAP_CELL[..], show_map_cell);
-        bd.skill_cmd_map.insert(&SHOW_INDEX[..], show_index);
+        bd.skill_function_cmd_map
+            .insert(&SHOW_MAP_CELL[..], show_map_cell);
+        bd.skill_function_cmd_map
+            .insert(&SHOW_INDEX[..], show_index);
 
-        bd.skill_cmd_map.insert(&MOVE_USER[..], move_user);
-        bd.skill_cmd_map
+        bd.skill_function_cmd_map.insert(&MOVE_USER[..], move_user);
+        bd.skill_function_cmd_map
             .insert(&NEAR_SKILL_DAMAGE_AND_CURE[..], skill_damage_and_cure);
-        bd.skill_cmd_map
+        bd.skill_function_cmd_map
             .insert(&SKILL_DAMAGE[..], single_skill_damage);
-        bd.skill_cmd_map.insert(&SKILL_AOE[..], skill_aoe_damage);
-        bd.skill_cmd_map.insert(&RED_SKILL_CD[..], sub_cd);
-        bd.skill_cmd_map
+        bd.skill_function_cmd_map
+            .insert(&SKILL_AOE[..], skill_aoe_damage);
+        bd.skill_function_cmd_map.insert(&RED_SKILL_CD[..], sub_cd);
+        bd.skill_function_cmd_map
             .insert(&SKILL_OPEN_MAP_CELL[..], skill_open_map_cell);
-        bd.skill_cmd_map.insert(
+        bd.skill_function_cmd_map.insert(
             &SKILL_DAMAGE_OPENED_ELEMENT[..],
             skill_damage_opened_element,
         );
-        bd.skill_cmd_map.insert(&SCOPE_CURE[..], scope_cure);
-        bd.skill_cmd_map.insert(&TRANSFORM[..], transform);
+        bd.skill_function_cmd_map
+            .insert(&SCOPE_CURE[..], scope_cure);
+        bd.skill_function_cmd_map.insert(&TRANSFORM[..], transform);
         bd
     }
 

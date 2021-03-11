@@ -23,6 +23,7 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
+use super::battle_enum::skill_judge_type::PAIR_LIMIT;
 use super::mission::{trigger_mission, MissionTriggerType};
 
 impl BattleData {
@@ -68,6 +69,7 @@ impl BattleData {
     ///下一个
     pub fn add_next_turn(&mut self) {
         self.next_turn_index += 1;
+        self.turn += 1;
         self.add_total_turn_times();
         let index = self.next_turn_index;
         if index >= MEMBER_MAX as usize {
@@ -508,11 +510,12 @@ impl BattleData {
             let mut cbp = CellBuffPt::new();
             cbp.index = map_cell.index as u32;
             for buff in map_cell.buffs.values() {
-                if map_cell.passive_buffs.contains(&buff.id) {
+                let buff_id = buff.get_id();
+                if map_cell.passive_buffs.contains(&buff_id) {
                     continue;
                 }
                 let mut buff_pt = BuffPt::new();
-                buff_pt.buff_id = buff.id;
+                buff_pt.buff_id = buff_id;
                 buff_pt.trigger_timesed = buff.trigger_timesed as u32;
                 buff_pt.keep_times = buff.keep_times as u32;
                 cbp.buffs.push(buff_pt);
@@ -1020,7 +1023,6 @@ impl BattleData {
         }
         let cter = self.get_battle_cter(Some(user_id), true).unwrap();
         let target_type = target_type.unwrap();
-
         match target_type {
             TargetType::PlayerSelf => {
                 if HP_LIMIT_GT == judge_temp.id && cter.base_attr.hp <= judge_temp.par1 as i16 {
@@ -1036,8 +1038,8 @@ impl BattleData {
                         .contains(&skill_id.unwrap())
                 {
                     anyhow::bail!(
-                        "this turn already used this skill!cter_id:{},skill_id:{},skill_judge_id:{}",
-                        cter.get_cter_id(),
+                        "this turn already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
+                        cter.get_user_id(),
                         skill_id.unwrap(),
                         skill_judge,
                     )
@@ -1048,11 +1050,23 @@ impl BattleData {
                         .contains(&skill_id.unwrap())
                 {
                     anyhow::bail!(
-                        "this round already used this skill!cter_id:{},skill_id:{},skill_judge_id:{}",
-                        cter.get_cter_id(),
+                        "this round already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
+                        cter.get_user_id(),
                         skill_id.unwrap(),
                         skill_judge,
                     )
+                } else if PAIR_LIMIT == judge_temp.id
+                    && cter
+                        .flow_data
+                        .pair_limit_skills
+                        .contains(&skill_id.unwrap())
+                {
+                    anyhow::bail!(
+                            "could not use this skill!palyer not pair!user_id:{},skill_id:{},skill_judge_id:{}",
+                            cter.get_user_id(),
+                            skill_id.unwrap(),
+                            skill_judge,
+                        )
                 }
             }
             _ => {}

@@ -20,6 +20,8 @@ pub mod skill_judge_type {
     pub const LIMIT_ROUND_TIMES: u32 = 2;
     ///turn限制
     pub const LIMIT_TURN_TIMES: u32 = 3;
+    ///配对限制
+    pub const PAIR_LIMIT: u32 = 4;
 }
 
 ///技能类型
@@ -42,7 +44,7 @@ pub mod skill_type {
     ///相临玩家造成技能伤害并恢复生命
     pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 6] = [999, 123, 20004, 20005, 323, 433];
+    pub const SKILL_DAMAGE: [u32; 7] = [999, 123, 20004, 20005, 323, 433, 331];
     ///技能aoe
     pub const SKILL_AOE: [u32; 4] = [121, 411, 412, 432];
     ///减技能cd
@@ -75,6 +77,8 @@ pub mod skill_type {
     pub const PUSH_SELF: [u32; 5] = [421, 20001, 112, 312, 324];
     ///选择一个地图块，展示其相同元素地图块位置
     pub const SHOW_INDEX_SAME_ELEMENT: u32 = 422;
+    ///配对可用，造成伤害
+    pub const SKILL_PAIR_LIMIT_DAMAGE: [u32; 1] = [331];
 }
 
 ///buff类型
@@ -134,6 +138,9 @@ pub mod buff_type {
 
     ///锁定技能
     pub const LOCK_SKILLS: [u32; 1] = [11];
+
+    ///被攻击时减cd
+    pub const ATTACKED_SUB_CD: u32 = 15;
 }
 
 ///pos操作类型

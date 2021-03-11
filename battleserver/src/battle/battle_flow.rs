@@ -188,6 +188,7 @@ impl BattleData {
 
             //技能判定
             let skill_judge = skill.skill_temp.skill_judge as u32;
+            let skill_function_id = skill.function_id;
 
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
@@ -203,11 +204,14 @@ impl BattleData {
 
             //根据技能id去找函数指针里面的函数，然后进行执行
             let self_ptr = self as *mut BattleData;
-            for skill_ids in self_ptr.as_ref().unwrap().skill_cmd_map.keys() {
-                if !skill_ids.deref().contains(&skill_id) {
+            for skill_function_ids in self_ptr.as_ref().unwrap().skill_function_cmd_map.keys() {
+                if !skill_function_ids.deref().contains(&skill_function_id) {
                     continue;
                 }
-                let fn_ptr = self.skill_cmd_map.get_mut(skill_ids.deref()).unwrap();
+                let fn_ptr = self
+                    .skill_function_cmd_map
+                    .get_mut(skill_function_ids.deref())
+                    .unwrap();
                 au_vec = fn_ptr(self, user_id, skill_id, target_array, au);
                 break;
             }
@@ -245,9 +249,9 @@ impl BattleData {
         cter.battle_buffs
             .buffs
             .values()
-            .filter(|buff| ADD_ATTACK_AND_AOE.contains(&buff.id))
+            .filter(|buff| ADD_ATTACK_AND_AOE.contains(&buff.function_id))
             .for_each(|buff| {
-                aoe_buff = Some(buff.id);
+                aoe_buff = Some(buff.get_id());
             });
 
         let index = targets.get(0).unwrap();
@@ -289,7 +293,7 @@ impl BattleData {
         }
         //目标被攻击，触发目标buff
         if target_pt.effects.get(0).unwrap().effect_value > 0 {
-            self.attacked_buffs_trigger(target_user_id, &mut target_pt);
+            self.attacked_trigger(target_user_id, &mut target_pt);
         }
         au.targets.push(target_pt);
         //检查aoebuff
@@ -330,7 +334,7 @@ impl BattleData {
                 match target_pt {
                     Ok(mut target_pt) => {
                         //目标被攻击，触发目标buff
-                        self.attacked_buffs_trigger(target_user, &mut target_pt);
+                        self.attacked_trigger(target_user, &mut target_pt);
                         au.targets.push(target_pt);
                     }
                     Err(e) => error!("{:?}", e),
@@ -368,6 +372,8 @@ impl BattleData {
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
         unsafe {
+            let mut buff_function_id;
+            let mut buff_id;
             //刷新角色状态和触发地图刷新的触发buff
             for cter in self.battle_cter.values_mut() {
                 if cter.is_died() {
@@ -375,13 +381,15 @@ impl BattleData {
                 }
                 cter.round_reset();
                 let cter_ptr = cter as *mut BattleCharacter;
-                for &buff_id in cter_ptr.as_mut().unwrap().battle_buffs.buffs.keys() {
+                for buff in cter_ptr.as_mut().unwrap().battle_buffs.buffs.values() {
+                    buff_function_id = buff.function_id;
+                    buff_id = buff.get_id();
                     //刷新地图增加攻击力
-                    if RESET_MAP_ADD_ATTACK.contains(&buff_id) {
+                    if RESET_MAP_ADD_ATTACK.contains(&buff_function_id) {
                         cter.trigger_add_damage_buff(buff_id);
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
-                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_id) {
+                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
                         cter.battle_buffs.add_damage_buffs.remove(&buff_id);
                     }
                 }
@@ -445,11 +453,15 @@ impl BattleData {
                 //再配对
                 is_pair = self.handler_map_cell_pair(user_id);
             }
+            let mut buff_function_id;
+            let mut buff_id;
             //消耗移动点干点什么，配对了又干点什么
-            for buff_id in battle_cter.battle_buffs.buffs.keys() {
+            for buff in battle_cter.battle_buffs.buffs.values() {
+                buff_function_id = buff.function_id;
+                buff_id = buff.get_id();
                 //移动加能量，配对加能量
-                if MANUAL_MOVE_AND_PAIR_ADD_ENERGY.contains(&buff_id) {
-                    self.manual_move_and_pair(Some(user_id), user_id, *buff_id, is_pair, au);
+                if MANUAL_MOVE_AND_PAIR_ADD_ENERGY.contains(&buff_function_id) {
+                    self.manual_move_and_pair(Some(user_id), user_id, buff_id, is_pair, au);
                 }
             }
 
@@ -519,7 +531,7 @@ impl BattleData {
                     if buff.permanent {
                         continue;
                     }
-                    let buff_id = buff.id;
+                    let buff_id = buff.get_id();
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         Some(cter.get_user_id()),
@@ -535,7 +547,7 @@ impl BattleData {
                     if buff.permanent {
                         continue;
                     }
-                    let buff_id = buff.id;
+                    let buff_id = buff.get_id();
                     battle_data.as_mut().unwrap().consume_buff(
                         buff_id,
                         None,

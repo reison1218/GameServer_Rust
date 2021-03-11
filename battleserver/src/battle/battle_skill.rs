@@ -24,6 +24,7 @@ use super::battle_enum::SkillConsumeType;
 #[derive(Clone, Debug)]
 pub struct Skill {
     pub id: u32,
+    pub function_id: u32, //功能id
     pub skill_temp: &'static SkillTemp,
     pub cd_times: i8,    //剩余cd,如果是消耗能量则无视这个值
     pub is_active: bool, //是否激活
@@ -49,6 +50,7 @@ impl From<&'static SkillTemp> for Skill {
     fn from(skill_temp: &'static SkillTemp) -> Self {
         Skill {
             id: skill_temp.id,
+            function_id: skill_temp.function_id,
             cd_times: 0,
             skill_temp,
             is_active: false,
@@ -133,8 +135,10 @@ pub fn show_index(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
+    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+    let skill_function_id = skill_temp.function_id;
     let show_index;
-    if SHOW_INDEX_SAME_ELEMENT == skill_id {
+    if SHOW_INDEX_SAME_ELEMENT == skill_function_id {
         let index = *target_array.get(0).unwrap() as usize;
         let res = battle_data.check_choice_index(index, true, true, true, false, false);
         //校验地图块
@@ -191,7 +195,9 @@ pub fn show_map_cell(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    if skill_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
+    let temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+    let function_id = temp.function_id;
+    if function_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
         warn!(
             "target_array is empty!skill_id:{},user_id:{}",
             skill_id, user_id
@@ -250,7 +256,7 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell.0 as u32);
         target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
-    } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_id {
+    } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == function_id {
         let index = *target_array.get(0).unwrap() as usize;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let element = map_cell.element;
@@ -329,6 +335,7 @@ pub unsafe fn add_buff(
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
+    let skill_function_id = skill_temp.function_id;
 
     let target_type = TargetType::try_from(skill_temp.target as u8).unwrap();
 
@@ -360,7 +367,7 @@ pub unsafe fn add_buff(
                 Some(user_id),
                 Some(skill_id),
             );
-            map_cell.buffs.insert(buff.id, buff);
+            map_cell.buffs.insert(buff.get_id(), buff);
             target_pt.target_value.push(index as u32);
             target_pt.add_buffs.push(buff_id);
         }
@@ -374,7 +381,7 @@ pub unsafe fn add_buff(
     au.targets.push(target_pt);
 
     //处理其他的
-    if HURT_SELF_ADD_BUFF.contains(&skill_id) {
+    if HURT_SELF_ADD_BUFF.contains(&skill_function_id) {
         let target_pt = battle_data.deduct_hp(user_id, user_id, Some(skill_temp.par1 as i16), true);
         match target_pt {
             Ok(target_pt) => au.targets.push(target_pt),
@@ -449,7 +456,9 @@ pub fn skill_open_map_cell(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
-    if SKILL_OPEN_NEAR_CELL == skill_id {
+    let skill = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+
+    if SKILL_OPEN_NEAR_CELL == skill.function_id {
         if target_array.is_empty() {
             warn!("{:?}", "target_array is empty");
             return None;
@@ -731,6 +740,7 @@ pub unsafe fn skill_aoe_damage(
     let battle_cter = battle_data.get_battle_cter(Some(user_id), true).unwrap();
     let self_index = battle_cter.get_map_cell_index();
     let skill = battle_cter.skills.get(&skill_id).unwrap();
+    let skill_function_id = skill.function_id;
     let par1 = skill.skill_temp.par1 as i16;
     let par2 = skill.skill_temp.par2 as i16;
     let par3 = skill.skill_temp.par3 as i16;
@@ -785,7 +795,7 @@ pub unsafe fn skill_aoe_damage(
     }
 
     //如果技能是造成aoe并减cd
-    if skill_id == SKILL_AOE_RED_SKILL_CD {
+    if skill_function_id == SKILL_AOE_RED_SKILL_CD {
         //处理减cd逻辑,如果造成伤害人数大于参数
         if count >= par2 {
             let battle_cter = battle_data
@@ -831,7 +841,7 @@ pub unsafe fn single_skill_damage(
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //目标在附近伤害加深
-    if skill_id == SKILL_DAMAGE_NEAR_DEEP {
+    if skill_temp.function_id == SKILL_DAMAGE_NEAR_DEEP {
         let (_, users) = battle_data.cal_scope(
             user_id,
             target_index as isize,

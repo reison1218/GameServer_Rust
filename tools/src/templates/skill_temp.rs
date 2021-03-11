@@ -4,6 +4,7 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct SkillTemp {
     pub id: u32,           //技能id
+    pub function_id: u32,  //关联id
     pub skill_judge: u16,  //判定条件
     pub target: u8,        //目标类型
     pub par1: u32,         //参数1
@@ -37,11 +38,13 @@ impl SkillTempMgr {
     }
 
     pub fn init(&mut self, t: Vec<SkillTemp>) {
+        let mut id;
         for tt in t {
+            id = tt.id;
             if tt.id == 321 {
-                self.lock_skills.push(tt.id);
+                self.lock_skills.push(id);
             }
-            self.temps.insert(tt.id, tt);
+            self.temps.insert(id, tt);
         }
     }
 }

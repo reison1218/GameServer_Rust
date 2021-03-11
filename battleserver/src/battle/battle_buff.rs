@@ -17,7 +17,8 @@ use tools::templates::buff_temp::BuffTemp;
 
 #[derive(Clone, Debug)]
 pub struct Buff {
-    pub id: u32,
+    id: u32,
+    pub function_id: u32, //功能id
     pub buff_temp: &'static BuffTemp,
     pub trigger_timesed: i8,       //已经触发过的次数
     pub keep_times: i8,            //剩余持续轮数
@@ -42,6 +43,10 @@ impl Buff {
         buff
     }
 
+    pub fn get_id(&self) -> u32 {
+        self.id
+    }
+
     pub(crate) fn sub_trigger_timesed(&mut self) {
         self.trigger_timesed -= 1;
         if self.trigger_timesed < 0 {
@@ -63,6 +68,7 @@ impl From<&'static BuffTemp> for Buff {
     fn from(bt: &'static BuffTemp) -> Self {
         let mut b = Buff {
             id: bt.id,
+            function_id: bt.function_id,
             trigger_timesed: bt.trigger_times as i8,
             keep_times: bt.keep_time as i8,
             buff_temp: bt,
@@ -487,7 +493,9 @@ impl BattleData {
         }
         let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
         let map_cell_element = map_cell.element;
+        let mut buff_function_id;
         for buff in buffs {
+            buff_function_id = buff.function_id;
             //如果匹配的人和开地图块的人是同一个人
             if open_user == match_user {
                 let last_map_cell_user_id;
@@ -504,11 +512,11 @@ impl BattleData {
 
                 if is_pair {
                     //获得道具
-                    if AWARD_ITEM.contains(&buff.id) {
+                    if AWARD_ITEM.contains(&buff_function_id) {
                         self.reward_item(from_user, match_user, buff.id, last_map_cell_user_id, au);
-                    } else if PAIR_CURE.contains(&buff.id) {
+                    } else if PAIR_CURE.contains(&buff_function_id) {
                         self.pair_cure(from_user, match_user, buff.id, last_map_cell_user_id, au);
-                    } else if AWARD_BUFF.contains(&buff.id) {
+                    } else if AWARD_BUFF.contains(&buff_function_id) {
                         //获得一个buff
                         self.award_buff(
                             from_user,
@@ -518,13 +526,13 @@ impl BattleData {
                             last_map_cell_user_id,
                             au,
                         );
-                    } else if NEAR_ADD_CD.contains(&buff.id) {
+                    } else if NEAR_ADD_CD.contains(&buff_function_id) {
                         //相临的玩家技能cd增加
                         self.near_add_cd(match_user, index, buff.id, au);
-                    } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff.id) {
+                    } else if NEAR_SKILL_DAMAGE_PAIR.contains(&buff_function_id) {
                         //相临都玩家造成技能伤害
                         self.near_skill_damage(match_user, index, buff.id, au);
-                    } else if PAIR_SAME_ELEMENT_CURE.contains(&buff.id) {
+                    } else if PAIR_SAME_ELEMENT_CURE.contains(&buff_function_id) {
                         //处理世界块的逻辑
                         //配对属性一样的地图块+hp
                         //查看配对的map_cell的属性是否与角色属性匹配
@@ -535,7 +543,7 @@ impl BattleData {
                             buff.id,
                             au,
                         );
-                    } else if PAIR_CLEAN_SKILL_CD.contains(&buff.id) {
+                    } else if PAIR_CLEAN_SKILL_CD.contains(&buff_function_id) {
                         //匹配了刷新指定技能cd
                         let skill_id = buff.buff_temp.par1;
                         self.pair_clean_skill_cd(open_user, buff.id, skill_id, au);
@@ -545,7 +553,7 @@ impl BattleData {
 
             if is_pair {
                 //匹配属性一样的地图块+攻击
-                if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff.id) {
+                if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
                     let cter = self.battle_cter.get_mut(&match_user).unwrap();
                     //此处触发加攻击不用通知客户端
                     let buff_element = buff.buff_temp.par1 as u8;
