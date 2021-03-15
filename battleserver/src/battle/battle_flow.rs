@@ -244,7 +244,6 @@ impl BattleData {
         let battle_cters = &mut self.battle_cter as *mut HashMap<u32, BattleCharacter>;
         let cter = battle_cters.as_mut().unwrap().get_mut(&user_id).unwrap();
         let mut aoe_buff: Option<u32> = None;
-
         //塞选出ape的buff
         cter.battle_buffs
             .buffs

@@ -90,14 +90,14 @@ impl BattleData {
         unsafe {
             for buff in map_cell.as_ref().unwrap().buffs.values() {
                 let buff_id = buff.get_id();
-                let function_id = buff.function_id;
+                let buff_function_id = buff.function_id;
                 //先判断是否是陷阱类buff
-                if !TRAPS.contains(&function_id) {
+                if !TRAPS.contains(&buff_function_id) {
                     continue;
                 }
                 let mut target_pt = None;
                 //判断是否是上buff的陷阱
-                if TRAP_ADD_BUFF.contains(&function_id) {
+                if TRAP_ADD_BUFF.contains(&buff_function_id) {
                     let buff_id = buff.buff_temp.par1;
                     let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
                     if let Err(e) = buff_temp {
@@ -117,7 +117,7 @@ impl BattleData {
                         .push(battle_cter.get_map_cell_index() as u32);
                     target_pt_tmp.add_buffs.push(buff_id);
                     target_pt = Some(target_pt_tmp);
-                } else if TRAP_SKILL_DAMAGE.contains(&function_id) {
+                } else if TRAP_SKILL_DAMAGE.contains(&buff_function_id) {
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
                     let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
@@ -239,13 +239,18 @@ impl TriggerEvent for BattleData {
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()> {
         //先判断目标位置的角色是否有不动泰山被动技能
         let target_cter = self.get_battle_cter(Some(target_user), true).unwrap();
-        if target_cter.battle_buffs.buffs.contains_key(&CAN_NOT_MOVED) && from_user != target_user {
-            anyhow::bail!(
-                "this cter can not be move!cter_id:{},buff_id:{}",
-                target_user,
-                CAN_NOT_MOVED
-            )
+        let mut buff_function_id;
+        for buff in target_cter.battle_buffs.buffs.values() {
+            buff_function_id = buff.function_id;
+            if buff_function_id == CAN_NOT_MOVED && from_user != target_user {
+                anyhow::bail!(
+                    "this cter can not be move!cter_id:{},buff_id:{}",
+                    target_user,
+                    CAN_NOT_MOVED
+                )
+            }
         }
+
         Ok(())
     }
 
@@ -264,7 +269,7 @@ impl TriggerEvent for BattleData {
             v.extend_from_slice(res.as_slice());
         }
         let mut is_died = false;
-        let mut function_id;
+        let mut buff_function_id;
         let mut buff_id;
         //触发别人的范围
         for other_cter in self.battle_cter.values() {
@@ -275,9 +280,9 @@ impl TriggerEvent for BattleData {
 
             //踩到别人到范围
             for buff in other_cter.battle_buffs.buffs.values() {
-                function_id = buff.function_id;
+                buff_function_id = buff.function_id;
                 buff_id = buff.get_id();
-                if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&function_id) {
+                if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff_function_id) {
                     continue;
                 }
                 //换位置不触发"DEFENSE_NEAR_MOVE_SKILL_DAMAGE"
@@ -374,6 +379,7 @@ impl TriggerEvent for BattleData {
         //战斗角色身上的技能
         let mut skill_s;
         let skill;
+        let skill_function_id;
         if is_item {
             let res = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
             if let Err(e) = res {
@@ -390,8 +396,9 @@ impl TriggerEvent for BattleData {
             }
             skill = res.unwrap();
         }
+        skill_function_id = skill.function_id;
         //替换技能,水炮
-        if skill.function_id == WATER_TURRET {
+        if skill_function_id == WATER_TURRET {
             let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
             cter.skills.remove(&skill_id);
             if let Err(e) = skill_temp {
@@ -436,8 +443,10 @@ impl TriggerEvent for BattleData {
             anyhow::bail!("{:?}", e)
         }
         let cter = cter.unwrap();
+        let mut buff_function_id;
         for buff in cter.battle_buffs.buffs.values() {
-            if LOCK_SKILLS.contains(&buff.function_id) {
+            buff_function_id = buff.function_id;
+            if LOCK_SKILLS.contains(&buff_function_id) {
                 anyhow::bail!(
                     "this cter can not use skill!was locked!cter's buff:{}",
                     buff.get_id()
@@ -495,30 +504,32 @@ impl TriggerEvent for BattleData {
     }
 
     fn before_map_refresh_buff_trigger(&mut self) {
+        let mut buff_function_id;
         //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
         for map_cell in self.tile_map.map_cells.iter() {
-            let buff = map_cell.buffs.get(&LOCKED);
-            if buff.is_none() {
-                continue;
+            for buff in map_cell.buffs.values() {
+                buff_function_id = buff.function_id;
+                if buff_function_id != LOCKED {
+                    continue;
+                }
+                let from_user = buff.from_user;
+                if from_user.is_none() {
+                    continue;
+                }
+                let from_user = from_user.unwrap();
+                let from_skill = buff.from_skill.unwrap();
+                let cter = self.battle_cter.get_mut(&from_user);
+                if cter.is_none() {
+                    continue;
+                }
+                let cter = cter.unwrap();
+                let skill = cter.skills.get_mut(&from_skill);
+                if skill.is_none() {
+                    continue;
+                }
+                let skill = skill.unwrap();
+                skill.is_active = false;
             }
-            let buff = buff.unwrap();
-            let from_user = buff.from_user;
-            if from_user.is_none() {
-                continue;
-            }
-            let from_user = from_user.unwrap();
-            let from_skill = buff.from_skill.unwrap();
-            let cter = self.battle_cter.get_mut(&from_user);
-            if cter.is_none() {
-                continue;
-            }
-            let cter = cter.unwrap();
-            let skill = cter.skills.get_mut(&from_skill);
-            if skill.is_none() {
-                continue;
-            }
-            let skill = skill.unwrap();
-            skill.is_active = false;
         }
     }
 
@@ -531,10 +542,10 @@ impl TriggerEvent for BattleData {
         }
 
         let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
-
+        let buff_function_id = buff_temp.function_id;
         let cter = cter.unwrap();
         //如果是变身buff,那就变回来
-        if TRANSFORM_BUFF.contains(&buff_temp.function_id) {
+        if TRANSFORM_BUFF.contains(&buff_function_id) {
             cter.transform_back();
         }
     }

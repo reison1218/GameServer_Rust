@@ -196,8 +196,8 @@ pub fn show_map_cell(
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     let temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
-    let function_id = temp.function_id;
-    if function_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
+    let skill_function_id = temp.function_id;
+    if skill_function_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
         warn!(
             "target_array is empty!skill_id:{},user_id:{}",
             skill_id, user_id
@@ -212,7 +212,7 @@ pub fn show_map_cell(
     let battle_cter = battle_cter.unwrap();
     let show_index;
     //向所有玩家随机展示一个地图块，优先生命元素
-    if SHOW_ALL_USERS_CELL == skill_id {
+    if SHOW_ALL_USERS_CELL == skill_function_id {
         let mut v = Vec::new();
         let mut nature_index = None;
         for index in battle_data.tile_map.un_pair_map.iter() {
@@ -256,7 +256,7 @@ pub fn show_map_cell(
         target_pt.target_value.push(map_cell.0 as u32);
         target_pt.target_value.push(map_cell_id);
         au.targets.push(target_pt);
-    } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == function_id {
+    } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_function_id {
         let index = *target_array.get(0).unwrap() as usize;
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let element = map_cell.element;
@@ -457,8 +457,8 @@ pub fn skill_open_map_cell(
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     let skill = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
-
-    if SKILL_OPEN_NEAR_CELL == skill.function_id {
+    let skill_function_id = skill.function_id;
+    if SKILL_OPEN_NEAR_CELL == skill_function_id {
         if target_array.is_empty() {
             warn!("{:?}", "target_array is empty");
             return None;
@@ -779,7 +779,8 @@ pub unsafe fn skill_aoe_damage(
         let damage_res;
         //判断是否中心位置
         let cter_index = cter.get_map_cell_index();
-        if cter_index == center_index as usize && skill_id == SKILL_AOE_CENTER_DAMAGE_DEEP {
+        if cter_index == center_index as usize && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
+        {
             damage_res = par2;
         } else {
             damage_res = par1;
@@ -840,8 +841,9 @@ pub unsafe fn single_skill_damage(
     let skill_damage;
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+    let skill_function_id = skill_temp.function_id;
     //目标在附近伤害加深
-    if skill_temp.function_id == SKILL_DAMAGE_NEAR_DEEP {
+    if skill_function_id == SKILL_DAMAGE_NEAR_DEEP {
         let (_, users) = battle_data.cal_scope(
             user_id,
             target_index as isize,

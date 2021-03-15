@@ -178,6 +178,19 @@ pub struct BattleBuff {
     pub sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
 }
 
+impl BattleBuff {
+    pub fn get_gd_buff(&mut self) -> Option<&mut Buff> {
+        let mut buff_function_id;
+        for buff in self.buffs.values_mut() {
+            buff_function_id = buff.function_id;
+            if buff_function_id == GD_ATTACK_DAMAGE[0] {
+                return Some(buff);
+            }
+        }
+        None
+    }
+}
+
 ///角色战斗流程相关数据
 #[derive(Clone, Debug, Default)]
 pub struct TurnFlowData {
@@ -784,14 +797,15 @@ impl BattleCharacter {
     ///计算减伤
     pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i16 {
         let mut value = self.base_attr.defence;
-
+        let mut buff_function_id;
         for (buff_id, times) in self.battle_buffs.sub_damage_buffs.iter() {
             let buff = self.battle_buffs.buffs.get(buff_id);
             if buff.is_none() {
                 continue;
             }
             let buff = buff.unwrap();
-            if buff.function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
+            buff_function_id = buff.function_id;
+            if buff_function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
                 continue;
             }
             for _ in 0..*times {
@@ -867,8 +881,10 @@ impl BattleCharacter {
 
     ///回合开始触发
     pub fn trigger_turn_start(&mut self) {
+        let mut buff_function_id;
         for buff in self.battle_buffs.buffs.values() {
-            if CHANGE_SKILL.contains(&buff.function_id) {
+            buff_function_id = buff.function_id;
+            if CHANGE_SKILL.contains(&buff_function_id) {
                 let skill_id = buff.buff_temp.par1;
 
                 let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);
@@ -918,7 +934,7 @@ impl BattleCharacter {
 
     ///触发抵挡攻击伤害
     pub fn trigger_attack_damge_gd(&mut self) -> (u32, bool) {
-        let gd_buff = self.battle_buffs.buffs.get_mut(&GD_ATTACK_DAMAGE[0]);
+        let gd_buff = self.battle_buffs.get_gd_buff();
         let mut buff_id = 0;
         let mut is_remove = false;
         if gd_buff.is_none() {
