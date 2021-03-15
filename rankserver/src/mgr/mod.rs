@@ -37,6 +37,7 @@ impl RankInfo {
         self.league.league_score = 0;
     }
 
+    ///更新段位
     pub fn update_league(&mut self, id: i8) {
         let res = crate::TEMPLATES.league_temp_mgr().get_temp(&id).unwrap();
         self.league.id = res.id;

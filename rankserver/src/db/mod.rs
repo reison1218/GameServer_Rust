@@ -4,6 +4,7 @@ use futures::executor::block_on;
 use log::error;
 pub mod dbtool;
 
+///初始化排行榜
 pub fn init_rank(rm: Lock) {
     let sql = "select * from t_u_league";
     let res = crate::DB_POOL.exe_sql(sql, None);
