@@ -1,7 +1,7 @@
 use crate::entity::user::UserData;
 use crate::entity::user_info::{
     create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name,
-    punish_match, search_room, show_rank, summary, sync_rank, update_last_season_rank,
+    punish_match, search_room, show_rank, sync_rank, update_last_season_rank,
 };
 use crate::entity::{Entity, EntityData};
 use crate::net::http::{notice_user_center, UserCenterNoticeType};
@@ -11,14 +11,17 @@ use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
 use tools::cmd_code::{GameCode::SyncData, RankCode};
 use tools::protos::base::RankInfoPt;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
-use tools::protos::server_protocol::UPDATE_SEASON_NOTICE;
+use tools::protos::server_protocol::{B_S_SUMMARY, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+
+use super::RoomType;
 
 pub struct RankInfoPtPtr(pub *const RankInfoPt);
 unsafe impl Send for RankInfoPtPtr {}
@@ -307,5 +310,56 @@ fn off_line(gm: &mut GameMgr, packet: Packet) {
         //通知用户中心
         async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
         info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
+    }
+}
+
+///房间战斗结算
+pub fn summary(gm: &mut GameMgr, packet: Packet) {
+    let mut bgs = B_S_SUMMARY::new();
+    let res = bgs.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
+    let room_type = RoomType::try_from(bgs.room_type as u8);
+    if let Err(e) = room_type {
+        error!("{:?}", e);
+        return;
+    }
+    let room_type = room_type.unwrap();
+    let summary_data = bgs.get_summary_data();
+    let user_id = summary_data.user_id;
+    let cter_id = summary_data.cter_id;
+    let grade = summary_data.get_grade();
+    let res = gm.users.get_mut(&user_id);
+    if let None = res {
+        error! {"summary!UserData is not find! user_id:{}",user_id};
+        return;
+    }
+    let user_data = res.unwrap();
+    //处理统计
+    let cters = user_data.get_characters_mut_ref().add_use_times(cter_id);
+    user_data.league.set_cters(cters.clone());
+    //处理持久化到数据库
+    user_data.add_version();
+    //如果是匹配房
+    if room_type == RoomType::OneVOneVOneVOneMatch {
+        //更新段位积分
+        user_data.league.update_from_pt(summary_data.get_league());
+        //第一名就加grade
+        user_data.user_info.set_grade(grade);
+        bgs.cters.extend_from_slice(cters.as_slice());
+        if user_data.league.id > 0 {
+            let res = bgs.write_to_bytes();
+            match res {
+                Ok(bytes) => {
+                    //更新排行榜
+                    gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
+                }
+                Err(e) => {
+                    warn!("{:?}", e)
+                }
+            }
+        }
     }
 }

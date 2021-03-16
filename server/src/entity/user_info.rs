@@ -1,15 +1,13 @@
 use super::*;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::game_mgr::RankInfoPtPtr;
-use crate::mgr::RoomType;
 use chrono::Local;
 use protobuf::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use std::convert::TryFrom;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, RankCode, RoomCode};
+use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::base::{PunishMatchPt, RankInfoPt};
 use tools::protos::protocol::{
     C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_GET_LAST_SEASON_RANK,
@@ -17,8 +15,8 @@ use tools::protos::protocol::{
 };
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::{
-    PlayerBattlePt, B_R_G_PUNISH_MATCH, B_S_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM,
-    G_R_SEARCH_ROOM, R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK,
+    PlayerBattlePt, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
+    R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK,
 };
 use tools::util::packet::Packet;
 
@@ -673,55 +671,4 @@ pub fn get_last_season_rank(gm: &mut GameMgr, packet: Packet) {
 
     let bytes = proto.write_to_bytes().unwrap();
     gm.send_2_client(ClientCode::GetLastSeasonRank, user_id, bytes);
-}
-
-///房间战斗结算
-pub fn summary(gm: &mut GameMgr, packet: Packet) {
-    let mut bgs = B_S_SUMMARY::new();
-    let res = bgs.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return;
-    }
-    let room_type = RoomType::try_from(bgs.room_type as u8);
-    if let Err(e) = room_type {
-        error!("{:?}", e);
-        return;
-    }
-    let room_type = room_type.unwrap();
-    let summary_data = bgs.get_summary_data();
-    let user_id = summary_data.user_id;
-    let cter_id = summary_data.cter_id;
-    let grade = summary_data.get_grade();
-    let res = gm.users.get_mut(&user_id);
-    if let None = res {
-        error! {"summary!UserData is not find! user_id:{}",user_id};
-        return;
-    }
-    let user_data = res.unwrap();
-    //处理统计
-    let cters = user_data.get_characters_mut_ref().add_use_times(cter_id);
-    user_data.league.set_cters(cters.clone());
-    //处理持久化到数据库
-    user_data.add_version();
-    //如果是匹配房
-    if room_type == RoomType::OneVOneVOneVOneMatch {
-        //更新段位积分
-        user_data.league.update_from_pt(summary_data.get_league());
-        //第一名就加grade
-        user_data.user_info.set_grade(grade);
-        bgs.cters.extend_from_slice(cters.as_slice());
-        if user_data.league.id > 0 {
-            let res = bgs.write_to_bytes();
-            match res {
-                Ok(bytes) => {
-                    //更新排行榜
-                    gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
-                }
-                Err(e) => {
-                    warn!("{:?}", e)
-                }
-            }
-        }
-    }
 }

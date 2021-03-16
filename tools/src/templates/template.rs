@@ -245,79 +245,82 @@ fn read_templates_from_dir<P: AsRef<Path>>(
         str.push_str(name.to_str().unwrap());
         let file = File::open(str)?;
         let mut reader = BufReader::new(file);
-        let mut string = String::new();
-        reader.read_line(&mut string)?;
+        let mut context = String::new();
+        reader.read_line(&mut context)?;
         let mut name = name.to_str().unwrap().to_string();
         let beta_offset = name.find('.').unwrap_or(name.len());
         name.replace_range(beta_offset.., "");
-
-        if name.eq_ignore_ascii_case(TILE_MAP_TEMPLATE) {
-            let v: Vec<TileMapTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.tile_map_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(CHARACTER_TEMPLATE) {
-            let v: Vec<CharacterTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.character_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(EMOJI_TEMPLATE) {
-            let v: Vec<EmojiTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.emoji_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(CONSTANT_TEMPLATE) {
-            let v: Vec<ConstantTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.constant_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(WORLD_CELL_TEMPLATE) {
-            let v: Vec<WorldCellTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.world_cell_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(CELL_TEMPLATE) {
-            let v: Vec<CellTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.cell_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
-            let v: Vec<SkillTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
-            let v: Vec<SkillScopeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_scope_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
-            let v: Vec<ItemTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.item_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SKILL_JUDGE_TEMPLATE) {
-            let v: Vec<SkillJudgeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.skill_judge_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(BUFF) {
-            let v: Vec<BuffTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.buff_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SEASON) {
-            let v: Vec<SeasonTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.season_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(ROBOT) {
-            let v: Vec<RobotTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.robot_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(LEAGUE) {
-            let v: Vec<LeagueTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.league_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SUMMARY_AWARD) {
-            let v: Vec<SummaryAwardTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.summary_award_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(BATTLE_LIMIT_TIME) {
-            let v: Vec<BattleLimitTimeTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.battle_limit_time_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(PUNISH) {
-            let v: Vec<PunishTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.punish_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(GRADE_FRAME) {
-            let v: Vec<GradeFrameTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.grade_frame_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(SOUL) {
-            let v: Vec<SoulTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.soul_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(MARKET) {
-            let v: Vec<MarketTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.market_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(MERCHANDISE) {
-            let v: Vec<MerchandiseTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.merchandise_temp_mgr.init(v);
-        } else if name.eq_ignore_ascii_case(MISSION) {
-            let v: Vec<MissionTemp> = serde_json::from_str(string.as_ref()).unwrap();
-            temps_mgr.mission_temp_mgr.init(v);
-        }
+        init_temps(temps_mgr, name, context.as_str());
     }
     Ok(())
+}
+
+fn init_temps(temps_mgr: &mut TemplatesMgr, name: String, context: &str) {
+    if name.eq_ignore_ascii_case(TILE_MAP_TEMPLATE) {
+        let v: Vec<TileMapTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.tile_map_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(CHARACTER_TEMPLATE) {
+        let v: Vec<CharacterTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.character_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(EMOJI_TEMPLATE) {
+        let v: Vec<EmojiTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.emoji_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(CONSTANT_TEMPLATE) {
+        let v: Vec<ConstantTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.constant_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(WORLD_CELL_TEMPLATE) {
+        let v: Vec<WorldCellTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.world_cell_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(CELL_TEMPLATE) {
+        let v: Vec<CellTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.cell_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SKILL_TEMPLATE) {
+        let v: Vec<SkillTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.skill_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SKILL_SCOPE_TEMPLATE) {
+        let v: Vec<SkillScopeTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.skill_scope_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(ITEM_TEMPLATE) {
+        let v: Vec<ItemTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.item_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SKILL_JUDGE_TEMPLATE) {
+        let v: Vec<SkillJudgeTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.skill_judge_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(BUFF) {
+        let v: Vec<BuffTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.buff_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SEASON) {
+        let v: Vec<SeasonTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.season_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(ROBOT) {
+        let v: Vec<RobotTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.robot_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(LEAGUE) {
+        let v: Vec<LeagueTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.league_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SUMMARY_AWARD) {
+        let v: Vec<SummaryAwardTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.summary_award_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(BATTLE_LIMIT_TIME) {
+        let v: Vec<BattleLimitTimeTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.battle_limit_time_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(PUNISH) {
+        let v: Vec<PunishTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.punish_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(GRADE_FRAME) {
+        let v: Vec<GradeFrameTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.grade_frame_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(SOUL) {
+        let v: Vec<SoulTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.soul_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(MARKET) {
+        let v: Vec<MarketTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.market_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(MERCHANDISE) {
+        let v: Vec<MerchandiseTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.merchandise_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(MISSION) {
+        let v: Vec<MissionTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.mission_temp_mgr.init(v);
+    }
 }

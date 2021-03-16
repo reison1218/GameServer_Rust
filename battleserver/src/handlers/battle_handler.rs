@@ -14,6 +14,7 @@ use std::borrow::{Borrow, BorrowMut};
 use std::convert::TryFrom;
 use std::fmt::Debug;
 use std::str::FromStr;
+use std::time::Duration;
 use tools::cmd_code::{ClientCode, GameCode};
 use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::C_BUY;
@@ -635,8 +636,10 @@ pub fn off_line(bm: &mut BattleMgr, packet: Packet) {
         //处理玩家离开
         bm.handler_leave(room_id, user_id, false);
     }
+    std::thread::sleep(Duration::from_millis(50));
     //通知游戏服卸载玩家数据
     bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
+    info!("发送GameCode::UnloadUser命令！user_id:{}", user_id)
 }
 
 ///离开房间

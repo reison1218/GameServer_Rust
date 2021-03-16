@@ -93,6 +93,7 @@ const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 /// ```
 ///
 pub mod tcp_server {
+
     use super::*;
     use async_std::task::block_on;
     use mio::event::Event;
