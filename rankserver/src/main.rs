@@ -50,6 +50,7 @@ fn init_templates_mgr() -> TemplatesMgr {
     conf
 }
 type Lock = Arc<Mutex<RankMgr>>;
+type JsonValue = serde_json::Value;
 fn main() {
     let rm = Arc::new(Mutex::new(RankMgr::new()));
 

@@ -13,7 +13,6 @@ use crate::task_timer::init_timer;
 use async_std::sync::Mutex;
 use log::{error, info, warn};
 use scheduled_thread_pool::ScheduledThreadPool;
-use serde_json::Value;
 use std::env;
 use std::sync::Arc;
 use tools::conf::Conf;
@@ -91,6 +90,7 @@ const REDIS_INDEX_GAME_SEASON: u32 = 1;
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 
 type Lock = Arc<Mutex<BattleMgr>>;
+type JsonValue = serde_json::Value;
 
 fn main() {
     let bm = Arc::new(Mutex::new(BattleMgr::new()));
@@ -149,7 +149,7 @@ fn init_season() {
         return;
     }
 
-    let value: Value = value.unwrap();
+    let value: JsonValue = value.unwrap();
     let map = value.as_object();
     if map.is_none() {
         warn!("the map is None for JsonValue!");

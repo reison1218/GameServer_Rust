@@ -8,7 +8,7 @@ use crate::room::map_data::TileMap;
 use crate::room::member::Member;
 use crate::room::{RoomSetting, RoomState, RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
-use crate::TEMPLATES;
+use crate::{JsonValue, TEMPLATES};
 use chrono::{DateTime, Utc};
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
@@ -868,8 +868,8 @@ impl Room {
         task.cmd = TaskCmd::ChoiceIndex;
 
         let mut map = serde_json::Map::new();
-        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
-        task.data = serde_json::Value::from(map);
+        map.insert("user_id".to_owned(), JsonValue::from(user_id));
+        task.data = JsonValue::from(map);
         let res = self.task_sender.send(task);
         if res.is_err() {
             error!("{:?}", res.err().unwrap());

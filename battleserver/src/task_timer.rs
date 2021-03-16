@@ -1,12 +1,11 @@
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::{MemberLeaveNoticeType, RoomState};
-use crate::{Lock, SCHEDULED_MGR};
+use crate::{JsonValue, Lock, SCHEDULED_MGR};
 use async_std::sync::{Arc, Mutex};
 use async_std::task::block_on;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use serde_json::Value as JsonValue;
 use std::time::Duration;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]

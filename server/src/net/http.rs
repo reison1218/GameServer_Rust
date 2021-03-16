@@ -3,7 +3,6 @@ use crate::{Lock, CONF_MAP};
 use http_types::Error as HttpTypesError;
 use log::{error, info};
 use serde_json::value::Value as JsonValue;
-use serde_json::Value;
 use serde_json::{json, Map};
 use std::time::Duration;
 use tools::http::{HttpMethod, HttpServerHandler};
@@ -30,7 +29,7 @@ impl HttpServerHandler for SavePlayerHttpHandler {
         "save"
     }
 
-    fn execute(&mut self, _: Option<Value>) -> Result<Value, http_types::Error> {
+    fn execute(&mut self, _: Option<JsonValue>) -> Result<JsonValue, http_types::Error> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         Ok(value)
@@ -54,7 +53,7 @@ impl HttpServerHandler for StopServerHttpHandler {
 
     fn execute(
         &mut self,
-        _: Option<Value>,
+        _: Option<JsonValue>,
     ) -> core::result::Result<serde_json::Value, HttpTypesError> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });

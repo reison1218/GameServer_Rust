@@ -3,6 +3,7 @@ use crate::battle::battle_enum::skill_type::{
     RED_SKILL_CD, SCOPE_CURE, SHOW_INDEX, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE,
     SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_MAP_CELL, TRANSFORM,
 };
+use crate::JsonValue;
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
@@ -126,8 +127,8 @@ impl BattleData {
             user_id = cter.get_user_id();
             break;
         }
-        map.insert("user_id".to_owned(), serde_json::Value::from(user_id));
-        task.data = serde_json::Value::from(map);
+        map.insert("user_id".to_owned(), JsonValue::from(user_id));
+        task.data = JsonValue::from(map);
         let res = self.task_sender.send(task);
         if let Err(e) = res {
             error!("{:?}", e);

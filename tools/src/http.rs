@@ -5,7 +5,7 @@ use async_std::prelude::*;
 use async_std::sync::{Arc as AsyncArc, RwLock as AsyncRwLock};
 use async_std::task;
 use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
-use serde_json::{Error, Value};
+use serde_json::Error;
 
 pub enum HttpMethod {
     POST,
@@ -14,10 +14,7 @@ pub enum HttpMethod {
 
 pub trait HttpServerHandler: Send + Sync {
     fn get_path(&self) -> &str;
-    fn execute(
-        &mut self,
-        params: Option<serde_json::Value>,
-    ) -> Result<serde_json::Value, HttpTypesError>;
+    fn execute(&mut self, params: Option<JsonValue>) -> Result<JsonValue, HttpTypesError>;
 }
 
 pub async fn http_server(
@@ -65,14 +62,13 @@ async fn accept(
         //获取body和其中的参数，并将参数转换成serde_json::value结构体
         let mut body = _req_mut.take_body();
         let body_len = body.len();
-        let mut params: Option<Value> = None;
+        let mut params: Option<JsonValue> = None;
         match body_len {
             Some(len) => {
                 if len > 0 {
                     let mut string = String::new();
                     body.read_to_string(&mut string).await.unwrap();
-                    let json: Result<serde_json::Value, Error> =
-                        serde_json::from_str(string.as_str());
+                    let json: Result<JsonValue, Error> = serde_json::from_str(string.as_str());
                     if json.is_err() {
                         error!("http server error!{:?}", json.as_ref().err().unwrap());
                         return Err(http_types::Error::from_str(
@@ -98,7 +94,7 @@ async fn accept(
         let mut write = handler_vec.write().await;
         //开始遍历path进行过滤
         let iter = write.iter_mut();
-        let mut result: Option<Result<serde_json::Value, http_types::Error>> = None;
+        let mut result: Option<Result<JsonValue, http_types::Error>> = None;
         for handler in iter {
             if !handler.get_path().eq(path) {
                 continue;
@@ -138,8 +134,8 @@ pub async fn send_http_request(
     ip_port: &str,
     path: &str,
     method: HttpMethod,
-    params: Option<Value>,
-) -> Result<Value, HttpTypesError> {
+    params: Option<JsonValue>,
+) -> Result<JsonValue, HttpTypesError> {
     let http_method: Option<Method>;
     match method {
         HttpMethod::POST => http_method = Some(Method::Post),
@@ -166,7 +162,7 @@ pub async fn send_http_request(
         return Err(HttpTypesError::from_str(status, error_str));
     }
     let mut body = res.take_body();
-    let result: Option<Value>;
+    let result: Option<JsonValue>;
     match body.len() {
         Some(len) => {
             if len <= 0 {
@@ -177,7 +173,7 @@ pub async fn send_http_request(
             }
             let mut string = String::new();
             body.read_to_string(&mut string).await.unwrap();
-            let json: serde_json::Value = serde_json::from_str(string.as_str())?;
+            let json: JsonValue = serde_json::from_str(string.as_str())?;
             result = Some(json)
         }
         None => {

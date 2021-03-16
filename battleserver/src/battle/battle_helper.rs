@@ -25,6 +25,7 @@ use tools::util::packet::Packet;
 
 use super::battle_enum::skill_judge_type::PAIR_LIMIT;
 use super::mission::{trigger_mission, MissionTriggerType};
+use crate::JsonValue;
 
 impl BattleData {
     ///检测地图刷新
@@ -841,8 +842,8 @@ impl BattleData {
         task.cmd = TaskCmd::BattleTurnTime;
 
         let mut map = serde_json::Map::new();
-        map.insert("user_id".to_owned(), serde_json::Value::from(*user_id));
-        task.data = serde_json::Value::from(map);
+        map.insert("user_id".to_owned(), JsonValue::from(*user_id));
+        task.data = JsonValue::from(map);
         let res = self.task_sender.send(task);
         if res.is_err() {
             error!("{:?}", res.err().unwrap());

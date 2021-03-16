@@ -19,7 +19,6 @@ use std::sync::Arc;
 
 use crate::mgr::timer_mgr::init_timer;
 use log::{error, info, warn};
-use serde_json::Value;
 use std::env;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
@@ -101,6 +100,7 @@ impl Season {
     }
 }
 type Lock = Arc<Mutex<GameMgr>>;
+type JsonValue = serde_json::Value;
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
 fn main() {
     let game_mgr = Arc::new(Mutex::new(GameMgr::new()));
@@ -146,7 +146,7 @@ fn init_season(gm: Lock) {
         error!("{:?}", e);
         return;
     }
-    let value: Value = value.unwrap();
+    let value: JsonValue = value.unwrap();
     let map = value.as_object();
     if map.is_none() {
         warn!("the map is None for JsonValue!");

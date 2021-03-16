@@ -1,13 +1,14 @@
-use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+use crate::JsonValue;
+
 ///conf of struct
 pub struct Conf {
-    conf: HashMap<String, Value>,
+    conf: HashMap<String, JsonValue>,
 }
 
 impl Conf {
@@ -49,7 +50,9 @@ impl Conf {
 }
 
 ///读取配置文件
-fn read_conf_from_file<P: AsRef<Path>>(path: P) -> Result<HashMap<String, Value>, Box<dyn Error>> {
+fn read_conf_from_file<P: AsRef<Path>>(
+    path: P,
+) -> Result<HashMap<String, JsonValue>, Box<dyn Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
     let reader = BufReader::new(file);

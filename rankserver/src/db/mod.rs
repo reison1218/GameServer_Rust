@@ -1,5 +1,5 @@
 use crate::mgr::{RankInfo, RankInfoPtr};
-use crate::Lock;
+use crate::{JsonValue, Lock};
 use futures::executor::block_on;
 use log::error;
 pub mod dbtool;
@@ -15,7 +15,7 @@ pub fn init_rank(rm: Lock) {
     let q = res.unwrap();
     let mut v = Vec::new();
     for qr in q {
-        let (_, data): (u32, serde_json::Value) = mysql::from_row(qr.unwrap());
+        let (_, data): (u32, JsonValue) = mysql::from_row(qr.unwrap());
         let ri = RankInfo::init_from_json(data);
         if let Err(e) = ri {
             error!("{:?}", e);

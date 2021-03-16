@@ -1,10 +1,9 @@
 use crate::battle::battle_enum::ActionType;
-use crate::{Lock, ROBOT_SCHEDULED_MGR};
+use crate::{JsonValue, Lock, ROBOT_SCHEDULED_MGR};
 use async_std::task::block_on;
 use log::error;
 use log::info;
 use protobuf::Message;
-use serde_json::Value as JsonValue;
 use std::time::Duration;
 use tools::macros::GetMutRef;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX};

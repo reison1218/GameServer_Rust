@@ -12,7 +12,6 @@ use crate::task_timer::init_timer;
 use async_std::sync::{Arc, Mutex};
 use log::{error, info, warn};
 use scheduled_thread_pool::ScheduledThreadPool;
-use serde_json::Value;
 use std::env;
 use std::sync::atomic::AtomicU32;
 use tools::conf::Conf;

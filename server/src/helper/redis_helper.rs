@@ -1,11 +1,10 @@
-use crate::REDIS_POOL;
+use crate::{JsonValue, REDIS_POOL};
 use crate::{REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID, REDIS_KEY_USERS};
 use log::error;
-use serde_json::Value;
 use std::str::FromStr;
 
 ///修改玩家redis状态
-pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
+pub fn modify_redis_user(user_id: u32, key: String, value: JsonValue) {
     let mut redis_lock = REDIS_POOL.lock().unwrap();
     let res: Option<String> = redis_lock.hget(
         REDIS_INDEX_USERS,
@@ -26,7 +25,7 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
         return;
     }
     let res = res.unwrap();
-    let json = Value::from_str(res.as_str());
+    let json = JsonValue::from_str(res.as_str());
 
     match json {
         Ok(mut json_value) => {
@@ -49,7 +48,7 @@ pub fn modify_redis_user(user_id: u32, key: String, value: Value) {
 }
 
 ///从redis获得玩家数据
-pub fn get_user_from_redis(user_id: u32) -> Option<Value> {
+pub fn get_user_from_redis(user_id: u32) -> Option<JsonValue> {
     let mut redis_lock = REDIS_POOL.lock().unwrap();
     let value: Option<String> = redis_lock.hget(
         REDIS_INDEX_USERS,
@@ -71,7 +70,7 @@ pub fn get_user_from_redis(user_id: u32) -> Option<Value> {
     }
     let res = res.unwrap();
 
-    let json = Value::from_str(res.as_str());
+    let json = JsonValue::from_str(res.as_str());
 
     match json {
         Ok(json_value) => Some(json_value),

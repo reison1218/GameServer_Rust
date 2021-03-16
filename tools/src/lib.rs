@@ -29,3 +29,5 @@ pub mod templates;
 pub mod thread_pool;
 pub mod util;
 use log::{error, info, warn};
+
+type JsonValue = serde_json::Value;
