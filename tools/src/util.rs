@@ -171,6 +171,8 @@ pub mod bytebuf {
 
 ///数据包封装，用户封装传输的数据包
 pub mod packet {
+    use std::collections::VecDeque;
+
     use crate::util::bytebuf::ByteBuf;
     #[derive(Debug, Default, Clone)]
     pub struct PacketDes {
@@ -241,9 +243,9 @@ pub mod packet {
         }
 
         ///解析tcp流数据，可能饱含多个数据包，循环解析
-        pub fn build_array_from_server(bytes: Vec<u8>) -> anyhow::Result<Vec<Packet>> {
+        pub fn build_array_from_server(bytes: Vec<u8>) -> anyhow::Result<VecDeque<Packet>> {
             let mut bb = ByteBuf::from(bytes);
-            let mut v = Vec::new();
+            let mut v = VecDeque::new();
             loop {
                 if bb.index() == bb.get_len() {
                     return Ok(v);
@@ -264,7 +266,7 @@ pub mod packet {
                 if body_size > 0 {
                     packet.set_data(bb.read_bytes_size(body_size as usize)?);
                 }
-                v.push(packet);
+                v.push_back(packet);
             }
         }
 
