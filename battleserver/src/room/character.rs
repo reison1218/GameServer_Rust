@@ -120,8 +120,11 @@ impl League {
             }
         }
 
-        let league_temp = mgr.get_league_by_score(self.score).unwrap();
-
+        let league_temp = mgr.get_league_by_score(self.score);
+        if league_temp.is_err() {
+            return self.score;
+        }
+        let league_temp = league_temp.unwrap();
         //掉分了不能掉段位
         if self.score < league_temp.score {
             self.score = league_temp.score;
