@@ -4,6 +4,8 @@ pub mod http;
 pub mod rank_tcp_client;
 pub mod room_tcp_client;
 
+use std::collections::VecDeque;
+
 use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
@@ -21,7 +23,7 @@ trait Forward {
     fn get_game_center_mut(&mut self) -> &mut Lock;
 
     ///数据包转发
-    async fn forward_packet(&mut self, packet_array: Vec<Packet>) {
+    async fn forward_packet(&mut self, packet_array: VecDeque<Packet>) {
         let gate_token;
         let res = self.get_gate_token();
         match res {

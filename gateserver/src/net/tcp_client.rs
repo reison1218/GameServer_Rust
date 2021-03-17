@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use super::*;
 use async_std::sync::Mutex;
 use async_std::task::block_on;
@@ -67,7 +69,7 @@ impl ClientHandler for TcpClientHandler {
     }
 }
 
-async fn handler_mess_s(cp: Lock, packet_array: Vec<Packet>) {
+async fn handler_mess_s(cp: Lock, packet_array: VecDeque<Packet>) {
     for mut packet in packet_array {
         let mut lock = cp.lock().await;
         let user_id = packet.get_user_id();

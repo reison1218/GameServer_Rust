@@ -173,7 +173,6 @@ impl Room {
                 match res {
                     Ok(bytes) => {
                         self.send_2_server(GameCode::Summary.into_u32(), user_id, bytes);
-                        info!("发送GameCode::Summary命令！user_id:{}", user_id)
                     }
                     Err(e) => {
                         error!("{:?}", e)

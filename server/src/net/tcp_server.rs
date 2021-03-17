@@ -57,12 +57,6 @@ impl tools::tcp::Handler for TcpServerHandler {
         let packet_array = packet_array.unwrap();
 
         for packet in packet_array {
-            let cmd = packet.get_cmd();
-            if cmd == GameCode::UnloadUser.into_u32() {
-                info!("接受到cmd:{:?}", GameCode::UnloadUser);
-            } else if cmd == GameCode::Summary.into_u32() {
-                info!("接受到cmd:{:?}", GameCode::Summary);
-            }
             let gm = self.gm.clone();
             async_std::task::spawn(handler_mess_s(gm, packet));
         }
