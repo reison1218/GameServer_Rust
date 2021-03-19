@@ -382,11 +382,19 @@ pub unsafe fn add_buff(
 
     //处理其他的
     if HURT_SELF_ADD_BUFF.contains(&skill_function_id) {
-        let target_pt = battle_data.deduct_hp(user_id, user_id, Some(skill_temp.par1 as i16), true);
-        match target_pt {
-            Ok(target_pt) => au.targets.push(target_pt),
+        let mut target_pt = battle_data.new_target_pt(user_id).unwrap();
+        let res = battle_data.deduct_hp(
+            user_id,
+            user_id,
+            Some(skill_temp.par1 as i16),
+            &mut target_pt,
+            true,
+        );
+        match res {
+            Ok(_) => {}
             Err(e) => error!("{:?}", e),
         }
+        au.targets.push(target_pt);
     }
     None
 }
@@ -435,13 +443,18 @@ pub fn skill_damage_opened_element(
                 continue;
             }
             let target_id = map_cell.unwrap().user_id;
-            let target_pt =
-                battle_data.deduct_hp(user_id, target_id, Some(skill_damage), is_last_one);
-            if let Err(e) = target_pt {
+            let mut target_pt = battle_data.new_target_pt(target_id).unwrap();
+            let res = battle_data.deduct_hp(
+                user_id,
+                target_id,
+                Some(skill_damage),
+                &mut target_pt,
+                is_last_one,
+            );
+            if let Err(e) = res {
                 warn!("{:?}", e);
                 continue;
             }
-            let target_pt = target_pt.unwrap();
             au.targets.push(target_pt);
         }
     }
@@ -700,15 +713,17 @@ pub unsafe fn skill_damage_and_cure(
         if index == v.len() - 1 {
             is_last_one = true;
         }
+        let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
         //扣血
-        let target_pt = battle_data.deduct_hp(
+        let res = battle_data.deduct_hp(
             user_id,
             target_user,
             Some(skill.skill_temp.par1 as i16),
+            &mut target_pt,
             is_last_one,
         );
-        match target_pt {
-            Ok(target_pt) => {
+        match res {
+            Ok(_) => {
                 au.targets.push(target_pt);
                 add_hp += skill.skill_temp.par1;
             }
@@ -785,9 +800,16 @@ pub unsafe fn skill_aoe_damage(
         } else {
             damage_res = par1;
         }
-        let target_pt = battle_data.deduct_hp(user_id, target_user, Some(damage_res), is_last_one);
-        match target_pt {
-            Ok(target_pt) => {
+        let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
+        let res = battle_data.deduct_hp(
+            user_id,
+            target_user,
+            Some(damage_res),
+            &mut target_pt,
+            is_last_one,
+        );
+        match res {
+            Ok(_) => {
                 au.targets.push(target_pt);
                 count += 1;
             }
@@ -859,12 +881,19 @@ pub unsafe fn single_skill_damage(
     } else {
         skill_damage = skill_temp.par1 as i16;
     }
-    let target_pt = battle_data.deduct_hp(user_id, target_user, Some(skill_damage), true);
-    if let Err(e) = target_pt {
+    let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
+    let res = battle_data.deduct_hp(
+        user_id,
+        target_user,
+        Some(skill_damage),
+        &mut target_pt,
+        true,
+    );
+    if let Err(e) = res {
         error!("{:?}", e);
         return None;
     }
-    au.targets.push(target_pt.unwrap());
+    au.targets.push(target_pt);
     None
 }
 
@@ -1051,16 +1080,19 @@ pub unsafe fn transform(
         if index == other_users.len() - 1 {
             is_last_one = true;
         }
-        let target_pt =
-            battle_data
-                .as_mut()
-                .unwrap()
-                .deduct_hp(user_id, user, Some(skill_damage), is_last_one);
-        if let Err(e) = target_pt {
+        let mut target_pt = battle_data.as_ref().unwrap().new_target_pt(user).unwrap();
+        let res = battle_data.as_mut().unwrap().deduct_hp(
+            user_id,
+            user,
+            Some(skill_damage),
+            &mut target_pt,
+            is_last_one,
+        );
+        if let Err(e) = res {
             warn!("{:?}", e);
             continue;
         }
-        au.targets.push(target_pt.unwrap());
+        au.targets.push(target_pt);
     }
 
     //处理技能消耗

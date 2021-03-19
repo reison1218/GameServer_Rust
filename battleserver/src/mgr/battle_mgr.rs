@@ -132,13 +132,8 @@ impl BattleMgr {
             need_push_self,
         );
         info!("玩家离线战斗服务!room_id={},user_id={}", room_id, user_id);
-        let mut need_rm_room = false;
-        if room.is_empty() {
-            need_rm_room = true;
-        } else if room.state == RoomState::BattleOvered {
-            need_rm_room = true;
-        }
-        if need_rm_room {
+        //判断战斗是否结束
+        if room.is_empty() || room.state == RoomState::BattleOvered {
             self.rm_room(room_id);
         }
     }

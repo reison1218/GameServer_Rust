@@ -1258,7 +1258,7 @@ pub fn handler_leave_room(
     let room_type = RoomType::from(room.get_room_type());
 
     //处理退出房间
-    match room_type {
+    let rm_room = match room_type {
         RoomType::OneVOneVOneVOneCustom => {
             let res = rm.custom_room.leave_room(
                 MemberLeaveNoticeType::Leave as u8,
@@ -1270,23 +1270,13 @@ pub fn handler_leave_room(
                 error!("{:?}", e);
                 return Ok(());
             }
-            info!(
-                "玩家离开自定义房间，卸载玩家房间数据!user_id:{},room_id:{}",
-                user_id, room_id
-            );
+
             let room = rm.custom_room.rooms.get(&room_id).unwrap();
             let owner_id = room.get_owner_id();
-            let mut need_rm_room = false;
-            if room.is_empty() {
-                need_rm_room = true;
-            } else if user_id == owner_id {
-                need_rm_room = true;
-            }
-            if need_rm_room {
-                for member_id in room.members.keys() {
-                    rm.player_room.remove(member_id);
-                }
-                rm.custom_room.rm_room(&room_id);
+            if room.is_empty() || user_id == owner_id {
+                rm.custom_room.rm_room(&room_id)
+            } else {
+                None
             }
         }
         RoomType::OneVOneVOneVOneMatch => {
@@ -1308,24 +1298,31 @@ pub fn handler_leave_room(
                     slr.write_to_bytes().unwrap(),
                 );
             }
-            info!(
-                "玩家离开匹配房间，卸载玩家房间数据!user_id:{},room_id:{}",
-                user_id, room_id
-            );
-            rm.player_room.remove(&user_id);
-            let mut need_rm_room = false;
-            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
+            let room = rm.match_room.rooms.get(&room_id).unwrap();
             if room.is_empty() {
-                need_rm_room = true;
-            }
-            if need_rm_room {
-                for member_id in room.members.keys() {
-                    rm.player_room.remove(member_id);
-                }
-                rm.match_room.rm_room(&room_id);
+                rm.match_room.rm_room(&room_id)
+            } else {
+                None
             }
         }
-        _ => {}
+        _ => None,
+    };
+
+    //删掉当前离开的玩家
+    rm.player_room.remove(&user_id);
+
+    //删除房间内所有玩家
+    if let Some(rm_room) = rm_room {
+        for &member_id in rm_room.members.keys() {
+            if member_id == 0 {
+                continue;
+            }
+            rm.player_room.remove(&member_id);
+        }
     }
+    info!(
+        "玩家离开{:?}房间，卸载玩家房间数据!user_id:{},room_id:{}",
+        room_type, user_id, room_id
+    );
     Ok(())
 }

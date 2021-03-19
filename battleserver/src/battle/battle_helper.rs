@@ -318,16 +318,25 @@ impl BattleData {
         alive_count
     }
 
+    pub fn new_target_pt(&self, user_id: u32) -> anyhow::Result<TargetPt> {
+        let cter = self.get_battle_cter(Some(user_id), false)?;
+        let mut target_pt = TargetPt::new();
+        target_pt
+            .target_value
+            .push(cter.get_map_cell_index() as u32);
+        Ok(target_pt)
+    }
+
     ///扣血
     pub unsafe fn deduct_hp(
         &mut self,
         from: u32,
         target: u32,
         skill_damege: Option<i16>,
+        target_pt: &mut TargetPt,
         is_last_one: bool,
-    ) -> anyhow::Result<TargetPt> {
+    ) -> anyhow::Result<u32> {
         let battle_data_ptr = self as *mut BattleData;
-        let mut target_pt = TargetPt::new();
 
         let mut ep = EffectPt::new();
         ep.effect_type = EffectType::SkillDamage as u32;
@@ -335,11 +344,15 @@ impl BattleData {
         let target_cter = battle_data_ptr
             .as_mut()
             .unwrap()
-            .get_battle_cter_mut(Some(target), true)?;
+            .get_battle_cter_mut(Some(target), true);
+        if let Err(e) = target_cter {
+            let str = format!("{:?}", e);
+            error!("{:?}", str);
+            anyhow::bail!("{:?}", str)
+        }
+        let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.base_attr.user_id;
-        target_pt
-            .target_value
-            .push(target_cter.get_map_cell_index() as u32);
+
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -381,7 +394,7 @@ impl BattleData {
         if is_die {
             self.after_cter_died_trigger(target_user_id, is_last_one, false);
         }
-        Ok(target_pt)
+        Ok(res as u32)
     }
 
     ///更新翻地图块队列

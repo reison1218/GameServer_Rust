@@ -708,12 +708,18 @@ impl Room {
             }
             turn_index += 1;
         }
+
         //删除各项数据
-        if self.state == RoomState::ChoiceIndex {
-            self.handler_leave_choice_index(user_id, turn_index);
-        } else if self.state == RoomState::BattleStarted {
-            self.handler_leave_battle_turn(user_id, turn_index);
+        match self.state {
+            RoomState::ChoiceIndex => {
+                self.handler_leave_choice_index(user_id, turn_index);
+            }
+            RoomState::BattleStarted => {
+                self.handler_leave_battle_turn(user_id, turn_index);
+            }
+            _ => {}
         }
+
         //删除数据
         self.members.remove(&user_id);
         //删除玩家数组的下标

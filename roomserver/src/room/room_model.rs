@@ -115,7 +115,7 @@ pub trait RoomModel {
         need_push_self: bool,
     ) -> anyhow::Result<u32>;
 
-    fn rm_room(&mut self, room_id: &u32);
+    fn rm_room(&mut self, room_id: &u32) -> Option<Room>;
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room>;
 
@@ -207,13 +207,16 @@ impl RoomModel for CustomRoom {
         Ok(room_id)
     }
 
-    fn rm_room(&mut self, room_id: &u32) {
-        self.rooms.remove(room_id);
-        info!(
-            "删除房间，释放内存！room_type:{:?},room_id:{}",
-            self.get_room_type(),
-            room_id
-        );
+    fn rm_room(&mut self, room_id: &u32) -> Option<Room> {
+        let res = self.rooms.remove(room_id);
+        if res.is_some() {
+            info!(
+                "删除房间，释放内存！room_type:{:?},room_id:{}",
+                self.get_room_type(),
+                room_id
+            );
+        }
+        res
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
@@ -321,14 +324,17 @@ impl RoomModel for MatchRoom {
     }
 
     ///删除房间
-    fn rm_room(&mut self, room_id: &u32) {
-        self.rooms.remove(room_id);
+    fn rm_room(&mut self, room_id: &u32) -> Option<Room> {
+        let res = self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
-        info!(
-            "删除房间，释放内存！room_type:{:?},room_id:{}",
-            self.get_room_type(),
-            room_id
-        );
+        if res.is_some() {
+            info!(
+                "删除房间，释放内存！room_type:{:?},room_id:{}",
+                self.get_room_type(),
+                room_id
+            );
+        }
+        res
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {

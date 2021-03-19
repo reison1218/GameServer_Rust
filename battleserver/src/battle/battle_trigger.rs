@@ -58,8 +58,14 @@ pub trait TriggerEvent {
 
     fn before_use_skill_trigger(&mut self, user_id: u32) -> anyhow::Result<()>;
 
-    ///受到攻击后触发
-    fn attacked_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
+    ///被攻击前触发
+    fn attacked_before_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
+
+    ///被攻击后触发
+    fn attacked_after_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
+
+    ///受到攻击伤害后触发
+    fn attacked_hurted_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt);
 
     ///地图刷新时候触发buff
     fn before_map_refresh_buff_trigger(&mut self);
@@ -120,13 +126,14 @@ impl BattleData {
                 } else if TRAP_SKILL_DAMAGE.contains(&buff_function_id) {
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
-                    let target_pt_tmp = self.deduct_hp(0, user_id, Some(skill_damage), true);
-                    if let Err(e) = target_pt_tmp {
+                    let mut target_pt_temp = self.new_target_pt(user_id).unwrap();
+                    let res =
+                        self.deduct_hp(0, user_id, Some(skill_damage), &mut target_pt_temp, true);
+                    if let Err(e) = res {
                         error!("{:?}", e);
                         continue;
                     }
-                    let target_pt_tmp = target_pt_tmp.unwrap();
-                    target_pt = Some(target_pt_tmp);
+                    target_pt = Some(target_pt_temp);
                 }
 
                 if target_pt.is_none() {
@@ -271,13 +278,15 @@ impl TriggerEvent for BattleData {
         let mut is_died = false;
         let mut buff_function_id;
         let mut buff_id;
+        let target_user = battle_cter.base_attr.user_id;
+        let mut from_user;
         //触发别人的范围
         for other_cter in self.battle_cter.values() {
             if other_cter.is_died() {
                 continue;
             }
             let cter_index = other_cter.get_map_cell_index() as isize;
-
+            from_user = other_cter.base_attr.user_id;
             //踩到别人到范围
             for buff in other_cter.battle_buffs.buffs.values() {
                 buff_function_id = buff.function_id;
@@ -289,7 +298,6 @@ impl TriggerEvent for BattleData {
                 if is_change_index_both {
                     continue;
                 }
-
                 for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                     let res = cter_index + scope_index;
                     if index != res {
@@ -297,24 +305,25 @@ impl TriggerEvent for BattleData {
                     }
 
                     unsafe {
-                        let target_pt = self_mut.deduct_hp(
-                            other_cter.base_attr.user_id,
-                            battle_cter.base_attr.user_id,
+                        let mut target_pt = self.new_target_pt(target_user).unwrap();
+                        let res = self_mut.deduct_hp(
+                            from_user,
+                            target_user,
                             Some(buff.buff_temp.par1 as i16),
+                            &mut target_pt,
                             true,
                         );
-                        match target_pt {
-                            Ok(target_pt) => {
-                                let mut other_aupt = ActionUnitPt::new();
-                                other_aupt.from_user = other_cter.base_attr.user_id;
-                                other_aupt.action_type = ActionType::Buff as u32;
-                                other_aupt.action_value.push(buff_id);
-                                other_aupt.targets.push(target_pt);
-                                v.push(other_aupt);
-                                break;
-                            }
-                            Err(e) => error!("{:?}", e),
+                        if let Err(e) = res {
+                            error!("{:?}", e);
                         }
+
+                        let mut other_aupt = ActionUnitPt::new();
+                        other_aupt.from_user = other_cter.base_attr.user_id;
+                        other_aupt.action_type = ActionType::Buff as u32;
+                        other_aupt.action_value.push(buff_id);
+                        other_aupt.targets.push(target_pt);
+                        v.push(other_aupt);
+                        break;
                     }
                 }
                 if battle_cter.is_died() {
@@ -456,9 +465,11 @@ impl TriggerEvent for BattleData {
         Ok(())
     }
 
-    ///受到普通攻击触发的buff
-    fn attacked_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
-        let battle_data = self as *mut BattleData;
+    ///被攻击前触发
+    fn attacked_before_trigger(&mut self, _: u32, _: &mut TargetPt) {}
+
+    ///被攻击后触发
+    fn attacked_after_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
         let cter = self.get_battle_cter_mut(Some(user_id), true);
         if let Err(e) = cter {
             warn!("{:?}", e);
@@ -466,6 +477,43 @@ impl TriggerEvent for BattleData {
         }
         let cter = cter.unwrap();
         let max_energy = cter.base_attr.max_energy;
+        let mut buff_id;
+        let mut buff_function_id;
+        for buff in cter.battle_buffs.buffs.clone().values() {
+            buff_id = buff.get_id();
+            buff_function_id = buff.function_id;
+
+            //被攻击增加能量
+            if ATTACKED_ADD_ENERGY.contains(&buff_function_id) && max_energy > 0 {
+                let mut tep = TriggerEffectPt::new();
+                tep.set_field_type(EffectType::AddEnergy.into_u32());
+                tep.set_buff_id(buff_id);
+                tep.set_value(buff.buff_temp.par1);
+                cter.add_energy(buff.buff_temp.par1 as i8);
+                target_pt.passiveEffect.push(tep);
+            }
+
+            //被攻击减技能cd
+            if ATTACKED_SUB_CD == buff_function_id {
+                let mut tep = TriggerEffectPt::new();
+                tep.set_field_type(EffectType::SubSkillCd.into_u32());
+                tep.set_buff_id(buff_id);
+                tep.set_value(buff.buff_temp.par1);
+                cter.sub_skill_cd(Some(buff.buff_temp.par1 as i8));
+                target_pt.passiveEffect.push(tep);
+            }
+        }
+    }
+
+    ///受到普通攻击触发的buff
+    fn attacked_hurted_trigger(&mut self, user_id: u32, target_pt: &mut TargetPt) {
+        let battle_data = self as *mut BattleData;
+        let cter = self.get_battle_cter_mut(Some(user_id), true);
+        if let Err(e) = cter {
+            warn!("{:?}", e);
+            return;
+        }
+        let cter = cter.unwrap();
         let mut buff_id;
         let mut buff_function_id;
         for buff in cter.battle_buffs.buffs.clone().values() {
@@ -481,24 +529,6 @@ impl TriggerEvent for BattleData {
                         .consume_buff(buff_id, Some(user_id), None, false);
                 }
                 target_pt.lost_buffs.push(buff_id);
-            }
-
-            //被攻击增加能量
-            if ATTACKED_ADD_ENERGY.contains(&buff_function_id) && max_energy > 0 {
-                let mut tep = TriggerEffectPt::new();
-                tep.set_field_type(EffectType::AddEnergy.into_u32());
-                tep.set_buff_id(buff_id);
-                tep.set_value(buff.buff_temp.par1);
-                cter.add_energy(buff.buff_temp.par1 as i8);
-                target_pt.passiveEffect.push(tep);
-            }
-            if ATTACKED_SUB_CD == buff_function_id {
-                let mut tep = TriggerEffectPt::new();
-                tep.set_field_type(EffectType::SubSkillCd.into_u32());
-                tep.set_buff_id(buff_id);
-                tep.set_value(buff.buff_temp.par1);
-                cter.sub_skill_cd(Some(buff.buff_temp.par1 as i8));
-                target_pt.passiveEffect.push(tep);
             }
         }
     }

@@ -277,23 +277,26 @@ impl BattleData {
         if aoe_buff.is_none() {
             is_last_one = true;
         }
+        let mut target_pt = self.new_target_pt(target_user_id)?;
+        //被攻击前触发
+        self.attacked_before_trigger(target_user_id, &mut target_pt);
 
         //扣血
-        let target_pt = self.deduct_hp(user_id, target_user_id, None, is_last_one);
+        let mut hurt_damge =
+            self.deduct_hp(user_id, target_user_id, None, &mut target_pt, is_last_one)?;
 
-        if let Err(e) = target_pt {
-            error!("{:?}", e);
-            anyhow::bail!("")
-        }
-        let mut target_pt = target_pt.unwrap();
         if target_pt.effects.is_empty() {
             error!("target_pt's effects is empty!");
             anyhow::bail!("")
         }
-        //目标被攻击，触发目标buff
-        if target_pt.effects.get(0).unwrap().effect_value > 0 {
-            self.attacked_trigger(target_user_id, &mut target_pt);
+        //被攻击后触发
+        self.attacked_after_trigger(target_user_id, &mut target_pt);
+
+        //收到攻击伤害触发
+        if hurt_damge > 0 {
+            self.attacked_hurted_trigger(target_user_id, &mut target_pt);
         }
+
         au.targets.push(target_pt);
         //检查aoebuff
         if let Some(buff) = aoe_buff {
@@ -328,16 +331,21 @@ impl BattleData {
                 if index == v.len() - 1 {
                     is_last_one = true;
                 }
+                let mut target_pt = self.new_target_pt(target_user)?;
+                //被攻击前触发
+                self.attacked_before_trigger(target_user, &mut target_pt);
                 //扣血
-                let target_pt = self.deduct_hp(user_id, target_user, None, is_last_one);
-                match target_pt {
-                    Ok(mut target_pt) => {
-                        //目标被攻击，触发目标buff
-                        self.attacked_trigger(target_user, &mut target_pt);
-                        au.targets.push(target_pt);
-                    }
-                    Err(e) => error!("{:?}", e),
+                hurt_damge =
+                    self.deduct_hp(user_id, target_user, None, &mut target_pt, is_last_one)?;
+
+                //被攻击后触发
+                self.attacked_after_trigger(target_user, &mut target_pt);
+
+                if hurt_damge > 0 {
+                    //目标被攻击，触发目标buff
+                    self.attacked_hurted_trigger(target_user, &mut target_pt);
                 }
+                au.targets.push(target_pt);
             }
         }
         cter.pair_attack_reward_movement_points();

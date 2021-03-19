@@ -331,15 +331,22 @@ impl BattleData {
                     is_last_one = true;
                 }
                 let target_user = v.get(index).unwrap();
+                let target_pt = self.new_target_pt(*target_user);
+                if let Err(e) = target_pt {
+                    error!("{:?}", e);
+                    continue;
+                }
+                let mut target_pt = target_pt.unwrap();
                 //造成技能伤害
-                let target_pt = self.deduct_hp(
+                let res = self.deduct_hp(
                     user_id,
                     *target_user,
                     Some(buff_temp.par1 as i16),
+                    &mut target_pt,
                     is_last_one,
                 );
-                match target_pt {
-                    Ok(target_pt) => {
+                match res {
+                    Ok(_) => {
                         au.targets.push(target_pt);
                     }
                     Err(e) => {
