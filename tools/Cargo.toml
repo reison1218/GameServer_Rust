@@ -22,7 +22,7 @@ codegen-units = 1
 num_cpus="1.10.1"
 threadpool="1.8.1"
 simplelog = "0.8"
-log="0.4.8"
+log="0.4"
 futures = "0.3"
 serde_json = "1.0"
 serde = {version="1.0",features = ["derive"]}

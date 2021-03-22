@@ -603,6 +603,7 @@ impl BattleCharacter {
         target_pt
     }
 
+    ///处理变身继承
     pub fn transform_inherit(&mut self, transform_inherits: Vec<TransformInherit>) {
         for ti in transform_inherits {
             let ti_type = ti.0;

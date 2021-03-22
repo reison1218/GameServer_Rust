@@ -14,6 +14,7 @@ pub struct MissionTemp {
     pub appear_par2: u16,       //出现参数2
     pub appear_par3: u16,       //出现参数3
     pub complete_reward: u16,   //完成奖励
+    pub complete_value: u16,    //完成值
 }
 
 impl Template for MissionTemp {}

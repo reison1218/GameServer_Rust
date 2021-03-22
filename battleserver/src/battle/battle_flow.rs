@@ -232,6 +232,35 @@ impl BattleData {
         Ok(au_vec)
     }
 
+    ///处理收到攻击时触发对事件
+    pub fn attacked_handler_trigger(
+        &mut self,
+        user_id: u32,
+        target_user_id: u32,
+        au: &mut ActionUnitPt,
+        is_last_one: bool,
+    ) -> anyhow::Result<()> {
+        let mut target_pt = self.new_target_pt(target_user_id)?;
+        //被攻击前触发
+        self.attacked_before_trigger(target_user_id, &mut target_pt);
+        let hurt_damge;
+        //扣血
+        unsafe {
+            hurt_damge =
+                self.deduct_hp(user_id, target_user_id, None, &mut target_pt, is_last_one)?;
+        }
+
+        //被攻击后触发
+        self.attacked_after_trigger(target_user_id, &mut target_pt);
+
+        //收到攻击伤害触发
+        if hurt_damge > 0 {
+            self.attacked_hurted_trigger(target_user_id, &mut target_pt);
+        }
+        au.targets.push(target_pt);
+        Ok(())
+    }
+
     ///普通攻击
     /// user_id:发动普通攻击的玩家
     /// targets:被攻击目标
@@ -277,27 +306,13 @@ impl BattleData {
         if aoe_buff.is_none() {
             is_last_one = true;
         }
-        let mut target_pt = self.new_target_pt(target_user_id)?;
-        //被攻击前触发
-        self.attacked_before_trigger(target_user_id, &mut target_pt);
-
-        //扣血
-        let mut hurt_damge =
-            self.deduct_hp(user_id, target_user_id, None, &mut target_pt, is_last_one)?;
-
-        if target_pt.effects.is_empty() {
-            error!("target_pt's effects is empty!");
+        //处理攻击触发事件
+        let res = self.attacked_handler_trigger(user_id, target_user_id, au, is_last_one);
+        if let Err(e) = res {
+            error!("{:?}", e);
             anyhow::bail!("")
         }
-        //被攻击后触发
-        self.attacked_after_trigger(target_user_id, &mut target_pt);
 
-        //收到攻击伤害触发
-        if hurt_damge > 0 {
-            self.attacked_hurted_trigger(target_user_id, &mut target_pt);
-        }
-
-        au.targets.push(target_pt);
         //检查aoebuff
         if let Some(buff) = aoe_buff {
             let buff = TEMPLATES.buff_temp_mgr().get_temp(&buff);
@@ -331,21 +346,12 @@ impl BattleData {
                 if index == v.len() - 1 {
                     is_last_one = true;
                 }
-                let mut target_pt = self.new_target_pt(target_user)?;
-                //被攻击前触发
-                self.attacked_before_trigger(target_user, &mut target_pt);
-                //扣血
-                hurt_damge =
-                    self.deduct_hp(user_id, target_user, None, &mut target_pt, is_last_one)?;
-
-                //被攻击后触发
-                self.attacked_after_trigger(target_user, &mut target_pt);
-
-                if hurt_damge > 0 {
-                    //目标被攻击，触发目标buff
-                    self.attacked_hurted_trigger(target_user, &mut target_pt);
+                //处理攻击触发事件
+                let res = self.attacked_handler_trigger(user_id, target_user, au, is_last_one);
+                if let Err(e) = res {
+                    error!("{:?}", e);
+                    continue;
                 }
-                au.targets.push(target_pt);
             }
         }
         cter.pair_attack_reward_movement_points();

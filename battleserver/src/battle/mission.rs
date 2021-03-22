@@ -116,6 +116,7 @@ impl MissionData {
         }
     }
 
+    ///重制任务
     pub fn reset(&mut self, reset_type: MissionResetType) {
         if self.mission.is_none() {
             return;
@@ -124,11 +125,12 @@ impl MissionData {
         let complete_type =
             MissionCompleteType::try_from(mission.mission_temp.complete_condition).unwrap();
         match reset_type {
-            MissionResetType::Trun => {
-                if complete_type == MissionCompleteType::TurnPairTimes {
+            MissionResetType::Trun => match complete_type {
+                MissionCompleteType::TurnPairTimes => {
                     mission.progress = 0;
                 }
-            }
+                _ => {}
+            },
             MissionResetType::Round => {}
         }
     }
@@ -145,41 +147,44 @@ impl MissionData {
         misson_parm: (u32, u32),
     ) -> (bool, u16) {
         let mut res = false;
+        //如果任务已经完成，或者任务是空的，直接返回
         if self.is_complete() || self.mission.is_none() {
             return (res, 0);
         }
         let mission = self.mission.as_mut().unwrap();
+        let mission_id = mission.mission_temp.id;
+        let complete_condition = mission.mission_temp.complete_condition;
+        let complete_par1 = mission.mission_temp.complete_par1;
+        let _ = mission.mission_temp.complete_par2;
+        let _ = mission.mission_temp.complete_par3;
+        let complete_value = mission.mission_temp.complete_value;
+        let complete_reward = mission.mission_temp.complete_reward;
 
-        let temp_type =
-            MissionCompleteType::try_from(mission.mission_temp.complete_condition).unwrap();
+        let temp_type = MissionCompleteType::try_from(complete_condition).unwrap();
 
         //如果类型不匹配,则返回
         if temp_type != mission_type {
             return (res, 0);
         }
+
         //校验需要带参数的任务
-        if mission_type == MissionCompleteType::OpenCellElement
-            || mission_type == MissionCompleteType::PairCellElement
-            || mission_type == MissionCompleteType::AttackLastTurnUser
-        {
-            let element = misson_parm.0;
-            if element == mission.mission_temp.complete_par1 as u32 {
+        match mission_type {
+            MissionCompleteType::OpenCellElement | MissionCompleteType::PairCellElement => {
+                let element = misson_parm.0;
+                if element == complete_par1 as u32 {
+                    mission.progress += value;
+                }
+            }
+            _ => {
                 mission.progress += value;
             }
-            if mission.progress >= mission.mission_temp.appear_par1 {
-                res = true;
-            }
-        } else {
-            mission.progress += value;
-            if mission.progress >= mission.mission_temp.appear_par1 {
-                res = true;
-            }
         }
-
-        if res {
+        //判断任务是否完成
+        if mission.progress >= complete_value {
+            res = true;
             mission.is_complete = res;
-            self.complete_list.push(mission.mission_temp.id);
-            return (res, mission.mission_temp.complete_reward);
+            self.complete_list.push(mission_id);
+            return (res, complete_reward);
         }
         (res, 0)
     }
@@ -236,11 +241,17 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
     }
 }
 
+///任务触发类型
 pub enum MissionTriggerType {
+    ///翻开地图块触发
     OpenCell,
+    ///配对触发
     Pair,
+    ///攻击触发
     Attack,
+    ///使用技能触发
     UseSkill,
+    ///获得金币触发
     GetGold,
 }
 
