@@ -13,11 +13,11 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
+use tools::cmd_code::RankCode;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
-use tools::cmd_code::{GameCode::SyncData, RankCode};
 use tools::protos::base::RankInfoPt;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
-use tools::protos::server_protocol::{B_S_SUMMARY, UPDATE_SEASON_NOTICE};
+use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME, UPDATE_SEASON_NOTICE};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -163,7 +163,6 @@ impl GameMgr {
             .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
-        self.cmd_map.insert(SyncData.into_u32(), sync);
         self.cmd_map
             .insert(GameCode::UnloadUser.into_u32(), off_line);
         self.cmd_map
@@ -191,6 +190,10 @@ impl GameMgr {
         self.cmd_map
             .insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
+        self.cmd_map.insert(
+            GameCode::UpdateLastSeasonRankPush.into_u32(),
+            sync_rank_nick_name,
+        );
     }
 }
 
@@ -311,6 +314,21 @@ fn off_line(gm: &mut GameMgr, packet: Packet) {
         async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
         info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
     }
+}
+
+pub fn sync_rank_nick_name(gm: &mut GameMgr, packet: Packet) {
+    let user_id = packet.get_user_id();
+    let mut proto = G_S_MODIFY_NICK_NAME::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(err) = res {
+        error!("{:?}", err);
+        return;
+    }
+    let nick_name = proto.nick_name;
+    gm.rank
+        .iter_mut()
+        .filter(|x| x.get_user_id() == user_id)
+        .for_each(|x| x.set_name(nick_name.clone()));
 }
 
 ///房间战斗结算

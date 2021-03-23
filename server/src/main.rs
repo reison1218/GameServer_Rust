@@ -79,6 +79,8 @@ const REDIS_KEY_USERS: &str = "users";
 
 const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
 
+const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
+
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 
 const REDIS_KEY_GAME_SEASON: &str = "game_season";

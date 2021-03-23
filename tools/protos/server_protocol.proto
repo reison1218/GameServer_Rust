@@ -70,5 +70,7 @@ message R_G_UPDATE_LAST_SEASON_RANK{
     repeated RankInfoPt ranks = 1;//排行信息
 }
 
-
-
+///游戏服通知其他服务器更新名字
+message G_S_MODIFY_NICK_NAME{
+    string nick_name = 1;           //玩家昵称
+}

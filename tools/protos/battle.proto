@@ -182,8 +182,3 @@ message S_BUY_NOTICE{
     uint32 user_id = 1;             //玩家id
     uint32 merchandise_id = 2;      //商品id
 }
-
-public struct S_BUY_NOTICE{
-    uint user_id;
-    uint merchandise_id;
-}

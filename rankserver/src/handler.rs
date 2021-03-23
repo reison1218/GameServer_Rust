@@ -3,8 +3,10 @@ use crate::mgr::{rank_mgr::RankMgr, RankInfoPtr};
 use crate::task_timer::Task;
 use log::{error, warn};
 use protobuf::Message;
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
 use tools::cmd_code::GameCode;
+use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::protos::server_protocol::{
     B_S_SUMMARY, R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK, UPDATE_SEASON_NOTICE,
 };
@@ -24,6 +26,28 @@ pub fn get_rank(rm: &mut RankMgr, packet: Packet) {
     }
     let bytes = bytes.unwrap();
     rm.send_2_server_direction(GameCode::SyncRank.into_u32(), 0, bytes, server_token);
+}
+
+///修改名字
+pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
+    let user_id = packet.get_user_id();
+    let mut proto = G_S_MODIFY_NICK_NAME::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(err) = res {
+        error!("{:?}", err);
+        return;
+    }
+    let nick_name = proto.nick_name;
+    rm.rank_vec
+        .par_iter_mut()
+        .filter(|x| x.user_id == user_id)
+        .for_each(|x| x.name = nick_name.clone());
+    //通知所游戏服更新名字
+    rm.push_2_server(
+        GameCode::SyncRankNickName.into_u32(),
+        0,
+        packet.get_data().to_vec(),
+    );
 }
 
 ///处理上一赛季

@@ -1,5 +1,5 @@
 use super::*;
-use redis::{ Commands, Connection, FromRedisValue, Pipeline};
+use redis::{Connection, FromRedisValue, Pipeline};
 
 ///redis客户端封装结构体
 pub struct RedisPoolTool {
@@ -22,6 +22,31 @@ impl RedisPoolTool {
         redis_pool
     }
 
+    pub fn replace_hash<T: FromRedisValue>(
+        &mut self,
+        index: u32,
+        hkey: &str,
+        old_key: &str,
+        new_key: &str,
+        value: &str,
+    ) -> Option<T> {
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip
+            .hdel(hkey, old_key)
+            .hset(hkey, new_key, value)
+            .query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
+        match res {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("{:?}", e);
+                None
+            }
+        }
+    }
+
     ///操作hash数据结构
     pub fn hset<T: FromRedisValue>(
         &mut self,
@@ -30,9 +55,11 @@ impl RedisPoolTool {
         key: &str,
         value: &str,
     ) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.hset(hkey, key, value);
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.hset(hkey, key, value).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
             Err(e) => {
@@ -44,9 +71,11 @@ impl RedisPoolTool {
 
     ///读hash数据结构
     pub fn hget<T: FromRedisValue>(&mut self, index: u32, hkey: &str, key: &str) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.hget(hkey, key);
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.hget(hkey, key).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         if res.is_err() {
             warn!(
                 "hget has error:{:?},index:{},hkey:{:?},key:{:?}",
@@ -71,9 +100,11 @@ impl RedisPoolTool {
         key: &str,
         value: isize,
     ) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.zadd(zkey, key, value);
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.zadd(zkey, key, value).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
             Err(e) => {
@@ -86,9 +117,11 @@ impl RedisPoolTool {
     ///得到整个有序集合
     /// zkey:有序集合的key
     pub fn zrange<T: FromRedisValue>(&mut self, index: u32, zkey: &str) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.zrange(zkey, 0, -1);
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.zrange(zkey, 0, -1).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
             Err(e) => {
@@ -102,9 +135,11 @@ impl RedisPoolTool {
     /// zkey:有序集合的key
     /// key：有序集合成员的key
     pub fn zincrby<T: FromRedisValue>(&mut self, index: u32, zkey: &str, key: &str) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.zincr(zkey, key, "increment");
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.zincr(zkey, key, "increment").query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
             Err(e) => {
@@ -116,9 +151,11 @@ impl RedisPoolTool {
 
     ///读hash数据结构
     pub fn test<T: FromRedisValue>(&mut self, index: u32, hkey: &str, key: &str) -> Option<T> {
-        get_pip().cmd("select").arg(index).execute(&mut self.conn);
-        let res = self.conn.hget(hkey, key);
-        get_pip().cmd("select").arg(0).execute(&mut self.conn);
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.hget(hkey, key).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
         if res.is_err() {
             error!("{:?}", res.err().unwrap());
             return None;
@@ -133,9 +170,14 @@ pub fn get_pip() -> Pipeline {
 
 pub fn test_api(add: &str, pass: &str) {
     let mut rpt = RedisPoolTool::init(add, pass);
-    let value: Option<Vec<u32>> = rpt.hget(1, "uid_2_pid", "1011000001");
+    let value: Option<String> = rpt.replace_hash(0, "name_2_uid", "test1", "test2", "123");
     if value.is_some() {
         let value = value.unwrap();
         println!("sdfsfd:{:?}", value);
     }
+}
+
+#[test]
+pub fn test() {
+    test_api("redis://localhost:6379/", "reison");
 }

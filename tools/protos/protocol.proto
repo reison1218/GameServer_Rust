@@ -95,5 +95,5 @@ message C_GET_LAST_SEASON_RANK{
 //请求上赛季排行榜返回
 //cmd:10083
 message S_GET_LAST_SEASON_RANK{
-  repeated RankInfoPt ranks = 2;//排行榜信息
+  repeated RankInfoPt ranks = 1;//排行榜信息
 }

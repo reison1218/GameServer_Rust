@@ -52,6 +52,8 @@ pub enum GameCode {
     UpdateLastSeasonRankPush = 1014,
     //获得上赛季排行榜信息
     GetLastSeasonRank = 1015,
+    //同步排行榜名字
+    SyncRankNickName = 1016,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值
@@ -143,8 +145,9 @@ impl BattleCode {
 #[repr(u32)]
 pub enum RankCode {
     Min = 40001,
-    UpdateRank = 40002, //更新排行榜
-    GetRank = 40003,    //获得排行榜
+    UpdateRank = 40002,     //更新排行榜
+    GetRank = 40003,        //获得排行榜
+    ModifyNickName = 40004, //修改名字
     Max = 50000,
 }
 

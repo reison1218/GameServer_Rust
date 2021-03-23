@@ -64,6 +64,7 @@ trait Forward {
             } else if cmd > GameCode::Min.into_u32()//转发给游戏服
                 && cmd < GameCode::Max.into_u32()
             {
+                //指定发给固定某个游戏服
                 let server_token = packet.get_server_token() as usize;
                 if server_token > 0 {
                     let gate_client = lock.gate_clients.get_mut(&server_token);
@@ -76,10 +77,12 @@ trait Forward {
                         }
                     }
                 } else if packet.is_broad() {
+                    //推送给所有游戏服
                     for gate_client in lock.gate_clients.values_mut() {
                         gate_client.send(bytes.clone());
                     }
                 } else {
+                    //发给玩家所在游戏服
                     let res = lock.get_gate_client_mut(user_id);
                     match res {
                         Ok(gc) => gc.send(bytes),

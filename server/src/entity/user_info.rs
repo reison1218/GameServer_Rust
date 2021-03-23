@@ -1,4 +1,5 @@
 use super::*;
+use crate::helper::redis_helper::check_nick_name;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::game_mgr::RankInfoPtPtr;
 use chrono::Local;
@@ -7,13 +8,14 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::str::FromStr;
-use tools::cmd_code::{ClientCode, RoomCode};
+use tools::cmd_code::{ClientCode, RankCode, RoomCode};
 use tools::protos::base::{PunishMatchPt, RankInfoPt};
 use tools::protos::protocol::{
     C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_GET_LAST_SEASON_RANK,
     S_MODIFY_GRADE_FRAME_AND_SOUL, S_MODIFY_NICK_NAME, S_SHOW_RANK,
 };
 use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
+use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::protos::server_protocol::{
     PlayerBattlePt, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
     R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK,
@@ -304,34 +306,73 @@ pub fn modify_nick_name(gm: &mut GameMgr, packet: Packet) {
     let mut cmn = C_MODIFY_NICK_NAME::new();
     let res = cmn.merge_from_bytes(packet.get_data());
 
-    let mut is_success = true;
     if res.is_err() {
-        is_success = false;
         error!(
             "protobuf:C_MODIFY_NICK_NAME parse has error!cmd:{}",
             packet.get_cmd()
         );
+        s_s_d.is_succ = false;
         s_s_d.err_mess = "request data is error!".to_owned();
+        gm.send_2_client(
+            ClientCode::NickNameModify,
+            user_id,
+            s_s_d.write_to_bytes().unwrap(),
+        );
+        return;
     }
+    let new_nick_name = cmn.nick_name.as_str();
     let user = user.unwrap();
+    let nick_name = user.get_user_info_ref().get_nick_name();
 
-    if cmn.nick_name.as_str() == user.get_user_info_mut_ref().get_nick_name() {
-        is_success = false;
+    //如果跟以前名字一样，直接返回
+    if new_nick_name == nick_name {
         error!("nick_name has no change!cmd:{}", packet.get_cmd());
         s_s_d.err_mess = "nick_name has no change!".to_owned();
+        s_s_d.is_succ = false;
+        gm.send_2_client(
+            ClientCode::NickNameModify,
+            user_id,
+            s_s_d.write_to_bytes().unwrap(),
+        );
+        return;
     }
-    if is_success {
-        user.get_user_info_mut_ref()
-            .set_nick_name(cmn.nick_name.as_str());
-    }
-    s_s_d.is_succ = is_success;
 
+    //判断是否重复
+    let is_success = check_nick_name(new_nick_name, nick_name, user_id.to_string().as_str());
+    if !is_success {
+        error!("nick_name is repeated!user_id:{}", user_id);
+        s_s_d.err_mess = "nick_name is repeated!".to_owned();
+        s_s_d.is_succ = false;
+        gm.send_2_client(
+            ClientCode::NickNameModify,
+            user_id,
+            s_s_d.write_to_bytes().unwrap(),
+        );
+        return;
+    }
+    //更新内存数据
+    user.get_user_info_mut_ref().set_nick_name(new_nick_name);
+
+    //回客户端消息
     gm.send_2_client(
         ClientCode::NickNameModify,
         user_id,
         s_s_d.write_to_bytes().unwrap(),
     );
-    info!("执行修改昵称函数!");
+
+    let mut grnn = G_S_MODIFY_NICK_NAME::new();
+    grnn.set_nick_name(new_nick_name.to_owned());
+    let bytes = grnn.write_to_bytes();
+    match bytes {
+        Ok(bytes) => {
+            info!("执行修改昵称函数!");
+            //通知其排行榜服
+            gm.send_2_server(RankCode::ModifyNickName.into_u32(), user_id, bytes);
+        }
+        Err(e) => {
+            error!("{:?}", e);
+        }
+    }
 }
 
 ///创建房间

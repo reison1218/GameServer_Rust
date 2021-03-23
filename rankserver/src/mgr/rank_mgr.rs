@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{RankInfo, RankInfoPtr};
-use crate::handler::{get_rank, update_rank, update_season};
+use crate::handler::{get_rank, modify_nick_name, update_rank, update_season};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::warn;
@@ -67,6 +67,9 @@ impl RankMgr {
             .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         //获得排行榜
         self.cmd_map.insert(RankCode::GetRank.into_u32(), get_rank);
+        //修改名字
+        self.cmd_map
+            .insert(RankCode::ModifyNickName.into_u32(), modify_nick_name);
     }
 
     ///执行函数，通过packet拿到cmd，然后从cmdmap拿到函数指针调用
