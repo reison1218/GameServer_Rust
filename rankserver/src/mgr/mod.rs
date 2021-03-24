@@ -1,6 +1,6 @@
 use tools::protos::base::{LeaguePt, RankInfoPt, SummaryDataPt};
 pub mod rank_mgr;
-use crate::JsonValue;
+use serde::{Deserialize, Serialize};
 
 pub struct RankInfoPtr(pub *mut RankInfo);
 
@@ -18,7 +18,7 @@ impl RankInfoPtr {
 }
 
 ///排行榜数据结构体
-#[derive(Default, Debug)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RankInfo {
     pub user_id: u32,    //玩家id
     pub name: String,    //名字
@@ -30,13 +30,6 @@ pub struct RankInfo {
 unsafe impl Send for RankInfo {}
 
 impl RankInfo {
-    pub fn reset(&mut self) {
-        self.rank = -1;
-        self.league.id = 0;
-        self.league.league_time = 0;
-        self.league.league_score = 0;
-    }
-
     ///更新段位
     pub fn update_league(&mut self, id: i8) {
         let res = crate::TEMPLATES.league_temp_mgr().get_temp(&id).unwrap();
@@ -44,42 +37,6 @@ impl RankInfo {
         let time = chrono::Local::now();
         self.league.league_score = res.score;
         self.league.league_time = time.timestamp_millis();
-    }
-
-    pub fn get_insert_sql_str(&self) -> String {
-        let mut map = serde_json::Map::new();
-        map.insert("id".to_owned(), JsonValue::from(self.league.id));
-        map.insert("name".to_owned(), JsonValue::from(self.name.clone()));
-        map.insert("rank".to_owned(), JsonValue::from(self.rank));
-        map.insert("cters".to_owned(), JsonValue::from(self.cters.as_slice()));
-        map.insert("score".to_owned(), JsonValue::from(self.get_score()));
-        map.insert("user_id".to_owned(), JsonValue::from(self.user_id));
-        let json = JsonValue::from(map);
-        let res = format!(
-            "insert into t_u_last_season_rank(user_id,content) values({},{:?})",
-            self.user_id,
-            json.to_string()
-        );
-        res
-    }
-    pub fn init_from_json(js: JsonValue) -> anyhow::Result<Self> {
-        let mut ri = RankInfo::default();
-        ri.user_id = js["user_id"].as_i64().unwrap() as u32;
-        ri.name = js["name"].as_str().unwrap().to_string();
-        ri.rank = js["rank"].as_i64().unwrap() as i32;
-        let cters = js["cters"].as_array();
-        if let Some(cters) = cters {
-            for cter in cters {
-                let cter_id = cter.as_i64().unwrap() as u32;
-                ri.cters.push(cter_id);
-            }
-        }
-        ri.league.id = js["id"].as_i64().unwrap() as i8;
-        ri.league.league_score = js["score"].as_i64().unwrap() as i32;
-
-        let time = js["league_time"].as_i64().unwrap();
-        ri.league.league_time = time;
-        Ok(ri)
     }
 
     ///获得积分
@@ -93,8 +50,11 @@ impl RankInfo {
         rip.name = self.name.clone();
         rip.rank = self.rank;
         rip.set_cters(self.cters.clone());
-        rip.set_league_id(self.league.get_league_id() as u32);
-        rip.set_league_score(self.league.league_score);
+        let mut l_pt = LeaguePt::new();
+        l_pt.set_league_id(self.league.get_league_id() as i32);
+        l_pt.set_league_score(self.league.league_score);
+        l_pt.set_league_time(self.league.league_time);
+        rip.set_league(l_pt);
         rip
     }
 
@@ -110,7 +70,7 @@ impl RankInfo {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct League {
     pub id: i8,            //段位id
     pub league_score: i32, //段位积分

@@ -1,6 +1,10 @@
 use crate::mgr::RankInfo;
 use crate::mgr::{rank_mgr::RankMgr, RankInfoPtr};
-use crate::task_timer::Task;
+use crate::{
+    REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, REDIS_KEY_HISTORY_RANK, REDIS_KEY_LAST_RANK,
+    REDIS_POOL,
+};
+use async_std::task::block_on;
 use log::{error, warn};
 use protobuf::Message;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -52,29 +56,43 @@ pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
 
 ///处理上一赛季
 ///先清空上一赛季数据库，然后插入当前赛季数据
-pub fn process_last_season_rank(rm: &mut RankMgr) {
+pub async fn process_last_season_rank(rm: &mut RankMgr, round: u32) {
+    let mut redis_lock = REDIS_POOL.lock().await;
+
     //先清空上一赛季的排行榜数据
-    let delete_sql = "delete from t_u_last_season_rank";
-    let res = crate::DB_POOL.exe_sql(delete_sql, None);
-    if let Err(e) = res {
-        error!("{:?}", e);
+    let _: Option<String> = redis_lock.del(REDIS_INDEX_RANK, REDIS_KEY_LAST_RANK);
+
+    //如果当前赛季到排行榜是空到，直接返回
+    if rm.rank_vec.is_empty() {
+        return;
     }
-    let mut size = 99;
-    let len = rm.rank_vec.len();
-    if len < size {
-        size = len - 1;
-    }
-    let res = &rm.rank_vec[0..size];
+
     //再插入新数据
     let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
-    for ri in res {
-        let insert_sql = ri.get_insert_sql_str();
-        let res = crate::DB_POOL.exe_sql(insert_sql.as_ref(), None);
-        if let Err(e) = res {
-            error!("{:?}", e)
+    let mut index = 0;
+    rm.rank_vec.iter().for_each(|ri| {
+        let user_id = ri.user_id;
+        let json_value = serde_json::to_string(&ri).unwrap();
+        let _: Option<String> = redis_lock.hset(
+            REDIS_INDEX_RANK,
+            REDIS_KEY_LAST_RANK,
+            user_id.to_string().as_str(),
+            json_value.as_str(),
+        );
+        if index < 100 {
+            let key = format!("{:?}-,{:?}", REDIS_KEY_HISTORY_RANK, round.to_string());
+            let _: Option<String> = redis_lock.hset(
+                REDIS_INDEX_RANK,
+                key.as_str(),
+                user_id.to_string().as_str(),
+                json_value.as_str(),
+            );
         }
-        proto.ranks.push(ri.into_rank_pt())
-    }
+
+        proto.ranks.push(ri.into_rank_pt());
+        index += 1;
+    });
+
     let bytes = proto.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
@@ -93,6 +111,7 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
         return;
     }
     let season_id = usn.get_season_id();
+    let round = usn.get_round();
 
     let mgr = crate::TEMPLATES.constant_temp_mgr();
     let round_season_id = mgr.temps.get("round_season_id");
@@ -112,27 +131,37 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
     }
 
     //先处理上一赛季排行榜问题
-    process_last_season_rank(rm);
+    block_on(process_last_season_rank(rm, round));
 
     //处理当前赛季数据
-    let task_task = rm.task_sender.clone().unwrap();
     let mut remove_v = Vec::new();
+    let mut redis_lock = async_std::task::block_on(REDIS_POOL.lock());
+
     //掉段处理
     rm.rank_vec.iter_mut().for_each(|x| {
+        let user_id = x.user_id.to_string();
         x.league.id -= 1;
         let league_id = x.league.id;
-        let sql_res;
-        let mut task = Task::default();
         if x.league.id <= 0 {
-            x.reset();
-            sql_res = format!(r#"update t_u_league set content = JSON_SET(content, "$.rank", -1),content=JSON_SET(content,"&.score",0),content=JSON_SET(content,"$.league_time",0),content=JSON_SET(content,"$.id",0) where user_id = {}"#,x.user_id);
             remove_v.push(x.user_id);
-        }else {
+            redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
+        } else {
             x.update_league(league_id);
-            sql_res = format!(r#"update t_u_league set content=JSON_SET(content,"&.score",{}),content=JSON_SET(content,"$.league_time",{}),content=JSON_SET(content,"$.id",{}) where user_id = {}"#,x.league.league_score,x.league.league_time,x.league.id,x.user_id);
+            let json_value = serde_json::to_string(x);
+            match json_value {
+                Ok(json_value) => {
+                    let _: Option<String> = redis_lock.hset(
+                        REDIS_INDEX_RANK,
+                        REDIS_KEY_CURRENT_RANK,
+                        user_id.as_str(),
+                        json_value.as_str(),
+                    );
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
+            }
         }
-        task.sql = sql_res;
-        let _=task_task.send(task);
     });
 
     //清除0段位处理

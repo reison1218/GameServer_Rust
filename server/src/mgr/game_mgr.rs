@@ -15,6 +15,7 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::RankCode;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::protos::base::LeaguePt;
 use tools::protos::base::RankInfoPt;
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
 use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME, UPDATE_SEASON_NOTICE};
@@ -23,7 +24,7 @@ use tools::util::packet::Packet;
 
 use super::RoomType;
 
-pub struct RankInfoPtPtr(pub *const RankInfoPt);
+pub struct RankInfoPtPtr(pub *mut RankInfoPt);
 unsafe impl Send for RankInfoPtPtr {}
 unsafe impl Sync for RankInfoPtPtr {}
 ///gameMgr结构体
@@ -51,6 +52,18 @@ impl GameMgr {
         //初始化命令
         gm.cmd_init();
         gm
+    }
+
+    pub fn update_user_league_id(&mut self, user_id: u32, league_pt: &LeaguePt) {
+        let rank_pt_ptr = self.user_rank.get_mut(&user_id);
+        if rank_pt_ptr.is_none() {
+            return;
+        }
+        let rank_pt_ptr = rank_pt_ptr.unwrap();
+        unsafe {
+            let rank_pt = rank_pt_ptr.0.as_mut().unwrap();
+            rank_pt.set_league(league_pt.clone());
+        }
     }
 
     ///初始化排行榜
@@ -112,10 +125,6 @@ impl GameMgr {
             let c_v = ud.get_characters_mut_ref().get_need_update_array();
             for i in c_v {
                 v.push(i);
-            }
-            //装段位数据
-            if ud.get_league_ref().get_version() > 0 {
-                v.push(ud.get_league_mut_ref().try_clone_for_db());
             }
             //grade相框数据
             if ud.grade_frame.get_version() > 0 {
@@ -190,10 +199,8 @@ impl GameMgr {
         self.cmd_map
             .insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
-        self.cmd_map.insert(
-            GameCode::UpdateLastSeasonRankPush.into_u32(),
-            sync_rank_nick_name,
-        );
+        self.cmd_map
+            .insert(GameCode::SyncRankNickName.into_u32(), sync_rank_nick_name);
     }
 }
 
@@ -253,10 +260,6 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) {
     let round_season_id = res.unwrap();
     if round_season_id != season_id {
         return;
-    }
-    //更新所有内存数据
-    for user in gm.users.values_mut() {
-        user.league.round_reset();
     }
 }
 
@@ -345,10 +348,10 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) {
         return;
     }
     let room_type = room_type.unwrap();
-    let summary_data = bgs.get_summary_data();
-    let user_id = summary_data.user_id;
-    let cter_id = summary_data.cter_id;
-    let grade = summary_data.get_grade();
+    let summary_data_pt = bgs.get_summary_data().clone();
+    let user_id = summary_data_pt.user_id;
+    let cter_id = summary_data_pt.cter_id;
+    let grade = summary_data_pt.get_grade();
     let res = gm.users.get_mut(&user_id);
     if let None = res {
         error! {"summary!UserData is not find! user_id:{}",user_id};
@@ -357,17 +360,17 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) {
     let user_data = res.unwrap();
     //处理统计
     let cters = user_data.get_characters_mut_ref().add_use_times(cter_id);
-    user_data.league.set_cters(cters.clone());
     //处理持久化到数据库
     user_data.add_version();
     //如果是匹配房
     if room_type == RoomType::OneVOneVOneVOneMatch {
-        //更新段位积分
-        user_data.league.update_from_pt(summary_data.get_league());
         //第一名就加grade
         user_data.user_info.set_grade(grade);
         bgs.cters.extend_from_slice(cters.as_slice());
-        if user_data.league.id > 0 {
+        let league_pt = summary_data_pt.get_league();
+        //更新段位积分
+        gm.update_user_league_id(user_id, league_pt);
+        if league_pt.league_id > 0 {
             let res = bgs.write_to_bytes();
             match res {
                 Ok(bytes) => {

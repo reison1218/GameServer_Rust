@@ -47,6 +47,63 @@ impl RedisPoolTool {
         }
     }
 
+    ///Delete one or more keys
+    pub fn del<T: FromRedisValue>(&mut self, index: u32, hkey: &str) -> Option<T> {
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.del(hkey).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
+        match res {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("{:?}", e);
+                None
+            }
+        }
+    }
+
+    ///Deletes a single (or multiple) fields from a hash
+    pub fn hdel(&mut self, index: u32, hkey: &str, key: &str) {
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        pip.hdel(hkey, key).execute(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
+    }
+
+    ///获得redis所有values
+    pub fn hvals<T: FromRedisValue>(&mut self, index: u32, hkey: &str) -> Option<T> {
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.hvals(hkey).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
+        match res {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("{:?}", e);
+                None
+            }
+        }
+    }
+
+    ///Gets all the fields and values in a hash.
+    pub fn hgetall<T: FromRedisValue>(&mut self, index: u32, hkey: &str) -> Option<T> {
+        let mut pip = get_pip();
+        let conn_mut = &mut self.conn;
+        pip.cmd("select").arg(index).execute(conn_mut);
+        let res = pip.hgetall(hkey).query(conn_mut);
+        pip.cmd("select").arg(0).execute(conn_mut);
+        match res {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("{:?}", e);
+                None
+            }
+        }
+    }
+
     ///操作hash数据结构
     pub fn hset<T: FromRedisValue>(
         &mut self,

@@ -1,12 +1,11 @@
-use tools::protos::base::{PlayerPt, PunishMatchPt, ResourcesPt};
+use tools::protos::base::{LeaguePt, PlayerPt, PunishMatchPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
 use crate::entity::grade_frame::GradeFrame;
-use crate::entity::league::League;
 use crate::entity::soul::Soul;
 use crate::entity::user::{
-    insert_characters, insert_grade_frame, insert_league, insert_soul, insert_user, UserData,
+    insert_characters, insert_grade_frame, insert_soul, insert_user, UserData,
 };
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
@@ -108,6 +107,18 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
         let user_data = init_user_data(user_id)?;
         gm_lock.users.insert(user_id, user_data);
     }
+
+    let rank_pt_ptr = gm_lock.user_rank.get(&user_id);
+    let league_pt;
+    match rank_pt_ptr {
+        Some(rank_pt_ptr) => unsafe {
+            let rank_pt = rank_pt_ptr.0.as_ref().unwrap();
+            league_pt = Some(rank_pt.get_league().clone());
+        },
+        None => {
+            league_pt = None;
+        }
+    }
     //封装会话
     let user_data = gm_lock.users.get_mut(&user_id);
     if user_data.is_none() {
@@ -120,8 +131,9 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     user.update_login();
     //通知用户中心
     async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
+
     //返回客户端
-    let lr = user2proto(user_data);
+    let lr = user2proto(user_data, league_pt);
     gm_lock.send_2_client(ClientCode::Login, user_id, lr.write_to_bytes()?);
     info!("用户完成登录！user_id:{}", &user_id);
     Ok(())
@@ -152,8 +164,6 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         //以下入库采用异步执行，以免造成io堵塞
         //玩家角色数据
         let c = Characters::new(user.user_id);
-        //玩家段位数据
-        let league = League::new(user.user_id, user.nick_name.clone());
         user.set_last_character(c.get_frist());
         //grade相框
         let grade_frame = GradeFrame::new(user.user_id);
@@ -164,7 +174,6 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         ud = Some(UserData::new(
             user.clone(),
             c.clone(),
-            league.clone(),
             grade_frame.clone(),
             soul.clone(),
         ));
@@ -172,7 +181,6 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         //异步持久化到db
         async_std::task::spawn(insert_user(user));
         async_std::task::spawn(insert_characters(c));
-        async_std::task::spawn(insert_league(league));
         async_std::task::spawn(insert_soul(soul));
         async_std::task::spawn(insert_grade_frame(grade_frame));
     }
@@ -180,7 +188,7 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
 }
 
 ///user结构体转proto
-fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
+fn user2proto(user: &mut UserData, league_pt: Option<LeaguePt>) -> S_USER_LOGIN {
     let mut lr = S_USER_LOGIN::new();
     lr.set_is_succ(true);
     // let result = user.get_json_value("signInTime");
@@ -203,7 +211,10 @@ fn user2proto(user: &mut UserData) -> S_USER_LOGIN {
     ppt.set_grade(user_info.grade);
     ppt.set_grade_frame(user_info.grade_frame);
     ppt.set_soul(user_info.soul);
-    ppt.set_league(user.league.into_league_pt());
+
+    if league_pt.is_some() {
+        ppt.set_league(league_pt.unwrap());
+    }
 
     lr.player_pt = protobuf::SingularPtrField::some(ppt);
     time = 0;

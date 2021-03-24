@@ -1,9 +1,10 @@
-use async_std::sync::Mutex;
+use crate::REDIS_INDEX_RANK;
+use crate::REDIS_KEY_CURRENT_RANK;
+use crate::REDIS_POOL;
 use log::{error, info};
 use protobuf::Message;
 use rayon::slice::ParallelSliceMut;
 use std::str::FromStr;
-use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use tools::cmd_code::GameCode;
 use tools::protos::server_protocol::R_G_SYNC_RANK;
@@ -22,52 +23,10 @@ pub fn init_timer(rm: Lock) {
     //每5分钟保存玩家数据
     sort_rank(rm.clone());
 
-    //定时更新排行到数据库
-    update_db(rm.clone());
-
     info!(
         "定时任务初始化完毕!耗时:{:?}ms",
         time.elapsed().unwrap().as_millis()
     )
-}
-
-fn update_db(rm: Lock) {
-    let (sender, receive) = crossbeam::channel::bounded(128);
-    let mut lock = async_std::task::block_on(rm.lock());
-    lock.set_task_sender(sender.clone());
-    std::mem::drop(lock);
-    let task_v = Arc::new(Mutex::new(Vec::new()));
-    let task_v_clone = task_v.clone();
-    let m = async move {
-        loop {
-            let task = receive.recv();
-            if let Err(e) = task {
-                error!("{:?}", e);
-                continue;
-            }
-            let task = task.unwrap();
-            let sql = task.sql.clone();
-            let mut lock = task_v_clone.lock().await;
-            lock.push(sql);
-        }
-    };
-    async_std::task::spawn(m);
-    let task_v_clone = task_v.clone();
-    let m = async move {
-        let time = 60 * 1000 * 5;
-        loop {
-            async_std::task::sleep(Duration::from_millis(time)).await;
-            let mut lock = task_v_clone.lock().await;
-            for sql in lock.iter() {
-                let res = crate::DB_POOL.exe_sql(sql.as_str(), None);
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                }
-            }
-            lock.clear();
-        }
-    };
-    async_std::task::spawn(m);
 }
 
 fn sort_rank(rm: Lock) {
@@ -88,6 +47,7 @@ fn sort_rank(rm: Lock) {
         None => time = 60 * 1000 * 10,
     }
     let m = async move {
+        let mut redis_lock = REDIS_POOL.lock().await;
         loop {
             async_std::task::sleep(Duration::from_millis(time)).await;
             let mut lock = rm.lock().await;
@@ -113,24 +73,22 @@ fn sort_rank(rm: Lock) {
             //重新排行之后下发到游戏服
             let take_time = std::time::SystemTime::now();
             let mut rgsr = R_G_SYNC_RANK::new();
-            let sender = lock.task_sender.clone().unwrap();
+
             lock.rank_vec
                 .iter_mut()
                 .enumerate()
                 .for_each(|(index, ri)| {
-                    if ri.rank != index as i32 && ri.league.id>0 {
+                    if ri.rank != index as i32 && ri.league.id > 0 {
                         ri.rank = index as i32;
-                        // 更新数据库
-                        let sql = format!(
-                            r#"update t_u_league set content = JSON_SET(content, "$.rank", {}) where user_id = {}"#,
-                            ri.rank, ri.user_id
+                        let user_id = ri.user_id;
+                        let json_value = serde_json::to_string(ri).unwrap();
+                        //持久化到redis
+                        let _: Option<String> = redis_lock.hset(
+                            REDIS_INDEX_RANK,
+                            REDIS_KEY_CURRENT_RANK,
+                            user_id.to_string().as_str(),
+                            json_value.as_str(),
                         );
-                        let mut task = Task::default();
-                        task.sql = sql;
-                        let res = sender.send(task);
-                        if let Err(e) = res{
-                            error!("{:?}", e);
-                        }
                     }
                     let res = ri.into_rank_pt();
                     rgsr.ranks.push(res);

@@ -1244,6 +1244,7 @@ impl ::protobuf::reflect::ProtobufValue for B_R_SUMMARY {
 pub struct UPDATE_SEASON_NOTICE {
     // message fields
     pub season_id: u32,
+    pub round: u32,
     pub next_update_time: u64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1276,7 +1277,22 @@ impl UPDATE_SEASON_NOTICE {
         self.season_id = v;
     }
 
-    // uint64 next_update_time = 2;
+    // uint32 round = 2;
+
+
+    pub fn get_round(&self) -> u32 {
+        self.round
+    }
+    pub fn clear_round(&mut self) {
+        self.round = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_round(&mut self, v: u32) {
+        self.round = v;
+    }
+
+    // uint64 next_update_time = 3;
 
 
     pub fn get_next_update_time(&self) -> u64 {
@@ -1312,6 +1328,13 @@ impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
+                    let tmp = is.read_uint32()?;
+                    self.round = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
                     let tmp = is.read_uint64()?;
                     self.next_update_time = tmp;
                 },
@@ -1330,8 +1353,11 @@ impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
         if self.season_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.season_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.round != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.round, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.next_update_time != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.next_update_time, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.next_update_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1342,8 +1368,11 @@ impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
         if self.season_id != 0 {
             os.write_uint32(1, self.season_id)?;
         }
+        if self.round != 0 {
+            os.write_uint32(2, self.round)?;
+        }
         if self.next_update_time != 0 {
-            os.write_uint64(2, self.next_update_time)?;
+            os.write_uint64(3, self.next_update_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1388,6 +1417,11 @@ impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
                 |m: &UPDATE_SEASON_NOTICE| { &m.season_id },
                 |m: &mut UPDATE_SEASON_NOTICE| { &mut m.season_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "round",
+                |m: &UPDATE_SEASON_NOTICE| { &m.round },
+                |m: &mut UPDATE_SEASON_NOTICE| { &mut m.round },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                 "next_update_time",
                 |m: &UPDATE_SEASON_NOTICE| { &m.next_update_time },
@@ -1410,6 +1444,7 @@ impl ::protobuf::Message for UPDATE_SEASON_NOTICE {
 impl ::protobuf::Clear for UPDATE_SEASON_NOTICE {
     fn clear(&mut self) {
         self.season_id = 0;
+        self.round = 0;
         self.next_update_time = 0;
         self.unknown_fields.clear();
     }
@@ -2567,22 +2602,22 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     pe\x12\x14\n\x05cters\x18\x02\x20\x03(\rR\x05cters\x128\n\x0csummary_dat\
     a\x18\x03\x20\x01(\x0b2\x15.protos.SummaryDataPtR\x0bsummaryData\"I\n\
     \x0bB_R_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b2\x15.protos.S\
-    ummaryDataPtR\x0csummaryDatas\"]\n\x14UPDATE_SEASON_NOTICE\x12\x1b\n\tse\
-    ason_id\x18\x01\x20\x01(\rR\x08seasonId\x12(\n\x10next_update_time\x18\
-    \x02\x20\x01(\x04R\x0enextUpdateTime\"\xa0\x02\n\x0ePlayerBattlePt\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\
-    \x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05g\
-    rade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\x01(\rR\ngradeFrame\x12\x12\n\
-    \x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\n\x06league\x18\x06\x20\x01(\
-    \x0b2\x10.protos.LeaguePtR\x06league\x128\n\x0cpunish_match\x18\x07\x20\
-    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05cters\x18\
-    \x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH\
-    _MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.PunishMat\
-    chPtR\x0bpunishMatch\"9\n\rR_G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\x03\
-    (\x0b2\x12.protos.RankInfoPtR\x05ranks\"G\n\x1bR_G_UPDATE_LAST_SEASON_RA\
-    NK\x12(\n\x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\
-    \"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\
-    \x08nickNameb\x06proto3\
+    ummaryDataPtR\x0csummaryDatas\"s\n\x14UPDATE_SEASON_NOTICE\x12\x1b\n\tse\
+    ason_id\x18\x01\x20\x01(\rR\x08seasonId\x12\x14\n\x05round\x18\x02\x20\
+    \x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\x01(\x04R\x0ene\
+    xtUpdateTime\"\xa0\x02\n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickN\
+    ame\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\x05grade\x12\x1f\n\x0bgrade_f\
+    rame\x18\x04\x20\x01(\rR\ngradeFrame\x12\x12\n\x04soul\x18\x05\x20\x01(\
+    \rR\x04soul\x12(\n\x06league\x18\x06\x20\x01(\x0b2\x10.protos.LeaguePtR\
+    \x06league\x128\n\x0cpunish_match\x18\x07\x20\x01(\x0b2\x15.protos.Punis\
+    hMatchPtR\x0bpunishMatch\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.proto\
+    s.CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_matc\
+    h\x18\x01\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"9\n\rR\
+    _G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPt\
+    R\x05ranks\"G\n\x1bR_G_UPDATE_LAST_SEASON_RANK\x12(\n\x05ranks\x18\x01\
+    \x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"3\n\x14G_S_MODIFY_NICK_N\
+    AME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickNameb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

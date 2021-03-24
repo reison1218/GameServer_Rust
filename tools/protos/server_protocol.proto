@@ -40,7 +40,8 @@ message B_R_SUMMARY{
 ///游戏服务器发给房间服务器，快速开始
 message UPDATE_SEASON_NOTICE{
     uint32 season_id = 1;//赛季信息
-    uint64 next_update_time = 2;//下次更新时间
+    uint32 round=2;//赛季round
+    uint64 next_update_time = 3;//下次更新时间
 }
 
 //玩家战斗数据封装proto

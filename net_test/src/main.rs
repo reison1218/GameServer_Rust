@@ -135,7 +135,6 @@ fn test_tcp_client() {
 }
 
 fn test_binary() {
-    let a = [1..3];
     // let int = 123u32;
     // //(1)最原始直接基础的位操作方法。
     // let mut byte: u8 = 0b0000_0000;

@@ -37,6 +37,13 @@ impl GameCenterMgr {
         }
         let season_id = season_id.unwrap();
 
+        let round = map.get("round");
+        if round.is_none() {
+            warn!("the round is None!");
+            return;
+        }
+        let round = round.unwrap();
+
         let next_update_time = map.get("next_update_time");
         if next_update_time.is_none() {
             warn!("the next_update_time is None!");
@@ -51,6 +58,7 @@ impl GameCenterMgr {
 
         let mut usn = UPDATE_SEASON_NOTICE::new();
         usn.set_season_id(season_id.as_u64().unwrap() as u32);
+        usn.set_round(round.as_u64().unwrap() as u32);
         usn.set_next_update_time(next_update_time);
         let cmd = ServerCommonCode::UpdateSeason.into_u32();
         let mut packet = Packet::new(cmd, 0, 0);

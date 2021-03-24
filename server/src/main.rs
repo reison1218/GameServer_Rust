@@ -7,9 +7,7 @@ use crate::db::dbtool::DbPool;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
-use entity::league::League;
-use entity::Entity;
-use mysql::QueryResult;
+use helper::RankInfo;
 use rayon::slice::ParallelSliceMut;
 use tools::protos::base::RankInfoPt;
 use tools::thread_pool::MyThreadPool;
@@ -74,6 +72,9 @@ lazy_static! {
     };
 }
 const REDIS_INDEX_USERS: u32 = 0;
+const REDIS_INDEX_GAME_SEASON: u32 = 1;
+///排行榜redis索引
+const REDIS_INDEX_RANK: u32 = 2;
 
 const REDIS_KEY_USERS: &str = "users";
 
@@ -81,9 +82,13 @@ const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
 
 const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
 
-const REDIS_INDEX_GAME_SEASON: u32 = 1;
-
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
+
+///当前赛季排行
+const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
+
+///上个赛季排行
+const REDIS_KEY_LAST_RANK: &str = "last_rank";
 
 ///赛季信息
 pub static mut SEASON: Season = Season::new();
@@ -209,21 +214,18 @@ fn init_tcp_server(gm: Lock) {
 }
 
 pub fn query_last_season_rank(gm: Lock) {
-    let mut sql = String::new();
-    sql.push_str("select * from t_u_last_season_rank");
+    let mut redis_lock = REDIS_POOL.lock().unwrap();
 
-    let q: Result<QueryResult, mysql::error::Error> = DB_POOL.exe_sql(sql.as_str(), None);
-    if q.is_err() {
-        error!("{:?}", q.err().unwrap());
+    let res: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_LAST_RANK);
+    if res.is_none() {
         return;
     }
-    let q = q.unwrap();
     let mut v = Vec::new();
-    for _qr in q {
-        let (_, data): (u32, serde_json::Value) = mysql::from_row(_qr.unwrap());
-        let c = League::init(data);
-        v.push(c.into());
-    }
+    let last_rank = res.unwrap();
+    last_rank.iter().for_each(|ri_str| {
+        let ri: RankInfo = serde_json::from_str(ri_str.as_str()).unwrap();
+        v.push(ri.into_rank_pt());
+    });
     v.par_sort_by(|a: &RankInfoPt, b: &RankInfoPt| a.rank.cmp(&b.rank));
     let mut lock = async_std::task::block_on(gm.lock());
     lock.last_season_rank = v;

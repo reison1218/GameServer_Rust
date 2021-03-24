@@ -5993,8 +5993,7 @@ pub struct RankInfoPt {
     pub user_id: u32,
     pub name: ::std::string::String,
     pub rank: i32,
-    pub league_id: u32,
-    pub league_score: i32,
+    pub league: ::protobuf::SingularPtrField<LeaguePt>,
     pub cters: ::std::vec::Vec<u32>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -6068,37 +6067,40 @@ impl RankInfoPt {
         self.rank = v;
     }
 
-    // uint32 league_id = 4;
+    // .protos.LeaguePt league = 4;
 
 
-    pub fn get_league_id(&self) -> u32 {
-        self.league_id
+    pub fn get_league(&self) -> &LeaguePt {
+        self.league.as_ref().unwrap_or_else(|| <LeaguePt as ::protobuf::Message>::default_instance())
     }
-    pub fn clear_league_id(&mut self) {
-        self.league_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_league_id(&mut self, v: u32) {
-        self.league_id = v;
+    pub fn clear_league(&mut self) {
+        self.league.clear();
     }
 
-    // int32 league_score = 5;
-
-
-    pub fn get_league_score(&self) -> i32 {
-        self.league_score
-    }
-    pub fn clear_league_score(&mut self) {
-        self.league_score = 0;
+    pub fn has_league(&self) -> bool {
+        self.league.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_league_score(&mut self, v: i32) {
-        self.league_score = v;
+    pub fn set_league(&mut self, v: LeaguePt) {
+        self.league = ::protobuf::SingularPtrField::some(v);
     }
 
-    // repeated uint32 cters = 6;
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_league(&mut self) -> &mut LeaguePt {
+        if self.league.is_none() {
+            self.league.set_default();
+        }
+        self.league.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_league(&mut self) -> LeaguePt {
+        self.league.take().unwrap_or_else(|| LeaguePt::new())
+    }
+
+    // repeated uint32 cters = 5;
 
 
     pub fn get_cters(&self) -> &[u32] {
@@ -6126,6 +6128,11 @@ impl RankInfoPt {
 
 impl ::protobuf::Message for RankInfoPt {
     fn is_initialized(&self) -> bool {
+        for v in &self.league {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -6151,20 +6158,9 @@ impl ::protobuf::Message for RankInfoPt {
                     self.rank = tmp;
                 },
                 4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.league_id = tmp;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.league)?;
                 },
                 5 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.league_score = tmp;
-                },
-                6 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.cters)?;
                 },
                 _ => {
@@ -6188,14 +6184,12 @@ impl ::protobuf::Message for RankInfoPt {
         if self.rank != 0 {
             my_size += ::protobuf::rt::value_size(3, self.rank, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.league_id != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.league_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.league_score != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.league_score, ::protobuf::wire_format::WireTypeVarint);
+        if let Some(ref v) = self.league.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         for value in &self.cters {
-            my_size += ::protobuf::rt::value_size(6, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(5, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -6212,14 +6206,13 @@ impl ::protobuf::Message for RankInfoPt {
         if self.rank != 0 {
             os.write_int32(3, self.rank)?;
         }
-        if self.league_id != 0 {
-            os.write_uint32(4, self.league_id)?;
-        }
-        if self.league_score != 0 {
-            os.write_int32(5, self.league_score)?;
+        if let Some(ref v) = self.league.as_ref() {
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         for v in &self.cters {
-            os.write_uint32(6, *v)?;
+            os.write_uint32(5, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -6274,15 +6267,10 @@ impl ::protobuf::Message for RankInfoPt {
                 |m: &RankInfoPt| { &m.rank },
                 |m: &mut RankInfoPt| { &mut m.rank },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "league_id",
-                |m: &RankInfoPt| { &m.league_id },
-                |m: &mut RankInfoPt| { &mut m.league_id },
-            ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                "league_score",
-                |m: &RankInfoPt| { &m.league_score },
-                |m: &mut RankInfoPt| { &mut m.league_score },
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<LeaguePt>>(
+                "league",
+                |m: &RankInfoPt| { &m.league },
+                |m: &mut RankInfoPt| { &mut m.league },
             ));
             fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "cters",
@@ -6308,8 +6296,7 @@ impl ::protobuf::Clear for RankInfoPt {
         self.user_id = 0;
         self.name.clear();
         self.rank = 0;
-        self.league_id = 0;
-        self.league_score = 0;
+        self.league.clear();
         self.cters.clear();
         self.unknown_fields.clear();
     }
@@ -6405,11 +6392,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x18\x02\x20\x01(\rR\x08punishId\"k\n\x08LeaguePt\x12!\n\x0cleague_score\
     \x18\x01\x20\x01(\x05R\x0bleagueScore\x12\x1b\n\tleague_id\x18\x02\x20\
     \x01(\x05R\x08leagueId\x12\x1f\n\x0bleague_time\x18\x03\x20\x01(\x03R\nl\
-    eagueTime\"\xa3\x01\n\nRankInfoPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\
+    eagueTime\"\x8d\x01\n\nRankInfoPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\
     \rR\x06userId\x12\x12\n\x04name\x18\x02\x20\x01(\tR\x04name\x12\x12\n\
-    \x04rank\x18\x03\x20\x01(\x05R\x04rank\x12\x1b\n\tleague_id\x18\x04\x20\
-    \x01(\rR\x08leagueId\x12!\n\x0cleague_score\x18\x05\x20\x01(\x05R\x0blea\
-    gueScore\x12\x14\n\x05cters\x18\x06\x20\x03(\rR\x05ctersb\x06proto3\
+    \x04rank\x18\x03\x20\x01(\x05R\x04rank\x12(\n\x06league\x18\x04\x20\x01(\
+    \x0b2\x10.protos.LeaguePtR\x06league\x12\x14\n\x05cters\x18\x05\x20\x03(\
+    \rR\x05ctersb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

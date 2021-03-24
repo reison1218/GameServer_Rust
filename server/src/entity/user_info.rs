@@ -411,8 +411,13 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into_league_pt();
-    pbp.set_league(lp);
+    let rank_pt = gm.user_rank.get(&user_id);
+    if let Some(rank_pt_ptr) = rank_pt {
+        unsafe {
+            let rank_pt = rank_pt_ptr.0.as_ref().unwrap();
+            pbp.set_league(rank_pt.get_league().clone());
+        }
+    }
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
     //封装角色
@@ -470,8 +475,13 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into_league_pt();
-    pbp.set_league(lp);
+    let rank_pt_ptr = gm.user_rank.get(&user_id);
+    if let Some(rank_pt_ptr) = rank_pt_ptr {
+        unsafe {
+            let rank_pt = rank_pt_ptr.0.as_ref().unwrap();
+            pbp.set_league(rank_pt.get_league().clone());
+        }
+    }
     let punish_match_pt = user_info.punish_match.into();
     pbp.set_punish_match(punish_match_pt);
     for cter in user_data.get_characters_ref().cter_map.values() {
@@ -577,9 +587,9 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) {
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
     if !gm.user_rank.contains_key(&user_id) {
-        let res = gm.rank.par_iter().find_first(|x| x.user_id == user_id);
+        let res = gm.rank.par_iter_mut().find_first(|x| x.user_id == user_id);
         if let Some(res) = res {
-            let rip = RankInfoPtPtr(res as *const RankInfoPt);
+            let rip = RankInfoPtPtr(res as *mut RankInfoPt);
             gm.user_rank.insert(user_id, rip);
         }
     }
@@ -681,8 +691,13 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let lp = user_data.get_league_ref().into_league_pt();
-    pbp.set_league(lp);
+    let rank_pt_ptr = gm.user_rank.get(&user_id);
+    if let Some(rank_pt_ptr) = rank_pt_ptr {
+        unsafe {
+            let rank_pt = rank_pt_ptr.0.as_ref().unwrap();
+            pbp.set_league(rank_pt.get_league().clone());
+        }
+    }
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }

@@ -18,6 +18,7 @@ pub struct RankMgr {
     pub update_map: HashMap<u32, RankInfoPtr>, //排行裸指针
     pub cmd_map: CmdFn,                        //命令管理 key:cmd,value:函数指针
     pub need_rank: bool,                       //是否需要排序
+    pub last_rank: Vec<RankInfo>,              //上一赛季排行榜数据
     sender: Option<TcpSender>,                 //tcp channel的发送方
     pub task_sender: Option<Sender<Task>>,     //任务发送方
 }
@@ -27,10 +28,6 @@ impl RankMgr {
         let mut rm = RankMgr::default();
         rm.cmd_init();
         rm
-    }
-
-    pub fn set_task_sender(&mut self, sender: Sender<Task>) {
-        self.task_sender = Some(sender);
     }
 
     ///转发到游戏中心服,然后推送给所有特定服务器

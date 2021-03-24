@@ -193,8 +193,7 @@ message RankInfoPt{
     uint32 user_id = 1;             //玩家id
     string name = 2;                //名字
     int32 rank=3;                  //排名
-    uint32 league_id = 4;           //段位id
-    int32 league_score = 5;         //段位积分
-    repeated uint32 cters=6;        //最常用的三个角色
+    LeaguePt league = 4;           //段位数据
+    repeated uint32 cters=5;        //最常用的三个角色
 
 }

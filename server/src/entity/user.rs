@@ -1,8 +1,7 @@
 use super::*;
-use crate::db::table_contants::{CHARACTER, GRADE_FRAME, LEAGUE, SOUL, USER};
+use crate::db::table_contants::{CHARACTER, GRADE_FRAME, SOUL, USER};
 use crate::entity::character::{Character, Characters};
 use crate::entity::grade_frame::GradeFrame;
-use crate::entity::league::League;
 use crate::entity::soul::Soul;
 use std::borrow::{Borrow, BorrowMut};
 use std::cell::Cell;
@@ -14,8 +13,6 @@ pub struct UserData {
     pub user_info: User,
     ///玩家角色
     character: Characters,
-    ///玩家段位数据
-    pub league: League,
     ///玩家grade相框
     pub grade_frame: GradeFrame,
     ///灵魂头像
@@ -39,14 +36,12 @@ impl UserData {
     pub fn new(
         user_info: User,
         character: Characters,
-        league: League,
         grade_frame: GradeFrame,
         soul: Soul,
     ) -> UserData {
         UserData {
             user_info,
             character,
-            league,
             grade_frame,
             soul,
             version: Cell::new(0),
@@ -60,13 +55,6 @@ impl UserData {
             return None;
         }
         let user = user.unwrap();
-        //段位数据
-        let mut league = League::query(LEAGUE, user_id);
-        if league.is_none() {
-            let res = League::new(user.user_id, user.nick_name.clone());
-            async_std::task::spawn(insert_league(res.clone()));
-            league = Some(res);
-        }
 
         let mut gf = GradeFrame::query(GRADE_FRAME, user_id);
         //grade相框数据
@@ -89,13 +77,7 @@ impl UserData {
             async_std::task::spawn(insert_characters(c.clone()));
             cters = Some(c);
         }
-        let ud = UserData::new(
-            user,
-            cters.unwrap(),
-            league.unwrap(),
-            gf.unwrap(),
-            soul.unwrap(),
-        );
+        let ud = UserData::new(user, cters.unwrap(), gf.unwrap(), soul.unwrap());
         Some(ud)
     }
     ///获得玩家id
@@ -131,10 +113,6 @@ impl UserData {
                 error!("{:?}", e);
             }
         }
-        let res = self.league.update();
-        if let Err(e) = res {
-            error!("{:?}", e);
-        }
         let res = self.soul.update();
         if let Err(e) = res {
             error!("{:?}", e);
@@ -160,16 +138,6 @@ impl UserData {
     ///获得character结构体的只读指针
     pub fn get_characters_ref(&self) -> &Characters {
         self.character.borrow()
-    }
-    ///获得段位的只读指针
-    pub fn get_league_ref(&self) -> &League {
-        self.league.borrow()
-    }
-
-    ///获得段位的可写指针
-    pub fn get_league_mut_ref(&self) -> &League {
-        self.add_version();
-        self.league.borrow()
     }
 
     ///获得character结构体的可变指针
@@ -210,7 +178,10 @@ pub async fn insert_characters(cter: Characters) {
 }
 
 pub async fn insert_grade_frame(grade_frame: GradeFrame) {
-    info!("玩家grade头像框数据不存在,现在创建玩家段位数据:{}", grade_frame.user_id);
+    info!(
+        "玩家grade头像框数据不存在,现在创建玩家段位数据:{}",
+        grade_frame.user_id
+    );
     let res = GradeFrame::insert(&grade_frame);
     if let Err(e) = res {
         error!("{:?}", e);
@@ -220,14 +191,6 @@ pub async fn insert_grade_frame(grade_frame: GradeFrame) {
 pub async fn insert_soul(soul: Soul) {
     info!("玩家Soul数据不存在,现在创建玩家段位数据:{}", soul.user_id);
     let res = Soul::insert(&soul);
-    if let Err(e) = res {
-        error!("{:?}", e);
-    }
-}
-
-pub async fn insert_league(league: League) {
-    info!("玩家段位数据不存在,现在创建玩家段位数据:{}", league.user_id);
-    let res = League::insert(&league);
     if let Err(e) = res {
         error!("{:?}", e);
     }
