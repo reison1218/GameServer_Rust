@@ -1,4 +1,5 @@
 use crate::mgr::room_mgr::RoomMgr;
+use crate::mgr::RankInfo;
 use crate::room::character::Character;
 use crate::room::member::MemberState;
 use crate::room::member::{Member, PunishMatch};
@@ -24,7 +25,7 @@ use tools::protos::room::{
 };
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
-    UPDATE_SEASON_NOTICE,
+    R_S_UPDATE_SEASON,
 };
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
@@ -53,7 +54,7 @@ pub fn reload_temps(_: &mut RoomMgr, _: Packet) {
 
 ///更新赛季
 pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
-    let mut usn = UPDATE_SEASON_NOTICE::new();
+    let mut usn = R_S_UPDATE_SEASON::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
@@ -83,8 +84,10 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
     if round_season_id != season_id {
         return;
     }
+
+    let mut redis_lock = crate::REDIS_POOL.lock().unwrap();
     //更新所有内存数据
-    for user_id in rm.player_room.clone().keys() {
+    for &user_id in rm.player_room.clone().keys() {
         let room = rm.get_room_mut(&user_id);
         if room.is_none() {
             continue;
@@ -95,7 +98,15 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
             continue;
         }
         let member = member.unwrap();
-        member.league.round_reset();
+        let rank: Option<String> = redis_lock.hget(
+            crate::REDIS_INDEX_RANK,
+            crate::REDIS_KEY_CURRENT_RANK,
+            user_id.to_string().as_str(),
+        );
+        if let Some(rank) = rank {
+            let ri: RankInfo = serde_json::from_str(rank.as_str()).unwrap();
+            member.league = ri.league.into();
+        }
     }
 }
 

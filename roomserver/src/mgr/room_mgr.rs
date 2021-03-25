@@ -224,12 +224,12 @@ impl RoomMgr {
 
     ///命令初始化
     fn cmd_init(&mut self) {
-        //更新赛季信息
-        self.cmd_map
-            .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
         //热更静态配置
         self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
+        //更新赛季信息
+        self.cmd_map
+            .insert(RoomCode::UpdateSeasonPush.into_u32(), update_season);
         //离线
         self.cmd_map.insert(RoomCode::OffLine.into_u32(), off_line);
         //离开房间

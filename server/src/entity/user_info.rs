@@ -2,6 +2,8 @@ use super::*;
 use crate::helper::redis_helper::check_nick_name;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::mgr::game_mgr::RankInfoPtPtr;
+use crate::SEASON;
+use crate::TEMPLATES;
 use chrono::Local;
 use protobuf::Message;
 use rayon::prelude::*;
@@ -18,7 +20,7 @@ use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::protos::server_protocol::{
     PlayerBattlePt, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
-    R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK,
+    R_G_SYNC_RANK, R_S_UPDATE_SEASON,
 };
 use tools::util::packet::Packet;
 
@@ -503,17 +505,40 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) {
 }
 
 ///修改grade相框和soul头像
-pub fn update_last_season_rank(gm: &mut GameMgr, packet: Packet) {
-    //先清空历史数据
-    gm.last_season_rank.clear();
-    let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
+pub fn update_season(gm: &mut GameMgr, packet: Packet) {
+    let mut proto = R_S_UPDATE_SEASON::new();
     let res = proto.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
         return;
     }
-    gm.last_season_rank
-        .extend_from_slice(proto.ranks.as_slice());
+
+    let season_id = proto.get_season_id();
+    let next_update_time = proto.get_next_update_time();
+    let constant_tmp = TEMPLATES.constant_temp_mgr().temps.get("round_season_id");
+    let default_session_id;
+    match constant_tmp {
+        Some(constant_temp) => {
+            default_session_id = u32::from_str(constant_temp.value.as_str()).unwrap();
+            if default_session_id != season_id {
+                unsafe {
+                    SEASON.season_id = season_id;
+                    SEASON.next_update_time = next_update_time;
+                }
+            }
+        }
+        None => {
+            default_session_id = 1001;
+        }
+    }
+
+    //如果轮完一轮
+    if default_session_id != season_id {
+        return;
+    }
+
+    //初始化排行榜数据
+    gm.init_rank();
 }
 
 ///修改grade相框和soul头像

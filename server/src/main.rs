@@ -7,9 +7,6 @@ use crate::db::dbtool::DbPool;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
-use helper::RankInfo;
-use rayon::slice::ParallelSliceMut;
-use tools::protos::base::RankInfoPt;
 use tools::thread_pool::MyThreadPool;
 
 use async_std::sync::Mutex;
@@ -84,11 +81,13 @@ const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
 
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 
-///当前赛季排行
-const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
-
 ///上个赛季排行
 const REDIS_KEY_LAST_RANK: &str = "last_rank";
+///玩家最好排行
+const REDIS_KEY_BEST_RANK: &str = "best_rank";
+
+///当前赛季排行
+const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 
 ///赛季信息
 pub static mut SEASON: Season = Season::new();
@@ -139,7 +138,8 @@ fn init_log() {
 
 ///初始化赛季信息
 fn init_season(gm: Lock) {
-    query_last_season_rank(gm);
+    let mut lock = async_std::task::block_on(gm.lock());
+    lock.init_rank();
     let mut lock = REDIS_POOL.lock().unwrap();
     let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
     if let None = res {
@@ -211,22 +211,4 @@ fn init_http_server(gm: Lock) {
 fn init_tcp_server(gm: Lock) {
     let tcp_port: &str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(tcp_port, gm);
-}
-
-pub fn query_last_season_rank(gm: Lock) {
-    let mut redis_lock = REDIS_POOL.lock().unwrap();
-
-    let res: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_LAST_RANK);
-    if res.is_none() {
-        return;
-    }
-    let mut v = Vec::new();
-    let last_rank = res.unwrap();
-    last_rank.iter().for_each(|ri_str| {
-        let ri: RankInfo = serde_json::from_str(ri_str.as_str()).unwrap();
-        v.push(ri.into_rank_pt());
-    });
-    v.par_sort_by(|a: &RankInfoPt, b: &RankInfoPt| a.rank.cmp(&b.rank));
-    let mut lock = async_std::task::block_on(gm.lock());
-    lock.last_season_rank = v;
 }

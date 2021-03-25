@@ -1,11 +1,10 @@
 use crate::entity::user::UserData;
 use crate::entity::user_info::{
     create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name,
-    punish_match, search_room, show_rank, sync_rank, update_last_season_rank,
+    punish_match, search_room, show_rank, sync_rank, update_season,
 };
 use crate::entity::{Entity, EntityData};
 use crate::net::http::{notice_user_center, UserCenterNoticeType};
-use crate::SEASON;
 use chrono::Local;
 use log::{error, info, warn};
 use protobuf::Message;
@@ -15,25 +14,28 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::RankCode;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
-use tools::protos::base::LeaguePt;
 use tools::protos::base::RankInfoPt;
-use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA};
-use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME, UPDATE_SEASON_NOTICE};
+use tools::protos::base::{LeaguePt, PlayerPt, PunishMatchPt, ResourcesPt};
+use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA, S_USER_LOGIN};
+use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
 use super::RoomType;
+use crate::helper::RankInfo;
+use rayon::prelude::ParallelSliceMut;
 
 pub struct RankInfoPtPtr(pub *mut RankInfoPt);
 unsafe impl Send for RankInfoPtPtr {}
 unsafe impl Sync for RankInfoPtPtr {}
 ///gameMgr结构体
 pub struct GameMgr {
-    pub users: HashMap<u32, UserData>,          //玩家数据
-    pub rank: Vec<RankInfoPt>,                  //排行榜快照，从排行榜服务器那边过来的
-    pub user_rank: HashMap<u32, RankInfoPtPtr>, //玩家对应的排行榜数据，为了避免遍历
-    pub last_season_rank: Vec<RankInfoPt>,      //上一赛季排行榜
-    sender: Option<TcpSender>,                  //tcpchannel
+    pub users: HashMap<u32, UserData>,            //玩家数据
+    pub rank: Vec<RankInfoPt>,                    //排行榜快照，从排行榜服务器那边过来的
+    pub user_rank: HashMap<u32, RankInfoPtPtr>,   //玩家对应的排行榜数据，为了避免遍历
+    pub last_season_rank: Vec<RankInfoPt>,        //上一赛季排行榜
+    pub user_best_rank: HashMap<u32, RankInfoPt>, //玩家最佳排行
+    sender: Option<TcpSender>,                    //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet), RandomState>, //命令管理
 }
 
@@ -47,6 +49,7 @@ impl GameMgr {
             rank: Vec::new(),
             user_rank: HashMap::new(),
             last_season_rank: Vec::new(),
+            user_best_rank: HashMap::new(),
             cmd_map: HashMap::new(),
         };
         //初始化命令
@@ -68,10 +71,46 @@ impl GameMgr {
 
     ///初始化排行榜
     pub fn init_rank(&mut self) {
-        if self.rank.len() > 0 {
-            return;
+        self.last_season_rank.clear();
+        self.user_best_rank.clear();
+        self.rank.clear();
+        self.user_rank.clear();
+        let mut redis_lock = crate::REDIS_POOL.lock().unwrap();
+        //加载当前排行榜
+        let ranks: Option<Vec<String>> =
+            redis_lock.hvals(crate::REDIS_INDEX_RANK, crate::REDIS_KEY_CURRENT_RANK);
+        if let Some(ranks) = ranks {
+            for rank_str in ranks {
+                let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
+                let mut rank_pt = ri.into_rank_pt();
+                let res = RankInfoPtPtr(&mut rank_pt as *mut RankInfoPt);
+                self.user_rank.insert(ri.user_id, res);
+                self.rank.push(rank_pt);
+            }
+            self.rank.par_sort_unstable_by(|a, b| a.rank.cmp(&b.rank));
         }
-        self.send_2_server(RankCode::GetRank.into_u32(), 0, Vec::new());
+
+        //加载上赛季排行榜
+        let last_ranks: Option<Vec<String>> =
+            redis_lock.hvals(crate::REDIS_INDEX_RANK, crate::REDIS_KEY_LAST_RANK);
+        if let Some(last_ranks) = last_ranks {
+            for last_rank_str in last_ranks {
+                let ri: RankInfo = serde_json::from_str(last_rank_str.as_str()).unwrap();
+                self.last_season_rank.push(ri.into_rank_pt());
+            }
+            self.last_season_rank
+                .par_sort_unstable_by(|a, b| a.rank.cmp(&b.rank));
+        }
+
+        //加载玩家最佳排名
+        let best_ranks: Option<Vec<String>> =
+            redis_lock.hvals(crate::REDIS_INDEX_RANK, crate::REDIS_KEY_BEST_RANK);
+        if let Some(best_ranks) = best_ranks {
+            for best_rank_str in best_ranks {
+                let ri: RankInfo = serde_json::from_str(best_rank_str.as_str()).unwrap();
+                self.user_best_rank.insert(ri.user_id, ri.into_rank_pt());
+            }
+        }
     }
 
     pub fn set_sender(&mut self, sender: TcpSender) {
@@ -169,8 +208,6 @@ impl GameMgr {
     ///命令初始化
     fn cmd_init(&mut self) {
         self.cmd_map
-            .insert(ServerCommonCode::UpdateSeason.into_u32(), update_season);
-        self.cmd_map
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
         self.cmd_map
             .insert(GameCode::UnloadUser.into_u32(), off_line);
@@ -192,15 +229,96 @@ impl GameMgr {
             GameCode::ModifyGradeFrameAndSoul.into_u32(),
             modify_grade_frame_and_soul,
         );
-        self.cmd_map.insert(
-            GameCode::UpdateLastSeasonRankPush.into_u32(),
-            update_last_season_rank,
-        );
+        self.cmd_map
+            .insert(GameCode::UpdateSeasonPush.into_u32(), update_season);
         self.cmd_map
             .insert(GameCode::GetLastSeasonRank.into_u32(), get_last_season_rank);
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
         self.cmd_map
             .insert(GameCode::SyncRankNickName.into_u32(), sync_rank_nick_name);
+    }
+
+    ///user结构体转proto
+    pub fn user2proto(&mut self, user_id: u32) -> S_USER_LOGIN {
+        let mut lr = S_USER_LOGIN::new();
+        lr.set_is_succ(true);
+        // let result = user.get_json_value("signInTime");
+        // if result.is_some() {
+        //     let str = result.unwrap().as_str().unwrap();
+        //     let mut sign_in_Time = str.parse::<NaiveDateTime>();
+        //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
+        // }
+        let user = self.users.get_mut(&user_id).unwrap();
+        let best_rank = self.user_best_rank.get(&user_id);
+        let user_info = user.get_user_info_ref();
+        let mut time = user_info.sync_time;
+        lr.sync_time = time;
+        let mut ppt = PlayerPt::new();
+        let nick_name = user_info.nick_name.as_str();
+        ppt.set_nick_name(nick_name.to_string());
+        let last_character = user_info.last_character;
+        ppt.set_last_character(last_character);
+        ppt.dlc.push(1);
+        let punish_match_pt: PunishMatchPt = user_info.punish_match.into();
+        ppt.set_punish_match(punish_match_pt);
+        ppt.set_grade(user_info.grade);
+        ppt.set_grade_frame(user_info.grade_frame);
+        ppt.set_soul(user_info.soul);
+        match best_rank {
+            Some(best_rank) => {
+                ppt.set_best_rank(best_rank.rank);
+            }
+            None => {
+                ppt.set_best_rank(-1);
+            }
+        }
+        let league_pt = self.user_rank.get(&user_id);
+        if let Some(league_pt) = league_pt {
+            unsafe {
+                ppt.set_league(league_pt.0.as_ref().unwrap().get_league().clone());
+            }
+        }
+
+        lr.player_pt = protobuf::SingularPtrField::some(ppt);
+        time = 0;
+        let res =
+            chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_login_time.as_str());
+        if let Ok(res) = res {
+            time = res.timestamp_subsec_micros();
+        }
+        lr.last_login_time = time;
+        time = 0;
+        let res =
+            chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_off_time.as_str());
+        if let Ok(res) = res {
+            time = res.timestamp_subsec_micros();
+        }
+
+        lr.last_logoff_time = time;
+
+        let mut v = Vec::new();
+        let mut res = ResourcesPt::new();
+        res.id = 1;
+        res.field_type = 1;
+        res.num = 100_u32;
+        v.push(res);
+
+        let resp = protobuf::RepeatedField::from(v);
+        lr.resp = resp;
+
+        let mut c_v = Vec::new();
+        for cter in user.get_characters_ref().cter_map.values() {
+            c_v.push(cter.clone().into());
+        }
+        let res = protobuf::RepeatedField::from(c_v);
+        lr.set_cters(res);
+
+        //封装grade相框
+        lr.grade_frames
+            .extend_from_slice(user.grade_frame.grade_frames.as_slice());
+        //封装soul头像
+        lr.souls.extend_from_slice(user.soul.souls.as_slice());
+        lr
     }
 }
 
@@ -227,39 +345,6 @@ pub fn reload_temps(_: &mut GameMgr, _: Packet) {
         Err(e) => {
             warn!("{:?}", e);
         }
-    }
-}
-
-///更新赛季
-pub fn update_season(gm: &mut GameMgr, packet: Packet) {
-    let mut usn = UPDATE_SEASON_NOTICE::new();
-    let res = usn.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return;
-    }
-    let season_id = usn.get_season_id();
-    let next_update_time = usn.get_next_update_time();
-    unsafe {
-        SEASON.season_id = season_id;
-        SEASON.next_update_time = next_update_time;
-    }
-    //处理更新内存
-    let mgr = crate::TEMPLATES.constant_temp_mgr();
-    let round_season_id = mgr.temps.get("round_season_id");
-    if let None = round_season_id {
-        warn!("the constant temp is None!key:round_season_id");
-        return;
-    }
-    let round_season_id = round_season_id.unwrap();
-    let res = u32::from_str(round_season_id.value.as_str());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return;
-    }
-    let round_season_id = res.unwrap();
-    if round_season_id != season_id {
-        return;
     }
 }
 

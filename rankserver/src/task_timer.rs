@@ -1,9 +1,5 @@
-use crate::REDIS_INDEX_RANK;
-use crate::REDIS_KEY_CURRENT_RANK;
-use crate::REDIS_POOL;
 use log::{error, info};
 use protobuf::Message;
-use rayon::slice::ParallelSliceMut;
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 use tools::cmd_code::GameCode;
@@ -47,7 +43,6 @@ fn sort_rank(rm: Lock) {
         None => time = 60 * 1000 * 10,
     }
     let m = async move {
-        let mut redis_lock = REDIS_POOL.lock().await;
         loop {
             async_std::task::sleep(Duration::from_millis(time)).await;
             let mut lock = rm.lock().await;
@@ -57,42 +52,19 @@ fn sort_rank(rm: Lock) {
             }
             info!("执行排行定时器-开始执行排序");
             let take_time = std::time::SystemTime::now();
-            lock.rank_vec.par_sort_unstable_by(|a, b| {
-                //如果段位等级一样
-                if a.league.get_league_id() == b.league.get_league_id() {
-                    if a.league.league_time != b.league.league_time {
-                        //看时间
-                        return a.league.league_time.cmp(&b.league.league_time);
-                    }
-                }
-                //段位不一样直接看分数
-                b.get_score().cmp(&a.get_score())
-            });
+            //排序
+            lock.sort(true);
+            //设置不需要排序
             lock.need_rank = false;
             info!("执行排行定时器结束!耗时:{:?}", take_time.elapsed().unwrap());
             //重新排行之后下发到游戏服
             let take_time = std::time::SystemTime::now();
             let mut rgsr = R_G_SYNC_RANK::new();
 
-            lock.rank_vec
-                .iter_mut()
-                .enumerate()
-                .for_each(|(index, ri)| {
-                    if ri.rank != index as i32 && ri.league.id > 0 {
-                        ri.rank = index as i32;
-                        let user_id = ri.user_id;
-                        let json_value = serde_json::to_string(ri).unwrap();
-                        //持久化到redis
-                        let _: Option<String> = redis_lock.hset(
-                            REDIS_INDEX_RANK,
-                            REDIS_KEY_CURRENT_RANK,
-                            user_id.to_string().as_str(),
-                            json_value.as_str(),
-                        );
-                    }
-                    let res = ri.into_rank_pt();
-                    rgsr.ranks.push(res);
-                });
+            lock.rank_vec.iter().for_each(|ri| {
+                let res = ri.into_rank_pt();
+                rgsr.ranks.push(res);
+            });
             let bytes = rgsr.write_to_bytes();
             if let Err(e) = bytes {
                 error!("{:?}", e);

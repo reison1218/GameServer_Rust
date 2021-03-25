@@ -107,8 +107,7 @@ fn arrange_packet(cp: async_std::sync::MutexGuard<ChannelMgr>, packet: Packet) {
     let cmd = packet.get_cmd();
     let mut lock = cp;
     //转发到游戏服
-    if (cmd == ServerCommonCode::ReloadTemps.into_u32()
-        || cmd == ServerCommonCode::UpdateSeason.into_u32())
+    if cmd == ServerCommonCode::ReloadTemps.into_u32()
         || (cmd >= GameCode::Min.into_u32() && cmd <= GameCode::Max.into_u32())
     {
         if cmd == GameCode::UnloadUser.into_u32() {
@@ -126,7 +125,7 @@ fn arrange_packet(cp: async_std::sync::MutexGuard<ChannelMgr>, packet: Packet) {
     {
         //转发到房间服
         lock.write_to_game_center(packet);
-    } else if cmd >= GateCode::Min.into_u32() && cmd <= GateCode::Max.into_u32() {
+    } else if cmd == GateCode::StopServer.into_u32() {
         lock.stop_server();
     }
 }

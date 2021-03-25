@@ -1,4 +1,4 @@
-use tools::protos::base::{CharacterPt, LeaguePt};
+use tools::protos::base::CharacterPt;
 
 #[derive(Clone, Debug, Default)]
 pub struct Character {
@@ -25,69 +25,5 @@ impl Into<CharacterPt> for Character {
         cter_pt.set_skills(self.skills);
         cter_pt.set_last_use_skills(self.last_use_skills);
         cter_pt
-    }
-}
-
-///段位数据
-#[derive(Clone, Debug)]
-pub struct League {
-    pub league_id: i8,    //段位id
-    pub score: i32,       //段位积分
-    pub league_time: i64, //进入段位时间
-}
-
-impl From<&LeaguePt> for League {
-    fn from(lp: &LeaguePt) -> Self {
-        let mut l = League::default();
-        l.score = lp.get_league_score();
-        l.league_time = lp.league_time;
-        let league_id = lp.league_id as i8;
-        l.league_id = league_id;
-        l
-    }
-}
-
-impl League {
-    pub fn round_reset(&mut self) {
-        let old_id = self.league_id;
-        self.league_id -= 1;
-        if self.league_id <= 0 {
-            self.league_id = 0;
-            self.league_time = 0;
-        } else {
-            let res = crate::TEMPLATES
-                .league_temp_mgr()
-                .get_temp(&self.league_id)
-                .unwrap();
-            if old_id != self.league_id {
-                self.score = res.score;
-                let time = chrono::Local::now();
-                self.league_time = time.timestamp_millis();
-            }
-        }
-    }
-
-    pub fn into_pt(&self) -> LeaguePt {
-        let mut lpt = LeaguePt::new();
-        lpt.set_league_id(self.league_id as i32);
-        lpt.set_league_score(self.score);
-        lpt.set_league_time(self.league_time);
-        lpt
-    }
-
-    pub fn update(&mut self, league_id: i8, league_score: i32, league_time: i64) {
-        self.league_id = league_id;
-        self.score = league_score;
-        self.league_time = league_time;
-    }
-}
-
-impl Default for League {
-    fn default() -> Self {
-        League {
-            score: 0,
-            league_time: 0,
-            league_id: 0,
-        }
     }
 }

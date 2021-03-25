@@ -1,4 +1,3 @@
-use tools::protos::base::{LeaguePt, PlayerPt, PunishMatchPt, ResourcesPt};
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
@@ -14,9 +13,8 @@ use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
-use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
-use tools::protos::protocol::{C_USER_LOGIN, S_USER_LOGIN};
+use tools::protos::protocol::C_USER_LOGIN;
 use tools::util::packet::Packet;
 
 use super::http::{notice_user_center, UserCenterNoticeType};
@@ -39,7 +37,6 @@ impl tools::tcp::Handler for TcpServerHandler {
     async fn on_open(&mut self, sender: TcpSender) {
         let mut lock = self.gm.lock().await;
         lock.set_sender(sender);
-        lock.init_rank();
     }
 
     async fn on_close(&mut self) {
@@ -108,17 +105,6 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
         gm_lock.users.insert(user_id, user_data);
     }
 
-    let rank_pt_ptr = gm_lock.user_rank.get(&user_id);
-    let league_pt;
-    match rank_pt_ptr {
-        Some(rank_pt_ptr) => unsafe {
-            let rank_pt = rank_pt_ptr.0.as_ref().unwrap();
-            league_pt = Some(rank_pt.get_league().clone());
-        },
-        None => {
-            league_pt = None;
-        }
-    }
     //封装会话
     let user_data = gm_lock.users.get_mut(&user_id);
     if user_data.is_none() {
@@ -133,7 +119,7 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
 
     //返回客户端
-    let lr = user2proto(user_data, league_pt);
+    let lr = gm_lock.user2proto(user_id);
     gm_lock.send_2_client(ClientCode::Login, user_id, lr.write_to_bytes()?);
     info!("用户完成登录！user_id:{}", &user_id);
     Ok(())
@@ -185,76 +171,6 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
         async_std::task::spawn(insert_grade_frame(grade_frame));
     }
     Ok(ud.unwrap())
-}
-
-///user结构体转proto
-fn user2proto(user: &mut UserData, league_pt: Option<LeaguePt>) -> S_USER_LOGIN {
-    let mut lr = S_USER_LOGIN::new();
-    lr.set_is_succ(true);
-    // let result = user.get_json_value("signInTime");
-    // if result.is_some() {
-    //     let str = result.unwrap().as_str().unwrap();
-    //     let mut sign_in_Time = str.parse::<NaiveDateTime>();
-    //     lr.signInTime = sign_in_Time.unwrap().timestamp_subsec_micros();
-    // }
-    let user_info = user.get_user_info_ref();
-    let mut time = user_info.sync_time;
-    lr.sync_time = time;
-    let mut ppt = PlayerPt::new();
-    let nick_name = user_info.nick_name.as_str();
-    ppt.set_nick_name(nick_name.to_string());
-    let last_character = user_info.last_character;
-    ppt.set_last_character(last_character);
-    ppt.dlc.push(1);
-    let punish_match_pt: PunishMatchPt = user_info.punish_match.into();
-    ppt.set_punish_match(punish_match_pt);
-    ppt.set_grade(user_info.grade);
-    ppt.set_grade_frame(user_info.grade_frame);
-    ppt.set_soul(user_info.soul);
-
-    if league_pt.is_some() {
-        ppt.set_league(league_pt.unwrap());
-    }
-
-    lr.player_pt = protobuf::SingularPtrField::some(ppt);
-    time = 0;
-    let res =
-        chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_login_time.as_str());
-    if let Ok(res) = res {
-        time = res.timestamp_subsec_micros();
-    }
-    lr.last_login_time = time;
-    time = 0;
-    let res = chrono::NaiveDateTime::from_str(user.get_user_info_mut_ref().last_off_time.as_str());
-    if let Ok(res) = res {
-        time = res.timestamp_subsec_micros();
-    }
-
-    lr.last_logoff_time = time;
-
-    let mut v = Vec::new();
-    let mut res = ResourcesPt::new();
-    res.id = 1;
-    res.field_type = 1;
-    res.num = 100_u32;
-    v.push(res);
-
-    let resp = protobuf::RepeatedField::from(v);
-    lr.resp = resp;
-
-    let mut c_v = Vec::new();
-    for cter in user.get_characters_ref().cter_map.values() {
-        c_v.push(cter.clone().into());
-    }
-    let res = protobuf::RepeatedField::from(c_v);
-    lr.set_cters(res);
-
-    //封装grade相框
-    lr.grade_frames
-        .extend_from_slice(user.grade_frame.grade_frames.as_slice());
-    //封装soul头像
-    lr.souls.extend_from_slice(user.soul.souls.as_slice());
-    lr
 }
 
 pub fn new(address: &str, gm: Lock) {

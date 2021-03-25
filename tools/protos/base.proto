@@ -31,8 +31,9 @@ message PlayerPt{
     uint32 grade = 4;//grade
     uint32 grade_frame = 5;//grade像框
     uint32 soul = 6;//灵魂头像
-    LeaguePt  league = 7;//玩家段位数据
-	repeated uint32 dlc = 8;//dlc
+    int32 best_rank = 7;//最佳排行，为负数代表没有数据
+    LeaguePt  league = 8;//玩家段位数据
+	repeated uint32 dlc = 9;//dlc
 }
 
 // 资源封装

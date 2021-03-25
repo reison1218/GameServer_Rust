@@ -11,7 +11,8 @@ use crate::battle::battle_skill::{
     show_map_cell, single_skill_damage, skill_aoe_damage, skill_damage_and_cure,
     skill_damage_opened_element, skill_open_map_cell, sub_cd, transform,
 };
-use crate::room::character::{BattleCharacter, League};
+use crate::mgr::League;
+use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::{RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};

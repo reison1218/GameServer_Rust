@@ -7,8 +7,6 @@ use num_enum::TryFromPrimitive;
 pub enum ServerCommonCode {
     //热更新静态配置
     ReloadTemps = 101,
-    //更新赛季
-    UpdateSeason = 102,
 }
 
 impl ServerCommonCode {
@@ -48,8 +46,8 @@ pub enum GameCode {
     ShowRank = 1012,
     //修改grade相框和soul头像
     ModifyGradeFrameAndSoul = 1013,
-    //更新上赛季排行榜通知
-    UpdateLastSeasonRankPush = 1014,
+    //更新赛季通知
+    UpdateSeasonPush = 1014,
     //获得上赛季排行榜信息
     GetLastSeasonRank = 1015,
     //同步排行榜名字
@@ -106,6 +104,8 @@ pub enum RoomCode {
     //--------------------------------------以下战斗相关---------------------------
     //战斗结算
     Summary = 21000,
+    //更新赛季通知
+    UpdateSeasonPush = 22000,
     //返回最大值
     Max = 30000,
 }
@@ -122,14 +122,15 @@ impl RoomCode {
 #[repr(u32)]
 pub enum BattleCode {
     Min = 30001,
-    Start = 30002,       //开始战斗
-    ChoiceIndex = 30003, //选择位置
-    Action = 30004,      //请求行动
-    Pos = 30005,         //架势请求
-    Emoji = 30006,       //表情符号
-    Buy = 30007,         //购买
-    OffLine = 39998,     //掉线
-    LeaveRoom = 39999,   //离开房间
+    Start = 30002,            //开始战斗
+    ChoiceIndex = 30003,      //选择位置
+    Action = 30004,           //请求行动
+    Pos = 30005,              //架势请求
+    Emoji = 30006,            //表情符号
+    Buy = 30007,              //购买
+    UpdateSeasonPush = 39997, //更新赛季通知
+    OffLine = 39998,          //掉线
+    LeaveRoom = 39999,        //离开房间
     Max = 40000,
 }
 
@@ -145,9 +146,9 @@ impl BattleCode {
 #[repr(u32)]
 pub enum RankCode {
     Min = 40001,
-    UpdateRank = 40002,     //更新排行榜
-    GetRank = 40003,        //获得排行榜
-    ModifyNickName = 40004, //修改名字
+    UpdateRank = 40002,       //更新排行榜
+    ModifyNickName = 40003,   //修改名字
+    UpdateSeasonPush = 40004, //更新赛季通知
     Max = 50000,
 }
 

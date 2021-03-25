@@ -37,17 +37,23 @@ trait Forward {
             let cmd = packet.get_cmd();
             let user_id = packet.get_user_id();
             let mut bytes = packet.build_server_bytes();
-
+            let is_broad = packet.is_broad();
             //需要自己处理的数据
             lock.handler(&packet, gate_token);
 
             //处理公共的命令
             if cmd > ClientCode::Min.into_u32() && cmd < ClientCode::Max.into_u32() {
                 //发送给客户端
-                let res = lock.get_gate_client_mut(user_id);
-                match res {
-                    Ok(gc) => gc.send(bytes),
-                    Err(e) => warn!("{:?},cmd:{}", e, cmd),
+                if is_broad {
+                    for client in lock.gate_clients.values_mut() {
+                        client.send(bytes.clone());
+                    }
+                } else {
+                    let res = lock.get_gate_client_mut(user_id);
+                    match res {
+                        Ok(gc) => gc.send(bytes),
+                        Err(e) => warn!("{:?},cmd:{}", e, cmd),
+                    }
                 }
             } else if cmd > RoomCode::Min.into_u32()//转发给房间服
                 && cmd < RoomCode::Max.into_u32()
@@ -76,7 +82,7 @@ trait Forward {
                             warn!("could not find gate client by token:{}!", server_token);
                         }
                     }
-                } else if packet.is_broad() {
+                } else if is_broad {
                     //推送给所有游戏服
                     for gate_client in lock.gate_clients.values_mut() {
                         gate_client.send(bytes.clone());
@@ -92,10 +98,16 @@ trait Forward {
             } else if cmd > BattleCode::Min.into_u32()//转发给战斗服
                 && cmd < BattleCode::Max.into_u32()
             {
-                let res = lock.get_battle_client_mut(user_id);
-                match res {
-                    Ok(gc) => gc.send(bytes),
-                    Err(e) => warn!("{:?},cmd:{:?}", e, cmd),
+                if is_broad {
+                    for battle_client in lock.battle_clients.values_mut() {
+                        battle_client.send(bytes.clone());
+                    }
+                } else {
+                    let res = lock.get_battle_client_mut(user_id);
+                    match res {
+                        Ok(gc) => gc.send(bytes),
+                        Err(e) => warn!("{:?},cmd:{:?}", e, cmd),
+                    }
                 }
             } else if cmd > RankCode::Min.into_u32()//转发给排行榜服
                 && cmd < RankCode::Max.into_u32()

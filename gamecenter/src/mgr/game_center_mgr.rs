@@ -3,8 +3,8 @@ use log::warn;
 use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, GameCode, GateCode, ServerCommonCode};
-use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
+use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, ServerCommonCode};
+use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -56,33 +56,17 @@ impl GameCenterMgr {
         }
         let next_update_time = next_update_time.unwrap();
 
-        let mut usn = UPDATE_SEASON_NOTICE::new();
+        let mut usn = R_S_UPDATE_SEASON::new();
         usn.set_season_id(season_id.as_u64().unwrap() as u32);
         usn.set_round(round.as_u64().unwrap() as u32);
         usn.set_next_update_time(next_update_time);
-        let cmd = ServerCommonCode::UpdateSeason.into_u32();
+
+        let cmd = RankCode::UpdateSeasonPush.into_u32();
         let mut packet = Packet::new(cmd, 0, 0);
         packet.set_is_client(false);
         packet.set_is_broad(true);
         packet.set_data(&usn.write_to_bytes().unwrap()[..]);
-        packet.set_cmd(ServerCommonCode::UpdateSeason.into_u32());
         let bytes = packet.build_server_bytes();
-        //通知gate(其实是通知游戏服务器)
-        for gate_client in self.gate_clients.values_mut() {
-            gate_client.send(bytes.clone());
-        }
-
-        //通知战斗服
-        for battle_client in self.battle_clients.values_mut() {
-            battle_client.send(bytes.clone());
-        }
-
-        //通知房间服
-        let res = self.get_room_center_mut().send(bytes.clone());
-        if let Err(e) = res {
-            warn!("{:?}", e);
-        }
-
         //通知排行榜服
         let res = self.get_rank_center_mut().send(bytes);
         if let Err(e) = res {

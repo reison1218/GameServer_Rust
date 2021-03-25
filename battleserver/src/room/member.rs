@@ -1,4 +1,5 @@
-use crate::room::character::{Character, League};
+use crate::mgr::League;
+use crate::room::character::Character;
 use std::collections::HashMap;
 use tools::protos::base::{MemberPt, PunishMatchPt};
 

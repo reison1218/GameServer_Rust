@@ -1,5 +1,5 @@
 use super::*;
-use redis::{Connection, FromRedisValue, Pipeline};
+use redis::{Commands, Connection, FromRedisValue, Pipeline};
 
 ///redis客户端封装结构体
 pub struct RedisPoolTool {
@@ -33,10 +33,11 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip
-            .hdel(hkey, old_key)
-            .hset(hkey, new_key, value)
-            .query(conn_mut);
+        let mut res = conn_mut.hdel(hkey, old_key);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
+        res = conn_mut.hset(hkey, new_key, value);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -52,7 +53,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.del(hkey).query(conn_mut);
+        let res = conn_mut.del(hkey);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -64,12 +65,19 @@ impl RedisPoolTool {
     }
 
     ///Deletes a single (or multiple) fields from a hash
-    pub fn hdel(&mut self, index: u32, hkey: &str, key: &str) {
+    pub fn hdel<T: FromRedisValue>(&mut self, index: u32, hkey: &str, key: &str) -> Option<T> {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        pip.hdel(hkey, key).execute(conn_mut);
+        let res = conn_mut.hdel(hkey, key);
         pip.cmd("select").arg(0).execute(conn_mut);
+        match res {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("{:?}", e);
+                None
+            }
+        }
     }
 
     ///获得redis所有values
@@ -77,7 +85,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.hvals(hkey).query(conn_mut);
+        let res = conn_mut.hvals(hkey);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -93,7 +101,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.hgetall(hkey).query(conn_mut);
+        let res = conn_mut.hgetall(hkey);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -115,7 +123,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.hset(hkey, key, value).query(conn_mut);
+        let res = conn_mut.hset(hkey, key, value);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -131,7 +139,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.hget(hkey, key).query(conn_mut);
+        let res = conn_mut.hget(hkey, key);
         pip.cmd("select").arg(0).execute(conn_mut);
         if res.is_err() {
             warn!(
@@ -160,7 +168,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.zadd(zkey, key, value).query(conn_mut);
+        let res = conn_mut.zadd(zkey, key, value);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -177,7 +185,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.zrange(zkey, 0, -1).query(conn_mut);
+        let res = conn_mut.zrange(zkey, 0, -1);
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -195,7 +203,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.zincr(zkey, key, "increment").query(conn_mut);
+        let res = conn_mut.zincr(zkey, key, "increment");
         pip.cmd("select").arg(0).execute(conn_mut);
         match res {
             Ok(v) => Some(v),
@@ -211,7 +219,7 @@ impl RedisPoolTool {
         let mut pip = get_pip();
         let conn_mut = &mut self.conn;
         pip.cmd("select").arg(index).execute(conn_mut);
-        let res = pip.hget(hkey, key).query(conn_mut);
+        let res = conn_mut.hget(hkey, key);
         pip.cmd("select").arg(0).execute(conn_mut);
         if res.is_err() {
             error!("{:?}", res.err().unwrap());

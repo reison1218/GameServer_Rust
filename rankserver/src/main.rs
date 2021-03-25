@@ -55,6 +55,9 @@ type Lock = Arc<Mutex<RankMgr>>;
 
 ///排行榜redis索引
 const REDIS_INDEX_RANK: u32 = 2;
+
+///排行榜历史redis索引
+const REDIS_INDEX_HISTORY: u32 = 3;
 ///当前赛季排行
 const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 
@@ -148,4 +151,16 @@ fn init_rank(rm: Lock) {
         //段位不一样直接看分数
         b.get_score().cmp(&a.get_score())
     });
+
+    //加载最佳排行
+    let best_ranks: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_BEST_RANK);
+    if let None = best_ranks {
+        return;
+    }
+    let best_ranks = best_ranks.unwrap();
+    for rank_str in best_ranks {
+        let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
+        let user_id = ri.user_id;
+        lock.user_best_rank.insert(user_id, ri);
+    }
 }

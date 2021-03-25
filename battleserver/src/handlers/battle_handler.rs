@@ -3,6 +3,7 @@ use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
 use crate::battle::battle_skill::Skill;
 use crate::battle::market::handler_buy;
 use crate::mgr::battle_mgr::BattleMgr;
+use crate::mgr::RankInfo;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::MapCellType;
 use crate::room::room::Room;
@@ -19,7 +20,7 @@ use tools::protos::base::ActionUnitPt;
 use tools::protos::battle::C_BUY;
 use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX, C_POS, S_ACTION_NOTICE, S_POS_NOTICE};
 use tools::protos::room::C_EMOJI;
-use tools::protos::server_protocol::{R_B_START, UPDATE_SEASON_NOTICE};
+use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON};
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
 
@@ -676,8 +677,8 @@ pub fn reload_temps(_: &mut BattleMgr, _: Packet) {
 }
 
 ///更新赛季
-pub fn update_season(rm: &mut BattleMgr, packet: Packet) {
-    let mut usn = UPDATE_SEASON_NOTICE::new();
+pub fn update_season(bm: &mut BattleMgr, packet: Packet) {
+    let mut usn = R_S_UPDATE_SEASON::new();
     let res = usn.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
         error!("{:?}", e);
@@ -707,9 +708,10 @@ pub fn update_season(rm: &mut BattleMgr, packet: Packet) {
     if round_season_id != season_id {
         return;
     }
+    let mut redis_lock = crate::REDIS_POOL.lock().unwrap();
     //更新所有内存数据
-    for user_id in rm.player_room.clone().keys() {
-        let room = rm.get_room_mut(&user_id);
+    for &user_id in bm.player_room.clone().keys() {
+        let room = bm.get_room_mut(&user_id);
         if room.is_none() {
             continue;
         }
@@ -719,7 +721,15 @@ pub fn update_season(rm: &mut BattleMgr, packet: Packet) {
             continue;
         }
         let member = member.unwrap();
-        member.league.season_round_reset();
+        let rank: Option<String> = redis_lock.hget(
+            crate::REDIS_INDEX_RANK,
+            crate::REDIS_KEY_CURRENT_RANK,
+            user_id.to_string().as_str(),
+        );
+        if let Some(rank) = rank {
+            let ri: RankInfo = serde_json::from_str(rank.as_str()).unwrap();
+            member.league = ri.league.into();
+        }
     }
 }
 

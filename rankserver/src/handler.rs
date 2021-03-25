@@ -1,19 +1,18 @@
 use crate::mgr::RankInfo;
 use crate::mgr::{rank_mgr::RankMgr, RankInfoPtr};
 use crate::{
-    REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, REDIS_KEY_HISTORY_RANK, REDIS_KEY_LAST_RANK,
-    REDIS_POOL,
+    REDIS_INDEX_HISTORY, REDIS_INDEX_RANK, REDIS_KEY_BEST_RANK, REDIS_KEY_CURRENT_RANK,
+    REDIS_KEY_HISTORY_RANK, REDIS_KEY_LAST_RANK, REDIS_POOL,
 };
 use async_std::task::block_on;
 use log::{error, warn};
 use protobuf::Message;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
-use tools::cmd_code::GameCode;
+use tools::cmd_code::{BattleCode, GameCode, RoomCode};
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
-use tools::protos::server_protocol::{
-    B_S_SUMMARY, R_G_SYNC_RANK, R_G_UPDATE_LAST_SEASON_RANK, UPDATE_SEASON_NOTICE,
-};
+use tools::protos::server_protocol::R_S_UPDATE_SEASON;
+use tools::protos::server_protocol::{B_S_SUMMARY, R_G_SYNC_RANK};
 use tools::util::packet::Packet;
 
 pub fn get_rank(rm: &mut RankMgr, packet: Packet) {
@@ -46,6 +45,11 @@ pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
         .par_iter_mut()
         .filter(|x| x.user_id == user_id)
         .for_each(|x| x.name = nick_name.clone());
+    //同步最好排名
+    let best_rank = rm.user_best_rank.get_mut(&user_id);
+    if let Some(best_rank) = best_rank {
+        best_rank.name = nick_name;
+    }
     //通知所游戏服更新名字
     rm.push_2_server(
         GameCode::SyncRankNickName.into_u32(),
@@ -56,7 +60,16 @@ pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
 
 ///处理上一赛季
 ///先清空上一赛季数据库，然后插入当前赛季数据
-pub async fn process_last_season_rank(rm: &mut RankMgr, round: u32) {
+pub async fn handler_season_update(
+    rm: &mut RankMgr,
+    round: u32,
+    round_season_id: u32,
+    proto: &mut R_S_UPDATE_SEASON,
+) {
+    if round_season_id != proto.season_id {
+        return;
+    }
+
     let mut redis_lock = REDIS_POOL.lock().await;
 
     //先清空上一赛季的排行榜数据
@@ -67,71 +80,65 @@ pub async fn process_last_season_rank(rm: &mut RankMgr, round: u32) {
         return;
     }
 
-    //再插入新数据
-    let mut proto = R_G_UPDATE_LAST_SEASON_RANK::new();
+    //立刻进行排序一次
+    rm.sort(false);
+
     let mut index = 0;
-    rm.rank_vec.iter().for_each(|ri| {
+    //刷新last_rank数据,并保存历史排行榜,并更新玩家历史最佳
+    for ri in rm.rank_vec.iter() {
         let user_id = ri.user_id;
         let json_value = serde_json::to_string(&ri).unwrap();
+        //更新last_rank
         let _: Option<String> = redis_lock.hset(
             REDIS_INDEX_RANK,
             REDIS_KEY_LAST_RANK,
             user_id.to_string().as_str(),
             json_value.as_str(),
         );
+        //更新历史排行榜
         if index < 100 {
             let key = format!("{:?}-,{:?}", REDIS_KEY_HISTORY_RANK, round.to_string());
             let _: Option<String> = redis_lock.hset(
-                REDIS_INDEX_RANK,
+                REDIS_INDEX_HISTORY,
                 key.as_str(),
                 user_id.to_string().as_str(),
                 json_value.as_str(),
             );
         }
-
-        proto.ranks.push(ri.into_rank_pt());
+        //更新玩家历史最佳
+        let best_rank = rm.user_best_rank.get_mut(&user_id);
+        let mut best_rank_temp = None;
+        match best_rank {
+            Some(best_rank) => {
+                if best_rank.rank < ri.rank {
+                    let _ = std::mem::replace(best_rank, ri.clone());
+                    best_rank_temp = Some(best_rank.clone());
+                }
+            }
+            None => {
+                rm.user_best_rank.insert(user_id, ri.clone());
+                best_rank_temp = Some(ri.clone());
+            }
+        }
+        if let Some(best_rank_temp) = best_rank_temp {
+            let best_rank_str = serde_json::to_string(&best_rank_temp);
+            match best_rank_str {
+                Ok(best_rank_str) => {
+                    //更新到redis
+                    let _: Option<String> = redis_lock.hset(
+                        REDIS_INDEX_RANK,
+                        REDIS_KEY_BEST_RANK,
+                        user_id.to_string().as_str(),
+                        best_rank_str.as_str(),
+                    );
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
+            }
+        }
         index += 1;
-    });
-
-    let bytes = proto.write_to_bytes();
-    if let Err(e) = bytes {
-        error!("{:?}", e);
-        return;
     }
-    let bytes = bytes.unwrap();
-    //通知所有游戏服更新上一赛季排行榜信息
-    rm.push_2_server(GameCode::UpdateLastSeasonRankPush.into_u32(), 0, bytes);
-}
-
-pub fn update_season(rm: &mut RankMgr, packet: Packet) {
-    let mut usn = UPDATE_SEASON_NOTICE::new();
-    let res = usn.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return;
-    }
-    let season_id = usn.get_season_id();
-    let round = usn.get_round();
-
-    let mgr = crate::TEMPLATES.constant_temp_mgr();
-    let round_season_id = mgr.temps.get("round_season_id");
-    if let None = round_season_id {
-        warn!("the constant temp is None!key:round_season_id");
-        return;
-    }
-    let round_season_id = round_season_id.unwrap();
-    let res = u32::from_str(round_season_id.value.as_str());
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return;
-    }
-    let round_season_id = res.unwrap();
-    if round_season_id != season_id {
-        return;
-    }
-
-    //先处理上一赛季排行榜问题
-    block_on(process_last_season_rank(rm, round));
 
     //处理当前赛季数据
     let mut remove_v = Vec::new();
@@ -144,7 +151,8 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
         let league_id = x.league.id;
         if x.league.id <= 0 {
             remove_v.push(x.user_id);
-            redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
+            let _: Option<String> =
+                redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
         } else {
             x.update_league(league_id);
             let json_value = serde_json::to_string(x);
@@ -175,6 +183,44 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
         }
         rm.rank_vec.remove(index);
     }
+}
+
+pub fn update_season(rm: &mut RankMgr, packet: Packet) {
+    let mut usn = R_S_UPDATE_SEASON::new();
+    let res = usn.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
+    let round = usn.get_round();
+
+    let mgr = crate::TEMPLATES.constant_temp_mgr();
+    let round_season_id = mgr.temps.get("round_season_id");
+    if let None = round_season_id {
+        warn!("the constant temp is None!key:round_season_id");
+        return;
+    }
+    let round_season_id = round_season_id.unwrap();
+    let res = u32::from_str(round_season_id.value.as_str());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
+    let round_season_id = res.unwrap();
+
+    //处理赛季更新
+    block_on(handler_season_update(rm, round, round_season_id, &mut usn));
+
+    let bytes = usn.write_to_bytes();
+    if let Err(e) = bytes {
+        error!("{:?}", e);
+        return;
+    }
+    let bytes = bytes.unwrap();
+    //通知其他服赛季更新
+    rm.push_2_server(GameCode::UpdateSeasonPush.into_u32(), 0, bytes.clone());
+    rm.push_2_server(RoomCode::UpdateSeasonPush.into_u32(), 0, bytes.clone());
+    rm.push_2_server(BattleCode::UpdateSeasonPush.into_u32(), 0, bytes);
 }
 
 ///更新排行榜请求指令
