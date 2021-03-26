@@ -6,6 +6,14 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+opt-level = 3 #优化等级最大
+lto = true #链接时优化,所有crate贯穿所有进行优化
+codegen-units = 1 #将每一个crate作为一整块进行编译
+
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [dependencies]
 protobuf="2.20.0"
 protoc-rust = "2.20.0"

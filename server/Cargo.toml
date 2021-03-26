@@ -11,6 +11,9 @@ opt-level = 3 #release
 lto = true
 codegen-units = 1
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [dependencies]
 #postgres ="0.15.2"
 num_cpus="1.10.1"

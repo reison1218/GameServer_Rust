@@ -7,7 +7,6 @@ mod test_tokio;
 mod web;
 mod web_socket;
 
-use bytes::{Buf, BufMut};
 use log::info;
 use num_enum::FromPrimitive;
 use num_enum::IntoPrimitive;
@@ -492,7 +491,31 @@ pub struct ZZ<T: TestTrait = StructTest> {
     e: T,
 }
 
+#[derive(Debug)]
+pub struct SSSSSSS<T, const N: usize>([T; N]);
+
+use std::sync::Once;
+
+static START: Once = Once::new();
+
 fn main() -> anyhow::Result<()> {
+    let res = SSSSSSS([0, 10]);
+    let res1 = SSSSSSS([0, 40]);
+    println!("{:?},{:?}", res.type_id(), res.0.type_id());
+    println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
+    let a = std::ptr::addr_of!(res);
+    unsafe {
+        println!("{:?}", a.read_unaligned());
+    }
+
+    START.call_once(|| {
+        println!("test Once!");
+    });
+
+    START.call_once(|| {
+        println!("test Once!");
+    });
+
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();

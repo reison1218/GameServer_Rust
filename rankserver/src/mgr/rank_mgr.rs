@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{RankInfo, RankInfoPtr};
-use crate::handler::{get_rank, modify_nick_name, update_rank, update_season};
+use crate::handler::{modify_nick_name, update_rank, update_season};
 use crate::task_timer::Task;
 use crate::{REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK};
 use async_std::task::block_on;
@@ -41,19 +41,6 @@ impl RankMgr {
         self.sender.as_mut().unwrap().send(bytes);
     }
 
-    ///转发到游戏中心服
-    pub fn send_2_server_direction(
-        &mut self,
-        cmd: u32,
-        user_id: u32,
-        bytes: Vec<u8>,
-        server_token: u32,
-    ) {
-        let bytes =
-            Packet::build_packet_bytes_direction(cmd, user_id, bytes, true, false, server_token);
-        self.sender.as_mut().unwrap().send(bytes);
-    }
-
     pub fn set_sender(&mut self, sender: TcpSender) {
         self.sender = Some(sender);
     }
@@ -66,8 +53,6 @@ impl RankMgr {
         //更新赛季
         self.cmd_map
             .insert(RankCode::UpdateSeasonPush.into_u32(), update_season);
-        //获得排行榜
-        self.cmd_map.insert(RankCode::GetRank.into_u32(), get_rank);
         //修改名字
         self.cmd_map
             .insert(RankCode::ModifyNickName.into_u32(), modify_nick_name);

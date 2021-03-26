@@ -10,26 +10,10 @@ use protobuf::Message;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::str::FromStr;
 use tools::cmd_code::{BattleCode, GameCode, RoomCode};
+use tools::protos::server_protocol::B_S_SUMMARY;
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::protos::server_protocol::R_S_UPDATE_SEASON;
-use tools::protos::server_protocol::{B_S_SUMMARY, R_G_SYNC_RANK};
 use tools::util::packet::Packet;
-
-pub fn get_rank(rm: &mut RankMgr, packet: Packet) {
-    let server_token = packet.get_server_token();
-    let mut rgsr = R_G_SYNC_RANK::new();
-    for ri in rm.rank_vec.iter() {
-        let res = ri.into_rank_pt();
-        rgsr.ranks.push(res);
-    }
-    let bytes = rgsr.write_to_bytes();
-    if let Err(e) = bytes {
-        error!("{:?}", e);
-        return;
-    }
-    let bytes = bytes.unwrap();
-    rm.send_2_server_direction(GameCode::SyncRank.into_u32(), 0, bytes, server_token);
-}
 
 ///修改名字
 pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {

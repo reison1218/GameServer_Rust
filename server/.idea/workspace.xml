@@ -31,21 +31,52 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15cc664f-7838-4ed0-a6d6-18401bb31140" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../battleserver/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/src/battle/battle.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/battle/battle.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../battleserver/src/handlers/battle_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/handlers/battle_handler.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../battleserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/map_data.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/map_data.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/src/mgr/battle_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/mgr/battle_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/src/mgr/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/mgr/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/character.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/src/room/member.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/room/member.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/template/Mission.json" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/template/Mission.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/template/TileMap.json" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/template/TileMap.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gamecenter/src/net/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/net/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/tcp_client.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../net_test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../net_test/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/src/handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/src/handler.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/src/mgr/rank_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/src/mgr/rank_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/src/task_timer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/src/task_timer.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/template/Mission.json" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/template/Mission.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/template/TileMap.json" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/template/TileMap.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/Cargo.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/handlers/room_handler.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../roomserver/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/mgr/room_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/character.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/character.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/src/room/member.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/src/room/member.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Mission.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Mission.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/TileMap.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/TileMap.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity/user_info.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity/user_info.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/mgr/game_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/mgr/game_mgr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/tcp_server.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Constants.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/Constants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/Mission.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/Mission.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/TileMap.json" beforeDir="false" afterPath="$PROJECT_DIR$/template/TileMap.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/protos/base.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/protos/base.proto" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../tools/protos/server_protocol.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/protos/server_protocol.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/cmd_code.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/cmd_code.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/protos/base.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/base.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../tools/src/protos/server_protocol.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/protos/server_protocol.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/src/redis_pool.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/redis_pool.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,6 +128,7 @@
       <option name="command" value="run --package server --bin server" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -111,6 +143,7 @@
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -125,6 +158,7 @@
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="true" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -243,6 +277,8 @@
       <workItem from="1609222204693" duration="2836000" />
       <workItem from="1609408731092" duration="117000" />
       <workItem from="1611214159640" duration="800000" />
+      <workItem from="1616651981837" duration="4080000" />
+      <workItem from="1616668450699" duration="440000" />
     </task>
     <task id="LOCAL-00002" summary="提交">
       <created>1571399172530</created>
@@ -296,7 +332,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/entity/user_info.rs</url>
-          <line>321</line>
+          <line>323</line>
           <option name="timeStamp" value="16" />
         </line-breakpoint>
       </breakpoints>

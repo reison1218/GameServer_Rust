@@ -10,6 +10,9 @@ opt-level = 3
 lto=true
 codegen-units = 1
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [dependencies]
 ws="0.9.1"
 #postgres ={version="0.15.2"}
