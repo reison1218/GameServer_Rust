@@ -123,6 +123,8 @@ impl BattleMgr {
         }
     }
 
+    ///处理玩家离开战斗
+    ///need_push_self:是否需要推送给自己
     pub fn handler_leave(&mut self, room_id: u32, user_id: u32, need_push_self: bool) {
         let room = self.rooms.get_mut(&room_id).unwrap();
         let room_id = room.get_room_id();

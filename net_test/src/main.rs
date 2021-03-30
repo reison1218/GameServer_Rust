@@ -14,6 +14,7 @@ use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
+use slab::Slab;
 use std::time::{Duration, Instant, SystemTime};
 use tools::protos::base::{RankInfoPt, WorldCellPt};
 
@@ -39,7 +40,6 @@ use async_std::prelude::*;
 use async_std::task;
 
 use crate::map::generate_map;
-use crate::test_async::async_main;
 use crate::web::test_http_client;
 use crate::web::{test_faster, test_http_server};
 use actix::{Actor, ContextFutureSpawner, SyncArbiter};
@@ -498,6 +498,8 @@ use std::sync::Once;
 
 static START: Once = Once::new();
 
+static mut STATIC_U32: u32 = 0;
+
 fn main() -> anyhow::Result<()> {
     let res = SSSSSSS([0, 10]);
     let res1 = SSSSSSS([0, 40]);
@@ -510,12 +512,25 @@ fn main() -> anyhow::Result<()> {
 
     START.call_once(|| {
         println!("test Once!");
+        unsafe {
+            STATIC_U32 = 1;
+        }
     });
 
     START.call_once(|| {
         println!("test Once!");
     });
-
+    let mut v = vec![StructTest::default(), StructTest::default()];
+    {
+        let size = v.len();
+        let mut res = v.drain(0..size);
+        let next1 = res.next();
+        let next2 = res.next();
+        println!("{:?}", next1);
+        println!("{:?}", next2);
+        std::mem::forget(res);
+    }
+    println!("{:?}", v);
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
@@ -924,7 +939,7 @@ fn test_sort() {
     let mut v = Vec::new();
     let mut rng = thread_rng();
     for i in 1..=99999 {
-        let n: u32 = rng.gen_range(1, 99999);
+        let n: u32 = rng.gen_range(1..99999);
         v.push(n);
     }
 
@@ -938,7 +953,7 @@ fn test_sort() {
     let mut v = Vec::new();
     let mut rng = thread_rng();
     for i in 1..=99999 {
-        let n: u32 = rng.gen_range(1, 99999);
+        let n: u32 = rng.gen_range(1..99999);
         v.push(n);
     }
     let time = SystemTime::now();

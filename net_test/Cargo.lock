@@ -1575,7 +1575,7 @@ dependencies = [
  "num_enum",
  "piston-ai_behavior",
  "protobuf",
- "rand 0.7.3",
+ "rand 0.8.3",
  "rayon",
  "scheduled-thread-pool",
  "scroll",

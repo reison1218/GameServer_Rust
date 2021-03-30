@@ -625,7 +625,7 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) {
     room.emoji(user_id, emoji_id);
 }
 
-///离开房间
+///离线
 pub fn off_line(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
