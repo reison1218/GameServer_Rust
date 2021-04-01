@@ -115,7 +115,7 @@ fn match_room_confirm_into(rm: Lock, task: Task) {
         return;
     }
     //删除房间
-    lock.clear_room_without_push(room_type, room_id);
+    lock.rm_room_without_push(room_type, room_id);
 }
 
 ///执行匹配房间任务
@@ -221,8 +221,7 @@ fn match_room_ready(rm: Lock, task: Task) {
                     }
                     let room_type = room.get_room_type();
                     let room_id = room.get_room_id();
-                    let v = room.get_member_vec();
-                    lock.rm_room(room_id, room_type, v);
+                    lock.rm_room_without_push(room_type, room_id);
                 }
             }
             return;

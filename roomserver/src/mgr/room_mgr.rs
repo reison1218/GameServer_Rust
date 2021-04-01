@@ -46,6 +46,24 @@ impl RoomMgr {
         rm
     }
 
+    pub fn rm_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
+        let room = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.rm_room(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.rm_room(&room_id),
+            _ => None,
+        };
+        if room.is_none() {
+            return;
+        }
+        let room = room.unwrap();
+        if room.is_empty() {
+            return;
+        }
+        for member in room.members.keys() {
+            self.player_room.remove(member);
+        }
+    }
+
     ///删除房间成员，不推送给客户端
     ///user_id:玩家id
     pub fn remove_member_without_push(&mut self, user_id: u32) {
@@ -85,39 +103,8 @@ impl RoomMgr {
             need_rm_room = false;
         }
         if need_rm_room {
-            self.clear_room_without_push(room_type, room_id);
+            self.rm_room_without_push(room_type, room_id);
         }
-    }
-
-    pub fn clear_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
-        let room = match room_type {
-            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
-            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
-            _ => None,
-        };
-        if let None = room {
-            warn!(
-                "the room is None!room_type:{:?},room_id:{}",
-                room_type, room_id
-            );
-            return;
-        }
-        let room = room.unwrap();
-
-        for id in room.members.keys() {
-            self.player_room.remove(id);
-        }
-
-        match room_type {
-            RoomType::OneVOneVOneVOneMatch => {
-                self.match_room.rooms.remove(&room_id);
-            }
-            _ => {}
-        }
-        info!(
-            "删除房间，释放内存,不推送给客户端!room_type:{:?},room_id:{}",
-            room_type, room_id
-        );
     }
 
     pub fn get_task_sender_clone(&self) -> crossbeam::channel::Sender<Task> {
@@ -205,22 +192,6 @@ impl RoomMgr {
             return self.match_room.get_room_ref(&room_id);
         }
         None
-    }
-
-    ///删除房间
-    pub fn rm_room(&mut self, room_id: u32, room_type: RoomType, member_v: Vec<u32>) {
-        match room_type {
-            RoomType::OneVOneVOneVOneMatch => {
-                self.match_room.rm_room(&room_id);
-            }
-            RoomType::OneVOneVOneVOneCustom => {
-                self.custom_room.rm_room(&room_id);
-            }
-            _ => {}
-        }
-        for user_id in member_v {
-            self.player_room.remove(&user_id);
-        }
     }
 
     ///命令初始化

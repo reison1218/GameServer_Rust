@@ -244,6 +244,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
         rm.send_2_server(BattleCode::LeaveRoom.into_u32(), user_id, Vec::new());
         return;
     }
+    //不然走正常离开房间流程
     let res = handler_leave_room(rm, user_id, true);
     if let Err(e) = res {
         warn!("{:?}", e);
@@ -304,8 +305,9 @@ pub fn cancel_search_room(rm: &mut RoomMgr, packet: Packet) {
         warn!("this user is not matching the room!user_id:{}", user_id);
         return;
     }
-
+    //删除玩家房间数据
     rm.remove_member_without_push(user_id);
+    //返回客户端消息
     rm.send_2_client(ClientCode::CancelSearch, user_id, Vec::new());
 }
 
@@ -1147,7 +1149,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
         let bytes = sircn.write_to_bytes().unwrap();
         room.send_2_all_client(ClientCode::IntoRoomCancelNotice, bytes);
         //删除房间
-        rm.clear_room_without_push(room_type, room_id);
+        rm.rm_room_without_push(room_type, room_id);
     }
 }
 
@@ -1169,7 +1171,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
     match room_type {
         //如果是匹配房，直接删除房间数据
         RoomType::OneVOneVOneVOneMatch => {
-            rm.clear_room_without_push(room_type, room_id);
+            rm.rm_room_without_push(room_type, room_id);
         }
         //如果是自定义房间，更新结算数据
         RoomType::OneVOneVOneVOneCustom => {
@@ -1272,7 +1274,7 @@ pub fn handler_leave_room(
     let room_type = RoomType::from(room.get_room_type());
 
     //处理退出房间
-    let rm_room = match room_type {
+    let need_rm = match room_type {
         RoomType::OneVOneVOneVOneCustom => {
             let res = rm.custom_room.leave_room(
                 MemberLeaveNoticeType::Leave as u8,
@@ -1288,9 +1290,9 @@ pub fn handler_leave_room(
             let room = rm.custom_room.rooms.get(&room_id).unwrap();
             let owner_id = room.get_owner_id();
             if room.is_empty() || user_id == owner_id {
-                rm.custom_room.rm_room(&room_id)
+                true
             } else {
-                None
+                false
             }
         }
         RoomType::OneVOneVOneVOneMatch => {
@@ -1314,29 +1316,23 @@ pub fn handler_leave_room(
             }
             let room = rm.match_room.rooms.get(&room_id).unwrap();
             if room.is_empty() {
-                rm.match_room.rm_room(&room_id)
+                true
             } else {
-                None
+                false
             }
         }
-        _ => None,
+        _ => false,
     };
 
     //删掉当前离开的玩家
     rm.player_room.remove(&user_id);
-
-    //删除房间内所有玩家
-    if let Some(rm_room) = rm_room {
-        for &member_id in rm_room.members.keys() {
-            if member_id == 0 {
-                continue;
-            }
-            rm.player_room.remove(&member_id);
-        }
-    }
     info!(
         "玩家离开{:?}房间，卸载玩家房间数据!user_id:{},room_id:{}",
         room_type, user_id, room_id
     );
+    if need_rm {
+        rm.rm_room_without_push(room_type, room_id);
+    }
+
     Ok(())
 }
