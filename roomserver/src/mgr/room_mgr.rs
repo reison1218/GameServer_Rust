@@ -7,9 +7,9 @@ use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
-use log::{info, warn};
-use std::collections::hash_map::RandomState;
+use log::{error, info, warn};
 use std::collections::HashMap;
+use std::{collections::hash_map::RandomState, convert::TryFrom};
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -72,21 +72,25 @@ impl RoomMgr {
             return;
         }
         let res = res.unwrap();
-        let (model, room_id) = tools::binary::separate_long_2_int(*res);
+        let (room_type, room_id) = tools::binary::separate_long_2_int(*res);
         let room;
-        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
-            room = self.custom_room.get_room_mut(&room_id);
-        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
-            room = self.match_room.get_room_mut(&room_id);
-        } else {
-            room = None;
+        let room_type = RoomType::try_from(room_type as u8);
+        if let Err(e) = room_type {
+            error!("{:?}", e);
+            return;
         }
+        let room_type = room_type.unwrap();
+        room = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            _ => None,
+        };
+
         if let None = room {
             warn!("the room is None!user_id:{}", user_id);
             return;
         }
         let room = room.unwrap();
-        let room_type = room.get_room_type();
         let room_id = room.get_room_id();
         room.remove_member_without_push(user_id);
         self.player_room.remove(&user_id);
@@ -165,14 +169,18 @@ impl RoomMgr {
             return None;
         }
         let res = res.unwrap();
-        let (model, room_id) = tools::binary::separate_long_2_int(*res);
+        let (room_type, room_id) = tools::binary::separate_long_2_int(*res);
+        let room_type = RoomType::try_from(room_type as u8);
+        if let Err(e) = room_type {
+            error!("{:?}", e);
+            return None;
+        }
+        let room_type = room_type.unwrap();
 
-        let room = if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
-            self.custom_room.get_room_mut(&room_id)
-        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
-            self.match_room.get_room_mut(&room_id)
-        } else {
-            None
+        let room = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            _ => None,
         };
         room
     }
@@ -184,14 +192,20 @@ impl RoomMgr {
             return None;
         }
         let res = res.unwrap();
-        let (model, room_id) = tools::binary::separate_long_2_int(*res);
-
-        if model == RoomType::into_u32(RoomType::OneVOneVOneVOneCustom) {
-            return self.custom_room.get_room_ref(&room_id);
-        } else if model == RoomType::into_u32(RoomType::OneVOneVOneVOneMatch) {
-            return self.match_room.get_room_ref(&room_id);
+        let (room_type, room_id) = tools::binary::separate_long_2_int(*res);
+        let room_type = RoomType::try_from(room_type as u8);
+        if let Err(e) = room_type {
+            error!("{:?}", e);
+            return None;
         }
-        None
+        let room_type = room_type.unwrap();
+
+        let room = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_ref(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_ref(&room_id),
+            _ => None,
+        };
+        room
     }
 
     ///命令初始化
