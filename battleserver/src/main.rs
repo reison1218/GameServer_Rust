@@ -88,9 +88,7 @@ fn init_templates_mgr() -> TemplatesMgr {
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 ///排行榜redis索引
 const REDIS_INDEX_RANK: u32 = 2;
-
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
-
 ///当前赛季排行
 const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 

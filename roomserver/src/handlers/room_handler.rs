@@ -5,6 +5,7 @@ use crate::room::member::MemberState;
 use crate::room::member::{Member, PunishMatch};
 use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{RoomModel, RoomType, TeamId};
+use crate::task_timer::build_match_room_ready_task;
 use crate::SEASON;
 use log::error;
 use log::info;
@@ -216,7 +217,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::OneVOneVOneVOneMatch
         && member_count == MEMBER_MAX as usize
-        && room_state == RoomState::Await
+        && room_state == RoomState::AwaitReady
     {
         warn!(
             "match room is full,could not leave room now! room_id:{},user_id:{}",
@@ -226,7 +227,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //房间为等待状态，并且已经准备了，则不允许退出房间
-    if room_state == RoomState::Await && member_state == MemberState::Ready {
+    if room_state == RoomState::AwaitReady && member_state == MemberState::Ready {
         warn!(
             "leave_room:the room is RoomState::Await,this player is already ready!user_id:{}",
             user_id
@@ -280,7 +281,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
         }
         _ => {
             //其他状态房间服自行处理
-            if room_state == RoomState::Await {
+            if room_state == RoomState::AwaitReady {
                 //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
                 room.check_punish_for_leave(user_id);
             }
@@ -430,7 +431,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     //校验房间是否已经开始游戏
-    if room_state != RoomState::Await {
+    if room_state != RoomState::AwaitReady {
         warn!(
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
@@ -730,7 +731,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
     let room = room.unwrap();
 
     //校验房间是否已经开始游戏
-    if room.get_state() != RoomState::Await {
+    if room.get_state() != RoomState::AwaitReady {
         warn!(
             "can not setting room!room_id:{},room_state:{:?}",
             room.get_room_id(),
@@ -1001,7 +1002,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
     let cter = member.cters.get(&cter_id).unwrap();
 
     //校验房间壮体啊
-    if room_state != RoomState::Await {
+    if room_state != RoomState::AwaitReady {
         warn!("can not choice skill now!");
         return;
     }
@@ -1131,12 +1132,14 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
         //判断人是否满了，满了就把房间信息推送给客户端
         let res = room.check_all_confirmed_into_room();
         if res {
-            room.state = RoomState::Await;
+            room.state = RoomState::AwaitReady;
             let mut sr = S_ROOM::new();
             sr.is_succ = true;
             sr.set_room(room.convert_to_pt());
             let bytes = sr.write_to_bytes().unwrap();
             room.send_2_all_client(ClientCode::Room, bytes);
+            let task_sender = rm.get_task_sender_clone();
+            build_match_room_ready_task(room_id, task_sender);
         }
     } else {
         //解散房间，并通知所有客户端
@@ -1171,7 +1174,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
         //如果是自定义房间，更新结算数据
         RoomType::OneVOneVOneVOneCustom => {
             //如果是自定义房间
-            room.state = RoomState::Await;
+            room.state = RoomState::AwaitReady;
             let mut brs = B_R_SUMMARY::new();
             let res = brs.merge_from_bytes(packet.get_data());
             if let Err(e) = res {

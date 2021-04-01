@@ -352,7 +352,7 @@ impl Room {
     }
 
     pub fn check_index_over(&mut self) -> bool {
-        self.state != RoomState::Await && self.state != RoomState::ChoiceIndex
+        self.state != RoomState::AwaitReady && self.state != RoomState::ChoiceIndex
     }
 
     ///选择占位

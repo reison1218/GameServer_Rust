@@ -96,15 +96,16 @@ impl RoomMgr {
             _ => None,
         };
         if let None = room {
-            warn!("the room is None!room_id:{}", room_id);
+            warn!(
+                "the room is None!room_type:{:?},room_id:{}",
+                room_type, room_id
+            );
             return;
         }
         let room = room.unwrap();
 
-        if room_type == RoomType::OneVOneVOneVOneMatch || room_type == RoomType::WorldBossCustom {
-            for id in room.members.keys() {
-                self.player_room.remove(id);
-            }
+        for id in room.members.keys() {
+            self.player_room.remove(id);
         }
 
         match room_type {

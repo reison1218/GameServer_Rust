@@ -45,7 +45,7 @@ impl RoomType {
 #[repr(u8)]
 pub enum RoomState {
     AwaitConfirm = 0,  //等待进入 只有匹配模式才会有到壮体啊
-    Await = 1,         //等待
+    AwaitReady = 1,    //等待
     ChoiceIndex = 2,   //选择占位
     BattleStarted = 3, //战斗开始
     BattleOvered = 4,  //战斗结束

@@ -68,27 +68,27 @@ lazy_static! {
         redis
     };
 }
+
+///redis 玩家index
 const REDIS_INDEX_USERS: u32 = 0;
+///redis 赛季index
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 ///排行榜redis索引
 const REDIS_INDEX_RANK: u32 = 2;
-
+///redis 玩家数据key
 const REDIS_KEY_USERS: &str = "users";
-
-const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
-
-const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
-
+///redis 赛季key
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
-
+///redis user_id对应平台id key
+const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
+///redis 名字对应userid key
+const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
 ///上个赛季排行
 const REDIS_KEY_LAST_RANK: &str = "last_rank";
 ///玩家最好排行
 const REDIS_KEY_BEST_RANK: &str = "best_rank";
-
 ///当前赛季排行
 const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
-
 ///赛季信息
 pub static mut SEASON: Season = Season::new();
 
@@ -105,8 +105,12 @@ impl Season {
         }
     }
 }
+
+///别名gamemgr锁
 type Lock = Arc<Mutex<GameMgr>>;
+///别名json
 type JsonValue = serde_json::Value;
+
 ///程序主入口,主要作用是初始化日志，数据库连接，redis连接，线程池，websocket，http
 fn main() {
     let game_mgr = Arc::new(Mutex::new(GameMgr::new()));

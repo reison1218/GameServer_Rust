@@ -17,7 +17,8 @@ use std::time::Duration;
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
 pub enum TaskCmd {
-    MatchRoomStart = 101, //匹配房间开始任务
+    MatchRoomReady = 101,       //匹配房间准备
+    MatchRoomConfirmInto = 102, //匹配房间，进入房间
 }
 
 impl TaskCmd {
@@ -53,7 +54,8 @@ pub fn init_timer(rm: Lock) {
             let task_cmd = TaskCmd::from(task.cmd);
             let rm_clone = rm.clone();
             let f = match task_cmd {
-                TaskCmd::MatchRoomStart => match_room_start,
+                TaskCmd::MatchRoomReady => match_room_ready,
+                TaskCmd::MatchRoomConfirmInto => match_room_confirm_into,
             };
             let m = move || f(rm_clone, task);
             SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
@@ -69,7 +71,55 @@ pub fn init_timer(rm: Lock) {
 }
 
 ///执行匹配房间任务
-fn match_room_start(rm: Lock, task: Task) {
+fn match_room_confirm_into(rm: Lock, task: Task) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+
+    let room_id = map.get("room_id");
+    if room_id.is_none() {
+        return;
+    }
+    let room_id = room_id.unwrap();
+    let room_id = room_id.as_u64();
+    if room_id.is_none() {
+        return;
+    }
+    let room_id = room_id.unwrap() as u32;
+
+    let mut lock = block_on(rm.lock());
+
+    let match_room = lock.match_room.borrow_mut();
+    let room = match_room.get_room_mut(&room_id);
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap();
+    let room_type = room.get_room_type();
+    //如果房间已经不再等待阶段了，就什么都不执行
+    if room.get_state() != RoomState::AwaitConfirm {
+        return;
+    }
+    let mut need_rm = false;
+    //判断是否需要删除房间
+    for member in room.members.values() {
+        if member.state == MemberState::AwaitConfirm {
+            need_rm = true;
+            break;
+        }
+    }
+    if !need_rm {
+        return;
+    }
+    //删除房间
+    lock.clear_room_without_push(room_type, room_id);
+}
+
+///执行匹配房间任务
+fn match_room_ready(rm: Lock, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -98,7 +148,7 @@ fn match_room_start(rm: Lock, task: Task) {
     }
     let room = room.unwrap();
     //如果房间已经不再等待阶段了，就什么都不执行
-    if room.get_state() != RoomState::Await {
+    if room.get_state() != RoomState::AwaitReady {
         return;
     }
 
@@ -182,7 +232,7 @@ fn match_room_start(rm: Lock, task: Task) {
     room.start();
 }
 
-pub fn build_match_room_start_task(room_id: u32, task_sender: Sender<Task>) {
+pub fn build_match_room_ready_task(room_id: u32, task_sender: Sender<Task>) {
     //创建延迟任务，并发送给定时器接收方执行
     let mut task = Task::default();
     let time_limit = crate::TEMPLATES
@@ -202,7 +252,37 @@ pub fn build_match_room_start_task(room_id: u32, task_sender: Sender<Task>) {
         warn!("the Constant kick_not_prepare_time is None!pls check!");
     }
 
-    task.cmd = TaskCmd::MatchRoomStart as u16;
+    task.cmd = TaskCmd::MatchRoomReady as u16;
+    let mut map = Map::new();
+    map.insert("room_id".to_owned(), JsonValue::from(room_id));
+    task.data = JsonValue::from(map);
+    let res = task_sender.send(task);
+    if let Err(e) = res {
+        error!("{:?}", e);
+    }
+}
+
+pub fn build_confirm_into_room_task(room_id: u32, task_sender: Sender<Task>) {
+    //创建延迟任务，并发送给定时器接收方执行
+    let mut task = Task::default();
+    let time_limit = crate::TEMPLATES
+        .constant_temp_mgr()
+        .temps
+        .get("match_room_be_sure_limit_time");
+    if let Some(time) = time_limit {
+        let time = u64::from_str(time.value.as_str());
+        match time {
+            Ok(time) => task.delay = time + 500,
+            Err(e) => {
+                error!("{:?}", e)
+            }
+        }
+    } else {
+        task.delay = 60000_u64;
+        warn!("the Constant match_room_be_sure_limit_time is None!pls check!");
+    }
+
+    task.cmd = TaskCmd::MatchRoomConfirmInto as u16;
     let mut map = Map::new();
     map.insert("room_id".to_owned(), JsonValue::from(room_id));
     task.data = JsonValue::from(map);

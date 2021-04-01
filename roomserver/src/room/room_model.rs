@@ -1,7 +1,7 @@
 use crate::room::member::Member;
 use crate::room::room::{MemberLeaveNoticeType, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
-use crate::task_timer::{build_match_room_start_task, Task};
+use crate::task_timer::{build_confirm_into_room_task, Task};
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
 use log::{error, info};
@@ -289,7 +289,7 @@ impl RoomModel for MatchRoom {
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
         //如果房间之前是满都，就给所有人取消准备
-        if room.get_state() == RoomState::Await
+        if room.get_state() == RoomState::AwaitReady
             && member_count == MEMBER_MAX as usize
             && now_count < member_count
         {
@@ -426,7 +426,8 @@ impl MatchRoom {
                 //推送匹配成功通知
                 let room_mut = self.rooms.get_mut(&room_id).unwrap();
                 room_mut.push_match_success();
-                build_match_room_start_task(room_id, task_sender);
+                //创建检测进入房间延迟任务
+                build_confirm_into_room_task(room_id, task_sender);
             }
             //重新排序
             room_cache_array.par_sort_by(|a, b| b.count.cmp(&a.count));

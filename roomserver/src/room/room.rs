@@ -66,7 +66,7 @@ pub enum MemberLeaveNoticeType {
 #[repr(u8)]
 pub enum RoomState {
     AwaitConfirm = 0, //等待进入 只有匹配模式才会有到壮体啊
-    Await = 1,        //等待
+    AwaitReady = 1,   //等待
     ChoiceIndex = 2,  //选择占位
 }
 
@@ -118,7 +118,7 @@ impl Room {
         str.push_str(thread_rng().gen_range(1..999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
-        let mut room_state = RoomState::Await;
+        let mut room_state = RoomState::AwaitReady;
         if room_type == RoomType::OneVOneVOneVOneMatch {
             room_state = RoomState::AwaitConfirm;
             owner.state = MemberState::AwaitConfirm;

@@ -124,7 +124,7 @@ impl BattleData {
             warn!("{:?}", e);
             return;
         }
-        let target_pt = self.build_target_pt(
+        let target_pt = self.build_target_pt( 
             from_user,
             user_id,
             EffectType::RewardItem,
