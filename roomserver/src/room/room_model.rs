@@ -1,5 +1,5 @@
 use crate::room::member::Member;
-use crate::room::room::{MemberLeaveNoticeType, RoomState};
+use crate::room::room::RoomState;
 use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{build_confirm_into_room_task, Task};
 use crate::TEMPLATES;
@@ -282,6 +282,12 @@ impl RoomModel for MatchRoom {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = *room_id;
         let member_count = room.get_member_count();
+        let room_state = room.state;
+        //其他状态房间服自行处理
+        if room_state == RoomState::AwaitReady {
+            //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
+            room.check_punish_for_leave(*user_id);
+        }
         room.remove_member(notice_type, user_id, need_push_self);
         //改变房间状态
         room.state = RoomState::AwaitConfirm;
@@ -345,22 +351,6 @@ impl RoomModel for MatchRoom {
 impl MatchRoom {
     pub fn get_room_mut(&mut self, room_id: &u32) -> Option<&mut Room> {
         self.rooms.get_mut(room_id)
-    }
-
-    ///离开房间，离线也好，主动离开也好
-    pub fn leave(
-        &mut self,
-        room_id: u32,
-        user_id: &u32,
-        need_push_self: bool,
-    ) -> anyhow::Result<u32> {
-        let res = self.leave_room(
-            MemberLeaveNoticeType::Leave as u8,
-            &room_id,
-            user_id,
-            need_push_self,
-        );
-        res
     }
 
     pub fn get_room_cache_mut(&mut self, room_id: &u32) -> Option<&mut RoomCache> {

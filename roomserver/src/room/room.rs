@@ -17,8 +17,8 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
     S_CHANGE_TEAM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_MATCH_SUCCESS_NOTICE,
-    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_ROOM, S_ROOM_ADD_MEMBER_NOTICE,
-    S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
+    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_PUNISH_MATCH_NOTICE, S_ROOM,
+    S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
 };
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
 use tools::tcp::TcpSender;
@@ -196,6 +196,19 @@ impl Room {
         match bytes {
             Ok(bytes) => {
                 self.send_2_server(GameCode::SyncPunish.into_u32(), user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+            }
+        }
+        //推送给客户端
+        let mut proto = S_PUNISH_MATCH_NOTICE::new();
+        proto.set_user_id(user_id);
+        proto.set_punish_match(pm.into());
+        let bytes = proto.write_to_bytes();
+        match bytes {
+            Ok(bytes) => {
+                self.send_2_client(ClientCode::PunishPatchPush, user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);

@@ -265,6 +265,8 @@ pub enum ClientCode {
     MissionNoice = 10101,
     //购买推送
     BuyNoice = 10102,
+    //匹配惩罚推送
+    PunishPatchPush = 10103,
     //最大命令号
     Max = 20000,
 }

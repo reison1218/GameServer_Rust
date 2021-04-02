@@ -58,6 +58,13 @@ pub struct PunishMatch {
     pub punish_id: u8,   //惩罚id
 }
 
+impl PunishMatch {
+    pub fn reset(&mut self) {
+        self.start_time = 0;
+        self.punish_id = 0;
+    }
+}
+
 impl Into<PunishMatchPt> for PunishMatch {
     fn into(self) -> PunishMatchPt {
         let mut pmp = PunishMatchPt::new();
@@ -291,6 +298,38 @@ impl User {
             data = Some(u);
         }
         data
+    }
+
+    ///处理匹配惩罚
+    pub fn reset_punish_match(&mut self) -> Option<PunishMatch> {
+        //先判断是否需要重制
+        let start_time = self.punish_match.start_time;
+        let id = self.punish_match.punish_id as u32;
+        if id == 0 {
+            return None;
+        }
+        let punish_temp = crate::TEMPLATES.punish_temp_mgr().get_temp(&id);
+        if let Err(e) = punish_temp {
+            warn!("{:?}", e);
+            return None;
+        }
+        let punish_temp = punish_temp.unwrap();
+        let end_time = start_time + punish_temp.punish_time;
+        //处理跨天清0
+        let is_today = tools::util::is_today(start_time);
+        if !is_today && start_time > 0 {
+            self.punish_match.reset();
+            self.add_version();
+            return Some(self.punish_match);
+        }
+        //处理过期
+        let now_time = chrono::Local::now().timestamp_millis();
+        if now_time >= end_time {
+            self.punish_match.reset();
+            self.add_version();
+            return Some(self.punish_match);
+        }
+        None
     }
 }
 

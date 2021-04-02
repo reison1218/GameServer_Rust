@@ -8,11 +8,14 @@ use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use protobuf::Message;
 use serde_json::{Map, Value as JsonValue};
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use std::time::Duration;
+use tools::cmd_code::ClientCode;
+use tools::protos::room::S_INTO_ROOM_CANCEL_NOTICE;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
@@ -114,6 +117,11 @@ fn match_room_confirm_into(rm: Lock, task: Task) {
     if !need_rm {
         return;
     }
+    //解散房间，并通知所有客户端
+    let sircn = S_INTO_ROOM_CANCEL_NOTICE::new();
+    let bytes = sircn.write_to_bytes().unwrap();
+    room.send_2_all_client(ClientCode::IntoRoomCancelNotice, bytes);
+
     //删除房间
     lock.rm_room_without_push(room_type, room_id);
 }

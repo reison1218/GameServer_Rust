@@ -5781,6 +5781,215 @@ impl ::protobuf::reflect::ProtobufValue for S_CANCEL_SEARCH {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct S_PUNISH_MATCH_NOTICE {
+    // message fields
+    pub user_id: u32,
+    pub punish_match: ::protobuf::SingularPtrField<super::base::PunishMatchPt>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a S_PUNISH_MATCH_NOTICE {
+    fn default() -> &'a S_PUNISH_MATCH_NOTICE {
+        <S_PUNISH_MATCH_NOTICE as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl S_PUNISH_MATCH_NOTICE {
+    pub fn new() -> S_PUNISH_MATCH_NOTICE {
+        ::std::default::Default::default()
+    }
+
+    // uint32 user_id = 1;
+
+
+    pub fn get_user_id(&self) -> u32 {
+        self.user_id
+    }
+    pub fn clear_user_id(&mut self) {
+        self.user_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_user_id(&mut self, v: u32) {
+        self.user_id = v;
+    }
+
+    // .protos.PunishMatchPt punish_match = 2;
+
+
+    pub fn get_punish_match(&self) -> &super::base::PunishMatchPt {
+        self.punish_match.as_ref().unwrap_or_else(|| <super::base::PunishMatchPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_punish_match(&mut self) {
+        self.punish_match.clear();
+    }
+
+    pub fn has_punish_match(&self) -> bool {
+        self.punish_match.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_punish_match(&mut self, v: super::base::PunishMatchPt) {
+        self.punish_match = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_punish_match(&mut self) -> &mut super::base::PunishMatchPt {
+        if self.punish_match.is_none() {
+            self.punish_match.set_default();
+        }
+        self.punish_match.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_punish_match(&mut self) -> super::base::PunishMatchPt {
+        self.punish_match.take().unwrap_or_else(|| super::base::PunishMatchPt::new())
+    }
+}
+
+impl ::protobuf::Message for S_PUNISH_MATCH_NOTICE {
+    fn is_initialized(&self) -> bool {
+        for v in &self.punish_match {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.punish_match)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.user_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.punish_match.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.user_id != 0 {
+            os.write_uint32(1, self.user_id)?;
+        }
+        if let Some(ref v) = self.punish_match.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> S_PUNISH_MATCH_NOTICE {
+        S_PUNISH_MATCH_NOTICE::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "user_id",
+                |m: &S_PUNISH_MATCH_NOTICE| { &m.user_id },
+                |m: &mut S_PUNISH_MATCH_NOTICE| { &mut m.user_id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::PunishMatchPt>>(
+                "punish_match",
+                |m: &S_PUNISH_MATCH_NOTICE| { &m.punish_match },
+                |m: &mut S_PUNISH_MATCH_NOTICE| { &mut m.punish_match },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_PUNISH_MATCH_NOTICE>(
+                "S_PUNISH_MATCH_NOTICE",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static S_PUNISH_MATCH_NOTICE {
+        static instance: ::protobuf::rt::LazyV2<S_PUNISH_MATCH_NOTICE> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(S_PUNISH_MATCH_NOTICE::new)
+    }
+}
+
+impl ::protobuf::Clear for S_PUNISH_MATCH_NOTICE {
+    fn clear(&mut self) {
+        self.user_id = 0;
+        self.punish_match.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for S_PUNISH_MATCH_NOTICE {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for S_PUNISH_MATCH_NOTICE {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
@@ -5829,7 +6038,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     SUCCESS_NOTICE\"/\n\x13C_CONFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\
     \x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\
     \x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOT\
-    ICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CANCEL_SEARCHb\x06proto3\
+    ICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNI\
+    SH_MATCH_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x128\
+    \n\x0cpunish_match\x18\x02\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpu\
+    nishMatchb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

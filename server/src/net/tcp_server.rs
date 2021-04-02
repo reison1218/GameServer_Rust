@@ -114,7 +114,10 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     let user_data = user_data.unwrap();
 
     let user = user_data.get_user_info_mut_ref();
+    //处理更新登陆
     user.update_login();
+    //处理重制惩罚时间
+    user.reset_punish_match();
     //通知用户中心
     async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
 

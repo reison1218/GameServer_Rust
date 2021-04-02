@@ -21,8 +21,8 @@ use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
     C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_CONFIRM_INTO_ROOM_NOTICE, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_ROOM,
-    S_ROOM_SETTING, S_START,
+    S_CHOOSE_SKILL, S_CONFIRM_INTO_ROOM_NOTICE, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM,
+    S_PUNISH_MATCH_NOTICE, S_ROOM, S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
@@ -281,11 +281,6 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
             rm.send_2_server(BattleCode::OffLine.into_u32(), user_id, Vec::new());
         }
         _ => {
-            //其他状态房间服自行处理
-            if room_state == RoomState::AwaitReady {
-                //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
-                room.check_punish_for_leave(user_id);
-            }
             //处理离开房间
             let res = handler_leave_room(rm, user_id, false);
             if let Err(e) = res {
@@ -355,12 +350,26 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
     member.punish_match = PunishMatch::from(grs.get_pbp().get_punish_match());
     let res = member.reset_punish_match();
     if let Some(pm) = res {
+        //推送服务器
         let mut brg = B_R_G_PUNISH_MATCH::new();
         brg.set_punish_match(pm.into());
         let bytes = brg.write_to_bytes();
         match bytes {
             Ok(bytes) => {
                 rm.send_2_server(GameCode::SyncPunish.into_u32(), user_id, bytes);
+            }
+            Err(e) => {
+                warn!("{:?}", e);
+            }
+        }
+        //推送给客户端
+        let mut proto = S_PUNISH_MATCH_NOTICE::new();
+        proto.set_user_id(user_id);
+        proto.set_punish_match(pm.into());
+        let bytes = proto.write_to_bytes();
+        match bytes {
+            Ok(bytes) => {
+                rm.send_2_client(ClientCode::PunishPatchPush, user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);
@@ -1300,7 +1309,13 @@ pub fn handler_leave_room(
             if room.is_empty() {
                 return Ok(());
             }
-            let res = rm.match_room.leave(room_id, &user_id, need_push_self);
+
+            let res = rm.match_room.leave_room(
+                MemberLeaveNoticeType::Leave as u8,
+                &room_id,
+                &user_id,
+                need_push_self,
+            );
             if let Err(e) = res {
                 error!("{:?}", e);
                 return Ok(());

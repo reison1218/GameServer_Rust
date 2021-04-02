@@ -238,3 +238,10 @@ message C_CANCEL_SEARCH{
 message S_CANCEL_SEARCH{
 
 }
+
+//匹配惩罚更新推送
+//cmd:10103
+message S_PUNISH_MATCH_NOTICE{
+    uint32 user_id = 1;//玩家id
+    PunishMatchPt punish_match = 2; //匹配惩罚
+}

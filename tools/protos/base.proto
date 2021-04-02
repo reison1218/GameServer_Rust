@@ -1,20 +1,20 @@
 syntax = "proto3";
 package protos;
 
-//enum RoomTypePt{
+// enum RoomTypePt{
 //    NONE = 0;         //无效占位数值，protobuf枚举必须包含0
 //    CUSTOM = 1;       //自定义房间
 //    MATCH = 2;        //匹配房间
 //    SEASONPVE = 3;    //赛季PVE房间
 //    WORLDBOSSPVE = 4; //世界boss房间
-//}
-//
-//enum BattleTypePt {
+// }
+
+// enum BattleTypePt {
 //    NONE = 0;            //初始值
 //    ONEVONEVONEVONE = 1; //1v1v1v1
 //    TWOVTWO = 2;         //2v2
 //    ONEVONE = 3;         //1v1
-//}
+// }
 
 message RoomSettingPt{
     uint32 turn_limit_time = 1;//回合时间限制
