@@ -1,9 +1,7 @@
 use log::{error, info};
-use protobuf::Message;
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 use tools::cmd_code::GameCode;
-use tools::protos::server_protocol::R_G_SYNC_RANK;
 
 use crate::Lock;
 
@@ -57,22 +55,10 @@ fn sort_rank(rm: Lock) {
             //设置不需要排序
             lock.need_rank = false;
             info!("执行排行定时器结束!耗时:{:?}", take_time.elapsed().unwrap());
-            //重新排行之后下发到游戏服
-            let take_time = std::time::SystemTime::now();
-            let mut rgsr = R_G_SYNC_RANK::new();
 
-            lock.rank_vec.iter().for_each(|ri| {
-                let res = ri.into_rank_pt();
-                rgsr.ranks.push(res);
-            });
-            let bytes = rgsr.write_to_bytes();
-            if let Err(e) = bytes {
-                error!("{:?}", e);
-                continue;
-            }
-            let bytes = bytes.unwrap();
             //下发到游戏服务器
-            lock.push_2_server(GameCode::SyncRank.into_u32(), 0, bytes);
+            lock.push_2_server(GameCode::SyncRank.into_u32(), 0, vec![]);
+            let take_time = std::time::SystemTime::now();
             let res = take_time.elapsed().unwrap();
             info!("更新rank并下发排行榜快照到游戏服结束!耗时{:?}", res);
         }

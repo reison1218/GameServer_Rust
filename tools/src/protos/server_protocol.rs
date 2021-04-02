@@ -1878,8 +1878,6 @@ impl ::protobuf::reflect::ProtobufValue for B_R_G_PUNISH_MATCH {
 
 #[derive(PartialEq,Clone,Default)]
 pub struct R_G_SYNC_RANK {
-    // message fields
-    pub ranks: ::protobuf::RepeatedField<super::base::RankInfoPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1895,40 +1893,10 @@ impl R_G_SYNC_RANK {
     pub fn new() -> R_G_SYNC_RANK {
         ::std::default::Default::default()
     }
-
-    // repeated .protos.RankInfoPt ranks = 1;
-
-
-    pub fn get_ranks(&self) -> &[super::base::RankInfoPt] {
-        &self.ranks
-    }
-    pub fn clear_ranks(&mut self) {
-        self.ranks.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_ranks(&mut self, v: ::protobuf::RepeatedField<super::base::RankInfoPt>) {
-        self.ranks = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_ranks(&mut self) -> &mut ::protobuf::RepeatedField<super::base::RankInfoPt> {
-        &mut self.ranks
-    }
-
-    // Take field
-    pub fn take_ranks(&mut self) -> ::protobuf::RepeatedField<super::base::RankInfoPt> {
-        ::std::mem::replace(&mut self.ranks, ::protobuf::RepeatedField::new())
-    }
 }
 
 impl ::protobuf::Message for R_G_SYNC_RANK {
     fn is_initialized(&self) -> bool {
-        for v in &self.ranks {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
         true
     }
 
@@ -1936,9 +1904,6 @@ impl ::protobuf::Message for R_G_SYNC_RANK {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
-                1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.ranks)?;
-                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -1951,21 +1916,12 @@ impl ::protobuf::Message for R_G_SYNC_RANK {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.ranks {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.ranks {
-            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -2003,12 +1959,7 @@ impl ::protobuf::Message for R_G_SYNC_RANK {
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
-            let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RankInfoPt>>(
-                "ranks",
-                |m: &R_G_SYNC_RANK| { &m.ranks },
-                |m: &mut R_G_SYNC_RANK| { &mut m.ranks },
-            ));
+            let fields = ::std::vec::Vec::new();
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<R_G_SYNC_RANK>(
                 "R_G_SYNC_RANK",
                 fields,
@@ -2025,7 +1976,6 @@ impl ::protobuf::Message for R_G_SYNC_RANK {
 
 impl ::protobuf::Clear for R_G_SYNC_RANK {
     fn clear(&mut self) {
-        self.ranks.clear();
         self.unknown_fields.clear();
     }
 }
@@ -2445,12 +2395,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05cters\x18\x08\
     \x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PUNISH_MAT\
     CH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.PunishMatchPt\
-    R\x0bpunishMatch\"9\n\rR_G_SYNC_RANK\x12(\n\x05ranks\x18\x01\x20\x03(\
-    \x0b2\x12.protos.RankInfoPtR\x05ranks\"p\n\x11R_S_UPDATE_SEASON\x12\x1b\
-    \n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12\x14\n\x05round\x18\x02\
-    \x20\x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\x01(\x04R\
-    \x0enextUpdateTime\"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\
-    \x01\x20\x01(\tR\x08nickNameb\x06proto3\
+    R\x0bpunishMatch\"\x0f\n\rR_G_SYNC_RANK\"p\n\x11R_S_UPDATE_SEASON\x12\
+    \x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12\x14\n\x05round\x18\
+    \x02\x20\x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\x01(\
+    \x04R\x0enextUpdateTime\"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnick_nam\
+    e\x18\x01\x20\x01(\tR\x08nickNameb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

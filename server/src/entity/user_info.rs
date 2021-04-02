@@ -1,6 +1,7 @@
 use super::*;
 use crate::helper::redis_helper::check_nick_name;
 use crate::helper::redis_helper::modify_redis_user;
+use crate::helper::RankInfo;
 use crate::mgr::game_mgr::RankInfoPtPtr;
 use crate::SEASON;
 use crate::TEMPLATES;
@@ -20,7 +21,7 @@ use tools::protos::room::{C_CREATE_ROOM, C_JOIN_ROOM, C_SEARCH_ROOM, S_ROOM};
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::protos::server_protocol::{
     PlayerBattlePt, B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
-    R_G_SYNC_RANK, R_S_UPDATE_SEASON,
+    R_S_UPDATE_SEASON,
 };
 use tools::util::packet::Packet;
 
@@ -681,16 +682,30 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) {
 }
 
 ///同步排行榜快照
-pub fn sync_rank(gm: &mut GameMgr, packet: Packet) {
-    let mut rgsr = R_G_SYNC_RANK::new();
-    let res = rgsr.merge_from_bytes(packet.get_data());
-    if let Err(e) = res {
-        error!("{:?}", e);
+pub fn sync_rank(gm: &mut GameMgr, _: Packet) {
+    //先清空排行榜
+    gm.rank.clear();
+    gm.user_rank.clear();
+
+    let redis_lock = crate::REDIS_POOL.lock();
+    if let Err(err) = redis_lock {
+        error!("{:?}", err);
         return;
     }
-    let rank = rgsr.ranks.to_vec();
-    gm.rank = rank;
-    gm.user_rank.clear();
+    let mut redis_lock = redis_lock.unwrap();
+    //加载当前排行榜
+    let ranks: Option<Vec<String>> =
+        redis_lock.hvals(crate::REDIS_INDEX_RANK, crate::REDIS_KEY_CURRENT_RANK);
+    if let Some(ranks) = ranks {
+        for rank_str in ranks {
+            let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
+            let mut rank_pt = ri.into_rank_pt();
+            let res = RankInfoPtPtr(&mut rank_pt as *mut RankInfoPt);
+            gm.user_rank.insert(ri.user_id, res);
+            gm.rank.push(rank_pt);
+        }
+        gm.rank.par_sort_unstable_by(|a, b| a.rank.cmp(&b.rank));
+    }
 }
 
 ///更新玩家匹配惩罚数据
