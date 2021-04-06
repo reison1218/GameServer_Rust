@@ -777,6 +777,8 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) {
             pbp.set_league(rank_pt.get_league().clone());
         }
     }
+    let punish_match_pt = user_info.punish_match.into();
+    pbp.set_punish_match(punish_match_pt);
     for cter in user_data.get_characters_ref().cter_map.values() {
         pbp.cters.push(cter.clone().into());
     }

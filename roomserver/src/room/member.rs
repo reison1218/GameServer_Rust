@@ -89,8 +89,8 @@ impl Member {
     }
 }
 
-impl From<PlayerBattlePt> for Member {
-    fn from(mut pbp: PlayerBattlePt) -> Self {
+impl From<&PlayerBattlePt> for Member {
+    fn from(pbp: &PlayerBattlePt) -> Self {
         let mut member = Member::default();
         member.nick_name = pbp.get_nick_name().to_owned();
         member.user_id = pbp.user_id;
@@ -102,7 +102,7 @@ impl From<PlayerBattlePt> for Member {
         let league = League::from(pbp.get_league());
         member.league = league;
         let mut cters = HashMap::new();
-        let res = pbp.take_cters();
+        let res = pbp.cters.clone();
 
         let v = res.to_vec();
         for i in v {

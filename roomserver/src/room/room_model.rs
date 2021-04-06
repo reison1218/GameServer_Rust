@@ -113,6 +113,7 @@ pub trait RoomModel {
         room_id: &u32,
         user_id: &u32,
         need_push_self: bool,
+        need_punish: bool,
     ) -> anyhow::Result<u32>;
 
     fn rm_room(&mut self, room_id: &u32) -> Option<Room>;
@@ -189,6 +190,7 @@ impl RoomModel for CustomRoom {
         room_id: &u32,
         user_id: &u32,
         need_push_self: bool,
+        _: bool,
     ) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = room.get_room_id();
@@ -278,13 +280,13 @@ impl RoomModel for MatchRoom {
         room_id: &u32,
         user_id: &u32,
         need_push_self: bool,
+        need_punish: bool,
     ) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = *room_id;
         let member_count = room.get_member_count();
-        let room_state = room.state;
         //其他状态房间服自行处理
-        if room_state == RoomState::AwaitReady {
+        if need_punish {
             //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
             room.check_punish_for_leave(*user_id);
         }

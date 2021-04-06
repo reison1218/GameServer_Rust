@@ -59,16 +59,19 @@ lazy_static! {
 
 static ROBOT_ID: AtomicU32 = AtomicU32::new(0);
 
+///赛季redis索引
 const REDIS_INDEX_GAME_SEASON: u32 = 1;
 
 ///排行榜redis索引
 const REDIS_INDEX_RANK: u32 = 2;
 
+///赛季redis key
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 
 ///当前赛季排行
 const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 
+///赛季数据
 pub static mut SEASON: Season = Season::new();
 
 pub struct Season {

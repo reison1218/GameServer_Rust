@@ -1,4 +1,4 @@
-use tools::protos::base::{LeaguePt, RankInfoPt, SummaryDataPt};
+use tools::protos::base::{LeaguePt, SummaryDataPt};
 pub mod rank_mgr;
 use serde::{Deserialize, Serialize};
 
@@ -42,20 +42,6 @@ impl RankInfo {
     ///获得积分
     pub fn get_score(&self) -> i32 {
         self.league.league_score
-    }
-
-    pub fn into_rank_pt(&self) -> RankInfoPt {
-        let mut rip = RankInfoPt::new();
-        rip.user_id = self.user_id;
-        rip.name = self.name.clone();
-        rip.rank = self.rank;
-        rip.set_cters(self.cters.clone());
-        let mut l_pt = LeaguePt::new();
-        l_pt.set_league_id(self.league.get_league_id() as i32);
-        l_pt.set_league_score(self.league.league_score);
-        l_pt.set_league_time(self.league.league_time);
-        rip.set_league(l_pt);
-        rip
     }
 
     pub fn new(sd_pt: &SummaryDataPt, cters: Vec<u32>) -> Self {

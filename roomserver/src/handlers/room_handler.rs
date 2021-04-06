@@ -151,7 +151,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
         }
     }
 
-    let owner = Member::from(grc.take_pbp());
+    let owner = Member::from(grc.get_pbp());
     let mut room_id: u32 = 0;
     let room_type = RoomType::from(room_type);
     //创建房间
@@ -245,7 +245,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     //不然走正常离开房间流程
-    let res = handler_leave_room(rm, user_id, true);
+    let res = handler_leave_room(rm, user_id, true, false);
     if let Err(e) = res {
         warn!("{:?}", e);
     }
@@ -282,7 +282,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
         }
         _ => {
             //处理离开房间
-            let res = handler_leave_room(rm, user_id, false);
+            let res = handler_leave_room(rm, user_id, false, true);
             if let Err(e) = res {
                 warn!("{:?}", e);
             }
@@ -345,9 +345,10 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
     let sender = rm.get_sender_clone();
     let task_sender = rm.get_task_sender_clone();
 
-    let mut member = Member::from(grs.take_pbp());
+    let mut member = Member::from(grs.get_pbp());
     member.state = MemberState::AwaitConfirm;
-    member.punish_match = PunishMatch::from(grs.get_pbp().get_punish_match());
+    let punish_match_pt = grs.get_pbp().get_punish_match();
+    member.punish_match = PunishMatch::from(punish_match_pt);
     let res = member.reset_punish_match();
     if let Some(pm) = res {
         //推送服务器
@@ -890,7 +891,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         );
         return;
     }
-    let member = Member::from(grj.take_pbp());
+    let member = Member::from(grj.get_pbp());
     //将玩家加入到房间
     let res = room.add_member(member);
     if let Err(e) = res {
@@ -1152,7 +1153,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
             let task_sender = rm.get_task_sender_clone();
             build_match_room_ready_task(room_id, task_sender);
         }
-    } else {
+    } else if room.state == RoomState::AwaitConfirm {
         //解散房间，并通知所有客户端
         let sircn = S_INTO_ROOM_CANCEL_NOTICE::new();
         let bytes = sircn.write_to_bytes().unwrap();
@@ -1277,6 +1278,7 @@ pub fn handler_leave_room(
     rm: &mut RoomMgr,
     user_id: u32,
     need_push_self: bool,
+    need_punish: bool,
 ) -> anyhow::Result<()> {
     let room = rm.get_room_mut(&user_id).unwrap();
     let room_id = room.get_room_id();
@@ -1290,6 +1292,7 @@ pub fn handler_leave_room(
                 &room_id,
                 &user_id,
                 need_push_self,
+                false,
             );
             if let Err(e) = res {
                 error!("{:?}", e);
@@ -1315,6 +1318,7 @@ pub fn handler_leave_room(
                 &room_id,
                 &user_id,
                 need_push_self,
+                need_punish,
             );
             if let Err(e) = res {
                 error!("{:?}", e);

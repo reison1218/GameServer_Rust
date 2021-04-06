@@ -202,8 +202,8 @@ fn match_room_ready(rm: Lock, task: Task) {
                     &room_id,
                     member_id,
                     true,
+                    true,
                 );
-                if res.is_err() {}
                 match res {
                     Ok(_) => {
                         rm_v.push(*member_id);

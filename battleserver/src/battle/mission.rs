@@ -10,8 +10,6 @@ use tools::templates::mission_temp::MissionTemp;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
-use crate::room::character::BattleCharacter;
-
 use super::battle::BattleData;
 
 use tools::protos::base::MissionPt;
@@ -270,44 +268,62 @@ pub fn trigger_mission(
     {
         return;
     }
-    let mut res = false;
-    for trigger_type in trigger_types {
-        res = match trigger_type {
-            MissionTriggerType::OpenCell => open_cell_trigger_mission(cter, value, mission_parm),
-            MissionTriggerType::Pair => pair_cell_trigger_mission(cter, value, mission_parm),
-            MissionTriggerType::Attack => attack_trigger_mission(cter, value, mission_parm),
-            MissionTriggerType::UseSkill => skill_times_trigger_mission(cter, value, mission_parm),
-            MissionTriggerType::GetGold => get_gold_trigger_mission(cter, value, mission_parm),
-        };
-        if res {
-            break;
-        }
-    }
-
-    if !res {
-        return;
-    }
     let missoin_id = cter.mission_data.mission.as_ref().unwrap().mission_temp.id;
-    //任务完成了，通知客户端
-    let mut proto = S_MISSION_NOTICE::new();
-    proto.set_user_id(cter.get_user_id());
-    proto.set_mission_id(missoin_id);
-    proto.set_notice_type(MissionNoticeType::Complete.into_u32());
-    let bytes = proto.write_to_bytes();
-    match bytes {
-        Ok(bytes) => battle_data.send_2_all_client(ClientCode::MissionNoice, bytes),
-        Err(e) => {
-            error!("{:?}", e);
+
+    //匹配任务
+    for trigger_type in trigger_types {
+        let res = match trigger_type {
+            MissionTriggerType::OpenCell => {
+                open_cell_trigger_mission(battle_data, user_id, value, mission_parm)
+            }
+            MissionTriggerType::Pair => {
+                pair_cell_trigger_mission(battle_data, user_id, value, mission_parm)
+            }
+            MissionTriggerType::Attack => {
+                attack_trigger_mission(battle_data, user_id, value, mission_parm)
+            }
+            MissionTriggerType::UseSkill => {
+                skill_times_trigger_mission(battle_data, user_id, value, mission_parm)
+            }
+            MissionTriggerType::GetGold => {
+                get_gold_trigger_mission(battle_data, user_id, value, mission_parm)
+            }
+        };
+        //没有完成就continue
+        if !res {
+            continue;
         }
+
+        //任务完成了，通知客户端
+        let mut proto = S_MISSION_NOTICE::new();
+        proto.set_user_id(user_id);
+        proto.set_mission_id(missoin_id);
+        proto.set_notice_type(MissionNoticeType::Complete.into_u32());
+        let bytes = proto.write_to_bytes();
+        match bytes {
+            Ok(bytes) => battle_data.send_2_all_client(ClientCode::MissionNoice, bytes),
+            Err(e) => {
+                error!("{:?}", e);
+            }
+        }
+        break;
     }
 }
 
 ///翻地图块触发任务
 fn open_cell_trigger_mission(
-    cter: &mut BattleCharacter,
+    battle_data: &mut BattleData,
+    user_id: u32,
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    if let Err(e) = cter {
+        error!("{:?}", e);
+        return false;
+    }
+    let cter = cter.unwrap();
+
     //翻地图块次数;翻开指定元素的地图块
     let mission_type_list = vec![
         MissionCompleteType::OpenCellTimes,
@@ -325,10 +341,17 @@ fn open_cell_trigger_mission(
 
 ///配对地图块触发任务
 fn pair_cell_trigger_mission(
-    cter: &mut BattleCharacter,
+    battle_data: &mut BattleData,
+    user_id: u32,
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    if let Err(e) = cter {
+        error!("{:?}", e);
+        return false;
+    }
+    let cter = cter.unwrap();
     //配对地图块次数;配对地图块次数;配对指定元素地图块
     let mission_type_list = vec![
         MissionCompleteType::PairTimes,
@@ -348,20 +371,34 @@ fn pair_cell_trigger_mission(
 
 ///技能触发任务
 fn skill_times_trigger_mission(
-    cter: &mut BattleCharacter,
+    battle_data: &mut BattleData,
+    user_id: u32,
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    if let Err(e) = cter {
+        error!("{:?}", e);
+        return false;
+    }
+    let cter = cter.unwrap();
     //使用技能触发任务
     cter.add_mission_progress(value, MissionCompleteType::UseSkillTimes, mission_parm)
 }
 
 ///攻击行为触发任务
 fn attack_trigger_mission(
-    cter: &mut BattleCharacter,
+    battle_data: &mut BattleData,
+    user_id: u32,
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    if let Err(e) = cter {
+        error!("{:?}", e);
+        return false;
+    }
+    let cter = cter.unwrap();
     if cter.revenge_user_id == mission_parm.0 {
         //复仇
         return cter.add_mission_progress(
@@ -375,10 +412,17 @@ fn attack_trigger_mission(
 
 ///获得金币触发任务
 fn get_gold_trigger_mission(
-    cter: &mut BattleCharacter,
+    battle_data: &mut BattleData,
+    user_id: u32,
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
+    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    if let Err(e) = cter {
+        error!("{:?}", e);
+        return false;
+    }
+    let cter = cter.unwrap();
     //复仇
     cter.add_mission_progress(value, MissionCompleteType::GoldCount, mission_parm)
 }

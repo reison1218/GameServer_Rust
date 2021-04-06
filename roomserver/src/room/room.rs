@@ -1,4 +1,4 @@
-use crate::room::member::{Member, MemberState, PunishMatch};
+use crate::room::member::{Member, MemberState};
 use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::Task;
 use crate::TEMPLATES;
@@ -172,24 +172,15 @@ impl Room {
         if self.room_type != RoomType::OneVOneVOneVOneMatch {
             return;
         }
-        let member_count = self.members.len();
         //判断是否需要重制
         let member = self.members.get_mut(&user_id);
         if let None = member {
             return;
         }
         let member = member.unwrap();
-        let mut res: Option<PunishMatch> = None;
-        //判断人满了没，满了就惩罚
-        if member_count == MEMBER_MAX as usize {
-            member.punish_match.add_punish();
-            res = Some(member.punish_match);
-        }
+        member.punish_match.add_punish();
+        let pm = member.punish_match;
         //同步到游戏服
-        if res.is_none() {
-            return;
-        }
-        let pm = res.unwrap();
         let mut brg = B_R_G_PUNISH_MATCH::new();
         brg.set_punish_match(pm.into());
         let bytes = brg.write_to_bytes();
