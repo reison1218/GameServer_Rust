@@ -57,12 +57,16 @@ pub struct User {
 pub struct PunishMatch {
     pub start_time: i64, //开始惩罚时间
     pub punish_id: u8,   //惩罚id
+    pub today_id: u8,
 }
 
 impl PunishMatch {
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, is_reset: bool) {
         self.start_time = 0;
         self.punish_id = 0;
+        if is_reset {
+            self.today_id = 0;
+        }
     }
 }
 
@@ -71,6 +75,7 @@ impl Into<PunishMatchPt> for PunishMatch {
         let mut pmp = PunishMatchPt::new();
         pmp.punish_id = self.punish_id as u32;
         pmp.start_time = self.start_time;
+        pmp.today_id = self.today_id as u32;
         pmp
     }
 }
@@ -80,6 +85,7 @@ impl From<&PunishMatchPt> for PunishMatch {
         let mut pm = PunishMatch::default();
         pm.punish_id = pmp.punish_id as u8;
         pm.start_time = pmp.start_time;
+        pm.today_id = pmp.today_id as u8;
         pm
     }
 }
@@ -319,14 +325,14 @@ impl User {
         //处理跨天清0
         let is_today = tools::util::is_today(start_time);
         if !is_today && start_time > 0 {
-            self.punish_match.reset();
+            self.punish_match.reset(true);
             self.add_version();
             return Some(self.punish_match);
         }
         //处理过期
         let now_time = chrono::Local::now().timestamp_millis();
         if now_time >= end_time {
-            self.punish_match.reset();
+            self.punish_match.reset(false);
             self.add_version();
             return Some(self.punish_match);
         }

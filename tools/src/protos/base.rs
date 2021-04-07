@@ -5618,6 +5618,7 @@ pub struct PunishMatchPt {
     // message fields
     pub start_time: i64,
     pub punish_id: u32,
+    pub today_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -5663,6 +5664,21 @@ impl PunishMatchPt {
     pub fn set_punish_id(&mut self, v: u32) {
         self.punish_id = v;
     }
+
+    // uint32 today_id = 3;
+
+
+    pub fn get_today_id(&self) -> u32 {
+        self.today_id
+    }
+    pub fn clear_today_id(&mut self) {
+        self.today_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_today_id(&mut self, v: u32) {
+        self.today_id = v;
+    }
 }
 
 impl ::protobuf::Message for PunishMatchPt {
@@ -5688,6 +5704,13 @@ impl ::protobuf::Message for PunishMatchPt {
                     let tmp = is.read_uint32()?;
                     self.punish_id = tmp;
                 },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.today_id = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -5706,6 +5729,9 @@ impl ::protobuf::Message for PunishMatchPt {
         if self.punish_id != 0 {
             my_size += ::protobuf::rt::value_size(2, self.punish_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.today_id != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.today_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -5717,6 +5743,9 @@ impl ::protobuf::Message for PunishMatchPt {
         }
         if self.punish_id != 0 {
             os.write_uint32(2, self.punish_id)?;
+        }
+        if self.today_id != 0 {
+            os.write_uint32(3, self.today_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -5766,6 +5795,11 @@ impl ::protobuf::Message for PunishMatchPt {
                 |m: &PunishMatchPt| { &m.punish_id },
                 |m: &mut PunishMatchPt| { &mut m.punish_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "today_id",
+                |m: &PunishMatchPt| { &m.today_id },
+                |m: &mut PunishMatchPt| { &mut m.today_id },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<PunishMatchPt>(
                 "PunishMatchPt",
                 fields,
@@ -5784,6 +5818,7 @@ impl ::protobuf::Clear for PunishMatchPt {
     fn clear(&mut self) {
         self.start_time = 0;
         self.punish_id = 0;
+        self.today_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6423,16 +6458,16 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x16\n\x06skills\x18\x02\x20\x03(\rR\x06skills\x12$\n\x05buffs\x18\
     \x03\x20\x03(\x0b2\x0e.protos.BuffPtR\x05buffs\"H\n\nCellBuffPt\x12\x14\
     \n\x05index\x18\x01\x20\x01(\rR\x05index\x12$\n\x05buffs\x18\x02\x20\x03\
-    (\x0b2\x0e.protos.BuffPtR\x05buffs\"K\n\rPunishMatchPt\x12\x1d\n\nstart_\
+    (\x0b2\x0e.protos.BuffPtR\x05buffs\"f\n\rPunishMatchPt\x12\x1d\n\nstart_\
     time\x18\x01\x20\x01(\x03R\tstartTime\x12\x1b\n\tpunish_id\x18\x02\x20\
-    \x01(\rR\x08punishId\"k\n\x08LeaguePt\x12!\n\x0cleague_score\x18\x01\x20\
-    \x01(\x05R\x0bleagueScore\x12\x1b\n\tleague_id\x18\x02\x20\x01(\x05R\x08\
-    leagueId\x12\x1f\n\x0bleague_time\x18\x03\x20\x01(\x03R\nleagueTime\"\
-    \x8d\x01\n\nRankInfoPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userI\
-    d\x12\x12\n\x04name\x18\x02\x20\x01(\tR\x04name\x12\x12\n\x04rank\x18\
-    \x03\x20\x01(\x05R\x04rank\x12(\n\x06league\x18\x04\x20\x01(\x0b2\x10.pr\
-    otos.LeaguePtR\x06league\x12\x14\n\x05cters\x18\x05\x20\x03(\rR\x05cters\
-    b\x06proto3\
+    \x01(\rR\x08punishId\x12\x19\n\x08today_id\x18\x03\x20\x01(\rR\x07todayI\
+    d\"k\n\x08LeaguePt\x12!\n\x0cleague_score\x18\x01\x20\x01(\x05R\x0bleagu\
+    eScore\x12\x1b\n\tleague_id\x18\x02\x20\x01(\x05R\x08leagueId\x12\x1f\n\
+    \x0bleague_time\x18\x03\x20\x01(\x03R\nleagueTime\"\x8d\x01\n\nRankInfoP\
+    t\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\n\x04name\
+    \x18\x02\x20\x01(\tR\x04name\x12\x12\n\x04rank\x18\x03\x20\x01(\x05R\x04\
+    rank\x12(\n\x06league\x18\x04\x20\x01(\x0b2\x10.protos.LeaguePtR\x06leag\
+    ue\x12\x14\n\x05cters\x18\x05\x20\x03(\rR\x05ctersb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

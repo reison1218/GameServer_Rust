@@ -5015,6 +5015,8 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM_MEMBER_LEAVE_NOTICE {
 
 #[derive(PartialEq,Clone,Default)]
 pub struct S_MATCH_SUCCESS_NOTICE {
+    // message fields
+    pub count: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -5030,6 +5032,21 @@ impl S_MATCH_SUCCESS_NOTICE {
     pub fn new() -> S_MATCH_SUCCESS_NOTICE {
         ::std::default::Default::default()
     }
+
+    // uint32 count = 1;
+
+
+    pub fn get_count(&self) -> u32 {
+        self.count
+    }
+    pub fn clear_count(&mut self) {
+        self.count = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_count(&mut self, v: u32) {
+        self.count = v;
+    }
 }
 
 impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
@@ -5041,6 +5058,13 @@ impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.count = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -5053,12 +5077,18 @@ impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.count != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.count, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.count != 0 {
+            os.write_uint32(1, self.count)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -5096,7 +5126,12 @@ impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
-            let fields = ::std::vec::Vec::new();
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "count",
+                |m: &S_MATCH_SUCCESS_NOTICE| { &m.count },
+                |m: &mut S_MATCH_SUCCESS_NOTICE| { &mut m.count },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_MATCH_SUCCESS_NOTICE>(
                 "S_MATCH_SUCCESS_NOTICE",
                 fields,
@@ -5113,6 +5148,7 @@ impl ::protobuf::Message for S_MATCH_SUCCESS_NOTICE {
 
 impl ::protobuf::Clear for S_MATCH_SUCCESS_NOTICE {
     fn clear(&mut self) {
+        self.count = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6034,14 +6070,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
     BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
-    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\"\x18\n\x16S_MATCH_\
-    SUCCESS_NOTICE\"/\n\x13C_CONFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\
-    \x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\
-    \x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOT\
-    ICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNI\
-    SH_MATCH_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x128\
-    \n\x0cpunish_match\x18\x02\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpu\
-    nishMatchb\x06proto3\
+    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUC\
+    CESS_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CO\
+    NFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\
+    \n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\
+    \x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARC\
+    H\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07\
+    user_id\x18\x01\x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\
+    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatchb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -16,9 +16,9 @@ use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
-    S_CHANGE_TEAM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER, S_MATCH_SUCCESS_NOTICE,
-    S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_PUNISH_MATCH_NOTICE, S_ROOM,
-    S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
+    S_CHANGE_TEAM_NOTICE, S_CONFIRM_INTO_ROOM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER,
+    S_MATCH_SUCCESS_NOTICE, S_PREPARE_CANCEL, S_PREPARE_CANCEL_NOTICE, S_PUNISH_MATCH_NOTICE,
+    S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
 };
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
 use tools::tcp::TcpSender;
@@ -245,21 +245,33 @@ impl Room {
     }
 
     pub fn push_match_success(&mut self) {
-        let mut user_id;
-        let smsn = S_MATCH_SUCCESS_NOTICE::new();
-        let bytes = smsn.write_to_bytes().unwrap();
+        let mut smsn = S_MATCH_SUCCESS_NOTICE::new();
+        let mut confirm_count = 0;
         for member in self.members.values() {
-            user_id = member.user_id;
-            //如果是机器人，则返回，不发送
+            //如果是机器人，跳过
             if member.is_robot {
                 continue;
             }
             if member.state != MemberState::AwaitConfirm {
                 continue;
             }
+            confirm_count += 1;
+        }
+        let mut member_id;
+        for member in self.members.values() {
+            //如果是机器人，跳过
+            if member.is_robot {
+                continue;
+            }
+            if member.state != MemberState::AwaitConfirm {
+                continue;
+            }
+            member_id = member.user_id;
+            smsn.set_count(confirm_count);
+            let bytes = smsn.write_to_bytes().unwrap();
             let res = Packet::build_packet_bytes(
                 ClientCode::MatchSuccessNotice.into_u32(),
-                user_id,
+                member_id,
                 bytes.clone(),
                 true,
                 true,
@@ -282,9 +294,12 @@ impl Room {
     }
 
     ///检查角色
-    pub fn check_character(&self, cter_id: u32) -> anyhow::Result<()> {
+    pub fn check_character(&self, user_id: u32, cter_id: u32) -> anyhow::Result<()> {
         for cter in self.members.values() {
-            if cter_id > 0 && cter.chose_cter.cter_id == cter_id {
+            if cter.user_id == user_id {
+                continue;
+            }
+            if cter.chose_cter.cter_id == cter_id {
                 let str = format!("this character was choiced!cter_id:{}", cter_id);
                 anyhow::bail!(str)
             }
@@ -304,19 +319,23 @@ impl Room {
     ///准备与取消
     pub fn prepare_cancel(&mut self, user_id: &u32, pregare_cancel: bool) {
         let member = self.members.get_mut(user_id).unwrap();
+        let member_state = member.state;
         match pregare_cancel {
             true => member.state = MemberState::Ready,
             false => member.state = MemberState::NotReady,
         }
-        //通知其他玩家
-        let mut spc = S_PREPARE_CANCEL::new();
-        spc.is_succ = true;
-        self.prepare_cancel_notice(*user_id, pregare_cancel);
-        self.send_2_client(
-            ClientCode::PrepareCancel,
-            *user_id,
-            spc.write_to_bytes().unwrap(),
-        );
+        //如果状态改变了通知其他玩家
+        if member_state != member.state {
+            let mut spc = S_PREPARE_CANCEL::new();
+            spc.is_succ = true;
+            self.prepare_cancel_notice(*user_id, pregare_cancel);
+            self.send_2_client(
+                ClientCode::PrepareCancel,
+                *user_id,
+                spc.write_to_bytes().unwrap(),
+            );
+        }
+
         if self.check_ready() && self.room_type == RoomType::OneVOneVOneVOneMatch {
             self.start();
         }
@@ -486,16 +505,42 @@ impl Room {
 
         //不是匹配房就通知其他成员
         if self.room_type != RoomType::OneVOneVOneVOneMatch {
-            //返回客户端消息
-            let mut sr = S_ROOM::new();
-            sr.is_succ = true;
-            sr.set_room(self.convert_to_pt());
-            self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
-
-            //通知房间里其他人
-            self.room_add_member_notice(&user_id);
+            self.notice_new_member(user_id);
         }
         Ok(self.id)
+    }
+
+    pub fn notice_confirm_count(&mut self, user_id: u32) {
+        let member = self.get_member_mut(&user_id).unwrap();
+        member.state = MemberState::NotReady;
+        let mut count = 0;
+        let mut need_push_vec = vec![];
+        for member in self.members.values() {
+            if member.state == MemberState::AwaitConfirm {
+                need_push_vec.push(member.user_id);
+                continue;
+            }
+            count += 1;
+        }
+
+        //推送给待确认进入房间人数
+        for member_id in need_push_vec {
+            let mut scirn = S_CONFIRM_INTO_ROOM_NOTICE::new();
+            scirn.set_count(count);
+            let bytes = scirn.write_to_bytes().unwrap();
+            self.send_2_client(ClientCode::ConfirmIntoRoomNotice, member_id, bytes);
+        }
+    }
+
+    pub fn notice_new_member(&mut self, user_id: u32) {
+        //返回客户端消息
+        let mut sr = S_ROOM::new();
+        sr.is_succ = true;
+        sr.set_room(self.convert_to_pt());
+        self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
+
+        //通知房间里其他人
+        self.room_add_member_notice(&user_id);
     }
 
     //随便获得一个玩家,如果玩家id==0,则代表没有玩家了

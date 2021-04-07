@@ -21,8 +21,8 @@ use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
     C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_CONFIRM_INTO_ROOM_NOTICE, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM,
-    S_PUNISH_MATCH_NOTICE, S_ROOM, S_ROOM_SETTING, S_START,
+    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_PUNISH_MATCH_NOTICE, S_ROOM,
+    S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
@@ -913,6 +913,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         warn!("this player is not in room!user_id:{}", user_id);
         return;
     }
+
     let room = res.unwrap();
     //校验房间状态
     if room.is_started() {
@@ -928,9 +929,26 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let cter_id = ccc.cter_id;
+    if cter_id == 0 {
+        warn!(
+            "choose_character-the param is error!cter_id=0!user_id:{}",
+            user_id
+        );
+        return;
+    }
+
+    let member = room.get_member_ref(&user_id).unwrap();
+    //不能发无效的选择
+    if member.chose_cter.cter_id == cter_id {
+        warn!(
+            "choose_character-the param is error!cter_id is repeated!!user_id:{},cter_id:{}",
+            user_id, cter_id
+        );
+        return;
+    }
 
     //校验角色
-    let res = room.check_character(cter_id);
+    let res = room.check_character(user_id, cter_id);
     if let Err(e) = res {
         warn!("{:?}", e);
         return;
@@ -963,7 +981,6 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
     //走正常逻辑
     let mut scc = S_CHOOSE_CHARACTER::new();
     scc.is_succ = true;
-
     //返回客户端
     room.send_2_client(
         ClientCode::ChoiceCharacter,
@@ -1125,21 +1142,11 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
 
     //如果全部确认进入房间，就发送通知房间协议给所有客户端
     if confirm {
-        let member = room.get_member_mut(&user_id).unwrap();
-        member.state = MemberState::NotReady;
-        let mut count = 0;
-        for member in room.members.values() {
-            if member.state != MemberState::NotReady {
-                continue;
-            }
-            count += 1;
-        }
+        //推送确认进入人数
+        room.notice_confirm_count(user_id);
 
-        //推送确认进入房间人数
-        let mut scirn = S_CONFIRM_INTO_ROOM_NOTICE::new();
-        scirn.set_count(count);
-        let bytes = scirn.write_to_bytes().unwrap();
-        room.send_2_all_client(ClientCode::ConfirmIntoRoomNotice, bytes);
+        //通知新成员加入
+        room.notice_new_member(user_id);
 
         //判断人是否满了，满了就把房间信息推送给客户端
         let res = room.check_all_confirmed_into_room();

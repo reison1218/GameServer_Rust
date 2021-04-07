@@ -181,6 +181,7 @@ message CellBuffPt{
 message PunishMatchPt{
     int64 start_time = 1;           //开始时间(unix时间戳，毫秒数)
     uint32 punish_id = 2;            //惩罚id
+    uint32 today_id = 3;            //服务器用的，客户端不用管
 }
 
 //段位数据

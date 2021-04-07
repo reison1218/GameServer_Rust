@@ -179,7 +179,7 @@ impl RoomModel for CustomRoom {
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
         //同志房间其他成员
-        room.room_add_member_notice(&user_id);
+        room.notice_new_member(user_id);
         Ok(room_id)
     }
 
@@ -284,7 +284,6 @@ impl RoomModel for MatchRoom {
     ) -> anyhow::Result<u32> {
         let room = self.get_mut_room_by_room_id(room_id)?;
         let room_id = *room_id;
-        let member_count = room.get_member_count();
         //其他状态房间服自行处理
         if need_punish {
             //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
@@ -297,10 +296,7 @@ impl RoomModel for MatchRoom {
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
         //如果房间之前是满都，就给所有人取消准备
-        if room.get_state() == RoomState::AwaitReady
-            && member_count == MEMBER_MAX as usize
-            && now_count < member_count
-        {
+        if room.get_state() == RoomState::AwaitConfirm && now_count < MEMBER_MAX as usize {
             room.do_cancel_prepare();
             if room.get_state() == RoomState::AwaitConfirm {
                 need_add_cache = true;

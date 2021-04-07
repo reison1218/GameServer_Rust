@@ -206,7 +206,7 @@ message S_ROOM_MEMBER_LEAVE_NOTICE{
 //匹配成功通知
 //cmd:10029
 message S_MATCH_SUCCESS_NOTICE{
-
+    uint32 count=1;//点击去人进入房间人的数量
 }
 
 //确认进入房间  此消息没有服务器不返回
