@@ -477,10 +477,11 @@ impl TriggerEvent for BattleData {
         }
         let cter = cter.unwrap();
         let max_energy = cter.base_attr.max_energy;
-        let mut buff_id;
         let mut buff_function_id;
-        for buff in cter.battle_buffs.buffs.clone().values() {
-            buff_id = buff.get_id();
+        let buff_ids: Vec<u32> = cter.battle_buffs.buffs.keys().copied().collect();
+        for buff_id in buff_ids {
+            let buff = cter.battle_buffs.buffs.get(&buff_id).unwrap();
+            let par1 = buff.buff_temp.par1;
             buff_function_id = buff.function_id;
 
             //被攻击增加能量
@@ -488,8 +489,8 @@ impl TriggerEvent for BattleData {
                 let mut tep = TriggerEffectPt::new();
                 tep.set_field_type(EffectType::AddEnergy.into_u32());
                 tep.set_buff_id(buff_id);
-                tep.set_value(buff.buff_temp.par1);
-                cter.add_energy(buff.buff_temp.par1 as i8);
+                tep.set_value(par1);
+                cter.add_energy(par1 as i8);
                 target_pt.passiveEffect.push(tep);
             }
 
@@ -498,8 +499,8 @@ impl TriggerEvent for BattleData {
                 let mut tep = TriggerEffectPt::new();
                 tep.set_field_type(EffectType::SubSkillCd.into_u32());
                 tep.set_buff_id(buff_id);
-                tep.set_value(buff.buff_temp.par1);
-                cter.sub_skill_cd(Some(buff.buff_temp.par1 as i8));
+                tep.set_value(par1);
+                cter.sub_skill_cd(Some(par1 as i8));
                 target_pt.passiveEffect.push(tep);
             }
         }

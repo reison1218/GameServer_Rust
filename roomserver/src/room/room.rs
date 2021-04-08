@@ -97,7 +97,7 @@ impl From<&Room> for RoomPt {
         rp.set_setting(setting.into());
         rp.owner_id = room.owner_id;
         for member in room.members.values() {
-            let mp = member.clone().into();
+            let mp = member.into();
             rp.members.push(mp);
         }
         rp
@@ -398,20 +398,24 @@ impl Room {
 
     ///推送消息
     pub fn room_add_member_notice(&mut self, user_id: &u32) {
-        let mut srmn = S_ROOM_ADD_MEMBER_NOTICE::new();
-        srmn.set_index(self.get_member_index(*user_id) as u32);
         let member = self.members.get(user_id);
         if member.is_none() {
             return;
         }
-        let mp = member.unwrap().clone().into();
+        let mut srmn = S_ROOM_ADD_MEMBER_NOTICE::new();
+        srmn.set_index(self.get_member_index(*user_id) as u32);
+        let mp = member.unwrap().into();
         srmn.set_member(mp);
 
         let bytes = srmn.write_to_bytes().unwrap();
-        let self_mut_ref = self.get_mut_ref();
-        if self_mut_ref.get_member_count() > 0 {
-            for id in self.members.keys() {
-                self_mut_ref.send_2_client(ClientCode::RoomAddMemberNotice, *id, bytes.clone());
+        let member_count = self.get_member_count();
+        if member_count > 0 {
+            let iter = self.member_index;
+            for &id in iter.iter() {
+                if id <= 0 {
+                    continue;
+                }
+                self.send_2_client(ClientCode::RoomAddMemberNotice, id, bytes.clone());
             }
         }
     }
@@ -647,7 +651,7 @@ impl Room {
             let member = self.members.get(user_id);
             if member.is_some() {
                 let member = member.unwrap();
-                let mp = member.clone().into();
+                let mp = member.into();
                 rp.members.push(mp);
             } else {
                 let mp = MemberPt::new();

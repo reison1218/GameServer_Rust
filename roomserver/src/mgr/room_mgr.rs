@@ -163,7 +163,7 @@ impl RoomMgr {
         let _ = f.unwrap()(self, packet);
     }
 
-    pub fn get_room_mut(&mut self, user_id: &u32) -> Option<&mut Room> {
+    pub fn get_room_mut_by_user_id(&mut self, user_id: &u32) -> Option<&mut Room> {
         let res = self.player_room.get(user_id);
         if res.is_none() {
             return None;
@@ -186,7 +186,7 @@ impl RoomMgr {
     }
 
     #[allow(dead_code)]
-    pub fn get_room_ref(&self, user_id: &u32) -> Option<&Room> {
+    pub fn get_room_ref_by_user_id(&self, user_id: &u32) -> Option<&Room> {
         let res = self.player_room.get(user_id);
         if res.is_none() {
             return None;

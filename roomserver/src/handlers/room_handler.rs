@@ -87,9 +87,12 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let mut redis_lock = crate::REDIS_POOL.lock().unwrap();
+
+    let cp: Vec<u32> = rm.player_room.keys().copied().collect();
+
     //更新所有内存数据
-    for &user_id in rm.player_room.clone().keys() {
-        let room = rm.get_room_mut(&user_id);
+    for user_id in cp {
+        let room = rm.get_room_mut_by_user_id(&user_id);
         if room.is_none() {
             continue;
         }
@@ -180,7 +183,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
 //离开房间
 pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if room.is_none() {
         warn!("could not find room!user_id:{}", user_id);
         return;
@@ -255,7 +258,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
 pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     //校验房间是否存在
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if room.is_none() {
         //通知游戏服卸载玩家数据
         rm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
@@ -295,7 +298,7 @@ pub fn off_line(rm: &mut RoomMgr, packet: Packet) {
 ///取消匹配房间
 pub fn cancel_search_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if room.is_none() {
         warn!("this user is not matching the room!user_id:{}", user_id);
         return;
@@ -419,7 +422,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     }
     let user_id = packet.get_user_id();
     let prepare = cpc.prepare;
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     //校验玩家房间
     if let None = room {
         warn!(
@@ -488,7 +491,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
 
     //校验房间
-    let room = rm.get_mut_ref().get_room_mut(&user_id);
+    let room = rm.get_mut_ref().get_room_mut_by_user_id(&user_id);
     if let None = room {
         warn!("this player is not in the room!user_id:{}", user_id);
         return;
@@ -672,7 +675,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
     }
     let target_id = ckm.target_id;
     //校验房间
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if room.is_none() {
         warn!(
             "kick_member:this player is not in the room!user_id:{}",
@@ -730,7 +733,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
 ///房间设置
 pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     let mut srs = S_ROOM_SETTING::new();
     srs.is_succ = true;
     if room.is_none() {
@@ -906,7 +909,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
 ///选择角色
 pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let res = rm.get_room_mut(&user_id);
+    let res = rm.get_room_mut_by_user_id(&user_id);
 
     //校验玩家在不在房间
     if res.is_none() {
@@ -1009,7 +1012,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
     }
     let skills = ccs.get_skills();
 
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if room.is_none() {
         warn!("this player is not in room!user_id:{}", user_id);
         return;
@@ -1030,9 +1033,9 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
 
     let cter = member.cters.get(&cter_id).unwrap();
 
-    //校验房间壮体啊
+    //校验房间状态
     if room_state != RoomState::AwaitReady {
-        warn!("can not choice skill now!");
+        warn!("can not choice skill now!room_state:{:?}", room_state);
         return;
     }
 
@@ -1096,7 +1099,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
 pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     //校验玩家在不在房间内
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if let None = room {
         warn!("this user is not in the room!");
         return;
@@ -1177,7 +1180,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
         warn!("summary,the user_id is 0!");
         return;
     }
-    let room = rm.get_room_mut(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if let None = room {
         return;
     }
@@ -1224,7 +1227,7 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
 ///发送表情
 pub fn emoji(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let res = rm.get_room_mut(&user_id);
+    let res = rm.get_room_mut_by_user_id(&user_id);
     if res.is_none() {
         warn!("this player is not in the room!user_id:{}", user_id);
         return;
@@ -1287,7 +1290,12 @@ pub fn handler_leave_room(
     need_push_self: bool,
     need_punish: bool,
 ) -> anyhow::Result<()> {
-    let room = rm.get_room_mut(&user_id).unwrap();
+    let room = rm.get_room_mut_by_user_id(&user_id);
+    if room.is_none() {
+        error!("room is none for user_id:{}", user_id);
+        anyhow::bail!("");
+    }
+    let room = room.unwrap();
     let room_id = room.get_room_id();
     let room_type = RoomType::from(room.get_room_type());
 

@@ -116,7 +116,7 @@ impl From<&PlayerBattlePt> for Member {
     }
 }
 
-impl Into<MemberPt> for Member {
+impl Into<MemberPt> for &Member {
     fn into(self) -> MemberPt {
         let mut mp = MemberPt::new();
         mp.user_id = self.get_user_id();
