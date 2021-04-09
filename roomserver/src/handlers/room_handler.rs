@@ -21,8 +21,8 @@ use tools::macros::GetMutRef;
 use tools::protos::room::{
     C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
     C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_PUNISH_MATCH_NOTICE, S_ROOM,
-    S_ROOM_SETTING, S_START,
+    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_PUNISH_MATCH_NOTICE, S_ROOM_SETTING,
+    S_START,
 };
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
@@ -1155,11 +1155,6 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
         let res = room.check_all_confirmed_into_room();
         if res {
             room.state = RoomState::AwaitReady;
-            let mut sr = S_ROOM::new();
-            sr.is_succ = true;
-            sr.set_room(room.convert_to_pt());
-            let bytes = sr.write_to_bytes().unwrap();
-            room.send_2_all_client(ClientCode::Room, bytes);
             let task_sender = rm.get_task_sender_clone();
             build_match_room_ready_task(room_id, task_sender);
         }
