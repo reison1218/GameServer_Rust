@@ -1,15 +1,13 @@
 ---
 application:
   name: "gameserver-rust"
-  project: "gameserver"
+  project: "test"
   organization: "QoveryCommunity"
 databases:
-- type: "MYSQL"
-  name: "game_data"
-  version: "8"
 - type: "REDIS"
-  name: "data_center"
-  version: "6"
+  name: "redis"
+- type: "MYSQL"
+  name: "mysql"
 routers:
 - name: "main-gameserver-rust"
   routes:
