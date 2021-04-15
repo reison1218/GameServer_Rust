@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 use slab::Slab;
 use std::time::{Duration, Instant, SystemTime};
+use tools::http::HttpMethod;
 use tools::protos::base::{RankInfoPt, WorldCellPt};
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -500,37 +501,51 @@ static START: Once = Once::new();
 
 static mut STATIC_U32: u32 = 0;
 
+use http_types::{Method, Request, Url};
+
 fn main() -> anyhow::Result<()> {
-    let res = SSSSSSS([0, 10]);
-    let res1 = SSSSSSS([0, 40]);
-    println!("{:?},{:?}", res.type_id(), res.0.type_id());
-    println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
-    let a = std::ptr::addr_of!(res);
-    unsafe {
-        println!("{:?}", a.read_unaligned());
-    }
+    let m = async {
+        let res = tools::http::send_http_request(
+            "spiritle-test.fabledgame.net",
+            "center/user_id",
+            HttpMethod::POST,
+            None,
+        )
+        .await
+        .unwrap();
+        println!("{:?}", res);
+    };
+    async_std::task::block_on(m);
+    // let res = SSSSSSS([0, 10]);
+    // let res1 = SSSSSSS([0, 40]);
+    // println!("{:?},{:?}", res.type_id(), res.0.type_id());
+    // println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
+    // let a = std::ptr::addr_of!(res);
+    // unsafe {
+    //     println!("{:?}", a.read_unaligned());
+    // }
 
-    START.call_once(|| {
-        println!("test Once!");
-        unsafe {
-            STATIC_U32 = 1;
-        }
-    });
+    // START.call_once(|| {
+    //     println!("test Once!");
+    //     unsafe {
+    //         STATIC_U32 = 1;
+    //     }
+    // });
 
-    START.call_once(|| {
-        println!("test Once!");
-    });
-    let mut v = vec![StructTest::default(), StructTest::default()];
-    {
-        let size = v.len();
-        let mut res = v.drain(0..size);
-        let next1 = res.next();
-        let next2 = res.next();
-        println!("{:?}", next1);
-        println!("{:?}", next2);
-        std::mem::forget(res);
-    }
-    println!("{:?}", v);
+    // START.call_once(|| {
+    //     println!("test Once!");
+    // });
+    // let mut v = vec![StructTest::default(), StructTest::default()];
+    // {
+    //     let size = v.len();
+    //     let mut res = v.drain(0..size);
+    //     let next1 = res.next();
+    //     let next2 = res.next();
+    //     println!("{:?}", next1);
+    //     println!("{:?}", next2);
+    //     std::mem::forget(res);
+    // }
+    // println!("{:?}", v);
     // let s = serde_json::Value::try_from(1).unwrap();
     // s.as_f64()
     // let v:Vec<Box<dyn Send+Sync+'static>> = Vec::new();
