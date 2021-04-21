@@ -1,5 +1,6 @@
 use tools::protos::base::{LeaguePt, SummaryDataPt};
 pub mod rank_mgr;
+use log::error;
 use serde::{Deserialize, Serialize};
 
 pub struct RankInfoPtr(pub *mut RankInfo);
@@ -9,10 +10,17 @@ unsafe impl Send for RankInfoPtr {}
 impl RankInfoPtr {
     pub fn update(&mut self, sd_pt: &SummaryDataPt, cters: Vec<u32>) {
         unsafe {
-            let res = self.0.as_mut().unwrap();
-            res.name = sd_pt.name.clone();
-            res.league = League::from(sd_pt.get_league());
-            res.cters = cters;
+            let res = self.0.as_mut();
+            match res {
+                Some(res) => {
+                    res.name = sd_pt.name.clone();
+                    res.league = League::from(sd_pt.get_league());
+                    res.cters = cters;
+                }
+                None => {
+                    error!("RankInfoPtr.0 could not convert to &mut RankInfo!");
+                }
+            }
         }
     }
 }

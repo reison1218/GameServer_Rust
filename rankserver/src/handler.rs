@@ -71,7 +71,12 @@ pub async fn handler_season_update(
     //刷新last_rank数据,并保存历史排行榜,并更新玩家历史最佳
     for ri in rm.rank_vec.iter() {
         let user_id = ri.user_id;
-        let json_value = serde_json::to_string(&ri).unwrap();
+        let json_value = serde_json::to_string(&ri);
+        if let Err(err) = json_value {
+            error!("{:?}", err);
+            continue;
+        }
+        let json_value = json_value.unwrap();
         //更新last_rank
         let _: Option<String> = redis_lock.hset(
             REDIS_INDEX_RANK,
@@ -226,10 +231,17 @@ pub fn update_rank(rm: &mut RankMgr, packet: Packet) {
         None => {
             let ri = RankInfo::new(sd, cters);
             rm.rank_vec.push(ri);
-            let len = rm.rank_vec.len();
-            let ri_mut = rm.rank_vec.get_mut(len - 1).unwrap();
-            rm.update_map
-                .insert(user_id, RankInfoPtr(ri_mut as *mut RankInfo));
+            let index = rm.rank_vec.len() - 1;
+            let ri_mut = rm.rank_vec.get_mut(index);
+            match ri_mut {
+                Some(ri_mut) => {
+                    rm.update_map
+                        .insert(user_id, RankInfoPtr(ri_mut as *mut RankInfo));
+                }
+                None => {
+                    error!("rm.rank_vec do not have index:{}", index);
+                }
+            }
         }
     }
     rm.need_rank = true;

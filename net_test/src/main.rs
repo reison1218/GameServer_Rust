@@ -501,29 +501,15 @@ static START: Once = Once::new();
 
 static mut STATIC_U32: u32 = 0;
 
-use http_types::{Method, Request, Url};
-
 fn main() -> anyhow::Result<()> {
-    let m = async {
-        let res = tools::http::send_http_request(
-            "spiritle-test.fabledgame.net",
-            "center/user_id",
-            HttpMethod::POST,
-            None,
-        )
-        .await
-        .unwrap();
-        println!("{:?}", res);
-    };
-    async_std::task::block_on(m);
-    // let res = SSSSSSS([0, 10]);
-    // let res1 = SSSSSSS([0, 40]);
-    // println!("{:?},{:?}", res.type_id(), res.0.type_id());
-    // println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
-    // let a = std::ptr::addr_of!(res);
-    // unsafe {
-    //     println!("{:?}", a.read_unaligned());
-    // }
+    let res = SSSSSSS([0, 10]);
+    let res1 = SSSSSSS([0, 40]);
+    println!("{:?},{:?}", res.type_id(), res.0.type_id());
+    println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
+    let a = std::ptr::addr_of!(res);
+    unsafe {
+        println!("{:?}", a.read_unaligned());
+    }
 
     // START.call_once(|| {
     //     println!("test Once!");

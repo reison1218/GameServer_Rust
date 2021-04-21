@@ -8,6 +8,7 @@ use std::env;
 use crate::mgr::rank_mgr::RankMgr;
 use crate::net::tcp_server;
 use async_std::sync::Mutex;
+use log::error;
 use mgr::{RankInfo, RankInfoPtr};
 use std::sync::Arc;
 use task_timer::init_timer;
@@ -106,8 +107,15 @@ fn init_rank(rm: Lock) {
     let last_ranks: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_LAST_RANK);
     if let Some(last_ranks) = last_ranks {
         for last_rank in last_ranks {
-            let ri: RankInfo = serde_json::from_str(last_rank.as_str()).unwrap();
-            lock.last_rank.push(ri);
+            let ri = serde_json::from_str(last_rank.as_str());
+            match ri {
+                Ok(ri) => {
+                    lock.last_rank.push(ri);
+                }
+                Err(err) => {
+                    error!("{:?}", err);
+                }
+            }
         }
     }
     //进行排序
@@ -131,7 +139,12 @@ fn init_rank(rm: Lock) {
     let ranks = ranks.unwrap();
 
     for rank_str in ranks {
-        let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
+        let ri = serde_json::from_str(rank_str.as_str());
+        if let Err(err) = ri {
+            error!("{:?}", err);
+            continue;
+        }
+        let ri: RankInfo = ri.unwrap();
         let user_id = ri.user_id;
         lock.rank_vec.push(ri);
         let len = lock.rank_vec.len();
@@ -159,7 +172,12 @@ fn init_rank(rm: Lock) {
     }
     let best_ranks = best_ranks.unwrap();
     for rank_str in best_ranks {
-        let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
+        let ri = serde_json::from_str(rank_str.as_str());
+        if let Err(err) = ri {
+            error!("{:?}", err);
+            continue;
+        }
+        let ri: RankInfo = ri.unwrap();
         let user_id = ri.user_id;
         lock.user_best_rank.insert(user_id, ri);
     }

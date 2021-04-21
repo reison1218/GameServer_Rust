@@ -65,13 +65,13 @@ impl ClientHandler for TcpClientHandler {
             return;
         }
         let packet_array = packet_array.unwrap();
-        async_std::task::spawn(handler_mess_s(self.cp.clone(), packet_array));
+        handler_mess_s(self.cp.clone(), packet_array)
     }
 }
 
-async fn handler_mess_s(cp: Lock, packet_array: VecDeque<Packet>) {
+fn handler_mess_s(cp: Lock, packet_array: VecDeque<Packet>) {
     for mut packet in packet_array {
-        let mut lock = cp.lock().await;
+        let mut lock = async_std::task::block_on(cp.lock());
         let user_id = packet.get_user_id();
         let cmd = packet.get_cmd();
         //判断是否是发给客户端消息

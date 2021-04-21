@@ -591,13 +591,14 @@ impl BattleData {
     }
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
+        let cmd = cmd.into_u32();
         for cter in self.battle_cter.values() {
             if cter.robot_data.is_some() {
                 continue;
             }
             let user_id = cter.base_attr.user_id;
-            let bytes_res =
-                Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
+
+            let bytes_res = Packet::build_packet_bytes(cmd, user_id, bytes.clone(), true, true);
             let res = self.tcp_sender.send(bytes_res);
             if let Err(e) = res {
                 error!("{:?}", e);
