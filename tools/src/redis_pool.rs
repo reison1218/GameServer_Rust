@@ -128,7 +128,10 @@ impl RedisPoolTool {
         match res {
             Ok(v) => Some(v),
             Err(e) => {
-                error!("{:?}", e);
+                error!(
+                    "{:?},index:{},hkey:{:?},key:{:?},value:{:?}",
+                    e, index, hkey, key, value
+                );
                 None
             }
         }

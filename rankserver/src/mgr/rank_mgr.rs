@@ -97,7 +97,7 @@ impl RankMgr {
                     if need_save {
                         let json_value = serde_json::to_string(ri).unwrap();
                         //持久化到redis
-                        let _: Option<String> = redis_lock.hset(
+                        let _: Option<u32> = redis_lock.hset(
                             REDIS_INDEX_RANK,
                             REDIS_KEY_CURRENT_RANK,
                             user_id.to_string().as_str(),

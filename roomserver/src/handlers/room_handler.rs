@@ -809,7 +809,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
                     }
                     Err(e) => {
                         warn!("{:?}", e);
-                        room.setting.turn_limit_time = 60;
+                        room.setting.turn_limit_time = 60000;
                     }
                 }
             }

@@ -502,14 +502,14 @@ static START: Once = Once::new();
 static mut STATIC_U32: u32 = 0;
 
 fn main() -> anyhow::Result<()> {
-    let res = SSSSSSS([0, 10]);
-    let res1 = SSSSSSS([0, 40]);
-    println!("{:?},{:?}", res.type_id(), res.0.type_id());
-    println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
-    let a = std::ptr::addr_of!(res);
-    unsafe {
-        println!("{:?}", a.read_unaligned());
-    }
+    // let res = SSSSSSS([0, 10]);
+    // let res1 = SSSSSSS([0, 40]);
+    // println!("{:?},{:?}", res.type_id(), res.0.type_id());
+    // println!("{:?},{:?}", res1.type_id(), res1.0.type_id());
+    // let a = std::ptr::addr_of!(res);
+    // unsafe {
+    //     println!("{:?}", a.read_unaligned());
+    // }
 
     // START.call_once(|| {
     //     println!("test Once!");

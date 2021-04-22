@@ -274,14 +274,21 @@ impl BattleCharacter {
     }
 
     pub fn sub_skill_cd(&mut self, value: Option<i8>) {
-        self.skills.values_mut().for_each(|x| {
-            let res;
-            match value {
-                Some(value) => res = value * -1,
-                None => {
-                    res = -1;
+        let res;
+        match value {
+            Some(value) => {
+                if value < 0 {
+                    res = value;
+                } else {
+                    res = value * -1;
                 }
             }
+            None => {
+                res = -1;
+            }
+        }
+
+        self.skills.values_mut().for_each(|x| {
             x.add_cd(res);
         })
     }
