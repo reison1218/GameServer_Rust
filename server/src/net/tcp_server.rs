@@ -54,16 +54,18 @@ impl tools::tcp::Handler for TcpServerHandler {
 
         for packet in packet_array {
             let gm = self.gm.clone();
-            async_std::task::spawn(handler_mess_s(gm, packet));
+            handler_mess_s(gm, packet).await;
         }
     }
 }
 
+#[track_caller]
 async fn handler_mess_s(gm: Lock, packet: Packet) {
     let cmd = packet.get_cmd();
     //如果为空，什么都不执行
     if cmd != GameCode::Login.into_u32()
         && cmd != GameCode::UnloadUser.into_u32()
+        && cmd != GameCode::SyncRank.into_u32()
         && cmd != ServerCommonCode::ReloadTemps.into_u32()
         && packet.get_data().is_empty()
     {

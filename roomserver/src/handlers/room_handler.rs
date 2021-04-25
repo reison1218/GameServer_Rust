@@ -797,7 +797,16 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
                 room.setting.is_open_ai = proto_value == 1;
             }
             RoomSettingType::SeasonId => {
-                room.setting.season_id = proto_value;
+                let season_id = proto_value;
+                if season_id != 0 {
+                    let season_temp_mgr = crate::TEMPLATES.season_temp_mgr();
+                    let res = season_temp_mgr.get_temp(&season_id);
+                    if let Err(err) = res {
+                        warn!("{:?}", err);
+                        return;
+                    }
+                }
+                room.setting.season_id = season_id;
             }
             RoomSettingType::TurnLimitTime => {
                 let id = proto_value as u8;
@@ -844,6 +853,11 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     let res = rm.check_player(&user_id);
     if res {
         warn!("this player already in the room!user_id:{}", user_id);
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("this player already in the room!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
 
@@ -851,6 +865,11 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     let room = rm.custom_room.get_mut_room_by_room_id(&room_id);
     if let Err(e) = room {
         warn!("{:?}", e);
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("this room is not exist!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
 
@@ -862,6 +881,11 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
             "can not leave room,this room is already started!room_id:{}",
             room.get_room_id()
         );
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("this room is already start!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
 
@@ -875,12 +899,22 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
             room.get_room_id(),
             room_type,
         );
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("room_type is error!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
 
     //校验房间人数
     if room.members.len() >= MEMBER_MAX as usize {
         warn!("this room already have max player num!,room_id:{}", room_id);
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("this room is full!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
 
@@ -892,6 +926,11 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
             packet.get_user_id(),
             room_id
         );
+        //返回客户端消息
+        let mut sr = tools::protos::room::S_ROOM::new();
+        sr.is_succ = false;
+        sr.err_mess = String::from("this room is not exist!");
+        rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
     let member = Member::from(grj.get_pbp());

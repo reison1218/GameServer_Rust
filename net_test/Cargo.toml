@@ -65,3 +65,5 @@ chrono = "0.4"
 slab = "0.4.2"
 time = "0.2.23"
 tools = { path = "../tools" }
+
+#Zellij

@@ -175,6 +175,9 @@ impl TriggerEvent for BattleData {
         //匹配地图块的buff
         self.trigger_open_map_cell_buff(Some(index), user_id, au, is_pair);
         let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
+        let map_cell = self.tile_map.map_cells.get(index).unwrap();
+        let element = map_cell.element as u32;
+        let miss_type_vec;
         //配对了加金币
         if is_pair {
             //把配对可用的技能加入
@@ -210,21 +213,18 @@ impl TriggerEvent for BattleData {
                 }
             }
             battle_cter.add_gold(res as i32);
-            let map_cell = self.tile_map.map_cells.get(index).unwrap();
-            let element = map_cell.element as u32;
-            //触发翻地图块任务;触发获得金币;触发配对任务
-            trigger_mission(
-                self,
-                user_id,
-                vec![
-                    MissionTriggerType::OpenCell,
-                    MissionTriggerType::GetGold,
-                    MissionTriggerType::Pair,
-                ],
-                1,
-                (element, 0),
-            );
+            //封装任务类型
+            miss_type_vec = vec![
+                MissionTriggerType::OpenCell,
+                MissionTriggerType::GetGold,
+                MissionTriggerType::Pair,
+            ]
+        } else {
+            //封装任务类型
+            miss_type_vec = vec![MissionTriggerType::OpenCell]
         }
+        //触发翻地图块任务;触发获得金币;触发配对任务
+        trigger_mission(self, user_id, miss_type_vec, 1, (element, 0));
         Ok(None)
     }
 

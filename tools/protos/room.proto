@@ -45,7 +45,7 @@ message S_ROOM{
 //房间设置请求
 //cmd:20011
 message C_ROOM_SETTING{
-    uint32 set_type = 1;//设定的类型 1是否启用worldtiles 3turn limit
+    uint32 set_type = 1;//设定的类型 1:是否启用ai 2:赛季id 3:turn限制时间
     uint32 value = 2;//对应的值
 }
 

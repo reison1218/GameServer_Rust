@@ -851,6 +851,10 @@ impl BattleData {
         }
         let user_id = user_id.unwrap();
         let time_limit = self.turn_limit_time;
+        //如果不限制时间,直接跳过
+        if time_limit == 0 {
+            return;
+        }
         let mut task = Task::default();
         task.delay = time_limit;
         task.cmd = TaskCmd::BattleTurnTime;

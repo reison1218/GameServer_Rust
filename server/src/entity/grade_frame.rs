@@ -86,18 +86,24 @@ impl GradeFrame {
         let default_grade_frame = crate::TEMPLATES
             .constant_temp_mgr()
             .temps
-            .get("default_grade_frame")
-            .unwrap();
-        let id = u32::from_str(default_grade_frame.value.as_str());
-        let gf_id;
-        if let Err(e) = id {
-            error!("{:?}", e);
-            gf_id = 1;
-        } else {
-            gf_id = id.unwrap();
+            .get("default_grade_frame");
+        match default_grade_frame {
+            Some(default_grade_frame) => {
+                let id = u32::from_str(default_grade_frame.value.as_str());
+                let gf_id;
+                if let Err(e) = id {
+                    error!("{:?}", e);
+                    gf_id = 1;
+                } else {
+                    gf_id = id.unwrap();
+                }
+                gf.grade_frames.push(gf_id);
+            }
+            None => {
+                warn!("default_grade_frame is none in constant_temp!");
+            }
         }
         gf.user_id = user_id;
-        gf.grade_frames.push(gf_id);
         gf
     }
 

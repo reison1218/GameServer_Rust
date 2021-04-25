@@ -157,13 +157,6 @@ impl Room {
         owner.join_time = Local::now().timestamp_millis() as u64;
         room.members.insert(user_id, owner);
         room.member_index[0] = user_id;
-        if room.room_type != RoomType::OneVOneVOneVOneMatch {
-            //返回客户端
-            let mut sr = S_ROOM::new();
-            sr.is_succ = true;
-            sr.set_room(room.convert_to_pt());
-            room.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
-        }
         Ok(room)
     }
 

@@ -40,10 +40,10 @@ fn sort_rank(rm: Lock) {
         }
         None => time = 60 * 1000 * 10,
     }
-    let m = async move {
+    let m = move || {
         loop {
-            async_std::task::sleep(Duration::from_millis(time)).await;
-            let mut lock = rm.lock().await;
+            std::thread::sleep(Duration::from_millis(time));
+            let mut lock = async_std::task::block_on(rm.lock());
             if !lock.need_rank {
                 info!("执行排行定时器-排行榜没有任何变化,无需排序");
                 continue;
@@ -63,5 +63,5 @@ fn sort_rank(rm: Lock) {
             info!("更新rank并下发排行榜快照到游戏服结束!耗时{:?}", res);
         }
     };
-    async_std::task::spawn(m);
+    std::thread::spawn(m);
 }

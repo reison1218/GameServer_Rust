@@ -51,12 +51,23 @@ impl RoomType {
 }
 
 ///房间设置
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone)]
 pub struct RoomSetting {
     pub turn_limit_time: u32,   //回合限制时间
     pub season_id: u32,         //赛季id
     pub is_open_ai: bool,       //是否开启ai
     pub victory_condition: u32, //胜利条件
+}
+
+impl Default for RoomSetting {
+    fn default() -> Self {
+        RoomSetting {
+            season_id: 0,
+            is_open_ai: false,
+            turn_limit_time: 60000,
+            victory_condition: 1,
+        }
+    }
 }
 
 impl From<RoomSettingPt> for RoomSetting {
