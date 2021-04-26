@@ -25,10 +25,13 @@ pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
         return;
     }
     let nick_name = proto.nick_name;
-    rm.rank_vec
-        .par_iter_mut()
-        .filter(|x| x.user_id == user_id)
-        .for_each(|x| x.name = nick_name.clone());
+    unsafe {
+        rm.rank_vec
+            .par_iter_mut()
+            .filter(|x| x.0.as_ref().unwrap().user_id == user_id)
+            .for_each(|x| x.0.as_mut().unwrap().name = nick_name.clone());
+    }
+
     //同步最好排名
     let best_rank = rm.user_best_rank.get_mut(&user_id);
     if let Some(best_rank) = best_rank {
@@ -69,64 +72,67 @@ pub async fn handler_season_update(
 
     let mut index = 0;
     //刷新last_rank数据,并保存历史排行榜,并更新玩家历史最佳
-    for ri in rm.rank_vec.iter() {
-        let user_id = ri.user_id;
-        let json_value = serde_json::to_string(&ri);
-        if let Err(err) = json_value {
-            error!("{:?}", err);
-            continue;
-        }
-        let json_value = json_value.unwrap();
-        //更新last_rank
-        let _: Option<String> = redis_lock.hset(
-            REDIS_INDEX_RANK,
-            REDIS_KEY_LAST_RANK,
-            user_id.to_string().as_str(),
-            json_value.as_str(),
-        );
-        //更新历史排行榜
-        if index < 100 {
-            let key = format!("{:?}-,{:?}", REDIS_KEY_HISTORY_RANK, round.to_string());
+    unsafe {
+        for ri in rm.rank_vec.iter() {
+            let ri = ri.0.as_ref().unwrap();
+            let user_id = ri.user_id;
+            let json_value = serde_json::to_string(&ri);
+            if let Err(err) = json_value {
+                error!("{:?}", err);
+                continue;
+            }
+            let json_value = json_value.unwrap();
+            //更新last_rank
             let _: Option<String> = redis_lock.hset(
-                REDIS_INDEX_HISTORY,
-                key.as_str(),
+                REDIS_INDEX_RANK,
+                REDIS_KEY_LAST_RANK,
                 user_id.to_string().as_str(),
                 json_value.as_str(),
             );
-        }
-        //更新玩家历史最佳
-        let best_rank = rm.user_best_rank.get_mut(&user_id);
-        let mut best_rank_temp = None;
-        match best_rank {
-            Some(best_rank) => {
-                if best_rank.rank < ri.rank {
-                    let _ = std::mem::replace(best_rank, ri.clone());
-                    best_rank_temp = Some(best_rank.clone());
+            //更新历史排行榜
+            if index < 100 {
+                let key = format!("{:?}-,{:?}", REDIS_KEY_HISTORY_RANK, round.to_string());
+                let _: Option<String> = redis_lock.hset(
+                    REDIS_INDEX_HISTORY,
+                    key.as_str(),
+                    user_id.to_string().as_str(),
+                    json_value.as_str(),
+                );
+            }
+            //更新玩家历史最佳
+            let best_rank = rm.user_best_rank.get_mut(&user_id);
+            let mut best_rank_temp = None;
+            match best_rank {
+                Some(best_rank) => {
+                    if best_rank.rank < ri.rank {
+                        let _ = std::mem::replace(best_rank, ri.clone());
+                        best_rank_temp = Some(best_rank.clone());
+                    }
+                }
+                None => {
+                    rm.user_best_rank.insert(user_id, ri.clone());
+                    best_rank_temp = Some(ri.clone());
                 }
             }
-            None => {
-                rm.user_best_rank.insert(user_id, ri.clone());
-                best_rank_temp = Some(ri.clone());
-            }
-        }
-        if let Some(best_rank_temp) = best_rank_temp {
-            let best_rank_str = serde_json::to_string(&best_rank_temp);
-            match best_rank_str {
-                Ok(best_rank_str) => {
-                    //更新到redis
-                    let _: Option<String> = redis_lock.hset(
-                        REDIS_INDEX_RANK,
-                        REDIS_KEY_BEST_RANK,
-                        user_id.to_string().as_str(),
-                        best_rank_str.as_str(),
-                    );
-                }
-                Err(e) => {
-                    error!("{:?}", e);
+            if let Some(best_rank_temp) = best_rank_temp {
+                let best_rank_str = serde_json::to_string(&best_rank_temp);
+                match best_rank_str {
+                    Ok(best_rank_str) => {
+                        //更新到redis
+                        let _: Option<String> = redis_lock.hset(
+                            REDIS_INDEX_RANK,
+                            REDIS_KEY_BEST_RANK,
+                            user_id.to_string().as_str(),
+                            best_rank_str.as_str(),
+                        );
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
                 }
             }
+            index += 1;
         }
-        index += 1;
     }
 
     //处理当前赛季数据
@@ -134,43 +140,46 @@ pub async fn handler_season_update(
     let mut redis_lock = async_std::task::block_on(REDIS_POOL.lock());
 
     //掉段处理
-    rm.rank_vec.iter_mut().for_each(|x| {
-        let user_id = x.user_id.to_string();
-        x.league.id -= 1;
-        let league_id = x.league.id;
-        if x.league.id <= 0 {
-            remove_v.push(x.user_id);
-            let _: Option<String> =
-                redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
-        } else {
-            x.update_league(league_id);
-            let json_value = serde_json::to_string(x);
-            match json_value {
-                Ok(json_value) => {
-                    let _: Option<String> = redis_lock.hset(
-                        REDIS_INDEX_RANK,
-                        REDIS_KEY_CURRENT_RANK,
-                        user_id.as_str(),
-                        json_value.as_str(),
-                    );
-                }
-                Err(e) => {
-                    error!("{:?}", e);
+    unsafe {
+        rm.rank_vec.iter_mut().for_each(|x| {
+            let x = x.0.as_mut().unwrap();
+            let user_id = x.user_id.to_string();
+            x.league.id -= 1;
+            let league_id = x.league.id;
+            if x.league.id <= 0 {
+                remove_v.push(x.user_id);
+                let _: Option<String> =
+                    redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
+            } else {
+                x.update_league(league_id);
+                let json_value = serde_json::to_string(x);
+                match json_value {
+                    Ok(json_value) => {
+                        let _: Option<String> = redis_lock.hset(
+                            REDIS_INDEX_RANK,
+                            REDIS_KEY_CURRENT_RANK,
+                            user_id.as_str(),
+                            json_value.as_str(),
+                        );
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
                 }
             }
+        });
+        //清除0段位处理
+        for user_id in remove_v {
+            let mut index = 0;
+            for ri in rm.rank_vec.iter() {
+                let ri = ri.0.as_ref().unwrap();
+                if ri.user_id == user_id {
+                    break;
+                };
+                index += 1;
+            }
+            rm.rank_vec.remove(index);
         }
-    });
-
-    //清除0段位处理
-    for user_id in remove_v {
-        let mut index = 0;
-        for ri in rm.rank_vec.iter() {
-            if ri.user_id == user_id {
-                break;
-            };
-            index += 1;
-        }
-        rm.rank_vec.remove(index);
     }
 }
 
@@ -230,18 +239,10 @@ pub fn update_rank(rm: &mut RankMgr, packet: Packet) {
         }
         None => {
             let ri = RankInfo::new(sd, cters);
-            rm.rank_vec.push(ri);
-            let index = rm.rank_vec.len() - 1;
-            let ri_mut = rm.rank_vec.get_mut(index);
-            match ri_mut {
-                Some(ri_mut) => {
-                    rm.update_map
-                        .insert(user_id, RankInfoPtr(ri_mut as *mut RankInfo));
-                }
-                None => {
-                    error!("rm.rank_vec do not have index:{}", index);
-                }
-            }
+            let user_id = ri.user_id;
+            rm.update_map.insert(user_id, ri);
+            let ri_mut = rm.update_map.get_mut(&user_id).unwrap();
+            rm.rank_vec.push(RankInfoPtr(ri_mut as *mut RankInfo));
         }
     }
     rm.need_rank = true;

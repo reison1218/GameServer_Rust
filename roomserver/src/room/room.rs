@@ -384,15 +384,18 @@ impl Room {
         srmn.set_member(mp);
 
         let bytes = srmn.write_to_bytes().unwrap();
-        let member_count = self.get_member_count();
-        if member_count > 0 {
-            let iter = self.member_index;
-            for &id in iter.iter() {
-                if id <= 0 {
-                    continue;
-                }
-                self.send_2_client(ClientCode::RoomAddMemberNotice, id, bytes.clone());
+        let mut need_push_v = vec![];
+        for (_, member) in self.members.iter() {
+            if member.state == MemberState::AwaitConfirm {
+                continue;
             }
+            need_push_v.push(member.user_id);
+        }
+        if need_push_v.is_empty() {
+            return;
+        }
+        for id in need_push_v {
+            self.send_2_client(ClientCode::RoomAddMemberNotice, id, bytes.clone());
         }
     }
 

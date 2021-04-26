@@ -1187,12 +1187,11 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
         //推送确认进入人数
         room.notice_confirm_count(user_id);
 
-        //通知新成员加入
-        room.notice_new_member(user_id);
-
         //判断人是否满了，满了就把房间信息推送给客户端
         let res = room.check_all_confirmed_into_room();
         if res {
+            //通知新成员加入
+            room.notice_new_member(user_id);
             room.state = RoomState::AwaitReady;
             let task_sender = rm.get_task_sender_clone();
             build_match_room_ready_task(room_id, task_sender);

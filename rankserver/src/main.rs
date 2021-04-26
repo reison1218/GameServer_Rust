@@ -146,24 +146,27 @@ fn init_rank(rm: Lock) {
         }
         let ri: RankInfo = ri.unwrap();
         let user_id = ri.user_id;
-        lock.rank_vec.push(ri);
-        let len = lock.rank_vec.len();
-        let res = lock.rank_vec.get_mut(len - 1).unwrap();
-        let res = RankInfoPtr(res as *mut RankInfo);
-        lock.update_map.insert(user_id, res);
+        lock.update_map.insert(user_id, ri);
+        let ri_mut = lock.update_map.get_mut(&user_id).unwrap();
+        let res = RankInfoPtr(ri_mut as *mut RankInfo);
+        lock.rank_vec.push(res);
     }
     //进行排序
-    lock.rank_vec.sort_unstable_by(|a, b| {
-        //如果段位等级一样
-        if a.league.get_league_id() == b.league.get_league_id() {
-            if a.league.league_time != b.league.league_time {
-                //看时间
-                return a.league.league_time.cmp(&b.league.league_time);
+    unsafe {
+        lock.rank_vec.sort_unstable_by(|a, b| {
+            //如果段位等级一样
+            let a_ref = a.0.as_ref().unwrap();
+            let b_ref = b.0.as_ref().unwrap();
+            if a_ref.league.get_league_id() == b_ref.league.get_league_id() {
+                if a_ref.league.league_time != b_ref.league.league_time {
+                    //看时间
+                    return a_ref.league.league_time.cmp(&b_ref.league.league_time);
+                }
             }
-        }
-        //段位不一样直接看分数
-        b.get_score().cmp(&a.get_score())
-    });
+            //段位不一样直接看分数
+            b_ref.get_score().cmp(&a_ref.get_score())
+        });
+    }
 
     //加载最佳排行
     let best_ranks: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_BEST_RANK);
