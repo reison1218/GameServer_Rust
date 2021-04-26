@@ -31,8 +31,8 @@ unsafe impl Sync for RankInfoPtPtr {}
 ///gameMgr结构体
 pub struct GameMgr {
     pub users: HashMap<u32, UserData>,            //玩家数据
-    pub rank: Vec<RankInfoPt>,                    //排行榜快照，从排行榜服务器那边过来的
-    pub user_rank: HashMap<u32, RankInfoPtPtr>,   //玩家对应的排行榜数据，为了避免遍历
+    pub rank: Vec<RankInfoPtPtr>,                 //排行榜快照，从排行榜服务器那边过来的
+    pub user_rank: HashMap<u32, RankInfoPt>,      //玩家对应的排行榜数据，为了避免遍历
     pub last_season_rank: Vec<RankInfoPt>,        //上一赛季排行榜
     pub user_best_rank: HashMap<u32, RankInfoPt>, //玩家最佳排行
     sender: Option<TcpSender>,                    //tcpchannel
@@ -57,16 +57,13 @@ impl GameMgr {
         gm
     }
 
-    pub fn update_user_league_id(&mut self, user_id: u32, league_pt: &LeaguePt) {
+    pub fn update_user_league_id(&mut self, user_id: u32, league_pt: LeaguePt) {
         let rank_pt_ptr = self.user_rank.get_mut(&user_id);
         if rank_pt_ptr.is_none() {
             return;
         }
-        let rank_pt_ptr = rank_pt_ptr.unwrap();
-        unsafe {
-            let rank_pt = rank_pt_ptr.0.as_mut().unwrap();
-            rank_pt.set_league(league_pt.clone());
-        }
+        let rank_pt = rank_pt_ptr.unwrap();
+        rank_pt.set_league(league_pt.clone());
     }
 
     ///初始化排行榜
@@ -82,12 +79,18 @@ impl GameMgr {
         if let Some(ranks) = ranks {
             for rank_str in ranks {
                 let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
-                let mut rank_pt = ri.into_rank_pt();
-                let res = RankInfoPtPtr(&mut rank_pt as *mut RankInfoPt);
-                self.user_rank.insert(ri.user_id, res);
-                self.rank.push(rank_pt);
+                let user_id = ri.user_id;
+                let rank_pt = ri.into_rank_pt();
+                self.user_rank.insert(ri.user_id, rank_pt);
+
+                let rank_mut = self.user_rank.get_mut(&user_id).unwrap() as *mut RankInfoPt;
+                self.rank.push(RankInfoPtPtr(rank_mut));
             }
-            self.rank.par_sort_unstable_by(|a, b| a.rank.cmp(&b.rank));
+            unsafe {
+                self.rank.par_sort_unstable_by(|a, b| {
+                    a.0.as_ref().unwrap().rank.cmp(&b.0.as_ref().unwrap().rank)
+                });
+            }
         }
 
         //加载上赛季排行榜
@@ -272,11 +275,9 @@ impl GameMgr {
                 ppt.set_best_rank(-1);
             }
         }
-        let league_pt = self.user_rank.get(&user_id);
-        if let Some(league_pt) = league_pt {
-            unsafe {
-                ppt.set_league(league_pt.0.as_ref().unwrap().get_league().clone());
-            }
+        let rank_pt = self.user_rank.get(&user_id);
+        if let Some(rank_pt) = rank_pt {
+            ppt.set_league(rank_pt.get_league().clone());
         }
 
         lr.player_pt = protobuf::SingularPtrField::some(ppt);
@@ -400,7 +401,7 @@ fn off_line(gm: &mut GameMgr, packet: Packet) {
         user_data.update_off();
         //通知用户中心
         async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
-        info!("游戏服已处理玩家离线 for id:{}", user_data.get_user_id());
+        info!("游戏服已处理玩家离线 for id:{}", user_id);
     }
 }
 
@@ -413,10 +414,10 @@ pub fn sync_rank_nick_name(gm: &mut GameMgr, packet: Packet) {
         return;
     }
     let nick_name = proto.nick_name;
-    gm.rank
-        .iter_mut()
-        .filter(|x| x.get_user_id() == user_id)
-        .for_each(|x| x.set_name(nick_name.clone()));
+    let rank_pt = gm.user_rank.get_mut(&user_id);
+    if let Some(rank_pt) = rank_pt {
+        rank_pt.set_name(nick_name);
+    }
 }
 
 ///房间战斗结算
@@ -454,7 +455,7 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) {
         bgs.cters.extend_from_slice(cters.as_slice());
         let league_pt = summary_data_pt.get_league();
         //更新段位积分
-        gm.update_user_league_id(user_id, league_pt);
+        gm.update_user_league_id(user_id, league_pt.clone());
         if league_pt.league_id > 0 {
             let res = bgs.write_to_bytes();
             match res {

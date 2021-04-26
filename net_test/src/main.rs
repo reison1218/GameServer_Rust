@@ -502,6 +502,23 @@ static START: Once = Once::new();
 static mut STATIC_U32: u32 = 0;
 
 fn main() -> anyhow::Result<()> {
+    let st = StructTest::default();
+    let mut map = HashMap::new();
+    map.insert(st.a, st);
+    let st_mut = map.get_mut(&0).unwrap();
+    println!("{:p}", st_mut);
+    unsafe {
+        let mut v = vec![st_mut as *mut StructTest];
+        println!("{:p}", v.get_mut(0).unwrap().as_mut().unwrap());
+        let mut ss = StructTest::default();
+        ss.a = 100;
+        map.insert(ss.a, ss);
+        let st_mut = map.get_mut(&0).unwrap();
+        println!("{:p}", st_mut);
+        v.push(st_mut as *mut StructTest);
+        println!("{:p}", v.get_mut(0).unwrap().as_mut().unwrap());
+    }
+
     // let res = SSSSSSS([0, 10]);
     // let res1 = SSSSSSS([0, 40]);
     // println!("{:?},{:?}", res.type_id(), res.0.type_id());

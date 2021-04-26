@@ -80,10 +80,7 @@ impl UserData {
         let ud = UserData::new(user, cters.unwrap(), gf.unwrap(), soul.unwrap());
         Some(ud)
     }
-    ///获得玩家id
-    pub fn get_user_id(&self) -> u32 {
-        self.user_info.user_id
-    }
+
     ///获得数据版本号
     pub fn get_version(&self) -> u32 {
         self.version.get()

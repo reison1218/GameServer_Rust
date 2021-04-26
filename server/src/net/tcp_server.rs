@@ -59,7 +59,6 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 }
 
-#[track_caller]
 async fn handler_mess_s(gm: Lock, packet: Packet) {
     let cmd = packet.get_cmd();
     //如果为空，什么都不执行

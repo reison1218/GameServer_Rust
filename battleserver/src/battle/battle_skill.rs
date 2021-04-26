@@ -848,6 +848,13 @@ pub unsafe fn single_skill_damage(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
+    if target_array.is_empty() {
+        warn!(
+            "single_skill_damage-target_array is empty!skill_id:{},user_id:{}",
+            skill_id, user_id
+        );
+        return None;
+    }
     let target_index = *target_array.get(0).unwrap();
     let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(target_index as usize);
     if let Err(e) = target_cter {

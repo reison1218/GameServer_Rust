@@ -1,7 +1,6 @@
 use crate::room::member::{Member, MemberState};
 use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::Task;
-use crate::TEMPLATES;
 use chrono::{DateTime, Local, Utc};
 use crossbeam::channel::Sender;
 use log::{error, warn};
@@ -135,22 +134,6 @@ impl Room {
             task_sender,
             time,
         };
-        if room.room_type == RoomType::OneVOneVOneVOneMatch {
-            let limit_time = TEMPLATES
-                .constant_temp_mgr()
-                .temps
-                .get("battle_turn_limit_time");
-            if let Some(limit_time) = limit_time {
-                let res = u32::from_str(limit_time.value.as_str());
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                } else {
-                    room.setting.turn_limit_time = res.unwrap();
-                }
-            } else {
-                warn!("constant temp's battle_turn_limit_time is none!")
-            }
-        }
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;

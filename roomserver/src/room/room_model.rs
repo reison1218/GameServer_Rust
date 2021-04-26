@@ -4,6 +4,7 @@ use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{build_confirm_into_room_task, Task};
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
+use log::warn;
 use log::{error, info};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -12,6 +13,7 @@ use rayon::slice::ParallelSliceMut;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
+use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomSettingPt;
 use tools::protos::room::S_LEAVE_ROOM;
@@ -61,10 +63,35 @@ pub struct RoomSetting {
 
 impl Default for RoomSetting {
     fn default() -> Self {
+        let temp = TEMPLATES
+            .constant_temp_mgr()
+            .temps
+            .get("battle_turn_limit_time");
+        let turn_limit_time;
+        match temp {
+            Some(temp) => {
+                let res = u32::from_str(temp.value.as_str());
+
+                match res {
+                    Ok(res) => {
+                        turn_limit_time = res;
+                    }
+                    Err(err) => {
+                        error!("{:?}", err);
+                        turn_limit_time = 60000;
+                    }
+                }
+            }
+
+            None => {
+                turn_limit_time = 60000;
+                warn!("constant temp's battle_turn_limit_time is none!")
+            }
+        }
         RoomSetting {
             season_id: 0,
             is_open_ai: false,
-            turn_limit_time: 60000,
+            turn_limit_time,
             victory_condition: 1,
         }
     }

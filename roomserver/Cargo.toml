@@ -16,9 +16,7 @@ codegen-units = 1 #将每一个crate作为一整块进行编译
 split-debuginfo = "unpacked"
 
 [dependencies]
-protobuf="2.20.0"
-protoc-rust = "2.20.0"
-protobuf-codegen="2.20.0"
+protobuf="2.23.0"
 futures = "0.3.6"
 async-std = "1.7"
 log="0.4.8"
