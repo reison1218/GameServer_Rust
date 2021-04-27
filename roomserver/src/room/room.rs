@@ -234,7 +234,7 @@ impl Room {
             if member.is_robot {
                 continue;
             }
-            if member.state != MemberState::AwaitConfirm {
+            if member.state == MemberState::AwaitConfirm {
                 continue;
             }
             confirm_count += 1;
