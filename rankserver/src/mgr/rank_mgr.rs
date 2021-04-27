@@ -91,26 +91,30 @@ impl RankMgr {
         }
         let mut redis_lock = block_on(crate::REDIS_POOL.lock());
         unsafe {
-            self.rank_vec
-                .iter_mut()
-                .enumerate()
-                .for_each(|(index, ri)| {
-                    let ri = ri.0.as_mut().unwrap();
-                    if ri.rank != index as i32 && ri.league.id > 0 {
-                        ri.rank = index as i32;
-                        let user_id = ri.user_id;
-                        if need_save {
-                            let json_value = serde_json::to_string(ri).unwrap();
-                            //持久化到redis
-                            let _: Option<u32> = redis_lock.hset(
-                                REDIS_INDEX_RANK,
-                                REDIS_KEY_CURRENT_RANK,
-                                user_id.to_string().as_str(),
-                                json_value.as_str(),
-                            );
+            let mut index = 0;
+            for ri in self.rank_vec.iter_mut() {
+                let ri_mut = ri.0.as_mut().unwrap();
+                if ri_mut.rank != index && ri_mut.league.id > 0 {
+                    ri_mut.rank = index;
+                    let user_id = ri_mut.user_id;
+                    if need_save {
+                        let res = self.update_map.get(&user_id);
+                        if res.is_none() {
+                            continue;
                         }
+                        let res = res.unwrap();
+                        let json_value = serde_json::to_string(res).unwrap();
+                        //持久化到redis
+                        let _: Option<u32> = redis_lock.hset(
+                            REDIS_INDEX_RANK,
+                            REDIS_KEY_CURRENT_RANK,
+                            user_id.to_string().as_str(),
+                            json_value.as_str(),
+                        );
                     }
-                });
+                }
+                index += 1;
+            }
         }
     }
 }

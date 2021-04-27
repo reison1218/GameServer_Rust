@@ -722,35 +722,35 @@ impl BattleData {
                 //校验地图块下标有效性
                 for &index in target_array {
                     let index = index as usize;
-                    self.check_choice_index(index, false, false, false, false, false)?;
+                    self.check_choice_index(index, false, false, false, false, false, false)?;
                 }
             }
             //未翻开的地图块
             TargetType::UnOpenMapCell => {
                 for &index in target_array {
-                    self.check_choice_index(index as usize, true, true, true, false, false)?;
+                    self.check_choice_index(index as usize, false, true, true, true, false, false)?;
                 }
             } //未配对的地图块
             TargetType::UnPairMapCell => {
                 for &index in target_array {
-                    self.check_choice_index(index as usize, false, true, true, true, false)?;
+                    self.check_choice_index(index as usize, false, false, true, true, true, false)?;
                 }
             } //空的地图块
             TargetType::NullMapCell => {
                 for &index in target_array {
-                    self.check_choice_index(index as usize, false, true, true, false, true)?;
+                    self.check_choice_index(index as usize, false, false, true, true, false, true)?;
                 }
             } //空的地图块，上面没人
             TargetType::UnPairNullMapCell => {
                 for &index in target_array {
                     let index = index as usize;
-                    self.check_choice_index(index, false, false, false, false, true)?;
+                    self.check_choice_index(index, false, false, false, false, false, true)?;
                 }
             }
             TargetType::OpenedMapCell => {
                 for &index in target_array {
                     let index = index as usize;
-                    self.check_choice_index(index, true, true, true, false, false)?;
+                    self.check_choice_index(index, true, false, false, true, false, false)?;
                 }
             }
             //其他目标类型
@@ -759,14 +759,14 @@ impl BattleData {
             TargetType::UnOpenMapCellAndUnLock => {
                 for &index in target_array {
                     let index = index as usize;
-                    self.check_choice_index(index, true, false, true, true, false)?;
+                    self.check_choice_index(index, false, true, false, true, true, false)?;
                 }
             }
             //未锁定空地图块
             TargetType::UnLockNullMapCell => {
                 for &index in target_array {
                     let index = index as usize;
-                    self.check_choice_index(index, false, false, true, true, true)?;
+                    self.check_choice_index(index, false, false, false, true, true, true)?;
                 }
             }
             _ => {}
@@ -794,6 +794,7 @@ impl BattleData {
     pub fn check_choice_index(
         &self,
         index: usize,
+        is_check_close: bool,
         is_check_open: bool,
         is_check_pair: bool,
         is_check_world: bool,
@@ -817,7 +818,9 @@ impl BattleData {
                 map_cell.index
             )
         }
-
+        if is_check_close && map_cell.open_user == 0 {
+            anyhow::bail!("this map_cell already closed!index:{}", map_cell.index)
+        }
         if is_check_open && map_cell.open_user > 0 {
             anyhow::bail!("this map_cell already opened!index:{}", map_cell.index)
         } else if is_check_open && map_cell.pair_index.is_some() {

@@ -513,12 +513,18 @@ fn main() -> anyhow::Result<()> {
         let mut ss = StructTest::default();
         ss.a = 100;
         map.insert(ss.a, ss);
-        let st_mut = map.get_mut(&0).unwrap();
-        println!("{:p}", st_mut);
+        let st_mut = map.get_mut(&100).unwrap();
+        println!("new:{:p}", st_mut);
         v.push(st_mut as *mut StructTest);
-        println!("{:p}", v.get_mut(0).unwrap().as_mut().unwrap());
+        println!("排序前:{:?}", v);
+        v.sort_by(|a, b| b.as_ref().unwrap().a.cmp(&a.as_ref().unwrap().a));
+        println!("排序后:{:?}", v);
     }
-
+    let mut str = Local::now().timestamp_subsec_micros().to_string();
+    println!("{:?}", str);
+    let size = str.len();
+    str.replace_range((size - 3)..size, "");
+    println!("{:?}", str);
     // let res = SSSSSSS([0, 10]);
     // let res1 = SSSSSSS([0, 40]);
     // println!("{:?},{:?}", res.type_id(), res.0.type_id());

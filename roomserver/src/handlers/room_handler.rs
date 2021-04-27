@@ -512,6 +512,18 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
         warn!("there is player not ready,can not start game!");
         return;
     }
+    let room_type = room.get_room_type();
+    //如果是自定义房间，切不是房主
+    if room_type == RoomType::OneVOneVOneVOneCustom && room.get_owner_id() != user_id {
+        warn!(
+            "can not start game!this player is not owner!room_type:{:?},owner_id:{},user_id:{}",
+            room_type,
+            room.get_owner_id(),
+            user_id
+        );
+        return;
+    }
+
     //校验是否加载机器人
     check_add_robot(rm.get_mut_ref(), room);
     //执行开始逻辑
@@ -784,13 +796,13 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
     //走正常逻辑
     if srs.is_succ {
         let mut rs = C_ROOM_SETTING::new();
-        let proto_value = rs.get_value();
         let res = rs.merge_from_bytes(packet.get_data());
         if res.is_err() {
             error!("{:?}", res.err().unwrap().to_string());
             return;
         }
-        let set_type = rs.get_set_type();
+        let set_type = rs.set_type;
+        let proto_value = rs.value;
         let room_set_type = RoomSettingType::from(set_type);
         match room_set_type {
             RoomSettingType::IsOpenAI => {
@@ -810,15 +822,19 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
             }
             RoomSettingType::TurnLimitTime => {
                 let id = proto_value as u8;
-                let limit_time_mgr = crate::TEMPLATES.battle_limit_time_temp_mgr();
-                let res = limit_time_mgr.get_temp(&id);
-                match res {
-                    Ok(temp) => {
-                        room.setting.turn_limit_time = temp.ms;
-                    }
-                    Err(e) => {
-                        warn!("{:?}", e);
-                        room.setting.turn_limit_time = 60000;
+                if id == 0 {
+                    room.setting.turn_limit_time = 0;
+                } else {
+                    let limit_time_mgr = crate::TEMPLATES.battle_limit_time_temp_mgr();
+                    let res = limit_time_mgr.get_temp(&id);
+                    match res {
+                        Ok(temp) => {
+                            room.setting.turn_limit_time = temp.ms;
+                        }
+                        Err(e) => {
+                            warn!("{:?}", e);
+                            room.setting.turn_limit_time = 60000;
+                        }
                     }
                 }
             }

@@ -418,7 +418,6 @@ impl MatchRoom {
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
-        let user_id = member.user_id;
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //校验地图配置
@@ -428,7 +427,6 @@ impl MatchRoom {
             }
             //创建房间
             room_id = self.create_room(member, sender, task_sender)?;
-            info!("创建匹配房间,room_id:{},user_id:{}", room_id, user_id);
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;

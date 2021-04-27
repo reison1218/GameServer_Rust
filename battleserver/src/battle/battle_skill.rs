@@ -90,14 +90,14 @@ pub unsafe fn change_map_cell_index(
     }
 
     //校验原下标
-    let res = battle_data.check_choice_index(source_index, true, true, true, false, false);
+    let res = battle_data.check_choice_index(source_index, false, true, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
     }
 
     //校验目标下标
-    let res = battle_data.check_choice_index(target_index, true, true, true, false, false);
+    let res = battle_data.check_choice_index(target_index, false, true, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -140,7 +140,7 @@ pub fn show_index(
     let show_index;
     if SHOW_INDEX_SAME_ELEMENT == skill_function_id {
         let index = *target_array.get(0).unwrap() as usize;
-        let res = battle_data.check_choice_index(index, true, true, true, false, false);
+        let res = battle_data.check_choice_index(index, true, false, true, true, false, false);
         //校验地图块
         if let Err(e) = res {
             warn!("{:?}", e);
@@ -163,8 +163,15 @@ pub fn show_index(
         }
         let element = map_cell.element;
         for _map_cell in battle_data.tile_map.map_cells.iter() {
-            let res =
-                battle_data.check_choice_index(_map_cell.index, true, true, true, false, true);
+            let res = battle_data.check_choice_index(
+                _map_cell.index,
+                false,
+                true,
+                true,
+                true,
+                false,
+                true,
+            );
             if res.is_err() {
                 continue;
             }
@@ -221,7 +228,8 @@ pub fn show_map_cell(
             if battle_cter.flow_data.open_map_cell_vec.contains(&index) {
                 continue;
             }
-            let res = battle_data.check_choice_index(index, true, false, false, false, false);
+            let res =
+                battle_data.check_choice_index(index, false, true, false, false, false, false);
             if let Err(_) = res {
                 continue;
             }
@@ -293,7 +301,7 @@ pub fn show_map_cell(
         //展示地图块
         let index = *target_array.get(0).unwrap() as usize;
         //校验index合法性
-        let res = battle_data.check_choice_index(index, true, true, true, false, false);
+        let res = battle_data.check_choice_index(index, false, true, true, true, false, false);
         if let Err(e) = res {
             warn!("show_index {:?}", e);
             return None;
@@ -354,7 +362,7 @@ pub unsafe fn add_buff(
         TargetType::UnPairNullMapCell => {
             let index = *target_array.get(0).unwrap() as usize;
 
-            let res = battle_data.check_choice_index(index, false, true, true, false, true);
+            let res = battle_data.check_choice_index(index, false, false, true, true, false, true);
             if let Err(e) = res {
                 warn!("{:?}", e);
                 return None;
@@ -531,7 +539,7 @@ pub unsafe fn auto_pair_map_cell(
     //将1个地图块自动配对。本回合内不能攻击。
     let target_index = *target_array.get(0).unwrap() as usize;
     let next_turn_index = battle_data.next_turn_index;
-    let res = battle_data.check_choice_index(target_index, false, true, true, false, false);
+    let res = battle_data.check_choice_index(target_index, false, false, true, true, false, false);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -651,7 +659,7 @@ pub fn move_user(
     let target_user_index = *target_array.get(0).unwrap() as usize;
     let target_index = *target_array.get(1).unwrap() as usize;
     //校验下标的地图块
-    let res = battle_data.check_choice_index(target_index, false, false, false, true, true);
+    let res = battle_data.check_choice_index(target_index, false, false, false, false, true, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -1025,7 +1033,7 @@ pub unsafe fn transform(
     let res = battle_data
         .as_ref()
         .unwrap()
-        .check_choice_index(index, false, false, true, true, true);
+        .check_choice_index(index, false, false, false, true, true, true);
     if let Err(e) = res {
         error!("{:?}", e);
         return None;

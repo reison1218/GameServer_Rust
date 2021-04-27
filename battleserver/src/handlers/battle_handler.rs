@@ -424,7 +424,8 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验地图块
-    let res = battle_data.check_choice_index(target_map_cell_index, true, true, true, true, false);
+    let res =
+        battle_data.check_choice_index(target_map_cell_index, false, true, true, true, true, false);
     if let Err(e) = res {
         let str = format!("{:?}", e);
         warn!("{:?}", str.as_str());
@@ -762,9 +763,15 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
 
-    let res = room
-        .battle_data
-        .check_choice_index(index as usize, false, false, true, false, false);
+    let res = room.battle_data.check_choice_index(
+        index as usize,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+    );
     //校验参数
     if let Err(e) = res {
         warn!("{:?}", e);

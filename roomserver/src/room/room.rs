@@ -3,7 +3,7 @@ use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::Task;
 use chrono::{DateTime, Local, Utc};
 use crossbeam::channel::Sender;
-use log::{error, warn};
+use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
@@ -114,7 +114,9 @@ impl Room {
         //转换成tilemap数据
         let user_id = owner.user_id;
         let mut str = Local::now().timestamp_subsec_micros().to_string();
-        str.push_str(thread_rng().gen_range(1..999).to_string().as_str());
+        let size = str.len();
+        str.replace_range((size - 3)..size, "");
+        str.push_str(thread_rng().gen_range(111..999).to_string().as_str());
         let id: u32 = u32::from_str(str.as_str())?;
         let time = Utc::now();
         let mut room_state = RoomState::AwaitReady;
@@ -140,6 +142,10 @@ impl Room {
         owner.join_time = Local::now().timestamp_millis() as u64;
         room.members.insert(user_id, owner);
         room.member_index[0] = user_id;
+        info!(
+            "创建房间,room_type:{:?},room_id:{},user_id:{}",
+            room_type, id, user_id
+        );
         Ok(room)
     }
 
@@ -499,8 +505,8 @@ impl Room {
         let mut count = 0;
         let mut need_push_vec = vec![];
         for member in self.members.values() {
+            need_push_vec.push(member.user_id);
             if member.state == MemberState::AwaitConfirm {
-                need_push_vec.push(member.user_id);
                 continue;
             }
             count += 1;
@@ -520,7 +526,7 @@ impl Room {
         let mut sr = S_ROOM::new();
         sr.is_succ = true;
         sr.set_room(self.convert_to_pt());
-        self.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
+        self.send_2_all_client(ClientCode::Room, sr.write_to_bytes().unwrap());
 
         //通知房间里其他人
         self.room_add_member_notice(&user_id);

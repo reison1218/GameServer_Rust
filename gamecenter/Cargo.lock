@@ -2002,7 +2002,6 @@ dependencies = [
  "num_enum",
  "prost",
  "protobuf",
- "protobuf-codegen",
  "protoc-rust",
  "rayon",
  "redis",
