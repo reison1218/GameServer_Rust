@@ -76,7 +76,12 @@ pub async fn handler_season_update(
         for ri in rm.rank_vec.iter() {
             let ri = ri.0.as_ref().unwrap();
             let user_id = ri.user_id;
-            let json_value = serde_json::to_string(&ri);
+            let ri = rm.update_map.get(&user_id);
+            if ri.is_none() {
+                continue;
+            }
+            let ri = ri.unwrap();
+            let json_value = serde_json::to_string(ri);
             if let Err(err) = json_value {
                 error!("{:?}", err);
                 continue;
@@ -136,49 +141,53 @@ pub async fn handler_season_update(
     }
 
     //处理当前赛季数据
-    let mut remove_v = Vec::new();
     let mut redis_lock = async_std::task::block_on(REDIS_POOL.lock());
-
+    let mut need_rm_v = vec![];
     //掉段处理
-    unsafe {
-        rm.rank_vec.iter_mut().for_each(|x| {
-            let x = x.0.as_mut().unwrap();
-            let user_id = x.user_id.to_string();
-            x.league.id -= 1;
-            let league_id = x.league.id;
-            if x.league.id <= 0 {
-                remove_v.push(x.user_id);
-                let _: Option<String> =
-                    redis_lock.hdel(REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK, user_id.as_str());
-            } else {
-                x.update_league(league_id);
-                let json_value = serde_json::to_string(x);
-                match json_value {
-                    Ok(json_value) => {
-                        let _: Option<String> = redis_lock.hset(
-                            REDIS_INDEX_RANK,
-                            REDIS_KEY_CURRENT_RANK,
-                            user_id.as_str(),
-                            json_value.as_str(),
-                        );
-                    }
-                    Err(e) => {
-                        error!("{:?}", e);
-                    }
+    for ri in rm.update_map.values_mut() {
+        let user_id = ri.user_id;
+        let user_id_str = user_id.to_string();
+
+        ri.league.id -= 1;
+        let league_id = ri.league.id;
+        //清除0段位处理
+        if ri.league.id <= 0 {
+            need_rm_v.push(user_id);
+            let _: Option<String> = redis_lock.hdel(
+                REDIS_INDEX_RANK,
+                REDIS_KEY_CURRENT_RANK,
+                user_id_str.as_str(),
+            );
+        } else {
+            ri.update_league(league_id);
+            let json_value = serde_json::to_string(ri);
+            match json_value {
+                Ok(json_value) => {
+                    let _: Option<String> = redis_lock.hset(
+                        REDIS_INDEX_RANK,
+                        REDIS_KEY_CURRENT_RANK,
+                        user_id_str.as_str(),
+                        json_value.as_str(),
+                    );
+                }
+                Err(e) => {
+                    error!("{:?}", e);
                 }
             }
-        });
-        //清除0段位处理
-        for user_id in remove_v {
+        }
+    }
+    unsafe {
+        for user_id in need_rm_v {
             let mut index = 0;
-            for ri in rm.rank_vec.iter() {
-                let ri = ri.0.as_ref().unwrap();
-                if ri.user_id == user_id {
+            for ri_ptr in rm.rank_vec.iter() {
+                let ri_ref = ri_ptr.0.as_ref().unwrap();
+                if ri_ref.user_id == user_id {
                     break;
                 };
                 index += 1;
             }
             rm.rank_vec.remove(index);
+            rm.update_map.remove(&user_id);
         }
     }
 }

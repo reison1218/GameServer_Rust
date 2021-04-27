@@ -93,17 +93,20 @@ impl RankMgr {
         unsafe {
             let mut index = 0;
             for ri in self.rank_vec.iter_mut() {
-                let ri_mut = ri.0.as_mut().unwrap();
-                if ri_mut.rank != index && ri_mut.league.id > 0 {
+                let ri_ref = ri.0.as_ref().unwrap();
+                let user_id = ri_ref.user_id;
+                let rank = ri_ref.rank;
+                let league_id = ri_ref.league.id;
+                if rank != index && league_id > 0 {
+                    let ri_mut = self.update_map.get_mut(&user_id);
+                    if ri_mut.is_none() {
+                        index += 1;
+                        continue;
+                    }
+                    let ri_mut = ri_mut.unwrap();
                     ri_mut.rank = index;
-                    let user_id = ri_mut.user_id;
                     if need_save {
-                        let res = self.update_map.get(&user_id);
-                        if res.is_none() {
-                            continue;
-                        }
-                        let res = res.unwrap();
-                        let json_value = serde_json::to_string(res).unwrap();
+                        let json_value = serde_json::to_string(ri_mut).unwrap();
                         //持久化到redis
                         let _: Option<u32> = redis_lock.hset(
                             REDIS_INDEX_RANK,
