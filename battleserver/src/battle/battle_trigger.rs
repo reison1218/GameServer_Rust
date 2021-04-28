@@ -74,7 +74,13 @@ pub trait TriggerEvent {
     fn buff_lost_trigger(&mut self, user_id: u32, buff_id: u32);
 
     ///角色死亡触发
-    fn after_cter_died_trigger(&mut self, user_id: u32, is_last_one: bool, is_punishment: bool);
+    fn after_cter_died_trigger(
+        &mut self,
+        from_user: u32,
+        user_id: u32,
+        is_last_one: bool,
+        is_punishment: bool,
+    );
 }
 
 impl BattleData {
@@ -581,13 +587,20 @@ impl TriggerEvent for BattleData {
         }
     }
 
-    fn after_cter_died_trigger(&mut self, user_id: u32, is_last_one: bool, is_punishment: bool) {
+    fn after_cter_died_trigger(
+        &mut self,
+        from_user: u32,
+        user_id: u32,
+        is_last_one: bool,
+        is_punishment: bool,
+    ) {
         let cter = self.get_battle_cter(Some(user_id), false);
         if let Err(e) = cter {
             warn!("{:?}", e);
             return;
         }
         let cter = cter.unwrap();
+        let gold = cter.gold;
         let self_league = cter.league.get_league_id();
         let mut punishment_score = -50;
         let mut reward_score;
@@ -706,6 +719,14 @@ impl TriggerEvent for BattleData {
         let map_cell = self.tile_map.get_map_cell_mut_by_user_id(user_id);
         if let Some(map_cell) = map_cell {
             map_cell.user_id = 0;
+        }
+        //将死掉的角色的金币都给攻击方
+        if from_user == 0 && from_user == user_id {
+            return;
+        }
+        let from_cter = self.get_battle_cter_mut(Some(from_user), true);
+        if let Ok(from_cter) = from_cter {
+            from_cter.add_gold(gold);
         }
     }
 }

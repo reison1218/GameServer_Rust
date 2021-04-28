@@ -54,7 +54,7 @@ impl BattleData {
                     }
                     member_cter.status.state = BattleCterState::Die;
                     let user_id = member_cter.get_user_id();
-                    self_mut.after_cter_died_trigger(user_id, true, false);
+                    self_mut.after_cter_died_trigger(user_id, user_id, true, false);
                 }
             }
         } else if leave_user > 0 {
@@ -249,14 +249,17 @@ impl BattleData {
             hurt_damge =
                 self.deduct_hp(user_id, target_user_id, None, &mut target_pt, is_last_one)?;
         }
+        let target_cter = self.get_battle_cter(Some(target_user_id), true);
+        if target_cter.is_ok() {
+            //被攻击后触发
+            self.attacked_after_trigger(target_user_id, &mut target_pt);
 
-        //被攻击后触发
-        self.attacked_after_trigger(target_user_id, &mut target_pt);
-
-        //收到攻击伤害触发
-        if hurt_damge > 0 {
-            self.attacked_hurted_trigger(target_user_id, &mut target_pt);
+            //收到攻击伤害触发
+            if hurt_damge > 0 {
+                self.attacked_hurted_trigger(target_user_id, &mut target_pt);
+            }
         }
+
         au.targets.push(target_pt);
         Ok(())
     }
@@ -572,6 +575,10 @@ impl BattleData {
 
             //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
             if user_id > 0 {
+                let battle_cter = self_mut.get_battle_cter(Some(user_id), true);
+                if battle_cter.is_err() {
+                    return;
+                }
                 let mut is_can_skip_turn: bool = true;
                 for &index in self_mut.tile_map.un_pair_map.keys() {
                     let map_cell = self_mut.tile_map.map_cells.get(index);
@@ -585,13 +592,9 @@ impl BattleData {
                     is_can_skip_turn = false;
                     break;
                 }
-                let battle_cter = self_mut.get_battle_cter_mut(Some(user_id), true);
-                if let Err(e) = battle_cter {
-                    error!("{:?}", e);
-                    return;
-                }
+
                 //turn结算玩家
-                let battle_cter = battle_cter.unwrap();
+                let battle_cter = self_mut.battle_cter.get_mut(&user_id).unwrap();
                 battle_cter.turn_start_reset();
                 battle_cter.set_is_can_end_turn(is_can_skip_turn);
             }

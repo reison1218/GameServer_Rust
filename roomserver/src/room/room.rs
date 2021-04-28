@@ -424,19 +424,18 @@ impl Room {
 
     ///检查准备状态
     pub fn check_ready(&self) -> bool {
-        let size = 4;
         let mut index = 0;
-        let room_type = self.room_type;
+        let size = self.members.len();
         for member in self.members.values() {
             let res = member.state == MemberState::Ready;
-            //如果是房主，并且是自定义房间
-            if member.user_id == self.owner_id && room_type == RoomType::OneVOneVOneVOneCustom {
-                index += 1;
-            }
             if !res {
                 continue;
             }
             index += 1;
+        }
+        //只有一个人的时候，如果ai关闭状态，不能开始
+        if size == 1 && !self.setting.is_open_ai {
+            return false;
         }
         index >= size
     }

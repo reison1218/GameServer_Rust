@@ -470,9 +470,8 @@ pub trait TestTrait {
 
 #[derive(Default, Debug)]
 pub struct StructTest {
-    a: u32,
-    b: u32,
-    c: Vec<u32>,
+    id: u32,
+    rank: u32,
 }
 
 impl Drop for StructTest {
@@ -501,30 +500,115 @@ static START: Once = Once::new();
 
 static mut STATIC_U32: u32 = 0;
 
+pub struct StructTestPtr(*mut StructTest);
+
 fn main() -> anyhow::Result<()> {
-    let st = StructTest::default();
+    let mut st = StructTest::default();
+    st.id = 1;
     let mut map = HashMap::new();
-    map.insert(st.a, st);
-    let st_mut = map.get_mut(&0).unwrap();
-    println!("{:p}", st_mut);
+    map.insert(st.id, st);
+    let st = StructTest::default();
+    map.insert(st.id, st);
     unsafe {
-        let mut v = vec![st_mut as *mut StructTest];
-        println!("{:p}", v.get_mut(0).unwrap().as_mut().unwrap());
-        let mut ss = StructTest::default();
-        ss.a = 100;
-        map.insert(ss.a, ss);
-        let st_mut = map.get_mut(&100).unwrap();
-        println!("new:{:p}", st_mut);
-        v.push(st_mut as *mut StructTest);
-        println!("排序前:{:?}", v);
-        v.sort_by(|a, b| b.as_ref().unwrap().a.cmp(&a.as_ref().unwrap().a));
-        println!("排序后:{:?}", v);
+        let mut v = vec![];
+        for tmp in map.values_mut() {
+            v.push(StructTestPtr(tmp as *mut StructTest));
+        }
+        v.sort_by(|a, b| {
+            let a_ref = a.0.as_ref().unwrap();
+            let b_ref = b.0.as_ref().unwrap();
+            b_ref.id.cmp(&a_ref.id)
+        });
+
+        for (index, st) in v.iter().enumerate() {
+            let t = st.0.as_ref().unwrap();
+            let key = t.id;
+            let ri = map.get_mut(&key);
+            match ri {
+                Some(ri) => {
+                    ri.rank = index as u32;
+                }
+                None => {
+                    println!("error!key:{},{:?}", key, t);
+                }
+            }
+        }
+        println!("第一次：");
+        for t in map.values() {
+            println!("{:?}", t);
+        }
+
+        let mut st = StructTest::default();
+        let key = 2;
+        st.id = key;
+        map.insert(st.id, st);
+        let res = map.get_mut(&key);
+        if let Some(res) = res {
+            v.push(StructTestPtr(res as *mut StructTest));
+        }
+
+        let mut st = StructTest::default();
+        let key = 3;
+        st.id = key;
+        map.insert(st.id, st);
+        let res = map.get_mut(&key);
+        if let Some(res) = res {
+            v.push(StructTestPtr(res as *mut StructTest));
+        }
+
+        let mut st = StructTest::default();
+        let key = 4;
+        st.id = key;
+        map.insert(st.id, st);
+        let res = map.get_mut(&key);
+        if let Some(res) = res {
+            v.push(StructTestPtr(res as *mut StructTest));
+        }
+
+        let mut st = StructTest::default();
+        let key = 5;
+        st.id = key;
+        map.insert(st.id, st);
+        let res = map.get_mut(&key);
+        if let Some(res) = res {
+            v.push(StructTestPtr(res as *mut StructTest));
+        }
+
+        v.sort_by(|a, b| {
+            let a_ref = a.0.as_ref().unwrap();
+            let b_ref = b.0.as_ref().unwrap();
+            b_ref.id.cmp(&a_ref.id)
+        });
+
+        for (index, st) in v.iter().enumerate() {
+            let t = st.0.as_ref().unwrap();
+            let key = t.id;
+            let ri = map.get_mut(&key);
+            match ri {
+                Some(ri) => {
+                    ri.rank = index as u32;
+                }
+                None => {
+                    println!("error!key:{},{:?}", key, t);
+                }
+            }
+        }
+
+        println!("第二次：");
+        for t in map.values() {
+            println!("{:?}", t);
+        }
+
+        println!("地址对比：");
+        for i in v {
+            println!("v——adress:{:p},value:{:?}", i.0, i.0.as_ref().unwrap());
+        }
+        println!("-------------------------------------------------");
+        for i in map.values_mut() {
+            println!("map——adress:{:p},value:{:?}", i, i);
+        }
     }
-    let mut str = Local::now().timestamp_subsec_micros().to_string();
-    println!("{:?}", str);
-    let size = str.len();
-    str.replace_range((size - 3)..size, "");
-    println!("{:?}", str);
+
     // let res = SSSSSSS([0, 10]);
     // let res1 = SSSSSSS([0, 40]);
     // println!("{:?},{:?}", res.type_id(), res.0.type_id());

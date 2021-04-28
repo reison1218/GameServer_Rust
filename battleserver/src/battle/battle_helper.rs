@@ -392,7 +392,7 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
-            self.after_cter_died_trigger(target_user_id, is_last_one, false);
+            self.after_cter_died_trigger(from, target_user_id, is_last_one, false);
         }
         Ok(res as u32)
     }

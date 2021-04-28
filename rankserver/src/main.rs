@@ -154,17 +154,9 @@ fn init_rank(rm: Lock) {
     //进行排序
     unsafe {
         lock.rank_vec.sort_unstable_by(|a, b| {
-            //如果段位等级一样
             let a_ref = a.0.as_ref().unwrap();
             let b_ref = b.0.as_ref().unwrap();
-            if a_ref.league.get_league_id() == b_ref.league.get_league_id() {
-                if a_ref.league.league_time != b_ref.league.league_time {
-                    //看时间
-                    return a_ref.league.league_time.cmp(&b_ref.league.league_time);
-                }
-            }
-            //段位不一样直接看分数
-            b_ref.get_score().cmp(&a_ref.get_score())
+            a_ref.rank.cmp(&b_ref.rank)
         });
     }
 

@@ -153,7 +153,7 @@ impl Room {
         //走惩罚触发
         if need_summary && punishment {
             self.battle_data
-                .after_cter_died_trigger(user_id, true, true);
+                .after_cter_died_trigger(user_id, user_id, true, true);
         }
     }
 
@@ -628,7 +628,7 @@ impl Room {
     }
 
     ///处理选择占位时候的离开
-    fn handler_leave_choice_index(&mut self, user_id: u32, index: usize) {
+    fn handler_leave_choice_index(&mut self, user_id: u32, turn_index: usize) {
         let next_turn_user = self.get_turn_user(None);
         if let Err(e) = next_turn_user {
             error!("{:?}", e);
@@ -637,17 +637,12 @@ impl Room {
         let next_turn_user = next_turn_user.unwrap();
         let member_size = MEMBER_MAX as usize;
 
-        //去掉地图块上的玩家id
-        let map_cell = self.battle_data.tile_map.map_cells.get_mut(index);
-        if let Some(map_cell) = map_cell {
-            map_cell.user_id = 0;
-        }
-
         let last_order_user = self.battle_data.turn_orders[member_size - 1];
-        self.remove_turn_orders(index);
+        self.remove_turn_orders(turn_index);
 
         //移除战斗角色
         self.battle_data.battle_cter.remove(&user_id);
+        //去掉地图块上的玩家id
         self.battle_data.tile_map.remove_user(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
@@ -670,7 +665,7 @@ impl Room {
     }
 
     ///处理选择战斗回合时候的离开
-    fn handler_leave_battle_turn(&mut self, user_id: u32, index: usize) {
+    fn handler_leave_battle_turn(&mut self, user_id: u32, turn_index: usize) {
         let next_turn_user = self.get_turn_user(None);
         if let Err(e) = next_turn_user {
             error!("{:?}", e);
@@ -678,7 +673,7 @@ impl Room {
         }
         let next_turn_user = next_turn_user.unwrap();
         //移除顺位数据
-        self.remove_turn_orders(index);
+        self.remove_turn_orders(turn_index);
         //移除玩家战斗数据
         self.battle_data.battle_cter.remove(&user_id);
         self.battle_data.tile_map.remove_user(user_id);

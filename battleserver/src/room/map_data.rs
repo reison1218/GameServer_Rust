@@ -112,11 +112,12 @@ impl TileMap {
     ///删除玩家
     pub fn remove_user(&mut self, user_id: u32) {
         for map_cell in self.map_cells.iter_mut() {
-            if map_cell.user_id != user_id {
-                continue;
+            if map_cell.user_id == user_id {
+                map_cell.user_id = 0;
             }
-            map_cell.user_id = 0;
-            break;
+            if map_cell.open_user == user_id {
+                map_cell.open_user = 0;
+            }
         }
     }
 

@@ -7,6 +7,7 @@ use crate::{REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK};
 use async_std::task::block_on;
 use crossbeam::channel::Sender;
 use log::warn;
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::collections::hash_map::RandomState;
 use tools::cmd_code::RankCode;
 use tools::tcp::TcpSender;
@@ -16,8 +17,7 @@ type CmdFn = HashMap<u32, fn(&mut RankMgr, Packet), RandomState>;
 ///排行榜管理器
 #[derive(Default)]
 pub struct RankMgr {
-    pub rank_vec: Vec<RankInfoPtr>,             //排行榜数据
-    pub update_map: HashMap<u32, RankInfo>,     //排行裸指针
+    pub rank_vec: Vec<RankInfo>,                //排行榜数据
     pub cmd_map: CmdFn,                         //命令管理 key:cmd,value:函数指针
     pub need_rank: bool,                        //是否需要排序
     pub last_rank: Vec<RankInfo>,               //上一赛季排行榜数据
@@ -31,6 +31,16 @@ impl RankMgr {
         let mut rm = RankMgr::default();
         rm.cmd_init();
         rm
+    }
+
+    pub fn get_rank_mut(&mut self, user_id: u32) -> Option<&mut RankInfo> {
+        for ri in self.rank_vec.iter_mut() {
+            if ri.user_id != user_id {
+                continue;
+            }
+            return Some(ri);
+        }
+        None
     }
 
     ///转发到游戏中心服,然后推送给所有特定服务器
@@ -92,8 +102,9 @@ impl RankMgr {
         let mut redis_lock = block_on(crate::REDIS_POOL.lock());
         unsafe {
             let mut index = 0;
-            for ri in self.rank_vec.iter_mut() {
+            for ri in self.rank_vec.iter() {
                 let ri_ref = ri.0.as_ref().unwrap();
+                println!("index:{}----{:?}", index, ri_ref);
                 let user_id = ri_ref.user_id;
                 let rank = ri_ref.rank;
                 let league_id = ri_ref.league.id;

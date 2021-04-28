@@ -135,7 +135,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     match room_type {
         RoomType::OneVOneVOneVOneCustom => {
             //校验这个用户在不在房间内
-            let res = rm.get_room_id(&packet.get_user_id());
+            let res = rm.get_room_id(&user_id);
             if let Some(room_id) = res {
                 warn!(
                     "this user already in the room,can not create room! user_id:{},room_id:{}",

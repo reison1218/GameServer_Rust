@@ -209,9 +209,13 @@ impl BattleData {
             index_res = self.next_turn_index
         }
         let res = self.turn_orders.get(index_res);
-        if res.is_none() {}
-        let user_id = *res.unwrap();
-        Ok(user_id)
+
+        match res {
+            Some(&res) => Ok(res),
+            None => {
+                anyhow::bail!("there is no turn_order for index:{}", index_res)
+            }
+        }
     }
 
     pub fn get_sender_mut(&mut self) -> &mut Sender<Vec<u8>> {
