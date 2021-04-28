@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use super::{RankInfo, RankInfoPtr};
+use super::RankInfo;
 use crate::handler::{modify_nick_name, update_rank, update_season};
 use crate::task_timer::Task;
 use crate::{REDIS_INDEX_RANK, REDIS_KEY_CURRENT_RANK};
 use async_std::task::block_on;
 use crossbeam::channel::Sender;
 use log::warn;
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use rayon::slice::ParallelSliceMut;
 use std::collections::hash_map::RandomState;
 use tools::cmd_code::RankCode;
 use tools::tcp::TcpSender;
@@ -84,50 +84,35 @@ impl RankMgr {
         if !self.need_rank {
             return;
         }
-        unsafe {
-            self.rank_vec.sort_unstable_by(|a, b| {
-                //如果段位等级一样
-                let a_ref = a.0.as_ref().unwrap();
-                let b_ref = b.0.as_ref().unwrap();
-                if a_ref.league.get_league_id() == b_ref.league.get_league_id() {
-                    if a_ref.league.league_time != b_ref.league.league_time {
-                        //看时间
-                        return a_ref.league.league_time.cmp(&b_ref.league.league_time);
-                    }
+        self.rank_vec.par_sort_by(|a, b| {
+            //如果段位等级一样
+            if a.league.get_league_id() == b.league.get_league_id() {
+                if a.league.league_time != b.league.league_time {
+                    //看时间
+                    return a.league.league_time.cmp(&b.league.league_time);
                 }
-                //段位不一样直接看分数
-                b_ref.get_score().cmp(&a_ref.get_score())
-            });
-        }
+            }
+            //段位不一样直接看分数
+            b.get_score().cmp(&a.get_score())
+        });
         let mut redis_lock = block_on(crate::REDIS_POOL.lock());
-        unsafe {
-            let mut index = 0;
-            for ri in self.rank_vec.iter() {
-                let ri_ref = ri.0.as_ref().unwrap();
-                println!("index:{}----{:?}", index, ri_ref);
-                let user_id = ri_ref.user_id;
-                let rank = ri_ref.rank;
-                let league_id = ri_ref.league.id;
-                if rank != index && league_id > 0 {
-                    let ri_mut = self.update_map.get_mut(&user_id);
-                    if ri_mut.is_none() {
-                        index += 1;
-                        continue;
-                    }
-                    let ri_mut = ri_mut.unwrap();
-                    ri_mut.rank = index;
-                    if need_save {
-                        let json_value = serde_json::to_string(ri_mut).unwrap();
-                        //持久化到redis
-                        let _: Option<u32> = redis_lock.hset(
-                            REDIS_INDEX_RANK,
-                            REDIS_KEY_CURRENT_RANK,
-                            user_id.to_string().as_str(),
-                            json_value.as_str(),
-                        );
-                    }
+        for (index, ri_mut) in self.rank_vec.iter_mut().enumerate() {
+            let user_id = ri_mut.user_id;
+            let rank = ri_mut.rank;
+            let league_id = ri_mut.league.id;
+            let index = index as i32;
+            if rank != index && league_id > 0 {
+                ri_mut.rank = index;
+                if need_save {
+                    let json_value = serde_json::to_string(ri_mut).unwrap();
+                    //持久化到redis
+                    let _: Option<u32> = redis_lock.hset(
+                        REDIS_INDEX_RANK,
+                        REDIS_KEY_CURRENT_RANK,
+                        user_id.to_string().as_str(),
+                        json_value.as_str(),
+                    );
                 }
-                index += 1;
             }
         }
     }

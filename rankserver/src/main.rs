@@ -9,7 +9,8 @@ use crate::mgr::rank_mgr::RankMgr;
 use crate::net::tcp_server;
 use async_std::sync::Mutex;
 use log::error;
-use mgr::{RankInfo, RankInfoPtr};
+use mgr::RankInfo;
+use rayon::slice::ParallelSliceMut;
 use std::sync::Arc;
 use task_timer::init_timer;
 use tools::conf::Conf;
@@ -145,20 +146,10 @@ fn init_rank(rm: Lock) {
             continue;
         }
         let ri: RankInfo = ri.unwrap();
-        let user_id = ri.user_id;
-        lock.update_map.insert(user_id, ri);
-        let ri_mut = lock.update_map.get_mut(&user_id).unwrap();
-        let res = RankInfoPtr(ri_mut as *mut RankInfo);
-        lock.rank_vec.push(res);
+        lock.rank_vec.push(ri);
     }
     //进行排序
-    unsafe {
-        lock.rank_vec.sort_unstable_by(|a, b| {
-            let a_ref = a.0.as_ref().unwrap();
-            let b_ref = b.0.as_ref().unwrap();
-            a_ref.rank.cmp(&b_ref.rank)
-        });
-    }
+    lock.rank_vec.par_sort_by(|a, b| a.rank.cmp(&b.rank));
 
     //加载最佳排行
     let best_ranks: Option<Vec<String>> = redis_lock.hvals(REDIS_INDEX_RANK, REDIS_KEY_BEST_RANK);

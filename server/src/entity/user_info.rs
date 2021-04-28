@@ -2,7 +2,6 @@ use super::*;
 use crate::helper::redis_helper::check_nick_name;
 use crate::helper::redis_helper::modify_redis_user;
 use crate::helper::RankInfo;
-use crate::mgr::game_mgr::RankInfoPtPtr;
 use crate::SEASON;
 use crate::TEMPLATES;
 use chrono::Local;
@@ -12,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RankCode, RoomCode};
-use tools::protos::base::{PunishMatchPt, RankInfoPt};
+use tools::protos::base::PunishMatchPt;
 use tools::protos::protocol::{
     C_MODIFY_GRADE_FRAME_AND_SOUL, C_MODIFY_NICK_NAME, S_GET_LAST_SEASON_RANK,
     S_MODIFY_GRADE_FRAME_AND_SOUL, S_MODIFY_NICK_NAME, S_SHOW_RANK,
@@ -459,7 +458,7 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let rank_pt = gm.user_rank.get(&user_id);
+    let rank_pt = gm.get_ri_ref(user_id);
     if let Some(rank_pt) = rank_pt {
         pbp.set_league(rank_pt.get_league().clone());
     }
@@ -520,8 +519,8 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let rank_pt_ptr = gm.user_rank.get(&user_id);
-    if let Some(rank_pt) = rank_pt_ptr {
+    let rank_pt = gm.get_ri_ref(user_id);
+    if let Some(rank_pt) = rank_pt {
         pbp.set_league(rank_pt.get_league().clone());
     }
     let punish_match_pt = user_info.punish_match.into();
@@ -651,16 +650,14 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) {
 
     let mut ssr = S_SHOW_RANK::new();
     //封装自己的
-    let res = gm.user_rank.get(&user_id);
+    let res = gm.get_ri_ref(user_id);
     if let Some(res) = res {
         ssr.set_self_rank(res.clone());
     }
 
     //封装另外100个
-    unsafe {
-        for rank in gm.rank[0..100].iter() {
-            ssr.ranks.push(rank.0.as_ref().unwrap().clone());
-        }
+    for rank in gm.rank[0..100].iter() {
+        ssr.ranks.push(rank.clone());
     }
     let bytes = ssr.write_to_bytes();
     if let Err(e) = bytes {
@@ -675,7 +672,6 @@ pub fn show_rank(gm: &mut GameMgr, packet: Packet) {
 pub fn sync_rank(gm: &mut GameMgr, _: Packet) {
     //先清空排行榜
     gm.rank.clear();
-    gm.user_rank.clear();
 
     let redis_lock = crate::REDIS_POOL.lock();
     if let Err(err) = redis_lock {
@@ -689,17 +685,10 @@ pub fn sync_rank(gm: &mut GameMgr, _: Packet) {
     if let Some(ranks) = ranks {
         for rank_str in ranks {
             let ri: RankInfo = serde_json::from_str(rank_str.as_str()).unwrap();
-            let user_id = ri.user_id;
             let rank_pt = ri.into_rank_pt();
-            gm.user_rank.insert(rank_pt.user_id, rank_pt);
-            let rank_pt_ptr = gm.user_rank.get_mut(&user_id).unwrap() as *mut RankInfoPt;
-            gm.rank.push(RankInfoPtPtr(rank_pt_ptr));
+            gm.rank.push(rank_pt);
         }
-        unsafe {
-            gm.rank.par_sort_unstable_by(|a, b| {
-                a.0.as_ref().unwrap().rank.cmp(&b.0.as_ref().unwrap().rank)
-            });
-        }
+        gm.rank.par_sort_unstable_by(|a, b| a.rank.cmp(&b.rank));
     }
 }
 
@@ -765,8 +754,8 @@ pub fn search_room(gm: &mut GameMgr, packet: Packet) {
     pbp.set_grade_frame(user_info.grade_frame);
     pbp.set_soul(user_info.soul);
     //封装玩家排行积分
-    let rank_pt_ptr = gm.user_rank.get(&user_id);
-    if let Some(rank_pt) = rank_pt_ptr {
+    let rank_pt = gm.get_ri_ref(user_id);
+    if let Some(rank_pt) = rank_pt {
         pbp.set_league(rank_pt.get_league().clone());
     }
     let punish_match_pt = user_info.punish_match.into();
