@@ -349,33 +349,39 @@ pub unsafe fn add_buff(
 
     let mut target_pt = TargetPt::new();
 
-    if target_type == TargetType::PlayerSelf {
-        cter.as_mut()
-            .unwrap()
-            .add_buff(Some(user_id), Some(skill_id), buff_id, Some(turn_index));
-        target_pt.target_value.push(cter_index as u32);
-        target_pt.add_buffs.push(buff_id);
-    } else if target_type == TargetType::MapCell
-        || target_type == TargetType::UnOpenMapCell
-        || target_type == TargetType::UnPairMapCell
-        || target_type == TargetType::NullMapCell
-        || target_type == TargetType::UnPairNullMapCell
-        || target_type == TargetType::OpenedMapCell
-        || target_type == TargetType::UnOpenMapCellAndUnLock
-        || target_type == TargetType::UnLockNullMapCell
-    {
-        let index = *target_array.get(0).unwrap() as usize;
-        let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
-        let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
-        let buff = Buff::new(
-            buff_temp,
-            Some(battle_data.next_turn_index),
-            Some(user_id),
-            Some(skill_id),
-        );
-        map_cell.buffs.insert(buff.get_id(), buff);
-        target_pt.target_value.push(index as u32);
-        target_pt.add_buffs.push(buff_id);
+    match target_type {
+        TargetType::PlayerSelf => {
+            cter.as_mut().unwrap().add_buff(
+                Some(user_id),
+                Some(skill_id),
+                buff_id,
+                Some(turn_index),
+            );
+            target_pt.target_value.push(cter_index as u32);
+            target_pt.add_buffs.push(buff_id);
+        }
+        TargetType::MapCell
+        | TargetType::UnOpenMapCell
+        | TargetType::UnPairMapCell
+        | TargetType::NullMapCell
+        | TargetType::UnPairNullMapCell
+        | TargetType::OpenedMapCell
+        | TargetType::UnOpenMapCellAndUnLock
+        | TargetType::UnLockNullMapCell => {
+            let index = *target_array.get(0).unwrap() as usize;
+            let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
+            let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+            let buff = Buff::new(
+                buff_temp,
+                Some(battle_data.next_turn_index),
+                Some(user_id),
+                Some(skill_id),
+            );
+            map_cell.buffs.insert(buff.get_id(), buff);
+            target_pt.target_value.push(index as u32);
+            target_pt.add_buffs.push(buff_id);
+        }
+        _ => {}
     }
 
     //处理技能激活状态
