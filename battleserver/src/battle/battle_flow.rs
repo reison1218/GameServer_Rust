@@ -362,8 +362,7 @@ impl BattleData {
         trigger_mission(
             self,
             user_id,
-            vec![MissionTriggerType::Attack],
-            1,
+            vec![(MissionTriggerType::Attack, 1)],
             (target_user_id, 0),
         );
         Ok(())

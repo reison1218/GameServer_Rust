@@ -446,9 +446,11 @@ pub fn create_room(gm: &mut GameMgr, packet: Packet) {
         return;
     }
     let room_type = cr.get_room_type();
+
     //封装proto发送给房间服
     let mut gr = G_R_CREATE_ROOM::new();
     gr.set_room_type(room_type);
+    gr.set_setting(cr.get_setting().clone());
     let mut pbp = PlayerBattlePt::new();
     let user_data = user_data.unwrap();
     let user_info = user_data.get_user_info_ref();

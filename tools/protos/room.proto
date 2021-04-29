@@ -20,6 +20,7 @@ import "base.proto";
 //cmd:1006
 message C_CREATE_ROOM{
     uint32 room_type = 1;//房间类型
+    RoomSettingPt setting = 2;//房间设置,只有自定义房间的时候需要传，其他房间类型不要传
 }
 
 //加入房间

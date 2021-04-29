@@ -183,7 +183,6 @@ impl TriggerEvent for BattleData {
         let battle_cter = self.battle_cter.get_mut(&user_id).unwrap();
         let map_cell = self.tile_map.map_cells.get(index).unwrap();
         let element = map_cell.element as u32;
-        let miss_type_vec;
         //配对了加金币
         if is_pair {
             //把配对可用的技能加入
@@ -219,18 +218,17 @@ impl TriggerEvent for BattleData {
                 }
             }
             battle_cter.add_gold(res as i32);
-            //封装任务类型
-            miss_type_vec = vec![
-                MissionTriggerType::OpenCell,
-                MissionTriggerType::GetGold,
-                MissionTriggerType::Pair,
-            ]
-        } else {
-            //封装任务类型
-            miss_type_vec = vec![MissionTriggerType::OpenCell]
+            //触发翻地图块任务;触发获得金币;触发配对任务
+            trigger_mission(
+                self,
+                user_id,
+                vec![
+                    (MissionTriggerType::Pair, 1),
+                    (MissionTriggerType::GetGold, res as u16),
+                ],
+                (element, 0),
+            );
         }
-        //触发翻地图块任务;触发获得金币;触发配对任务
-        trigger_mission(self, user_id, miss_type_vec, 1, (element, 0));
         Ok(None)
     }
 
@@ -448,8 +446,13 @@ impl TriggerEvent for BattleData {
         } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
             cter.flow_data.round_limit_skills.push(skill_id);
         }
-        //触发翻地图块任务
-        trigger_mission(self, user_id, vec![MissionTriggerType::UseSkill], 1, (0, 0));
+        //使用技能任务
+        trigger_mission(
+            self,
+            user_id,
+            vec![(MissionTriggerType::UseSkill, 1)],
+            (0, 0),
+        );
     }
 
     fn before_use_skill_trigger(&mut self, user_id: u32) -> anyhow::Result<()> {
@@ -621,6 +624,7 @@ impl TriggerEvent for BattleData {
 
         let mut sp = SummaryUser::default();
         sp.user_id = user_id;
+        sp.name = cter.base_attr.name.clone();
         sp.cter_id = cter.get_cter_id();
         sp.league = cter.league.clone();
         sp.grade = cter.base_attr.grade;

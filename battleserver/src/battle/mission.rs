@@ -207,7 +207,7 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
 
     //todo 再添加需要条件的
 
-    //如果任务都接过了,只过滤上一次都任务就行了
+    //如果任务都接过了,只过滤上一次的任务就行了
     if mission_list.is_empty() {
         let mut temp_id;
         for temp in no_condition_missions.iter() {
@@ -257,8 +257,7 @@ pub enum MissionTriggerType {
 pub fn trigger_mission(
     battle_data: &mut BattleData,
     user_id: u32,
-    trigger_types: Vec<MissionTriggerType>,
-    value: u16,
+    trigger_types: Vec<(MissionTriggerType, u16)>,
     mission_parm: (u32, u32),
 ) {
     let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
@@ -271,7 +270,7 @@ pub fn trigger_mission(
     let missoin_id = cter.mission_data.mission.as_ref().unwrap().mission_temp.id;
 
     //匹配任务
-    for trigger_type in trigger_types {
+    for (trigger_type, value) in trigger_types {
         let res = match trigger_type {
             MissionTriggerType::OpenCell => {
                 open_cell_trigger_mission(battle_data, user_id, value, mission_parm)
@@ -423,6 +422,6 @@ fn get_gold_trigger_mission(
         return false;
     }
     let cter = cter.unwrap();
-    //复仇
+    //加任务进度
     cter.add_mission_progress(value, MissionCompleteType::GoldCount, mission_parm)
 }

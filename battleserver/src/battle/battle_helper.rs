@@ -429,7 +429,15 @@ impl BattleData {
         //加金币
         cter.add_gold(res as i32);
         //触发任务
-        trigger_mission(self, user_id, vec![MissionTriggerType::OpenCell], 1, (0, 0));
+        trigger_mission(
+            self,
+            user_id,
+            vec![
+                (MissionTriggerType::OpenCell, 1),
+                (MissionTriggerType::GetGold, res as u16),
+            ],
+            (0, 0),
+        );
     }
 
     ///处理地图块配对逻辑

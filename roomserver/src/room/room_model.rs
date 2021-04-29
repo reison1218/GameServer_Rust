@@ -97,8 +97,8 @@ impl Default for RoomSetting {
     }
 }
 
-impl From<RoomSettingPt> for RoomSetting {
-    fn from(rs_pt: RoomSettingPt) -> Self {
+impl From<&RoomSettingPt> for RoomSetting {
+    fn from(rs_pt: &RoomSettingPt) -> Self {
         let is_open_ai = rs_pt.is_open_ai;
         let victory_condition = rs_pt.victory_condition;
         let turn_limit_time = rs_pt.turn_limit_time;
@@ -141,6 +141,7 @@ pub trait RoomModel {
     fn create_room(
         &mut self,
         owner: Member,
+        room_setting: Option<RoomSetting>,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32>;
@@ -203,16 +204,21 @@ impl RoomModel for CustomRoom {
     fn create_room(
         &mut self,
         owner: Member,
+        room_setting: Option<RoomSetting>,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let room = Room::new(
+        let mut room = Room::new(
             owner.clone(),
             RoomType::OneVOneVOneVOneCustom,
             sender,
             task_sender,
         )?;
+        if let Some(room_setting) = room_setting {
+            room.setting = room_setting;
+        }
+
         let room_id = room.get_room_id();
         self.rooms.insert(room_id, room);
         let room = self.rooms.get_mut(&room_id).unwrap();
@@ -298,6 +304,7 @@ impl RoomModel for MatchRoom {
     fn create_room(
         &mut self,
         owner: Member,
+        _: Option<RoomSetting>,
         sender: TcpSender,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
@@ -426,7 +433,7 @@ impl MatchRoom {
                 anyhow::bail!("TileMapTempMgr is None")
             }
             //创建房间
-            room_id = self.create_room(member, sender, task_sender)?;
+            room_id = self.create_room(member, None, sender, task_sender)?;
         } else {
             //如果有，则往房间里塞
             room_id = self.get_room_cache_last_room_id()?;

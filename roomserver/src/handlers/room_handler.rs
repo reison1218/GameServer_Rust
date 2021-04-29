@@ -4,7 +4,7 @@ use crate::room::character::Character;
 use crate::room::member::MemberState;
 use crate::room::member::{Member, PunishMatch};
 use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{RoomModel, RoomType, TeamId};
+use crate::room::room_model::{RoomModel, RoomSetting, RoomType, TeamId};
 use crate::task_timer::build_match_room_ready_task;
 use crate::SEASON;
 use log::error;
@@ -131,7 +131,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     }
     let room_type = room_type.unwrap();
     let user_id = packet.get_user_id();
-
+    let mut room_setting;
     match room_type {
         RoomType::OneVOneVOneVOneCustom => {
             //校验这个用户在不在房间内
@@ -143,6 +143,35 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
                 );
                 return;
             }
+            //校验房间设置
+            let room_setting_pt = grc.get_setting();
+            let season_id = room_setting_pt.season_id;
+            let victory_condition = room_setting_pt.victory_condition;
+            if victory_condition == 0 || victory_condition > 6 {
+                warn!("victory_condition is error!");
+                return;
+            }
+            let season_temp = crate::TEMPLATES.season_temp_mgr().get_temp(&season_id);
+            if let Err(err) = season_temp {
+                warn!("{:?}", err);
+                return;
+            }
+            let turn_limit_time_id = room_setting_pt.turn_limit_time as u8;
+            let turn_limit_time;
+            let res = crate::TEMPLATES
+                .battle_limit_time_temp_mgr()
+                .get_temp(&turn_limit_time_id);
+            match res {
+                Ok(res) => {
+                    turn_limit_time = res.ms;
+                }
+                Err(err) => {
+                    warn!("{:?}", err);
+                    return;
+                }
+            }
+            room_setting = RoomSetting::from(room_setting_pt);
+            room_setting.turn_limit_time = turn_limit_time;
         }
         RoomType::WorldBossCustom => {
             warn!("this function is not open yet!");
@@ -156,12 +185,12 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
 
     let owner = Member::from(grc.get_pbp());
     let mut room_id: u32 = 0;
-    let room_type = RoomType::from(room_type);
     //创建房间
     match room_type {
         RoomType::OneVOneVOneVOneCustom => {
             let res = rm.custom_room.create_room(
                 owner,
+                Some(room_setting),
                 rm.get_sender_clone(),
                 rm.get_task_sender_clone(),
             );

@@ -27,6 +27,7 @@
 pub struct C_CREATE_ROOM {
     // message fields
     pub room_type: u32,
+    pub setting: ::protobuf::SingularPtrField<super::base::RoomSettingPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -57,10 +58,48 @@ impl C_CREATE_ROOM {
     pub fn set_room_type(&mut self, v: u32) {
         self.room_type = v;
     }
+
+    // .protos.RoomSettingPt setting = 2;
+
+
+    pub fn get_setting(&self) -> &super::base::RoomSettingPt {
+        self.setting.as_ref().unwrap_or_else(|| <super::base::RoomSettingPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_setting(&mut self) {
+        self.setting.clear();
+    }
+
+    pub fn has_setting(&self) -> bool {
+        self.setting.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_setting(&mut self, v: super::base::RoomSettingPt) {
+        self.setting = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_setting(&mut self) -> &mut super::base::RoomSettingPt {
+        if self.setting.is_none() {
+            self.setting.set_default();
+        }
+        self.setting.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_setting(&mut self) -> super::base::RoomSettingPt {
+        self.setting.take().unwrap_or_else(|| super::base::RoomSettingPt::new())
+    }
 }
 
 impl ::protobuf::Message for C_CREATE_ROOM {
     fn is_initialized(&self) -> bool {
+        for v in &self.setting {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -74,6 +113,9 @@ impl ::protobuf::Message for C_CREATE_ROOM {
                     }
                     let tmp = is.read_uint32()?;
                     self.room_type = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.setting)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -90,6 +132,10 @@ impl ::protobuf::Message for C_CREATE_ROOM {
         if self.room_type != 0 {
             my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
         }
+        if let Some(ref v) = self.setting.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -98,6 +144,11 @@ impl ::protobuf::Message for C_CREATE_ROOM {
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
         if self.room_type != 0 {
             os.write_uint32(1, self.room_type)?;
+        }
+        if let Some(ref v) = self.setting.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -142,6 +193,11 @@ impl ::protobuf::Message for C_CREATE_ROOM {
                 |m: &C_CREATE_ROOM| { &m.room_type },
                 |m: &mut C_CREATE_ROOM| { &mut m.room_type },
             ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RoomSettingPt>>(
+                "setting",
+                |m: &C_CREATE_ROOM| { &m.setting },
+                |m: &mut C_CREATE_ROOM| { &mut m.setting },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CREATE_ROOM>(
                 "C_CREATE_ROOM",
                 fields,
@@ -159,6 +215,7 @@ impl ::protobuf::Message for C_CREATE_ROOM {
 impl ::protobuf::Clear for C_CREATE_ROOM {
     fn clear(&mut self) {
         self.room_type = 0;
+        self.setting.clear();
         self.unknown_fields.clear();
     }
 }
@@ -6027,20 +6084,21 @@ impl ::protobuf::reflect::ProtobufValue for S_PUNISH_MATCH_NOTICE {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\",\n\rC_CREATE_ROOM\x12\x1b\
-    \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"&\n\x0bC_JOIN_ROOM\x12\
-    \x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\",\n\rC_SEARCH_ROOM\x12\
-    \x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"`\n\x06S_ROOM\x12\x17\
-    \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
-    \x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\x0e.pr\
-    otos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\x18\
-    \x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05va\
-    lue\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
-    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\
-    \x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\
-    \x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
+    \n\nroom.proto\x12\x06protos\x1a\nbase.proto\"]\n\rC_CREATE_ROOM\x12\x1b\
+    \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12/\n\x07setting\x18\x02\
+    \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"&\n\x0bC_JOIN_ROOM\
+    \x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\",\n\rC_SEARCH_ROOM\
+    \x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"`\n\x06S_ROOM\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
+    \x0e.protos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\
+    \x18\x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\
+    \x05value\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\
+    \x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\
+    \x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\
+    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
+    rMess\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\r\
+    R\x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
     \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
     s\"M\n\x19S_CHOOSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
     (\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"(\n\

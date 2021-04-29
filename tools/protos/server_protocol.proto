@@ -11,6 +11,7 @@ message R_B_START{
 message G_R_CREATE_ROOM{
     uint32 room_type = 1;//房间类型
     PlayerBattlePt pbp = 2;//玩家房间需要的数据
+    RoomSettingPt setting = 3;//房间设置,只有自定义房间的时候需要传，其他房间类型不要传
 }
 
 ///游戏服务器发给房间服务器，加入房间
