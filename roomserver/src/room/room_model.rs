@@ -56,7 +56,7 @@ impl RoomType {
 #[derive(Debug, Copy, Clone)]
 pub struct RoomSetting {
     pub turn_limit_time: u32,   //回合限制时间
-    pub season_id: u32,         //赛季id
+    pub season_id: i32,         //赛季id
     pub is_open_ai: bool,       //是否开启ai
     pub victory_condition: u32, //胜利条件
 }

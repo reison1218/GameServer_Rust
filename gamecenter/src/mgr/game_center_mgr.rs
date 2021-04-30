@@ -57,7 +57,7 @@ impl GameCenterMgr {
         let next_update_time = next_update_time.unwrap();
 
         let mut usn = R_S_UPDATE_SEASON::new();
-        usn.set_season_id(season_id.as_u64().unwrap() as u32);
+        usn.set_season_id(season_id.as_u64().unwrap() as i32);
         usn.set_round(round.as_u64().unwrap() as u32);
         usn.set_next_update_time(next_update_time);
 

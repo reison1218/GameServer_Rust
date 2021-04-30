@@ -28,6 +28,8 @@ use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, B_R_SUMMARY};
 use tools::util::packet::Packet;
 
+use super::MemberLeaveNoticeType;
+
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
@@ -166,7 +168,7 @@ impl Room {
         let is_battle_over;
         let summary_protos = self.battle_data.summary();
         //发给游戏服同步结算数据
-        if summary_protos.len() > 0 {
+        if summary_protos.len() > 0 && self.room_type == RoomType::OneVOneVOneVOneMatch {
             for sp in summary_protos {
                 let user_id = sp.get_summary_data().user_id;
                 let res = sp.write_to_bytes();
@@ -181,35 +183,32 @@ impl Room {
             }
         }
 
-        //发给房间服
-        if self.state == RoomState::BattleOvered {
-            let mut brs = B_R_SUMMARY::new();
-            for spa_v in self.battle_data.summary_vec.iter_mut() {
-                for sp in spa_v.iter_mut() {
-                    let smp = sp.clone().into();
-                    brs.summary_datas.push(smp);
-                }
-            }
-            let bytes = brs.write_to_bytes();
-            match bytes {
-                Ok(bytes) => {
-                    let user_id = self.random_user_id();
-                    if user_id > 0 {
-                        //发给房间服同步结算数据
-                        self.send_2_server(RoomCode::Summary.into_u32(), user_id, bytes);
-                    }
-                }
-                Err(e) => {
-                    error!("{:?}", e);
-                }
-            }
-        }
         let size = self.battle_data.get_alive_player_num();
-        if size == 0 {
+        if size <= 1 {
             is_battle_over = true;
             self.state = RoomState::BattleOvered;
         } else {
             is_battle_over = false;
+        }
+
+        //发给房间服
+        if self.state == RoomState::BattleOvered {
+            let user_id = self.random_user_id();
+            if user_id > 0 {
+                let mut proto = B_R_SUMMARY::new();
+                proto.room_type = self.room_type.into_u32();
+                proto.room_id = self.get_room_id();
+                let bytes = proto.write_to_bytes();
+                match bytes {
+                    Ok(bytes) => {
+                        //通知房间服战斗结算
+                        self.send_2_server(RoomCode::Summary.into_u32(), 0, bytes);
+                    }
+                    Err(err) => {
+                        error!("{:?}", err);
+                    }
+                }
+            }
         }
         is_battle_over
     }
@@ -554,9 +553,14 @@ impl Room {
     }
 
     ///成员离开推送
-    pub fn member_leave_notice(&mut self, notice_type: u8, user_id: &u32, need_push_self: bool) {
+    pub fn member_leave_notice(
+        &mut self,
+        notice_type: MemberLeaveNoticeType,
+        user_id: &u32,
+        need_push_self: bool,
+    ) {
         let mut srmln = S_ROOM_MEMBER_LEAVE_NOTICE::new();
-        srmln.set_notice_type(notice_type as u32);
+        srmln.set_notice_type(notice_type.into_u32());
         srmln.set_user_id(*user_id);
         let bytes = srmln.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
@@ -565,6 +569,10 @@ impl Room {
                 continue;
             }
             self_mut_ref.send_2_client(ClientCode::MemberLeaveNotice, *member_id, bytes.clone());
+        }
+
+        if notice_type == MemberLeaveNoticeType::Kicked {
+            self.send_2_server(RoomCode::BattleKickMember.into_u32(), *user_id, vec![]);
         }
     }
 
@@ -594,7 +602,12 @@ impl Room {
     }
 
     ///移除玩家
-    pub fn remove_member(&mut self, notice_type: u8, user_id: &u32, need_push_self: bool) {
+    pub fn remove_member(
+        &mut self,
+        notice_type: MemberLeaveNoticeType,
+        user_id: &u32,
+        need_push_self: bool,
+    ) {
         let res = self.members.get_mut(user_id);
         if res.is_none() {
             return;
@@ -608,15 +621,6 @@ impl Room {
 
         //处理战斗相关的数据
         self.handler_leave(*user_id);
-
-        // 转移房间房主权限
-        // if self.get_owner_id() == *user_id && self.get_member_count() > 0 {
-        //     for i in self.members.keys() {
-        //         self.owner_id = *i;
-        //         break;
-        //     }
-        //     self.room_notice();
-        // }
     }
 
     fn get_turn_orders(&self) -> &[u32] {
@@ -681,7 +685,7 @@ impl Room {
         if next_turn_user != user_id {
             return;
         }
-        self.battle_data.next_turn();
+        self.battle_data.next_turn(true);
     }
 
     ///处理玩家离开
@@ -780,6 +784,9 @@ impl Room {
             member_count,
             self.battle_data.last_map_id,
         )?;
+        if self.setting.season_id < 0 {
+            self.setting.season_id = tmd.season_id;
+        }
         self.battle_data.last_map_id = tmd.id;
         self.battle_data.tile_map = tmd;
         self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;

@@ -45,6 +45,7 @@ pub struct TileMap {
     pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
     pub world_cell: (usize, u32),                  //世界块 index,世界块id
     pub market_cell: (usize, u32),                 //商店 index,世界块id
+    pub season_id: i32,                            //当前地图赛季id
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
 }
 
@@ -124,7 +125,7 @@ impl TileMap {
     ///初始化战斗地图数据
     pub fn init(
         room_type: RoomType,
-        mut season_id: u32,
+        mut season_id: i32,
         mut member_count: u8,
         last_map_id: u32,
     ) -> anyhow::Result<Self> {
@@ -134,23 +135,38 @@ impl TileMap {
         }
         //创建随机结构体实例
         let mut rand = rand::thread_rng();
-        //如果是匹配房,第一次进行随机
-        if room_type == RoomType::OneVOneVOneVOneMatch && last_map_id == 0 {
-            //否则进行随机，0-1，0代表不开启世界块
-            let res = rand.gen_range(0..2);
-            if res > 0 {
-                unsafe { season_id = crate::SEASON.season_id }
-            }
-        }
         //拿到地图配置管理器
         let tile_map_mgr = TEMPLATES.tile_map_temp_mgr();
-        //如果有世界块，后面一直有
-        if last_map_id != 0 {
+        //第一次初始化地图
+        if last_map_id == 0 {
+            match room_type {
+                RoomType::OneVOneVOneVOneCustom => {
+                    //如果赛季id==-1则随机一个出来
+                    if season_id == -1 {
+                        let season_temp = crate::TEMPLATES.season_temp_mgr().random();
+                        season_id = season_temp.id as i32;
+                    }
+                }
+                RoomType::OneVOneVOneVOneMatch => {
+                    //如果是匹配房,第一次进行随机
+                    //否则进行随机，0-1，0代表不开启世界块
+                    let res = rand.gen_range(0..2);
+                    if res > 0 {
+                        unsafe { season_id = crate::SEASON.season_id }
+                    }
+                }
+                _ => {}
+            }
+        } else if last_map_id != 0 {
+            //后续刷新地图，如果有世界块，后面一直有
             let tile_map_temp = tile_map_mgr.get_temp(last_map_id);
             if let Ok(tile_map_temp) = tile_map_temp {
                 if tile_map_temp.world_cell > 0 {
-                    unsafe {
-                        season_id = crate::SEASON.season_id;
+                    match room_type {
+                        RoomType::OneVOneVOneVOneMatch => unsafe {
+                            season_id = crate::SEASON.season_id;
+                        },
+                        _ => {}
                     }
                 }
             }
@@ -338,6 +354,7 @@ impl TileMap {
             tmp.map_cells[index] = map_cell;
             index += 1;
         }
+        tmp.season_id = season_id;
         Ok(tmp)
     }
 }

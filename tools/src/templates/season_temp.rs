@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::templates::template::{Template, TemplateMgrTrait};
 use std::collections::HashMap;
 
@@ -29,6 +31,17 @@ impl SeasonTempMgr {
         for tt in t {
             self.temps.insert(tt.id, tt);
         }
+    }
+
+    pub fn random(&self) -> &SeasonTemp {
+        let mut v = vec![];
+        for &id in self.temps.keys() {
+            v.push(id);
+        }
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0..v.len());
+        let season_id = v.get(index).unwrap();
+        self.temps.get(season_id).unwrap()
     }
 }
 

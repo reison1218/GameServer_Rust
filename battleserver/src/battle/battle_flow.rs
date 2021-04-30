@@ -66,7 +66,7 @@ impl BattleData {
                 for su in spa_v.iter_mut() {
                     let smp: SummaryDataPt = su.clone().into();
                     ssn.summary_datas.push(smp.clone());
-                    if !su.push_to_server {
+                    if !su.push_to_server && self.room_type == RoomType::OneVOneVOneVOneMatch {
                         let mut bg = B_S_SUMMARY::new();
                         bg.set_room_type(self.room_type.into_u32());
                         bg.set_summary_data(smp);
@@ -137,7 +137,7 @@ impl BattleData {
     ///跳过回合
     pub fn skip_turn(&mut self, _au: &mut ActionUnitPt) {
         //直接下一个turn
-        self.next_turn();
+        self.next_turn(false);
     }
 
     ///使用技能
@@ -372,7 +372,7 @@ impl BattleData {
     pub fn reset_map(
         &mut self,
         room_type: RoomType,
-        season_id: u32,
+        season_id: i32,
         last_map_id: u32,
     ) -> anyhow::Result<()> {
         //地图刷新前触发buff
@@ -504,13 +504,15 @@ impl BattleData {
     }
 
     ///下个turn
-    pub fn next_turn(&mut self) {
+    pub fn next_turn(&mut self, need_push_battle_turn_notice: bool) {
         //本回合结束
         self.turn_end();
         //计算下一个回合
         self.add_next_turn();
         //给客户端推送战斗turn推送
-        self.send_battle_turn_notice();
+        if need_push_battle_turn_notice {
+            self.send_battle_turn_notice();
+        }
         //创建战斗turn定时器任务
         self.build_battle_turn_task();
     }
@@ -539,6 +541,33 @@ impl BattleData {
         let user_id = user_id.unwrap();
         unsafe {
             let self_mut = self;
+
+            //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
+            if user_id > 0 {
+                let battle_cter = self_mut.get_battle_cter(Some(user_id), true);
+                if battle_cter.is_err() {
+                    return;
+                }
+                let mut is_can_skip_turn: bool = true;
+                for &index in self_mut.tile_map.un_pair_map.keys() {
+                    let map_cell = self_mut.tile_map.map_cells.get(index);
+                    if let None = map_cell {
+                        continue;
+                    }
+                    let map_cell = map_cell.unwrap();
+                    if map_cell.check_is_locked() {
+                        continue;
+                    }
+                    is_can_skip_turn = false;
+                    break;
+                }
+
+                //turn结算玩家
+                let battle_cter = self_mut.battle_cter.get_mut(&user_id).unwrap();
+                battle_cter.turn_start_reset();
+                battle_cter.set_is_can_end_turn(is_can_skip_turn);
+            }
+
             //结算玩家身上的buff
             for cter in self_mut.battle_cter.values_mut() {
                 for buff in cter.battle_buffs.buffs.values() {
@@ -570,32 +599,6 @@ impl BattleData {
                         true,
                     );
                 }
-            }
-
-            //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
-            if user_id > 0 {
-                let battle_cter = self_mut.get_battle_cter(Some(user_id), true);
-                if battle_cter.is_err() {
-                    return;
-                }
-                let mut is_can_skip_turn: bool = true;
-                for &index in self_mut.tile_map.un_pair_map.keys() {
-                    let map_cell = self_mut.tile_map.map_cells.get(index);
-                    if let None = map_cell {
-                        continue;
-                    }
-                    let map_cell = map_cell.unwrap();
-                    if map_cell.check_is_locked() {
-                        continue;
-                    }
-                    is_can_skip_turn = false;
-                    break;
-                }
-
-                //turn结算玩家
-                let battle_cter = self_mut.battle_cter.get_mut(&user_id).unwrap();
-                battle_cter.turn_start_reset();
-                battle_cter.set_is_can_end_turn(is_can_skip_turn);
             }
         }
     }

@@ -46,5 +46,6 @@ prost = "0.7"
 tonic-build = "0.4"
 mio = {version="0.7",features = ["os-poll", "tcp"]}
 tokio = "1.1"
+rand = "0.8"
 [build-dependencies]
 tonic-build = "0.4"

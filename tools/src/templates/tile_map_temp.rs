@@ -9,7 +9,7 @@ pub struct TileMapTemp {
     pub cell_rare: Vec<CellRare>,
     pub world_cell: u32,
     pub member_count: Vec<u32>,
-    pub season_id: u32,
+    pub season_id: i32,
     pub world_cell_index: usize,
     pub member_count_key: u8,
     pub market_index: usize,
@@ -30,7 +30,7 @@ pub struct TileMapTempMgr {
     ///key:member_count key:is_has_world_cell
     pub member_temps: HashMap<u8, HashMap<bool, Vec<TileMapTemp>>>,
     ///key:赛季id key:人数 keu:位置 value:vec<TileMapTemp>
-    pub season_temps: HashMap<u32, HashMap<u8, HashMap<usize, Vec<TileMapTemp>>>>,
+    pub season_temps: HashMap<i32, HashMap<u8, HashMap<usize, Vec<TileMapTemp>>>>,
 }
 
 impl TileMapTempMgr {

@@ -7,6 +7,7 @@ use crate::mgr::RankInfo;
 use crate::room::character::BattleCharacter;
 use crate::room::map_data::MapCellType;
 use crate::room::room::Room;
+use crate::room::MemberLeaveNoticeType;
 use crate::room::RoomState;
 use crate::SEASON;
 use log::{error, info, warn};
@@ -255,7 +256,9 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         //判断是否进行结算
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
         if !is_summary && current_cter_is_died {
-            room.battle_data.next_turn();
+            room.battle_data.next_turn(true);
+        } else {
+            room.battle_data.send_battle_turn_notice();
         }
     }
 }
@@ -635,7 +638,7 @@ pub fn off_line(bm: &mut BattleMgr, packet: Packet) {
     if let Some(room) = room {
         let room_id = room.get_room_id();
         //处理玩家离开
-        bm.handler_leave(room_id, user_id, false);
+        bm.handler_leave(room_id, MemberLeaveNoticeType::OffLine, user_id, false);
     }
     //通知游戏服卸载玩家数据
     bm.send_2_server(GameCode::UnloadUser.into_u32(), user_id, Vec::new());
@@ -652,7 +655,7 @@ pub fn leave_room(bm: &mut BattleMgr, packet: Packet) {
     }
     let room_id = room.unwrap().get_room_id();
     //处理玩家离开
-    bm.handler_leave(room_id, user_id, true);
+    bm.handler_leave(room_id, MemberLeaveNoticeType::Leave, user_id, true);
 }
 
 pub fn reload_temps(_: &mut BattleMgr, _: Packet) {
@@ -700,7 +703,7 @@ pub fn update_season(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let round_season_id = round_season_id.unwrap();
-    let res = u32::from_str(round_season_id.value.as_str());
+    let res = i32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
         return;

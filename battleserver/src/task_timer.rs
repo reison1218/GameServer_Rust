@@ -110,7 +110,7 @@ fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     }
 
     //移除玩家
-    room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
+    room.remove_member(MemberLeaveNoticeType::Kicked, &user_id, true);
 
     info!("定时检测选占位任务,没有选择都人T出去,user_id:{}", user_id);
 
@@ -127,15 +127,18 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
+        warn!("json_value.as_object() is None!");
         return;
     }
     let map = res.unwrap();
     let user_id = map.get("user_id");
     if user_id.is_none() {
+        warn!("user_id is None!");
         return;
     }
     let user_id = user_id.unwrap().as_u64();
     if user_id.is_none() {
+        warn!("user_id is None!");
         return;
     }
     let user_id = user_id.unwrap() as u32;
@@ -144,6 +147,7 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
+        warn!("room is None!user_id:{}", user_id);
         return;
     }
     let room = room.unwrap();
@@ -177,7 +181,7 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     //如果玩家啥都没做，就T出房间
     if battle_cter.flow_data.open_map_cell_vec.is_empty() {
-        room.remove_member(MemberLeaveNoticeType::Kicked as u8, &user_id, true);
+        room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
         info!("定时检测翻格子任务,没有翻人T出去,user_id:{}", user_id);
     }
     let room_state = room.state;

@@ -48,7 +48,7 @@ pub fn modify_nick_name(rm: &mut RankMgr, packet: Packet) {
 pub async fn handler_season_update(
     rm: &mut RankMgr,
     round: u32,
-    round_season_id: u32,
+    round_season_id: i32,
     proto: &mut R_S_UPDATE_SEASON,
 ) {
     if round_season_id != proto.season_id {
@@ -194,7 +194,7 @@ pub fn update_season(rm: &mut RankMgr, packet: Packet) {
         return;
     }
     let round_season_id = round_season_id.unwrap();
-    let res = u32::from_str(round_season_id.value.as_str());
+    let res = i32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
         return;

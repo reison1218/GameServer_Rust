@@ -93,7 +93,7 @@ const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 pub static mut SEASON: Season = Season::new();
 
 pub struct Season {
-    season_id: u32,
+    season_id: i32,
     next_update_time: u64,
 }
 
@@ -178,7 +178,7 @@ fn init_season(gm: Lock) {
     }
     let season_id = season_id.unwrap();
     unsafe {
-        SEASON.season_id = season_id as u32;
+        SEASON.season_id = season_id as i32;
         let next_update_time = map.get("next_update_time");
         if next_update_time.is_none() {
             warn!("the next_update_time is None!");

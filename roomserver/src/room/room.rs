@@ -646,10 +646,10 @@ impl Room {
     }
 
     pub fn is_started(&self) -> bool {
-        if self.state != RoomState::ChoiceIndex {
-            false
-        } else {
+        if self.state == RoomState::ChoiceIndex {
             true
+        } else {
+            false
         }
     }
 

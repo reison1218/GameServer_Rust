@@ -560,7 +560,7 @@ pub fn update_season(gm: &mut GameMgr, packet: Packet) {
     let default_session_id;
     match constant_tmp {
         Some(constant_temp) => {
-            default_session_id = u32::from_str(constant_temp.value.as_str()).unwrap();
+            default_session_id = i32::from_str(constant_temp.value.as_str()).unwrap();
             if default_session_id != season_id {
                 unsafe {
                     SEASON.season_id = season_id;

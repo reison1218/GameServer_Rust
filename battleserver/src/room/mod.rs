@@ -51,26 +51,34 @@ pub enum RoomState {
     BattleOvered = 4,  //战斗结束
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum RoomMemberNoticeType {
     None = 0,         //无效
     UpdateMember = 2, //更新成员
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum MemberLeaveNoticeType {
-    None = 0,   //无效
-    Leave = 1,  //自己离开
-    Kicked = 2, //被T
+    None = 0,    //无效
+    Leave = 1,   //自己离开
+    Kicked = 2,  //被T
+    OffLine = 3, //离线
+}
+
+impl MemberLeaveNoticeType {
+    pub fn into_u32(self) -> u32 {
+        let res: u8 = self.into();
+        res as u32
+    }
 }
 
 ///房间设置
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
     pub turn_limit_time: u32,   //回合限制时间
-    pub season_id: u32,         //赛季id
+    pub season_id: i32,         //赛季id
     pub is_open_ai: bool,       //是否开启ai
     pub victory_condition: u32, //胜利条件
 }

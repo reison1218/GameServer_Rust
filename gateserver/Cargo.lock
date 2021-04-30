@@ -2276,6 +2276,7 @@ dependencies = [
  "prost",
  "protobuf",
  "protoc-rust",
+ "rand 0.8.3",
  "rayon",
  "redis 0.20.0",
  "serde",

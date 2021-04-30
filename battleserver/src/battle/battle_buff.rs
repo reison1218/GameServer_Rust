@@ -124,7 +124,7 @@ impl BattleData {
             warn!("{:?}", e);
             return;
         }
-        let target_pt = self.build_target_pt( 
+        let target_pt = self.build_target_pt(
             from_user,
             user_id,
             EffectType::RewardItem,
@@ -598,6 +598,7 @@ impl BattleData {
                 );
             }
         } else {
+            //匹配地图上面的
             let tail_map_ptr = self_mut.tile_map.borrow_mut();
             let map_cell = tail_map_ptr.map_cells.get(map_cell_index.unwrap()).unwrap();
             for cter in self_mut.battle_cter.values_mut() {

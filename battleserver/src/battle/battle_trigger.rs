@@ -12,6 +12,7 @@ use crate::battle::battle_skill::Skill;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::robot::RememberCell;
 use crate::room::character::BattleCharacter;
+use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
@@ -648,22 +649,29 @@ impl TriggerEvent for BattleData {
             let con_temp_mgr = crate::TEMPLATES.constant_temp_mgr();
             let res = con_temp_mgr.temps.get("max_grade");
             let mut max_grade = 2;
-            match res {
-                None => {
-                    warn!("max_grade config is None!");
-                }
-                Some(res) => {
-                    max_grade = match u8::from_str(res.value.as_str()) {
-                        Ok(res) => res,
-                        Err(e) => {
-                            warn!("{:?}", e);
-                            max_grade
+            if self.room_type == RoomType::OneVOneVOneVOneMatch {
+                match res {
+                    None => {
+                        warn!("max_grade config is None!");
+                    }
+                    Some(res) => {
+                        max_grade = match u8::from_str(res.value.as_str()) {
+                            Ok(res) => res,
+                            Err(e) => {
+                                warn!("{:?}", e);
+                                max_grade
+                            }
                         }
                     }
                 }
             }
+
             for sp in rank_vec_temp.iter_mut() {
                 sp.summary_rank = index as u8;
+                //不是匹配房间不结算段位，积分
+                if self.room_type != RoomType::OneVOneVOneVOneMatch {
+                    continue;
+                }
                 //进行结算
                 if is_punishment {
                     reward_score = punishment_score;

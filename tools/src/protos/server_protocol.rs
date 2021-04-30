@@ -1134,7 +1134,8 @@ impl ::protobuf::reflect::ProtobufValue for B_S_SUMMARY {
 #[derive(PartialEq,Clone,Default)]
 pub struct B_R_SUMMARY {
     // message fields
-    pub summary_datas: ::protobuf::RepeatedField<super::base::SummaryDataPt>,
+    pub room_type: u32,
+    pub room_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1151,39 +1152,39 @@ impl B_R_SUMMARY {
         ::std::default::Default::default()
     }
 
-    // repeated .protos.SummaryDataPt summary_datas = 1;
+    // uint32 room_type = 1;
 
 
-    pub fn get_summary_datas(&self) -> &[super::base::SummaryDataPt] {
-        &self.summary_datas
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
     }
-    pub fn clear_summary_datas(&mut self) {
-        self.summary_datas.clear();
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_summary_datas(&mut self, v: ::protobuf::RepeatedField<super::base::SummaryDataPt>) {
-        self.summary_datas = v;
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
     }
 
-    // Mutable pointer to the field.
-    pub fn mut_summary_datas(&mut self) -> &mut ::protobuf::RepeatedField<super::base::SummaryDataPt> {
-        &mut self.summary_datas
+    // uint32 room_id = 2;
+
+
+    pub fn get_room_id(&self) -> u32 {
+        self.room_id
+    }
+    pub fn clear_room_id(&mut self) {
+        self.room_id = 0;
     }
 
-    // Take field
-    pub fn take_summary_datas(&mut self) -> ::protobuf::RepeatedField<super::base::SummaryDataPt> {
-        ::std::mem::replace(&mut self.summary_datas, ::protobuf::RepeatedField::new())
+    // Param is passed by value, moved
+    pub fn set_room_id(&mut self, v: u32) {
+        self.room_id = v;
     }
 }
 
 impl ::protobuf::Message for B_R_SUMMARY {
     fn is_initialized(&self) -> bool {
-        for v in &self.summary_datas {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
         true
     }
 
@@ -1192,7 +1193,18 @@ impl ::protobuf::Message for B_R_SUMMARY {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.summary_datas)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1206,21 +1218,24 @@ impl ::protobuf::Message for B_R_SUMMARY {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.summary_datas {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.room_type, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.room_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.room_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.summary_datas {
-            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
+        if self.room_type != 0 {
+            os.write_uint32(1, self.room_type)?;
+        }
+        if self.room_id != 0 {
+            os.write_uint32(2, self.room_id)?;
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -1259,10 +1274,15 @@ impl ::protobuf::Message for B_R_SUMMARY {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SummaryDataPt>>(
-                "summary_datas",
-                |m: &B_R_SUMMARY| { &m.summary_datas },
-                |m: &mut B_R_SUMMARY| { &mut m.summary_datas },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "room_type",
+                |m: &B_R_SUMMARY| { &m.room_type },
+                |m: &mut B_R_SUMMARY| { &mut m.room_type },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "room_id",
+                |m: &B_R_SUMMARY| { &m.room_id },
+                |m: &mut B_R_SUMMARY| { &mut m.room_id },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<B_R_SUMMARY>(
                 "B_R_SUMMARY",
@@ -1280,7 +1300,8 @@ impl ::protobuf::Message for B_R_SUMMARY {
 
 impl ::protobuf::Clear for B_R_SUMMARY {
     fn clear(&mut self) {
-        self.summary_datas.clear();
+        self.room_type = 0;
+        self.room_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -2052,7 +2073,7 @@ impl ::protobuf::reflect::ProtobufValue for R_G_SYNC_RANK {
 #[derive(PartialEq,Clone,Default)]
 pub struct R_S_UPDATE_SEASON {
     // message fields
-    pub season_id: u32,
+    pub season_id: i32,
     pub round: u32,
     pub next_update_time: u64,
     // special fields
@@ -2071,10 +2092,10 @@ impl R_S_UPDATE_SEASON {
         ::std::default::Default::default()
     }
 
-    // uint32 season_id = 1;
+    // int32 season_id = 1;
 
 
-    pub fn get_season_id(&self) -> u32 {
+    pub fn get_season_id(&self) -> i32 {
         self.season_id
     }
     pub fn clear_season_id(&mut self) {
@@ -2082,7 +2103,7 @@ impl R_S_UPDATE_SEASON {
     }
 
     // Param is passed by value, moved
-    pub fn set_season_id(&mut self, v: u32) {
+    pub fn set_season_id(&mut self, v: i32) {
         self.season_id = v;
     }
 
@@ -2130,7 +2151,7 @@ impl ::protobuf::Message for R_S_UPDATE_SEASON {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_int32()?;
                     self.season_id = tmp;
                 },
                 2 => {
@@ -2175,7 +2196,7 @@ impl ::protobuf::Message for R_S_UPDATE_SEASON {
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
         if self.season_id != 0 {
-            os.write_uint32(1, self.season_id)?;
+            os.write_int32(1, self.season_id)?;
         }
         if self.round != 0 {
             os.write_uint32(2, self.round)?;
@@ -2221,7 +2242,7 @@ impl ::protobuf::Message for R_S_UPDATE_SEASON {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                 "season_id",
                 |m: &R_S_UPDATE_SEASON| { &m.season_id },
                 |m: &mut R_S_UPDATE_SEASON| { &mut m.season_id },
@@ -2443,21 +2464,22 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     erBattlePtR\x03pbp\"z\n\x0bB_S_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\
     \x01(\rR\x08roomType\x12\x14\n\x05cters\x18\x02\x20\x03(\rR\x05cters\x12\
     8\n\x0csummary_data\x18\x03\x20\x01(\x0b2\x15.protos.SummaryDataPtR\x0bs\
-    ummaryData\"I\n\x0bB_R_SUMMARY\x12:\n\rsummary_datas\x18\x01\x20\x03(\
-    \x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"\xa0\x02\n\x0ePlayerBat\
-    tlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick\
-    _name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01\
-    (\rR\x05grade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\x01(\rR\ngradeFrame\
-    \x12\x12\n\x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\n\x06league\x18\x06\
-    \x20\x01(\x0b2\x10.protos.LeaguePtR\x06league\x128\n\x0cpunish_match\x18\
-    \x07\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05ct\
-    ers\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G\
-    _PUNISH_MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.Pu\
-    nishMatchPtR\x0bpunishMatch\"\x0f\n\rR_G_SYNC_RANK\"p\n\x11R_S_UPDATE_SE\
-    ASON\x12\x1b\n\tseason_id\x18\x01\x20\x01(\rR\x08seasonId\x12\x14\n\x05r\
-    ound\x18\x02\x20\x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\
-    \x01(\x04R\x0enextUpdateTime\"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnic\
-    k_name\x18\x01\x20\x01(\tR\x08nickNameb\x06proto3\
+    ummaryData\"C\n\x0bB_R_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\
+    \x08roomType\x12\x17\n\x07room_id\x18\x02\x20\x01(\rR\x06roomId\"\xa0\
+    \x02\n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
+    rId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05gr\
+    ade\x18\x03\x20\x01(\rR\x05grade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\
+    \x01(\rR\ngradeFrame\x12\x12\n\x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\
+    \n\x06league\x18\x06\x20\x01(\x0b2\x10.protos.LeaguePtR\x06league\x128\n\
+    \x0cpunish_match\x18\x07\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpuni\
+    shMatch\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\
+    \x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_match\x18\x01\x20\
+    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"\x0f\n\rR_G_SYNC_RA\
+    NK\"p\n\x11R_S_UPDATE_SEASON\x12\x1b\n\tseason_id\x18\x01\x20\x01(\x05R\
+    \x08seasonId\x12\x14\n\x05round\x18\x02\x20\x01(\rR\x05round\x12(\n\x10n\
+    ext_update_time\x18\x03\x20\x01(\x04R\x0enextUpdateTime\"3\n\x14G_S_MODI\
+    FY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickNameb\x06pr\
+    oto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -101,6 +101,8 @@ pub enum RoomCode {
     ConfirmIntoRoom = 20015,
     //取消匹配
     CancelSearch = 20016,
+    //战斗T人通知
+    BattleKickMember = 20017,
     //--------------------------------------以下战斗相关---------------------------
     //战斗结算
     Summary = 21000,

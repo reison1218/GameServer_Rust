@@ -791,7 +791,7 @@ impl ::protobuf::reflect::ProtobufValue for S_ROOM {
 pub struct C_ROOM_SETTING {
     // message fields
     pub set_type: u32,
-    pub value: u32,
+    pub value: i32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -823,10 +823,10 @@ impl C_ROOM_SETTING {
         self.set_type = v;
     }
 
-    // uint32 value = 2;
+    // int32 value = 2;
 
 
-    pub fn get_value(&self) -> u32 {
+    pub fn get_value(&self) -> i32 {
         self.value
     }
     pub fn clear_value(&mut self) {
@@ -834,7 +834,7 @@ impl C_ROOM_SETTING {
     }
 
     // Param is passed by value, moved
-    pub fn set_value(&mut self, v: u32) {
+    pub fn set_value(&mut self, v: i32) {
         self.value = v;
     }
 }
@@ -859,7 +859,7 @@ impl ::protobuf::Message for C_ROOM_SETTING {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_int32()?;
                     self.value = tmp;
                 },
                 _ => {
@@ -890,7 +890,7 @@ impl ::protobuf::Message for C_ROOM_SETTING {
             os.write_uint32(1, self.set_type)?;
         }
         if self.value != 0 {
-            os.write_uint32(2, self.value)?;
+            os.write_int32(2, self.value)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -935,7 +935,7 @@ impl ::protobuf::Message for C_ROOM_SETTING {
                 |m: &C_ROOM_SETTING| { &m.set_type },
                 |m: &mut C_ROOM_SETTING| { &mut m.set_type },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                 "value",
                 |m: &C_ROOM_SETTING| { &m.value },
                 |m: &mut C_ROOM_SETTING| { &mut m.value },
@@ -6092,7 +6092,7 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
     \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
     \x0e.protos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\
-    \x18\x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\
+    \x18\x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\
     \x05value\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\
     \x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\
     \x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\

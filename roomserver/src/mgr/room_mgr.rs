@@ -1,7 +1,7 @@
 use crate::handlers::room_handler::{
-    cancel_search_room, change_team, choice_skills, choose_character, confirm_into_room,
-    create_room, emoji, join_room, kick_member, leave_room, off_line, prepare_cancel, reload_temps,
-    room_setting, search_room, start, summary, update_season,
+    battle_kick_member, cancel_search_room, change_team, choice_skills, choose_character,
+    confirm_into_room, create_room, emoji, join_room, kick_member, leave_room, off_line,
+    prepare_cancel, reload_temps, room_setting, search_room, start, summary, update_season,
 };
 use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
@@ -44,6 +44,22 @@ impl RoomMgr {
         };
         rm.cmd_init();
         rm
+    }
+
+    pub fn get_room_mut(&mut self, room_type: RoomType, room_id: u32) -> anyhow::Result<&mut Room> {
+        let res = match room_type {
+            RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
+            RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            _ => None,
+        };
+        if res.is_none() {
+            anyhow::bail!(
+                "there is no Room! room_type:{:?},room_id:{}",
+                room_type,
+                room_id
+            )
+        }
+        Ok(res.unwrap())
     }
 
     pub fn rm_room_without_push(&mut self, room_type: RoomType, room_id: u32) {
@@ -92,6 +108,7 @@ impl RoomMgr {
         }
         let room = room.unwrap();
         let room_id = room.get_room_id();
+        let room_type = room.get_room_type();
         room.remove_member_without_push(user_id);
         self.player_room.remove(&user_id);
         info!(
@@ -101,7 +118,11 @@ impl RoomMgr {
         let need_rm_room;
         if room.is_empty() {
             need_rm_room = true;
-        } else if room.state == RoomState::ChoiceIndex && room.members.len() == 1 {
+        } else if room.state == RoomState::ChoiceIndex
+            && (room.members.len() == 1 && room_type == RoomType::OneVOneVOneVOneMatch)
+        {
+            need_rm_room = true;
+        } else if room_type == RoomType::OneVOneVOneVOneCustom && user_id == room.get_owner_id() {
             need_rm_room = true;
         } else {
             need_rm_room = false;
@@ -258,7 +279,10 @@ impl RoomMgr {
             .insert(RoomCode::ConfirmIntoRoom.into_u32(), confirm_into_room);
         //结算处理
         self.cmd_map.insert(RoomCode::Summary.into_u32(), summary);
-        //开始游戏
+        //开始游戏 
         self.cmd_map.insert(RoomCode::StartGame.into_u32(), start);
+        //战斗服通知T人
+        self.cmd_map
+            .insert(RoomCode::BattleKickMember.into_u32(), battle_kick_member);
     }
 }

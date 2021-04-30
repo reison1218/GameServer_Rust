@@ -24,9 +24,9 @@ use tools::protos::room::{
     S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_PUNISH_MATCH_NOTICE, S_ROOM_SETTING,
     S_START,
 };
+use tools::protos::server_protocol::B_R_SUMMARY;
 use tools::protos::server_protocol::{
-    B_R_G_PUNISH_MATCH, B_R_SUMMARY, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM,
-    R_S_UPDATE_SEASON,
+    B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_S_UPDATE_SEASON,
 };
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
@@ -76,7 +76,7 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let round_season_id = round_season_id.unwrap();
-    let res = u32::from_str(round_season_id.value.as_str());
+    let res = i32::from_str(round_season_id.value.as_str());
     if let Err(e) = res {
         error!("{:?}", e);
         return;
@@ -151,11 +151,16 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
                 warn!("victory_condition is error!");
                 return;
             }
-            let season_temp = crate::TEMPLATES.season_temp_mgr().get_temp(&season_id);
-            if let Err(err) = season_temp {
-                warn!("{:?}", err);
-                return;
+            if season_id > 0 {
+                let season_temp = crate::TEMPLATES
+                    .season_temp_mgr()
+                    .get_temp(&(season_id as u32));
+                if let Err(err) = season_temp {
+                    warn!("{:?}", err);
+                    return;
+                }
             }
+
             let turn_limit_time_id = room_setting_pt.turn_limit_time as u8;
             let turn_limit_time;
             let res = crate::TEMPLATES
@@ -269,9 +274,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     //如果战斗已经开始了,交给战斗服处理
     if room_state == RoomState::ChoiceIndex {
         //如果是匹配房，删除玩家数据，不需要推送，战斗服已经处理过了
-        if room_type == RoomType::OneVOneVOneVOneMatch {
-            rm.remove_member_without_push(user_id);
-        }
+        rm.remove_member_without_push(user_id);
         //通知战斗服进行处理
         rm.send_2_server(BattleCode::LeaveRoom.into_u32(), user_id, Vec::new());
         return;
@@ -513,6 +516,13 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     room.prepare_cancel(&user_id, prepare);
+}
+
+pub fn battle_kick_member(rm: &mut RoomMgr, packet: Packet) {
+    let user_id = packet.get_user_id();
+
+    //如果是匹配房，删除玩家数据，不需要推送，战斗服已经处理过了
+    rm.remove_member_without_push(user_id);
 }
 
 ///开始游戏
@@ -839,9 +849,9 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
             }
             RoomSettingType::SeasonId => {
                 let season_id = proto_value;
-                if season_id != 0 {
+                if season_id > 0 {
                     let season_temp_mgr = crate::TEMPLATES.season_temp_mgr();
-                    let res = season_temp_mgr.get_temp(&season_id);
+                    let res = season_temp_mgr.get_temp(&(season_id as u32));
                     if let Err(err) = res {
                         warn!("{:?}", err);
                         return;
@@ -1253,48 +1263,37 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
 
 ///结算
 pub fn summary(rm: &mut RoomMgr, packet: Packet) {
-    let user_id = packet.get_user_id();
-    if user_id == 0 {
-        warn!("summary,the user_id is 0!");
+    let mut proto = B_R_SUMMARY::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
         return;
     }
-    let room = rm.get_room_mut_by_user_id(&user_id);
-    if let None = room {
+    let room_type = proto.room_type;
+    let room_type = RoomType::try_from(room_type as u8);
+    if let Err(e) = room_type {
+        error!("{:?}", e);
+        return;
+    }
+    let room_type = room_type.unwrap();
+    let room_id = proto.room_id;
+    let room = rm.get_room_mut(room_type, room_id);
+    if let Err(err) = room {
+        warn!("{:?}", err);
         return;
     }
     let room = room.unwrap();
-    let room_type = room.get_room_type();
-    let room_id = room.get_room_id();
 
     match room_type {
         //如果是匹配房，直接删除房间数据
         RoomType::OneVOneVOneVOneMatch => {
             rm.rm_room_without_push(room_type, room_id);
         }
-        //如果是自定义房间，更新结算数据
+        //如果是自定义房间，重制玩家数据
         RoomType::OneVOneVOneVOneCustom => {
-            //如果是自定义房间
             room.state = RoomState::AwaitReady;
-            let mut brs = B_R_SUMMARY::new();
-            let res = brs.merge_from_bytes(packet.get_data());
-            if let Err(e) = res {
-                error!("{:?}", e);
-                return;
-            }
-            for sd in brs.summary_datas.iter() {
-                let user_id = sd.user_id;
-                let member = room.get_member_mut(&user_id);
-                if let None = member {
-                    continue;
-                }
-                let member = member.unwrap();
+            for member in room.members.values_mut() {
                 member.chose_cter = Character::default();
-                member.grade = sd.grade as u8;
-                member.league.update(
-                    sd.get_league().get_league_id() as i8,
-                    sd.get_league().league_score,
-                    sd.get_league().league_time,
-                );
                 member.state = MemberState::NotReady;
             }
         }
