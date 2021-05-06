@@ -257,7 +257,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
         if !is_summary && current_cter_is_died {
             room.battle_data.next_turn(true);
-        } else {
+        } else if action_type == ActionType::Skip && room.state == RoomState::BattleStarted {
             room.battle_data.send_battle_turn_notice();
         }
     }
