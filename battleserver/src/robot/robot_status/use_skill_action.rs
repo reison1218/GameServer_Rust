@@ -52,17 +52,17 @@ impl RobotStatusAction for UseSkillRobotAction {
             return;
         }
         let battle_data = battle_data.unwrap();
-        let cter = battle_data.battle_cter.get(&self.robot_id);
+        let cter = battle_data.battle_player.get(&self.robot_id);
         if let None = cter {
             warn!("robot's cter is None!robot_id:{}", self.robot_id);
             return;
         }
-        let cter = cter.unwrap();
-        if cter.is_died() {
+        let battle_player = cter.unwrap();
+        if battle_player.is_died() {
             return;
         }
-        let robot = cter.robot_data.as_ref().unwrap();
-        for skill in cter.skills.values() {
+        let robot = battle_player.robot_data.as_ref().unwrap();
+        for skill in battle_player.cter.skills.values() {
             let _ = robot_use_skill(battle_data, skill, robot);
         }
     }

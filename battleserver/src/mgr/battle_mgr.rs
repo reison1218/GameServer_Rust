@@ -54,7 +54,7 @@ impl BattleMgr {
         let room = self.get_room_ref(&user_id);
         match room {
             Some(room) => {
-                let cter = room.get_battle_cter_ref(&user_id);
+                let cter = room.get_battle_player_ref(&user_id);
                 if let Some(cter) = cter {
                     if cter.is_robot() {
                         return;

@@ -11,7 +11,7 @@ use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -95,13 +95,13 @@ impl RobotData {
         self.battle_data.clone()
     }
 
-    pub fn get_battle_cter_mut_ref(&self) -> &mut BattleCharacter {
+    pub fn get_battle_player_mut_ref(&self) -> &mut BattlePlayer {
         unsafe {
             let res = self
                 .battle_data
                 .as_ref()
                 .unwrap()
-                .battle_cter
+                .battle_player
                 .get(&self.robot_id)
                 .unwrap();
             res.get_mut_ref()
@@ -110,7 +110,7 @@ impl RobotData {
 
     ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
     pub fn thinking_do_something(&self) {
-        let cter = self.get_battle_cter_mut_ref();
+        let cter = self.get_battle_player_mut_ref();
         self.goal_think
             .arbitrate(cter, self.sender.clone(), self.clone_battle_data_ptr());
     }

@@ -217,10 +217,31 @@ impl SkillConsumeType {
 ///回合行为类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
+pub enum BattlePlayerState {
+    Normal = 0,
+    Eliminate = 1,
+    OffLine = 2, //离线
+}
+
+impl Default for BattlePlayerState {
+    fn default() -> Self {
+        BattlePlayerState::Normal
+    }
+}
+
+impl BattlePlayerState {
+    pub fn into_u8(self) -> u8 {
+        let value: u8 = self.into();
+        value
+    }
+}
+
+///角色状态
+#[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum BattleCterState {
     Alive = 0,
     Die = 1,
-    OffLine = 2, //离线
 }
 
 impl Default for BattleCterState {

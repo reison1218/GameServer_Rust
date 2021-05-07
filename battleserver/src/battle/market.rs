@@ -27,13 +27,13 @@ pub enum MerchandisType {
 
 ///购物
 pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u32) {
-    let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
     let merchandise_temp = crate::TEMPLATES.merchandise_temp_mgr();
     let temp = merchandise_temp.get_temp(&merchandise_id).unwrap();
     //扣金币
-    cter.add_gold(-temp.price);
+    battle_player.add_gold(-temp.price);
     //添加购买次数
-    cter.merchandise_data.add_buy_times(merchandise_id);
+    battle_player.merchandise_data.add_buy_times(merchandise_id);
     let effect_value = temp.effect_value;
     //开始执行给玩家商品
     let mt = MerchandisType::try_from(temp.effect_type).unwrap();
@@ -42,14 +42,14 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
             let _ = battle_data.add_hp(Some(user_id), user_id, effect_value as i16, None);
         }
         MerchandisType::Attack => {
-            cter.base_attr.atk += temp.effect_value as u8;
+            battle_player.cter.base_attr.atk += temp.effect_value as u8;
         }
         MerchandisType::SkillCd => {
             //玩家技能cd
-            cter.sub_skill_cd(Some(effect_value as i8));
+            battle_player.cter.sub_skill_cd(Some(effect_value as i8));
         }
         MerchandisType::Energy => {
-            cter.add_energy(effect_value as i8);
+            battle_player.cter.add_energy(effect_value as i8);
         }
         MerchandisType::Mission => {
             random_mission(battle_data, user_id);

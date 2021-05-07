@@ -4,7 +4,7 @@ use crate::battle::battle_skill::Skill;
 use crate::battle::market::handler_buy;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::mgr::RankInfo;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crate::room::map_data::MapCellType;
 use crate::room::room::Room;
 use crate::room::MemberLeaveNoticeType;
@@ -50,14 +50,14 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let battle_data = &mut room.battle_data;
-    let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
-    let cter_id = cter.base_attr.cter_id;
+    let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
+    let cter_id = battle_player.get_cter_id();
     //校验玩家死了没
-    if cter.is_died() {
+    if battle_player.is_died() {
         return;
     }
     //校验选了站位没
-    let cter_index = cter.index_data.map_cell_index;
+    let cter_index = battle_player.cter.index_data.map_cell_index;
     if cter_index.is_none() {
         error!("this player index is None!user_id:{}", user_id);
         return;
@@ -77,7 +77,9 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     let merchandise_temp = temp.unwrap();
     let turn_limit_buy_times = merchandise_temp.turn_limit_buy_times;
     //校验是否可以购买
-    let buy_times = cter.merchandise_data.get_turn_buy_times(merchandise_id);
+    let buy_times = battle_player
+        .merchandise_data
+        .get_turn_buy_times(merchandise_id);
     if buy_times >= turn_limit_buy_times {
         warn!("could not buy this merchandise!turn_limit_buy_times:{},user_id:{},user_turn_buy_times:{}",user_id,turn_limit_buy_times,buy_times);
         return;
@@ -89,7 +91,10 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     if !merchandise_temp.room_type.contains(&room_type) {
         warn!(
             "the room_type is error!merchandis_id:{},room_type:{:?};cter_id:{} room_type:{}",
-            merchandise_id, merchandise_temp.room_type, cter.base_attr.cter_id, room_type
+            merchandise_id,
+            merchandise_temp.room_type,
+            battle_player.get_cter_id(),
+            room_type
         );
         return;
     }
@@ -108,10 +113,10 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     //校验金币是否足够
-    if cter.gold < price {
+    if battle_player.gold < price {
         warn!(
             "this player's gold is not enough!merchandis_id:{}'s price is {},player's gold is {}",
-            merchandise_id, price, cter.gold
+            merchandise_id, price, battle_player.gold
         );
         return;
     }
@@ -247,11 +252,11 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     }
 
     unsafe {
-        let cter = room.battle_data.get_battle_cter(None, false).unwrap();
-        let current_cter_is_died = cter.is_died();
+        let battle_player = room.battle_data.get_battle_player(None, false).unwrap();
+        let current_cter_is_died = battle_player.is_died();
         //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
-        if !current_cter_is_died || cter.robot_data.is_some() {
-            cter.robot_start_action();
+        if !current_cter_is_died || battle_player.robot_data.is_some() {
+            battle_player.robot_start_action();
         }
         //判断是否进行结算
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
@@ -278,7 +283,7 @@ pub unsafe fn process_summary(bm: &mut BattleMgr, room: &mut Room) -> bool {
     }
     let room = room.unwrap();
 
-    for user_id in room.battle_data.battle_cter.keys() {
+    for user_id in room.battle_data.battle_player.keys() {
         bm.player_room.remove(user_id);
     }
     true
@@ -330,12 +335,12 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
         return;
     }
 
-    let battle_cter = room.get_battle_cter_mut_ref(&user_id);
-    if battle_cter.is_none() {
-        warn!("battle_cter is not find!user_id:{}", user_id);
+    let battle_player = room.get_battle_player_mut_ref(&user_id);
+    if battle_player.is_none() {
+        warn!("battle_player is not find!user_id:{}", user_id);
         return;
     }
-    let battle_cter = battle_cter.unwrap();
+    let battle_cter = battle_player.unwrap();
 
     let mut cp = C_POS::new();
     let res = cp.merge_from_bytes(packet.get_data());
@@ -346,7 +351,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
     let skill_id = cp.skill_id;
     let pos_type = cp.field_type;
     //校验技能
-    let res = battle_cter.skills.contains_key(&skill_id);
+    let res = battle_cter.cter.skills.contains_key(&skill_id);
     if !res {
         warn!(
             "this battle_cter has no this skill!cter_id:{},skill_id:{}",
@@ -379,26 +384,26 @@ fn use_item(
     targets: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id);
+    let battle_cter = rm.battle_data.battle_player.get(&user_id);
     if let None = battle_cter {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
-    let battle_cter = battle_cter.unwrap();
+    let battle_player = battle_cter.unwrap();
 
-    if battle_cter.is_locked() {
+    if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
 
-    if battle_cter.items.is_empty() {
+    if battle_player.cter.items.is_empty() {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
-    let res = battle_cter.items.contains_key(&item_id);
+    let res = battle_player.cter.items.contains_key(&item_id);
     if !res {
         let str = format!(
             "this user not have this item!item_id:{},user_id:{}",
@@ -419,7 +424,7 @@ fn open_map_cell(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     let battle_data = rm.battle_data.borrow();
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
     let cter_index = battle_cter.get_map_cell_index();
     if battle_cter.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
@@ -484,7 +489,7 @@ fn attack(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //先校验玩家是否可以进行攻击
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id).unwrap();
+    let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
     if battle_cter.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
@@ -516,20 +521,20 @@ fn use_skill(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //校验技能id有效性
-    let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
-    if battle_cter.is_locked() {
+    let battle_player = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
+    if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
-    let skill = battle_cter.skills.get(&skill_id);
+    let skill = battle_player.cter.skills.get(&skill_id);
     if skill.is_none() {
         warn!("this skill is none!skill_id:{}", user_id);
         anyhow::bail!("")
     }
     //校验技能可用状态
     let skill = skill.unwrap();
-    let res = check_skill_useable(battle_cter, skill);
+    let res = check_skill_useable(battle_player, skill);
     if let Err(e) = res {
         warn!("{:?}", e);
         anyhow::bail!("")
@@ -566,7 +571,7 @@ fn skip_turn(
     }
 
     //拿到战斗角色
-    let battle_cter = rm.battle_data.battle_cter.get(&user_id);
+    let battle_cter = rm.battle_data.battle_player.get(&user_id);
     if battle_cter.is_none() {
         warn!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
         anyhow::bail!("")
@@ -593,13 +598,13 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let room = res.unwrap();
-    let cter = room.battle_data.battle_cter.get(&user_id);
+    let cter = room.battle_data.battle_player.get(&user_id);
     if let None = cter {
         warn!("can not find cter!user_id:{}", user_id);
         return;
     }
-    let cter = cter.unwrap();
-    let cter_id = cter.base_attr.cter_id;
+    let battle_player = cter.unwrap();
+    let cter_id = battle_player.get_cter_id();
 
     let mut ce = C_EMOJI::new();
     let res = ce.merge_from_bytes(packet.get_data());
@@ -782,8 +787,8 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) {
     }
 
     //校验他选过没有
-    let member = room.get_battle_cter_ref(&user_id).unwrap();
-    if member.map_cell_index_is_choiced() {
+    let member = room.get_battle_player_ref(&user_id).unwrap();
+    if member.cter.map_cell_index_is_choiced() {
         warn!("this player is already choice index!user_id:{}", user_id);
         return;
     }
@@ -797,7 +802,7 @@ fn unlock_oper(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
     //先校验玩家是否可以进行攻击
-    let battle_cter = rm.battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let battle_cter = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
     let v = *au.action_value.get(0).unwrap();
     if battle_cter.status.locked_oper == 0 || battle_cter.status.locked_oper != v {
         anyhow::bail!("{there is no show cell skill activate!}")
@@ -809,7 +814,7 @@ fn unlock_oper(
 
 ///校验玩家
 fn check_user(rm: &Room, user_id: u32) -> bool {
-    let cter = rm.get_battle_cter_ref(&user_id);
+    let cter = rm.get_battle_player_ref(&user_id);
     if let None = cter {
         warn!(
             "user is not in the room!room_id:{},user_id:{}",
@@ -818,9 +823,9 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
         );
         return false;
     }
-    let cter = cter.unwrap();
+    let battle_player = cter.unwrap();
     //校验角色是否死亡
-    if cter.is_died() {
+    if battle_player.is_died() {
         warn!(
             "this cter is already dead!room_id:{},user_id:{}",
             rm.get_room_id(),
@@ -829,7 +834,7 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
         return false;
     }
     //校验是否选择了占位
-    if cter.index_data.map_cell_index.is_none() {
+    if battle_player.cter.index_data.map_cell_index.is_none() {
         warn!(
             "user is not choice index!room_id:{},user_id:{}",
             rm.get_room_id(),
@@ -854,23 +859,23 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
 }
 
 ///校验技能可用状态
-fn check_skill_useable(cter: &BattleCharacter, skill: &Skill) -> anyhow::Result<()> {
+fn check_skill_useable(battle_player: &BattlePlayer, skill: &Skill) -> anyhow::Result<()> {
     //校验cd
     if skill.skill_temp.consume_type != SkillConsumeType::Energy.into_u8() && skill.cd_times > 0 {
         anyhow::bail!(
             "this skill cd is not ready!cter_id:{},skill_id:{},cd:{}",
-            cter.get_cter_id(),
+            battle_player.get_cter_id(),
             skill.id,
             skill.cd_times
         )
     } else if skill.skill_temp.consume_type == SkillConsumeType::Energy.into_u8()
-        && cter.base_attr.energy < skill.skill_temp.consume_value
+        && battle_player.cter.base_attr.energy < skill.skill_temp.consume_value
     {
         anyhow::bail!(
             "this cter's energy is not enough!cter_id:{},skill_id:{},energy:{},cost_energy:{}",
-            cter.get_cter_id(),
+            battle_player.get_cter_id(),
             skill.id,
-            cter.base_attr.energy,
+            battle_player.cter.base_attr.energy,
             skill.skill_temp.consume_value
         )
     }

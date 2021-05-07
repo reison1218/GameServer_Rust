@@ -113,13 +113,13 @@ impl BattleData {
         let buff_temp = buff_temp.unwrap();
         let item_id = buff_temp.par1;
 
-        let battle_cter = self.battle_cter.get_mut(&user_id);
-        if let None = battle_cter {
+        let battle_player = self.battle_player.get_mut(&user_id);
+        if let None = battle_player {
             error!("battle_cter is not find!user_id:{}", user_id);
             return;
         }
-        let battle_cter = battle_cter.unwrap();
-        let res = battle_cter.add_item(item_id);
+        let battle_player = battle_player.unwrap();
+        let res = battle_player.cter.add_item(item_id);
         if let Err(e) = res {
             warn!("{:?}", e);
             return;
@@ -142,12 +142,12 @@ impl BattleData {
         }
         //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
         if buff_temp.target == TargetType::MapCellPlayer.into_u8() {
-            let last_map_cell_user = self.battle_cter.get_mut(&last_map_cell_user_id);
+            let last_map_cell_user = self.battle_player.get_mut(&last_map_cell_user_id);
             if let None = last_map_cell_user {
                 return;
             }
             let last_map_cell_user = last_map_cell_user.unwrap();
-            let res = last_map_cell_user.add_item(item_id);
+            let res = last_map_cell_user.cter.add_item(item_id);
             if let Err(e) = res {
                 warn!("{:?}", e);
                 return;
@@ -241,29 +241,30 @@ impl BattleData {
 
         //如果目标类型是地图块上的玩家
         if target_type == TargetType::MapCellPlayer {
-            let last_map_cell_user = self.battle_cter.get_mut(&last_map_cell_user_id);
+            let last_map_cell_user = self.battle_player.get_mut(&last_map_cell_user_id);
             if let Some(last_map_cell_user) = last_map_cell_user {
                 last_map_cell_user
+                    .cter
                     .battle_buffs
                     .buffs
                     .insert(buff.id, buff.clone());
-                let last_map_cell_user_index = last_map_cell_user.get_map_cell_index() as u32;
+                let last_map_cell_user_index = last_map_cell_user.cter.get_map_cell_index() as u32;
                 target_pt.target_value.push(last_map_cell_user_index);
                 au.targets.push(target_pt.clone());
             }
         }
-        let battle_cter = self.battle_cter.get_mut(&target_user);
-        if let None = battle_cter {
+        let battle_player = self.battle_player.get_mut(&target_user);
+        if let None = battle_player {
             warn!("can not find battle_cter!cter_id={}", target_user);
         }
-        let battle_cter = battle_cter.unwrap();
-        let battle_cter_index = battle_cter.get_map_cell_index() as u32;
+        let battle_player = battle_player.unwrap();
+        let battle_cter_index = battle_player.cter.get_map_cell_index() as u32;
         //给自己加
         target_pt.target_value.clear();
         target_pt.target_value.push(battle_cter_index);
         au.targets.push(target_pt);
 
-        battle_cter.battle_buffs.buffs.insert(buff.id, buff);
+        battle_player.cter.battle_buffs.buffs.insert(buff.id, buff);
     }
 
     ///给附近的人添加技能cd
@@ -280,23 +281,25 @@ impl BattleData {
         ep.effect_value = buff_temp.par1;
         target_pt.effects.push(ep);
         let isize_index = index as isize;
-        for cter in self.battle_cter.values_mut() {
-            if cter.get_user_id() == user_id {
+        for battle_player in self.battle_player.values_mut() {
+            if battle_player.get_user_id() == user_id {
                 continue;
             }
-            if cter.is_died() {
+            if battle_player.is_died() {
                 continue;
             }
-            let cter_index = cter.get_map_cell_index() as isize;
+            let cter_index = battle_player.cter.get_map_cell_index() as isize;
             for scope_index in TRIGGER_SCOPE_NEAR.iter() {
                 let res = isize_index + *scope_index;
                 if res != cter_index {
                     continue;
                 }
-                if cter.base_attr.max_energy > 0 {
+                if battle_player.cter.base_attr.max_energy > 0 {
                     continue;
                 }
-                cter.skills
+                battle_player
+                    .cter
+                    .skills
                     .values_mut()
                     .for_each(|skill| skill.add_cd(buff_temp.par1 as i8));
             }
@@ -365,19 +368,19 @@ impl BattleData {
         skill_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let cter = self.get_battle_cter_mut(Some(user_id), true);
-        if let Err(e) = cter {
+        let battle_player = self.get_battle_player_mut(Some(user_id), true);
+        if let Err(e) = battle_player {
             error!("{:?}", e);
             return;
         }
-        let cter = cter.unwrap();
-        let skill = cter.skills.get_mut(&skill_id);
+        let battle_player = battle_player.unwrap();
+        let skill = battle_player.cter.skills.get_mut(&skill_id);
         if let None = skill {
             return;
         }
         let skill = skill.unwrap();
         skill.cd_times = 0;
-        let cter_index = cter.get_map_cell_index() as u32;
+        let cter_index = battle_player.get_map_cell_index() as u32;
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(cter_index);
         let mut tep = TriggerEffectPt::new();
@@ -403,8 +406,8 @@ impl BattleData {
         buff_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let battle_cter = self.battle_cter.get(&target_user).unwrap();
-        if map_cell_element != battle_cter.base_attr.element {
+        let battle_player = self.battle_player.get(&target_user).unwrap();
+        if map_cell_element != battle_player.cter.base_attr.element {
             return;
         }
         let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
@@ -444,10 +447,10 @@ impl BattleData {
         if is_pair {
             energy += buff_temp.par2 as u8;
         }
-        let target_battle = self.battle_cter.get_mut(&target_user).unwrap();
-        target_battle.add_energy(energy as i8);
+        let target_player = self.battle_player.get_mut(&target_user).unwrap();
+        target_player.cter.add_energy(energy as i8);
 
-        let target_battle_index = target_battle.get_map_cell_index() as u32;
+        let target_battle_index = target_player.cter.get_map_cell_index() as u32;
 
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(target_battle_index);
@@ -484,17 +487,17 @@ impl BattleData {
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let open_cter = self.battle_cter.get_mut(&open_user);
+        let open_cter = self.battle_player.get_mut(&open_user);
         if let None = open_cter {
             error!("battle_cter not find!user_id:{}", open_user);
             return;
         }
         let open_cter = open_cter.unwrap();
 
-        let last_index = open_cter.index_data.last_map_cell_index;
-        let index = open_cter.get_map_cell_index() as u32;
+        let last_index = open_cter.cter.index_data.last_map_cell_index;
+        let index = open_cter.cter.get_map_cell_index() as u32;
 
-        if !self.battle_cter.contains_key(&match_user) {
+        if !self.battle_player.contains_key(&match_user) {
             error!("battle_cter not find!user_id:{}", match_user);
             return;
         }
@@ -561,12 +564,12 @@ impl BattleData {
             if is_pair {
                 //匹配属性一样的地图块+攻击
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
-                    let cter = self.battle_cter.get_mut(&match_user).unwrap();
+                    let battle_player = self.battle_player.get_mut(&match_user).unwrap();
                     //此处触发加攻击不用通知客户端
                     let buff_element = buff.buff_temp.par1 as u8;
-                    let cter_element = cter.base_attr.element;
+                    let cter_element = battle_player.cter.base_attr.element;
                     if buff_element == cter_element && cter_element == map_cell_element {
-                        cter.trigger_add_damage_buff(buff.id);
+                        battle_player.cter.trigger_add_damage_buff(buff.id);
                     }
                 }
             }
@@ -584,14 +587,14 @@ impl BattleData {
         let self_mut = self.get_mut_ref();
         if map_cell_index.is_none() {
             //匹配其他玩家身上的
-            for cter in self_mut.battle_cter.values_mut() {
-                if cter.is_died() {
+            for battle_player in self_mut.battle_player.values_mut() {
+                if battle_player.is_died() {
                     continue;
                 }
                 self.get_mut_ref().match_open_map_cell_buff(
-                    Some(cter.get_user_id()),
-                    cter.battle_buffs.buffs.values(),
-                    cter.get_user_id(),
+                    Some(battle_player.get_user_id()),
+                    battle_player.cter.battle_buffs.buffs.values(),
+                    battle_player.get_user_id(),
                     user_id,
                     au,
                     is_pair,
@@ -601,7 +604,7 @@ impl BattleData {
             //匹配地图上面的
             let tail_map_ptr = self_mut.tile_map.borrow_mut();
             let map_cell = tail_map_ptr.map_cells.get(map_cell_index.unwrap()).unwrap();
-            for cter in self_mut.battle_cter.values_mut() {
+            for cter in self_mut.battle_player.values_mut() {
                 if cter.is_died() {
                     continue;
                 }

@@ -2,7 +2,7 @@ use crate::battle::battle::BattleData;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::open_cell_action::OpenCellRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
@@ -11,7 +11,7 @@ pub struct OpenCellGoalEvaluator {
 }
 
 impl GoalEvaluator for OpenCellGoalEvaluator {
-    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
+    fn calculate_desirability(&self, cter: &BattlePlayer) -> u32 {
         //如果可以翻地图块，则返回期望值10
         if cter.flow_data.residue_movement_points > 0 {
             return 10;
@@ -21,7 +21,7 @@ impl GoalEvaluator for OpenCellGoalEvaluator {
 
     fn set_status(
         &self,
-        cter: &BattleCharacter,
+        cter: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {

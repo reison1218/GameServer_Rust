@@ -190,7 +190,7 @@ impl MissionData {
 
 ///随机任务
 pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
-    let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let cter = battle_data.battle_player.get_mut(&user_id).unwrap();
     let mission_temp_mgr = crate::TEMPLATES.mission_temp_mgr();
     let mut random = rand::thread_rng();
     let no_condition_missions = mission_temp_mgr.no_condition_mission();
@@ -260,7 +260,7 @@ pub fn trigger_mission(
     trigger_types: Vec<(MissionTriggerType, u16)>,
     mission_parm: (u32, u32),
 ) {
-    let cter = battle_data.battle_cter.get_mut(&user_id).unwrap();
+    let cter = battle_data.battle_player.get_mut(&user_id).unwrap();
     //如果任务是空的，或者任务完成了则直接返回
     if cter.mission_data.mission.is_none()
         || cter.mission_data.mission.as_ref().unwrap().is_complete
@@ -316,7 +316,7 @@ fn open_cell_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
     if let Err(e) = cter {
         error!("{:?}", e);
         return false;
@@ -345,7 +345,7 @@ fn pair_cell_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
     if let Err(e) = cter {
         error!("{:?}", e);
         return false;
@@ -375,7 +375,7 @@ fn skill_times_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
     if let Err(e) = cter {
         error!("{:?}", e);
         return false;
@@ -392,15 +392,15 @@ fn attack_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
-    if let Err(e) = cter {
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
         error!("{:?}", e);
         return false;
     }
-    let cter = cter.unwrap();
-    if cter.revenge_user_id == mission_parm.0 {
+    let battle_player = battle_player.unwrap();
+    if battle_player.cter.revenge_user_id == mission_parm.0 {
         //复仇
-        return cter.add_mission_progress(
+        return battle_player.add_mission_progress(
             value,
             MissionCompleteType::AttackLastTurnUser,
             mission_parm,
@@ -416,7 +416,7 @@ fn get_gold_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_cter_mut(Some(user_id), true);
+    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
     if let Err(e) = cter {
         error!("{:?}", e);
         return false;

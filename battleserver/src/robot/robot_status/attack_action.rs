@@ -55,13 +55,13 @@ impl RobotStatusAction for AttackRobotAction {
         let res = res.unwrap();
         let mut target_index: usize = 0;
         let mut cter_hp_max: i16 = 0;
-        for cter in res.battle_cter.values() {
-            if cter.get_cter_id() == self.cter_id {
+        for battle_player in res.battle_player.values() {
+            if battle_player.get_cter_id() == self.cter_id {
                 continue;
             }
-            if cter.base_attr.hp > cter_hp_max {
-                cter_hp_max = cter.base_attr.hp;
-                target_index = cter.get_map_cell_index();
+            if battle_player.cter.base_attr.hp > cter_hp_max {
+                cter_hp_max = battle_player.cter.base_attr.hp;
+                target_index = battle_player.get_map_cell_index();
             }
         }
         self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);

@@ -2,7 +2,7 @@ use crate::battle::battle::BattleData;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::choice_index_action::ChoiceIndexRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
@@ -11,9 +11,9 @@ pub struct ChoiceIndexGoalEvaluator {
 }
 
 impl GoalEvaluator for ChoiceIndexGoalEvaluator {
-    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
+    fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
         //如果没有选择站位，则期望值拉满
-        if cter.index_data.map_cell_index.is_none() {
+        if battle_player.cter.index_data.map_cell_index.is_none() {
             return 100;
         }
         0
@@ -21,7 +21,7 @@ impl GoalEvaluator for ChoiceIndexGoalEvaluator {
 
     fn set_status(
         &self,
-        cter: &BattleCharacter,
+        cter: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {

@@ -3,7 +3,7 @@ use crate::robot::goal_evaluator::attack_goal_evaluator::AttackTargetGoalEvaluat
 use crate::robot::goal_evaluator::open_cell_goal_evaluator::OpenCellGoalEvaluator;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 use log::info;
 
@@ -44,7 +44,7 @@ impl GoalThink {
     ///仲裁goal
     pub fn arbitrate(
         &self,
-        cter: &BattleCharacter,
+        battle_player: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
@@ -57,7 +57,7 @@ impl GoalThink {
         //开始执行仲裁
         for index in 0..self.goal_evaluators.len() {
             let ge = self.goal_evaluators.get(index).unwrap();
-            let desirabilty = ge.calculate_desirability(cter);
+            let desirabilty = ge.calculate_desirability(battle_player);
             if desirabilty > best_desirabilty {
                 best_desirabilty = desirabilty;
                 best_index = index;
@@ -66,6 +66,6 @@ impl GoalThink {
         //获得仲裁结果
         let best_goal_evaluator = self.goal_evaluators.get(best_index).unwrap();
         //设置状态
-        best_goal_evaluator.set_status(cter, sender, battle_data);
+        best_goal_evaluator.set_status(battle_player, sender, battle_data);
     }
 }

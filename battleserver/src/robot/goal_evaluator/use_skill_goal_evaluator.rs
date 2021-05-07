@@ -3,7 +3,7 @@ use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_skill::skill_condition;
 use crate::robot::robot_status::use_skill_action::UseSkillRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
@@ -11,9 +11,10 @@ pub struct UseSkillGoalEvaluator {
     // desirability: AtomicCell<u32>,
 }
 
-pub fn get_battle_data_ref(cter: &BattleCharacter) -> &BattleData {
+pub fn get_battle_data_ref(battle_player: &BattlePlayer) -> &BattleData {
     unsafe {
-        cter.robot_data
+        battle_player
+            .robot_data
             .as_ref()
             .unwrap()
             .battle_data
@@ -23,11 +24,11 @@ pub fn get_battle_data_ref(cter: &BattleCharacter) -> &BattleData {
 }
 
 impl GoalEvaluator for UseSkillGoalEvaluator {
-    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32 {
+    fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
         //如果可以使用技能，则直接期望值拉满
-        let robot = cter.robot_data.as_ref().unwrap();
-        let battle_data = get_battle_data_ref(cter);
-        for skill in cter.skills.values() {
+        let robot = battle_player.robot_data.as_ref().unwrap();
+        let battle_data = get_battle_data_ref(battle_player);
+        for skill in battle_player.cter.skills.values() {
             let res = skill_condition(battle_data, skill, robot);
             if res {
                 return 100;
@@ -38,11 +39,11 @@ impl GoalEvaluator for UseSkillGoalEvaluator {
 
     fn set_status(
         &self,
-        cter: &BattleCharacter,
+        battle_player: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
         let aa = UseSkillRobotAction::new(battle_data, sender);
-        cter.change_robot_status(Box::new(aa));
+        battle_player.change_robot_status(Box::new(aa));
     }
 }

@@ -19,16 +19,10 @@ use std::collections::HashMap;
 #[repr(u8)]
 pub enum TransformInheritType {
     None = 0,
-    Other = 1,
-    Hp = 2,
-    Attack = 3,
-    ResidueOpenTimes = 4,
-    AttackState = 5,
-    MapIndex = 6,
-    Energy = 7,
-    Gold = 8,
-    Mission = 9,
-    Buff = 10,
+    Hp = 1,
+    Attack = 2,
+    MapIndex = 3,
+    Energy = 4,
 }
 
 impl TransformInheritType {

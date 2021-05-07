@@ -4,7 +4,8 @@ use serde_json::{Map, Value};
 use tools::cmd_code::BattleCode;
 
 use crate::battle::battle_enum::TargetType;
-use crate::room::{character::BattleCharacter, map_data::MapCellType};
+use crate::room::character::BattlePlayer;
+use crate::room::map_data::MapCellType;
 use crate::{
     battle::{battle::BattleData, battle_skill::Skill},
     room::map_data::TileMap,
@@ -59,12 +60,12 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         }
         //判断是否配对
         i if [211].contains(&i) => {
-            let cter = battle_data.battle_cter.get(&robot_id).unwrap();
-            can_use = check_pair(cter);
+            let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+            can_use = check_pair(battle_player);
         }
         //翻两个地图块之后进行判断，如果记忆队列中有地图块，使用技能
         i if [221].contains(&i) => {
-            let cter = battle_data.battle_cter.get(&robot_id).unwrap();
+            let cter = battle_data.battle_player.get(&robot_id).unwrap();
             can_use =
                 cter.flow_data.open_map_cell_vec.len() >= 2 && robot.remember_map_cell.len() > 0;
         }
@@ -95,13 +96,13 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
 pub fn skill_target(battle_data: &BattleData, skill: &Skill, robot: &RobotData) -> Vec<usize> {
     let skill_id = skill.id;
     let robot_id = robot.robot_id;
-    let cter = battle_data.get_battle_cter(Some(robot_id), true).unwrap();
+    let battle_player = battle_data.get_battle_player(Some(robot_id), true).unwrap();
     let mut targets = vec![];
     //匹配技能id进行不同的目标选择
     match skill_id {
         //目标是自己
         i if [211, 313, 321].contains(&i) => {
-            targets.push(cter.index_data.map_cell_index.unwrap());
+            targets.push(battle_player.cter.index_data.map_cell_index.unwrap());
         }
         //除自己外最大血量的目标
         i if [123, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
@@ -251,19 +252,19 @@ pub fn rand_remember_map_cell(robot_data: &RobotData) -> usize {
 ///获得除robot_id生命值最高的角色位置
 pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize> {
     let mut res = (0, 0);
-    for cter in battle_data.battle_cter.values() {
+    for battle_player in battle_data.battle_player.values() {
         //排除死掉的
-        if cter.is_died() {
+        if battle_player.is_died() {
             continue;
         }
         //排除给定robot_id的
-        if cter.base_attr.user_id == robot_id {
+        if battle_player.user_id == robot_id {
             continue;
         }
         //对比血量
-        if cter.base_attr.hp > res.0 {
-            res.0 = cter.base_attr.hp;
-            res.1 = cter.index_data.map_cell_index.unwrap();
+        if battle_player.cter.base_attr.hp > res.0 {
+            res.0 = battle_player.cter.base_attr.hp;
+            res.1 = battle_player.cter.index_data.map_cell_index.unwrap();
         }
     }
     //校验返回结果
@@ -274,13 +275,13 @@ pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize>
 }
 
 ///检测是否匹配了
-pub fn check_pair(cter: &BattleCharacter) -> bool {
+pub fn check_pair(cter: &BattlePlayer) -> bool {
     cter.status.is_pair
 }
 
 ///有没有相邻的玩家
 pub fn no_near_user(battle_data: &BattleData, robot_id: u32) -> bool {
-    let cter = battle_data.battle_cter.get(&robot_id).unwrap();
+    let cter = battle_data.battle_player.get(&robot_id).unwrap();
     let index = cter.get_map_cell_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
     res.0.len() > 0

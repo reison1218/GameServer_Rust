@@ -1,9 +1,8 @@
 use crate::battle::battle::BattleData;
-use crate::battle::battle_enum::BattleCterState;
+use crate::battle::battle_enum::{BattleCterState, BattlePlayerState};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::battle::mission::random_mission;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
 use crate::room::map_data::TileMap;
 use crate::room::member::Member;
 use crate::room::{RoomSetting, RoomState, RoomType, MEMBER_MAX};
@@ -28,6 +27,7 @@ use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, B_R_SUMMARY};
 use tools::util::packet::Packet;
 
+use super::character::BattlePlayer;
 use super::MemberLeaveNoticeType;
 
 ///房间结构体，封装房间必要信息
@@ -134,22 +134,23 @@ impl Room {
         let mut need_summary = false;
         let mut punishment = false;
         let room_state = self.state;
-        let res = self.battle_data.get_battle_cter_mut(Some(user_id), false);
+        let res = self.battle_data.get_battle_player_mut(Some(user_id), false);
         if let Err(_) = res {
             return;
         }
-        let cter = res.unwrap();
+        let battle_player = res.unwrap();
 
         //房间必须为选择占位阶段和开始战斗阶段
         if room_state == RoomState::ChoiceIndex || room_state == RoomState::BattleStarted {
             need_summary = true;
 
             //没死走惩罚逻辑，死了走正常逻辑
-            if !cter.is_died() {
+            if !battle_player.is_died() {
                 punishment = true;
             }
             //离开房间，当死亡处理
-            cter.status.state = BattleCterState::Die;
+            battle_player.cter.state = BattleCterState::Die;
+            battle_player.status.battle_state = BattlePlayerState::Eliminate;
             self.battle_data.leave_user = (user_id, punishment);
         }
         //走惩罚触发
@@ -250,7 +251,7 @@ impl Room {
 
     ///回其他服消息
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
-        let cter = self.get_battle_cter_ref(&user_id);
+        let cter = self.get_battle_player_ref(&user_id);
         match cter {
             Some(cter) => {
                 if cter.is_robot() {
@@ -305,11 +306,11 @@ impl Room {
         }
         let mut res = true;
         //判断是否都选完了
-        for battle_cter in self.battle_data.battle_cter.values() {
-            if battle_cter.is_died() {
+        for battle_player in self.battle_data.battle_player.values() {
+            if battle_player.is_died() {
                 continue;
             }
-            if !battle_cter.map_cell_index_is_choiced() {
+            if !battle_player.cter.map_cell_index_is_choiced() {
                 res = false;
             }
         }
@@ -342,12 +343,12 @@ impl Room {
         self.battle_data.next_turn_index = index;
     }
 
-    pub fn get_battle_cter_ref(&self, key: &u32) -> Option<&BattleCharacter> {
-        self.battle_data.battle_cter.get(key)
+    pub fn get_battle_player_ref(&self, key: &u32) -> Option<&BattlePlayer> {
+        self.battle_data.battle_player.get(key)
     }
 
-    pub fn get_battle_cter_mut_ref(&mut self, key: &u32) -> Option<&mut BattleCharacter> {
-        self.battle_data.battle_cter.get_mut(key)
+    pub fn get_battle_player_mut_ref(&mut self, key: &u32) -> Option<&mut BattlePlayer> {
+        self.battle_data.battle_player.get_mut(key)
     }
 
     pub fn check_index_over(&mut self) -> bool {
@@ -358,7 +359,7 @@ impl Room {
     pub fn choice_index(&mut self, user_id: u32, index: u32) {
         let turn_index = self.get_next_turn_index();
         let turn_order = self.battle_data.turn_orders;
-        let member = self.get_battle_cter_mut_ref(&user_id);
+        let member = self.get_battle_player_mut_ref(&user_id);
         if member.is_none() {
             error!("choice_index member is none!user_id:{}", user_id);
             return;
@@ -371,7 +372,7 @@ impl Room {
         );
 
         //更新角色下标和地图块上面的角色id
-        member.set_map_cell_index(index as usize);
+        member.cter.set_map_cell_index(index as usize);
         let map_cell = self
             .battle_data
             .tile_map
@@ -385,7 +386,7 @@ impl Room {
         let bytes = scln.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         //通知给房间成员
-        for id in self.battle_data.battle_cter.keys() {
+        for id in self.battle_data.battle_player.keys() {
             self_mut_ref.send_2_client(ClientCode::ChoiceIndexNotice, *id, bytes.clone());
         }
 
@@ -460,7 +461,7 @@ impl Room {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let member = self.battle_data.battle_cter.get(&user_id);
+        let member = self.battle_data.battle_player.get(&user_id);
         if let None = member {
             return;
         }
@@ -480,7 +481,7 @@ impl Room {
         let mut user_id;
         for member in self.members.values() {
             user_id = member.user_id;
-            let cter = self.battle_data.battle_cter.get(&user_id);
+            let cter = self.battle_data.battle_player.get(&user_id);
             //如果是机器人，则返回，不发送
             if cter.is_none() {
                 continue;
@@ -498,7 +499,7 @@ impl Room {
     }
 
     pub fn init_mission_for_choice_index(&mut self) {
-        let cter = self.battle_data.get_battle_cter_mut(None, false);
+        let cter = self.battle_data.get_battle_player_mut(None, false);
         if let Err(e) = cter {
             error!("{:?}", e);
             return;
@@ -594,8 +595,8 @@ impl Room {
         if self.room_type != RoomType::OneVOneVOneVOneMatch {
             return;
         }
-        let cter = self.get_battle_cter_mut_ref(&user_id).unwrap();
-        if cter.is_died() {
+        let battle_player = self.get_battle_player_mut_ref(&user_id).unwrap();
+        if battle_player.is_died() {
             return;
         }
         self.add_punish(user_id);
@@ -645,7 +646,7 @@ impl Room {
         self.remove_turn_orders(turn_index);
 
         //移除战斗角色
-        self.battle_data.battle_cter.remove(&user_id);
+        self.battle_data.battle_player.remove(&user_id);
         //去掉地图块上的玩家id
         self.battle_data.tile_map.remove_user(user_id);
         //如果当前离开的玩家不是当前顺序就退出
@@ -679,7 +680,7 @@ impl Room {
         //移除顺位数据
         self.remove_turn_orders(turn_index);
         //移除玩家战斗数据
-        self.battle_data.battle_cter.remove(&user_id);
+        self.battle_data.battle_player.remove(&user_id);
         self.battle_data.tile_map.remove_user(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
@@ -739,10 +740,12 @@ impl Room {
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
             let battle_cter =
-                BattleCharacter::init(&member, &self.battle_data, self.robot_sender.clone());
+                BattlePlayer::init(&member, &self.battle_data, self.robot_sender.clone());
             match battle_cter {
                 Ok(b_cter) => {
-                    self.battle_data.battle_cter.insert(member.user_id, b_cter);
+                    self.battle_data
+                        .battle_player
+                        .insert(member.user_id, b_cter);
                 }
                 Err(_) => {
                     return;
@@ -813,8 +816,8 @@ impl Room {
                 }
                 let buff = buff.unwrap();
                 if buff.par1 > 0 {
-                    for (_, battle_cter) in self.battle_data.battle_cter.iter_mut() {
-                        battle_cter.add_buff(
+                    for (_, battle_player) in self.battle_data.battle_player.iter_mut() {
+                        battle_player.cter.add_buff(
                             None,
                             None,
                             buff.par1,
@@ -826,7 +829,7 @@ impl Room {
         }
         let mut sbsn = S_BATTLE_START_NOTICE::new();
         let debug = crate::CONF_MAP.borrow().get_bool("debug");
-        for battle_cter in self.battle_data.battle_cter.values() {
+        for battle_cter in self.battle_data.battle_player.values() {
             let cter_pt = battle_cter.convert_to_battle_cter_pt();
             sbsn.battle_cters.push(cter_pt);
         }

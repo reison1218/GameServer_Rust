@@ -6,18 +6,18 @@ pub mod use_item_goal_evaluator;
 pub mod use_skill_goal_evaluator;
 use crate::battle::battle::BattleData;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 
 ///评估trait
 pub trait GoalEvaluator: Send + Sync + 'static {
     ///计算期望值
-    fn calculate_desirability(&self, cter: &BattleCharacter) -> u32;
+    fn calculate_desirability(&self, cter: &BattlePlayer) -> u32;
 
     ///设置状态
     fn set_status(
         &self,
-        cter: &BattleCharacter,
+        cter: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     );

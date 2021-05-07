@@ -172,12 +172,12 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
 
-    let battle_cter = room.battle_data.get_battle_cter(Some(user_id), true);
-    if let Err(e) = battle_cter {
+    let battle_player = room.battle_data.get_battle_player(Some(user_id), true);
+    if let Err(e) = battle_player {
         warn!("{:?}", e);
         return;
     }
-    let battle_cter = battle_cter.unwrap();
+    let battle_cter = battle_player.unwrap();
 
     //如果玩家啥都没做，就T出房间
     if battle_cter.flow_data.open_map_cell_vec.is_empty() {

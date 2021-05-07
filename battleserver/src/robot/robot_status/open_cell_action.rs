@@ -1,6 +1,6 @@
 use super::*;
 use crate::robot::RobotActionType;
-use crate::room::character::BattleCharacter;
+use crate::room::character::BattlePlayer;
 use log::{error, warn};
 use std::borrow::Borrow;
 use tools::cmd_code::BattleCode;
@@ -67,7 +67,7 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut index = 0;
 
         let robot_id = self.robot_id;
-        let battle_cter = battle_data.battle_cter.get(&robot_id).unwrap();
+        let battle_cter = battle_data.battle_player.get(&robot_id).unwrap();
         let mut action_type = RobotActionType::Open;
 
         //剩余翻块次数
@@ -98,7 +98,7 @@ impl RobotStatusAction for OpenCellRobotAction {
             index = *pair_v.get(0).unwrap();
         } else {
             let mut is_cd = false;
-            for skill in battle_cter.skills.values() {
+            for skill in battle_cter.cter.skills.values() {
                 if skill.cd_times > 0_i8 {
                     is_cd = true;
                     break;
@@ -141,13 +141,13 @@ impl RobotStatusAction for OpenCellRobotAction {
 ///计算能够配对的数量
 pub fn cal_pair_num(
     battle_data: &BattleData,
-    battle_cter: &BattleCharacter,
+    battle_player: &BattlePlayer,
 ) -> anyhow::Result<(Vec<usize>, Option<usize>)> {
     let mut index_v = Vec::new();
     let mut element_index: Option<usize> = None;
 
     //拿到机器人数据
-    let robot_data = battle_cter.get_robot_data_ref();
+    let robot_data = battle_player.get_robot_data_ref();
     if let Err(e) = robot_data {
         error!("{:?}", e);
         anyhow::bail!(e)
@@ -158,7 +158,7 @@ pub fn cal_pair_num(
     let remember_cells = robot_data.remember_map_cell.borrow();
 
     //这个turn放开的地图块下标
-    let open_map_cell_vec = &battle_cter.flow_data.open_map_cell_vec;
+    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec;
     //去掉已经翻开过的,并且添加可以配对的
     for cell_index in open_map_cell_vec.iter() {
         let cell_index = *cell_index;
@@ -173,7 +173,7 @@ pub fn cal_pair_num(
                 index_v.push(cell_index);
             }
             //添加元素相同的
-            if element_index.is_none() && map_cell.element == battle_cter.base_attr.element {
+            if element_index.is_none() && map_cell.element == battle_player.cter.base_attr.element {
                 element_index = Some(map_cell.index);
             }
         }
