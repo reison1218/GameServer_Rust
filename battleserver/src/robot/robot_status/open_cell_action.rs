@@ -1,8 +1,8 @@
-use super::*;
-use crate::robot::RobotActionType;
-use crate::room::character::BattlePlayer;
-use log::{error, warn};
 use std::borrow::Borrow;
+
+use super::*;
+use crate::{battle::battle_player::BattlePlayer, robot::RobotActionType};
+use log::{error, warn};
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]

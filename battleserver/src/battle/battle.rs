@@ -12,7 +12,6 @@ use crate::battle::battle_skill::{
     skill_damage_opened_element, skill_open_map_cell, sub_cd, transform,
 };
 use crate::mgr::League;
-use crate::room::character::BattlePlayer;
 use crate::room::map_data::TileMap;
 use crate::room::{RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
@@ -22,6 +21,8 @@ use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
+
+use super::battle_player::BattlePlayer;
 
 ///物品结构体
 #[derive(Clone, Debug)]

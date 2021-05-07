@@ -8,7 +8,6 @@ use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
-use crate::room::character::BattlePlayer;
 use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
 use crate::room::RoomType;
@@ -23,8 +22,8 @@ use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
 use tools::protos::server_protocol::B_S_SUMMARY;
 
-use super::battle_enum::BattlePlayerState;
 use super::mission::{trigger_mission, MissionTriggerType};
+use super::{battle_enum::BattlePlayerState, battle_player::BattlePlayer};
 
 impl BattleData {
     ///处理战斗结算核心逻辑，不管地图刷新逻辑

@@ -1,8 +1,7 @@
-use crate::battle::battle::BattleData;
+use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::attack_action::AttackRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]

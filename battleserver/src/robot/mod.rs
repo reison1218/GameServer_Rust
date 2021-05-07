@@ -6,12 +6,11 @@ pub mod robot_status;
 pub mod robot_task_mgr;
 pub mod robot_trigger;
 
-use crate::battle::battle::BattleData;
+use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
-use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;

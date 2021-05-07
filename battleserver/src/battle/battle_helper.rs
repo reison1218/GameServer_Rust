@@ -4,7 +4,6 @@ use crate::battle::battle_enum::skill_judge_type::{
 };
 use crate::battle::battle_enum::{AttackState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_trigger::TriggerEvent;
-use crate::room::character::BattlePlayer;
 use crate::room::map_data::{MapCell, MapCellType, TileMap};
 use crate::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
@@ -21,9 +20,9 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
-use super::battle_enum::skill_judge_type::PAIR_LIMIT;
 use super::battle_enum::BattlePlayerState;
 use super::mission::{trigger_mission, MissionTriggerType};
+use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
 use crate::JsonValue;
 
 impl BattleData {

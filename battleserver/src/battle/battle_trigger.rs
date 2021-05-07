@@ -11,7 +11,6 @@ use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::robot::RememberCell;
-use crate::room::character::BattlePlayer;
 use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
@@ -20,9 +19,9 @@ use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
-use super::battle_enum::buff_type::ATTACKED_SUB_CD;
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
 use super::mission::{trigger_mission, MissionTriggerType};
+use super::{battle_enum::buff_type::ATTACKED_SUB_CD, battle_player::BattlePlayer};
 
 ///触发事件trait
 pub trait TriggerEvent {
@@ -196,7 +195,7 @@ impl TriggerEvent for BattleData {
                 if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
                     continue;
                 }
-                battle_player.flow_data.pair_usable_skills.push(skill_id);
+                battle_player.flow_data.pair_usable_skills.insert(skill_id);
             }
             //配对了奖励金币
             let res;
@@ -450,21 +449,10 @@ impl TriggerEvent for BattleData {
         }
         //使用后删除可用状态
         if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
-            let mut delete_index = 0;
-            for (index, id) in battle_player
-                .flow_data
-                .pair_usable_skills
-                .iter()
-                .enumerate()
-            {
-                if id == &skill_function_id {
-                    delete_index = index;
-                }
-            }
             battle_player
                 .flow_data
                 .pair_usable_skills
-                .remove(delete_index);
+                .remove(&skill_function_id);
         }
         //使用技能任务
         trigger_mission(

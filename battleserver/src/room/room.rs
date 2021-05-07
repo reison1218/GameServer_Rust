@@ -1,7 +1,7 @@
-use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::{BattleCterState, BattlePlayerState};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::battle::mission::random_mission;
+use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::map_data::TileMap;
 use crate::room::member::Member;
@@ -27,7 +27,6 @@ use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, B_R_SUMMARY};
 use tools::util::packet::Packet;
 
-use super::character::BattlePlayer;
 use super::MemberLeaveNoticeType;
 
 ///房间结构体，封装房间必要信息

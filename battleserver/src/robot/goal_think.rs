@@ -1,9 +1,8 @@
-use crate::battle::battle::BattleData;
+use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::attack_goal_evaluator::AttackTargetGoalEvaluator;
 use crate::robot::goal_evaluator::open_cell_goal_evaluator::OpenCellGoalEvaluator;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_task_mgr::RobotTask;
-use crate::room::character::BattlePlayer;
 use crossbeam::channel::Sender;
 use log::info;
 

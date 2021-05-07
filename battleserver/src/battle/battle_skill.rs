@@ -8,7 +8,6 @@ use crate::battle::battle_enum::skill_type::{
 use crate::battle::battle_enum::{EffectType, ElementType, TargetType};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
-use crate::room::character::BattlePlayer;
 use crate::room::map_data::MapCell;
 use crate::TEMPLATES;
 use log::{error, warn};
@@ -19,7 +18,7 @@ use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
-use super::battle_enum::SkillConsumeType;
+use super::{battle_enum::SkillConsumeType, battle_player::BattlePlayer};
 
 #[derive(Clone, Debug)]
 pub struct Skill {

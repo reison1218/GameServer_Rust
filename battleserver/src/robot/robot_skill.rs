@@ -3,8 +3,7 @@ use rand::Rng;
 use serde_json::{Map, Value};
 use tools::cmd_code::BattleCode;
 
-use crate::battle::battle_enum::TargetType;
-use crate::room::character::BattlePlayer;
+use crate::battle::{battle_enum::TargetType, battle_player::BattlePlayer};
 use crate::room::map_data::MapCellType;
 use crate::{
     battle::{battle::BattleData, battle_skill::Skill},
