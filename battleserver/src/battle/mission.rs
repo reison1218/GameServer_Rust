@@ -260,14 +260,25 @@ pub fn trigger_mission(
     trigger_types: Vec<(MissionTriggerType, u16)>,
     mission_parm: (u32, u32),
 ) {
-    let cter = battle_data.battle_player.get_mut(&user_id).unwrap();
+    let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
     //如果任务是空的，或者任务完成了则直接返回
-    if cter.mission_data.mission.is_none()
-        || cter.mission_data.mission.as_ref().unwrap().is_complete
+    if battle_player.mission_data.mission.is_none()
+        || battle_player
+            .mission_data
+            .mission
+            .as_ref()
+            .unwrap()
+            .is_complete
     {
         return;
     }
-    let missoin_id = cter.mission_data.mission.as_ref().unwrap().mission_temp.id;
+    let missoin_id = battle_player
+        .mission_data
+        .mission
+        .as_ref()
+        .unwrap()
+        .mission_temp
+        .id;
 
     //匹配任务
     for (trigger_type, value) in trigger_types {
@@ -316,12 +327,12 @@ fn open_cell_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = cter {
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
         error!("{:?}", e);
         return false;
     }
-    let cter = cter.unwrap();
+    let battle_player = battle_player.unwrap();
 
     //翻地图块次数;翻开指定元素的地图块
     let mission_type_list = vec![
@@ -330,7 +341,7 @@ fn open_cell_trigger_mission(
     ];
     let mut res = false;
     for &mission_type in mission_type_list.iter() {
-        res = cter.add_mission_progress(value, mission_type, mission_parm);
+        res = battle_player.add_mission_progress(value, mission_type, mission_parm);
         if res {
             break;
         }

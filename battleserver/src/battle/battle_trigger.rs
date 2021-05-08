@@ -192,7 +192,7 @@ impl TriggerEvent for BattleData {
             for skill in battle_player.cter.skills.values() {
                 skill_function_id = skill.function_id;
                 skill_id = skill.id;
-                if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
+                if !SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
                     continue;
                 }
                 battle_player.flow_data.pair_usable_skills.insert(skill_id);
@@ -390,6 +390,15 @@ impl TriggerEvent for BattleData {
             return;
         }
         let battle_player = battle_player.unwrap();
+
+        //添加技能限制条件
+        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+        if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
+            battle_player.flow_data.turn_limit_skills.push(skill_id);
+        } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
+            battle_player.flow_data.round_limit_skills.push(skill_id);
+        }
+
         //战斗角色身上的技能
         let mut skill_s;
         let skill;
@@ -405,7 +414,7 @@ impl TriggerEvent for BattleData {
             skill = skill_s.as_mut().unwrap();
         } else {
             let res = battle_player.cter.skills.get_mut(&skill_id);
-            if let None = res {
+            if res.is_none() {
                 return;
             }
             skill = res.unwrap();
@@ -440,13 +449,6 @@ impl TriggerEvent for BattleData {
             au.targets.push(target_pt);
         }
 
-        //添加技能限制条件
-        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
-        if skill_temp.skill_judge == LIMIT_TURN_TIMES as u16 {
-            battle_player.flow_data.turn_limit_skills.push(skill_id);
-        } else if skill_temp.skill_judge == LIMIT_ROUND_TIMES as u16 {
-            battle_player.flow_data.round_limit_skills.push(skill_id);
-        }
         //使用后删除可用状态
         if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
             battle_player

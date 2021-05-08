@@ -234,9 +234,7 @@ impl TileMap {
         tile_map_temp.map.iter().enumerate().for_each(|i| {
             let index = i.0;
             let &value = i.1;
-            let mut map_cell = MapCell::default();
             let map_cell_type = MapCellType::try_from(value as u8).unwrap();
-            map_cell.index = index;
             map[index] = (value, map_cell_type);
         });
 

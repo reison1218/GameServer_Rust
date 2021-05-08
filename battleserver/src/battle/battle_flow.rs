@@ -190,7 +190,6 @@ impl BattleData {
             //技能判定
             let skill_judge = skill.skill_temp.skill_judge as u32;
             let skill_function_id = skill.function_id;
-
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
             if let Err(e) = res {

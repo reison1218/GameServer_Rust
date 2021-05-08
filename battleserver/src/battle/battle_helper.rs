@@ -415,6 +415,7 @@ impl BattleData {
         //更新地图块打开人
         let map_cell = self.tile_map.map_cells.get_mut(index).unwrap();
         map_cell.open_user = user_id;
+        let element = map_cell.element as u32;
         let res;
         let temp = crate::TEMPLATES
             .constant_temp_mgr()
@@ -445,7 +446,7 @@ impl BattleData {
                 (MissionTriggerType::OpenCell, 1),
                 (MissionTriggerType::GetGold, res as u16),
             ],
-            (0, 0),
+            (element, 0),
         );
     }
 
@@ -670,6 +671,14 @@ impl BattleData {
         target_type: TargetType,
         target_array: &[u32],
     ) -> anyhow::Result<()> {
+        //如果为空，则不校验
+        if target_array.is_empty() {
+            return Ok(());
+        }
+        let center_index = *target_array.get(0).unwrap() as usize;
+        //先判断中心是否是
+        self.check_choice_index(center_index, false, false, false, true, false, false)?;
+        //校验其他目标类型
         match target_type {
             //无效目标
             TargetType::None => {
@@ -825,14 +834,17 @@ impl BattleData {
         let map_cell = res.unwrap();
         let res = match map_cell.cell_type {
             MapCellType::Valid => true,
+            MapCellType::WorldCell => true,
             MapCellType::MarketCell => true,
             _ => false,
         };
 
         if !res {
             anyhow::bail!(
-                "this is map_cell can not be choice!index:{}",
-                map_cell.index
+                "this is map_cell can not be choice!index:{},cell_id:{},cell_type:{:?}",
+                map_cell.index,
+                map_cell.id,
+                map_cell.cell_type
             )
         }
         if is_check_close && map_cell.open_user == 0 {
@@ -1058,6 +1070,7 @@ impl BattleData {
         let judge_temp = TEMPLATES.skill_judge_temp_mgr().get_temp(&skill_judge)?;
         let target_type = TargetType::try_from(judge_temp.target);
         if let Err(e) = target_type {
+            warn!("{:?}", e);
             anyhow::bail!("{:?}", e)
         }
         let battle_player = self.get_battle_player(Some(user_id), true).unwrap();
@@ -1067,47 +1080,48 @@ impl BattleData {
                 if HP_LIMIT_GT == judge_temp.id
                     && battle_player.cter.base_attr.hp <= judge_temp.par1 as i16
                 {
-                    anyhow::bail!(
+                    let err_str = format!(
                         "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
-                        judge_temp.par1,
-                        judge_temp.id
-                    )
+                        judge_temp.par1, judge_temp.id
+                    );
+                    warn!("{:?}", err_str);
+                    anyhow::bail!("{:?}", err_str)
                 } else if LIMIT_TURN_TIMES == judge_temp.id
                     && battle_player
                         .flow_data
                         .turn_limit_skills
                         .contains(&skill_id.unwrap())
                 {
-                    anyhow::bail!(
-                        "this turn already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
-                        battle_player.get_user_id(),
-                        skill_id.unwrap(),
-                        skill_judge,
-                    )
+                    let err_str = format!("this turn already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
+                    battle_player.get_user_id(),
+                    skill_id.unwrap(),
+                    skill_judge);
+                    warn!("{:?}", err_str);
+                    anyhow::bail!("{:?}", err_str)
                 } else if LIMIT_ROUND_TIMES == judge_temp.id
                     && battle_player
                         .flow_data
                         .round_limit_skills
                         .contains(&skill_id.unwrap())
                 {
-                    anyhow::bail!(
-                        "this round already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
-                        battle_player.get_user_id(),
-                        skill_id.unwrap(),
-                        skill_judge,
-                    )
+                    let err_str = format!("this round already used this skill!user_id:{},skill_id:{},skill_judge_id:{}",
+                    battle_player.get_user_id(),
+                    skill_id.unwrap(),
+                    skill_judge);
+                    warn!("{:?}", err_str);
+                    anyhow::bail!("{:?}", err_str)
                 } else if PAIR_LIMIT == judge_temp.id
                     && !battle_player
                         .flow_data
                         .pair_usable_skills
                         .contains(&skill_id.unwrap())
                 {
-                    anyhow::bail!(
-                            "could not use this skill!palyer not pair!user_id:{},skill_id:{},skill_judge_id:{}",
-                            battle_player.get_user_id(),
-                            skill_id.unwrap(),
-                            skill_judge,
-                        )
+                    let err_str = format!("could not use this skill!palyer not pair!user_id:{},skill_id:{},skill_judge_id:{}",
+                    battle_player.get_user_id(),
+                    skill_id.unwrap(),
+                    skill_judge);
+                    warn!("{:?}", err_str);
+                    anyhow::bail!("{:?}", err_str)
                 }
             }
             _ => {}
