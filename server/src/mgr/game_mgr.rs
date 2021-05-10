@@ -1,7 +1,7 @@
 use crate::entity::user::UserData;
 use crate::entity::user_info::{
-    create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, modify_nick_name,
-    punish_match, search_room, show_rank, sync_rank, update_season,
+    create_room, get_last_season_rank, join_room, modify_grade_frame_and_soul, punish_match,
+    search_room, show_rank, sync_rank, update_season,
 };
 use crate::entity::{Entity, EntityData};
 use crate::net::http::{notice_user_center, UserCenterNoticeType};
@@ -223,8 +223,6 @@ impl GameMgr {
             .insert(ServerCommonCode::ReloadTemps.into_u32(), reload_temps);
         self.cmd_map
             .insert(GameCode::UnloadUser.into_u32(), off_line);
-        self.cmd_map
-            .insert(GameCode::ModifyNickName.into_u32(), modify_nick_name);
         self.cmd_map
             .insert(GameCode::CreateRoom.into_u32(), create_room);
         self.cmd_map

@@ -272,8 +272,8 @@ impl Room {
     ///创建选择下标检测任务
     pub fn start_choice_index(&mut self) {
         self.state = RoomState::ChoiceIndex;
-        //把cter转换成battle_cter
-        if !self.battle_data.reflash_map_turn.is_some() {
+        //地图没有刷新过就把cter转换成battle_cter
+        if self.battle_data.reflash_map_turn.is_none() {
             self.cter_2_battle_cter();
         }
         info!(
@@ -299,22 +299,26 @@ impl Room {
 
     ///推进下一个人，并检测状态，如果都选择完了展位，切换到战斗已经开始状态
     pub fn check_next_choice_index(&mut self) {
-        self.battle_data.add_next_turn();
+        if self.state != RoomState::BattleStarted {
+            let mut res = true;
+            //判断是否都选完了
+            for battle_player in self.battle_data.battle_player.values() {
+                if battle_player.is_died() {
+                    continue;
+                }
+                if !battle_player.cter.map_cell_index_is_choiced() {
+                    res = false;
+                }
+            }
+            if res {
+                self.state = RoomState::BattleStarted;
+            }
+        }
+
         if self.state == RoomState::BattleStarted {
-            return;
-        }
-        let mut res = true;
-        //判断是否都选完了
-        for battle_player in self.battle_data.battle_player.values() {
-            if battle_player.is_died() {
-                continue;
-            }
-            if !battle_player.cter.map_cell_index_is_choiced() {
-                res = false;
-            }
-        }
-        if res {
-            self.state = RoomState::BattleStarted;
+            self.battle_data.next_turn(false);
+        } else {
+            self.battle_data.choice_index_next_turn();
         }
     }
 
@@ -351,7 +355,7 @@ impl Room {
     }
 
     pub fn check_index_over(&mut self) -> bool {
-        self.state != RoomState::AwaitReady && self.state != RoomState::ChoiceIndex
+        self.state == RoomState::BattleStarted
     }
 
     ///选择占位

@@ -582,9 +582,15 @@ fn skip_turn(
         warn!("this player not open any map_cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
-    //跳过当前这个人
-    rm.battle_data.skip_turn(_au);
-    rm.refresh_map();
+    let need_refresh_map = rm.battle_data.check_refresh_map();
+    //如果需要刷新地图，走地图刷新next turn逻辑
+    if need_refresh_map {
+        rm.battle_data.choice_index_next_turn();
+        rm.refresh_map();
+    } else {
+        //否则走战斗next turn逻辑
+        rm.battle_data.next_turn(false);
+    }
     Ok(None)
 }
 

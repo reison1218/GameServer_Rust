@@ -1,3 +1,4 @@
+use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
 use tools::tcp::TcpSender;
 
 use crate::entity::character::Characters;
@@ -8,12 +9,13 @@ use crate::entity::user::{
 };
 use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
+use crate::mgr::game_mgr::GameMgr;
 use crate::Lock;
 use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
-use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::cmd_code::{ClientCode, GameCode, RankCode, ServerCommonCode};
 use tools::protos::protocol::C_USER_LOGIN;
 use tools::util::packet::Packet;
 
@@ -105,7 +107,7 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
         let user_data = init_user_data(user_id)?;
         gm_lock.users.insert(user_id, user_data);
     }
-
+    check_nick_name(&mut gm_lock, user_id);
     //封装会话
     let user_data = gm_lock.users.get_mut(&user_id);
     if user_data.is_none() {
@@ -127,6 +129,53 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     gm_lock.send_2_client(ClientCode::Login, user_id, lr.write_to_bytes()?);
     info!("用户完成登录！user_id:{}", &user_id);
     Ok(())
+}
+
+fn check_nick_name(gm_lock: &mut async_std::sync::MutexGuard<GameMgr>, user_id: u32) {
+    let user_data = gm_lock.users.get_mut(&user_id);
+    if user_data.is_none() {
+        return;
+    }
+    let user_data = user_data.unwrap();
+    let user = user_data.get_user_info_mut_ref();
+    let nick_name = user.nick_name.as_str();
+    let value = get_user_from_redis(user.user_id);
+    if value.is_none() {
+        let str = format!("redis has no data for user_id:{}", user_id);
+        warn!("{:?}", str.as_str());
+        return;
+    }
+    let json_value = value.unwrap();
+
+    let redis_nick_name = json_value.get("nick_name");
+    if redis_nick_name.is_none() {
+        return;
+    }
+    let redis_nick_name = redis_nick_name.unwrap();
+    let redis_nick_name = redis_nick_name.as_str();
+    if redis_nick_name.is_none() {
+        return;
+    }
+    let redis_nick_name = redis_nick_name.unwrap();
+    if nick_name == redis_nick_name {
+        return;
+    }
+
+    user.set_nick_name(redis_nick_name);
+    //通知排行榜服务器
+    let mut grnn = G_S_MODIFY_NICK_NAME::new();
+    grnn.set_nick_name(redis_nick_name.to_owned());
+    let bytes = grnn.write_to_bytes();
+    match bytes {
+        Ok(bytes) => {
+            info!("执行修改昵称函数!");
+            //通知其排行榜服
+            gm_lock.send_2_server(RankCode::ModifyNickName.into_u32(), user_id, bytes);
+        }
+        Err(e) => {
+            error!("{:?}", e);
+        }
+    }
 }
 
 ///初始化玩家数据

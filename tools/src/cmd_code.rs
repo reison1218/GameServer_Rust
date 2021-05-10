@@ -28,8 +28,6 @@ pub enum GameCode {
     Login = 1003,
     //同步数据
     SyncData = 1004,
-    //请求修改昵称
-    ModifyNickName = 1005,
     //创建房间
     CreateRoom = 1006,
     //加入房间

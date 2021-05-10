@@ -11,7 +11,6 @@ use async_std::task::block_on;
 use log::{error, info, warn};
 use mysql::prelude::ToValue;
 use mysql::{Error, QueryResult, Value};
-use serde_json::Value as JsonValue;
 use std::any::Any;
 
 ///关于结构体转换的trait

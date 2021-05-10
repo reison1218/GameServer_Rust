@@ -81,8 +81,7 @@ const REDIS_KEY_USERS: &str = "users";
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
 ///redis user_id对应平台id key
 const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
-///redis 名字对应userid key
-const REDIS_KEY_NAME_2_UID: &str = "name_2_uid";
+
 ///上个赛季排行
 const REDIS_KEY_LAST_RANK: &str = "last_rank";
 ///玩家最好排行

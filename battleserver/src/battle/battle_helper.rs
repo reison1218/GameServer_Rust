@@ -65,6 +65,39 @@ impl BattleData {
         }
     }
 
+    pub fn choice_index_next_turn(&mut self) {
+        self.next_turn_index += 1;
+        let index = self.next_turn_index;
+        if index >= MEMBER_MAX as usize {
+            self.next_turn_index = 0;
+        }
+        let user_id = self.get_turn_user(None);
+        if let Ok(user_id) = user_id {
+            if user_id == 0 {
+                self.choice_index_next_turn();
+                return;
+            }
+
+            let cter_res = self.get_battle_player(Some(user_id), false);
+            match cter_res {
+                Ok(cter) => {
+                    if cter.is_died() {
+                        self.choice_index_next_turn();
+                        return;
+                    }
+                    if cter.robot_data.is_some() {
+                        cter.robot_start_action();
+                    }
+                }
+                Err(e) => {
+                    warn!("{:?}", e);
+                }
+            }
+        } else {
+            warn!("{:?}", user_id.err().unwrap());
+        }
+    }
+
     ///下一个
     pub fn add_next_turn(&mut self) {
         self.next_turn_index += 1;

@@ -135,12 +135,6 @@ impl BattleData {
         Ok(res)
     }
 
-    ///跳过回合
-    pub fn skip_turn(&mut self, _au: &mut ActionUnitPt) {
-        //直接下一个turn
-        self.next_turn(false);
-    }
-
     ///使用技能
     /// user_id:使用技能的玩家id
     /// target_array目标数组

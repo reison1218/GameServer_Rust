@@ -1,4 +1,3 @@
-mod map;
 mod mio_test;
 mod sig_rec;
 mod tcp_client;
@@ -40,7 +39,6 @@ use async_std::net::{TcpListener as AsyncTcpListener, TcpStream as AsyncTcpStrea
 use async_std::prelude::*;
 use async_std::task;
 
-use crate::map::generate_map;
 use crate::web::test_http_client;
 use crate::web::{test_faster, test_http_server};
 use actix::{Actor, ContextFutureSpawner, SyncArbiter};
@@ -472,6 +470,7 @@ pub trait TestTrait {
 pub struct StructTest {
     id: u32,
     rank: u32,
+    str: String,
 }
 
 impl Drop for StructTest {
@@ -502,113 +501,14 @@ static mut STATIC_U32: u32 = 0;
 
 pub struct StructTestPtr(*mut StructTest);
 
+fn abc(st: &mut StructTest) {
+    st.str.push_str("string");
+}
 fn main() -> anyhow::Result<()> {
     let mut st = StructTest::default();
-    st.id = 1;
-    let mut map = HashMap::new();
-    map.insert(st.id, st);
-    let st = StructTest::default();
-    map.insert(st.id, st);
-    unsafe {
-        let mut v = vec![];
-        for tmp in map.values_mut() {
-            v.push(StructTestPtr(tmp as *mut StructTest));
-        }
-        v.sort_by(|a, b| {
-            let a_ref = a.0.as_ref().unwrap();
-            let b_ref = b.0.as_ref().unwrap();
-            b_ref.id.cmp(&a_ref.id)
-        });
-
-        for (index, st) in v.iter().enumerate() {
-            let t = st.0.as_ref().unwrap();
-            let key = t.id;
-            let ri = map.get_mut(&key);
-            match ri {
-                Some(ri) => {
-                    ri.rank = index as u32;
-                }
-                None => {
-                    println!("error!key:{},{:?}", key, t);
-                }
-            }
-        }
-        println!("第一次：");
-        for t in map.values() {
-            println!("{:?}", t);
-        }
-
-        let mut st = StructTest::default();
-        let key = 2;
-        st.id = key;
-        map.insert(st.id, st);
-        let res = map.get_mut(&key);
-        if let Some(res) = res {
-            v.push(StructTestPtr(res as *mut StructTest));
-        }
-
-        let mut st = StructTest::default();
-        let key = 3;
-        st.id = key;
-        map.insert(st.id, st);
-        let res = map.get_mut(&key);
-        if let Some(res) = res {
-            v.push(StructTestPtr(res as *mut StructTest));
-        }
-
-        let mut st = StructTest::default();
-        let key = 4;
-        st.id = key;
-        map.insert(st.id, st);
-        let res = map.get_mut(&key);
-        if let Some(res) = res {
-            v.push(StructTestPtr(res as *mut StructTest));
-        }
-
-        let mut st = StructTest::default();
-        let key = 5;
-        st.id = key;
-        map.insert(st.id, st);
-        let res = map.get_mut(&key);
-        if let Some(res) = res {
-            v.push(StructTestPtr(res as *mut StructTest));
-        }
-
-        v.sort_by(|a, b| {
-            let a_ref = a.0.as_ref().unwrap();
-            let b_ref = b.0.as_ref().unwrap();
-            b_ref.id.cmp(&a_ref.id)
-        });
-
-        for (index, st) in v.iter().enumerate() {
-            let t = st.0.as_ref().unwrap();
-            let key = t.id;
-            let ri = map.get_mut(&key);
-            match ri {
-                Some(ri) => {
-                    ri.rank = index as u32;
-                }
-                None => {
-                    println!("error!key:{},{:?}", key, t);
-                }
-            }
-        }
-
-        println!("第二次：");
-        for t in map.values() {
-            println!("{:?}", t);
-        }
-
-        println!("地址对比：");
-        for i in v {
-            println!("v——adress:{:p},value:{:?}", i.0, i.0.as_ref().unwrap());
-        }
-        println!("-------------------------------------------------");
-        for i in map.values_mut() {
-            println!("map——adress:{:p},value:{:?}", i, i);
-        }
-    }
-
+    let a = &mut st;
+    abc(a);
+    println!("{:p}", a);
     // let res = SSSSSSS([0, 10]);
     // let res1 = SSSSSSS([0, 40]);
     // println!("{:?},{:?}", res.type_id(), res.0.type_id());
