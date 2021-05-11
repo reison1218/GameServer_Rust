@@ -495,9 +495,8 @@ impl BattleData {
             return false;
         }
         let battle_player = battle_player.unwrap();
-        let size = battle_player.flow_data.open_map_cell_vec.len();
         //如果该turn第一次翻，或者已经配对了再翻，不用判断是否配对
-        if size <= 1 {
+        if battle_player.flow_data.open_map_cell_vec.is_empty() {
             return false;
         }
         let map_cell = self.tile_map.map_cells.get_mut(index);
