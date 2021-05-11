@@ -448,12 +448,12 @@ fn open_map_cell(
     //校验本turn是否翻过目标地图块
     if battle_cter
         .flow_data
-        .open_map_cell_vec
+        .open_map_cell_vec_history
         .contains(&target_map_cell_index)
     {
         let str = format!(
             "this player already has open this map_cell!user_id:{},open_map_cell_vec:{:?},index:{}",
-            user_id, battle_cter.flow_data.open_map_cell_vec, target_map_cell_index
+            user_id, battle_cter.flow_data.open_map_cell_vec_history, target_map_cell_index
         );
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

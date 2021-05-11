@@ -668,6 +668,8 @@ impl Room {
         } else {
             //不是最后一个就轮到下一个
             self.check_next_choice_index();
+            //初始化玩家任务
+            self.init_mission_for_choice_index();
             self.build_choice_index_task();
         }
     }

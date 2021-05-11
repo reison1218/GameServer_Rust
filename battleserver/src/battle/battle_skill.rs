@@ -153,7 +153,9 @@ pub fn show_index(
         }
         let cter = cter.unwrap();
         //地图块必须已翻开
-        if !cter.flow_data.open_map_cell_vec.contains(&index) && map_cell.pair_index.is_none() {
+        if !cter.flow_data.open_map_cell_vec_history.contains(&index)
+            && map_cell.pair_index.is_none()
+        {
             warn!(
                 "this index is invalid!the map_cell must open!index:{}",
                 index
@@ -224,7 +226,11 @@ pub fn show_map_cell(
         for index in battle_data.tile_map.un_pair_map.iter() {
             let (index, map_cell_id) = (*index.0, *index.1);
             //排除是自己当前turn翻了的
-            if battle_player.flow_data.open_map_cell_vec.contains(&index) {
+            if battle_player
+                .flow_data
+                .open_map_cell_vec_history
+                .contains(&index)
+            {
                 continue;
             }
             let res =
@@ -509,7 +515,7 @@ pub fn skill_open_map_cell(
         battle_data.exec_open_map_cell(user_id, index);
 
         //处理配对逻辑
-        let is_pair = battle_data.handler_map_cell_pair(user_id);
+        let is_pair = battle_data.handler_map_cell_pair(user_id, index);
 
         //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();

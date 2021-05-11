@@ -57,7 +57,7 @@ impl BattleData {
             return;
         }
         let cter = cter.unwrap();
-        for index in cter.flow_data.open_map_cell_vec.iter() {
+        for index in cter.flow_data.open_map_cell_vec_history.iter() {
             let map_cell = self.tile_map.map_cells.get_mut(*index);
             if let Some(map_cell) = map_cell {
                 map_cell.open_user = 0;
@@ -154,7 +154,7 @@ impl BattleData {
             .map_cells
             .get_mut(index)
             .unwrap();
-        au.action_value.push(map_cell.id);
+
         let mut is_change_index_both = false;
         let title_map_mut = tile_map_ptr.as_mut().unwrap();
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
@@ -186,6 +186,10 @@ impl BattleData {
         let index = index as isize;
         //移动位置后触发事件
         let res = self.after_move_trigger(battle_player, index, is_change_index_both);
+        //如果角色没死，就把翻的地图块id传给客户端
+        if !res.0 {
+            au.action_value.push(map_cell.id);
+        }
         Ok(res)
     }
 
@@ -443,7 +447,7 @@ impl BattleData {
     pub fn exec_open_map_cell(&mut self, user_id: u32, index: usize) {
         let cter = self.battle_player.get_mut(&user_id).unwrap();
         //将翻的地图块放到翻开的队列
-        cter.flow_data.open_map_cell_vec.push(index);
+        cter.add_open_map_cell(index);
 
         //更新地图块打开人
         let map_cell = self.tile_map.map_cells.get_mut(index).unwrap();
@@ -484,7 +488,7 @@ impl BattleData {
     }
 
     ///处理地图块配对逻辑
-    pub fn handler_map_cell_pair(&mut self, user_id: u32) -> bool {
+    pub fn handler_map_cell_pair(&mut self, user_id: u32, index: usize) -> bool {
         let battle_player = self.battle_player.get_mut(&user_id);
         if let None = battle_player {
             error!("cter is not find!user_id:{}", user_id);
@@ -496,12 +500,6 @@ impl BattleData {
         if size <= 1 {
             return false;
         }
-        let index = *battle_player
-            .flow_data
-            .open_map_cell_vec
-            .get(size - 1)
-            .unwrap();
-
         let map_cell = self.tile_map.map_cells.get_mut(index);
         if let None = map_cell {
             error!("map_cell is not find!map_cell_index:{}", index);
@@ -509,26 +507,28 @@ impl BattleData {
         }
         let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
         unsafe {
-            let is_pair;
-
-            //最近一次翻开的地图块
+            let mut is_pair = false;
+            let mut rm_index = 0;
             let map_cell_mut = map_cell_ptr.as_mut().unwrap();
             let map_cell_id = map_cell_mut.id;
 
-            //拿到上一个翻开的地图块
-            let last_map_cell = *battle_player
-                .flow_data
-                .open_map_cell_vec
-                .get(size - 2)
-                .unwrap();
-            let last_map_cell = self.tile_map.map_cells.get_mut(last_map_cell).unwrap();
-            let last_map_cell_id = last_map_cell.id;
-            let last_map_cell_index = last_map_cell.index;
+            for (vec_index, &open_index) in
+                battle_player.flow_data.open_map_cell_vec.iter().enumerate()
+            {
+                //处理配对逻辑
+                let res = self.tile_map.map_cells.get_mut(open_index);
+                if res.is_none() {
+                    continue;
+                }
 
-            //校验是否配对了
-            if map_cell_id == last_map_cell_id {
-                map_cell_mut.pair_index = Some(last_map_cell_index);
-                last_map_cell.pair_index = Some(index);
+                let match_map_cell = res.unwrap();
+                if match_map_cell.id != map_cell_id {
+                    continue;
+                }
+                let match_map_cell_index = match_map_cell.index;
+
+                map_cell_mut.pair_index = Some(match_map_cell_index);
+                match_map_cell.pair_index = Some(index);
                 is_pair = true;
                 battle_player.status.is_pair = is_pair;
                 let attack_state = battle_player.get_attack_state();
@@ -542,19 +542,22 @@ impl BattleData {
                         battle_player.get_user_id()
                     );
                 }
-                self.tile_map.un_pair_map.remove(&last_map_cell.index);
+                self.tile_map.un_pair_map.remove(&match_map_cell.index);
                 self.tile_map.un_pair_map.remove(&map_cell_mut.index);
-            } else {
-                is_pair = false;
-            }
-            //配对了就封装
-            if is_pair {
                 info!(
                     "user:{} open map_cell pair! last_map_cell:{},now_map_cell:{}",
                     battle_player.get_user_id(),
-                    last_map_cell_index,
+                    match_map_cell_index,
                     index
                 );
+                is_pair = true;
+                rm_index = vec_index;
+                break;
+            }
+            if !is_pair {
+                battle_player.flow_data.open_map_cell_vec.push(index);
+            } else {
+                battle_player.flow_data.open_map_cell_vec.remove(rm_index);
             }
             is_pair
         }

@@ -1,5 +1,5 @@
 use crate::room::member::Member;
-use crate::room::room::RoomState;
+use crate::room::room::{recycle_room_id, RoomState};
 use crate::room::room::{Room, MEMBER_MAX};
 use crate::task_timer::{build_confirm_into_room_task, Task};
 use crate::TEMPLATES;
@@ -249,20 +249,23 @@ impl RoomModel for CustomRoom {
             *user_id,
             slr.write_to_bytes().unwrap(),
         );
-
         Ok(room_id)
     }
 
     fn rm_room(&mut self, room_id: &u32) -> Option<Room> {
         let res = self.rooms.remove(room_id);
-        if res.is_some() {
-            info!(
-                "删除房间，释放内存！room_type:{:?},room_id:{}",
-                self.get_room_type(),
-                room_id
-            );
+        match res {
+            Some(room) => {
+                recycle_room_id(room.get_room_id());
+                info!(
+                    "删除房间，释放内存！room_type:{:?},room_id:{}",
+                    room.get_room_type(),
+                    room_id
+                );
+                Some(room)
+            }
+            None => None,
         }
-        res
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {
@@ -376,14 +379,18 @@ impl RoomModel for MatchRoom {
     fn rm_room(&mut self, room_id: &u32) -> Option<Room> {
         let res = self.rooms.remove(room_id);
         self.remove_room_cache(room_id);
-        if res.is_some() {
-            info!(
-                "删除房间，释放内存！room_type:{:?},room_id:{}",
-                self.get_room_type(),
-                room_id
-            );
+        match res {
+            Some(room) => {
+                recycle_room_id(room.get_room_id());
+                info!(
+                    "删除房间，释放内存！room_type:{:?},room_id:{}",
+                    room.get_room_type(),
+                    room_id
+                );
+                Some(room)
+            }
+            None => None,
         }
-        res
     }
 
     fn get_rooms_mut(&mut self) -> &mut HashMap<u32, Room, RandomState> {

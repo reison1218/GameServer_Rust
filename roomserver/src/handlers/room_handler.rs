@@ -1026,13 +1026,6 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let cter_id = ccc.cter_id;
-    if cter_id == 0 {
-        warn!(
-            "choose_character-the param is error!cter_id=0!user_id:{}",
-            user_id
-        );
-        return;
-    }
 
     let member = room.get_member_ref(&user_id).unwrap();
     //不能发无效的选择

@@ -279,7 +279,7 @@ impl RoomMgr {
             .insert(RoomCode::ConfirmIntoRoom.into_u32(), confirm_into_room);
         //结算处理
         self.cmd_map.insert(RoomCode::Summary.into_u32(), summary);
-        //开始游戏 
+        //开始游戏
         self.cmd_map.insert(RoomCode::StartGame.into_u32(), start);
         //战斗服通知T人
         self.cmd_map

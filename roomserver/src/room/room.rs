@@ -1,16 +1,16 @@
 use crate::room::member::{Member, MemberState};
 use crate::room::room_model::{RoomSetting, RoomType};
 use crate::task_timer::Task;
+use crate::ROOM_ID;
 use chrono::{DateTime, Local, Utc};
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use protobuf::Message;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
-use std::str::FromStr;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
@@ -113,11 +113,7 @@ impl Room {
     ) -> anyhow::Result<Room> {
         //转换成tilemap数据
         let user_id = owner.user_id;
-        let mut str = Local::now().timestamp_subsec_micros().to_string();
-        let size = str.len();
-        str.replace_range((size - 3)..size, "");
-        str.push_str(thread_rng().gen_range(111..999).to_string().as_str());
-        let id: u32 = u32::from_str(str.as_str())?;
+        let id: u32 = create_room_id();
         let time = Utc::now();
         let mut room_state = RoomState::AwaitReady;
         if room_type == RoomType::OneVOneVOneVOneMatch {
@@ -281,7 +277,7 @@ impl Room {
             if cter.user_id == user_id {
                 continue;
             }
-            if cter.chose_cter.cter_id == cter_id {
+            if cter.chose_cter.cter_id == cter_id && cter_id != 0 {
                 let str = format!("this character was choiced!cter_id:{}", cter_id);
                 anyhow::bail!(str)
             }
@@ -672,5 +668,21 @@ impl Room {
         }
         let bytes = res.unwrap();
         self.send_2_server(BattleCode::Start.into_u32(), user_id, bytes);
+    }
+}
+
+pub fn create_room_id() -> u32 {
+    unsafe {
+        let size = ROOM_ID.len() - 1;
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0..=size);
+        let res = ROOM_ID.remove(index);
+        res
+    }
+}
+
+pub fn recycle_room_id(room_id: u32) {
+    unsafe {
+        ROOM_ID.push(room_id);
     }
 }

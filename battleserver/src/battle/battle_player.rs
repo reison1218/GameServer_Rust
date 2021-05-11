@@ -79,11 +79,12 @@ impl BattleBuff {
 ///角色战斗流程相关数据
 #[derive(Clone, Debug, Default)]
 pub struct TurnFlowData {
-    pub residue_movement_points: u8,      //剩余移动点数
-    pub open_map_cell_vec: Vec<usize>,    //最近一次turn翻过的地图块
-    pub turn_limit_skills: Vec<u32>,      //turn限制技能
-    pub round_limit_skills: Vec<u32>,     //round限制技能
-    pub pair_usable_skills: HashSet<u32>, //配对可用技能
+    pub residue_movement_points: u8,           //剩余移动点数
+    pub open_map_cell_vec: Vec<usize>,         //最近一次turn翻过的地图块
+    pub open_map_cell_vec_history: Vec<usize>, //这个turn所有翻过的地图块
+    pub turn_limit_skills: Vec<u32>,           //turn限制技能
+    pub round_limit_skills: Vec<u32>,          //round限制技能
+    pub pair_usable_skills: HashSet<u32>,      //配对可用技能
 }
 
 ///角色战斗流程相关数据
@@ -178,6 +179,15 @@ impl BattlePlayer {
         }
         battle_player.reset_residue_movement_points();
         Ok(battle_player)
+    }
+
+    pub fn add_open_map_cell(&mut self, index: usize) {
+        self.flow_data.open_map_cell_vec_history.push(index);
+    }
+
+    pub fn clear_turn_open_map_cell(&mut self) {
+        self.flow_data.open_map_cell_vec.clear();
+        self.flow_data.open_map_cell_vec_history.clear();
     }
 
     pub fn change_robot_status(&self, robot_action: Box<dyn RobotStatusAction>) {
@@ -355,7 +365,7 @@ impl BattlePlayer {
         self.change_attack_none();
         self.status.pair_attack_open_count = false;
         self.cter.index_data.map_cell_index = None;
-        self.flow_data.open_map_cell_vec.clear();
+        self.clear_turn_open_map_cell();
         self.cter.index_data.last_map_cell_index = None;
         self.flow_data.round_limit_skills.clear();
     }
@@ -372,7 +382,7 @@ impl BattlePlayer {
         //重制配对攻击奖励翻地图块次数
         self.status.pair_attack_open_count = false;
         //重制是否翻过地图块
-        self.flow_data.open_map_cell_vec.clear();
+        self.clear_turn_open_map_cell();
         //清空turn限制
         self.flow_data.turn_limit_skills.clear();
         //重制是否可以攻击

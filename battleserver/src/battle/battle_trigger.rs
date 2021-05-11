@@ -690,6 +690,10 @@ impl TriggerEvent for BattleData {
                 //进行结算
                 if is_punishment {
                     reward_score = punishment_score;
+                    sp.grade -= 1;
+                    if sp.grade <= 0 {
+                        sp.grade = 1;
+                    }
                 } else {
                     //计算基础分
                     let mut rank = sp.summary_rank + 1;

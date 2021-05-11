@@ -501,14 +501,20 @@ static mut STATIC_U32: u32 = 0;
 
 pub struct StructTestPtr(*mut StructTest);
 
-fn abc(st: &mut StructTest) {
-    st.str.push_str("string");
+fn abc<'b, 'a: 'b>(mut st: &'b mut StructTest, st1: &'a mut StructTest) {
+    println!("l_st:{:p}", st);
+    st = st1;
+    println!("l_st:{:p}", st);
 }
 fn main() -> anyhow::Result<()> {
-    let mut st = StructTest::default();
-    let a = &mut st;
-    abc(a);
-    println!("{:p}", a);
+    // let mut st = StructTest::default();
+    // let mut st1 = StructTest::default();
+    // let a = &mut st;
+    // let b = &mut st1;
+    // println!("w_st:{:p}", a);
+    // println!("w_st1:{:p}", b);
+    // abc(a, b);
+    // println!("w_st:{:p}", a);
     // let res = SSSSSSS([0, 10]);
     // let res1 = SSSSSSS([0, 40]);
     // println!("{:?},{:?}", res.type_id(), res.0.type_id());

@@ -65,8 +65,8 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         //翻两个地图块之后进行判断，如果记忆队列中有地图块，使用技能
         i if [221].contains(&i) => {
             let cter = battle_data.battle_player.get(&robot_id).unwrap();
-            can_use =
-                cter.flow_data.open_map_cell_vec.len() >= 2 && robot.remember_map_cell.len() > 0;
+            can_use = cter.flow_data.open_map_cell_vec_history.len() >= 2
+                && robot.remember_map_cell.len() > 0;
         }
         //判断周围有没有人
         i if [313].contains(&i) => {

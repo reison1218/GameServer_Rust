@@ -88,12 +88,22 @@ impl Season {
     }
 }
 
+pub static mut ROOM_ID: Vec<u32> = Vec::new();
+
 fn init_templates_mgr() -> TemplatesMgr {
     let path = env::current_dir().unwrap();
     let str = path.as_os_str().to_str().unwrap();
     let res = str.to_string() + "/template";
     let conf = init_temps_mgr(res.as_str());
     conf
+}
+
+fn init_room_id() {
+    unsafe {
+        for i in 100000..=999999 {
+            ROOM_ID.push(i);
+        }
+    }
 }
 
 type Lock = Arc<Mutex<RoomMgr>>;
@@ -113,6 +123,9 @@ fn main() {
 
     //初始化赛季
     init_season();
+
+    //初始化房间id
+    init_room_id();
 
     //初始化tcp服务
     init_tcp_server(room_mgr.clone());

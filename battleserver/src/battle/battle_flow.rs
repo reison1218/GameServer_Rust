@@ -473,7 +473,7 @@ impl BattleData {
                 self.exec_open_map_cell(user_id, index);
 
                 //再配对
-                is_pair = self.handler_map_cell_pair(user_id);
+                is_pair = self.handler_map_cell_pair(user_id, index);
             }
             let mut buff_function_id;
             let mut buff_id;

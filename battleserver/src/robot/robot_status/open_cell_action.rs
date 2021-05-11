@@ -158,7 +158,7 @@ pub fn cal_pair_num(
     let remember_cells = robot_data.remember_map_cell.borrow();
 
     //这个turn放开的地图块下标
-    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec;
+    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec_history;
     //去掉已经翻开过的,并且添加可以配对的
     for cell_index in open_map_cell_vec.iter() {
         let cell_index = *cell_index;
