@@ -104,7 +104,7 @@ async fn accept(
         }
 
         if result.is_none() {
-            error!("{:?}", "result is none!");
+            error!("result is none!path:{:?}", path);
             return Err(http_types::Error::from_str(
                 StatusCode::NoContent,
                 "result is none!",

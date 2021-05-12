@@ -100,8 +100,9 @@ pub mod bytebuf {
 
         ///读取指定长度的字节数
         pub fn read_bytes_size(&mut self, size: usize) -> anyhow::Result<&[u8]> {
+            let len = self.bytes.len();
             if self.bytes.len() - self.index < size {
-                anyhow::bail!("could not read u32,the readable u8 array is notEnough!")
+                anyhow::bail!("could not read bytes,the readable u8 array is notEnough!read_size:{},bytes_len:{}",size,len)
             }
             let end = self.index + size;
             let res = &self.bytes[self.index..end];
