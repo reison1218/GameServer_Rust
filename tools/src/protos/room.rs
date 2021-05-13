@@ -541,6 +541,7 @@ pub struct S_ROOM {
     // message fields
     pub is_succ: bool,
     pub err_mess: ::std::string::String,
+    pub err_code: u32,
     pub room: ::protobuf::SingularPtrField<super::base::RoomPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -599,7 +600,22 @@ impl S_ROOM {
         ::std::mem::replace(&mut self.err_mess, ::std::string::String::new())
     }
 
-    // .protos.RoomPt room = 3;
+    // uint32 err_code = 3;
+
+
+    pub fn get_err_code(&self) -> u32 {
+        self.err_code
+    }
+    pub fn clear_err_code(&mut self) {
+        self.err_code = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_err_code(&mut self, v: u32) {
+        self.err_code = v;
+    }
+
+    // .protos.RoomPt room = 4;
 
 
     pub fn get_room(&self) -> &super::base::RoomPt {
@@ -658,6 +674,13 @@ impl ::protobuf::Message for S_ROOM {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.err_mess)?;
                 },
                 3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.err_code = tmp;
+                },
+                4 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.room)?;
                 },
                 _ => {
@@ -678,6 +701,9 @@ impl ::protobuf::Message for S_ROOM {
         if !self.err_mess.is_empty() {
             my_size += ::protobuf::rt::string_size(2, &self.err_mess);
         }
+        if self.err_code != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.err_code, ::protobuf::wire_format::WireTypeVarint);
+        }
         if let Some(ref v) = self.room.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -694,8 +720,11 @@ impl ::protobuf::Message for S_ROOM {
         if !self.err_mess.is_empty() {
             os.write_string(2, &self.err_mess)?;
         }
+        if self.err_code != 0 {
+            os.write_uint32(3, self.err_code)?;
+        }
         if let Some(ref v) = self.room.as_ref() {
-            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
@@ -747,6 +776,11 @@ impl ::protobuf::Message for S_ROOM {
                 |m: &S_ROOM| { &m.err_mess },
                 |m: &mut S_ROOM| { &mut m.err_mess },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "err_code",
+                |m: &S_ROOM| { &m.err_code },
+                |m: &mut S_ROOM| { &mut m.err_code },
+            ));
             fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::RoomPt>>(
                 "room",
                 |m: &S_ROOM| { &m.room },
@@ -770,6 +804,7 @@ impl ::protobuf::Clear for S_ROOM {
     fn clear(&mut self) {
         self.is_succ = false;
         self.err_mess.clear();
+        self.err_code = 0;
         self.room.clear();
         self.unknown_fields.clear();
     }
@@ -6088,54 +6123,55 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12/\n\x07setting\x18\x02\
     \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"&\n\x0bC_JOIN_ROOM\
     \x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\",\n\rC_SEARCH_ROOM\
-    \x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"`\n\x06S_ROOM\x12\
+    \x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"{\n\x06S_ROOM\x12\
     \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\x12\"\n\x04room\x18\x03\x20\x01(\x0b2\
-    \x0e.protos.RoomPtR\x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\
-    \x18\x01\x20\x01(\rR\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\
-    \x05value\"D\n\x0eS_ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\
-    \x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\
-    \x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\
-    \x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07er\
-    rMess\"-\n\x12C_CHOOSE_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\r\
-    R\x06cterId\"H\n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"M\n\x19S_CHOOSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
-    (\rR\x06userId\x12\x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"(\n\
-    \x0eC_CHOOSE_SKILL\x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\
-    \n\x0eS_CHOOSE_SKILL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSuc\
-    c\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skil\
-    ls\x18\x03\x20\x03(\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_i\
-    d\x18\x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_su\
-    cc\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01\
-    (\tR\x07errMess\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\
-    \x01(\rR\x0ctargetTeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_\
-    id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\r\
-    R\x06teamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\
-    \x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\
-    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
-    \x07errMess\"L\n\x17S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userId\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07pre\
-    pare\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"Z\n\x18S_ROOM_ADD_MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\r\
-    R\x05index\x12(\n\x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\
-    \x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\
-    \x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSetti\
-    ngPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\
-    \rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08\
-    R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\
-    \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
-    BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
-    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUC\
-    CESS_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CO\
-    NFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\
-    \n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\
-    \x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARC\
-    H\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07\
-    user_id\x18\x01\x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\
-    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatchb\x06proto3\
+    \x18\x02\x20\x01(\tR\x07errMess\x12\x19\n\x08err_code\x18\x03\x20\x01(\r\
+    R\x07errCode\x12\"\n\x04room\x18\x04\x20\x01(\x0b2\x0e.protos.RoomPtR\
+    \x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\x18\x01\x20\x01(\r\
+    R\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\x05value\"D\n\x0eS\
+    _ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
+    \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROO\
+    M\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
+    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"-\n\x12C_CHOOS\
+    E_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\"H\n\x12S\
+    _CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"M\n\x19S_CHOOSE_C\
+    HARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
+    \x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"(\n\x0eC_CHOOSE_SKILL\
+    \x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_CHOOSE_SKI\
+    LL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
+    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\x03\x20\x03\
+    (\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\
+    \rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\x18\x01\x20\x01\
+    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"5\
+    \n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctarget\
+    TeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
+    (\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\rR\x06teamId\",\n\
+    \x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepa\
+    re\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
+    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"L\n\x17\
+    S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
+    Id\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07prepare\"\t\n\x07C_STAR\
+    T\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"Z\n\x18S_ROOM_ADD\
+    _MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12(\n\
+    \x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_\
+    ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\
+    \x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"\
+    $\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\
+    \x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
+    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\
+    \x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEMBER_LEAVE_NOTICE\x12\
+    \x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x17\n\x07user_\
+    id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUCCESS_NOTICE\x12\x14\
+    \n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CONFIRM_INTO_ROOM\x12\
+    \x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INT\
+    O_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\
+    \x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CA\
+    NCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\x01(\x0b2\x15.\
+    protos.PunishMatchPtR\x0bpunishMatchb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

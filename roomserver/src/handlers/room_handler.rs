@@ -912,6 +912,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this player already in the room!");
+        sr.err_code = 101;
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -924,6 +925,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is not exist!");
+        sr.err_code = 102;
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -940,6 +942,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is already start!");
+        sr.err_code = 103;
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -969,6 +972,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is full!");
+        sr.err_code = 104;
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }

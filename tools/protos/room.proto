@@ -40,7 +40,8 @@ message C_SEARCH_ROOM{
 message S_ROOM{
     bool is_succ = 1;//是否成功;
     string err_mess = 2;//错误信息;
-    RoomPt room = 3;//房间数据
+    uint32 err_code = 3;//错误码;101:玩家已经在房间内   102:房间不存在   103:房间已开始 104:房间人满了
+    RoomPt room = 4;//房间数据
 }
 
 //房间设置请求
