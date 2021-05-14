@@ -506,7 +506,36 @@ fn abc<'b, 'a: 'b>(mut st: &'b mut StructTest, st1: &'a mut StructTest) {
     st = st1;
     println!("l_st:{:p}", st);
 }
+
+pub struct TcpClientTest;
+use async_trait::async_trait;
+#[async_trait]
+impl tools::tcp::ClientHandler for TcpClientTest {
+    async fn on_open(&mut self, sender: crossbeam::channel::Sender<Vec<u8>>) {
+        println!("open");
+    }
+
+    async fn on_close(&mut self) {
+        println!("close");
+    }
+
+    async fn on_message(&mut self, mess: Vec<u8>) {
+        println!("message");
+    }
+}
+
 fn main() -> anyhow::Result<()> {
+    let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:16801");
+    match res {
+        Ok(mut ts) => {
+            println!("success");
+            let s = String::from_str("hello").unwrap();
+            ts.write(s.as_bytes());
+        }
+        Err(e) => {
+            println!("{:?}", e);
+        }
+    }
     // let mut st = StructTest::default();
     // let mut st1 = StructTest::default();
     // let a = &mut st;

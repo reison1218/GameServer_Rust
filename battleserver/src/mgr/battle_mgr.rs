@@ -3,7 +3,7 @@ use crate::handlers::battle_handler::{
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
-use crate::room::{MemberLeaveNoticeType, RoomState};
+use crate::room::{MemberLeaveNoticeType, RoomState, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{info, warn};
@@ -133,6 +133,23 @@ impl BattleMgr {
         need_push_self: bool,
     ) {
         let room = self.rooms.get_mut(&room_id).unwrap();
+        let battle_player = room.get_battle_player_ref(&user_id);
+        if battle_player.is_none() {
+            return;
+        }
+        let battle_player = battle_player.unwrap();
+
+        let room_type = room.get_room_type();
+        //如果是主动推出房间，房间为匹配房，玩家没死，不允许退出房间
+        if notice_type == MemberLeaveNoticeType::Leave
+            && room_type == RoomType::OneVOneVOneVOneMatch
+            && !battle_player.is_died()
+        {
+            warn!(
+                "player can not leave room!room_type: {:?},user_id:{},battle_state:{:?} ",
+                room_type, user_id, battle_player.status.battle_state
+            );
+        }
         let room_id = room.get_room_id();
         room.remove_member(notice_type, &user_id, need_push_self);
         info!("玩家离线战斗服务!room_id={},user_id={}", room_id, user_id);

@@ -130,6 +130,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     let user_id = packet.get_user_id();
     let res = bm.get_room_mut(&user_id);
     if let None = res {
+        warn!("the player is not in the room!user_id:{}", user_id);
         return;
     }
     let room = res.unwrap();
@@ -216,7 +217,8 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     }
 
     //如果有问题就返回
-    if let Err(_) = res {
+    if let Err(e) = res {
+        warn!("{:?}", e);
         return;
     }
 

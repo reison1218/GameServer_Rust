@@ -1066,7 +1066,9 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
     }
     if cter.is_some() {
         let cter = cter.unwrap();
-        member.chose_cter = cter.clone();
+        let mut res = cter.clone();
+        res.skills.clear();
+        member.chose_cter = res;
     } else if cter_id == 0 {
         let choice_cter = Character::default();
         member.chose_cter = choice_cter;
@@ -1143,8 +1145,9 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
         .character_temp_mgr()
         .get_temp_ref(&cter_id)
         .unwrap();
+    let usable_skill_count = cter_temp.usable_skill_count;
     //校验技能数量
-    if skills.len() > cter_temp.usable_skill_count as usize {
+    if skills.len() > usable_skill_count as usize {
         warn!("this cter's skill count is error! cter_id:{}", cter_id);
         return;
     }
@@ -1159,7 +1162,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
         }
     }
 
-    //校验技能合法性
+    //校验技能组
     for group in cter_temp.skills.iter() {
         let mut count = 0;
         for skill in skills {
@@ -1167,13 +1170,30 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
                 continue;
             }
             count += 1;
-            if count >= 2 {
+            if count >= usable_skill_count {
                 warn!("the skill group is error!user_id:{}", user_id);
                 return;
             }
         }
     }
 
+    //校验是否重复发送
+    let mut same_count: usize = 0;
+    for &id in member.chose_cter.skills.iter() {
+        for &skill_id in skills {
+            if id != skill_id {
+                continue;
+            }
+            same_count += 1;
+        }
+    }
+    if same_count >= usable_skill_count as usize {
+        warn!(
+            "the skill is unchange!user_id:{},skills:{:?},skills_param:{:?}",
+            user_id, member.chose_cter.skills, skills
+        );
+        return;
+    }
     //走正常逻辑
     member.chose_cter.skills = skills.to_vec();
     let mut scs = S_CHOOSE_SKILL::new();
