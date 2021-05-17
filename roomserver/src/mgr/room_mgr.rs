@@ -3,7 +3,7 @@ use crate::handlers::room_handler::{
     confirm_into_room, create_room, emoji, join_room, kick_member, leave_room, off_line,
     prepare_cancel, reload_temps, room_setting, search_room, start, summary, update_season,
 };
-use crate::room::room::{Room, RoomState};
+use crate::room::room::Room;
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
@@ -111,22 +111,11 @@ impl RoomMgr {
         let room_type = room.get_room_type();
         room.remove_member_without_push(user_id);
         self.player_room.remove(&user_id);
+        let need_rm_room = room.check_need_rm_room();
         info!(
             "玩家退出房间!删除房间内玩家数据!不通知客户端!user_id:{},room_id:{}",
             user_id, room_id
         );
-        let need_rm_room;
-        if room.is_empty() {
-            need_rm_room = true;
-        } else if room.state == RoomState::ChoiceIndex
-            && (room.members.len() == 1 && room_type == RoomType::OneVOneVOneVOneMatch)
-        {
-            need_rm_room = true;
-        } else if room_type == RoomType::OneVOneVOneVOneCustom && user_id == room.get_owner_id() {
-            need_rm_room = true;
-        } else {
-            need_rm_room = false;
-        }
         if need_rm_room {
             self.rm_room_without_push(room_type, room_id);
         }

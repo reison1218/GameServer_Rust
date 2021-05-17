@@ -912,7 +912,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this player already in the room!");
-        sr.err_code = 101;
+        sr.set_err_code(101);
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -925,7 +925,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is not exist!");
-        sr.err_code = 102;
+        sr.set_err_code(102);
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -942,7 +942,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is already start!");
-        sr.err_code = 103;
+        sr.set_err_code(103);
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -972,7 +972,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         let mut sr = tools::protos::room::S_ROOM::new();
         sr.is_succ = false;
         sr.err_mess = String::from("this room is full!");
-        sr.err_code = 104;
+        sr.set_err_code(104);
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
@@ -1308,10 +1308,14 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
         }
         //如果是自定义房间，重制玩家数据
         RoomType::OneVOneVOneVOneCustom => {
-            room.state = RoomState::AwaitReady;
-            for member in room.members.values_mut() {
-                member.chose_cter = Character::default();
-                member.state = MemberState::NotReady;
+            if room.get_owner_id() == 0 {
+                rm.rm_room_without_push(room_type, room_id);
+            } else {
+                room.state = RoomState::AwaitReady;
+                for member in room.members.values_mut() {
+                    member.chose_cter = Character::default();
+                    member.state = MemberState::NotReady;
+                }
             }
         }
         _ => {}
@@ -1410,7 +1414,7 @@ pub fn handler_leave_room(
 
             let room = rm.custom_room.rooms.get(&room_id).unwrap();
             let owner_id = room.get_owner_id();
-            if room.is_empty() || user_id == owner_id {
+            if room.is_empty() || (user_id == owner_id && room.state != RoomState::ChoiceIndex) {
                 true
             } else {
                 false

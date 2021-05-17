@@ -145,6 +145,31 @@ impl Room {
         Ok(room)
     }
 
+    pub fn check_need_rm_room(&self) -> bool {
+        let room_type = self.room_type;
+        let state = self.state;
+        if self.is_empty() {
+            return true;
+        }
+
+        match room_type {
+            RoomType::OneVOneVOneVOneCustom => {
+                if self.get_owner_id() == 0 && state != RoomState::ChoiceIndex {
+                    return true;
+                }
+            }
+            RoomType::OneVOneVOneVOneMatch => {
+                if state == RoomState::ChoiceIndex && self.members.len() == 1 {
+                    return true;
+                }
+            }
+            _ => {
+                return false;
+            }
+        }
+        false
+    }
+
     ///离开房间检查是否需要添加惩罚
     pub fn check_punish_for_leave(&mut self, user_id: u32) {
         if self.room_type != RoomType::OneVOneVOneVOneMatch {
@@ -570,6 +595,9 @@ impl Room {
     ///处理玩家离开
     fn handler_leave(&mut self, user_id: u32) {
         self.members.remove(&user_id);
+        if self.get_owner_id() == user_id {
+            self.owner_id = 0;
+        }
         let mut index = 0_usize;
         for i in self.member_index.iter() {
             if *i == user_id {
