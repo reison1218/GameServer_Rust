@@ -536,6 +536,10 @@ impl Room {
         for id in self.members.keys() {
             self_mut_ref.send_2_client(ClientCode::StartNotice, *id, bytes.clone());
         }
+        for battle_cter in self.battle_data.battle_player.values() {
+            let cter_pt = battle_cter.convert_to_battle_cter_pt();
+            ssn.battle_cters.push(cter_pt);
+        }
     }
 
     ///发送表情包
@@ -858,6 +862,9 @@ impl Room {
 
     ///创建选择下标定时任务
     pub fn build_choice_index_task(&self) {
+        if self.room_type == RoomType::OneVOneVOneVOneCustom && self.setting.turn_limit_time == 0 {
+            return;
+        }
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             error!("{:?}", e);
@@ -866,21 +873,27 @@ impl Room {
         let user_id = user_id.unwrap();
         let time_limit = TEMPLATES.constant_temp_mgr().temps.get("choice_index_time");
         let mut task = Task::default();
-        if let Some(time) = time_limit {
-            let time = u64::from_str(time.value.as_str());
-            match time {
-                Ok(time) => {
-                    task.delay = time + 500;
-                }
-                Err(e) => {
-                    task.delay = 20000_u64;
-                    error!("{:?}", e);
-                }
-            }
+
+        if self.room_type == RoomType::OneVOneVOneVOneCustom {
+            task.delay = self.setting.turn_limit_time as u64;
         } else {
-            task.delay = 5000_u64;
-            warn!("the choice_index_time of Constant config is None!pls check!");
+            if let Some(time) = time_limit {
+                let time = u64::from_str(time.value.as_str());
+                match time {
+                    Ok(time) => {
+                        task.delay = time + 500;
+                    }
+                    Err(e) => {
+                        task.delay = 20000_u64;
+                        error!("{:?}", e);
+                    }
+                }
+            } else {
+                task.delay = 5000_u64;
+                warn!("the choice_index_time of Constant config is None!pls check!");
+            }
         }
+
         task.cmd = TaskCmd::ChoiceIndex;
 
         let mut map = serde_json::Map::new();

@@ -38,7 +38,6 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {
-        //[255,244,255,253,6]
         //校验包长度
         if mess.is_empty() || mess.len() < 16 {
             error!("client packet len is wrong!");

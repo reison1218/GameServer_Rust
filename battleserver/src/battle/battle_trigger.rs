@@ -401,8 +401,7 @@ impl TriggerEvent for BattleData {
 
         //战斗角色身上的技能
         let mut skill_s;
-        let skill;
-        let skill_function_id;
+        let mut skill = None;
         if is_item {
             let res = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
             if let Err(e) = res {
@@ -410,52 +409,54 @@ impl TriggerEvent for BattleData {
                 return;
             }
             let skill_temp = res.unwrap();
-            skill_s = Some(Skill::from(skill_temp));
-            skill = skill_s.as_mut().unwrap();
+            skill_s = Skill::from(skill_temp);
+            skill = Some(&mut skill_s);
         } else {
             let res = battle_player.cter.skills.get_mut(&skill_id);
-            if res.is_none() {
-                return;
+            if let Some(res) = res {
+                skill = Some(res);
             }
-            skill = res.unwrap();
         }
-        skill_function_id = skill.function_id;
-        //替换技能,水炮
-        if skill_function_id == WATER_TURRET {
-            let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
-            battle_player.cter.skills.remove(&skill_id);
-            if let Err(e) = skill_temp {
-                error!("{:?}", e);
-                return;
+        if let Some(skill) = skill {
+            let skill_function_id = skill.function_id;
+            //替换技能,水炮
+            if skill_function_id == WATER_TURRET {
+                let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
+                battle_player.cter.skills.remove(&skill_id);
+                if let Err(e) = skill_temp {
+                    error!("{:?}", e);
+                    return;
+                }
+                let st = skill_temp.unwrap();
+
+                let mut target_pt = TargetPt::new();
+                //封装角色位置
+                target_pt
+                    .target_value
+                    .push(battle_player.get_map_cell_index() as u32);
+                //封装丢失技能
+                target_pt.lost_skills.push(skill_id);
+                //封装增加的技能
+                let mut ep = EffectPt::new();
+                ep.effect_type = AddSkill.into_u32();
+                ep.effect_value = st.id;
+                target_pt.effects.push(ep);
+                //将新技能封装到内存
+                let skill = Skill::from(st);
+                battle_player.cter.skills.insert(skill.id, skill);
+                //将target封装到proto
+                au.targets.push(target_pt);
             }
-            let st = skill_temp.unwrap();
 
-            let mut target_pt = TargetPt::new();
-            //封装角色位置
-            target_pt
-                .target_value
-                .push(battle_player.get_map_cell_index() as u32);
-            //封装丢失技能
-            target_pt.lost_skills.push(skill_id);
-            //封装增加的技能
-            let mut ep = EffectPt::new();
-            ep.effect_type = AddSkill.into_u32();
-            ep.effect_value = st.id;
-            target_pt.effects.push(ep);
-            //将新技能封装到内存
-            let skill = Skill::from(st);
-            battle_player.cter.skills.insert(skill.id, skill);
-            //将target封装到proto
-            au.targets.push(target_pt);
+            //使用后删除可用状态
+            if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
+                battle_player
+                    .flow_data
+                    .pair_usable_skills
+                    .remove(&skill_function_id);
+            }
         }
 
-        //使用后删除可用状态
-        if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
-            battle_player
-                .flow_data
-                .pair_usable_skills
-                .remove(&skill_function_id);
-        }
         //使用技能任务
         trigger_mission(
             self,

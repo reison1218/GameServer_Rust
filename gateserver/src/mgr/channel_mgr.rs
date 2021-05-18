@@ -61,7 +61,7 @@ impl ChannelMgr {
                 self.notice_off_line(user_id);
             }
             None => {
-                warn!("user_id is none for token:{},so nothing to do!", token);
+                //warn!("user_id is none for token:{},so nothing to do!", token);
             }
         }
     }

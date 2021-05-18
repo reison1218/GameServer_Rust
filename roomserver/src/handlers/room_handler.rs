@@ -1414,7 +1414,7 @@ pub fn handler_leave_room(
 
             let room = rm.custom_room.rooms.get(&room_id).unwrap();
             let owner_id = room.get_owner_id();
-            if room.is_empty() || (user_id == owner_id && room.state != RoomState::ChoiceIndex) {
+            if room.is_empty() || (owner_id == 0 && room.state != RoomState::ChoiceIndex) {
                 true
             } else {
                 false

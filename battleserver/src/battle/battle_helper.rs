@@ -878,7 +878,7 @@ impl BattleData {
                 map_cell.cell_type
             )
         }
-        if is_check_close && map_cell.open_user == 0 {
+        if is_check_close && (map_cell.open_user == 0 && map_cell.pair_index.is_none()) {
             anyhow::bail!("this map_cell already closed!index:{}", map_cell.index)
         }
         if is_check_open && map_cell.open_user > 0 {

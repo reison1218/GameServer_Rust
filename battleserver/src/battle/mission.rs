@@ -37,6 +37,20 @@ pub enum MissionResetType {
     Round = 2,
 }
 
+///任务触发类型
+pub enum MissionTriggerType {
+    ///翻开地图块触发
+    OpenCell,
+    ///配对触发
+    Pair,
+    ///攻击触发
+    Attack,
+    ///使用技能触发
+    UseSkill,
+    ///获得金币触发
+    GetGold,
+}
+
 ///任务完成条件枚举
 #[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -237,20 +251,6 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
             error!("{:?}", e);
         }
     }
-}
-
-///任务触发类型
-pub enum MissionTriggerType {
-    ///翻开地图块触发
-    OpenCell,
-    ///配对触发
-    Pair,
-    ///攻击触发
-    Attack,
-    ///使用技能触发
-    UseSkill,
-    ///获得金币触发
-    GetGold,
 }
 
 ///触发任务

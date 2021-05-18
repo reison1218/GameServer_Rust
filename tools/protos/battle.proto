@@ -82,6 +82,7 @@ message S_START_NOTICE{
     uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
     repeated uint32 turn_order = 4;//turn顺序
+    repeated BattleCharacterPt battle_cters = 5;//战斗角色数据
 }
 
 //选择位置请求

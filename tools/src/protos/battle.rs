@@ -30,6 +30,7 @@ pub struct S_START_NOTICE {
     pub tile_map_id: u32,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
     pub turn_order: ::std::vec::Vec<u32>,
+    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -125,11 +126,41 @@ impl S_START_NOTICE {
     pub fn take_turn_order(&mut self) -> ::std::vec::Vec<u32> {
         ::std::mem::replace(&mut self.turn_order, ::std::vec::Vec::new())
     }
+
+    // repeated .protos.BattleCharacterPt battle_cters = 5;
+
+
+    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
+        &self.battle_cters
+    }
+    pub fn clear_battle_cters(&mut self) {
+        self.battle_cters.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
+        self.battle_cters = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        &mut self.battle_cters
+    }
+
+    // Take field
+    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
+        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
+    }
 }
 
 impl ::protobuf::Message for S_START_NOTICE {
     fn is_initialized(&self) -> bool {
         for v in &self.world_cell {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.battle_cters {
             if !v.is_initialized() {
                 return false;
             }
@@ -161,6 +192,9 @@ impl ::protobuf::Message for S_START_NOTICE {
                 4 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.turn_order)?;
                 },
+                5 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -186,6 +220,10 @@ impl ::protobuf::Message for S_START_NOTICE {
         for value in &self.turn_order {
             my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
+        for value in &self.battle_cters {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -205,6 +243,11 @@ impl ::protobuf::Message for S_START_NOTICE {
         };
         for v in &self.turn_order {
             os.write_uint32(4, *v)?;
+        };
+        for v in &self.battle_cters {
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -264,6 +307,11 @@ impl ::protobuf::Message for S_START_NOTICE {
                 |m: &S_START_NOTICE| { &m.turn_order },
                 |m: &mut S_START_NOTICE| { &mut m.turn_order },
             ));
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
+                "battle_cters",
+                |m: &S_START_NOTICE| { &m.battle_cters },
+                |m: &mut S_START_NOTICE| { &mut m.battle_cters },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_NOTICE>(
                 "S_START_NOTICE",
                 fields,
@@ -284,6 +332,7 @@ impl ::protobuf::Clear for S_START_NOTICE {
         self.tile_map_id = 0;
         self.world_cell.clear();
         self.turn_order.clear();
+        self.battle_cters.clear();
         self.unknown_fields.clear();
     }
 }
@@ -3058,40 +3107,41 @@ impl ::protobuf::reflect::ProtobufValue for S_BUY_NOTICE {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"\xa4\x01\n\x0eS_START_\
+    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"\xe2\x01\n\x0eS_START_\
     NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\
     \n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\
     \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12\x1d\n\nturn_or\
-    der\x18\x04\x20\x03(\rR\tturnOrder\"&\n\x0eC_CHOOSE_INDEX\x12\x14\n\x05i\
-    ndex\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_INDEX\x12\x17\n\x07is\
-    _succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\
-    \x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\x12\x17\n\x07user_id\
-    \x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\x18\x02\x20\x01(\rR\
-    \x05index\"d\n\x08C_ACTION\x12\x1f\n\x0baction_type\x18\x01\x20\x01(\rR\
-    \nactionType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\x12!\n\x0ct\
-    arget_index\x18\x03\x20\x03(\rR\x0btargetIndex\"p\n\x15S_BATTLE_START_NO\
-    TICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\x0b2\x19.protos.BattleChara\
-    cterPtR\x0bbattleCters\x12\x19\n\x08map_data\x18\x02\x20\x01(\tR\x07mapD\
-    ata\"J\n\x0fS_ACTION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\
-    \x14.protos.ActionUnitPtR\x0bactionUints\"\x93\x01\n\x14S_BATTLE_TURN_NO\
-    TICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12/\n\x05cters\
-    \x18\x02\x20\x03(\x0b2\x19.protos.BattleCharacterPtR\x05cters\x121\n\nce\
-    ll_buffs\x18\x03\x20\x03(\x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\n\
-    \x05C_POS\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08ski\
-    ll_id\x18\x02\x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07u\
-    ser_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\n\x04type\x18\x02\x20\x01(\
-    \rR\x04type\x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\x8b\
-    \x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\
-    \rR\nroomStatus\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\
-    \x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworld\
-    Cell\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\x0b\
-    2\x15.protos.SummaryDataPtR\x0csummaryDatas\"k\n\x10S_MISSION_NOTICE\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1d\n\nmission_id\
-    \x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnotice_type\x18\x03\x20\x01\
-    (\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchandise_id\x18\x01\x20\x01(\
-    \rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\
-    \x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\x02\x20\x01(\rR\rmerchan\
-    diseIdb\x06proto3\
+    der\x18\x04\x20\x03(\rR\tturnOrder\x12<\n\x0cbattle_cters\x18\x05\x20\
+    \x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"&\n\x0eC_CHOOSE\
+    _INDEX\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_\
+    INDEX\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08\
+    err_mess\x18\x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\
+    \x18\x02\x20\x01(\rR\x05index\"d\n\x08C_ACTION\x12\x1f\n\x0baction_type\
+    \x18\x01\x20\x01(\rR\nactionType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\
+    \x05value\x12!\n\x0ctarget_index\x18\x03\x20\x03(\rR\x0btargetIndex\"p\n\
+    \x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\x0b2\
+    \x19.protos.BattleCharacterPtR\x0bbattleCters\x12\x19\n\x08map_data\x18\
+    \x02\x20\x01(\tR\x07mapData\"J\n\x0fS_ACTION_NOTICE\x127\n\x0caction_uin\
+    ts\x18\x01\x20\x03(\x0b2\x14.protos.ActionUnitPtR\x0bactionUints\"\x93\
+    \x01\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
+    \x06userId\x12/\n\x05cters\x18\x02\x20\x03(\x0b2\x19.protos.BattleCharac\
+    terPtR\x05cters\x121\n\ncell_buffs\x18\x03\x20\x03(\x0b2\x12.protos.Cell\
+    BuffPtR\tcellBuffs\"6\n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\x01(\rR\
+    \x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\x07skillId\"V\n\x0cS_\
+    POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\n\
+    \x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x03\x20\
+    \x01(\rR\x07skillId\"\x8b\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broo\
+    m_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\n\x0btile_map_id\x18\
+    \x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13\
+    .protos.WorldCellPtR\tworldCell\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary\
+    _datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"\
+    k\n\x10S_MISSION_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
+    Id\x12\x1d\n\nmission_id\x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnot\
+    ice_type\x18\x03\x20\x01(\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchan\
+    dise_id\x18\x01\x20\x01(\rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\
+    \n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\
+    \x02\x20\x01(\rR\rmerchandiseIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;
