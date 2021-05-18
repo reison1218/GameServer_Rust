@@ -674,6 +674,10 @@ impl BattleData {
                 let element = skill_temp.par2 as u8;
                 for map_cell in self.tile_map.map_cells.iter() {
                     let index = map_cell.index;
+                    //必须已经翻开
+                    if map_cell.open_user == 0 || map_cell.pair_index.is_none() {
+                        continue;
+                    }
                     //排除自己和上面没人的地图块
                     if map_cell.user_id == user_id || map_cell.user_id == 0 {
                         continue;
