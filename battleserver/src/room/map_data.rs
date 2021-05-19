@@ -116,9 +116,6 @@ impl TileMap {
             if map_cell.user_id == user_id {
                 map_cell.user_id = 0;
             }
-            if map_cell.open_user == user_id {
-                map_cell.open_user = 0;
-            }
         }
     }
 

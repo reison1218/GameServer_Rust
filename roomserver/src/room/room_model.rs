@@ -78,13 +78,13 @@ impl Default for RoomSetting {
                     }
                     Err(err) => {
                         error!("{:?}", err);
-                        turn_limit_time = 60000;
+                        turn_limit_time = 120000;
                     }
                 }
             }
 
             None => {
-                turn_limit_time = 60000;
+                turn_limit_time = 120000;
                 warn!("constant temp's battle_turn_limit_time is none!")
             }
         }

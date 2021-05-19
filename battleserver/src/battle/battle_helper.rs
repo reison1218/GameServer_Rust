@@ -60,7 +60,9 @@ impl BattleData {
         for index in cter.flow_data.open_map_cell_vec_history.iter() {
             let map_cell = self.tile_map.map_cells.get_mut(*index);
             if let Some(map_cell) = map_cell {
-                map_cell.open_user = 0;
+                if map_cell.pair_index.is_none() {
+                    map_cell.open_user = 0;
+                }
             }
         }
     }
@@ -675,7 +677,7 @@ impl BattleData {
                 for map_cell in self.tile_map.map_cells.iter() {
                     let index = map_cell.index;
                     //必须已经翻开
-                    if map_cell.open_user == 0 || map_cell.pair_index.is_none() {
+                    if map_cell.open_user == 0 {
                         continue;
                     }
                     //排除自己和上面没人的地图块
@@ -830,6 +832,13 @@ impl BattleData {
                     self.check_choice_index(index, false, false, false, true, true, true)?;
                 }
             }
+            //未锁定空地图块
+            TargetType::UnOpenNullMapCell => {
+                for &index in target_array {
+                    let index = index as usize;
+                    self.check_choice_index(index, false, true, true, true, false, true)?;
+                }
+            }
             _ => {}
         }
         Ok(())
@@ -882,7 +891,7 @@ impl BattleData {
                 map_cell.cell_type
             )
         }
-        if is_check_close && (map_cell.open_user == 0 && map_cell.pair_index.is_none()) {
+        if is_check_close && map_cell.open_user == 0 {
             anyhow::bail!("this map_cell already closed!index:{}", map_cell.index)
         }
         if is_check_open && map_cell.open_user > 0 {

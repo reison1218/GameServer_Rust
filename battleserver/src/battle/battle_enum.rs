@@ -74,7 +74,8 @@ pub mod skill_type {
     ///造成aoe伤害，并且减技能cd
     pub const SKILL_AOE_RED_SKILL_CD: u32 = 121;
     ///只用推送给自己的技能
-    pub const PUSH_SELF: [u32; 5] = [421, 20001, 112, 312, 324];
+    //pub const PUSH_SELF: [u32; 5] = [421, 20001, 112, 312, 324];
+    pub const PUSH_SELF: [u32; 0] = [];
     ///选择一个地图块，展示其相同元素地图块位置
     pub const SHOW_INDEX_SAME_ELEMENT: u32 = 422;
     ///配对可用，造成伤害
@@ -182,6 +183,8 @@ pub enum EffectType {
     AddSkill = 9,
     ///刷新技能cd
     RefreshSkillCd = 10,
+    ///换地图块位置
+    ChangeCellIndex = 11,
 }
 
 impl EffectType {
@@ -336,6 +339,7 @@ pub enum TargetType {
     MapCellOtherPlayer = 17,     //地图块上，除自己以外的玩家
     UnOpenMapCellAndUnLock = 18, //未翻开，且未锁定
     UnLockNullMapCell = 19,      //未锁定空地图块
+    UnOpenNullMapCell = 20,      //未翻开的空地图快
 }
 
 impl TargetType {

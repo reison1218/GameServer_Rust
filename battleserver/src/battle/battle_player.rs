@@ -708,10 +708,6 @@ impl BattleCharacter {
     ///获得角色地图块位置
     pub fn get_map_cell_index(&self) -> usize {
         if self.index_data.map_cell_index.is_none() {
-            error!(
-                "this cter's map_cell_index is None!user_id:{},cter_id:{}",
-                self.base_attr.user_id, self.base_attr.cter_id
-            );
             return 100;
         }
         self.index_data.map_cell_index.unwrap()

@@ -35,6 +35,7 @@ import "base.proto";
 //     AddEnergy = 8,               //增加能量
 //     AddSkill = 9,                //增加技能
 //     RefreshSkillCd = 10,         //刷新技能cd
+//     ChangeCellIndex = 11,         //换地图块位置
 // }
 //
 //

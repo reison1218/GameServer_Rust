@@ -1,3 +1,4 @@
+use crate::battle::battle_enum::TURN_DEFAULT_MOVEMENT_POINTS;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::{MemberLeaveNoticeType, RoomState};
 use crate::{JsonValue, Lock, SCHEDULED_MGR};
@@ -180,17 +181,22 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     let battle_cter = battle_player.unwrap();
 
     //如果玩家啥都没做，就T出房间
-    if battle_cter.flow_data.open_map_cell_vec_history.is_empty() {
+    let need_rm = battle_cter.flow_data.residue_movement_points == TURN_DEFAULT_MOVEMENT_POINTS
+        && !battle_cter.status.pair_attack_open_count;
+    if need_rm {
         room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
         info!("定时检测翻格子任务,没有翻人T出去,user_id:{}", user_id);
+        let room_state = room.state;
+        let is_empty = room.is_empty();
+        if is_empty || room_state == RoomState::BattleOvered {
+            let room_id = room.get_room_id();
+            lock.rm_room(room_id);
+        }
+        lock.player_room.remove(&user_id);
+    } else {
+        //如果用过移动点数就帮他跳过
+        room.battle_data.next_turn(true);
     }
-    let room_state = room.state;
-    let is_empty = room.is_empty();
-    if is_empty || room_state == RoomState::BattleOvered {
-        let room_id = room.get_room_id();
-        lock.rm_room(room_id);
-    }
-    lock.player_room.remove(&user_id);
 }
 
 fn max_battle_turn_limit(rm: Arc<Mutex<BattleMgr>>, task: Task) {

@@ -172,7 +172,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
                 }
                 Err(err) => {
                     warn!("{:?}", err);
-                    return;
+                    turn_limit_time = 120000;
                 }
             }
             room_setting = RoomSetting::from(room_setting_pt);
@@ -872,7 +872,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
                         }
                         Err(e) => {
                             warn!("{:?}", e);
-                            room.setting.turn_limit_time = 60000;
+                            room.setting.turn_limit_time = 120000;
                         }
                     }
                 }

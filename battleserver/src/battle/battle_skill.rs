@@ -63,7 +63,7 @@ pub unsafe fn change_map_cell_index(
     user_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
-    _: &mut ActionUnitPt,
+    au: &mut ActionUnitPt,
 ) -> Option<Vec<ActionUnitPt>> {
     if target_array.len() < 2 {
         warn!(
@@ -87,16 +87,15 @@ pub unsafe fn change_map_cell_index(
         );
         return None;
     }
-
     //校验原下标
-    let res = battle_data.check_choice_index(source_index, false, true, true, true, false, false);
+    let res = battle_data.check_choice_index(source_index, false, true, true, true, false, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
     }
 
     //校验目标下标
-    let res = battle_data.check_choice_index(target_index, false, true, true, true, false, false);
+    let res = battle_data.check_choice_index(target_index, false, true, true, true, false, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -110,7 +109,7 @@ pub unsafe fn change_map_cell_index(
     let target_user_id = target_map_cell.user_id;
     let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
 
-    //保留玩家数据和位置数据
+    //换内存数据
     std::mem::swap(source_map_cell, target_map_cell);
     source_map_cell.index = source_index;
     source_map_cell.x = s_x;
@@ -120,6 +119,22 @@ pub unsafe fn change_map_cell_index(
     target_map_cell.x = t_y;
     source_map_cell.user_id = source_user_id;
     target_map_cell.user_id = target_user_id;
+
+    let mut target = TargetPt::new();
+    target.target_value.push(source_index as u32);
+    let mut ep = EffectPt::new();
+    ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+    ep.effect_value = target_index as u32;
+    target.effects.push(ep);
+    au.targets.push(target);
+
+    let mut target = TargetPt::new();
+    target.target_value.push(target_index as u32);
+    let mut ep = EffectPt::new();
+    ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+    ep.effect_value = source_index as u32;
+    target.effects.push(ep);
+    au.targets.push(target);
 
     //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
     battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);
