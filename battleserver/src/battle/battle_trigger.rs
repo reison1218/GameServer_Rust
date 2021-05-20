@@ -31,7 +31,7 @@ pub trait TriggerEvent {
         user_id: u32,
         au: &mut ActionUnitPt,
         is_pair: bool,
-    ) -> anyhow::Result<Option<ActionUnitPt>>;
+    ) -> anyhow::Result<Option<(u32, ActionUnitPt)>>;
 
     ///看到地图块触发
     fn map_cell_trigger_for_robot(&self, index: usize, robot_trigger_type: RobotTriggerType);
@@ -45,7 +45,7 @@ pub trait TriggerEvent {
         battle_player: &mut BattlePlayer,
         index: isize,
         is_change_index_both: bool,
-    ) -> (bool, Vec<ActionUnitPt>);
+    ) -> (bool, Vec<(u32, ActionUnitPt)>);
 
     ///使用技能后触发
     fn after_use_skill_trigger(
@@ -89,7 +89,7 @@ impl BattleData {
         &mut self,
         battle_player: &mut BattlePlayer,
         index: usize,
-    ) -> Option<Vec<ActionUnitPt>> {
+    ) -> Option<Vec<(u32, ActionUnitPt)>> {
         let map_cell = self.tile_map.map_cells.get_mut(index);
         if let None = map_cell {
             warn!("map do not has this map_cell!index:{}", index);
@@ -159,7 +159,7 @@ impl BattleData {
                 aup.action_type = ActionType::Buff as u32;
                 aup.action_value.push(buff.get_id());
                 aup.targets.push(target_pt);
-                au_v.push(aup);
+                au_v.push((0, aup));
             }
         }
 
@@ -173,7 +173,7 @@ impl TriggerEvent for BattleData {
         user_id: u32,
         au: &mut ActionUnitPt,
         is_pair: bool,
-    ) -> anyhow::Result<Option<ActionUnitPt>> {
+    ) -> anyhow::Result<Option<(u32, ActionUnitPt)>> {
         // let battle_players = self.battle_player.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_player = self.battle_player.get_mut(&user_id).unwrap();
         let index = battle_player.get_map_cell_index();
@@ -272,7 +272,7 @@ impl TriggerEvent for BattleData {
         battle_player: &mut BattlePlayer,
         index: isize,
         is_change_index_both: bool,
-    ) -> (bool, Vec<ActionUnitPt>) {
+    ) -> (bool, Vec<(u32, ActionUnitPt)>) {
         let mut v = Vec::new();
         let self_mut = self.get_mut_ref();
         //触发陷阱
@@ -327,7 +327,7 @@ impl TriggerEvent for BattleData {
                         other_aupt.action_type = ActionType::Buff as u32;
                         other_aupt.action_value.push(buff_id);
                         other_aupt.targets.push(target_pt);
-                        v.push(other_aupt);
+                        v.push((0, other_aupt));
                         break;
                     }
                 }

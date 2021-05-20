@@ -109,7 +109,7 @@ impl BattleData {
         item_id: u32,
         targets: Vec<u32>,
         au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+    ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
         let battle_player = self.get_battle_player(Some(user_id), true);
         if let Err(e) = battle_player {
             error!("{:?}", e);
@@ -145,8 +145,8 @@ impl BattleData {
         is_item: bool,
         target_array: Vec<u32>,
         au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
-        let mut au_vec: Option<Vec<ActionUnitPt>> = None;
+    ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
+        let mut au_vec: Option<Vec<(u32, ActionUnitPt)>> = None;
         unsafe {
             //战斗角色
             let res = self.get_battle_player_mut(Some(user_id), true);
@@ -425,7 +425,7 @@ impl BattleData {
         &mut self,
         index: usize,
         au: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+    ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             warn!("{:?}", e);

@@ -45,7 +45,7 @@ type SkillFn = HashMap<
         skill_id: u32,
         target_array: Vec<u32>,
         au: &mut ActionUnitPt,
-    ) -> Option<Vec<ActionUnitPt>>,
+    ) -> Option<Vec<(u32, ActionUnitPt)>>,
 >;
 
 #[derive(Clone, Default)]

@@ -20,7 +20,7 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
-use super::battle_enum::BattlePlayerState;
+use super::battle_enum::{ActionType, BattlePlayerState};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
 use crate::JsonValue;
@@ -145,7 +145,7 @@ impl BattleData {
         user_id: u32,
         index: usize,
         au: &mut ActionUnitPt,
-    ) -> anyhow::Result<(bool, Vec<ActionUnitPt>)> {
+    ) -> anyhow::Result<(bool, Vec<(u32, ActionUnitPt)>)> {
         let battle_players = &mut self.battle_player as *mut HashMap<u32, BattlePlayer>;
         let battle_player = battle_players.as_mut().unwrap().get_mut(&user_id).unwrap();
         let battle_player_index = battle_player.get_map_cell_index();
@@ -801,7 +801,15 @@ impl BattleData {
             } //空的地图块
             TargetType::NullMapCell => {
                 for &index in target_array {
-                    self.check_choice_index(index as usize, false, false, true, true, false, true)?;
+                    self.check_choice_index(
+                        index as usize,
+                        false,
+                        false,
+                        false,
+                        true,
+                        false,
+                        true,
+                    )?;
                 }
             } //空的地图块，上面没人
             TargetType::UnPairNullMapCell => {
@@ -832,7 +840,7 @@ impl BattleData {
                     self.check_choice_index(index, false, false, false, true, true, true)?;
                 }
             }
-            //未锁定空地图块
+            //未翻开的空地图块
             TargetType::UnOpenNullMapCell => {
                 for &index in target_array {
                     let index = index as usize;
@@ -1172,4 +1180,16 @@ impl BattleData {
         }
         Ok(())
     }
+}
+
+pub fn build_action_unit_pt(
+    user_id: u32,
+    action_type: ActionType,
+    action_value: u32,
+) -> ActionUnitPt {
+    let mut au = ActionUnitPt::new();
+    au.from_user = user_id;
+    au.action_type = action_type.into_u32();
+    au.action_value.push(action_value);
+    au
 }

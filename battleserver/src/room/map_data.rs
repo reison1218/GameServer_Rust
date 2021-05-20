@@ -259,7 +259,6 @@ impl TileMap {
             map[index_value] = (tile_map_temp.market_id, MapCellType::MarketCell);
             tmp.market_cell = (index_value, tile_map_temp.market_id);
         }
-        //这里是为了去重，进行拷贝
         let mut random_vec = TEMPLATES.cell_temp_mgr().type_vec.clone();
         //然后就是rare_map_cell
         for map_cell_rare in tile_map_temp.cell_rare.iter() {
@@ -270,6 +269,8 @@ impl TileMap {
                 .unwrap()
                 .clone();
             let mut size = 0;
+            //这里是为了去重，进行拷贝
+
             'out: loop {
                 if size >= map_cell_rare.count {
                     break 'out;
@@ -279,7 +280,8 @@ impl TileMap {
                         break 'out;
                     }
                     //先随出map_celltype列表中的一个
-                    let mut map_cell_v = hs_2_v(&random_vec.get(element_type).unwrap());
+                    let map_cell_v =
+                        hs_2_v(&random_vec.get(element_type).unwrap(), map_cell_rare.rare);
                     if map_cell_v.len() == 0 {
                         continue;
                     }
@@ -293,7 +295,6 @@ impl TileMap {
                         empty_v.remove(index);
                         size += 1;
                     }
-                    map_cell_v.remove(index);
                     //删掉选中的，进行去重
                     random_vec
                         .get_mut(element_type)
@@ -354,9 +355,14 @@ impl TileMap {
     }
 }
 
-fn hs_2_v(hs: &HashSet<u32>) -> Vec<u32> {
+fn hs_2_v(hs: &HashSet<u32>, rare: u16) -> Vec<u32> {
     let mut v = Vec::new();
+    let temp_mgr = TEMPLATES.cell_temp_mgr();
     for i in hs.iter() {
+        let temp = temp_mgr.get_temp(i).unwrap();
+        if temp.rare != rare {
+            continue;
+        }
         v.push(*i);
     }
     v

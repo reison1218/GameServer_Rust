@@ -1,7 +1,7 @@
 use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
+use crate::battle::battle_player::BattlePlayer;
 use crate::battle::battle_skill::Skill;
 use crate::battle::market::handler_buy;
-use crate::battle::{battle_enum::skill_type::PUSH_SELF, battle_player::BattlePlayer};
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::mgr::RankInfo;
 use crate::room::map_data::MapCellType;
@@ -223,33 +223,47 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     }
 
     //回给客户端,添加action主动方
-    let mut san = S_ACTION_NOTICE::new();
-    san.action_uints.push(au);
-
+    let mut san_push_all = S_ACTION_NOTICE::new();
+    san_push_all.action_uints.push(au);
+    let mut san_assign = vec![];
     //添加额外的行动方
     if let Ok(au_vec) = res {
         if let Some(v) = au_vec {
-            for au in v {
-                san.action_uints.push(au);
+            for (user_id, au) in v {
+                if user_id == 0 {
+                    san_push_all.action_uints.push(au);
+                } else {
+                    let mut san = S_ACTION_NOTICE::new();
+                    san.action_uints.push(au);
+                    san_assign.push((user_id, san));
+                }
             }
         }
     }
 
     //以下通知客户端结果
-    let bytes = san.write_to_bytes();
+    let bytes = san_push_all.write_to_bytes();
     if let Err(e) = bytes {
         error!("{:?}", e);
         return;
     }
     let bytes = bytes.unwrap();
-    //处理只用推送给自己的技能
-    if (action_type == ActionType::Skill || action_type == ActionType::EndShowMapCell)
-        && PUSH_SELF.contains(&value)
-    {
-        room.send_2_client(ClientCode::ActionNotice, user_id, bytes.clone());
-    } else {
-        //推送给所有房间成员
-        room.send_2_all_client(ClientCode::ActionNotice, bytes);
+
+    //推送给所有房间成员
+    room.send_2_all_client(ClientCode::ActionNotice, bytes);
+
+    if !san_assign.is_empty() {
+        for (user_id, san) in san_assign {
+            let bytes = san.write_to_bytes();
+            match bytes {
+                Ok(bytes) => {
+                    room.send_2_client(ClientCode::ActionNotice, user_id, bytes);
+                }
+                Err(e) => {
+                    error!("{:?}", e);
+                }
+            }
+        }
     }
 
     unsafe {
@@ -384,7 +398,7 @@ fn use_item(
     item_id: u32,
     targets: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     let battle_cter = rm.battle_data.battle_player.get(&user_id);
     if let None = battle_cter {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
@@ -423,7 +437,7 @@ fn open_map_cell(
     user_id: u32,
     target_map_cell_index: usize,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     let battle_data = rm.battle_data.borrow();
     let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
     let cter_index = battle_cter.get_map_cell_index();
@@ -488,7 +502,7 @@ fn attack(
     user_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
     if battle_cter.is_locked() {
@@ -520,7 +534,7 @@ fn use_skill(
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     //校验技能id有效性
     let battle_player = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
     if battle_player.is_locked() {
@@ -553,7 +567,7 @@ fn skip_turn(
     rmgr: &mut BattleMgr,
     user_id: u32,
     _au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     let rm = rmgr.get_room_mut(&user_id).unwrap();
     //校验现在能不能跳过
     let next_user = rm.get_turn_user(None);
@@ -807,7 +821,7 @@ fn unlock_oper(
     rm: &mut Room,
     user_id: u32,
     au: &mut ActionUnitPt,
-) -> anyhow::Result<Option<Vec<ActionUnitPt>>> {
+) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     //先校验玩家是否可以进行攻击
     let battle_cter = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
     let v = *au.action_value.get(0).unwrap();

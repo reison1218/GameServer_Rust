@@ -16,6 +16,7 @@ pub struct SkillTemp {
     pub cd: u8,            //cd
     pub scope: u32,        //范围
     pub buff: u32,         //能够触发的buff
+    pub view_target: u8,   //视野目标
 }
 
 impl Template for SkillTemp {}
