@@ -34,22 +34,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a00410c-fdea-4176-b301-520e9756777d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/battle/battle_helper.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/battle/battle_helper.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../battleserver/src/battle/battle_skill.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/src/battle/battle_skill.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gamecenter/src/mgr/game_center_mgr.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/entity/gateuser.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/entity/gateuser.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/http.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/http.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/tcp_server.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../gateserver/src/net/websocket.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../battleserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../battleserver/template/Skill.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../rankserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robotserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../robotserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../roomserver/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../server/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../server/src/net/http.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/net/http.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tools/src/http.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/src/http.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rankserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../rankserver/template/Skill.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../roomserver/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../roomserver/template/Skill.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/template/Skill.json" beforeDir="false" afterPath="$PROJECT_DIR$/../server/template/Skill.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tools/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../tools/Cargo.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,9 +83,11 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
+    <property name="cidr.known.project.marker" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="settings.editor.selected.configurable" value="language.rust.cargo" />
@@ -101,6 +97,7 @@
       <option name="command" value="run --package net_test --bin net_test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -115,6 +112,7 @@
       <option name="command" value="test --package net_test --bin net_test mio_test" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -129,6 +127,7 @@
       <option name="command" value="test --package net_test --bin net_test sig_rec::test -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -143,6 +142,7 @@
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -157,6 +157,7 @@
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="channel" value="STABLE" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
@@ -167,16 +168,11 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Run net_test" />
         <item itemvalue="Cargo.Test sig_rec::test" />
         <item itemvalue="Cargo.Test mio_test" />
+        <item itemvalue="Cargo.Run net_test" />
       </list>
     </recent_temporary>
   </component>
@@ -268,6 +264,12 @@
       <workItem from="1611904201963" duration="3312000" />
       <workItem from="1612167354215" duration="16000" />
       <workItem from="1612167380136" duration="906000" />
+      <workItem from="1621567704772" duration="51000" />
+      <workItem from="1621567770308" duration="161000" />
+      <workItem from="1621567946827" duration="275000" />
+      <workItem from="1621568235567" duration="648000" />
+      <workItem from="1621580790787" duration="729000" />
+      <workItem from="1621581688793" duration="784000" />
     </task>
     <servers />
   </component>

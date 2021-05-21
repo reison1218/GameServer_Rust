@@ -5,18 +5,13 @@ use ws::Sender as WsSender;
 
 ///玩家会话封装结构体
 pub struct GateUser {
-    user_id: u32,              //玩家id
     ws: Option<Arc<WsSender>>, //websocket会话封装
     tcp: Option<TcpSender>,    //tcp的stream
 }
 
 impl GateUser {
-    pub fn new(user_id: u32, ws: Option<Arc<WsSender>>, tcp: Option<TcpSender>) -> Self {
-        GateUser {
-            user_id: user_id,
-            ws: ws,
-            tcp: tcp,
-        }
+    pub fn new(ws: Option<Arc<WsSender>>, tcp: Option<TcpSender>) -> Self {
+        GateUser { ws: ws, tcp: tcp }
     }
 
     pub fn close(&mut self) {
@@ -24,10 +19,6 @@ impl GateUser {
             self.get_ws_ref().close(CloseCode::Invalid).unwrap();
         }
         if self.tcp.is_some() {}
-    }
-
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
     }
 
     #[warn(dead_code)]

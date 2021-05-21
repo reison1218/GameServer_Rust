@@ -64,6 +64,7 @@ async-trait = "0.1.41"
 chrono = "0.4"
 slab = "0.4.2"
 time = "0.2.23"
+message-io = "0.14.0"
 tools = { path = "../tools" }
 
 #Zellij

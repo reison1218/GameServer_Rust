@@ -17,7 +17,7 @@ impl StopAllServerHandler {
 
 impl HttpServerHandler for StopAllServerHandler {
     fn get_path(&self) -> &str {
-        "reload_temps"
+        "stop_all"
     }
 
     fn execute(

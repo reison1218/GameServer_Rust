@@ -1,6 +1,6 @@
 use crate::entity::gateuser::GateUser;
 use crossbeam::channel::Sender;
-use log::{error, info, warn};
+use log::{error, info};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tools::cmd_code::RoomCode;
@@ -16,7 +16,7 @@ pub struct ChannelMgr {
     // pub room_client_channel: Option<TcpStream>,
     //游戏中心stream
     pub game_center_client_channel: Option<Sender<Vec<u8>>>,
-    //玩家channels
+    //玩家channels user_id GateUser
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
     pub channels: HashMap<usize, u32>,
@@ -139,12 +139,12 @@ impl ChannelMgr {
             token = tcp.as_ref().unwrap().token;
         }
         self.insert_channels(token, user_id);
-        self.insert_user_channel(user_id, GateUser::new(user_id, ws, tcp));
+        self.insert_user_channel(user_id, GateUser::new(ws, tcp));
     }
 
     ///插入channel,key：userid,v:channel
-    pub fn insert_user_channel(&mut self, token: u32, gate_user: GateUser) {
-        self.user_channel.insert(token, gate_user);
+    pub fn insert_user_channel(&mut self, user_id: u32, gate_user: GateUser) {
+        self.user_channel.insert(user_id, gate_user);
     }
     ///插入token-userid的映射
     pub fn insert_channels(&mut self, token: usize, user_id: u32) {
@@ -189,5 +189,6 @@ impl ChannelMgr {
         for (_, user_id) in res.iter() {
             self.notice_off_line(*user_id);
         }
+        info!("kick all finish!");
     }
 }
