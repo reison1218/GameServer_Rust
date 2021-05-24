@@ -2,7 +2,7 @@ use crate::battle::battle::SummaryUser;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
-    LOCK_SKILLS, TRANSFORM_BUFF, TRAPS, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
+    LOCK_SKILLS, TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
 use crate::battle::battle_enum::skill_type::WATER_TURRET;
@@ -100,13 +100,9 @@ impl BattleData {
         let user_id = battle_player.get_user_id();
         let map_cell = map_cell.unwrap() as *mut MapCell;
         unsafe {
-            for buff in map_cell.as_ref().unwrap().buffs.values() {
+            for buff in map_cell.as_ref().unwrap().get_traps() {
                 let buff_id = buff.get_id();
                 let buff_function_id = buff.function_id;
-                //先判断是否是陷阱类buff
-                if !TRAPS.contains(&buff_function_id) {
-                    continue;
-                }
                 let mut target_pt = None;
                 //判断是否是上buff的陷阱
                 if TRAP_ADD_BUFF.contains(&buff_function_id) {

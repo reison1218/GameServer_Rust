@@ -113,12 +113,9 @@ pub unsafe fn change_map_cell_index(
     let mut ep;
 
     let mut view_targets = HashMap::new();
-
+    let traps = source_map_cell.get_traps_mut();
     //判断有没有陷阱
-    for buff in source_map_cell.buffs.values() {
-        if !TRAPS.contains(&buff.get_id()) {
-            continue;
-        }
+    for buff in traps {
         for &view_user in buff.trap_view_users.iter() {
             if !view_targets.contains_key(&view_user) {
                 view_targets.insert(view_user, vec![]);
@@ -137,12 +134,9 @@ pub unsafe fn change_map_cell_index(
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
     let target_user_id = target_map_cell.user_id;
     let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
+    let mut traps = target_map_cell.get_traps_mut();
     //判断有没有陷阱
-    for buff in target_map_cell.buffs.values() {
-        if !TRAPS.contains(&buff.get_id()) {
-            continue;
-        }
-
+    for buff in traps.iter_mut() {
         for &view_user in buff.trap_view_users.iter() {
             if !view_targets.contains_key(&view_user) {
                 view_targets.insert(view_user, vec![]);
@@ -385,17 +379,26 @@ pub fn show_map_cell(
     }
 
     //判断地图块有没有陷阱
-    let map_cell = battle_data.tile_map.map_cells.get(show_index);
+    let map_cell = battle_data.tile_map.map_cells.get_mut(show_index);
     let mut au_trap_pt = build_action_unit_pt(0, ActionType::None, 0);
     if let Some(map_cell) = map_cell {
-        for buff_id in map_cell.buffs.keys() {
-            if !TRAPS.contains(buff_id) {
-                continue;
-            }
+        let map_cell_index = map_cell.index;
+        let traps = map_cell.get_traps_mut();
+        for buff in traps {
+            let buff_id = buff.get_id();
             let mut target_pt = TargetPt::new();
-            target_pt.add_buffs.push(*buff_id);
-            target_pt.target_value.push(map_cell.index as u32);
+            target_pt.add_buffs.push(buff_id);
+            target_pt.target_value.push(map_cell_index as u32);
             au_trap_pt.targets.push(target_pt);
+
+            //处理陷阱可见玩家
+            if view_target_type == TargetType::PlayerSelf {
+                buff.trap_view_users.insert(user_id);
+            } else {
+                for &user_id in battle_data.battle_player.keys() {
+                    buff.trap_view_users.insert(user_id);
+                }
+            }
         }
     }
     //判断是不是只推送给自己

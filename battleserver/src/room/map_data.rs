@@ -1,5 +1,6 @@
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::LOCKED;
+use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::room::RoomType;
 use crate::TEMPLATES;
 use num_enum::IntoPrimitive;
@@ -90,6 +91,28 @@ impl MapCell {
             }
         }
         false
+    }
+
+    pub fn get_traps_mut(&mut self) -> Vec<&mut Buff> {
+        let mut res = Vec::new();
+        for buff in self.buffs.values_mut() {
+            if !TRAPS.contains(&buff.get_id()) {
+                continue;
+            }
+            res.push(buff);
+        }
+        res
+    }
+
+    pub fn get_traps(&self) -> Vec<&Buff> {
+        let mut res = Vec::new();
+        for buff in self.buffs.values() {
+            if !TRAPS.contains(&buff.get_id()) {
+                continue;
+            }
+            res.push(buff);
+        }
+        res
     }
 
     ///移除buff
