@@ -116,6 +116,12 @@ impl TileMap {
             if map_cell.user_id == user_id {
                 map_cell.user_id = 0;
             }
+            for buff in map_cell.buffs.values_mut() {
+                if !buff.trap_view_users.contains(&user_id) {
+                    continue;
+                }
+                buff.trap_view_users.remove(&user_id);
+            }
         }
     }
 

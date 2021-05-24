@@ -10,6 +10,7 @@ use crate::TEMPLATES;
 use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::Values;
+use std::collections::HashSet;
 use std::convert::TryFrom;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
@@ -20,13 +21,14 @@ pub struct Buff {
     id: u32,
     pub function_id: u32, //功能id
     pub buff_temp: &'static BuffTemp,
-    pub trigger_timesed: i8,       //已经触发过的次数
-    pub keep_times: i8,            //剩余持续轮数
-    pub scope: Vec<Direction>,     //buff的作用范围
-    pub permanent: bool,           //是否永久
-    pub from_user: Option<u32>,    //来源的玩家id
-    pub from_skill: Option<u32>,   //来源的技能id
-    pub turn_index: Option<usize>, //生效于turn_index
+    pub trigger_timesed: i8,           //已经触发过的次数
+    pub keep_times: i8,                //剩余持续轮数
+    pub scope: Vec<Direction>,         //buff的作用范围
+    pub permanent: bool,               //是否永久
+    pub from_user: Option<u32>,        //来源的玩家id
+    pub from_skill: Option<u32>,       //来源的技能id
+    pub turn_index: Option<usize>,     //生效于turn_index
+    pub trap_view_users: HashSet<u32>, //陷阱可见玩家
 }
 
 impl Buff {
@@ -77,6 +79,7 @@ impl From<&'static BuffTemp> for Buff {
             from_user: None,
             from_skill: None,
             turn_index: None,
+            trap_view_users: HashSet::new(),
         };
         let mut v = Vec::new();
         let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&bt.scope);

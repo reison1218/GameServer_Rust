@@ -108,20 +108,30 @@ pub unsafe fn change_map_cell_index(
     let source_user_id = source_map_cell.user_id;
     let (s_x, s_y) = (source_map_cell.x, source_map_cell.y);
     let mut au_vec = vec![];
+
+    let mut target_pt;
+    let mut ep;
+
+    let mut view_targets = HashMap::new();
+
     //判断有没有陷阱
     for buff in source_map_cell.buffs.values() {
         if !TRAPS.contains(&buff.get_id()) {
             continue;
         }
-        let mut au_pt = build_action_unit_pt(0, ActionType::None, 0);
-        let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(source_index as u32);
-        let mut ep = EffectPt::new();
-        ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-        ep.effect_value = target_index as u32;
-        target_pt.effects.push(ep);
-        au_pt.targets.push(target_pt);
-        au_vec.push((buff.from_user.unwrap(), au_pt));
+        for &view_user in buff.trap_view_users.iter() {
+            if !view_targets.contains_key(&view_user) {
+                view_targets.insert(view_user, vec![]);
+            }
+            target_pt = TargetPt::new();
+            target_pt.target_value.push(source_index as u32);
+            ep = EffectPt::new();
+            ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+            ep.effect_value = target_index as u32;
+            target_pt.effects.push(ep);
+            let res = view_targets.get_mut(&view_user).unwrap();
+            res.push(target_pt);
+        }
     }
 
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
@@ -132,15 +142,28 @@ pub unsafe fn change_map_cell_index(
         if !TRAPS.contains(&buff.get_id()) {
             continue;
         }
-        let mut au_pt = build_action_unit_pt(0, ActionType::None, 0);
-        let mut target_pt = TargetPt::new();
-        target_pt.target_value.push(target_index as u32);
-        let mut ep = EffectPt::new();
-        ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-        ep.effect_value = source_index as u32;
-        target_pt.effects.push(ep);
-        au_pt.targets.push(target_pt);
-        au_vec.push((buff.from_user.unwrap(), au_pt));
+
+        for &view_user in buff.trap_view_users.iter() {
+            if !view_targets.contains_key(&view_user) {
+                view_targets.insert(view_user, vec![]);
+            }
+            target_pt = TargetPt::new();
+            target_pt.target_value.push(target_index as u32);
+            ep = EffectPt::new();
+            ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+            ep.effect_value = source_index as u32;
+            target_pt.effects.push(ep);
+            let res = view_targets.get_mut(&view_user).unwrap();
+            res.push(target_pt);
+        }
+    }
+    let mut au_pt;
+    for (from_user, target_pts) in view_targets {
+        au_pt = build_action_unit_pt(0, ActionType::None, 0);
+        for target_pt in target_pts {
+            au_pt.targets.push(target_pt);
+        }
+        au_vec.push((from_user, au_pt));
     }
 
     //换内存数据
@@ -425,6 +448,7 @@ pub unsafe fn add_buff(
     let target_type = TargetType::try_from(skill_temp.target as u8).unwrap();
     let view_target_type = TargetType::try_from(skill_temp.view_target).unwrap();
     let mut target_pt = TargetPt::new();
+    let mut au_vec = vec![];
 
     match target_type {
         TargetType::PlayerSelf => {
@@ -448,15 +472,31 @@ pub unsafe fn add_buff(
             let index = *target_array.get(0).unwrap() as usize;
             let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
-            let buff = Buff::new(
+            let mut buff = Buff::new(
                 buff_temp,
                 Some(battle_data.next_turn_index),
                 Some(user_id),
                 Some(skill_id),
             );
-            map_cell.buffs.insert(buff.get_id(), buff);
             target_pt.target_value.push(index as u32);
             target_pt.add_buffs.push(buff_id);
+            //处理视野目标
+            if view_target_type == TargetType::PlayerSelf {
+                let mut au_pt = build_action_unit_pt(user_id, ActionType::Skill, skill_id);
+                au_pt.targets.push(target_pt);
+                au_vec.push((user_id, au_pt));
+                if TRAPS.contains(&buff_id) {
+                    buff.trap_view_users.insert(user_id);
+                }
+            } else {
+                au.targets.push(target_pt);
+                if TRAPS.contains(&buff_id) {
+                    for &user_id in battle_data.battle_player.keys() {
+                        buff.trap_view_users.insert(user_id);
+                    }
+                }
+            }
+            map_cell.buffs.insert(buff.get_id(), buff);
         }
         _ => {}
     }
@@ -470,16 +510,6 @@ pub unsafe fn add_buff(
         .get_mut(&skill_id);
     if let Some(skill) = skill {
         skill.is_active = true;
-    }
-
-    let mut au_vec = vec![];
-    //处理视野目标
-    if view_target_type == TargetType::PlayerSelf {
-        let mut au_pt = build_action_unit_pt(user_id, ActionType::Skill, skill_id);
-        au_pt.targets.push(target_pt);
-        au_vec.push((user_id, au_pt));
-    } else {
-        au.targets.push(target_pt);
     }
 
     //处理其他的全局要看到的，此处为自残扣血

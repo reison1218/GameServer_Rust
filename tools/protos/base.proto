@@ -140,11 +140,11 @@ message TriggerEffectPt{
 
 //行动单元封装
 message ActionUnitPt{
-    uint32 from_user = 1;//发起的玩家
-    uint32 action_type = 2;//行动类型
-    repeated uint32 action_value = 3;//行动对应类型的值
-    repeated TargetPt targets = 4;//目标列表
-    repeated uint32 lost_buffs= 5;//玩家失效的buff
+    uint32 from_user = 1;//发起的玩家,如果玩家id为0，则代表纯显示的消息
+    uint32 action_type = 2;//行动类型，如果from_user=0,则此值也一定为0
+    repeated uint32 action_value = 3;//行动对应类型的值，如果action_type=0，则此值一定为0
+    repeated TargetPt targets = 4;//目标列表，对目标造成对影响
+    repeated uint32 lost_buffs= 5;//from_user失效的buff
 
 }
 
