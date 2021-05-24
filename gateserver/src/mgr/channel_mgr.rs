@@ -59,6 +59,7 @@ impl ChannelMgr {
             Some(user_id) => {
                 let user_id = *user_id;
                 self.notice_off_line(user_id);
+                info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据");
             }
             None => {
                 //warn!("user_id is none for token:{},so nothing to do!", token);

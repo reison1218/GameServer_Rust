@@ -525,12 +525,24 @@ impl tools::tcp::ClientHandler for TcpClientTest {
 }
 
 fn main() -> anyhow::Result<()> {
-    let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:16801");
+    // let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:16801");
+    let res = std::net::TcpStream::connect("127.0.0.1:16801");
     match res {
         Ok(mut ts) => {
             println!("success");
             let s = String::from_str("hello").unwrap();
-            ts.write(s.as_bytes());
+            loop {
+                let res = ts.write(s.as_bytes());
+                std::thread::sleep(Duration::from_secs(1));
+                match res {
+                    Ok(size) => {
+                        println!("{}", size);
+                    }
+                    Err(err) => {
+                        println!("{:?}", err);
+                    }
+                }
+            }
         }
         Err(e) => {
             println!("{:?}", e);

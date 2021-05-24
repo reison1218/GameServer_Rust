@@ -34,12 +34,12 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     ///客户端读取事件
-    async fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return;
+            return true;
         }
         let packet_array = packet_array.unwrap();
 
@@ -47,6 +47,7 @@ impl tools::tcp::Handler for TcpServerHandler {
             //异步处理业务逻辑
             task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
+        true
     }
 }
 

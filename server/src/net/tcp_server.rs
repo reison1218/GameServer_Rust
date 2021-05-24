@@ -45,12 +45,12 @@ impl tools::tcp::Handler for TcpServerHandler {
         info!("与tcp客户端断开连接");
     }
 
-    async fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return;
+            return true;
         }
         let packet_array = packet_array.unwrap();
 
@@ -58,6 +58,7 @@ impl tools::tcp::Handler for TcpServerHandler {
             let gm = self.gm.clone();
             handler_mess_s(gm, packet).await;
         }
+        true
     }
 }
 

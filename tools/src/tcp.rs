@@ -23,7 +23,8 @@ pub trait Handler: Send + Sync {
     async fn on_close(&mut self);
 
     ///Triggered when there is client data transfer
-    async fn on_message(&mut self, mess: Vec<u8>);
+    ///return the res of verify,if true,that is ok,false is verify fail!
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool;
 }
 
 ///tcp server sender
@@ -78,7 +79,7 @@ const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 ///         self.clone();//Here, implement the clone function yourself, or add #[derive(clone)] to the ServerHandler as above
 ///     }
 ///     ///Called when there is a new client connection
-///     fn on_open(&mut self, sender: TcpSender) {
+///     fn on_open(&mut self, sender: TcpSender){
 ///         //do something here what u need
 ///      }
 ///     ///Called when the client connection is invalid
@@ -86,7 +87,7 @@ const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 ///         //do something here what u need
 ///     }
 ///     ///Called when has message from client
-///     fn on_message(&mut self, mess: Vec<u8>) {
+///     fn on_message(&mut self, mess: Vec<u8>) -> bool {
 ///         //do something here what u need
 ///     }
 /// }
@@ -302,7 +303,12 @@ pub mod tcp_server {
                     Ok(n) => {
                         let mut received_data = Vec::new();
                         received_data.extend_from_slice(&buf[..n]);
-                        block_on(handler.on_message(received_data));
+                        let res = block_on(handler.on_message(received_data));
+                        if !res {
+                            warn!("data verify fail!kick this tcp client!");
+                            close_connect(connection, handler, None);
+                            return Ok(true);
+                        }
                     }
                     // Would block "errors" are the OS's way of saying that the
                     // connection is  unavailable ready to perform this I/O operation.

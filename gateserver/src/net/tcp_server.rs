@@ -30,24 +30,22 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     async fn on_close(&mut self) {
-        info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据",);
-
         let token = self.tcp.as_ref().unwrap().token;
         let mut lock = self.cm.lock().await;
         lock.off_line(token);
     }
 
-    async fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         //校验包长度
         if mess.is_empty() || mess.len() < 16 {
             error!("client packet len is wrong!");
-            return;
+            return false;
         }
         let packet_array = Packet::build_array_from_client(mess);
 
         if packet_array.is_err() {
             error!("{:?}", packet_array.err().unwrap().to_string());
-            return;
+            return false;
         }
         let packet_array = packet_array.unwrap();
 
@@ -56,6 +54,7 @@ impl tools::tcp::Handler for TcpServerHandler {
             info!("GateServer receive data of client!cmd:{}", cmd);
             self.handle_binary(packet);
         }
+        true
     }
 }
 

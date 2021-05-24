@@ -48,16 +48,17 @@ impl tools::tcp::Handler for BattleTcpServerHandler {
     }
 
     ///客户端读取事件
-    async fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         let packet_array = Packet::build_array_from_server(mess);
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return;
+            return true;
         }
         let packet_array = packet_array.unwrap();
 
         self.forward_packet(packet_array).await;
+        true
     }
 }
 
