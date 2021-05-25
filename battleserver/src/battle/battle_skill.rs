@@ -16,7 +16,6 @@ use log::{error, warn};
 use rand::Rng;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
@@ -105,86 +104,72 @@ pub unsafe fn change_map_cell_index(
     }
 
     let map_ptr = battle_data.tile_map.map_cells.borrow_mut() as *mut [MapCell; 30];
+    //玩家proto封装
+    let mut au_vec = vec![];
+    //目标proto
+    let mut target_pt;
+    //效果proto
+    let mut ep;
+    //陷阱
+    let mut traps = None;
+    //视野可见目标
+    let mut view_targets = HashMap::new();
+
+    //源地图块数据
     let source_map_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
     let source_user_id = source_map_cell.user_id;
     let (s_x, s_y) = (source_map_cell.x, source_map_cell.y);
-    let mut au_vec = vec![];
+    let source_has_lock_buff = source_map_cell.has_lock_buff();
+    let source_traps = source_map_cell.get_traps_mut();
 
-    let mut target_pt;
-    let mut ep;
-
-    let mut view_targets = HashMap::new();
-    let mut has_lock_buff = source_map_cell.has_lock_buff();
-    let traps = source_map_cell.get_traps_mut();
-
-    let mut need_push_trap = true;
-    //封装锁定buff
-    if has_lock_buff {
-        need_push_trap = false;
-        target_pt = TargetPt::new();
-        target_pt.target_value.push(source_index as u32);
-        ep = EffectPt::new();
-        ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-        ep.effect_value = target_index as u32;
-        target_pt.effects.push(ep);
-        if !view_targets.contains_key(&0) {
-            view_targets.insert(0, vec![]);
-        }
-        let res = view_targets.get_mut(&0).unwrap();
-        res.push(target_pt);
-    } else if !traps.is_empty() {
-        if need_push_trap {
-            //判断有没有陷阱
-            for buff in traps {
-                for &view_user in buff.trap_view_users.iter() {
-                    if !view_targets.contains_key(&view_user) {
-                        view_targets.insert(view_user, vec![]);
-                    }
-                    target_pt = TargetPt::new();
-                    target_pt.target_value.push(source_index as u32);
-                    ep = EffectPt::new();
-                    ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-                    ep.effect_value = target_index as u32;
-                    target_pt.effects.push(ep);
-                    let res = view_targets.get_mut(&view_user).unwrap();
-                    res.push(target_pt);
-                }
-            }
-        }
-    }
-
+    //目标地图看数据
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
     let target_user_id = target_map_cell.user_id;
     let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
-    has_lock_buff = target_map_cell.has_lock_buff();
-    let mut traps = target_map_cell.get_traps_mut();
+    let target_has_lock_buff = target_map_cell.has_lock_buff();
+    let target_traps = target_map_cell.get_traps_mut();
 
-    //封装锁定buff
-    if has_lock_buff {
-        need_push_trap = false;
+    //加载全地图可见的，此处只有锁buff
+    let mut index = None;
+    if source_has_lock_buff {
+        index = Some((source_index as u32, target_index as u32));
+    } else if target_has_lock_buff {
+        index = Some((target_index as u32, source_index as u32));
+    }
+
+    //再加载部分可见的陷阱类buff
+    if !source_traps.is_empty() {
+        traps = Some((((source_index as u32, target_index as u32)), source_traps));
+    } else if target_traps.is_empty() {
+        traps = Some((((target_index as u32, source_index as u32)), target_traps));
+    }
+
+    //优先判断全地图可见的
+    if index.is_some() {
+        let (index1, index2) = index.unwrap();
         target_pt = TargetPt::new();
-        target_pt.target_value.push(target_index as u32);
+        target_pt.target_value.push(index1);
         ep = EffectPt::new();
         ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-        ep.effect_value = source_index as u32;
+        ep.effect_value = index2;
         target_pt.effects.push(ep);
         if !view_targets.contains_key(&0) {
             view_targets.insert(0, vec![]);
         }
         let res = view_targets.get_mut(&0).unwrap();
         res.push(target_pt);
-    } else if !traps.is_empty() && need_push_trap {
-        //判断有没有陷阱
-        for buff in traps.iter_mut() {
+    } else if let Some(traps) = traps {
+        let ((index1, index2), traps) = traps;
+        for buff in traps {
             for &view_user in buff.trap_view_users.iter() {
                 if !view_targets.contains_key(&view_user) {
                     view_targets.insert(view_user, vec![]);
                 }
                 target_pt = TargetPt::new();
-                target_pt.target_value.push(target_index as u32);
+                target_pt.target_value.push(index1);
                 ep = EffectPt::new();
                 ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-                ep.effect_value = source_index as u32;
+                ep.effect_value = index2;
                 target_pt.effects.push(ep);
                 let res = view_targets.get_mut(&view_user).unwrap();
                 res.push(target_pt);
