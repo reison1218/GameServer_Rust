@@ -16,6 +16,7 @@ use log::{error, warn};
 use rand::Rng;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
@@ -113,44 +114,84 @@ pub unsafe fn change_map_cell_index(
     let mut ep;
 
     let mut view_targets = HashMap::new();
+    let mut has_lock_buff = source_map_cell.has_lock_buff();
     let traps = source_map_cell.get_traps_mut();
-    //判断有没有陷阱
-    for buff in traps {
-        for &view_user in buff.trap_view_users.iter() {
-            if !view_targets.contains_key(&view_user) {
-                view_targets.insert(view_user, vec![]);
+
+    let mut need_push_trap = true;
+    //封装锁定buff
+    if has_lock_buff {
+        need_push_trap = false;
+        target_pt = TargetPt::new();
+        target_pt.target_value.push(source_index as u32);
+        ep = EffectPt::new();
+        ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+        ep.effect_value = target_index as u32;
+        target_pt.effects.push(ep);
+        if !view_targets.contains_key(&0) {
+            view_targets.insert(0, vec![]);
+        }
+        let res = view_targets.get_mut(&0).unwrap();
+        res.push(target_pt);
+    } else if !traps.is_empty() {
+        if need_push_trap {
+            //判断有没有陷阱
+            for buff in traps {
+                for &view_user in buff.trap_view_users.iter() {
+                    if !view_targets.contains_key(&view_user) {
+                        view_targets.insert(view_user, vec![]);
+                    }
+                    target_pt = TargetPt::new();
+                    target_pt.target_value.push(source_index as u32);
+                    ep = EffectPt::new();
+                    ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+                    ep.effect_value = target_index as u32;
+                    target_pt.effects.push(ep);
+                    let res = view_targets.get_mut(&view_user).unwrap();
+                    res.push(target_pt);
+                }
             }
-            target_pt = TargetPt::new();
-            target_pt.target_value.push(source_index as u32);
-            ep = EffectPt::new();
-            ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-            ep.effect_value = target_index as u32;
-            target_pt.effects.push(ep);
-            let res = view_targets.get_mut(&view_user).unwrap();
-            res.push(target_pt);
         }
     }
 
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
     let target_user_id = target_map_cell.user_id;
     let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
+    has_lock_buff = target_map_cell.has_lock_buff();
     let mut traps = target_map_cell.get_traps_mut();
-    //判断有没有陷阱
-    for buff in traps.iter_mut() {
-        for &view_user in buff.trap_view_users.iter() {
-            if !view_targets.contains_key(&view_user) {
-                view_targets.insert(view_user, vec![]);
+
+    //封装锁定buff
+    if has_lock_buff {
+        need_push_trap = false;
+        target_pt = TargetPt::new();
+        target_pt.target_value.push(target_index as u32);
+        ep = EffectPt::new();
+        ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+        ep.effect_value = source_index as u32;
+        target_pt.effects.push(ep);
+        if !view_targets.contains_key(&0) {
+            view_targets.insert(0, vec![]);
+        }
+        let res = view_targets.get_mut(&0).unwrap();
+        res.push(target_pt);
+    } else if !traps.is_empty() && need_push_trap {
+        //判断有没有陷阱
+        for buff in traps.iter_mut() {
+            for &view_user in buff.trap_view_users.iter() {
+                if !view_targets.contains_key(&view_user) {
+                    view_targets.insert(view_user, vec![]);
+                }
+                target_pt = TargetPt::new();
+                target_pt.target_value.push(target_index as u32);
+                ep = EffectPt::new();
+                ep.effect_type = EffectType::ChangeCellIndex.into_u32();
+                ep.effect_value = source_index as u32;
+                target_pt.effects.push(ep);
+                let res = view_targets.get_mut(&view_user).unwrap();
+                res.push(target_pt);
             }
-            target_pt = TargetPt::new();
-            target_pt.target_value.push(target_index as u32);
-            ep = EffectPt::new();
-            ep.effect_type = EffectType::ChangeCellIndex.into_u32();
-            ep.effect_value = source_index as u32;
-            target_pt.effects.push(ep);
-            let res = view_targets.get_mut(&view_user).unwrap();
-            res.push(target_pt);
         }
     }
+
     let mut au_pt;
     for (from_user, target_pts) in view_targets {
         au_pt = build_action_unit_pt(0, ActionType::None, 0);

@@ -37,6 +37,8 @@ pub struct Direction {
     pub direction: &'static Vec<isize>,
 }
 
+///技能函数指针map,返回结果数组中的元组
+///第一位表示具体玩家ID，如果为0，表示要推送给所有玩家，第二位是要推送的proto
 type SkillFn = HashMap<
     &'static [u32],
     unsafe fn(

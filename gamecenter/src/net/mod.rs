@@ -31,6 +31,12 @@ trait Forward {
             None => gate_token = 0,
         }
 
+        let battle_token;
+        let res = self.get_battle_token();
+        match res {
+            Some(token) => battle_token = token,
+            None => battle_token = 0,
+        }
         let lock = self.get_game_center_mut();
         let mut lock = lock.lock().await;
         for mut packet in packet_array {
@@ -129,6 +135,8 @@ trait Forward {
             }
             //玩家离开房间，解除玩家绑定
             lock.user_leave(cmd, user_id);
+            //战斗结束处理复制均衡资源回收
+            lock.slb_back(cmd, battle_token);
         }
     }
 }

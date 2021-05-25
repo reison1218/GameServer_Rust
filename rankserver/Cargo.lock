@@ -1114,9 +1114,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "lexical"
-version = "2.2.2"
+version = "2.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e0d09e60c187a6d0a3fa418aec8587c6a4ae9de872f6126f2134f319b5ed10d"
+checksum = "c9d189f82a78aa5c06e64f60cbd6f9ec37fe1cdb453dfd88ac2128c81157dc6c"
 dependencies = [
  "cfg-if 0.1.10",
  "lexical-core",
@@ -1125,9 +1125,9 @@ dependencies = [
 
 [[package]]
 name = "lexical-core"
-version = "0.4.6"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2304bccb228c4b020f3a4835d247df0a02a7c4686098d4167762cfbbe4c5cb14"
+checksum = "34449d00c5d4066537f4dc72320b18e3aa421e8e92669250eecd664c618fefce"
 dependencies = [
  "arrayvec",
  "cfg-if 0.1.10",
@@ -1956,9 +1956,9 @@ dependencies = [
 
 [[package]]
 name = "simplelog"
-version = "0.8.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b2736f58087298a448859961d3f4a0850b832e72619d75adc69da7993c2cd3c"
+checksum = "59d0fe306a0ced1c88a58042dc22fc2ddd000982c26d75f6aa09a394547c41e0"
 dependencies = [
  "chrono",
  "log",

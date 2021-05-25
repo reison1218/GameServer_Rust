@@ -1,4 +1,5 @@
 use log::{info, LevelFilter};
+use simplelog::ColorChoice;
 use simplelog::{CombinedLogger, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::time;
@@ -14,7 +15,12 @@ pub fn init_log(info_path: &str, error_path: &str) {
     config.set_target_level(LevelFilter::Error);
     config.set_location_level(LevelFilter::Error);
     CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Info, config.build(), TerminalMode::Mixed),
+        TermLogger::new(
+            LevelFilter::Info,
+            config.build(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        ),
         WriteLogger::new(
             LevelFilter::Info,
             config.build(),

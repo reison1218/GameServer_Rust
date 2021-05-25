@@ -20,6 +20,7 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
+use super::battle_enum::buff_type::TRAPS;
 use super::battle_enum::{ActionType, BattlePlayerState};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
@@ -562,18 +563,36 @@ impl BattleData {
 
     ///发送战斗turn推送
     pub fn send_battle_turn_notice(&mut self) {
-        let mut sbtn = S_BATTLE_TURN_NOTICE::new();
-        sbtn.set_user_id(self.get_turn_user(None).unwrap());
-        //角色身上的
+        //最终推送的proto
+        let mut push_map = HashMap::new();
+        //地图块上的buff proto,因为如果是陷阱，只有部分人才能看到，所以要单独封装
+        let mut cell_buff_map = HashMap::new();
+
+        //初始化
         for battle_player in self.battle_player.values() {
-            let cter_pt = battle_player.convert_to_battle_cter_pt();
-            sbtn.cters.push(cter_pt);
+            let user_id = battle_player.get_user_id();
+            let mut sbtn = S_BATTLE_TURN_NOTICE::new();
+            sbtn.set_user_id(self.get_turn_user(None).unwrap());
+            push_map.insert(user_id, sbtn);
+            cell_buff_map.insert(user_id, HashMap::new());
+        }
+
+        //角色身上的
+        for sbtn in push_map.values_mut() {
+            for battle_player in self.battle_player.values() {
+                let cter_pt = battle_player.convert_to_battle_cter_pt();
+                sbtn.cters.push(cter_pt);
+            }
         }
 
         //地图块身上的
         for map_cell in self.tile_map.map_cells.iter() {
+            let index = map_cell.index as u32;
             let mut cbp = CellBuffPt::new();
-            cbp.index = map_cell.index as u32;
+            cbp.index = index;
+            for res in cell_buff_map.values_mut() {
+                res.insert(index, cbp.clone());
+            }
             for buff in map_cell.buffs.values() {
                 let buff_id = buff.get_id();
                 if map_cell.passive_buffs.contains(&buff_id) {
@@ -583,14 +602,35 @@ impl BattleData {
                 buff_pt.buff_id = buff_id;
                 buff_pt.trigger_timesed = buff.trigger_timesed as u32;
                 buff_pt.keep_times = buff.keep_times as u32;
-                cbp.buffs.push(buff_pt);
+
+                if TRAPS.contains(&buff_id) {
+                    for &view_user in buff.trap_view_users.iter() {
+                        let res = cell_buff_map.get_mut(&view_user).unwrap();
+                        let cbp = res.get_mut(&index).unwrap();
+                        cbp.buffs.push(buff_pt.clone());
+                    }
+                } else {
+                    for res in cell_buff_map.values_mut() {
+                        let cbp = res.get_mut(&index).unwrap();
+                        cbp.buffs.push(buff_pt.clone())
+                    }
+                }
             }
-            sbtn.cell_buffs.push(cbp);
         }
 
-        let bytes = sbtn.write_to_bytes().unwrap();
+        for (user_id, mut sbtn) in push_map {
+            let res = cell_buff_map.remove(&user_id);
+            if let Some(res) = res {
+                for (_, cpt) in res {
+                    if !cpt.buffs.is_empty() {
+                        sbtn.cell_buffs.push(cpt);
+                    }
+                }
+            }
 
-        self.send_2_all_client(ClientCode::BattleTurnNotice, bytes);
+            let bytes = sbtn.write_to_bytes().unwrap();
+            self.send_2_client(ClientCode::BattleTurnNotice, user_id, bytes);
+        }
     }
 
     ///获得战斗角色可变借用指针

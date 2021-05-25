@@ -3,7 +3,7 @@ use log::warn;
 use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
-use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, ServerCommonCode};
+use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, RoomCode, ServerCommonCode};
 use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -169,6 +169,7 @@ impl GameCenterMgr {
             let user_id = member.user_id;
             self.user_w_battle.insert(user_id, battle_token);
         }
+        bc_res.room_num += 1;
     }
 
     ///玩家离开
@@ -176,6 +177,18 @@ impl GameCenterMgr {
         if cmd == GameCode::UnloadUser.into_u32() {
             self.user_w_battle.remove(&user_id);
             self.user_w_gate.remove(&user_id);
+        }
+    }
+
+    ///负载均衡资源回收
+    pub fn slb_back(&mut self, cmd: u32, battle_token: usize) {
+        if cmd == RoomCode::Summary.into_u32() {
+            let battle_client = self.battle_clients.get_mut(&battle_token);
+            if let Some(battle_client) = battle_client {
+                if battle_client.room_num > 0 {
+                    battle_client.room_num -= 1;
+                }
+            }
         }
     }
 
