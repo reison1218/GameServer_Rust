@@ -409,7 +409,11 @@ impl BattleData {
         buff_id: u32,
         au: &mut ActionUnitPt,
     ) {
-        let battle_player = self.battle_player.get(&target_user).unwrap();
+        let battle_player = self.battle_player.get(&target_user);
+        if battle_player.is_none() {
+            return;
+        }
+        let battle_player = battle_player.unwrap();
         if map_cell_element != battle_player.cter.base_attr.element {
             return;
         }
@@ -450,7 +454,11 @@ impl BattleData {
         if is_pair {
             energy += buff_temp.par2 as u8;
         }
-        let target_player = self.battle_player.get_mut(&target_user).unwrap();
+        let target_player = self.battle_player.get_mut(&target_user);
+        if target_player.is_none() {
+            return;
+        }
+        let target_player = target_player.unwrap();
         target_player.cter.add_energy(energy as i8);
 
         let target_battle_index = target_player.cter.get_map_cell_index() as u32;

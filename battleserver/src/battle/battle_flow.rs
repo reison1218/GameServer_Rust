@@ -12,7 +12,7 @@ use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
 use crate::room::RoomType;
 use crate::TEMPLATES;
-use log::{error, warn};
+use log::{error, info, warn};
 use protobuf::Message;
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -268,7 +268,12 @@ impl BattleData {
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<()> {
         let battle_players = &mut self.battle_player as *mut HashMap<u32, BattlePlayer>;
-        let battle_player = battle_players.as_mut().unwrap().get_mut(&user_id).unwrap();
+        let battle_player = battle_players.as_mut().unwrap().get_mut(&user_id);
+        if battle_player.is_none() {
+            warn!("could not find battle_player!user_id:{}", user_id);
+            return Ok(());
+        }
+        let battle_player = battle_player.unwrap();
         let mut aoe_buff: Option<u32> = None;
         //塞选出ape的buff
         battle_player

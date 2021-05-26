@@ -215,7 +215,7 @@ pub fn show_index(
     let show_index;
     if SHOW_INDEX_SAME_ELEMENT == skill_function_id {
         let index = *target_array.get(0).unwrap() as usize;
-        let res = battle_data.check_choice_index(index, true, false, true, true, false, false);
+        let res = battle_data.check_choice_index(index, true, false, false, true, false, false);
         //校验地图块
         if let Err(e) = res {
             warn!("{:?}", e);
@@ -489,6 +489,7 @@ pub unsafe fn add_buff(
             );
             target_pt.target_value.push(cter_index as u32);
             target_pt.add_buffs.push(buff_id);
+            au.targets.push(target_pt);
         }
         TargetType::MapCell
         | TargetType::UnOpenMapCell
@@ -985,20 +986,25 @@ pub unsafe fn skill_aoe_damage(
     if skill_function_id == SKILL_AOE_RED_SKILL_CD {
         //处理减cd逻辑,如果造成伤害人数大于参数
         if count >= par2 {
-            let battle_player = battle_data
-                .get_battle_player_mut(Some(user_id), true)
-                .unwrap();
-            let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
-            skill.reset_cd();
-            let reduce_cd = -(par3 as i8);
-            skill.add_cd(reduce_cd);
-            let mut target_pt = TargetPt::new();
-            target_pt.target_value.push(self_index as u32);
-            let mut effect_pt = EffectPt::new();
-            effect_pt.effect_type = EffectType::SubSkillCd.into_u32();
-            effect_pt.effect_value = par3 as u32;
-            target_pt.effects.push(effect_pt);
-            au.targets.push(target_pt);
+            let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+            match battle_player {
+                Ok(battle_player) => {
+                    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
+                    skill.reset_cd();
+                    let reduce_cd = -(par3 as i8);
+                    skill.add_cd(reduce_cd);
+                    let mut target_pt = TargetPt::new();
+                    target_pt.target_value.push(self_index as u32);
+                    let mut effect_pt = EffectPt::new();
+                    effect_pt.effect_type = EffectType::SubSkillCd.into_u32();
+                    effect_pt.effect_value = par3 as u32;
+                    target_pt.effects.push(effect_pt);
+                    au.targets.push(target_pt);
+                }
+                Err(e) => {
+                    warn!("{:?}", e);
+                }
+            }
         }
     }
     None

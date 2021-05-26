@@ -19,7 +19,7 @@ use crate::robot::RobotData;
 use crate::room::member::Member;
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
-use log::{error, warn};
+use log::{error, info, warn};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::convert::TryFrom;
