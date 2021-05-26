@@ -12,7 +12,7 @@ use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
 use crate::room::RoomType;
 use crate::TEMPLATES;
-use log::{error, info, warn};
+use log::{error, warn};
 use protobuf::Message;
 use std::collections::HashMap;
 use std::convert::TryFrom;

@@ -92,6 +92,21 @@ impl Room {
         Ok(room)
     }
 
+    pub fn get_last_order_user(&self) -> u32 {
+        let mut index = (MEMBER_MAX - 1) as usize;
+        loop {
+            let res = self.battle_data.turn_orders[index];
+            if res != 0 {
+                return res;
+            }
+            if index == 0 {
+                return res;
+            }
+            index -= 1;
+        }
+        0
+    }
+
     pub fn add_punish(&mut self, user_id: u32) {
         let res = self.members.get_mut(&user_id);
         if res.is_none() {
@@ -308,6 +323,7 @@ impl Room {
                 }
                 if !battle_player.cter.map_cell_index_is_choiced() {
                     res = false;
+                    break;
                 }
             }
             if res {
@@ -647,9 +663,8 @@ impl Room {
             return;
         }
         let next_turn_user = next_turn_user.unwrap();
-        let member_size = MEMBER_MAX as usize;
 
-        let last_order_user = self.battle_data.turn_orders[member_size - 1];
+        let last_order_user = self.get_last_order_user();
         self.remove_turn_orders(turn_index);
 
         //移除战斗角色

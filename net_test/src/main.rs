@@ -524,9 +524,26 @@ impl tools::tcp::ClientHandler for TcpClientTest {
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut res = None;
-    res = Some(StructTest::default());
-    res = None;
+    let res = [0, 0, 0, 0];
+
+    fn aaaaaaaaa(res: [u32; 4]) -> u32 {
+        let mut index = res.len() - 1;
+
+        loop {
+            let a = res[index];
+            if a != 0 {
+                return a;
+            }
+            if index == 0 {
+                return a;
+            }
+            index -= 1;
+        }
+        0
+    }
+    let res = aaaaaaaaa(res);
+    println!("{}", res);
+
     // let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:16801");
     // let res = std::net::TcpStream::connect("127.0.0.1:16801");
     // match res {
