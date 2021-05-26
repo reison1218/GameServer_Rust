@@ -19,7 +19,7 @@ use crate::robot::RobotData;
 use crate::room::member::Member;
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
-use log::{error, warn};
+use log::{error, info, warn};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::convert::TryFrom;
@@ -179,6 +179,13 @@ impl BattlePlayer {
         }
         battle_player.reset_residue_movement_points();
         Ok(battle_player)
+    }
+
+    pub fn player_die(&mut self, str: String) {
+        self.cter.base_attr.hp = 0;
+        self.cter.state = BattleCterState::Die;
+        self.status.battle_state = BattlePlayerState::Eliminate;
+        info!("{:?}", str);
     }
 
     pub fn add_open_map_cell(&mut self, index: usize) {
@@ -514,9 +521,12 @@ impl BattlePlayer {
     pub fn add_hp(&mut self, hp: i16) -> bool {
         self.cter.base_attr.hp += hp;
         if self.cter.base_attr.hp <= 0 {
-            self.cter.base_attr.hp = 0;
-            self.cter.state = BattleCterState::Die;
-            self.status.battle_state = BattlePlayerState::Eliminate;
+            let str = format!(
+                "player is died!because hp:{},user_id:{}",
+                hp,
+                self.get_user_id()
+            );
+            self.player_die(str);
         }
         self.status.battle_state == BattlePlayerState::Eliminate
     }

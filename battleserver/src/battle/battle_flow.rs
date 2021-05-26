@@ -3,7 +3,7 @@ use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, MANUAL_MOVE_AND_PAIR_ADD_ENERGY, PAIR_SAME_ELEMENT_ADD_ATTACK,
     RESET_MAP_ADD_ATTACK,
 };
-use crate::battle::battle_enum::{BattleCterState, SkillConsumeType};
+use crate::battle::battle_enum::SkillConsumeType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
@@ -52,8 +52,12 @@ impl BattleData {
                     if battle_player.is_died() {
                         continue;
                     }
-                    battle_player.cter.state = BattleCterState::Die;
-                    battle_player.status.battle_state = BattlePlayerState::Eliminate;
+
+                    let str = format!(
+                        "player died!because is battle_over,user_id:{}",
+                        battle_player.get_user_id()
+                    );
+                    battle_player.player_die(str);
                     let user_id = battle_player.get_user_id();
                     self_mut.after_cter_died_trigger(user_id, user_id, true, false);
                 }

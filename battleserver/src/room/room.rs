@@ -1,4 +1,3 @@
-use crate::battle::battle_enum::{BattleCterState, BattlePlayerState};
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::battle::mission::random_mission;
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
@@ -104,7 +103,6 @@ impl Room {
             }
             index -= 1;
         }
-        0
     }
 
     pub fn add_punish(&mut self, user_id: u32) {
@@ -163,8 +161,9 @@ impl Room {
                 punishment = true;
             }
             //离开房间，当死亡处理
-            battle_player.cter.state = BattleCterState::Die;
-            battle_player.status.battle_state = BattlePlayerState::Eliminate;
+
+            let str = format!("player is died!because league_summary,user_id:{}", user_id);
+            battle_player.player_die(str);
             self.battle_data.leave_user = (user_id, punishment);
         }
         //走惩罚触发
@@ -287,6 +286,10 @@ impl Room {
     ///创建选择下标检测任务
     pub fn start_choice_index(&mut self) {
         self.state = RoomState::ChoiceIndex;
+        info!(
+            "change room state RoomState::ChoiceIndex,because start_choice_index!room_id:{}",
+            self.id
+        );
         //地图没有刷新过就把cter转换成battle_cter
         if self.battle_data.reflash_map_turn.is_none() {
             self.cter_2_battle_cter();
@@ -328,6 +331,7 @@ impl Room {
             }
             if res {
                 self.state = RoomState::BattleStarted;
+                info!("change room state RoomState::BattleStarted,because check_next_choice_index and all done!room_id:{}",self.id);
             }
         }
 
@@ -678,6 +682,7 @@ impl Room {
         //如果当前玩家正好处于最后一个顺序
         if last_order_user == user_id {
             self.state = RoomState::BattleStarted;
+            info!("change room state RoomState::BattleStarted,because handler_leave_choice_index last_order_user is:{},room_id:{}",last_order_user,self.id);
             self.set_next_turn_index(0);
             let next_turn_user = self.get_turn_user(None).unwrap();
             if next_turn_user == 0 {
