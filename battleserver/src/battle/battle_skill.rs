@@ -1206,6 +1206,41 @@ pub unsafe fn transform(
         error!("{:?}", e);
         return None;
     }
+
+    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
+    let scope_id = skill.skill_temp.scope;
+    let skill_damage = skill.skill_temp.par1 as i16;
+    let consume_type = skill.skill_temp.consume_type;
+    let consume_value = skill.skill_temp.consume_value;
+    let buff_id = skill.skill_temp.buff;
+    let transform_cter_id = skill.skill_temp.par2;
+    let target_type = TargetType::try_from(skill.skill_temp.target);
+    if let Err(e) = target_type {
+        warn!("{:?}", e);
+        return None;
+    }
+    let target_type = target_type.unwrap();
+
+    //处理技能消耗
+    if consume_type != SkillConsumeType::Energy as u8 {
+        skill.reset_cd();
+    } else {
+        let mut v = consume_value as i8;
+        v = v * -1;
+        battle_player.cter.add_energy(v);
+    }
+    //处理变身
+    let res = battle_player.transform(user_id, transform_cter_id, buff_id, next_turn_index);
+    match res {
+        Err(e) => {
+            error!("{:?}", e);
+            return None;
+        }
+        Ok(target_pt) => {
+            au.targets.push(target_pt);
+        }
+    }
+
     //更新位置
     let v = battle_data
         .as_mut()
@@ -1222,26 +1257,12 @@ pub unsafe fn transform(
         return Some(v);
     }
 
-    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
-    let consume_type = skill.skill_temp.consume_type;
-    let consume_value = skill.skill_temp.consume_value;
-    let buff_id = skill.skill_temp.buff;
-    let transform_cter_id = skill.skill_temp.par2;
-    let target_type = TargetType::try_from(skill.skill_temp.target);
-    if let Err(e) = target_type {
-        warn!("{:?}", e);
-        return None;
-    }
-    let target_type = target_type.unwrap();
-
     //计算范围
-    let scope_id = skill.skill_temp.scope;
     let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         warn!("{:?}", e);
         return None;
     }
-    let skill_damage = skill.skill_temp.par1 as i16;
     let scope_temp = scope_temp.unwrap();
     //对周围对人造成伤害
     let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
@@ -1278,24 +1299,5 @@ pub unsafe fn transform(
         au.targets.push(target_pt);
     }
 
-    //处理技能消耗
-    if consume_type != SkillConsumeType::Energy as u8 {
-        skill.reset_cd();
-    } else {
-        let mut v = consume_value as i8;
-        v = v * -1;
-        battle_player.cter.add_energy(v);
-    }
-    //处理变身
-    let res = battle_player.transform(user_id, transform_cter_id, buff_id, next_turn_index);
-    match res {
-        Err(e) => {
-            error!("{:?}", e);
-            return None;
-        }
-        Ok(target_pt) => {
-            au.targets.push(target_pt);
-        }
-    }
     None
 }
