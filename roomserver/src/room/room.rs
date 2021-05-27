@@ -446,7 +446,10 @@ impl Room {
     ///检查准备状态
     pub fn check_ready(&self) -> bool {
         let mut index = 0;
-        let size = self.members.len();
+        let mut size = self.members.len();
+        if self.room_type == RoomType::OneVOneVOneVOneMatch {
+            size = MEMBER_MAX as usize;
+        }
         for member in self.members.values() {
             let res = member.state == MemberState::Ready;
             if !res {

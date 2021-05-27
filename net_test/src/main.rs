@@ -524,49 +524,28 @@ impl tools::tcp::ClientHandler for TcpClientTest {
 }
 
 fn main() -> anyhow::Result<()> {
-    let res = [0, 0, 0, 0];
-
-    fn aaaaaaaaa(res: [u32; 4]) -> u32 {
-        let mut index = res.len() - 1;
-
-        loop {
-            let a = res[index];
-            if a != 0 {
-                return a;
+    let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:9091");
+    match res {
+        Ok(mut ts) => {
+            println!("success");
+            let s = String::from_str("hello").unwrap();
+            loop {
+                let res = ts.write(s.as_bytes());
+                std::thread::sleep(Duration::from_secs(1));
+                match res {
+                    Ok(size) => {
+                        println!("{}", size);
+                    }
+                    Err(err) => {
+                        println!("{:?}", err);
+                    }
+                }
             }
-            if index == 0 {
-                return a;
-            }
-            index -= 1;
         }
-        0
+        Err(e) => {
+            println!("{:?}", e);
+        }
     }
-    let res = aaaaaaaaa(res);
-    println!("{}", res);
-
-    // let res = std::net::TcpStream::connect("spiritle.test.fabled-game.com:16801");
-    // let res = std::net::TcpStream::connect("127.0.0.1:16801");
-    // match res {
-    //     Ok(mut ts) => {
-    //         println!("success");
-    //         let s = String::from_str("hello").unwrap();
-    //         loop {
-    //             let res = ts.write(s.as_bytes());
-    //             std::thread::sleep(Duration::from_secs(1));
-    //             match res {
-    //                 Ok(size) => {
-    //                     println!("{}", size);
-    //                 }
-    //                 Err(err) => {
-    //                     println!("{:?}", err);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     Err(e) => {
-    //         println!("{:?}", e);
-    //     }
-    // }
 
     // let mut st = StructTest::default();
     // let mut st1 = StructTest::default();

@@ -29,6 +29,7 @@ impl Default for TaskCmd {
 pub struct Task {
     pub cmd: TaskCmd,    //要执行的命令
     pub delay: u64,      //要延迟执行的时间
+    pub turn: u32,       //turn
     pub data: JsonValue, //数据
 }
 
@@ -57,6 +58,7 @@ pub fn init_timer(bm: Lock) {
                 TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
                 _ => choice_index,
             };
+            info!("执行定时器任务开始:{:?}", task);
             let m = move || f(rm_clone, task);
             SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
         }
@@ -71,7 +73,7 @@ pub fn init_timer(bm: Lock) {
 }
 
 ///占位任务，没选的直接t出房间
-fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
+fn choice_index(bm: Arc<Mutex<BattleMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -88,7 +90,7 @@ fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = block_on(rm.lock());
+    let mut lock = block_on(bm.lock());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
@@ -124,8 +126,9 @@ fn choice_index(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     lock.player_room.remove(&user_id);
 }
 
-fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
+fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
     let json_value = task.data;
+    let turn = task.turn;
     let res = json_value.as_object();
     if res.is_none() {
         warn!("json_value.as_object() is None!");
@@ -144,7 +147,7 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = block_on(rm.lock());
+    let mut lock = block_on(bm.lock());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
@@ -156,8 +159,8 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     //校验房间状态
     if room.state != RoomState::BattleStarted {
         warn!(
-            "battle_turn_time,the room state is not RoomState::BattleStarted!room_id:{}",
-            room.get_room_id()
+            "battle_turn_time,the room state is not RoomState::BattleStarted!room_id:{},room_state:{:?}",
+            room.get_room_id(),room.state
         );
         return;
     }
@@ -173,6 +176,13 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
 
+    //如果不是同一个turn,就返回
+    if room.battle_data.turn != turn {
+        return;
+    }
+
+    info!("当前turn:{}", room.battle_data.turn);
+
     let battle_player = room.battle_data.get_battle_player(Some(user_id), true);
     if let Err(e) = battle_player {
         warn!("{:?}", e);
@@ -181,11 +191,11 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     let battle_cter = battle_player.unwrap();
 
     //如果玩家啥都没做，就T出房间
-    let need_rm = battle_cter.flow_data.residue_movement_points == TURN_DEFAULT_MOVEMENT_POINTS
+    let need_kick = battle_cter.flow_data.residue_movement_points == TURN_DEFAULT_MOVEMENT_POINTS
         && !battle_cter.status.pair_attack_open_count;
-    if need_rm {
+    if need_kick {
         room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
-        info!("定时检测翻格子任务,没有翻人T出去,user_id:{}", user_id);
+        info!("定时检turn任务,没有翻的人T出去,user_id:{}", user_id);
         let room_state = room.state;
         let is_empty = room.is_empty();
         if is_empty || room_state == RoomState::BattleOvered {
@@ -194,12 +204,21 @@ fn battle_turn_time(rm: Arc<Mutex<BattleMgr>>, task: Task) {
         }
         lock.player_room.remove(&user_id);
     } else {
-        //如果用过移动点数就帮他跳过
-        room.battle_data.next_turn(true);
+        let need_refresh_map = room.battle_data.check_refresh_map();
+        //如果需要刷新地图，走地图刷新next turn逻辑
+        if need_refresh_map {
+            room.battle_data.choice_index_next_turn();
+            room.refresh_map();
+            info!("定时检测turn任务,刷新地图");
+        } else {
+            //如果用过移动点数就帮他跳过
+            room.battle_data.next_turn(true);
+            info!("定时检测turn任务,自动帮玩家跳过turn!user_id:{}", user_id);
+        }
     }
 }
 
-fn max_battle_turn_limit(rm: Arc<Mutex<BattleMgr>>, task: Task) {
+fn max_battle_turn_limit(bm: Arc<Mutex<BattleMgr>>, task: Task) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -216,7 +235,7 @@ fn max_battle_turn_limit(rm: Arc<Mutex<BattleMgr>>, task: Task) {
     }
     let user_id = user_id.unwrap() as u32;
 
-    let mut lock = block_on(rm.lock());
+    let mut lock = block_on(bm.lock());
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
