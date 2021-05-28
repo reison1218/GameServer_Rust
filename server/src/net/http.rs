@@ -83,6 +83,7 @@ pub async fn notice_user_center(user_id: u32, notice_type: UserCenterNoticeType)
     map.insert("type".to_owned(), JsonValue::from(is_login));
     let value = JsonValue::from(map);
     let res = tools::http::send_http_request(
+        "http://",
         http_port,
         "center/user_state",
         HttpMethod::POST,

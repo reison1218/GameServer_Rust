@@ -5,7 +5,10 @@ import "base.proto";
 // 登录
 //cmd:1003
 message C_USER_LOGIN {
-   uint32 user_id = 1;//玩家id
+   string register_platform = 1;//平台
+   string platform_value = 2;//平台值
+   uint32 user_id = 3;//玩家id
+   
 }
 
 // 登录返回

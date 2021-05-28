@@ -1236,7 +1236,8 @@ pub unsafe fn transform(
             error!("{:?}", e);
             return None;
         }
-        Ok(target_pt) => {
+        Ok(mut target_pt) => {
+            target_pt.target_value.push(index as u32);
             au.targets.push(target_pt);
         }
     }

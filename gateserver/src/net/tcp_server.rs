@@ -1,3 +1,6 @@
+use crate::auth::steam_auth::auth_account;
+use crate::auth::STEAM;
+
 use super::*;
 use async_std::sync::{Mutex, MutexGuard};
 use async_std::task::block_on;
@@ -98,17 +101,27 @@ impl TcpServerHandler {
                 error!("{:?}", res.err().unwrap().to_string());
                 return;
             }
-            u_id = c_u_l.get_user_id();
-            let res = handle_login(packet.get_data(), &mut lock);
-            if let Err(e) = res {
-                let mut sul = S_USER_LOGIN::new();
-                sul.set_is_succ(false);
-                sul.set_err_mess(e.to_string());
-                packet.set_cmd(ClientCode::Login as u32);
-                packet.set_data_from_vec(sul.write_to_bytes().unwrap());
-                std::mem::drop(lock);
-                self.write_to_client(packet.build_client_bytes());
-                return;
+            let platform_value = c_u_l.platform_value.as_str();
+
+            let register_platform = c_u_l.register_platform.as_str();
+
+            let user_id = c_u_l.get_user_id();
+
+            let res = handle_login(&mut lock, register_platform, platform_value, user_id);
+            match res {
+                Ok(user_id) => {
+                    u_id = user_id;
+                }
+                Err(e) => {
+                    let mut sul = S_USER_LOGIN::new();
+                    sul.set_is_succ(false);
+                    sul.set_err_mess(e.to_string());
+                    packet.set_cmd(ClientCode::Login as u32);
+                    packet.set_data_from_vec(sul.write_to_bytes().unwrap());
+                    std::mem::drop(lock);
+                    self.write_to_client(packet.build_client_bytes());
+                    return;
+                }
             }
             lock.temp_channels.insert(u_id, self.tcp.clone());
         } else {
@@ -173,23 +186,46 @@ pub fn new(address: &str, cm: Lock) {
 }
 
 ///处理登陆逻辑
-fn handle_login(bytes: &[u8], lock: &mut MutexGuard<ChannelMgr>) -> anyhow::Result<()> {
-    let mut c_login = C_USER_LOGIN::new();
-    c_login.merge_from_bytes(bytes)?;
-    //校验用户中心账号是否已经登陆了
-    let uc_res = check_uc_online(&c_login.get_user_id())?;
-    //校验内存
-    let mem_res = check_mem_online(&c_login.get_user_id(), lock);
-    //如果用户中心登陆了或者本地内存登陆了，直接错误返回
-    if uc_res || mem_res {
-        let str = format!(
-            "this account already login!uc_res:{},mem_res:{},user_id:{}",
-            uc_res,
-            mem_res,
-            &c_login.get_user_id()
-        );
+fn handle_login(
+    lock: &mut MutexGuard<ChannelMgr>,
+    register_platform: &str,
+    platform_value: &str,
+    user_id: u32,
+) -> anyhow::Result<u32> {
+    let debug = crate::CONF_MAP.get_bool("debug");
+
+    // if debug {
+    //     query_user_id_from_redis(platform_value)?;
+    // } else {
+    //     if register_platform.eq(STEAM) {
+    //         // user_id = auth_account(platform_value)?;
+    //         let res = query_pid_from_redis(user_id);
+    //         match res {
+    //             Ok(_) => {
+    //                 return Ok(user_id);
+    //             }
+    //             Err(e) => {
+    //                 anyhow::bail!("{:?}", e)
+    //             }
+    //         }
+    //     } else {
+    //         return Ok(0);
+    //     }
+    // }
+
+    let res = query_pid_from_redis(user_id);
+
+    if let Err(e) = res {
+        anyhow::bail!("{:?}", e)
+    }
+
+    // //校验内存
+    let mem_res = check_mem_online(&user_id, lock);
+    // //如果用户中心登陆了或者本地内存登陆了，直接错误返回
+    if mem_res && debug {
+        let str = format!("this account already login!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!("{:?}", str)
     }
-    Ok(())
+    Ok(user_id)
 }

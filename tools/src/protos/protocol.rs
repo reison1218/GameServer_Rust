@@ -26,6 +26,8 @@
 #[derive(PartialEq,Clone,Default)]
 pub struct C_USER_LOGIN {
     // message fields
+    pub register_platform: ::std::string::String,
+    pub platform_value: ::std::string::String,
     pub user_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -43,7 +45,59 @@ impl C_USER_LOGIN {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // string register_platform = 1;
+
+
+    pub fn get_register_platform(&self) -> &str {
+        &self.register_platform
+    }
+    pub fn clear_register_platform(&mut self) {
+        self.register_platform.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_register_platform(&mut self, v: ::std::string::String) {
+        self.register_platform = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_register_platform(&mut self) -> &mut ::std::string::String {
+        &mut self.register_platform
+    }
+
+    // Take field
+    pub fn take_register_platform(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.register_platform, ::std::string::String::new())
+    }
+
+    // string platform_value = 2;
+
+
+    pub fn get_platform_value(&self) -> &str {
+        &self.platform_value
+    }
+    pub fn clear_platform_value(&mut self) {
+        self.platform_value.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_platform_value(&mut self, v: ::std::string::String) {
+        self.platform_value = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_platform_value(&mut self) -> &mut ::std::string::String {
+        &mut self.platform_value
+    }
+
+    // Take field
+    pub fn take_platform_value(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.platform_value, ::std::string::String::new())
+    }
+
+    // uint32 user_id = 3;
 
 
     pub fn get_user_id(&self) -> u32 {
@@ -69,6 +123,12 @@ impl ::protobuf::Message for C_USER_LOGIN {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.register_platform)?;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.platform_value)?;
+                },
+                3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -87,8 +147,14 @@ impl ::protobuf::Message for C_USER_LOGIN {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if !self.register_platform.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.register_platform);
+        }
+        if !self.platform_value.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.platform_value);
+        }
         if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -96,8 +162,14 @@ impl ::protobuf::Message for C_USER_LOGIN {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.register_platform.is_empty() {
+            os.write_string(1, &self.register_platform)?;
+        }
+        if !self.platform_value.is_empty() {
+            os.write_string(2, &self.platform_value)?;
+        }
         if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
+            os.write_uint32(3, self.user_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -137,6 +209,16 @@ impl ::protobuf::Message for C_USER_LOGIN {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "register_platform",
+                |m: &C_USER_LOGIN| { &m.register_platform },
+                |m: &mut C_USER_LOGIN| { &mut m.register_platform },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "platform_value",
+                |m: &C_USER_LOGIN| { &m.platform_value },
+                |m: &mut C_USER_LOGIN| { &mut m.platform_value },
+            ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "user_id",
                 |m: &C_USER_LOGIN| { &m.user_id },
@@ -158,6 +240,8 @@ impl ::protobuf::Message for C_USER_LOGIN {
 
 impl ::protobuf::Clear for C_USER_LOGIN {
     fn clear(&mut self) {
+        self.register_platform.clear();
+        self.platform_value.clear();
         self.user_id = 0;
         self.unknown_fields.clear();
     }
@@ -2671,34 +2755,36 @@ impl ::protobuf::reflect::ProtobufValue for S_GET_LAST_SEASON_RANK {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"'\n\x0cC_USER_LOGIN\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\"\xed\x02\n\x0cS_USE\
-    R_LOGIN\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
-    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\
-    \x20\x01(\rR\x08syncTime\x12&\n\x0flast_login_time\x18\x04\x20\x01(\rR\r\
-    lastLoginTime\x12(\n\x10last_logoff_time\x18\x05\x20\x01(\rR\x0elastLogo\
-    ffTime\x12-\n\tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08p\
-    layerPt\x12'\n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04\
-    resp\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05ct\
-    ers\x12!\n\x0cgrade_frames\x18\t\x20\x03(\rR\x0bgradeFrames\x12\x14\n\
-    \x05souls\x18\n\x20\x03(\rR\x05souls\"'\n\nHEART_BEAT\x12\x19\n\x08sys_t\
-    ime\x18\x01\x20\x01(\x04R\x07sysTime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_\
-    pt\x18\x01\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\
-    \x18\x02\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DA\
-    TA\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
-    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\
-    \x01(\rR\x08syncTime\"1\n\x12C_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\
-    \x01\x20\x01(\tR\x08nickName\"H\n\x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_\
-    succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\
-    \x01(\tR\x07errMess\"\r\n\x0bC_SHOW_RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tsel\
-    f_rank\x18\x01\x20\x01(\x0b2\x12.protos.RankInfoPtR\x08selfRank\x12(\n\
-    \x05ranks\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"T\n\x1d\
-    C_MODIFY_GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\rR\x04s\
-    oul\x12\x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\n\x1dS_M\
-    ODIFY_GRADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
-    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x18\n\
-    \x16C_GET_LAST_SEASON_RANK\"B\n\x16S_GET_LAST_SEASON_RANK\x12(\n\x05rank\
-    s\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
+    \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"{\n\x0cC_USER_LOGIN\
+    \x12+\n\x11register_platform\x18\x01\x20\x01(\tR\x10registerPlatform\x12\
+    %\n\x0eplatform_value\x18\x02\x20\x01(\tR\rplatformValue\x12\x17\n\x07us\
+    er_id\x18\x03\x20\x01(\rR\x06userId\"\xed\x02\n\x0cS_USER_LOGIN\x12\x17\
+    \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08\
+    syncTime\x12&\n\x0flast_login_time\x18\x04\x20\x01(\rR\rlastLoginTime\
+    \x12(\n\x10last_logoff_time\x18\x05\x20\x01(\rR\x0elastLogoffTime\x12-\n\
+    \tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\
+    \n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\x12)\n\
+    \x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\x12!\n\
+    \x0cgrade_frames\x18\t\x20\x03(\rR\x0bgradeFrames\x12\x14\n\x05souls\x18\
+    \n\x20\x03(\rR\x05souls\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\
+    \x20\x01(\x04R\x07sysTime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\
+    \x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\
+    \x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\
+    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
+    \x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\
+    \x08syncTime\"1\n\x12C_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\
+    \x01(\tR\x08nickName\"H\n\x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\
+    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
+    \x07errMess\"\r\n\x0bC_SHOW_RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tself_rank\
+    \x18\x01\x20\x01(\x0b2\x12.protos.RankInfoPtR\x08selfRank\x12(\n\x05rank\
+    s\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"T\n\x1dC_MODIFY\
+    _GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\rR\x04soul\x12\
+    \x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\n\x1dS_MODIFY_G\
+    RADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x18\n\x16C_GET_L\
+    AST_SEASON_RANK\"B\n\x16S_GET_LAST_SEASON_RANK\x12(\n\x05ranks\x18\x01\
+    \x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

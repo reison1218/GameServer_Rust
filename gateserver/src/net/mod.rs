@@ -27,6 +27,53 @@ use std::str::FromStr;
 
 type Lock = Arc<Mutex<ChannelMgr>>;
 
+///从redis查找user_id
+pub fn query_pid_from_redis(user_id: u32) -> anyhow::Result<String> {
+    let user_id_str = user_id.to_string();
+    //校验用户中心是否登陆过，如果有，则不往下执行
+    let mut redis_write = REDIS_POOL.lock().unwrap();
+    let res: Option<String> =
+        redis_write.hget(REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID, user_id_str.as_str());
+    if res.is_none() {
+        anyhow::bail!("this account is invalid!user_id:{:?}", user_id)
+    }
+    let pid = res.unwrap();
+    Ok(pid)
+}
+
+///从redis查找user_id
+pub fn query_user_id_from_redis(platform_value: &str) -> anyhow::Result<u32> {
+    //校验用户中心是否登陆过，如果有，则不往下执行
+    let mut redis_write = REDIS_POOL.lock().unwrap();
+    let res: Option<String> = redis_write.hget(REDIS_INDEX_USERS, REDIS_KEY_USERS, platform_value);
+    if res.is_none() {
+        anyhow::bail!(
+            "this account is invalid!platform_value:{:?}",
+            platform_value
+        )
+    }
+    let json_value = res.unwrap();
+
+    let json_value = Value::from_str(json_value.as_str());
+    match json_value {
+        Ok(json_value) => {
+            let user_id = json_value["user_id"].as_u64();
+            match user_id {
+                Some(user_id) => {
+                    return Ok(user_id as u32);
+                }
+                None => {
+                    anyhow::bail!(
+                        "this account is invalid!platform_value:{:?}",
+                        platform_value
+                    )
+                }
+            }
+        }
+        Err(e) => anyhow::bail!("{:?}", e.to_string()),
+    }
+}
+
 ///校验用户中心是否在线
 fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
     //校验用户中心是否登陆过，如果有，则不往下执行
@@ -66,7 +113,7 @@ fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
     let mut res: bool = false;
     //如果有，则执行T下线
     if gate_user.is_some() {
-        // let token = gate_user.as_mut().unwrap().get_tcp_ref().token;
+        // let token = gate_user.unwrap().get_token();
         // write.close_remove(&token);
         res = true;
     }

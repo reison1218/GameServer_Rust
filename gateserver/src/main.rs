@@ -1,3 +1,4 @@
+mod auth;
 mod entity;
 mod mgr;
 mod net;
@@ -60,7 +61,6 @@ const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
 fn main() {
     //创建核心结构体，channel管理器，因为涉及到多线程异步，所以创建结构体的arc引用计数器指针
     let cm = Arc::new(Mutex::new(ChannelMgr::new()));
-
     //初始化日志
     init_log();
 

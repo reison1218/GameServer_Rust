@@ -96,7 +96,7 @@ impl ClientHandler for TcpClientHandler {
         // let user_id = res_map.get("user_id").unwrap();
         // let user_id = user_id.as_u64().unwrap() as u32;
         //s_l.set_user_id(id);
-        s_l.set_user_id(self.user_id);
+        // s_l.set_user_id(self.user_id);
         packet.set_data(&s_l.write_to_bytes().unwrap()[..]);
         packet.set_len(16 + packet.get_data().len() as u32);
         self.ts

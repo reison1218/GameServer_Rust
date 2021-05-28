@@ -8,7 +8,7 @@ use crate::JsonValue;
 
 ///conf of struct
 pub struct Conf {
-    conf: HashMap<String, JsonValue>,
+    pub conf: HashMap<String, JsonValue>,
 }
 
 impl Conf {
@@ -45,7 +45,8 @@ impl Conf {
         if value.is_none() {
             return "";
         }
-        value.unwrap().as_str().unwrap()
+        let res = value.unwrap();
+        res.as_str().unwrap()
     }
 }
 

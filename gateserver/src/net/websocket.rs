@@ -136,10 +136,10 @@ impl WebSocketHandler {
             c_login.merge_from_bytes(packet.get_data())?;
 
             //校验用户中心账号是否已经登陆了
-            let res = check_uc_online(&c_login.get_user_id())?;
+            let res = check_uc_online(&0)?;
             if res {
                 //校验内存
-                let res = check_mem_online(&c_login.get_user_id(), &mut lock);
+                let res = check_mem_online(&0, &mut lock);
                 if !res {
                     //todo
                 } else {
@@ -151,10 +151,7 @@ impl WebSocketHandler {
                     if res.is_err() {
                         error!("{:?}", res.err().unwrap().to_string());
                     }
-                    let str = format!(
-                        "this account already login!user_id:{}",
-                        &c_login.get_user_id()
-                    );
+                    let str = format!("this account already login!user_id:{}", &0);
 
                     anyhow::bail!("{:?}", str)
                 }
@@ -164,7 +161,7 @@ impl WebSocketHandler {
             //check_mem_online(&c_login.get_userId(), &mut lock);
 
             //添加到内存
-            lock.add_gate_user(c_login.get_user_id(), Some(self.ws.clone()), None);
+            lock.add_gate_user(0, Some(self.ws.clone()), None);
         }
         //封装packet转发到其他服
         let user_id = lock.get_channels_user_id(&token);

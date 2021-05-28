@@ -131,6 +131,7 @@ async fn accept(
 ///发送http请求
 #[warn(unused_assignments)]
 pub async fn send_http_request(
+    http_way: &str,
     ip_port: &str,
     path: &str,
     method: HttpMethod,
@@ -143,7 +144,7 @@ pub async fn send_http_request(
     }
     let stream = TcpStream::connect(ip_port).await?;
     let peer_addr = stream.peer_addr()?;
-    let str = format!("http://{}/{}", peer_addr, path);
+    let str = format!("{}{}/{}", http_way, peer_addr, path);
     info!("connecting to {:?}", str.as_str());
     let url = Url::parse(str.as_str())?;
     let mut req = Request::new(http_method.unwrap(), url);
