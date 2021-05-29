@@ -254,6 +254,43 @@ pub mod tcp_server {
                                 let res = ts.write(bytes.as_slice());
                                 if let Err(e) = res {
                                     error!("{:?}", e);
+                                    if e.kind() == io::ErrorKind::ConnectionReset {
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                        }
+                                        break;
+                                    }
+                                    if e.kind() == io::ErrorKind::ConnectionRefused {
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                        }
+                                        break;
+                                    }
+
+                                    if e.kind() == io::ErrorKind::ConnectionAborted {
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                        }
+                                        break;
+                                    }
+
+                                    if e.kind() == io::ErrorKind::NotConnected {
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                        }
+                                        break;
+                                    }
+                                    if e.kind() == io::ErrorKind::BrokenPipe {
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            error!("{:?}", e);
+                                        }
+                                        break;
+                                    }
                                     continue;
                                 }
                                 let res = ts.flush();
@@ -347,6 +384,22 @@ pub mod tcp_server {
                         close_connect(connection, handler, Some(err));
                         return Ok(true);
                     }
+
+                    Err(ref err) if not_connected(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
+                    }
+
+                    Err(ref err) if broken_pipe(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
+                    }
+
+                    Err(ref err) if connection_refused(err) => {
+                        close_connect(connection, handler, Some(err));
+                        return Ok(true);
+                    }
+
                     Err(ref err) if other(err) => {
                         warn!("{:?}", err);
                         continue;
@@ -382,7 +435,10 @@ pub mod tcp_server {
                 warn!("{:?},then remove client", err_str);
             }
         }
-        let _ = connect.shutdown(Shutdown::Both);
+        let res = connect.shutdown(Shutdown::Both);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+        }
         block_on(handler.on_close());
     }
 }
@@ -403,8 +459,20 @@ pub fn aborted(err: &io::Error) -> bool {
     err.kind() == io::ErrorKind::ConnectionAborted
 }
 
+pub fn not_connected(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::NotConnected
+}
+
+pub fn connection_refused(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::ConnectionRefused
+}
+
 pub fn reset(err: &io::Error) -> bool {
     err.kind() == io::ErrorKind::ConnectionReset
+}
+
+pub fn broken_pipe(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::BrokenPipe
 }
 
 pub fn other(err: &io::Error) -> bool {
@@ -496,6 +564,18 @@ pub trait ClientHandler: Send + Sync {
                     self.on_close().await;
                     break;
                 }
+                Err(ref err) if not_connected(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if connection_refused(err) => {
+                    self.on_close().await;
+                    break;
+                }
+                Err(ref err) if broken_pipe(err) => {
+                    self.on_close().await;
+                    break;
+                }
                 Err(ref err) if other(err) => {
                     warn!("{:?}", err);
                     continue;
@@ -522,6 +602,43 @@ fn read_sender_mess_client(rec: Receiver<Vec<u8>>, tcp_stream: std::net::TcpStre
                 let write = tcp_stream.write(&bytes[..]);
                 if let Err(e) = write {
                     error!("{:?}", e);
+                    if e.kind() == io::ErrorKind::ConnectionReset {
+                        let res = tcp_stream.shutdown(Shutdown::Both);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
+                        }
+                        break;
+                    }
+                    if e.kind() == io::ErrorKind::ConnectionRefused {
+                        let res = tcp_stream.shutdown(Shutdown::Both);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
+                        }
+                        break;
+                    }
+
+                    if e.kind() == io::ErrorKind::ConnectionAborted {
+                        let res = tcp_stream.shutdown(Shutdown::Both);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
+                        }
+                        break;
+                    }
+
+                    if e.kind() == io::ErrorKind::NotConnected {
+                        let res = tcp_stream.shutdown(Shutdown::Both);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
+                        }
+                        break;
+                    }
+                    if e.kind() == io::ErrorKind::BrokenPipe {
+                        let res = tcp_stream.shutdown(Shutdown::Both);
+                        if let Err(e) = res {
+                            error!("{:?}", e);
+                        }
+                        break;
+                    }
                     continue;
                 }
                 let res = tcp_stream.flush();

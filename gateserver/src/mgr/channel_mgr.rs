@@ -1,5 +1,6 @@
 use crate::entity::gateuser::GateUser;
 use crossbeam::channel::Sender;
+use log::warn;
 use log::{error, info};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -59,6 +60,8 @@ impl ChannelMgr {
             Some(user_id) => {
                 let user_id = *user_id;
                 self.notice_off_line(user_id);
+                //关闭连接
+                self.close_remove(&token);
                 info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据");
             }
             None => {
@@ -70,6 +73,7 @@ impl ChannelMgr {
     ///通知下线
     fn notice_off_line(&mut self, user_id: u32) {
         let cmd = RoomCode::OffLine.into_u32();
+
         //初始化包
         let mut packet = Packet::default();
         packet.set_user_id(user_id);
@@ -116,10 +120,11 @@ impl ChannelMgr {
     pub fn temp_channel_2_gate_user(&mut self, user_id: u32) {
         let res = self.temp_channels.remove(&user_id);
         if let None = res {
-            error!(
+            warn!(
                 "temp_channels could not find tcpsender for user_id:{}",
                 user_id
             );
+            return;
         }
         let res = res.unwrap();
         self.add_gate_user(user_id, None, res);
@@ -170,17 +175,15 @@ impl ChannelMgr {
     pub fn close_remove(&mut self, token: &usize) {
         let user_id = self.channels.remove(token);
         if user_id.is_none() {
-            info!("channel_mgr:user_id is none for token:{}", token);
             return;
         }
         let user_id = &user_id.unwrap();
         let gate_user = self.user_channel.get_mut(user_id);
-        if gate_user.is_none() {
-            info!("channel_mgr:gate_user is none for user_id:{}", user_id);
-            return;
+        if let Some(gate_user) = gate_user {
+            gate_user.close();
         }
-        gate_user.unwrap().close();
         self.user_channel.remove(user_id);
+        self.temp_channels.remove(user_id);
         info!("channel_mgr:玩家断开连接，关闭句柄释放资源：{}", user_id);
     }
 
