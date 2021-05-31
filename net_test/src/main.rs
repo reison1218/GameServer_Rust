@@ -525,60 +525,18 @@ impl tools::tcp::ClientHandler for TcpClientTest {
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut res = std::net::TcpStream::connect("192.168.2.103:16801").unwrap();
-    let mut aa = res.try_clone().unwrap();
-    let err = aa.shutdown(Shutdown::Both);
-    if let Err(e) = err {
-        println!("{:?}", e);
-    }
-    let mut read_bytes: [u8; 51200] = [0; 51200];
-    let r = res.read(&mut read_bytes);
-    match r {
-        Ok(s) => {
-            println!("rrrrrrr_size:{}", s);
-        }
-        Err(e) => {
-            println!("rrrrrrrrr_err{:?}", e);
-        }
-    }
-    let mut str = String::from_str("ssss").unwrap();
+    let ticket="140000002122985e271b14182b7e180001001001c1d4b06018000000010000000200000055a1c4a738e3c606c029070001000000b200000032000000040000002b7e180001001001067d18003cb20fb77302a8c000000000ed6ca4606d1cc060010005af080000000000c5379ac1ac49f4b5488c02e5a327a2759d52a8da892f1d649c69745a8a530d6b3ad1128a6864db03eb5a7de7c30562c822ac646886091bdbe0c6cf5629266d06e4898dee90bcadf139ceb73103b5a694f17fae162b2d5971b2734cc3acf88f9e76a4767e7c4c156666d6f54e1c9d9a2dc8fa7d9d2454a0dbe94ee7f73f0cd9c2";
 
-    let r = res.write(str.as_bytes());
-    match r {
-        Ok(s) => {
-            println!("wwwwwwwwwww_size:{}", s);
-        }
-        Err(e) => {
-            println!("wwwwwwwww_err:{:?}", e);
-        }
-    }
-    // match res {
-    //     Ok(mut ts) => {
-    //         println!("success");
-    //         let s = String::from_str("hello").unwrap();
-    //         loop {
-    //             let res = ts.write(s.as_bytes());
-    //             std::thread::sleep(Duration::from_secs(1));
-    //             match res {
-    //                 Ok(size) => {
-    //                     println!("{}", size);
-    //                 }
-    //                 Err(err) => {
-    //                     println!("{:?}", err);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     Err(e) => {
-    //         println!("{:?}", e);
-    //     }
-    // }
-    // let ticket="140000002122985e271b14182b7e180001001001c1d4b06018000000010000000200000055a1c4a738e3c606c029070001000000b200000032000000040000002b7e180001001001067d18003cb20fb77302a8c000000000ed6ca4606d1cc060010005af080000000000c5379ac1ac49f4b5488c02e5a327a2759d52a8da892f1d649c69745a8a530d6b3ad1128a6864db03eb5a7de7c30562c822ac646886091bdbe0c6cf5629266d06e4898dee90bcadf139ceb73103b5a694f17fae162b2d5971b2734cc3acf88f9e76a4767e7c4c156666d6f54e1c9d9a2dc8fa7d9d2454a0dbe94ee7f73f0cd9c2";
+    let  url = format!("https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?key={:?}&appid={}&ticket={:?}","DC8AD15E088033860FD8C08C02591AFD",1604870,ticket);
 
-    // let  url = format!("https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?key={:?}&appid={}&ticket={:?}","DC8AD15E088033860FD8C08C02591AFD",1604870,ticket);
-
-    // let url = url.replace(r#"""#, "");
-
+    let url = url.replace(r#"""#, "");
+    let res = String::new();
+    let mut request = http::Request::builder()
+        .uri(url.as_str())
+        .header("User-Agent", "awesome/1.0")
+        .body(res)
+        .unwrap();
+    println!("{:?}", res);
     // let resp = reqwest::blocking::get(url.as_str())?;
 
     // let res = resp.text().unwrap();

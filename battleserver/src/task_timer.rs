@@ -192,7 +192,7 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     //如果玩家啥都没做，就T出房间
     let need_kick = battle_cter.flow_data.residue_movement_points == TURN_DEFAULT_MOVEMENT_POINTS
-        && !battle_cter.status.pair_attack_open_count;
+        && !battle_cter.status.pair_open_count;
     if need_kick {
         room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
         info!("定时检turn任务,没有翻的人T出去,user_id:{}", user_id);

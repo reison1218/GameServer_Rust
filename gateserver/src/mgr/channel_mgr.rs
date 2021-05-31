@@ -1,4 +1,6 @@
 use crate::entity::gateuser::GateUser;
+use crate::net::http::notice_user_center;
+use crate::net::http::UserCenterNoticeType;
 use crossbeam::channel::Sender;
 use log::warn;
 use log::{error, info};
@@ -62,6 +64,7 @@ impl ChannelMgr {
                 self.notice_off_line(user_id);
                 //关闭连接
                 self.close_remove(&token);
+
                 info!("tcp_server:客户端断开连接,通知其他服卸载玩家数据");
             }
             None => {
@@ -83,6 +86,8 @@ impl ChannelMgr {
         packet.set_cmd(cmd);
         //发给房间相关服
         self.write_to_game_center(packet);
+        //通知用户中心
+        async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
     }
 
     ///写到游戏服
@@ -128,6 +133,8 @@ impl ChannelMgr {
         }
         let res = res.unwrap();
         self.add_gate_user(user_id, None, res);
+        //通知用户中心
+        async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
     }
 
     //添加gateuser

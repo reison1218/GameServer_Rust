@@ -4,7 +4,6 @@ use crate::entity::user_info::{
     search_room, show_rank, sync_rank, update_season,
 };
 use crate::entity::{Entity, EntityData};
-use crate::net::http::{notice_user_center, UserCenterNoticeType};
 use chrono::Local;
 use log::{error, info, warn};
 use protobuf::Message;
@@ -409,8 +408,6 @@ fn off_line(gm: &mut GameMgr, packet: Packet) {
     let user = gm.users.remove(&user_id);
     if let Some(mut user_data) = user {
         user_data.update_off();
-        //通知用户中心
-        async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::OffLine));
         info!("游戏服已处理玩家离线 for id:{}", user_id);
     }
 }

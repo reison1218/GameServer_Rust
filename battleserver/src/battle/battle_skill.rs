@@ -1300,5 +1300,5 @@ pub unsafe fn transform(
         au.targets.push(target_pt);
     }
 
-    None
+    Some(v)
 }

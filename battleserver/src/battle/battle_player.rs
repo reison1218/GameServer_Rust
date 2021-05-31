@@ -50,7 +50,7 @@ pub struct BattleStatus {
     is_can_end_turn: bool,               //是否可以结束turn
     pub locked_oper: u32,                //锁住的操作，如果有值，玩家什么都做不了
     attack_state: AttackState,           //是否可以攻击
-    pub pair_attack_open_count: bool,    //配对攻击后奖励翻地图块次数,表示是否奖励过翻拍次数
+    pub pair_open_count: bool,           //配对攻击后奖励翻地图块次数,表示是否奖励过翻拍次数
     pub battle_state: BattlePlayerState, //玩家战斗状态
 }
 
@@ -275,15 +275,14 @@ impl BattlePlayer {
     }
 
     ///奖励移动点数
-    pub fn pair_attack_reward_movement_points(&mut self) {
-        self.change_attack_none();
+    pub fn pair_reward_movement_points(&mut self) {
         if !self.status.is_pair {
             return;
         }
-        if self.status.pair_attack_open_count {
+        if self.status.pair_open_count {
             return;
         }
-        self.status.pair_attack_open_count = true;
+        self.status.pair_open_count = true;
         let temp = TEMPLATES.constant_temp_mgr();
         let res = temp.temps.get("turn_default_movement_points");
         let reward_count;
@@ -370,7 +369,7 @@ impl BattlePlayer {
     pub fn round_reset(&mut self) {
         self.status.is_attacked = false;
         self.change_attack_none();
-        self.status.pair_attack_open_count = false;
+        self.status.pair_open_count = false;
         self.cter.index_data.map_cell_index = None;
         self.clear_turn_open_map_cell();
         self.cter.index_data.last_map_cell_index = None;
@@ -387,7 +386,7 @@ impl BattlePlayer {
         //重制剩余移动点数
         self.reset_residue_movement_points();
         //重制配对攻击奖励翻地图块次数
-        self.status.pair_attack_open_count = false;
+        self.status.pair_open_count = false;
         //重制是否翻过地图块
         self.clear_turn_open_map_cell();
         //清空turn限制

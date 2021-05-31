@@ -362,7 +362,7 @@ impl BattleData {
                 }
             }
         }
-        battle_player.pair_attack_reward_movement_points();
+        battle_player.change_attack_none();
         //触发翻地图块任务
         trigger_mission(
             self,

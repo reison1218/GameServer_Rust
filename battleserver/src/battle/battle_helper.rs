@@ -379,7 +379,7 @@ impl BattleData {
         target: u32,
         skill_damege: Option<i16>,
         target_pt: &mut TargetPt,
-        is_last_one: bool,
+        mut is_last_one: bool,
     ) -> anyhow::Result<u32> {
         let battle_data_ptr = self as *mut BattleData;
 
@@ -441,6 +441,10 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
+            let player_count = self.get_alive_player_num();
+            if player_count == 1 {
+                is_last_one = true;
+            }
             self.after_cter_died_trigger(from, target_user_id, is_last_one, false);
         }
         Ok(res as u32)
@@ -556,6 +560,7 @@ impl BattleData {
                 battle_player.flow_data.open_map_cell_vec.push(index);
             } else {
                 battle_player.flow_data.open_map_cell_vec.remove(rm_index);
+                battle_player.pair_reward_movement_points();
             }
             is_pair
         }

@@ -19,8 +19,6 @@ use tools::cmd_code::{ClientCode, GameCode, RankCode, ServerCommonCode};
 use tools::protos::protocol::C_USER_LOGIN;
 use tools::util::packet::Packet;
 
-use super::http::{notice_user_center, UserCenterNoticeType};
-
 #[derive(Clone)]
 struct TcpServerHandler {
     gm: Lock,
@@ -122,8 +120,6 @@ async fn login(gm: Lock, packet: Packet) -> anyhow::Result<()> {
     user.update_login();
     //处理重制惩罚时间
     user.reset_punish_match();
-    //通知用户中心
-    async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
 
     //返回客户端
     let lr = gm_lock.user2proto(user_id);
