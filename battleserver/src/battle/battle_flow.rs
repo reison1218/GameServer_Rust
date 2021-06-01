@@ -561,27 +561,26 @@ impl BattleData {
             //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
             if user_id > 0 {
                 let battle_player = self_mut.get_battle_player(Some(user_id), true);
-                if battle_player.is_err() {
-                    return;
-                }
-                let mut is_can_skip_turn: bool = true;
-                for &index in self_mut.tile_map.un_pair_map.keys() {
-                    let map_cell = self_mut.tile_map.map_cells.get(index);
-                    if let None = map_cell {
-                        continue;
+                if let Ok(_) = battle_player {
+                    let mut is_can_skip_turn: bool = true;
+                    for &index in self_mut.tile_map.un_pair_map.keys() {
+                        let map_cell = self_mut.tile_map.map_cells.get(index);
+                        if let None = map_cell {
+                            continue;
+                        }
+                        let map_cell = map_cell.unwrap();
+                        if map_cell.check_is_locked() {
+                            continue;
+                        }
+                        is_can_skip_turn = false;
+                        break;
                     }
-                    let map_cell = map_cell.unwrap();
-                    if map_cell.check_is_locked() {
-                        continue;
-                    }
-                    is_can_skip_turn = false;
-                    break;
-                }
 
-                //turn结算玩家
-                let battle_player = self_mut.battle_player.get_mut(&user_id).unwrap();
-                battle_player.turn_start_reset();
-                battle_player.set_is_can_end_turn(is_can_skip_turn);
+                    //turn结算玩家
+                    let battle_player = self_mut.battle_player.get_mut(&user_id).unwrap();
+                    battle_player.turn_start_reset();
+                    battle_player.set_is_can_end_turn(is_can_skip_turn);
+                }
             }
 
             //结算玩家身上的buff

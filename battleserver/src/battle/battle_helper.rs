@@ -212,8 +212,7 @@ impl BattleData {
         if user_id.is_some() {
             let user_id = user_id.unwrap();
             let cter = self.get_battle_player_mut(Some(user_id), true);
-            if let Err(e) = cter {
-                error!("{:?}", e);
+            if let Err(_) = cter {
                 return lost_buff;
             }
             let battle_player = cter.unwrap();
