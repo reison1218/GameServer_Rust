@@ -264,10 +264,10 @@ impl Room {
 
     ///回其他服消息
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
-        let cter = self.get_battle_player_ref(&user_id);
-        match cter {
-            Some(cter) => {
-                if cter.is_robot() {
+        let battle_player = self.get_battle_player_ref(&user_id);
+        match battle_player {
+            Some(battle_player) => {
+                if battle_player.is_robot() {
                     return;
                 }
             }
@@ -504,13 +504,13 @@ impl Room {
         let mut user_id;
         for member in self.members.values() {
             user_id = member.user_id;
-            let cter = self.battle_data.battle_player.get(&user_id);
+            let battle_player = self.battle_data.battle_player.get(&user_id);
             //如果是机器人，则返回，不发送
-            if cter.is_none() {
+            if battle_player.is_none() {
                 continue;
             }
-            let cter = cter.unwrap();
-            if cter.robot_data.is_some() {
+            let battle_player = battle_player.unwrap();
+            if battle_player.robot_data.is_some() {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
@@ -522,16 +522,16 @@ impl Room {
     }
 
     pub fn init_mission_for_choice_index(&mut self) {
-        let cter = self.battle_data.get_battle_player_mut(None, false);
-        if let Err(e) = cter {
+        let battle_player = self.battle_data.get_battle_player_mut(None, false);
+        if let Err(e) = battle_player {
             error!("{:?}", e);
             return;
         }
-        let cter = cter.unwrap();
-        if cter.mission_data.mission.is_some() {
+        let battle_player = battle_player.unwrap();
+        if battle_player.mission_data.mission.is_some() {
             return;
         }
-        let user_id = cter.get_user_id();
+        let user_id = battle_player.get_user_id();
         random_mission(self.battle_data.borrow_mut(), user_id);
     }
 
@@ -768,13 +768,13 @@ impl Room {
 
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
-            let battle_cter =
+            let battle_player =
                 BattlePlayer::init(&member, &self.battle_data, self.robot_sender.clone());
-            match battle_cter {
-                Ok(b_cter) => {
+            match battle_player {
+                Ok(battle_player) => {
                     self.battle_data
                         .battle_player
-                        .insert(member.user_id, b_cter);
+                        .insert(member.user_id, battle_player);
                 }
                 Err(_) => {
                     return;

@@ -64,8 +64,8 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         }
         //翻两个地图块之后进行判断，如果记忆队列中有地图块，使用技能
         i if [221].contains(&i) => {
-            let cter = battle_data.battle_player.get(&robot_id).unwrap();
-            can_use = cter.flow_data.open_map_cell_vec_history.len() >= 2
+            let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+            can_use = battle_player.flow_data.open_map_cell_vec_history.len() >= 2
                 && robot.remember_map_cell.len() > 0;
         }
         //判断周围有没有人
@@ -280,8 +280,8 @@ pub fn check_pair(cter: &BattlePlayer) -> bool {
 
 ///有没有相邻的玩家
 pub fn no_near_user(battle_data: &BattleData, robot_id: u32) -> bool {
-    let cter = battle_data.battle_player.get(&robot_id).unwrap();
-    let index = cter.get_map_cell_index() as isize;
+    let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+    let index = battle_player.get_map_cell_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
     res.0.len() > 0
 }

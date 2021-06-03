@@ -109,9 +109,12 @@ impl RobotData {
 
     ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
     pub fn thinking_do_something(&self) {
-        let cter = self.get_battle_player_mut_ref();
-        self.goal_think
-            .arbitrate(cter, self.sender.clone(), self.clone_battle_data_ptr());
+        let battle_player = self.get_battle_player_mut_ref();
+        self.goal_think.arbitrate(
+            battle_player,
+            self.sender.clone(),
+            self.clone_battle_data_ptr(),
+        );
     }
 
     pub fn trigger(&self, rc: RememberCell, trigger_type: RobotTriggerType) {

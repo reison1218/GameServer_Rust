@@ -355,7 +355,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
         warn!("battle_player is not find!user_id:{}", user_id);
         return;
     }
-    let battle_cter = battle_player.unwrap();
+    let battle_player = battle_player.unwrap();
 
     let mut cp = C_POS::new();
     let res = cp.merge_from_bytes(packet.get_data());
@@ -366,11 +366,11 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
     let skill_id = cp.skill_id;
     let pos_type = cp.field_type;
     //校验技能
-    let res = battle_cter.cter.skills.contains_key(&skill_id);
+    let res = battle_player.cter.skills.contains_key(&skill_id);
     if !res {
         warn!(
             "this battle_cter has no this skill!cter_id:{},skill_id:{}",
-            battle_cter.get_cter_id(),
+            battle_player.get_cter_id(),
             skill_id
         );
         return;
@@ -399,13 +399,13 @@ fn use_item(
     targets: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
-    let battle_cter = rm.battle_data.battle_player.get(&user_id);
-    if let None = battle_cter {
+    let battle_player = rm.battle_data.battle_player.get(&user_id);
+    if let None = battle_player {
         let str = format!("battle_cter is not find!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
-    let battle_player = battle_cter.unwrap();
+    let battle_player = battle_player.unwrap();
 
     if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
@@ -439,9 +439,9 @@ fn open_map_cell(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     let battle_data = rm.battle_data.borrow();
-    let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
-    let cter_index = battle_cter.get_map_cell_index();
-    if battle_cter.is_locked() {
+    let battle_player = rm.battle_data.battle_player.get(&user_id).unwrap();
+    let cter_index = battle_player.get_map_cell_index();
+    if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
@@ -455,21 +455,21 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验剩余翻块次数
-    if battle_cter.flow_data.residue_movement_points <= 0 {
+    if battle_player.flow_data.residue_movement_points <= 0 {
         let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
 
     //校验本turn是否翻过目标地图块
-    if battle_cter
+    if battle_player
         .flow_data
         .open_map_cell_vec_history
         .contains(&target_map_cell_index)
     {
         let str = format!(
             "this player already has open this map_cell!user_id:{},open_map_cell_vec:{:?},index:{}",
-            user_id, battle_cter.flow_data.open_map_cell_vec_history, target_map_cell_index
+            user_id, battle_player.flow_data.open_map_cell_vec_history, target_map_cell_index
         );
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
@@ -504,13 +504,13 @@ fn attack(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     //先校验玩家是否可以进行攻击
-    let battle_cter = rm.battle_data.battle_player.get(&user_id).unwrap();
-    if battle_cter.is_locked() {
+    let battle_player = rm.battle_data.battle_player.get(&user_id).unwrap();
+    if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
-    if !battle_cter.is_can_attack() {
+    if !battle_player.is_can_attack() {
         let str = format!("now can not attack!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
@@ -586,15 +586,15 @@ fn skip_turn(
     }
 
     //拿到战斗角色
-    let battle_cter = rm.battle_data.battle_player.get(&user_id);
-    if battle_cter.is_none() {
+    let battle_player = rm.battle_data.battle_player.get(&user_id);
+    if battle_player.is_none() {
         warn!("skip_choice_turn battle_cter is none!user_id:{}", user_id);
         anyhow::bail!("")
     }
 
     //没有翻过地图块，则跳过
-    let battle_cter = battle_cter.unwrap();
-    if !battle_cter.get_is_can_end_turn() {
+    let battle_player = battle_player.unwrap();
+    if !battle_player.get_is_can_end_turn() {
         warn!("this player not open any map_cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
@@ -619,12 +619,12 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let room = res.unwrap();
-    let cter = room.battle_data.battle_player.get(&user_id);
-    if let None = cter {
+    let battle_player = room.battle_data.battle_player.get(&user_id);
+    if let None = battle_player {
         warn!("can not find cter!user_id:{}", user_id);
         return;
     }
-    let battle_player = cter.unwrap();
+    let battle_player = battle_player.unwrap();
     let cter_id = battle_player.get_cter_id();
 
     let mut ce = C_EMOJI::new();
@@ -823,20 +823,20 @@ fn unlock_oper(
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
     //先校验玩家是否可以进行攻击
-    let battle_cter = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
+    let battle_player = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
     let v = *au.action_value.get(0).unwrap();
-    if battle_cter.status.locked_oper == 0 || battle_cter.status.locked_oper != v {
+    if battle_player.status.locked_oper == 0 || battle_player.status.locked_oper != v {
         anyhow::bail!("{there is no show cell skill activate!}")
     }
-    battle_cter.status.locked_oper = 0;
-    battle_cter.set_is_can_end_turn(true);
+    battle_player.status.locked_oper = 0;
+    battle_player.set_is_can_end_turn(true);
     Ok(None)
 }
 
 ///校验玩家
 fn check_user(rm: &Room, user_id: u32) -> bool {
-    let cter = rm.get_battle_player_ref(&user_id);
-    if let None = cter {
+    let battle_player = rm.get_battle_player_ref(&user_id);
+    if let None = battle_player {
         warn!(
             "user is not in the room!room_id:{},user_id:{}",
             rm.get_room_id(),
@@ -844,7 +844,7 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
         );
         return false;
     }
-    let battle_player = cter.unwrap();
+    let battle_player = battle_player.unwrap();
     //校验角色是否死亡
     if battle_player.is_died() {
         warn!(

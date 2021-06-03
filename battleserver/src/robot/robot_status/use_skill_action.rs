@@ -52,12 +52,12 @@ impl RobotStatusAction for UseSkillRobotAction {
             return;
         }
         let battle_data = battle_data.unwrap();
-        let cter = battle_data.battle_player.get(&self.robot_id);
-        if let None = cter {
+        let battle_player = battle_data.battle_player.get(&self.robot_id);
+        if let None = battle_player {
             warn!("robot's cter is None!robot_id:{}", self.robot_id);
             return;
         }
-        let battle_player = cter.unwrap();
+        let battle_player = battle_player.unwrap();
         if battle_player.is_died() {
             return;
         }

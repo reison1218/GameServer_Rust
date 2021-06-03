@@ -59,11 +59,11 @@ pub struct Data {
 unsafe impl Send for Data {}
 unsafe impl Sync for Data {}
 
-///系统错误码35:代表OSX内核下的socket unactually
-const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
+//系统错误码35:代表OSX内核下的socket unactually
+//const MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 35;
 
-///错误码11代表linux内核的socket unactually
-const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
+//错误码11代表linux内核的socket unactually
+//const LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE: i32 = 11;
 
 ///TCP server module, just need impl Handler, and call the new function, can run the TCP server program,
 /// each client corresponds to a separate handler for client requests. The following is an example.
@@ -335,23 +335,7 @@ pub mod tcp_server {
                     // Would block "errors" are the OS's way of saying that the
                     // connection is  unavailable ready to perform this I/O operation.
                     Err(ref err) if would_block(err) => {
-                        let status = err.raw_os_error();
-                        let mut res = 0;
-                        if status.is_some() {
-                            res = status.unwrap();
-                        }
-                        //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
-                        //直接跳出token读取事件，待下次actually再进行读取
-                        if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
-                            || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
-                        {
-                            //just break,wait for next time ready when the os socket is actually
-                            break;
-                        } else {
-                            warn!("{:?}", err.to_string());
-                        }
-                        close_connect(connection, handler, Some(err));
-                        return Ok(true);
+                        break;
                     }
                     Err(ref err) if interrupted(err) => {
                         warn!("{:?}", err);
@@ -498,24 +482,10 @@ pub trait ClientHandler: Send + Sync {
                         self.on_message(v).await;
                     }
                 }
+                // Would block "errors" are the OS's way of saying that the
+                // connection is not actually ready to perform this I/O operation.
                 Err(ref err) if would_block(err) => {
-                    let status = err.raw_os_error();
-                    let mut res = 0;
-                    if status.is_some() {
-                        res = status.unwrap();
-                    }
-                    //系统错误码35代表OSX内核下的socket unactually,错误码11代表linux内核的socket unactually
-                    //直接跳出token读取事件，待下次actually再进行读取
-                    if res == MAC_OS_SOCKET_UNACTUALLY_ERROR_CODE
-                        || res == LINUX_OS_SOCKET_UNACTUALLY_ERROR_CODE
-                    {
-                        //just continue,get up this packet
-                        continue;
-                    } else {
-                        warn!("{:?}", err.to_string());
-                    }
-                    self.on_close().await;
-                    break;
+                    continue;
                 }
                 Err(ref err) if interrupted(err) => {
                     warn!("{:?}", err);

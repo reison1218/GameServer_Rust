@@ -118,7 +118,7 @@ impl BattleData {
 
         let battle_player = self.battle_player.get_mut(&user_id);
         if let None = battle_player {
-            error!("battle_cter is not find!user_id:{}", user_id);
+            error!("battle_player is not find!user_id:{}", user_id);
             return;
         }
         let battle_player = battle_player.unwrap();
@@ -498,18 +498,18 @@ impl BattleData {
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let open_cter = self.battle_player.get_mut(&open_user);
-        if let None = open_cter {
-            error!("battle_cter not find!user_id:{}", open_user);
+        let open_player = self.battle_player.get_mut(&open_user);
+        if let None = open_player {
+            error!("battle_player not find!user_id:{}", open_user);
             return;
         }
-        let open_cter = open_cter.unwrap();
+        let open_player = open_player.unwrap();
 
-        let last_index = open_cter.cter.index_data.last_map_cell_index;
-        let index = open_cter.cter.get_map_cell_index() as u32;
+        let last_index = open_player.cter.index_data.last_map_cell_index;
+        let index = open_player.cter.get_map_cell_index() as u32;
 
         if !self.battle_player.contains_key(&match_user) {
-            error!("battle_cter not find!user_id:{}", match_user);
+            error!("battle_player not find!user_id:{}", match_user);
             return;
         }
         let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
@@ -615,14 +615,14 @@ impl BattleData {
             //匹配地图上面的
             let tail_map_ptr = self_mut.tile_map.borrow_mut();
             let map_cell = tail_map_ptr.map_cells.get(map_cell_index.unwrap()).unwrap();
-            for cter in self_mut.battle_player.values_mut() {
-                if cter.is_died() {
+            for battle_player in self_mut.battle_player.values_mut() {
+                if battle_player.is_died() {
                     continue;
                 }
                 self.get_mut_ref().match_open_map_cell_buff(
                     None,
                     map_cell.buffs.values(),
-                    cter.get_user_id(),
+                    battle_player.get_user_id(),
                     user_id,
                     au,
                     is_pair,

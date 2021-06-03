@@ -67,18 +67,18 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut index = 0;
 
         let robot_id = self.robot_id;
-        let battle_cter = battle_data.battle_player.get(&robot_id).unwrap();
+        let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
         let mut action_type = RobotActionType::Open;
 
         //剩余翻块次数
-        let residue_open_times = battle_cter.flow_data.residue_movement_points;
+        let residue_open_times = battle_player.flow_data.residue_movement_points;
 
         //剩余次数等于0，则啥也不干，直接返回
         if residue_open_times == 0 {
             return;
         }
         //计算可以配对多少个
-        let res = cal_pair_num(battle_data, battle_cter);
+        let res = cal_pair_num(battle_data, battle_player);
         if let Err(e) = res {
             error!("{:?}", e);
             return;
@@ -98,7 +98,7 @@ impl RobotStatusAction for OpenCellRobotAction {
             index = *pair_v.get(0).unwrap();
         } else {
             let mut is_cd = false;
-            for skill in battle_cter.cter.skills.values() {
+            for skill in battle_player.cter.skills.values() {
                 if skill.cd_times > 0_i8 {
                     is_cd = true;
                     break;

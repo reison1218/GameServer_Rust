@@ -204,13 +204,13 @@ impl MissionData {
 
 ///随机任务
 pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
-    let cter = battle_data.battle_player.get_mut(&user_id).unwrap();
+    let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
     let mission_temp_mgr = crate::TEMPLATES.mission_temp_mgr();
     let mut random = rand::thread_rng();
     let no_condition_missions = mission_temp_mgr.no_condition_mission();
     let mut mission_list = vec![];
-    let history_list = &cter.mission_data.history_list;
-    let last_mission_id = cter.mission_data.get_last_mission();
+    let history_list = &battle_player.mission_data.history_list;
+    let last_mission_id = battle_player.mission_data.get_last_mission();
     //先添加无需条件都任务
     for mission_temp in no_condition_missions.iter() {
         if history_list.contains(&mission_temp.id) {
@@ -237,11 +237,11 @@ pub fn random_mission(battle_data: &mut BattleData, user_id: u32) {
     let index = random.gen_range(0..mission_list.len());
     let &temp_id = mission_list.get(index).unwrap();
     let temp = mission_temp_mgr.get_temp(&temp_id).unwrap();
-    cter.mission_data.new_mission(temp);
-    let missoin_id = cter.mission_data.get_last_mission();
+    battle_player.mission_data.new_mission(temp);
+    let missoin_id = battle_player.mission_data.get_last_mission();
     //封装proto，通知客户端
     let mut proto = S_MISSION_NOTICE::new();
-    proto.set_user_id(cter.get_user_id());
+    proto.set_user_id(battle_player.get_user_id());
     proto.set_mission_id(missoin_id);
     proto.set_notice_type(MissionNoticeType::New.into_u32());
     let bytes = proto.write_to_bytes();
@@ -356,12 +356,12 @@ fn pair_cell_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = cter {
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
         error!("{:?}", e);
         return false;
     }
-    let cter = cter.unwrap();
+    let battle_player = battle_player.unwrap();
     //配对地图块次数;配对地图块次数;配对指定元素地图块
     let mission_type_list = vec![
         MissionCompleteType::PairTimes,
@@ -371,7 +371,7 @@ fn pair_cell_trigger_mission(
 
     let mut res = false;
     for &mission_type in mission_type_list.iter() {
-        res = cter.add_mission_progress(value, mission_type, mission_parm);
+        res = battle_player.add_mission_progress(value, mission_type, mission_parm);
         if res {
             break;
         }
@@ -386,14 +386,14 @@ fn skill_times_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = cter {
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
         error!("{:?}", e);
         return false;
     }
-    let cter = cter.unwrap();
+    let battle_player = battle_player.unwrap();
     //使用技能触发任务
-    cter.add_mission_progress(value, MissionCompleteType::UseSkillTimes, mission_parm)
+    battle_player.add_mission_progress(value, MissionCompleteType::UseSkillTimes, mission_parm)
 }
 
 ///攻击行为触发任务
@@ -427,12 +427,12 @@ fn get_gold_trigger_mission(
     value: u16,
     mission_parm: (u32, u32),
 ) -> bool {
-    let cter = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = cter {
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
         error!("{:?}", e);
         return false;
     }
-    let cter = cter.unwrap();
+    let battle_player = battle_player.unwrap();
     //加任务进度
-    cter.add_mission_progress(value, MissionCompleteType::GoldCount, mission_parm)
+    battle_player.add_mission_progress(value, MissionCompleteType::GoldCount, mission_parm)
 }

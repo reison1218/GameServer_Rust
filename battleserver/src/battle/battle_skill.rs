@@ -222,14 +222,17 @@ pub fn show_index(
             return None;
         }
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let cter = battle_data.get_battle_player(Some(user_id), true);
-        if let Err(e) = cter {
+        let battle_player = battle_data.get_battle_player(Some(user_id), true);
+        if let Err(e) = battle_player {
             warn!("{:?}", e);
             return None;
         }
-        let cter = cter.unwrap();
+        let battle_player = battle_player.unwrap();
         //地图块必须已翻开
-        if !cter.flow_data.open_map_cell_vec_history.contains(&index)
+        if !battle_player
+            .flow_data
+            .open_map_cell_vec_history
+            .contains(&index)
             && map_cell.pair_index.is_none()
         {
             warn!(
@@ -640,10 +643,10 @@ pub fn skill_open_map_cell(
             return None;
         }
         let index = *target_array.get(0).unwrap() as usize;
-        let cter = battle_data
+        let battle_player = battle_data
             .get_battle_player_mut(Some(user_id), true)
             .unwrap();
-        let cter_index = cter.get_map_cell_index() as isize;
+        let cter_index = battle_player.get_map_cell_index() as isize;
         let (map_cells, _) =
             battle_data.cal_scope(user_id, cter_index, TargetType::PlayerSelf, None, None);
 
@@ -953,12 +956,12 @@ pub unsafe fn skill_aoe_damage(
         if index == v.len() - 1 {
             is_last_one = true;
         }
-        let cter = battle_data
+        let battle_player = battle_data
             .get_battle_player_mut(Some(target_user), true)
             .unwrap();
         let damage_res;
         //判断是否中心位置
-        let cter_index = cter.get_map_cell_index();
+        let cter_index = battle_player.get_map_cell_index();
         if cter_index == center_index as usize && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
         {
             damage_res = par2;

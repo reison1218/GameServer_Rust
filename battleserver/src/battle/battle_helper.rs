@@ -53,12 +53,12 @@ impl BattleData {
             return;
         }
         let user_id = *res.unwrap();
-        let cter = self.battle_player.get(&user_id);
-        if let None = cter {
+        let battle_player = self.battle_player.get(&user_id);
+        if let None = battle_player {
             return;
         }
-        let cter = cter.unwrap();
-        for index in cter.flow_data.open_map_cell_vec_history.iter() {
+        let battle_player = battle_player.unwrap();
+        for index in battle_player.flow_data.open_map_cell_vec_history.iter() {
             let map_cell = self.tile_map.map_cells.get_mut(*index);
             if let Some(map_cell) = map_cell {
                 if map_cell.pair_index.is_none() {
@@ -81,15 +81,15 @@ impl BattleData {
                 return;
             }
 
-            let cter_res = self.get_battle_player(Some(user_id), false);
-            match cter_res {
-                Ok(cter) => {
-                    if cter.is_died() {
+            let battle_player_res = self.get_battle_player(Some(user_id), false);
+            match battle_player_res {
+                Ok(battle_player) => {
+                    if battle_player.is_died() {
                         self.choice_index_next_turn();
                         return;
                     }
-                    if cter.robot_data.is_some() {
-                        cter.robot_start_action();
+                    if battle_player.robot_data.is_some() {
+                        battle_player.robot_start_action();
                     }
                 }
                 Err(e) => {
@@ -120,15 +120,15 @@ impl BattleData {
                 return;
             }
 
-            let cter_res = self.get_battle_player(Some(user_id), false);
-            match cter_res {
-                Ok(cter) => {
-                    if cter.is_died() {
+            let battle_player_res = self.get_battle_player(Some(user_id), false);
+            match battle_player_res {
+                Ok(battle_player) => {
+                    if battle_player.is_died() {
                         self.add_next_turn();
                         return;
                     }
-                    if cter.robot_data.is_some() {
-                        cter.robot_start_action();
+                    if battle_player.robot_data.is_some() {
+                        battle_player.robot_start_action();
                     }
                 }
                 Err(e) => {
@@ -211,11 +211,11 @@ impl BattleData {
         let battle_players = self.battle_player.borrow_mut() as *mut HashMap<u32, BattlePlayer>;
         if user_id.is_some() {
             let user_id = user_id.unwrap();
-            let cter = self.get_battle_player_mut(Some(user_id), true);
-            if let Err(_) = cter {
+            let battle_player = self.get_battle_player_mut(Some(user_id), true);
+            if let Err(_) = battle_player {
                 return lost_buff;
             }
-            let battle_player = cter.unwrap();
+            let battle_player = battle_player.unwrap();
             let buff = battle_player.cter.battle_buffs.buffs.get_mut(&buff_id);
             if buff.is_none() {
                 return lost_buff;
@@ -321,7 +321,7 @@ impl BattleData {
 
         if battle_player.is_died() {
             anyhow::bail!(
-                "this cter is died! user_id:{},cter_id:{}",
+                "this battle_player is died! user_id:{},cter_id:{}",
                 target,
                 battle_player.get_cter_id()
             )
@@ -333,24 +333,24 @@ impl BattleData {
     }
 
     ///计算减伤
-    pub fn calc_reduce_damage(&self, from_user: u32, target_cter: &mut BattlePlayer) -> i16 {
-        let target_user = target_cter.get_user_id();
+    pub fn calc_reduce_damage(&self, from_user: u32, target_player: &mut BattlePlayer) -> i16 {
+        let target_user = target_player.get_user_id();
         let scope_temp = TEMPLATES
             .skill_scope_temp_mgr()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
         if let Err(_) = scope_temp {
-            return target_cter.cter.base_attr.defence as i16;
+            return target_player.cter.base_attr.defence as i16;
         }
         let scope_temp = scope_temp.unwrap();
         let (_, user_v) = self.cal_scope(
             target_user,
-            target_cter.get_map_cell_index() as isize,
+            target_player.get_map_cell_index() as isize,
             TargetType::None,
             None,
             Some(scope_temp),
         );
         let res = user_v.contains(&from_user);
-        target_cter.cter.calc_reduce_damage(res)
+        target_player.cter.calc_reduce_damage(res)
     }
 
     pub fn get_alive_player_num(&self) -> usize {
@@ -363,11 +363,11 @@ impl BattleData {
     }
 
     pub fn new_target_pt(&self, user_id: u32) -> anyhow::Result<TargetPt> {
-        let cter = self.get_battle_player(Some(user_id), false)?;
+        let battle_player = self.get_battle_player(Some(user_id), false)?;
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
-            .push(cter.get_map_cell_index() as u32);
+            .push(battle_player.get_map_cell_index() as u32);
         Ok(target_pt)
     }
 
@@ -385,16 +385,16 @@ impl BattleData {
         let mut ep = EffectPt::new();
         ep.effect_type = EffectType::SkillDamage as u32;
 
-        let target_cter = battle_data_ptr
+        let target_player = battle_data_ptr
             .as_mut()
             .unwrap()
             .get_battle_player_mut(Some(target), true);
-        if let Err(e) = target_cter {
+        if let Err(e) = target_player {
             let str = format!("{:?}", e);
             error!("{:?}", str);
             anyhow::bail!("{:?}", str)
         }
-        let target_player = target_cter.unwrap();
+        let target_player = target_player.unwrap();
         let target_user_id = target_player.user_id;
 
         let mut res;
@@ -451,9 +451,9 @@ impl BattleData {
 
     ///更新翻地图块队列
     pub fn exec_open_map_cell(&mut self, user_id: u32, index: usize) {
-        let cter = self.battle_player.get_mut(&user_id).unwrap();
+        let battle_player = self.battle_player.get_mut(&user_id).unwrap();
         //将翻的地图块放到翻开的队列
-        cter.add_open_map_cell(index);
+        battle_player.add_open_map_cell(index);
 
         //更新地图块打开人
         let map_cell = self.tile_map.map_cells.get_mut(index).unwrap();
@@ -480,7 +480,7 @@ impl BattleData {
             }
         }
         //加金币
-        cter.add_gold(res as i32);
+        battle_player.add_gold(res as i32);
         //触发任务
         trigger_mission(
             self,
@@ -497,7 +497,7 @@ impl BattleData {
     pub fn handler_map_cell_pair(&mut self, user_id: u32, index: usize) -> bool {
         let battle_player = self.battle_player.get_mut(&user_id);
         if let None = battle_player {
-            error!("cter is not find!user_id:{}", user_id);
+            error!("battle_player is not find!user_id:{}", user_id);
             return false;
         }
         let battle_player = battle_player.unwrap();
@@ -669,10 +669,10 @@ impl BattleData {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let cter = self.get_battle_player(Some(user_id), false);
-        match cter {
-            Ok(cter) => {
-                if cter.is_robot() {
+        let battle_player = self.get_battle_player(Some(user_id), false);
+        match battle_player {
+            Ok(battle_player) => {
+                if battle_player.is_robot() {
                     return;
                 }
             }
@@ -687,11 +687,11 @@ impl BattleData {
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let cmd = cmd.into_u32();
-        for cter in self.battle_player.values() {
-            if cter.robot_data.is_some() {
+        for battle_player in self.battle_player.values() {
+            if battle_player.robot_data.is_some() {
                 continue;
             }
-            let user_id = cter.user_id;
+            let user_id = battle_player.user_id;
 
             let bytes_res = Packet::build_packet_bytes(cmd, user_id, bytes.clone(), true, true);
             let res = self.tcp_sender.send(bytes_res);
@@ -728,8 +728,8 @@ impl BattleData {
                     if map_cell.user_id == user_id || map_cell.user_id == 0 {
                         continue;
                     }
-                    let target_cter = self.battle_player.get(&map_cell.user_id);
-                    if let None = target_cter {
+                    let target_player = self.battle_player.get(&map_cell.user_id);
+                    if let None = target_player {
                         continue;
                     }
 
@@ -769,8 +769,8 @@ impl BattleData {
             TargetType::AnyPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(cter.get_user_id());
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    v.push(battle_player.get_user_id());
                     break;
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
@@ -780,8 +780,8 @@ impl BattleData {
                     anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                 }
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    if cter.get_user_id() != user_id {
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    if battle_player.get_user_id() != user_id {
                         anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                     }
                 }
@@ -790,16 +790,16 @@ impl BattleData {
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(cter.get_user_id());
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    v.push(battle_player.get_user_id());
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             }
             TargetType::OtherAllPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(cter.get_user_id());
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    v.push(battle_player.get_user_id());
                 }
                 //除自己所有玩家
                 self.check_user_target(&v[..], Some(user_id))?
@@ -807,8 +807,8 @@ impl BattleData {
             TargetType::OtherAnyPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(cter.get_user_id());
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    v.push(battle_player.get_user_id());
                     break;
                 }
                 //除自己所有玩家
@@ -817,8 +817,8 @@ impl BattleData {
             TargetType::SelfScopeOthers => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let cter = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(cter.get_user_id());
+                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
+                    v.push(battle_player.get_user_id());
                     break;
                 }
                 //除自己所有玩家
@@ -1005,11 +1005,11 @@ impl BattleData {
         effect_value: u32,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
-        let target_cter = self.get_battle_player(Some(target_user), true)?;
+        let target_player = self.get_battle_player(Some(target_user), true)?;
         let mut target_pt = TargetPt::new();
         target_pt
             .target_value
-            .push(target_cter.get_map_cell_index() as u32);
+            .push(target_player.get_map_cell_index() as u32);
         if from_user.is_some() && from_user.unwrap() == target_user && buff_id.is_some() {
             let mut tep = TriggerEffectPt::new();
             tep.set_field_type(effect_type.into_u32());
@@ -1088,8 +1088,8 @@ impl BattleData {
                         continue;
                     }
 
-                    let cter = self.get_battle_player(Some(other_user), true);
-                    if let Err(e) = cter {
+                    let battle_player = self.get_battle_player(Some(other_user), true);
+                    if let Err(e) = battle_player {
                         warn!("{:?}", e);
                         continue;
                     }
@@ -1135,16 +1135,16 @@ impl BattleData {
                         if other_user == 0 {
                             continue;
                         }
-                        let cter = self.get_battle_player(Some(other_user), true);
-                        if let Err(e) = cter {
+                        let battle_player = self.get_battle_player(Some(other_user), true);
+                        if let Err(e) = battle_player {
                             warn!("{:?}", e);
                             continue;
                         }
-                        let cter = cter.unwrap();
-                        if v_u.contains(&cter.get_user_id()) {
+                        let battle_player = battle_player.unwrap();
+                        if v_u.contains(&battle_player.get_user_id()) {
                             continue;
                         }
-                        v_u.push(cter.get_user_id());
+                        v_u.push(battle_player.get_user_id());
                     }
                 }
             }

@@ -247,8 +247,8 @@ impl BattleData {
             hurt_damge =
                 self.deduct_hp(user_id, target_user_id, None, &mut target_pt, is_last_one)?;
         }
-        let target_cter = self.get_battle_player(Some(target_user_id), true);
-        if target_cter.is_ok() {
+        let target_player = self.get_battle_player(Some(target_user_id), true);
+        if target_player.is_ok() {
             //被攻击后触发
             self.attacked_after_trigger(target_user_id, &mut target_pt);
 
@@ -291,22 +291,22 @@ impl BattleData {
             });
 
         let index = targets.get(0).unwrap();
-        let target_cter = self.get_battle_player_mut_by_map_cell_index(*index as usize);
+        let target_player = self.get_battle_player_mut_by_map_cell_index(*index as usize);
 
-        if let Err(e) = target_cter {
+        if let Err(e) = target_player {
             warn!("{:?}", e);
             anyhow::bail!("")
         }
 
-        let target_cter = target_cter.unwrap();
-        let target_user_id = target_cter.get_user_id();
-        let target_user_index = target_cter.get_map_cell_index() as u32;
+        let target_player = target_player.unwrap();
+        let target_user_id = target_player.get_user_id();
+        let target_user_index = target_player.get_map_cell_index() as u32;
         if target_user_id == user_id {
             warn!("the attack target can not be Self!user_id:{}", user_id);
             anyhow::bail!("")
         }
-        if target_cter.is_died() {
-            warn!("the target is died!user_id:{}", target_cter.get_user_id());
+        if target_player.is_died() {
+            warn!("the target is died!user_id:{}", target_player.get_user_id());
             anyhow::bail!("")
         }
         let mut is_last_one = false;
@@ -537,13 +537,13 @@ impl BattleData {
     pub fn turn_end(&mut self) {
         //清空翻开地图玩家id
         self.clear_open_cells();
-        let cter = self.get_battle_player_mut(None, true);
-        if cter.is_err() {
+        let battle_player = self.get_battle_player_mut(None, true);
+        if battle_player.is_err() {
             return;
         }
-        let cter = cter.unwrap();
+        let battle_player = battle_player.unwrap();
         //turn结束重制
-        cter.turn_end_reset();
+        battle_player.turn_end_reset();
     }
 
     ///回合开始触发
