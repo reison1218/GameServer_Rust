@@ -115,7 +115,6 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
 ///初始化游戏服务器tcp客户端链接
 fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
     let game = async {
-        async_std::task::sleep(Duration::from_millis(80)).await;
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("game_port");
         info!("开始链接游戏服:{:?}...", address);
