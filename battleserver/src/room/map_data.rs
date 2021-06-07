@@ -94,8 +94,8 @@ impl MapCell {
     }
 
     pub fn has_lock_buff(&self) -> bool {
-        for &buff_id in self.buffs.keys() {
-            if LOCKED == buff_id {
+        for buff in self.buffs.values() {
+            if LOCKED == buff.function_id {
                 return true;
             }
         }
@@ -105,7 +105,7 @@ impl MapCell {
     pub fn get_traps_mut(&mut self) -> Vec<&mut Buff> {
         let mut res = Vec::new();
         for buff in self.buffs.values_mut() {
-            if !TRAPS.contains(&buff.get_id()) {
+            if !TRAPS.contains(&buff.function_id) {
                 continue;
             }
             res.push(buff);
@@ -116,7 +116,7 @@ impl MapCell {
     pub fn get_traps(&self) -> Vec<&Buff> {
         let mut res = Vec::new();
         for buff in self.buffs.values() {
-            if !TRAPS.contains(&buff.get_id()) {
+            if !TRAPS.contains(&buff.function_id) {
                 continue;
             }
             res.push(buff);

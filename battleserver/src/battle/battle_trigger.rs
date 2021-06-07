@@ -446,10 +446,7 @@ impl TriggerEvent for BattleData {
 
             //使用后删除可用状态
             if SKILL_PAIR_LIMIT_DAMAGE.contains(&skill_function_id) {
-                battle_player
-                    .flow_data
-                    .pair_usable_skills
-                    .remove(&skill_function_id);
+                battle_player.flow_data.pair_usable_skills.remove(&skill_id);
             }
         }
 

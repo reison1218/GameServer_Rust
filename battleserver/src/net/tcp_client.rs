@@ -1,5 +1,5 @@
 use crate::Lock;
-use async_std::task::block_on;
+use async_std::task::{block_on, spawn};
 use async_trait::async_trait;
 use crossbeam::channel::Sender;
 use log::{error, warn};
@@ -47,7 +47,7 @@ impl ClientHandler for TcpClientHandler {
                 warn!("cmd is invalid!cmd = {}", cmd);
                 continue;
             }
-            async_std::task::spawn(handler_mess_s(self.bm.clone(), packet));
+            spawn(handler_mess_s(self.bm.clone(), packet));
         }
     }
 }
@@ -61,5 +61,5 @@ async fn handler_mess_s(bm: Lock, packet: Packet) {
 pub fn new(address: &str, bm: Lock) {
     let mut tch = TcpClientHandler::new(bm);
     let res = tch.on_read(address.to_string());
-    async_std::task::block_on(res);
+    block_on(res);
 }

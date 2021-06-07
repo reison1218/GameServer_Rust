@@ -475,6 +475,13 @@ pub unsafe fn add_buff(
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
+    let buff_function_res = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
+    let buff_function_id;
+    match buff_function_res {
+        Ok(buff_temp) => buff_function_id = buff_temp.function_id,
+        Err(_) => buff_function_id = 0,
+    }
+
     let skill_function_id = skill_temp.function_id;
 
     let target_type = TargetType::try_from(skill_temp.target as u8).unwrap();
@@ -518,12 +525,12 @@ pub unsafe fn add_buff(
                 let mut au_pt = build_action_unit_pt(user_id, ActionType::Skill, skill_id);
                 au_pt.targets.push(target_pt);
                 au_vec.push((user_id, au_pt));
-                if TRAPS.contains(&buff_id) {
+                if TRAPS.contains(&buff_function_id) {
                     buff.trap_view_users.insert(user_id);
                 }
             } else {
                 au.targets.push(target_pt);
-                if TRAPS.contains(&buff_id) {
+                if TRAPS.contains(&buff_function_id) {
                     for &user_id in battle_data.battle_player.keys() {
                         buff.trap_view_users.insert(user_id);
                     }

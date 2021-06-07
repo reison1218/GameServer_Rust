@@ -599,6 +599,7 @@ impl BattleData {
             }
             for buff in map_cell.buffs.values() {
                 let buff_id = buff.get_id();
+                let buff_function_id = buff.function_id;
                 if map_cell.passive_buffs.contains(&buff_id) {
                     continue;
                 }
@@ -607,7 +608,7 @@ impl BattleData {
                 buff_pt.trigger_timesed = buff.trigger_timesed as u32;
                 buff_pt.keep_times = buff.keep_times as u32;
 
-                if TRAPS.contains(&buff_id) {
+                if TRAPS.contains(&buff_function_id) {
                     for &view_user in buff.trap_view_users.iter() {
                         let res = cell_buff_map.get_mut(&view_user).unwrap();
                         let cbp = res.get_mut(&index).unwrap();
