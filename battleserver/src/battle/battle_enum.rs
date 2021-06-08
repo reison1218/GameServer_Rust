@@ -88,7 +88,7 @@ pub mod buff_type {
     ///增加攻击力并变成AOE
     pub const ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
-    pub const ADD_ATTACK: [u32; 2] = [4, 7];
+    pub const ADD_ATTACK: [u32; 3] = [4, 7, 15];
     ///减伤buff
     pub const SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
     ///获得道具

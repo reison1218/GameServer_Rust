@@ -38,6 +38,7 @@ impl tools::tcp::Handler for TcpServerHandler {
         lock.off_line(token);
     }
 
+    ///此处返回一个bool，表示校验数据包结果，若为false,则tcp底层将T出客户端，为true则不会
     async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         //校验包长度
         if mess.is_empty() || mess.len() < 16 {
@@ -52,10 +53,14 @@ impl tools::tcp::Handler for TcpServerHandler {
         }
         let packet_array = packet_array.unwrap();
 
+        let mut res;
         for packet in packet_array {
             let cmd = packet.get_cmd();
             info!("GateServer receive data of client!cmd:{}", cmd);
-            self.handle_binary(packet);
+            res = self.handle_binary(packet).await;
+            if !res {
+                return res;
+            }
         }
         true
     }
@@ -76,9 +81,9 @@ impl TcpServerHandler {
     }
 
     ///处理二进制数据
-    fn handle_binary(&mut self, mut packet: Packet) {
+    async fn handle_binary(&mut self, mut packet: Packet) -> bool {
         let token = self.tcp.as_ref().unwrap().token;
-        let mut lock = block_on(self.cm.lock());
+        let mut lock = self.cm.lock().await;
         let user_id = lock.get_channels_user_id(&token);
 
         //如果内存不存在数据，请求的命令又不是登录命令,则判断未登录异常操作
@@ -89,7 +94,7 @@ impl TcpServerHandler {
                 token
             );
             warn!("{:?}", str.as_str());
-            return;
+            return true;
         }
 
         let u_id;
@@ -99,7 +104,7 @@ impl TcpServerHandler {
             let res = c_u_l.merge_from_bytes(packet.get_data());
             if res.is_err() {
                 error!("{:?}", res.err().unwrap().to_string());
-                return;
+                return true;
             }
             let platform_value = c_u_l.platform_value.as_str();
 
@@ -120,7 +125,7 @@ impl TcpServerHandler {
                     packet.set_data_from_vec(sul.write_to_bytes().unwrap());
                     std::mem::drop(lock);
                     self.write_to_client(packet.build_client_bytes());
-                    return;
+                    return false;
                 }
             }
             lock.temp_channels.insert(u_id, self.tcp.clone());
@@ -139,7 +144,7 @@ impl TcpServerHandler {
                 Packet::build_packet_bytes(ClientCode::HeartBeat.into(), u_id, bytes, false, true);
             let gate_user = lock.user_channel.get_mut(&u_id);
             if let None = gate_user {
-                return;
+                return true;
             }
             let gate_user = gate_user.unwrap();
             gate_user.get_tcp_mut_ref().send(res);
@@ -152,6 +157,7 @@ impl TcpServerHandler {
         std::mem::drop(lock);
         //转发函数
         self.arrange_packet(packet);
+        true
     }
 
     ///数据包转发

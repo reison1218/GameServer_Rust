@@ -1,12 +1,16 @@
+use tokio::io;
+use tokio::io::AsyncReadExt;
+use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
-use tokio::prelude::*;
 
 #[tokio::main]
- pub async fn test_tokio_server() -> io::Result<()> {
-    let  mut listener = TcpListener::bind("127.0.0.1:8080").await?;
+pub async fn test_tokio_server() -> io::Result<()> {
+    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+
     loop {
         let (mut socket, _) = listener.accept().await?;
+
         tokio::spawn(async move {
             let mut buf = [0; 1024];
 
@@ -32,10 +36,10 @@ use tokio::prelude::*;
     }
 }
 
- pub async fn test_tokio_client(){
+pub async fn test_tokio_client() {
     let mut ts = TcpStream::connect("127.0.0.1:8080").await.unwrap();
     let mut buf = [0; 1024];
-    loop{
+    loop {
         let res = ts.read(&mut buf);
     }
 }

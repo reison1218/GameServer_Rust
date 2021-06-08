@@ -105,7 +105,7 @@ pub mod tcp_server {
     use std::io::{self, Read, Write};
     use std::net::SocketAddr;
     use std::str::FromStr;
-    use std::sync::{Arc, RwLock};
+    use std::sync::{Arc, Mutex};
 
     ///事件的唯一标示
     const SERVER: Token = Token(0);
@@ -121,7 +121,7 @@ pub mod tcp_server {
         // Setup the TCP server socket.
         let mut server = MioTcpListener::bind(address)?;
         // Map of `Token` -> `TcpStream`.
-        let conn_map = Arc::new(RwLock::new(HashMap::new()));
+        let conn_map = Arc::new(Mutex::new(HashMap::new()));
         //handlermap
         let mut handler_map = HashMap::new();
         // Unique token for each incoming connection.
@@ -174,7 +174,7 @@ pub mod tcp_server {
                             error!("{:?}", e);
                             continue;
                         }
-                        conn_map.write().unwrap().insert(token.0, connection);
+                        conn_map.lock().unwrap().insert(token.0, connection);
                         info!("Accepted connection from: {}", client_address);
 
                         //clone a handler for tcpstream
@@ -193,7 +193,7 @@ pub mod tcp_server {
                     token => {
                         // (maybe) received an event for a TCP connection.
                         let done =
-                            if let Some(connection) = conn_map.write().unwrap().get_mut(&token.0) {
+                            if let Some(connection) = conn_map.lock().unwrap().get_mut(&token.0) {
                                 let hd = handler_map.get_mut(&token.0);
                                 match hd {
                                     Some(hd) => {
@@ -222,7 +222,7 @@ pub mod tcp_server {
                                 false
                             };
                         if done {
-                            conn_map.write().unwrap().remove(&token.0);
+                            conn_map.lock().unwrap().remove(&token.0);
                             handler_map.remove(&token.0);
                         }
                     }
@@ -234,7 +234,7 @@ pub mod tcp_server {
     ///Read the data from the sender of the handler
     fn read_sender_mess(
         rec: Receiver<Data>,
-        connections: Arc<RwLock<HashMap<usize, MioTcpStream>>>,
+        connections: Arc<Mutex<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
             loop {
@@ -243,14 +243,14 @@ pub mod tcp_server {
                     Ok(data) => {
                         let token = data.token;
                         let bytes = data.bytes;
-                        let write = connections.write();
-                        if let Err(e) = write {
+                        let lock = connections.lock();
+                        if let Err(e) = lock {
                             error!("{:?}", e);
                             continue;
                         }
-                        let mut write = write.unwrap();
+                        let mut lock = lock.unwrap();
 
-                        let res: Option<&mut MioTcpStream> = write.get_mut(&token);
+                        let res: Option<&mut MioTcpStream> = lock.get_mut(&token);
                         match res {
                             Some(ts) => {
                                 //send mess to client

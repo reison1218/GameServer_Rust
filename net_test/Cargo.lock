@@ -20,7 +20,7 @@ dependencies = [
  "parking_lot",
  "pin-project-lite",
  "smallvec",
- "tokio 1.6.0",
+ "tokio",
  "tokio-util",
 ]
 
@@ -31,7 +31,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc7d7cd957c9ed92288a7c3c96af81fa5291f65247a76a34dac7b6af74e52ba0"
 dependencies = [
  "futures-core",
- "tokio 1.6.0",
+ "tokio",
 ]
 
 [[package]]
@@ -408,12 +408,6 @@ dependencies = [
  "byteorder",
  "iovec",
 ]
-
-[[package]]
-name = "bytes"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0dcbc35f504eb6fc275a6d20e4ebcda18cf50d40ba6fabff8c711fa16cb3b16"
 
 [[package]]
 name = "bytes"
@@ -1001,7 +995,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.6.0",
+ "tokio",
  "tokio-util",
  "tracing",
 ]
@@ -1130,7 +1124,7 @@ dependencies = [
  "itoa",
  "pin-project",
  "socket2",
- "tokio 1.6.0",
+ "tokio",
  "tower-service",
  "tracing",
  "want",
@@ -1456,7 +1450,7 @@ dependencies = [
  "slab",
  "threadpool",
  "time 0.2.26",
- "tokio 0.3.7",
+ "tokio",
  "tonic-build",
  "tools",
  "ws",
@@ -2472,28 +2466,6 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46409491c9375a693ce7032101970a54f8a2010efb77e13f70788f0d84489e39"
-dependencies = [
- "autocfg",
- "bytes 0.6.0",
- "futures-core",
- "libc",
- "memchr",
- "mio 0.7.11",
- "num_cpus",
- "once_cell",
- "parking_lot",
- "pin-project-lite",
- "signal-hook-registry",
- "slab",
- "tokio-macros 0.3.2",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd3076b5c8cc18138b8f8814895c11eb4de37114a5d127bafdc5e55798ceef37"
@@ -2503,23 +2475,13 @@ dependencies = [
  "libc",
  "memchr",
  "mio 0.7.11",
+ "num_cpus",
  "once_cell",
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
- "tokio-macros 1.2.0",
+ "tokio-macros",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46dfffa59fc3c8aad216ed61bdc2c263d2b9d87a9c8ac9de0c11a813e51b6db7"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -2541,7 +2503,7 @@ checksum = "f8864d706fdb3cc0843a49647ac892720dac98a6eeb818b77190592cf4994066"
 dependencies = [
  "futures-core",
  "pin-project-lite",
- "tokio 1.6.0",
+ "tokio",
 ]
 
 [[package]]
@@ -2555,7 +2517,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite",
- "tokio 1.6.0",
+ "tokio",
 ]
 
 [[package]]
@@ -2587,7 +2549,7 @@ dependencies = [
  "pin-project",
  "prost",
  "prost-derive",
- "tokio 1.6.0",
+ "tokio",
  "tokio-stream",
  "tokio-util",
  "tower",
@@ -2637,7 +2599,7 @@ dependencies = [
  "serde_json",
  "simplelog",
  "threadpool",
- "tokio 1.6.0",
+ "tokio",
  "tonic",
  "tonic-build",
 ]
@@ -2654,7 +2616,7 @@ dependencies = [
  "pin-project",
  "rand 0.8.3",
  "slab",
- "tokio 1.6.0",
+ "tokio",
  "tokio-stream",
  "tokio-util",
  "tower-layer",

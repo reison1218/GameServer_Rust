@@ -502,7 +502,18 @@ impl BattlePlayer {
         }
         let buff_temp = buff_temp.unwrap();
         let buff = Buff::new(buff_temp, Some(next_turn_index), None, None);
+        let attack_buff_id = buff_temp.par1;
         self.cter.battle_buffs.buffs.insert(buff.get_id(), buff);
+
+        //添加变身附带的攻击buff
+        let attack_buff = TEMPLATES.buff_temp_mgr().get_temp(&attack_buff_id);
+        if let Ok(attack_buff) = attack_buff {
+            let attack_buff_function_id = attack_buff.function_id;
+            if ADD_ATTACK.contains(&attack_buff_function_id) {
+                self.cter.trigger_add_damage_buff(attack_buff_id);
+            }
+        }
+
         //保存自己变身的角色
         if self.cter.base_attr.user_id == from_user {
             self.cter.self_transform_cter = Some(Box::new(self.cter.clone()));
@@ -855,6 +866,9 @@ impl BattleCharacter {
 
     ///触发增加伤害buff
     pub fn trigger_add_damage_buff(&mut self, buff_id: u32) {
+        if buff_id == 0 {
+            return;
+        }
         if !self.battle_buffs.add_damage_buffs.contains_key(&buff_id) {
             self.battle_buffs.add_damage_buffs.insert(buff_id, 1);
         } else {

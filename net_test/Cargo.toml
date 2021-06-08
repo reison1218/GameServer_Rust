@@ -59,7 +59,7 @@ piston-ai_behavior = "0.32.0"
 num_enum = "0.5.1"
 scheduled-thread-pool = "0.2.5"
 actix = "0.11.1"
-tokio = { version="0.3" , features = ["full"] }
+tokio = { version="1.6.0" , features = ["full"] }
 async-trait = "0.1.41"
 chrono = "0.4"
 slab = "0.4.2"
