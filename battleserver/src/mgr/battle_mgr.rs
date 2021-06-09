@@ -117,7 +117,7 @@ impl BattleMgr {
                 self.player_room.remove(user_id);
             }
             info!(
-                "删除房间，释放内存！room_type:{:?},room_id:{}",
+                "战斗结束！删除房间，释放内存！room_type:{:?},room_id:{}",
                 room_type, room_id
             );
         }

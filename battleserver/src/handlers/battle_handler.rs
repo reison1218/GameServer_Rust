@@ -292,15 +292,7 @@ pub unsafe fn process_summary(bm: &mut BattleMgr, room: &mut Room) -> bool {
     if !is_summary {
         return false;
     }
-    let room = bm.rooms.remove(&room_id);
-    if let None = room {
-        return true;
-    }
-    let room = room.unwrap();
-
-    for user_id in room.battle_data.battle_player.keys() {
-        bm.player_room.remove(user_id);
-    }
+    bm.rm_room(room_id);
     true
 }
 
@@ -324,6 +316,7 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let mut room = room.unwrap();
+    let room_type = room.get_room_type();
     //开始战斗
     room.start();
     let room_id = room.get_room_id();
@@ -331,6 +324,8 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) {
         bm.player_room.insert(*user_id, room_id);
     }
     bm.rooms.insert(room.get_room_id(), room);
+
+    info!("battle start!room_type:{:?},room_id:{}", room_type, room_id);
 }
 
 ///处理pos

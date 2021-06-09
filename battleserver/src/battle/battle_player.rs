@@ -501,16 +501,22 @@ impl BattlePlayer {
             anyhow::bail!("")
         }
         let buff_temp = buff_temp.unwrap();
-        let buff = Buff::new(buff_temp, Some(next_turn_index), None, None);
-        let attack_buff_id = buff_temp.par1;
-        self.cter.battle_buffs.buffs.insert(buff.get_id(), buff);
+        self.cter
+            .add_buff(Some(from_user), None, buff_id, Some(next_turn_index));
 
         //添加变身附带的攻击buff
+        let attack_buff_id = buff_temp.par1;
         let attack_buff = TEMPLATES.buff_temp_mgr().get_temp(&attack_buff_id);
         if let Ok(attack_buff) = attack_buff {
             let attack_buff_function_id = attack_buff.function_id;
             if ADD_ATTACK.contains(&attack_buff_function_id) {
-                self.cter.trigger_add_damage_buff(attack_buff_id);
+                let buff_from_user = self.get_user_id();
+                self.cter.add_buff(
+                    Some(buff_from_user),
+                    None,
+                    attack_buff_id,
+                    Some(next_turn_index),
+                );
             }
         }
 
@@ -524,6 +530,7 @@ impl BattlePlayer {
             .push(self.get_map_cell_index() as u32);
         let battle_cter_pt = self.convert_to_battle_cter_pt();
         target_pt.set_transform_cter(battle_cter_pt);
+
         Ok(target_pt)
     }
 
@@ -827,8 +834,6 @@ impl BattleCharacter {
         let buff_temp = buff_temp.unwrap();
         let buff_function_id = buff_temp.function_id;
 
-        let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
-
         //增伤
         if ADD_ATTACK.contains(&buff_function_id) {
             self.trigger_add_damage_buff(buff_id);
@@ -837,7 +842,7 @@ impl BattleCharacter {
         if SUB_ATTACK_DAMAGE.contains(&buff_function_id) {
             self.trigger_sub_damage_buff(buff_id);
         }
-
+        let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
         self.battle_buffs.buffs.insert(buff.get_id(), buff);
     }
 
@@ -865,10 +870,11 @@ impl BattleCharacter {
     }
 
     ///触发增加伤害buff
-    pub fn trigger_add_damage_buff(&mut self, buff_id: u32) {
+    fn trigger_add_damage_buff(&mut self, buff_id: u32) {
         if buff_id == 0 {
             return;
         }
+
         if !self.battle_buffs.add_damage_buffs.contains_key(&buff_id) {
             self.battle_buffs.add_damage_buffs.insert(buff_id, 1);
         } else {
@@ -879,7 +885,11 @@ impl BattleCharacter {
     }
 
     ///触发减伤buff
-    pub fn trigger_sub_damage_buff(&mut self, buff_id: u32) {
+    fn trigger_sub_damage_buff(&mut self, buff_id: u32) {
+        if buff_id == 0 {
+            return;
+        }
+
         if !self.battle_buffs.sub_damage_buffs.contains_key(&buff_id) {
             self.battle_buffs.sub_damage_buffs.insert(buff_id, 1);
         } else {

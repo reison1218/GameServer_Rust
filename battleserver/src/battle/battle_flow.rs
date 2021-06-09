@@ -400,6 +400,7 @@ impl BattleData {
                     continue;
                 }
                 battle_player.round_reset();
+                let from_user = battle_player.get_user_id();
                 let battle_player_ptr = battle_player as *mut BattlePlayer;
                 for buff in battle_player_ptr
                     .as_mut()
@@ -413,15 +414,16 @@ impl BattleData {
                     buff_id = buff.get_id();
                     //刷新地图增加攻击力
                     if RESET_MAP_ADD_ATTACK.contains(&buff_function_id) {
-                        battle_player.cter.trigger_add_damage_buff(buff_id);
+                        battle_player.cter.add_buff(
+                            Some(from_user),
+                            None,
+                            buff_id,
+                            Some(self.next_turn_index),
+                        );
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
                     if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
-                        battle_player
-                            .cter
-                            .battle_buffs
-                            .add_damage_buffs
-                            .remove(&buff_id);
+                        battle_player.cter.remove_buff(buff_id);
                     }
                 }
             }

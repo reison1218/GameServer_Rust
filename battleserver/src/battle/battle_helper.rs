@@ -255,14 +255,18 @@ impl BattleData {
             return lost_buff;
         }
         let need_remove;
-        if is_turn_index && buff.turn_index.is_some() && buff.turn_index.unwrap() == next_turn_index
-        {
-            buff.sub_keep_times();
-        } else if !is_turn_index {
-            buff.sub_trigger_timesed()
-        }
         let cfg_keep_time = buff.buff_temp.keep_time;
         let cfg_trigger_time = buff.buff_temp.trigger_times;
+        //判断是否减去keep_times
+        if cfg_keep_time > 0 && is_turn_index {
+            if buff.turn_index.is_some() && buff.turn_index.unwrap() == next_turn_index {
+                buff.sub_keep_times();
+            }
+        } else if cfg_trigger_time > 0 && !is_turn_index {
+            //判断是否减去处罚次数
+            buff.sub_trigger_timesed()
+        }
+
         //判断触发次数
         if cfg_keep_time == 0 && buff.trigger_timesed <= 0 {
             need_remove = true;

@@ -39,7 +39,9 @@ impl Buff {
         from_skill: Option<u32>,
     ) -> Self {
         let mut buff = Buff::from(temp);
-        buff.turn_index = turn_index;
+        if temp.keep_time > 0 {
+            buff.turn_index = turn_index;
+        }
         buff.from_user = from_user;
         buff.from_skill = from_skill;
         buff
@@ -233,24 +235,19 @@ impl BattleData {
             return;
         }
         let new_buff_temp = new_buff_temp.unwrap();
-        let buff = Buff::new(
-            new_buff_temp,
-            Some(self.next_turn_index),
-            from_user,
-            from_skill,
-        );
         target_pt.add_buffs.push(new_buff_temp.id);
-        let target_type = TargetType::try_from(buff.buff_temp.target as u8).unwrap();
+        let target_type = TargetType::try_from(new_buff_temp.target as u8).unwrap();
 
         //如果目标类型是地图块上的玩家
         if target_type == TargetType::MapCellPlayer {
             let last_map_cell_user = self.battle_player.get_mut(&last_map_cell_user_id);
             if let Some(last_map_cell_user) = last_map_cell_user {
-                last_map_cell_user
-                    .cter
-                    .battle_buffs
-                    .buffs
-                    .insert(buff.id, buff.clone());
+                last_map_cell_user.cter.add_buff(
+                    from_user,
+                    from_skill,
+                    new_buff_temp.id,
+                    Some(self.next_turn_index),
+                );
                 let last_map_cell_user_index = last_map_cell_user.cter.get_map_cell_index() as u32;
                 target_pt.target_value.push(last_map_cell_user_index);
                 au.targets.push(target_pt.clone());
@@ -267,7 +264,12 @@ impl BattleData {
         target_pt.target_value.push(battle_cter_index);
         au.targets.push(target_pt);
 
-        battle_player.cter.battle_buffs.buffs.insert(buff.id, buff);
+        battle_player.cter.add_buff(
+            from_user,
+            from_skill,
+            new_buff_temp.id,
+            Some(self.next_turn_index),
+        )
     }
 
     ///给附近的人添加技能cd
@@ -576,11 +578,17 @@ impl BattleData {
                 //匹配属性一样的地图块+攻击
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
                     let battle_player = self.battle_player.get_mut(&match_user).unwrap();
+                    let from_user = battle_player.get_user_id();
                     //此处触发加攻击不用通知客户端
                     let buff_element = buff.buff_temp.par1 as u8;
                     let cter_element = battle_player.cter.base_attr.element;
                     if buff_element == cter_element && cter_element == map_cell_element {
-                        battle_player.cter.trigger_add_damage_buff(buff.id);
+                        battle_player.cter.add_buff(
+                            Some(from_user),
+                            None,
+                            buff.id,
+                            Some(self.next_turn_index),
+                        );
                     }
                 }
             }
