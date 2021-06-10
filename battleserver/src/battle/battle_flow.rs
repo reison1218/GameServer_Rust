@@ -283,7 +283,7 @@ impl BattleData {
         battle_player
             .cter
             .battle_buffs
-            .buffs
+            .buffs()
             .values()
             .filter(|buff| ADD_ATTACK_AND_AOE.contains(&buff.function_id))
             .for_each(|buff| {
@@ -407,7 +407,7 @@ impl BattleData {
                     .unwrap()
                     .cter
                     .battle_buffs
-                    .buffs
+                    .buffs()
                     .values()
                 {
                     buff_function_id = buff.function_id;
@@ -489,7 +489,7 @@ impl BattleData {
             let mut buff_function_id;
             let mut buff_id;
             //消耗移动点干点什么，配对了又干点什么
-            for buff in battle_player.cter.battle_buffs.buffs.values() {
+            for buff in battle_player.cter.battle_buffs.buffs().values() {
                 buff_function_id = buff.function_id;
                 buff_id = buff.get_id();
                 //移动加能量，配对加能量
@@ -587,7 +587,7 @@ impl BattleData {
 
             //结算玩家身上的buff
             for battle_player in self_mut.battle_player.values_mut() {
-                for buff in battle_player.cter.battle_buffs.buffs.values() {
+                for buff in battle_player.cter.battle_buffs.buffs().values() {
                     //如果是永久buff,则跳过
                     if buff.permanent {
                         continue;

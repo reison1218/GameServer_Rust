@@ -58,7 +58,6 @@ pub fn init_timer(bm: Lock) {
                 TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
                 _ => choice_index,
             };
-            info!("执行定时器任务开始:{:?}", task);
             let m = move || f(rm_clone, task);
             SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
         }

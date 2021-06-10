@@ -612,7 +612,7 @@ impl BattleData {
                 }
                 self.get_mut_ref().match_open_map_cell_buff(
                     Some(battle_player.get_user_id()),
-                    battle_player.cter.battle_buffs.buffs.values(),
+                    battle_player.cter.battle_buffs.buffs().values(),
                     battle_player.get_user_id(),
                     user_id,
                     au,

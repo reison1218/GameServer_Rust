@@ -325,7 +325,10 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) {
     }
     bm.rooms.insert(room.get_room_id(), room);
 
-    info!("battle start!room_type:{:?},room_id:{}", room_type, room_id);
+    info!(
+        "房间战斗开始！room_type:{:?},room_id:{}",
+        room_type, room_id
+    );
 }
 
 ///处理pos

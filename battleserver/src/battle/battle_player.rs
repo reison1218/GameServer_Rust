@@ -57,13 +57,30 @@ pub struct BattleStatus {
 ///角色战斗buff
 #[derive(Clone, Debug, Default)]
 pub struct BattleBuff {
-    pub buffs: HashMap<u32, Buff>,          //角色身上的buff
-    pub passive_buffs: HashMap<u32, Buff>,  //被动技能id
-    pub add_damage_buffs: HashMap<u32, u8>, //伤害加深buff key:buffid value:叠加次数
-    pub sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
+    buffs: HashMap<u32, Buff>,          //角色身上的buff
+    passive_buffs: HashMap<u32, Buff>,  //被动技能id
+    add_damage_buffs: HashMap<u32, u8>, //伤害加深buff key:buffid value:叠加次数
+    sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
 }
 
 impl BattleBuff {
+    pub fn init(&mut self, buff: Buff) {
+        self.buffs.insert(buff.get_id(), buff.clone());
+        self.passive_buffs.insert(buff.get_id(), buff);
+    }
+
+    pub fn add_buff_for_buffs(&mut self, buff: Buff) {
+        self.buffs.insert(buff.get_id(), buff);
+    }
+
+    pub fn buffs(&self) -> &HashMap<u32, Buff> {
+        &self.buffs
+    }
+
+    pub fn get_buff_mut(&mut self, buff_id: u32) -> Option<&mut Buff> {
+        self.buffs.get_mut(&buff_id)
+    }
+
     pub fn get_gd_buff(&mut self) -> Option<&mut Buff> {
         let mut buff_function_id;
         for buff in self.buffs.values_mut() {
@@ -632,11 +649,7 @@ impl BattleCharacter {
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);
-            battle_cter.add_buff(Some(battle_cter.get_user_id()), None, *buff_id, None);
-            battle_cter
-                .battle_buffs
-                .passive_buffs
-                .insert(*buff_id, buff);
+            battle_cter.battle_buffs.init(buff);
         });
         Ok(battle_cter)
     }
@@ -671,8 +684,7 @@ impl BattleCharacter {
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(buff_id);
             if let Ok(buff_temp) = buff_temp {
                 let buff = Buff::from(buff_temp);
-                self.add_buff(Some(self.get_user_id()), None, buff.get_id(), None);
-                self.battle_buffs.passive_buffs.insert(*buff_id, buff);
+                self.battle_buffs.init(buff);
             }
         });
     }
@@ -704,10 +716,6 @@ impl BattleCharacter {
             }
         }
         true
-    }
-
-    pub fn get_user_id(&self) -> u32 {
-        self.base_attr.user_id
     }
 
     pub fn add_energy(&mut self, value: i8) {
@@ -780,13 +788,13 @@ impl BattleCharacter {
     pub fn calc_damage(&self) -> i16 {
         let mut damage = self.base_attr.atk;
 
-        for (buff_id, times) in self.battle_buffs.add_damage_buffs.iter() {
+        for (buff_id, &times) in self.battle_buffs.add_damage_buffs.iter() {
             let buff = self.battle_buffs.buffs.get(buff_id);
             if buff.is_none() {
                 continue;
             }
             let buff = buff.unwrap();
-            for _ in 0..*times {
+            for _ in 0..times {
                 if buff_id == &1001 {
                     damage += buff.buff_temp.par2 as u8;
                 } else {
@@ -842,8 +850,11 @@ impl BattleCharacter {
         if SUB_ATTACK_DAMAGE.contains(&buff_function_id) {
             self.trigger_sub_damage_buff(buff_id);
         }
-        let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
-        self.battle_buffs.buffs.insert(buff.get_id(), buff);
+
+        if !self.battle_buffs.buffs.contains_key(&buff_id) {
+            let buff = Buff::new(buff_temp, turn_index, from_user, from_skill);
+            self.battle_buffs.add_buff_for_buffs(buff);
+        }
     }
 
     pub fn clean_all(&mut self) {

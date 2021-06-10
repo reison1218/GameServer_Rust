@@ -1,5 +1,4 @@
 use crate::battle::battle::SummaryUser;
-use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::{
     ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
     LOCK_SKILLS, TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
@@ -112,13 +111,9 @@ impl BattleData {
                         warn!("{:?}", e);
                         continue;
                     }
-                    let buff_temp = buff_temp.unwrap();
-                    let buff_add = Buff::new(buff_temp, Some(turn_index), None, None);
                     battle_player
                         .cter
-                        .battle_buffs
-                        .buffs
-                        .insert(buff_add.get_id(), buff_add);
+                        .add_buff(None, None, buff_id, Some(turn_index));
 
                     let mut target_pt_tmp = TargetPt::new();
                     target_pt_tmp
@@ -248,7 +243,7 @@ impl TriggerEvent for BattleData {
         //先判断目标位置的角色是否有不动泰山被动技能
         let target_cter = self.get_battle_player(Some(target_user), true).unwrap();
         let mut buff_function_id;
-        for buff in target_cter.cter.battle_buffs.buffs.values() {
+        for buff in target_cter.cter.battle_buffs.buffs().values() {
             buff_function_id = buff.function_id;
             if buff_function_id == CAN_NOT_MOVED && from_user != target_user {
                 anyhow::bail!(
@@ -289,7 +284,7 @@ impl TriggerEvent for BattleData {
             let cter_index = other_player.get_map_cell_index() as isize;
             from_user = other_player.user_id;
             //踩到别人到范围
-            for buff in other_player.cter.battle_buffs.buffs.values() {
+            for buff in other_player.cter.battle_buffs.buffs().values() {
                 buff_function_id = buff.function_id;
                 buff_id = buff.get_id();
                 if !DEFENSE_NEAR_MOVE_SKILL_DAMAGE.contains(&buff_function_id) {
@@ -466,7 +461,7 @@ impl TriggerEvent for BattleData {
         }
         let battle_player = battle_player.unwrap();
         let mut buff_function_id;
-        for buff in battle_player.cter.battle_buffs.buffs.values() {
+        for buff in battle_player.cter.battle_buffs.buffs().values() {
             buff_function_id = buff.function_id;
             if LOCK_SKILLS.contains(&buff_function_id) {
                 anyhow::bail!(
@@ -494,12 +489,17 @@ impl TriggerEvent for BattleData {
         let buff_ids: Vec<u32> = battle_player
             .cter
             .battle_buffs
-            .buffs
+            .buffs()
             .keys()
             .copied()
             .collect();
         for buff_id in buff_ids {
-            let buff = battle_player.cter.battle_buffs.buffs.get(&buff_id).unwrap();
+            let buff = battle_player
+                .cter
+                .battle_buffs
+                .buffs()
+                .get(&buff_id)
+                .unwrap();
             let par1 = buff.buff_temp.par1;
             buff_function_id = buff.function_id;
 
@@ -536,7 +536,7 @@ impl TriggerEvent for BattleData {
         let battle_player = battle_player.unwrap();
         let mut buff_id;
         let mut buff_function_id;
-        for buff in battle_player.cter.battle_buffs.buffs.clone().values() {
+        for buff in battle_player.cter.battle_buffs.buffs().values() {
             buff_id = buff.get_id();
             buff_function_id = buff.function_id;
 

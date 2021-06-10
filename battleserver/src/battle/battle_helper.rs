@@ -216,7 +216,7 @@ impl BattleData {
                 return lost_buff;
             }
             let battle_player = battle_player.unwrap();
-            let buff = battle_player.cter.battle_buffs.buffs.get_mut(&buff_id);
+            let buff = battle_player.cter.battle_buffs.get_buff_mut(buff_id);
             if buff.is_none() {
                 return lost_buff;
             }
@@ -242,8 +242,7 @@ impl BattleData {
                 .unwrap()
                 .cter
                 .battle_buffs
-                .buffs
-                .get_mut(&buff_id);
+                .get_buff_mut(buff_id);
         } else if map_cell_res.is_some() {
             buff = map_cell_res.as_mut().unwrap().buffs.get_mut(&buff_id);
         } else {
