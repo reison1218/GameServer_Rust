@@ -121,6 +121,8 @@ pub mod buff_type {
     pub const TRAPS: [u32; 2] = [10, 12];
     ///配对成功刷新技能cd
     pub const PAIR_CLEAN_SKILL_CD: [u32; 1] = [13];
+    ///配对成功，刷新技能cd或者减少技能cd
+    pub const PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD: [u32; 1] = [1003];
     ///变身buff
     pub const TRANSFORM_BUFF: [u32; 1] = [14];
 

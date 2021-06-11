@@ -41,6 +41,10 @@ impl Skill {
         }
     }
 
+    pub fn clean_cd(&mut self) {
+        self.cd_times = 0;
+    }
+
     ///重制技能cd
     pub fn reset_cd(&mut self) {
         self.cd_times = self.skill_temp.cd as i8;
@@ -352,8 +356,9 @@ pub fn show_map_cell(
             warn!("there is no nature_index and v_vec is empty!");
             return None;
         }
-        show_index = index;
+
         let map_cell = v.get(index).unwrap();
+        show_index = map_cell.0;
         let map_cell_id = map_cell.1;
         target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell.0 as u32);
@@ -399,9 +404,10 @@ pub fn show_map_cell(
             warn!("show_index {:?}", e);
             return None;
         }
-        show_index = index;
+
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
         let map_cell_id = map_cell.id;
+        show_index = map_cell.index;
         target_pt = TargetPt::new();
         target_pt.target_value.push(map_cell.index as u32);
         target_pt.target_value.push(map_cell_id);

@@ -81,6 +81,10 @@ impl BattleBuff {
         self.buffs.get_mut(&buff_id)
     }
 
+    pub fn get_buff(&self, buff_id: u32) -> Option<&Buff> {
+        self.buffs.get(&buff_id)
+    }
+
     pub fn get_gd_buff(&mut self) -> Option<&mut Buff> {
         let mut buff_function_id;
         for buff in self.buffs.values_mut() {
@@ -689,6 +693,13 @@ impl BattleCharacter {
         });
     }
 
+    pub fn clean_skill_cd(&mut self) {
+        self.skills
+            .values_mut()
+            .filter(|skill| !skill.is_active)
+            .for_each(|x| x.clean_cd())
+    }
+
     pub fn sub_skill_cd(&mut self, value: Option<i8>) {
         let res;
         match value {
@@ -704,9 +715,12 @@ impl BattleCharacter {
             }
         }
 
-        self.skills.values_mut().for_each(|x| {
-            x.add_cd(res);
-        })
+        self.skills
+            .values_mut()
+            .filter(|skill| !skill.is_active)
+            .for_each(|x| {
+                x.add_cd(res);
+            })
     }
 
     pub fn can_use_skill(&self) -> bool {
@@ -878,6 +892,11 @@ impl BattleCharacter {
         self.battle_buffs.buffs.remove(&buff_id);
         self.battle_buffs.add_damage_buffs.remove(&buff_id);
         self.battle_buffs.sub_damage_buffs.remove(&buff_id);
+    }
+
+    ///移除加伤buff
+    pub fn remove_damage_buff(&mut self, buff_id: u32) {
+        self.battle_buffs.add_damage_buffs.remove(&buff_id);
     }
 
     ///触发增加伤害buff

@@ -16,6 +16,8 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
+use super::battle_enum::buff_type::PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD;
+
 #[derive(Clone, Debug)]
 pub struct Buff {
     id: u32,
@@ -402,6 +404,47 @@ impl BattleData {
         au.targets.push(target_pt);
     }
 
+    ///匹配同元素治疗，不同就减cd
+    fn pair_same_element_clean_or_sub_skill_cd(
+        &mut self,
+        user_id: u32,
+        map_cell_element: u8,
+        buff_id: u32,
+        au: &mut ActionUnitPt,
+    ) {
+        let res = self.get_battle_player_mut(Some(user_id), true);
+        if let Err(_) = res {
+            return;
+        }
+        let battle_player = res.unwrap();
+        let buff = battle_player.cter.battle_buffs.get_buff(buff_id);
+        if let None = buff {
+            return;
+        }
+        let buff = buff.unwrap();
+
+        let par1 = buff.buff_temp.par1 as u8;
+        let par2 = buff.buff_temp.par1 as i8;
+        let cter_index = battle_player.get_map_cell_index() as u32;
+        let mut target_pt = TargetPt::new();
+        target_pt.target_value.push(cter_index);
+        let mut tep = TriggerEffectPt::new();
+        tep.buff_id = buff_id;
+        //如果匹配的元素相同就清空技能cd
+        if par1 == map_cell_element {
+            tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
+            battle_player.cter.clean_skill_cd();
+        } else {
+            //减cd
+            battle_player.cter.sub_skill_cd(Some(par2));
+            tep.set_field_type(EffectType::SubSkillCd.into_u32());
+            tep.set_value(par1 as u32);
+            battle_player.cter.sub_skill_cd(Some(par1 as i8));
+        }
+        target_pt.passiveEffect.push(tep);
+        au.targets.push(target_pt);
+    }
+
     ///匹配同元素治疗
     fn pair_same_element_cure(
         &mut self,
@@ -570,6 +613,13 @@ impl BattleData {
                         //匹配了刷新指定技能cd
                         let skill_id = buff.buff_temp.par1;
                         self.pair_clean_skill_cd(open_user, buff.id, skill_id, au);
+                    } else if PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD.contains(&buff_function_id) {
+                        self.pair_same_element_clean_or_sub_skill_cd(
+                            match_user,
+                            map_cell_element,
+                            buff.id,
+                            au,
+                        );
                     }
                 }
             }
