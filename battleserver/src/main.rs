@@ -185,6 +185,7 @@ fn init_season() {
             warn!("the next_update_time is None!");
             return;
         }
+
         let next_update_time = next_update_time.unwrap();
         SEASON.next_update_time = next_update_time;
     }

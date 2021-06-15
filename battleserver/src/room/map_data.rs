@@ -261,6 +261,7 @@ impl TileMap {
         }
 
         let map_random_index = rand.gen_range(0..tile_map_temp_v.len());
+
         let tile_map_temp = tile_map_temp_v.get(map_random_index).unwrap();
         let mut tmp = TileMap::default();
         tmp.id = tile_map_temp.id;

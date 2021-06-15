@@ -144,54 +144,54 @@ impl BattleData {
     pub unsafe fn handler_cter_move(
         &mut self,
         user_id: u32,
-        index: usize,
+        target_index: usize,
         au: &mut ActionUnitPt,
     ) -> anyhow::Result<(bool, Vec<(u32, ActionUnitPt)>)> {
         let battle_players = &mut self.battle_player as *mut HashMap<u32, BattlePlayer>;
         let battle_player = battle_players.as_mut().unwrap().get_mut(&user_id).unwrap();
-        let battle_player_index = battle_player.get_map_cell_index();
+        let source_battle_player_index = battle_player.get_map_cell_index();
         let tile_map_ptr = self.tile_map.borrow_mut() as *mut TileMap;
-        let map_cell = tile_map_ptr
+        let target_map_cell = tile_map_ptr
             .as_mut()
             .unwrap()
             .map_cells
-            .get_mut(index)
+            .get_mut(target_index)
             .unwrap();
 
         let mut is_change_index_both = false;
         let title_map_mut = tile_map_ptr.as_mut().unwrap();
         //判断改地图块上面有没有角色，有的话将目标位置的玩家挪到操作玩家的位置上
-        if map_cell.user_id > 0 {
-            let target_user = map_cell.user_id;
+        if target_map_cell.user_id > 0 {
+            let target_user = target_map_cell.user_id;
             //先判断目标位置的角色是否有不动泰山被动技能
             self.before_moved_trigger(user_id, target_user)?;
             //如果没有，则改变目标玩家的位置
             let target_player = self.get_battle_player_mut(Some(target_user), true).unwrap();
-            target_player.cter.move_index(battle_player_index);
+            target_player.cter.move_index(source_battle_player_index);
             let source_map_cell = title_map_mut
                 .map_cells
-                .get_mut(battle_player_index)
+                .get_mut(source_battle_player_index)
                 .unwrap();
             source_map_cell.user_id = target_player.get_user_id();
             is_change_index_both = true;
         } else {
             //重制之前地图块上的玩家id
-            let last_map_cell = title_map_mut
+            let source_map_cell = title_map_mut
                 .map_cells
-                .get_mut(battle_player_index)
+                .get_mut(source_battle_player_index)
                 .unwrap();
-            last_map_cell.user_id = 0;
+            source_map_cell.user_id = 0;
         }
         //改变角色位置
-        battle_player.cter.move_index(index);
-        map_cell.user_id = user_id;
+        battle_player.cter.move_index(target_index);
+        target_map_cell.user_id = user_id;
 
-        let index = index as isize;
+        let index = target_index as isize;
         //移动位置后触发事件
         let res = self.after_move_trigger(battle_player, index, is_change_index_both);
         //如果角色没死，就把翻的地图块id传给客户端
         if !res.0 {
-            au.action_value.push(map_cell.id);
+            au.action_value.push(target_map_cell.id);
         }
         Ok(res)
     }

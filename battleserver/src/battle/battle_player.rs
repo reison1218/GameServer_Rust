@@ -65,8 +65,32 @@ pub struct BattleBuff {
 
 impl BattleBuff {
     pub fn init(&mut self, buff: Buff) {
+        let buff_id = buff.get_id();
         self.buffs.insert(buff.get_id(), buff.clone());
-        self.passive_buffs.insert(buff.get_id(), buff);
+        self.passive_buffs.insert(buff.get_id(), buff.clone());
+        if SUB_ATTACK_DAMAGE.contains(&buff_id) {
+            self.add_sub_damage_buff(buff_id);
+        }
+    }
+
+    pub fn add_add_damage_buffs(&mut self, buff_id: u32) {
+        if !self.add_damage_buffs.contains_key(&buff_id) {
+            self.add_damage_buffs.insert(buff_id, 1);
+        } else {
+            let res = self.add_damage_buffs.get(&buff_id).unwrap();
+            let res = *res + 1;
+            self.add_damage_buffs.insert(buff_id, res);
+        }
+    }
+
+    pub fn add_sub_damage_buff(&mut self, buff_id: u32) {
+        if !self.sub_damage_buffs.contains_key(&buff_id) {
+            self.sub_damage_buffs.insert(buff_id, 1);
+        } else {
+            let res = self.sub_damage_buffs.get(&buff_id).unwrap();
+            let res = *res + 1;
+            self.sub_damage_buffs.insert(buff_id, res);
+        }
     }
 
     pub fn add_buff_for_buffs(&mut self, buff: Buff) {
@@ -904,14 +928,7 @@ impl BattleCharacter {
         if buff_id == 0 {
             return;
         }
-
-        if !self.battle_buffs.add_damage_buffs.contains_key(&buff_id) {
-            self.battle_buffs.add_damage_buffs.insert(buff_id, 1);
-        } else {
-            let res = self.battle_buffs.add_damage_buffs.get(&buff_id).unwrap();
-            let res = *res + 1;
-            self.battle_buffs.add_damage_buffs.insert(buff_id, res);
-        }
+        self.battle_buffs.add_add_damage_buffs(buff_id);
     }
 
     ///触发减伤buff
@@ -919,14 +936,7 @@ impl BattleCharacter {
         if buff_id == 0 {
             return;
         }
-
-        if !self.battle_buffs.sub_damage_buffs.contains_key(&buff_id) {
-            self.battle_buffs.sub_damage_buffs.insert(buff_id, 1);
-        } else {
-            let res = self.battle_buffs.sub_damage_buffs.get(&buff_id).unwrap();
-            let res = *res + 1;
-            self.battle_buffs.sub_damage_buffs.insert(buff_id, res);
-        }
+        self.battle_buffs.add_sub_damage_buff(buff_id);
     }
 
     ///回合开始触发
