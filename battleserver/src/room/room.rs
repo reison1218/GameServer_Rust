@@ -626,7 +626,7 @@ impl Room {
         if battle_player.is_died() {
             return;
         }
-        self.add_punish(user_id);
+        //self.add_punish(user_id);
     }
 
     ///移除玩家

@@ -383,6 +383,10 @@ impl BattleData {
         let battle_player = battle_player.unwrap();
         let skill = battle_player.cter.skills.get_mut(&skill_id);
         if let None = skill {
+            warn!(
+                "skill is not find!skill_id:{},cter_id:{},user_id:{}",
+                skill_id, battle_player.cter.base_attr.cter_id, user_id
+            );
             return;
         }
         let skill = skill.unwrap();
@@ -549,7 +553,6 @@ impl BattleData {
             return;
         }
         let open_player = open_player.unwrap();
-
         let last_index = open_player.cter.index_data.last_map_cell_index;
         let index = open_player.cter.get_map_cell_index() as u32;
 
@@ -627,16 +630,24 @@ impl BattleData {
             if is_pair {
                 //匹配属性一样的地图块+攻击
                 if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
-                    let battle_player = self.battle_player.get_mut(&match_user).unwrap();
-                    let from_user = battle_player.get_user_id();
-                    //此处触发加攻击不用通知客户端
+                    let buff_id = buff.id;
                     let buff_element = buff.buff_temp.par1 as u8;
-                    let cter_element = battle_player.cter.base_attr.element;
-                    if buff_element == cter_element && cter_element == map_cell_element {
+                    let from_user = match_user;
+                    let battle_player = self.battle_player.get_mut(&match_user).unwrap();
+                    //先清除
+                    battle_player.cter.remove_damage_buff(buff_id);
+                    //此处触发加攻击不用通知客户端
+                    let res = self.tile_map.pair_element_map_cells(buff_element);
+                    let res = res.len() / 2;
+                    if res == 0 {
+                        return;
+                    }
+                    //再添加
+                    for _ in 0..res {
                         battle_player.cter.add_buff(
                             Some(from_user),
                             None,
-                            buff.id,
+                            buff_id,
                             Some(self.next_turn_index),
                         );
                     }

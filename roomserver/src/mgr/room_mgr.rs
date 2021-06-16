@@ -3,11 +3,12 @@ use crate::handlers::room_handler::{
     confirm_into_room, create_room, emoji, join_room, kick_member, leave_room, off_line,
     prepare_cancel, reload_temps, room_setting, search_room, start, summary, update_season,
 };
-use crate::room::room::Room;
+use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
+use rayon::slice::ParallelSliceMut;
 use std::collections::HashMap;
 use std::{collections::hash_map::RandomState, convert::TryFrom};
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
@@ -89,13 +90,13 @@ impl RoomMgr {
         }
         let res = res.unwrap();
         let (room_type, room_id) = tools::binary::separate_long_2_int(*res);
-        let room;
         let room_type = RoomType::try_from(room_type as u8);
         if let Err(e) = room_type {
             error!("{:?}", e);
             return;
         }
         let room_type = room_type.unwrap();
+        let room;
         room = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
@@ -107,6 +108,7 @@ impl RoomMgr {
             return;
         }
         let room = room.unwrap();
+        let room_state = room.state;
         let room_id = room.get_room_id();
         let room_type = room.get_room_type();
         room.remove_member_without_push(user_id);
@@ -116,6 +118,34 @@ impl RoomMgr {
             "玩家退出房间!删除房间内玩家数据!不通知客户端!user_id:{},room_id:{}",
             user_id, room_id
         );
+
+        if room_type == RoomType::OneVOneVOneVOneMatch && room_state == RoomState::AwaitConfirm {
+            let mut need_rm_cache = false;
+            let mut need_cache_sort = false;
+            for room_cache in self.match_room.room_cache.iter_mut() {
+                if room_cache.room_id != room_id {
+                    continue;
+                }
+                if room_cache.count > 0 {
+                    room_cache.count -= 1;
+                }
+                if room_cache.count == 0 {
+                    need_rm_cache = true;
+                }
+                need_cache_sort = true;
+
+                break;
+            }
+            if !need_rm_room && need_rm_cache {
+                self.match_room.remove_room_cache(&room_id);
+            }
+            if !need_rm_room && need_cache_sort {
+                //重新排序
+                self.match_room
+                    .room_cache
+                    .par_sort_by(|a, b| b.count.cmp(&a.count));
+            }
+        }
         if need_rm_room {
             self.rm_room_without_push(room_type, room_id);
         }

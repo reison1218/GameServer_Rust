@@ -127,8 +127,8 @@ impl From<&RoomSetting> for RoomSettingPt {
 ///房间缓存
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomCache {
-    room_id: u32,
-    count: u8,
+    pub room_id: u32,
+    pub count: u8,
 }
 
 pub trait RoomModel {
@@ -318,6 +318,7 @@ impl RoomModel for MatchRoom {
         rc.room_id = room_id;
         rc.count = 1;
         self.room_cache.push(rc);
+        self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
         Ok(room_id)
     }
 
@@ -335,7 +336,7 @@ impl RoomModel for MatchRoom {
         //其他状态房间服自行处理
         if need_punish {
             //处理匹配惩罚,如果是匹配放，并且当前房间是满的，则进行惩罚
-            room.check_punish_for_leave(*user_id);
+            //room.check_punish_for_leave(*user_id);
         }
         room.remove_member(notice_type, user_id, need_push_self);
         //改变房间状态
@@ -346,9 +347,7 @@ impl RoomModel for MatchRoom {
         //如果房间之前是满都，就给所有人取消准备
         if room.get_state() == RoomState::AwaitConfirm && now_count < MEMBER_MAX as usize {
             room.do_cancel_prepare();
-            if room.get_state() == RoomState::AwaitConfirm {
-                need_add_cache = true;
-            }
+            need_add_cache = true;
         }
 
         if need_remove {
@@ -422,6 +421,8 @@ impl MatchRoom {
             return;
         }
         self.room_cache.remove(index as usize);
+        //重新排序
+        self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
     }
 
     ///快速加入
@@ -452,14 +453,14 @@ impl MatchRoom {
             //将成员加入到房间中
             room_mut.add_member(member)?;
             //解决房间队列缓存
-            let room_cache_array: &mut Vec<RoomCache> = self.room_cache.as_mut();
-            let room_cache = room_cache_array.last_mut().unwrap();
+            let room_cache = self.room_cache.get_mut(0).unwrap();
             //cache人数加1
             room_cache.count += 1;
+            let room_cache_count = room_cache.count;
             //如果人满里，则从缓存房间列表中弹出
-            if room_cache.count >= MEMBER_MAX {
+            if room_cache_count >= MEMBER_MAX {
                 //人满了就从队列里面弹出去
-                room_cache_array.pop();
+                self.remove_room_cache(&room_id);
                 info!("匹配房人满,将房间从匹配队列移除！room_id:{}", room_id);
                 //推送匹配成功通知
                 let room_mut = self.rooms.get_mut(&room_id).unwrap();
@@ -468,13 +469,13 @@ impl MatchRoom {
                 build_confirm_into_room_task(room_id, task_sender);
             }
             //重新排序
-            room_cache_array.par_sort_by(|a, b| b.count.cmp(&a.count));
+            self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
         }
         Ok(room_id)
     }
 
     fn get_room_cache_last_room_id(&self) -> anyhow::Result<u32> {
-        let room_cache = self.room_cache.last();
+        let room_cache = self.room_cache.get(0);
         if room_cache.is_none() {
             let str = "room_cache is empty!".to_owned();
             error!("{:?}", str.as_str());

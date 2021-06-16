@@ -70,7 +70,7 @@ pub enum RoomState {
 }
 
 ///房间结构体，封装房间必要信息
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Room {
     id: u32,                                      //房间id
     room_type: RoomType,                          //房间类型
@@ -600,6 +600,13 @@ impl Room {
         self.members.remove(&user_id);
         if self.get_owner_id() == user_id {
             self.owner_id = 0;
+            if self.room_type == RoomType::OneVOneVOneVOneMatch {
+                for &id in self.members.keys() {
+                    if id != 0 {
+                        self.owner_id = id;
+                    }
+                }
+            }
         }
         let mut index = 0_usize;
         for i in self.member_index.iter() {
@@ -699,6 +706,12 @@ impl Room {
         }
         let bytes = res.unwrap();
         self.send_2_server(BattleCode::Start.into_u32(), user_id, bytes);
+        info!(
+            "战斗开始，向战斗服发送BattleCode::Start，room_type:{:?},room_id:{},user_id:{}",
+            self.room_type,
+            self.get_room_id(),
+            user_id
+        );
     }
 }
 

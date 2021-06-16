@@ -62,6 +62,34 @@ impl TileMap {
         }
         str
     }
+
+    pub fn pair_element_map_cells(&self, element: u8) -> Vec<&MapCell> {
+        let mut res = vec![];
+        for map in self.map_cells.iter() {
+            if map.pair_index.is_none() {
+                continue;
+            }
+            if map.element != element {
+                continue;
+            }
+            res.push(map);
+        }
+        res
+    }
+
+    pub fn pair_element_map_cells_mut(&mut self, element: u8) -> Vec<&mut MapCell> {
+        let mut res = vec![];
+        for map in self.map_cells.iter_mut() {
+            if map.pair_index.is_none() {
+                continue;
+            }
+            if map.element != element {
+                continue;
+            }
+            res.push(map);
+        }
+        res
+    }
 }
 
 ///块的封装结构体

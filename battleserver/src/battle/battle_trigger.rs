@@ -1,7 +1,7 @@
 use crate::battle::battle::SummaryUser;
 use crate::battle::battle_enum::buff_type::{
-    ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCKED,
-    LOCK_SKILLS, TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
+    ATTACKED_ADD_ENERGY, CAN_NOT_MOVED, CHANGE_SKILL, DEFENSE_NEAR_MOVE_SKILL_DAMAGE, LOCK_SKILLS,
+    TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
 use crate::battle::battle_enum::skill_type::WATER_TURRET;
@@ -554,14 +554,9 @@ impl TriggerEvent for BattleData {
     }
 
     fn before_map_refresh_buff_trigger(&mut self) {
-        let mut buff_function_id;
         //如果存活玩家>=2并且地图未配对的数量<=2则刷新地图
         for map_cell in self.tile_map.map_cells.iter() {
             for buff in map_cell.buffs.values() {
-                buff_function_id = buff.function_id;
-                if buff_function_id != LOCKED {
-                    continue;
-                }
                 let from_user = buff.from_user;
                 if from_user.is_none() {
                     continue;
@@ -569,10 +564,14 @@ impl TriggerEvent for BattleData {
                 let from_user = from_user.unwrap();
                 let from_skill = buff.from_skill.unwrap();
                 let battle_player = self.battle_player.get_mut(&from_user);
-                if battle_player.is_none() {
+
+                if let None = battle_player {
                     continue;
                 }
                 let battle_player = battle_player.unwrap();
+                if battle_player.is_died() {
+                    continue;
+                }
                 let skill = battle_player.cter.skills.get_mut(&from_skill);
                 if skill.is_none() {
                     continue;
