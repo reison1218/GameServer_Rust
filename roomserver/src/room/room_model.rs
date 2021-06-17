@@ -409,20 +409,17 @@ impl MatchRoom {
 
     ///删除缓存房间
     pub fn remove_room_cache(&mut self, room_id: &u32) {
-        let mut index = -1_isize;
-        for i in self.room_cache.iter() {
-            index += 1;
-            if i.room_id != *room_id {
+        let mut index;
+        for (i, room) in self.room_cache.iter().enumerate() {
+            index = i;
+            if room.room_id != *room_id {
                 continue;
             }
+            self.room_cache.remove(index);
+            //重新排序
+            self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
             break;
         }
-        if index < 0 {
-            return;
-        }
-        self.room_cache.remove(index as usize);
-        //重新排序
-        self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
     }
 
     ///快速加入

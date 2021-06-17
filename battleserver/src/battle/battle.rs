@@ -50,7 +50,7 @@ type SkillFn = HashMap<
     ) -> Option<Vec<(u32, ActionUnitPt)>>,
 >;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct SummaryUser {
     pub user_id: u32,         //玩家id
     pub name: String,         //名称

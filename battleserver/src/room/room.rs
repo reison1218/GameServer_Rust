@@ -161,7 +161,6 @@ impl Room {
                 punishment = true;
             }
             //离开房间，当死亡处理
-
             let str = format!("player is died!because league_summary,user_id:{}", user_id);
             battle_player.player_die(str);
             self.battle_data.leave_user = (user_id, punishment);

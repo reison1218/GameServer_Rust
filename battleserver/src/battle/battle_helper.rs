@@ -316,22 +316,23 @@ impl BattleData {
     pub fn add_hp(
         &mut self,
         from_user: Option<u32>,
-        target: u32,
+        target_user: u32,
         hp: i16,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
-        let battle_player = self.get_battle_player_mut(Some(target), true)?;
+        let battle_player = self.get_battle_player_mut(Some(target_user), true)?;
 
         if battle_player.is_died() {
             anyhow::bail!(
                 "this battle_player is died! user_id:{},cter_id:{}",
-                target,
+                target_user,
                 battle_player.get_cter_id()
             )
         }
         battle_player.add_hp(hp);
+
         let target_pt =
-            self.build_target_pt(from_user, target, EffectType::Cure, hp as u32, buff_id)?;
+            self.build_target_pt(from_user, target_user, EffectType::Cure, hp as u32, buff_id)?;
         Ok(target_pt)
     }
 
