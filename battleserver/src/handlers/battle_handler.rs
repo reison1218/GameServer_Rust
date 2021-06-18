@@ -49,6 +49,7 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let battle_data = &mut room.battle_data;
+    let turn_user = battle_data.get_turn_user(None);
     let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
     let cter_id = battle_player.get_cter_id();
     //校验玩家死了没
@@ -66,6 +67,22 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     if cter_index != battle_data.tile_map.market_cell.0 {
         error!("this player index is not market!user_id:{}", user_id);
         return;
+    }
+    //校验玩家回合
+    match turn_user {
+        Ok(turn_user) => {
+            if turn_user != user_id {
+                warn!(
+                    "could not buy!turn_user != user_id,turn_user:{},user_id:{}",
+                    turn_user, user_id
+                );
+                return;
+            }
+        }
+        Err(e) => {
+            error!("{:?}", e);
+            return;
+        }
     }
     let merchandise_temp = crate::TEMPLATES.merchandise_temp_mgr();
     let temp = merchandise_temp.get_temp(&merchandise_id);

@@ -45,7 +45,7 @@ pub struct TileMap {
     pub map_cells: [MapCell; 30],                  //地图格子vec
     pub coord_map: HashMap<(isize, isize), usize>, //坐标对应格子
     pub world_cell: (usize, u32),                  //世界块 index,世界块id
-    pub market_cell: (usize, u32),                 //商店 index,世界块id
+    pub market_cell: (usize, u32),                 //商店 index,商店id
     pub season_id: i32,                            //当前地图赛季id
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
 }

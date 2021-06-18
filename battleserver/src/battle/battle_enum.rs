@@ -94,13 +94,13 @@ pub mod buff_type {
     ///获得道具
     pub const AWARD_ITEM: [u32; 5] = [10003, 30011, 30021, 30031, 30041];
     ///配对恢复生命
-    pub const PAIR_CURE: [u32; 1] = [30012];
+    pub const PAIR_CURE: u32 = 30012;
     ///获得buff
-    pub const AWARD_BUFF: [u32; 1] = [30022];
+    pub const AWARD_BUFF: u32 = 30022;
     ///相临技能cd增加
-    pub const NEAR_ADD_CD: [u32; 1] = [30032];
+    pub const NEAR_ADD_CD: u32 = 30032;
     ///配对成功相临造成技能伤害
-    pub const NEAR_SKILL_DAMAGE_PAIR: [u32; 1] = [30042];
+    pub const NEAR_SKILL_DAMAGE_PAIR: u32 = 30042;
     ///其他玩家移动到相临造成技能伤害
     pub const DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     ///被攻击时增加能量
@@ -116,13 +116,13 @@ pub mod buff_type {
     ///锁buff
     pub const LOCKED: u32 = 6;
     ///配对与自己相同元素时恢复生命
-    pub const PAIR_SAME_ELEMENT_CURE: [u32; 1] = [9];
+    pub const PAIR_SAME_ELEMENT_CURE: u32 = 9;
     ///陷阱类buff
     pub const TRAPS: [u32; 2] = [10, 12];
     ///配对成功刷新技能cd
-    pub const PAIR_CLEAN_SKILL_CD: [u32; 1] = [13];
+    pub const PAIR_CLEAN_SKILL_CD: u32 = 13;
     ///配对成功，刷新技能cd或者减少技能cd
-    pub const PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD: [u32; 1] = [1003];
+    pub const PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD: u32 = 1003;
     ///变身buff
     pub const TRANSFORM_BUFF: [u32; 1] = [14];
 

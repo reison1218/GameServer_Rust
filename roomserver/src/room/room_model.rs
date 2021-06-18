@@ -447,6 +447,7 @@ impl MatchRoom {
             if room_mut.get_member_count() >= MEMBER_MAX as usize {
                 anyhow::bail!("room is None,room_id:{}", room_id)
             }
+            let user_id = member.user_id;
             //将成员加入到房间中
             room_mut.add_member(member)?;
             //解决房间队列缓存
@@ -467,6 +468,12 @@ impl MatchRoom {
             }
             //重新排序
             self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
+            let match_room_count = self.room_cache.len();
+            info!(
+                "玩家匹配到房间！当前房间人数：{},match_user_id:{},room_id:{}",
+                room_cache_count, user_id, room_id
+            );
+            info!("当前匹配房数量:{}!", match_room_count);
         }
         Ok(room_id)
     }
