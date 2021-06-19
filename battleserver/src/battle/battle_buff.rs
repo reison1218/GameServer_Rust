@@ -11,7 +11,6 @@ use log::{error, warn};
 use std::borrow::BorrowMut;
 use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
-use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
@@ -691,6 +690,7 @@ impl BattleData {
         let map_cell = self.tile_map.map_cells.get(map_cell_index);
         if let None = map_cell {
             warn!("could not find map_cell!index:{}", map_cell_index);
+            return;
         }
         let map_cell = map_cell.unwrap();
         if map_cell.buffs.is_empty() {
@@ -703,30 +703,16 @@ impl BattleData {
     ///匹配buff
     pub fn trigger_open_map_cell_buff(
         &mut self,
-        map_cell_index: Option<usize>,
+        map_cell_index: usize,
         user_id: u32,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let self_mut = self.get_mut_ref();
-        if map_cell_index.is_none() {
-            //匹配玩家身上的
-            self.match_open_map_cell_buff_for_user(user_id, au, is_pair);
-        } else {
-            let map_cell_index = map_cell_index.unwrap();
-            //匹配地图上面的
-            let tail_map_ptr = self_mut.tile_map.borrow_mut();
-            let map_cell = tail_map_ptr.map_cells.get(map_cell_index).unwrap();
-            if map_cell.buffs.is_empty() {
-                return;
-            }
-            self.get_mut_ref().match_open_map_cell_buff_for_map_cell(
-                user_id,
-                map_cell_index,
-                au,
-                is_pair,
-            );
-        }
+        //匹配玩家身上的
+        self.match_open_map_cell_buff_for_user(user_id, au, is_pair);
+
+        //匹配地图快上的
+        self.match_open_map_cell_buff_for_map_cell(user_id, map_cell_index, au, is_pair);
     }
 }
 

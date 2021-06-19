@@ -168,10 +168,8 @@ impl TriggerEvent for BattleData {
         // let battle_players = self.battle_player.borrow_mut() as *mut HashMap<u32, BattleCharacter>;
         let battle_player = self.battle_player.get_mut(&user_id).unwrap();
         let index = battle_player.get_map_cell_index();
-        //匹配玩家身上的buff
-        self.trigger_open_map_cell_buff(None, user_id, au, is_pair);
-        //匹配地图块的buff
-        self.trigger_open_map_cell_buff(Some(index), user_id, au, is_pair);
+        //匹配玩家身上的buff和地图快上面的buff
+        self.trigger_open_map_cell_buff(index, user_id, au, is_pair);
         let battle_player = self.battle_player.get_mut(&user_id).unwrap();
         let map_cell = self.tile_map.map_cells.get(index).unwrap();
         let element = map_cell.element as u32;
