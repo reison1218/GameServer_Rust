@@ -106,7 +106,7 @@ pub mod buff_type {
     ///被攻击时增加能量
     pub const ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
     /// 匹配属性一样的地图块+攻击
-    pub const PAIR_SAME_ELEMENT_ADD_ATTACK: [u32; 1] = [1001];
+    pub const PAIR_SAME_ELEMENT_ADD_ATTACK: u32 = 1001;
     ///当地图重制，+攻击力
     pub const RESET_MAP_ADD_ATTACK: [u32; 1] = [1002];
     /// 移动干点啥，配对又干点啥

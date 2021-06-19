@@ -9,14 +9,14 @@ use crate::handlers::battle_handler::{Delete, Find};
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::borrow::BorrowMut;
-use std::collections::hash_map::Values;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
 use super::battle_enum::buff_type::PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD;
+use super::battle_player::BattlePlayer;
 
 #[derive(Clone, Debug)]
 pub struct Buff {
@@ -530,86 +530,87 @@ impl BattleData {
         au.targets.push(target_pt);
     }
 
-    ///匹配打开地图块触发buff
-    ///from_user: buff的来源玩家id
-    ///buffs: Values<u32, Buff>, buff列表
-    ///match_user: u32,匹配的玩家id
-    ///open_user: u32,打开地图块的玩家id
-    ///battle_cters: *mut HashMap<u32, BattleCharacter>,裸指针
-    ///au: &mut ActionUnitPt,proto
-    ///is_pair: bool,是否配对了
-    fn match_open_map_cell_buff(
+    //打开地图快触发buff for player
+    fn match_open_map_cell_buff_for_user(
         &mut self,
-        from_user: Option<u32>,
-        buffs: Values<u32, Buff>,
-        match_user: u32,
         open_user: u32,
         au: &mut ActionUnitPt,
         is_pair: bool,
     ) {
-        let open_player = self.battle_player.get_mut(&open_user);
-        if let None = open_player {
-            error!("battle_player not find!user_id:{}", open_user);
-            return;
-        }
-        let open_player = open_player.unwrap();
-        let last_index = open_player.cter.index_data.last_map_cell_index;
-        let index = open_player.cter.get_map_cell_index() as u32;
+        let battle_players_ptr = self.battle_player.borrow_mut() as *mut HashMap<u32, BattlePlayer>;
+        unsafe {
+            let open_player = battle_players_ptr.as_mut().unwrap().get_mut(&open_user);
+            if let None = open_player {
+                error!("battle_player not find!user_id:{}", open_user);
+                return;
+            }
+            let open_player = open_player.unwrap();
+            //玩家当前为止
+            let index = open_player.cter.get_map_cell_index() as u32;
 
-        if !self.battle_player.contains_key(&match_user) {
-            error!("battle_player not find!user_id:{}", match_user);
-            return;
-        }
-        let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
-        let map_cell_element = map_cell.element;
-        let mut buff_function_id;
-        let mut buff_id;
-        for buff in buffs {
-            buff_function_id = buff.function_id;
-            buff_id = buff.id;
-            //如果匹配的人和开地图块的人是同一个人
-            if open_user == match_user {
-                let last_map_cell_user_id;
-                if let Some(last_index) = last_index {
-                    let last_map_cell = self.tile_map.map_cells.get_mut(last_index);
-                    if let Some(last_map_cell) = last_map_cell {
-                        last_map_cell_user_id = last_map_cell.user_id;
-                    } else {
-                        last_map_cell_user_id = 0;
-                    }
+            //找出玩家上一个地图快为止的玩家id
+            let last_index = open_player.cter.index_data.last_map_cell_index;
+            let last_map_cell_user_id;
+            if let Some(last_index) = last_index {
+                let last_map_cell = self.tile_map.map_cells.get_mut(last_index);
+                if let Some(last_map_cell) = last_map_cell {
+                    last_map_cell_user_id = last_map_cell.user_id;
                 } else {
                     last_map_cell_user_id = 0;
                 }
+            } else {
+                last_map_cell_user_id = 0;
+            }
+            let map_cell = self.tile_map.map_cells.get(index as usize).unwrap();
+            let map_cell_element = map_cell.element;
+            let mut buff_function_id;
+            let mut buff_id;
 
+            //匹配自己翻开的
+            for buff in open_player.cter.battle_buffs.buffs().values() {
+                buff_function_id = buff.function_id;
+                buff_id = buff.id;
                 if is_pair {
                     //获得道具
                     if AWARD_ITEM.contains(&buff_function_id) {
-                        self.reward_item(from_user, match_user, buff_id, last_map_cell_user_id, au);
+                        self.reward_item(
+                            Some(open_user),
+                            open_user,
+                            buff_id,
+                            last_map_cell_user_id,
+                            au,
+                        );
                     } else if PAIR_CURE == buff_function_id {
-                        self.pair_cure(from_user, match_user, buff_id, last_map_cell_user_id, au);
+                        self.pair_cure(
+                            Some(open_user),
+                            open_user,
+                            buff_id,
+                            last_map_cell_user_id,
+                            au,
+                        );
                     } else if AWARD_BUFF == buff_function_id {
                         //获得一个buff
                         self.award_buff(
-                            from_user,
+                            Some(open_user),
                             None,
-                            match_user,
+                            open_user,
                             buff_id,
                             last_map_cell_user_id,
                             au,
                         );
                     } else if NEAR_ADD_CD == buff_function_id {
                         //相临的玩家技能cd增加
-                        self.near_add_cd(match_user, index, buff_id, au);
+                        self.near_add_cd(open_user, index, buff_id, au);
                     } else if NEAR_SKILL_DAMAGE_PAIR == buff_function_id {
                         //相临都玩家造成技能伤害
-                        self.near_skill_damage(match_user, index, buff_id, au);
+                        self.near_skill_damage(open_user, index, buff_id, au);
                     } else if PAIR_SAME_ELEMENT_CURE == buff_function_id {
                         //处理世界块的逻辑
                         //配对属性一样的地图块+hp
                         //查看配对的map_cell的属性是否与角色属性匹配
                         self.pair_same_element_cure(
-                            from_user,
-                            match_user,
+                            Some(open_user),
+                            open_user,
                             map_cell_element,
                             buff_id,
                             au,
@@ -620,7 +621,7 @@ impl BattleData {
                         self.pair_clean_skill_cd(open_user, buff_id, skill_id, au);
                     } else if PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD == buff_function_id {
                         self.pair_same_element_clean_or_sub_skill_cd(
-                            match_user,
+                            open_user,
                             map_cell_element,
                             buff_id,
                             au,
@@ -629,32 +630,74 @@ impl BattleData {
                 }
             }
 
-            if is_pair {
-                //匹配属性一样的地图块+攻击
-                if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
-                    let buff_element = buff.buff_temp.par1 as u8;
-                    let from_user = match_user;
-                    let battle_player = self.battle_player.get_mut(&match_user).unwrap();
-                    //先清除
-                    battle_player.cter.remove_damage_buff(buff_id);
-                    //此处触发加攻击不用通知客户端
-                    let res = self.tile_map.pair_element_map_cells(buff_element);
-                    let res = res.len() / 2;
-                    if res == 0 {
-                        return;
-                    }
-                    //再添加
-                    for _ in 0..res {
-                        battle_player.cter.add_buff(
-                            Some(from_user),
-                            None,
-                            buff_id,
-                            Some(self.next_turn_index),
-                        );
+            //匹配其他玩家的
+            let mut match_user;
+            for battle_player in self.battle_player.values_mut() {
+                if battle_player.is_died() {
+                    continue;
+                }
+                match_user = battle_player.get_user_id();
+                for buff in battle_player.cter.battle_buffs.buffs().values() {
+                    buff_function_id = buff.function_id;
+                    buff_id = buff.id;
+                    //匹配属性一样的地图块+攻击
+                    if PAIR_SAME_ELEMENT_ADD_ATTACK == buff_function_id {
+                        let buff_element = buff.buff_temp.par1 as u8;
+                        let from_user = match_user;
+                        //先清除
+                        let player = battle_players_ptr
+                            .as_mut()
+                            .unwrap()
+                            .get_mut(&match_user)
+                            .unwrap();
+                        player.cter.remove_damage_buff(buff_id);
+                        //此处触发加攻击不用通知客户端
+                        let res = self.tile_map.pair_element_map_cells(buff_element);
+                        let res = res.len() / 2;
+                        if res == 0 {
+                            return;
+                        }
+                        //再添加
+                        for _ in 0..res {
+                            player.cter.add_buff(
+                                Some(from_user),
+                                None,
+                                buff_id,
+                                Some(self.next_turn_index),
+                            );
+                        }
                     }
                 }
             }
         }
+    }
+
+    ///匹配打开地图块触发buff for map_cell
+    ///au: &mut ActionUnitPt,proto
+    ///is_pair: bool,是否配对了
+    fn match_open_map_cell_buff_for_map_cell(
+        &mut self,
+        open_user: u32,
+        map_cell_index: usize,
+        au: &mut ActionUnitPt,
+        is_pair: bool,
+    ) {
+        let open_player = self.battle_player.get_mut(&open_user);
+        if let None = open_player {
+            error!("battle_player not find!user_id:{}", open_user);
+            return;
+        }
+        let open_player = open_player.unwrap();
+        let map_cell = self.tile_map.map_cells.get(map_cell_index);
+        if let None = map_cell {
+            warn!("could not find map_cell!index:{}", map_cell_index);
+        }
+        let map_cell = map_cell.unwrap();
+        if map_cell.buffs.is_empty() {
+            return;
+        }
+
+        for buff in map_cell.buffs.values() {}
     }
 
     ///匹配buff
@@ -667,43 +710,22 @@ impl BattleData {
     ) {
         let self_mut = self.get_mut_ref();
         if map_cell_index.is_none() {
-            //匹配其他玩家身上的
-            for battle_player in self_mut.battle_player.values_mut() {
-                if battle_player.is_died() {
-                    continue;
-                }
-                if battle_player.cter.battle_buffs.buffs().is_empty() {
-                    continue;
-                }
-                self.get_mut_ref().match_open_map_cell_buff(
-                    Some(battle_player.get_user_id()),
-                    battle_player.cter.battle_buffs.buffs().values(),
-                    battle_player.get_user_id(),
-                    user_id,
-                    au,
-                    is_pair,
-                );
-            }
+            //匹配玩家身上的
+            self.match_open_map_cell_buff_for_user(user_id, au, is_pair);
         } else {
+            let map_cell_index = map_cell_index.unwrap();
             //匹配地图上面的
             let tail_map_ptr = self_mut.tile_map.borrow_mut();
-            let map_cell = tail_map_ptr.map_cells.get(map_cell_index.unwrap()).unwrap();
+            let map_cell = tail_map_ptr.map_cells.get(map_cell_index).unwrap();
             if map_cell.buffs.is_empty() {
                 return;
             }
-            for battle_player in self_mut.battle_player.values_mut() {
-                if battle_player.is_died() {
-                    continue;
-                }
-                self.get_mut_ref().match_open_map_cell_buff(
-                    None,
-                    map_cell.buffs.values(),
-                    battle_player.get_user_id(),
-                    user_id,
-                    au,
-                    is_pair,
-                );
-            }
+            self.get_mut_ref().match_open_map_cell_buff_for_map_cell(
+                user_id,
+                map_cell_index,
+                au,
+                is_pair,
+            );
         }
     }
 }

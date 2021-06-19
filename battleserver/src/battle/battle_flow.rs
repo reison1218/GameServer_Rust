@@ -422,7 +422,7 @@ impl BattleData {
                         );
                     }
                     //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
-                    if PAIR_SAME_ELEMENT_ADD_ATTACK.contains(&buff_function_id) {
+                    if PAIR_SAME_ELEMENT_ADD_ATTACK == buff_function_id {
                         battle_player.cter.remove_damage_buff(buff_id);
                     }
                 }
