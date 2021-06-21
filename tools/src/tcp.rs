@@ -111,7 +111,7 @@ pub mod tcp_server {
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub async fn new(addr: String, handler: impl Handler) -> io::Result<()> {
+    pub async fn new<T: Handler + 'static>(addr: String, handler: T) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
@@ -123,15 +123,16 @@ pub mod tcp_server {
         // Map of `Token` -> `TcpStream`.
         let conn_map = Arc::new(Mutex::new(HashMap::new()));
         //handlermap
-        let mut handler_map = HashMap::new();
+        let handler_map = Arc::new(Mutex::new(HashMap::new()));
         // Unique token for each incoming connection.
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
         let (sender, rec) = crossbeam::channel::bounded(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
+        let handler_map_cp = handler_map.clone();
         //read data from sender
-        read_sender_mess(rec, conn_map_cp);
+        read_sender_mess(rec, handler_map_cp, conn_map_cp);
         info!("TCP-SERVER listening on:{:?}", addr);
         info!("server start success!");
         // Register the server with poll we can receive events for it.
@@ -187,13 +188,14 @@ pub mod tcp_server {
                         block_on(res);
 
                         //save the handler
-                        handler_map.insert(token.0, hd);
+                        handler_map.lock().unwrap().insert(token.0, hd);
                     }
                     token => {
                         // (maybe) received an event for a TCP connection.
                         let done =
                             if let Some(connection) = conn_map.lock().unwrap().get_mut(&token.0) {
-                                let hd = handler_map.get_mut(&token.0);
+                                let mut handler_map_lock = handler_map.lock().unwrap();
+                                let hd = handler_map_lock.get_mut(&token.0);
                                 match hd {
                                     Some(hd) => {
                                         let res = handle_connection_event(
@@ -222,7 +224,7 @@ pub mod tcp_server {
                             };
                         if done {
                             conn_map.lock().unwrap().remove(&token.0);
-                            handler_map.remove(&token.0);
+                            handler_map.lock().unwrap().remove(&token.0);
                         }
                     }
                 }
@@ -231,8 +233,9 @@ pub mod tcp_server {
     }
 
     ///Read the data from the sender of the handler
-    fn read_sender_mess(
+    fn read_sender_mess<T: Handler + 'static>(
         rec: Receiver<Data>,
+        handler_map: Arc<Mutex<HashMap<usize, T>>>,
         connections: Arc<Mutex<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
@@ -253,8 +256,10 @@ pub mod tcp_server {
                         match res {
                             Some(ts) => {
                                 if bytes.is_empty() {
+                                    let mut handler_map_lock = handler_map.lock().unwrap();
                                     let _ = ts.shutdown(Shutdown::Both);
                                     connections_lock.remove(&token);
+                                    handler_map_lock.remove(&token);
                                     continue;
                                 }
 
@@ -274,6 +279,9 @@ pub mod tcp_server {
                                         if let Err(e) = res {
                                             warn!("{:?}", e);
                                         }
+                                        let mut handler_map_lock = handler_map.lock().unwrap();
+                                        handler_map_lock.remove(&token);
+                                        connections_lock.remove(&token);
                                         continue;
                                     }
                                     Err(e) => {

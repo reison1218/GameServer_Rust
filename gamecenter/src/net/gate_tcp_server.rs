@@ -1,7 +1,7 @@
 use crate::net::{new_server_tcp, Forward};
 use crate::Lock;
 use async_trait::async_trait;
-use log::{info,error};
+use log::{error, info};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
 
@@ -40,7 +40,7 @@ impl tools::tcp::Handler for GateTcpServerHandler {
     async fn on_open(&mut self, sender: TcpSender) {
         self.token = sender.token;
         self.gm.lock().await.add_gate_client(sender);
-        info!("new gate_client is connect!token:{}",self.token);
+        info!("new gate_client is connect!token:{}", self.token);
     }
 
     ///客户端tcp链接关闭事件
@@ -60,7 +60,7 @@ impl tools::tcp::Handler for GateTcpServerHandler {
         }
         //删除gate服
         lock.gate_clients.remove(&token);
-        info!("gate_client is closed!token:{}",token);
+        info!("gate_client is closed!token:{}", token);
     }
 
     ///客户端读取事件
