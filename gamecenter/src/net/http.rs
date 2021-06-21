@@ -31,6 +31,56 @@ impl HttpServerHandler for StopAllServerHandler {
     }
 }
 
+pub struct KickPlayerHandler {
+    gm: Lock,
+}
+
+impl KickPlayerHandler {
+    pub fn new(gm: Lock) -> Self {
+        KickPlayerHandler { gm }
+    }
+}
+
+impl HttpServerHandler for KickPlayerHandler {
+    fn get_path(&self) -> &str {
+        "kick"
+    }
+
+    fn execute(
+        &mut self,
+        params: Option<Value>,
+    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+        if let None = params {
+            let value = json!({ "status":"false ","error":"the params is none!" });
+            return Ok(value);
+        }
+        let params = params.unwrap();
+        let res = params.as_object();
+        if let None = res {
+            let value = json!({ "status":"false ","error":"the params is none!" });
+            return Ok(value);
+        }
+
+        let map = res.unwrap();
+        let user_id = map.get("user_id");
+        if let None = user_id {
+            let value = json!({ "status":"false ","error":"the user_id is none!" });
+            return Ok(value);
+        }
+        let user_id = user_id.unwrap();
+        let res = user_id.as_i64();
+        if let None = res {
+            let value = json!({ "status":"false ","error":"the user_id is not i64!" });
+            return Ok(value);
+        }
+        let user_id = user_id.as_i64().unwrap() as u32;
+        let mut lock = block_on(self.gm.lock());
+        lock.kick_player_handler(user_id);
+        let value = json!({ "status":"OK" });
+        Ok(value)
+    }
+}
+
 pub struct ReloadTempsHandler {
     gm: Lock,
 }

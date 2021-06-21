@@ -109,7 +109,7 @@ fn check_uc_online(user_id: &u32) -> anyhow::Result<bool> {
 ///校验内存是否在线，并做处理
 fn check_mem_online(user_id: &u32, write: &mut MutexGuard<ChannelMgr>) -> bool {
     //校验内存是否已经登陆
-    let gate_user = write.get_mut_user_channel_channel(user_id);
+    let gate_user = write.get_mut_user_channel(user_id);
     let mut res: bool = false;
     //如果有，则执行T下线
     if gate_user.is_some() {

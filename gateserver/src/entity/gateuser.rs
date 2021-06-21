@@ -18,7 +18,9 @@ impl GateUser {
         if self.ws.is_some() {
             self.get_ws_ref().close(CloseCode::Invalid).unwrap();
         }
-        if self.tcp.is_some() {}
+        if self.tcp.is_some() {
+            self.tcp.as_mut().unwrap().send(vec![]);
+        }
     }
 
     #[warn(dead_code)]

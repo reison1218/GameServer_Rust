@@ -130,7 +130,6 @@ pub mod tcp_server {
         let (sender, rec) = crossbeam::channel::bounded(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
-
         //read data from sender
         read_sender_mess(rec, conn_map_cp);
         info!("TCP-SERVER listening on:{:?}", addr);
@@ -243,16 +242,22 @@ pub mod tcp_server {
                     Ok(data) => {
                         let token = data.token;
                         let bytes = data.bytes;
-                        let lock = connections.lock();
-                        if let Err(e) = lock {
+                        let connections_lock = connections.lock();
+                        if let Err(e) = connections_lock {
                             error!("{:?}", e);
                             continue;
                         }
-                        let mut lock = lock.unwrap();
+                        let mut connections_lock = connections_lock.unwrap();
 
-                        let res: Option<&mut MioTcpStream> = lock.get_mut(&token);
+                        let res: Option<&mut MioTcpStream> = connections_lock.get_mut(&token);
                         match res {
                             Some(ts) => {
+                                if bytes.is_empty() {
+                                    let _ = ts.shutdown(Shutdown::Both);
+                                    connections_lock.remove(&token);
+                                    continue;
+                                }
+
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 match res {
@@ -269,7 +274,7 @@ pub mod tcp_server {
                                         if let Err(e) = res {
                                             warn!("{:?}", e);
                                         }
-                                        break;
+                                        continue;
                                     }
                                     Err(e) => {
                                         error!("{:?}", e);

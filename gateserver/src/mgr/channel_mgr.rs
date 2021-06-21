@@ -108,6 +108,17 @@ impl ChannelMgr {
         self.kick_all();
     }
 
+    pub fn kick_player(&mut self, user_id: u32) -> bool {
+        let gate_user = self.get_user_channel(&user_id);
+        if let None = gate_user {
+            return false;
+        }
+        let gate_user = gate_user.unwrap();
+        let token = gate_user.get_token();
+        self.off_line(token);
+        true
+    }
+
     ///写到游戏中心服
     pub fn write_to_game_center(&mut self, packet: Packet) {
         if self.game_center_client_channel.is_none() {
@@ -174,7 +185,7 @@ impl ChannelMgr {
     }
 
     ///通过userid获得channel
-    pub fn get_mut_user_channel_channel(&mut self, user_id: &u32) -> Option<&mut GateUser> {
+    pub fn get_mut_user_channel(&mut self, user_id: &u32) -> Option<&mut GateUser> {
         self.user_channel.get_mut(user_id)
     }
 
@@ -197,8 +208,8 @@ impl ChannelMgr {
     ///T掉所有玩家
     pub fn kick_all(&mut self) {
         let res = self.channels.clone();
-        for (_, user_id) in res.iter() {
-            self.notice_off_line(*user_id);
+        for (_, &user_id) in res.iter() {
+            self.kick_player(user_id);
         }
         info!("kick all finish!");
     }

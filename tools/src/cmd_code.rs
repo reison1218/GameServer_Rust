@@ -165,6 +165,7 @@ impl RankCode {
 pub enum GateCode {
     Min = 50001,
     StopServer = 50002, //停服
+    KickPlayer = 50003, //T玩家下线
     Max = 60000,
 }
 

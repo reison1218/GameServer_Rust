@@ -83,6 +83,23 @@ impl GameCenterMgr {
         }
     }
 
+    pub fn kick_player_handler(&mut self, user_id: u32) {
+        if user_id == 0 {
+            return;
+        }
+
+        let bytes = Packet::build_packet_bytes(
+            GateCode::KickPlayer.into_u32(),
+            user_id,
+            Vec::new(),
+            true,
+            false,
+        );
+        for gate_client in self.gate_clients.values_mut() {
+            gate_client.send(bytes.clone());
+        }
+    }
+
     pub fn notice_reload_temps(&mut self) {
         let bytes = Packet::build_packet_bytes(
             ServerCommonCode::ReloadTemps.into_u32(),

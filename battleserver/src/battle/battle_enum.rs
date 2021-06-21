@@ -141,6 +141,9 @@ pub mod buff_type {
 
     ///被攻击时减cd
     pub const ATTACKED_SUB_CD: u32 = 15;
+
+    ///世界树buff,在战斗开始的时候就开始加载，
+    pub const WORLD_CELL_BUFFS: u32 = 30051;
 }
 
 ///pos操作类型

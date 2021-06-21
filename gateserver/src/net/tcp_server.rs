@@ -228,10 +228,12 @@ fn handle_login(
     // //校验内存
     let mem_res = check_mem_online(&user_id, lock);
     // //如果用户中心登陆了或者本地内存登陆了，直接错误返回
-    if mem_res && debug {
-        let str = format!("this account already login!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!("{:?}", str)
+    if mem_res {
+        // let str = format!("this account already login!user_id:{}", user_id);
+        // warn!("{:?}", str.as_str());
+        // anyhow::bail!("{:?}", str)
+        lock.kick_player(user_id);
+        warn!("发现重复登陆，T掉之前的tcp!user_id:{}", user_id);
     }
     Ok(user_id)
 }

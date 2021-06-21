@@ -6,6 +6,7 @@ use crate::battle::battle_enum::buff_type::{
 use crate::battle::battle_enum::EffectType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
 use crate::handlers::battle_handler::{Delete, Find};
+use crate::room::map_data::MapCell;
 use crate::TEMPLATES;
 use log::{error, warn};
 use std::borrow::BorrowMut;
@@ -579,30 +580,6 @@ impl BattleData {
                             last_map_cell_user_id,
                             au,
                         );
-                    } else if PAIR_CURE == buff_function_id {
-                        self.pair_cure(
-                            Some(open_user),
-                            open_user,
-                            buff_id,
-                            last_map_cell_user_id,
-                            au,
-                        );
-                    } else if AWARD_BUFF == buff_function_id {
-                        //获得一个buff
-                        self.award_buff(
-                            Some(open_user),
-                            None,
-                            open_user,
-                            buff_id,
-                            last_map_cell_user_id,
-                            au,
-                        );
-                    } else if NEAR_ADD_CD == buff_function_id {
-                        //相临的玩家技能cd增加
-                        self.near_add_cd(open_user, index, buff_id, au);
-                    } else if NEAR_SKILL_DAMAGE_PAIR == buff_function_id {
-                        //相临都玩家造成技能伤害
-                        self.near_skill_damage(open_user, index, buff_id, au);
                     } else if PAIR_SAME_ELEMENT_CURE == buff_function_id {
                         //处理世界块的逻辑
                         //配对属性一样的地图块+hp
@@ -687,6 +664,7 @@ impl BattleData {
             return;
         }
         let open_player = open_player.unwrap();
+
         let map_cell = self.tile_map.map_cells.get(map_cell_index);
         if let None = map_cell {
             warn!("could not find map_cell!index:{}", map_cell_index);
@@ -696,8 +674,66 @@ impl BattleData {
         if map_cell.buffs.is_empty() {
             return;
         }
+        let map_cell_ptr = map_cell as *const MapCell;
 
-        for buff in map_cell.buffs.values() {}
+        let last_index = open_player.cter.index_data.last_map_cell_index;
+        let last_map_cell_user_id;
+        if let Some(last_index) = last_index {
+            let last_map_cell = self.tile_map.map_cells.get(last_index);
+            match last_map_cell {
+                Some(last_map_cell) => {
+                    last_map_cell_user_id = last_map_cell.user_id;
+                }
+                None => last_map_cell_user_id = 0,
+            }
+        } else {
+            last_map_cell_user_id = 0;
+        }
+        let mut buff_function_id;
+        let mut buff_id;
+        unsafe {
+            let map_cell_ref = map_cell_ptr.as_ref().unwrap();
+            for buff in map_cell_ref.buffs.values() {
+                buff_id = buff.id;
+                buff_function_id = buff.function_id;
+                if is_pair {
+                    //获得道具
+                    if AWARD_ITEM.contains(&buff_function_id) {
+                        self.reward_item(
+                            Some(open_user),
+                            open_user,
+                            buff_id,
+                            last_map_cell_user_id,
+                            au,
+                        );
+                    } else if PAIR_CURE == buff_function_id {
+                        self.pair_cure(
+                            Some(open_user),
+                            open_user,
+                            buff_id,
+                            last_map_cell_user_id,
+                            au,
+                        );
+                    } else if AWARD_BUFF == buff_function_id {
+                        //获得一个buff
+                        self.award_buff(
+                            Some(open_user),
+                            None,
+                            open_user,
+                            buff_id,
+                            last_map_cell_user_id,
+                            au,
+                        );
+                    } else if NEAR_ADD_CD == buff_function_id {
+                        //相临的玩家技能cd增加
+                        self.near_add_cd(open_user, map_cell_index as u32, buff_id, au);
+                    } else if NEAR_SKILL_DAMAGE_PAIR == buff_function_id {
+                        //相临都玩家造成技能伤害
+                        self.near_skill_damage(open_user, map_cell_index as u32, buff_id, au);
+                    }
+                }
+            }
+        }
     }
 
     ///匹配buff
