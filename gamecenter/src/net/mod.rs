@@ -11,8 +11,10 @@ use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, warn};
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RankCode, RoomCode};
-use tools::tcp::Handler;
 use tools::util::packet::Packet;
+
+use self::battle_tcp_server::BattleTcpServerHandler;
+use self::gate_tcp_server::GateTcpServerHandler;
 
 #[async_trait]
 trait Forward {
@@ -141,7 +143,15 @@ trait Forward {
     }
 }
 
-async fn new_server_tcp(address: String, handler: impl Handler) {
+async fn new_battle_server_tcp(address: String, handler: BattleTcpServerHandler) {
+    let res = block_on(tools::tcp::tcp_server::new(address, handler));
+    if let Err(e) = res {
+        error!("{:?}", e);
+        std::process::abort();
+    }
+}
+
+async fn new_gate_server_tcp(address: String, handler: GateTcpServerHandler) {
     let res = block_on(tools::tcp::tcp_server::new(address, handler));
     if let Err(e) = res {
         error!("{:?}", e);

@@ -12,7 +12,7 @@ pub struct UseItemGoalEvaluator {
 impl GoalEvaluator for UseItemGoalEvaluator {
     fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
         if battle_player.cter.items.len() > 0 {
-            return 1;
+            return 0;
         }
         0
     }

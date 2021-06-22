@@ -257,9 +257,20 @@ pub mod tcp_server {
                             Some(ts) => {
                                 if bytes.is_empty() {
                                     let mut handler_map_lock = handler_map.lock().unwrap();
+                                    let address = ts.peer_addr();
+                                    match address {
+                                        Ok(add) => {
+                                            info!(
+                                                "client kick out!so remove client peer:{:?}",
+                                                add
+                                            );
+                                        }
+                                        Err(_) => {}
+                                    }
                                     let _ = ts.shutdown(Shutdown::Both);
                                     connections_lock.remove(&token);
                                     handler_map_lock.remove(&token);
+
                                     continue;
                                 }
 

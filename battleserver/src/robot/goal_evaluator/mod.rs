@@ -1,4 +1,5 @@
 pub mod attack_goal_evaluator;
+pub mod buy_goal_evaluator;
 pub mod choice_index_goal_evaluator;
 pub mod open_cell_goal_evaluator;
 pub mod skip_goal_evaluator;
@@ -11,12 +12,12 @@ use crossbeam::channel::Sender;
 ///评估trait
 pub trait GoalEvaluator: Send + Sync + 'static {
     ///计算期望值
-    fn calculate_desirability(&self, cter: &BattlePlayer) -> u32;
+    fn calculate_desirability(&self, robot: &BattlePlayer) -> u32;
 
     ///设置状态
     fn set_status(
         &self,
-        cter: &BattlePlayer,
+        robot: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     );

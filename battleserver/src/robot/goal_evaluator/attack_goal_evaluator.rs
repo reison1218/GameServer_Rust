@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::attack_action::AttackRobotAction;
@@ -10,10 +12,11 @@ pub struct AttackTargetGoalEvaluator {
 }
 
 impl GoalEvaluator for AttackTargetGoalEvaluator {
-    fn calculate_desirability(&self, cter: &BattlePlayer) -> u32 {
+    fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
+        std::thread::sleep(Duration::from_secs(2));
         //如果状态是可以攻击，期望值大于0，当没有其他高优先级的事件，则执行攻击
-        if cter.is_can_attack() {
-            return 1;
+        if robot.is_can_attack() {
+            return 80;
         }
         0
     }

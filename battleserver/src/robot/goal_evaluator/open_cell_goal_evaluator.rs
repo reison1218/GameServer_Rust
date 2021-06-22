@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_status::open_cell_action::OpenCellRobotAction;
@@ -11,11 +13,14 @@ pub struct OpenCellGoalEvaluator {
 
 impl GoalEvaluator for OpenCellGoalEvaluator {
     fn calculate_desirability(&self, cter: &BattlePlayer) -> u32 {
-        //如果可以翻地图块，则返回期望值10
-        if cter.flow_data.residue_movement_points > 0 {
-            return 10;
+        std::thread::sleep(Duration::from_secs(2));
+        let robot_data = cter.robot_data.as_ref().unwrap();
+        let pair_index = robot_data.can_pair_index();
+
+        if pair_index.is_some() && cter.flow_data.residue_movement_points > 0 {
+            return 70;
         }
-        0
+        50
     }
 
     fn set_status(

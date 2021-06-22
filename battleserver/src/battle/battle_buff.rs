@@ -428,7 +428,7 @@ impl BattleData {
         let buff = buff.unwrap();
 
         let par1 = buff.buff_temp.par1 as u8;
-        let par2 = buff.buff_temp.par1 as i8;
+        let par2 = buff.buff_temp.par2 as i8;
         let cter_index = battle_player.get_map_cell_index() as u32;
         let mut target_pt = TargetPt::new();
         target_pt.target_value.push(cter_index);
@@ -442,8 +442,7 @@ impl BattleData {
             //减cd
             battle_player.cter.sub_skill_cd(Some(par2));
             tep.set_field_type(EffectType::SubSkillCd.into_u32());
-            tep.set_value(par1 as u32);
-            battle_player.cter.sub_skill_cd(Some(par1 as i8));
+            tep.set_value(par2 as u32);
         }
         target_pt.passiveEffect.push(tep);
         au.targets.push(target_pt);

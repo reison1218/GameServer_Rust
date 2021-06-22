@@ -525,8 +525,9 @@ impl BattleData {
                 if res.is_none() {
                     continue;
                 }
-
                 let match_map_cell = res.unwrap();
+
+                //不匹配就跳过
                 if match_map_cell.id != map_cell_id {
                     continue;
                 }

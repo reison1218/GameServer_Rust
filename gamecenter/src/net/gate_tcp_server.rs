@@ -1,9 +1,11 @@
-use crate::net::{new_server_tcp, Forward};
+use crate::net::Forward;
 use crate::Lock;
 use async_trait::async_trait;
 use log::{error, info};
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+
+use super::new_gate_server_tcp;
 
 ///处理客户端所有请求,每个客户端单独分配一个handler
 #[derive(Clone)]
@@ -80,6 +82,6 @@ impl tools::tcp::Handler for GateTcpServerHandler {
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: String, rm: Lock) {
     let sh = GateTcpServerHandler { token: 0, gm: rm };
-    let m = new_server_tcp(address, sh);
+    let m = new_gate_server_tcp(address, sh);
     async_std::task::spawn(m);
 }

@@ -564,7 +564,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //校验是否加载机器人
-    check_add_robot(rm.get_mut_ref(), room);
+    check_add_robot(rm, room);
     //执行开始逻辑
     room.start();
 

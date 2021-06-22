@@ -41,6 +41,8 @@ pub enum RobotActionType {
     Buff,
     ///结束展示地图块(解锁玩家状态)
     EndShowMapCell,
+    ///结束展示地图块(解锁玩家状态)
+    Buy,
 }
 
 impl Default for RobotActionType {
@@ -87,6 +89,31 @@ impl RobotData {
             robot_status: None,
             remember_map_cell: VecDeque::new(),
             sender,
+        }
+    }
+
+    pub fn can_pair_index(&self) -> Option<usize> {
+        unsafe {
+            let battle_data = self.battle_data.as_ref().unwrap();
+            let robot = battle_data.battle_player.get(&self.robot_id);
+            if let None = robot {
+                return None;
+            }
+            let robot = robot.unwrap();
+            for &open_index in robot.flow_data.open_map_cell_vec.iter() {
+                let res = battle_data.tile_map.map_cells.get(open_index);
+                if res.is_none() {
+                    continue;
+                }
+                let match_map_cell = res.unwrap();
+                for re_map_cell in self.remember_map_cell.iter() {
+                    if match_map_cell.id != re_map_cell.cell_id {
+                        continue;
+                    }
+                    return Some(re_map_cell.cell_index);
+                }
+            }
+            None
         }
     }
 

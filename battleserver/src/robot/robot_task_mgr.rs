@@ -6,7 +6,7 @@ use log::info;
 use protobuf::Message;
 use std::time::Duration;
 use tools::macros::GetMutRef;
-use tools::protos::battle::{C_ACTION, C_CHOOSE_INDEX};
+use tools::protos::battle::{C_ACTION, C_BUY, C_CHOOSE_INDEX};
 use tools::util::packet::Packet;
 
 use super::RobotActionType;
@@ -44,6 +44,7 @@ pub fn robot_init_timer(bm: Lock) {
                 RobotActionType::Skip => skip_turn,
                 RobotActionType::UseItem => use_item,
                 RobotActionType::ChoiceIndex => choice_index,
+                RobotActionType::Buy => buy,
                 _ => attack,
             };
             let m = move || fnc(rm_clone, task);
@@ -75,6 +76,30 @@ pub fn choice_index(rm: Lock, task: RobotTask) {
     proto.set_index(target_index);
     packet.set_data(proto.write_to_bytes().unwrap().as_slice());
 
+    let lock = block_on(rm.lock());
+    //拿到BattleMgr的可变指针
+    let rm_mut_ref = lock.get_mut_ref();
+    let func = lock.cmd_map.get(&cmd).unwrap();
+    func(rm_mut_ref, packet);
+}
+
+///普通攻击
+pub fn buy(rm: Lock, task: RobotTask) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let merchandise_id = map.get("merchandise_id").unwrap().as_u64().unwrap() as u32;
+    let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
+
+    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut ca = C_BUY::new();
+    ca.merchandise_id = merchandise_id;
+    packet.set_data(ca.write_to_bytes().unwrap().as_slice());
+    //解锁,获得函数指针，执行普通攻击逻辑
     let lock = block_on(rm.lock());
     //拿到BattleMgr的可变指针
     let rm_mut_ref = lock.get_mut_ref();

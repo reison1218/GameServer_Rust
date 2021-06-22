@@ -524,16 +524,26 @@ impl tools::tcp::ClientHandler for TcpClientTest {
     }
 }
 
-pub async fn abcd() {
-    println!("abc");
-}
-
-#[derive(Default, Debug)]
-struct 人 {
-    pub 名字: String,
+pub fn abcd<T: Debug + 'static>(str: T) {
+    let mut map = HashMap::new();
+    map.insert("1".to_owned(), str);
+    map.remove("1");
+    println!("{:?}", map.get("1").unwrap());
 }
 
 fn main() -> anyhow::Result<()> {
+    let mut tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
+    let mut bytes: [u8; 512] = [0; 512];
+    loop {
+        let res = tcp.read(&mut bytes);
+        let size = res.unwrap();
+        println!("{}", size);
+        if size == 0 {
+            break;
+        }
+    }
+    println!("over");
+
     // let ticket="140000002122985e271b14182b7e180001001001c1d4b06018000000010000000200000055a1c4a738e3c606c029070001000000b200000032000000040000002b7e180001001001067d18003cb20fb77302a8c000000000ed6ca4606d1cc060010005af080000000000c5379ac1ac49f4b5488c02e5a327a2759d52a8da892f1d649c69745a8a530d6b3ad1128a6864db03eb5a7de7c30562c822ac646886091bdbe0c6cf5629266d06e4898dee90bcadf139ceb73103b5a694f17fae162b2d5971b2734cc3acf88f9e76a4767e7c4c156666d6f54e1c9d9a2dc8fa7d9d2454a0dbe94ee7f73f0cd9c2";
 
     // let  url = format!("https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?key={:?}&appid={}&ticket={:?}","DC8AD15E088033860FD8C08C02591AFD",1604870,ticket);

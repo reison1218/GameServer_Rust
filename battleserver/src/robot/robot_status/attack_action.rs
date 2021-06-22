@@ -33,8 +33,8 @@ impl AttackRobotAction {
 }
 
 impl RobotStatusAction for AttackRobotAction {
-    fn set_sender(&self, sender: Sender<RobotTask>) {
-        self.get_mut_ref().sender = Some(sender);
+    fn set_sender(&mut self, sender: Sender<RobotTask>) {
+        self.sender = Some(sender);
     }
 
     fn get_cter_id(&self) -> u32 {

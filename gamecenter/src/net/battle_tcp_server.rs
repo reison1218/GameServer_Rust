@@ -1,10 +1,12 @@
-use crate::net::{new_server_tcp, Forward};
+use crate::net::Forward;
 use crate::Lock;
 use async_trait::async_trait;
 use log::error;
 use log::info;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
+
+use super::new_battle_server_tcp;
 
 #[derive(Clone)]
 pub struct BattleTcpServerHandler {
@@ -81,6 +83,6 @@ impl tools::tcp::Handler for BattleTcpServerHandler {
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: String, rm: Lock) {
     let sh = BattleTcpServerHandler { token: 0, gm: rm };
-    let m = new_server_tcp(address, sh);
+    let m = new_battle_server_tcp(address, sh);
     async_std::task::spawn(m);
 }
