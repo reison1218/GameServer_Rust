@@ -543,6 +543,9 @@ fn main() -> anyhow::Result<()> {
     //     }
     // }
     // println!("over");
+    for i in 0..100 {
+        let tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
+    }
 
     tcp_client::test_tcp_client("reison2");
 

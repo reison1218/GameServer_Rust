@@ -85,26 +85,6 @@ impl ClientHandler for TcpClientHandler {
             let mut s = S_USER_LOGIN::new();
             s.merge_from_bytes(packet.get_data());
             println!("from server-login:{:?}", s);
-        } else if packet.get_cmd() == ClientCode::Room as u32 {
-            let mut s = S_ROOM::new();
-            s.merge_from_bytes(packet.get_data());
-            println!("from server-room:{:?}", s);
-        } else if packet.get_cmd() == ClientCode::SyncData as u32 {
-            let mut s = S_SYNC_DATA::new();
-            s.merge_from_bytes(packet.get_data());
-            println!("from server-sync:{:?}", s);
-        } else if packet.get_cmd() == ClientCode::PrepareCancel as u32 {
-            let mut s = S_PREPARE_CANCEL::new();
-            s.merge_from_bytes(packet.get_data());
-            println!("from server-prepare:{:?}", s);
-        } else if packet.get_cmd() == ClientCode::ChoiceCharacter as u32 {
-            let mut s = S_CHOOSE_CHARACTER::new();
-            s.merge_from_bytes(packet.get_data());
-            println!("from server-choosecter:{:?}", s);
-        } else if packet.get_cmd() == ClientCode::RoomAddMemberNotice as u32 {
-            let mut s = S_ROOM_ADD_MEMBER_NOTICE::new();
-            s.merge_from_bytes(packet.get_data());
-            println!("client:{},from server-mem-notice:{:?}", self.user_id, s);
         }
     }
 }

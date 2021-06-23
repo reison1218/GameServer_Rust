@@ -65,5 +65,6 @@ chrono = "0.4"
 slab = "0.4.2"
 time = "0.2.23"
 xh = "0.10.0"
+message-io = "0.14.2"
 tools = { path = "../tools" }
 #Zellij

@@ -111,7 +111,7 @@ pub mod tcp_server {
     const SERVER: Token = Token(0);
 
     ///Create the TCP server and start listening on the port
-    pub async fn new<T: Handler + 'static>(addr: String, handler: T) -> io::Result<()> {
+    pub async fn new(addr: String, handler: impl Handler) -> io::Result<()> {
         // Create a poll instance.
         let mut poll = Poll::new()?;
         // Create storage for events.
@@ -123,21 +123,26 @@ pub mod tcp_server {
         // Map of `Token` -> `TcpStream`.
         let conn_map = Arc::new(Mutex::new(HashMap::new()));
         //handlermap
-        let handler_map = Arc::new(Mutex::new(HashMap::new()));
+        // let handler_map = Arc::new(Mutex::new(HashMap::new()));
+        let mut handler_map = HashMap::new();
         // Unique token for each incoming connection.
         let mut unique_token = Token(SERVER.0 + 1);
         // async_channel message ，for receiver all sender of handler's message
         let (sender, rec) = crossbeam::channel::bounded(102400);
         //clone an conn_map to read_sender_mess func
         let conn_map_cp = conn_map.clone();
-        let handler_map_cp = handler_map.clone();
+        // let handler_map_cp = handler_map.clone();
         //read data from sender
-        read_sender_mess(rec, handler_map_cp, conn_map_cp);
+        // read_sender_mess(rec, handler_map_cp, conn_map_cp);
+        read_sender_mess(rec, conn_map_cp);
         info!("TCP-SERVER listening on:{:?}", addr);
         info!("server start success!");
         // Register the server with poll we can receive events for it.
-        poll.registry()
-            .register(&mut server, SERVER, Interest::READABLE)?;
+        poll.registry().register(
+            &mut server,
+            SERVER,
+            Interest::READABLE.add(Interest::WRITABLE),
+        )?;
         loop {
             let res = poll.poll(&mut events, None);
             if let Err(e) = res {
@@ -173,7 +178,7 @@ pub mod tcp_server {
                             continue;
                         }
                         let mut conn_map_lock = conn_map.lock().unwrap();
-                        let mut handler_map_lock = handler_map.lock().unwrap();
+                        // let mut handler_map_lock = handler_map.lock().unwrap();
                         conn_map_lock.insert(token.0, connection);
                         info!("Accepted connection from: {}", client_address);
 
@@ -188,15 +193,17 @@ pub mod tcp_server {
                         block_on(res);
 
                         //save the handler
-                        handler_map_lock.insert(token.0, hd);
+                        // handler_map_lock.insert(token.0, hd);
+                        handler_map.insert(token.0, hd);
                         info!("handler_map insert!token:{}", token.0);
                     }
                     token => {
                         let mut conn_map_lock = conn_map.lock().unwrap();
-                        let mut handler_map_lock = handler_map.lock().unwrap();
+                        // let mut handler_map_lock = handler_map.lock().unwrap();
                         // (maybe) received an event for a TCP connection.
                         let done = if let Some(connection) = conn_map_lock.get_mut(&token.0) {
-                            let hd = handler_map_lock.get_mut(&token.0);
+                            // let hd = handler_map_lock.get_mut(&token.0);
+                            let hd = handler_map.get_mut(&token.0);
                             match hd {
                                 Some(hd) => {
                                     let res = handle_connection_event(
@@ -226,7 +233,8 @@ pub mod tcp_server {
                         };
                         if done {
                             conn_map_lock.remove(&token.0);
-                            handler_map_lock.remove(&token.0);
+                            // handler_map_lock.remove(&token.0);
+                            handler_map.remove(&token.0);
                         }
                     }
                 }
@@ -235,9 +243,9 @@ pub mod tcp_server {
     }
 
     ///Read the data from the sender of the handler
-    fn read_sender_mess<T: Handler + 'static>(
+    fn read_sender_mess(
         rec: Receiver<Data>,
-        handler_map: Arc<Mutex<HashMap<usize, T>>>,
+        // handler_map: Arc<Mutex<HashMap<usize, T>>>,
         conn_map: Arc<Mutex<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
@@ -248,7 +256,7 @@ pub mod tcp_server {
                         let token = data.token;
                         let bytes = data.bytes;
                         let mut conn_map_lock = conn_map.lock().unwrap();
-                        let mut handler_map_lock = handler_map.lock().unwrap();
+                        // let mut handler_map_lock = handler_map.lock().unwrap();
                         let res: Option<&mut MioTcpStream> = conn_map_lock.get_mut(&token);
                         match res {
                             Some(ts) => {
@@ -269,14 +277,27 @@ pub mod tcp_server {
                                         }
                                     }
                                     let _ = ts.shutdown(Shutdown::Both);
-                                    conn_map_lock.remove(&token);
-                                    handler_map_lock.remove(&token);
+                                    // conn_map_lock.remove(&token);
+                                    // handler_map_lock.remove(&token);
                                     continue;
                                 }
 
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 match res {
+                                    Ok(0) => {
+                                        info!(
+                                            "write 0 size,tcp already invalid!so remove!token:{}",
+                                            token
+                                        );
+                                        let res = ts.shutdown(Shutdown::Both);
+                                        if let Err(e) = res {
+                                            warn!("{:?}", e);
+                                        }
+                                        // handler_map_lock.remove(&token);
+                                        // conn_map_lock.remove(&token);
+                                        continue;
+                                    }
                                     Ok(size) => {
                                         info!("写入tcp!size:{}", size);
                                     }
@@ -292,8 +313,8 @@ pub mod tcp_server {
                                         if let Err(e) = res {
                                             warn!("{:?}", e);
                                         }
-                                        handler_map_lock.remove(&token);
-                                        conn_map_lock.remove(&token);
+                                        // handler_map_lock.remove(&token);
+                                        // conn_map_lock.remove(&token);
                                         continue;
                                     }
                                     Err(e) => {
@@ -558,7 +579,12 @@ fn read_sender_mess_client(rec: Receiver<Vec<u8>>, tcp_stream: std::net::TcpStre
                 let write = tcp_stream.write(&bytes[..]);
 
                 match write {
-                    Ok(_) => {}
+                    Ok(size) => {
+                        if size == 0 {
+                            let _ = tcp_stream.shutdown(Shutdown::Both);
+                            break;
+                        }
+                    }
                     Err(ref err)
                         if reset(err)
                             | connection_refused(err)
