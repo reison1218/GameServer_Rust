@@ -109,12 +109,13 @@ impl ChannelMgr {
     }
 
     pub fn kick_player(&mut self, user_id: u32) -> bool {
-        let gate_user = self.get_user_channel(&user_id);
+        let gate_user = self.get_mut_user_channel(&user_id);
         if let None = gate_user {
             return false;
         }
         let gate_user = gate_user.unwrap();
         let token = gate_user.get_token();
+        gate_user.close();
         self.off_line(token);
         true
     }
@@ -196,10 +197,6 @@ impl ChannelMgr {
             return;
         }
         let user_id = &user_id.unwrap();
-        let gate_user = self.user_channel.get_mut(user_id);
-        if let Some(gate_user) = gate_user {
-            gate_user.close();
-        }
         self.user_channel.remove(user_id);
         self.temp_channels.remove(user_id);
         info!("channel_mgr:玩家断开连接，关闭句柄释放资源：{}", user_id);

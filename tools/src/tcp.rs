@@ -165,16 +165,16 @@ pub mod tcp_server {
                         let token = next(&mut unique_token);
 
                         //register event for every tcpstream
-                        let res = poll.registry().register(
-                            &mut connection,
-                            token,
-                            Interest::READABLE.add(Interest::WRITABLE),
-                        );
+                        let res =
+                            poll.registry()
+                                .register(&mut connection, token, Interest::READABLE);
                         if let Err(e) = res {
                             error!("{:?}", e);
                             continue;
                         }
-                        conn_map.lock().unwrap().insert(token.0, connection);
+                        let mut conn_map_lock = conn_map.lock().unwrap();
+                        let mut handler_map_lock = handler_map.lock().unwrap();
+                        conn_map_lock.insert(token.0, connection);
                         info!("Accepted connection from: {}", client_address);
 
                         //clone a handler for tcpstream
@@ -188,43 +188,45 @@ pub mod tcp_server {
                         block_on(res);
 
                         //save the handler
-                        handler_map.lock().unwrap().insert(token.0, hd);
+                        handler_map_lock.insert(token.0, hd);
+                        info!("handler_map insert!token:{}", token.0);
                     }
                     token => {
+                        let mut conn_map_lock = conn_map.lock().unwrap();
+                        let mut handler_map_lock = handler_map.lock().unwrap();
                         // (maybe) received an event for a TCP connection.
-                        let done =
-                            if let Some(connection) = conn_map.lock().unwrap().get_mut(&token.0) {
-                                let mut handler_map_lock = handler_map.lock().unwrap();
-                                let hd = handler_map_lock.get_mut(&token.0);
-                                match hd {
-                                    Some(hd) => {
-                                        let res = handle_connection_event(
-                                            poll.registry(),
-                                            connection,
-                                            event,
-                                            hd,
-                                        );
+                        let done = if let Some(connection) = conn_map_lock.get_mut(&token.0) {
+                            let hd = handler_map_lock.get_mut(&token.0);
+                            match hd {
+                                Some(hd) => {
+                                    let res = handle_connection_event(
+                                        poll.registry(),
+                                        connection,
+                                        event,
+                                        hd,
+                                        token.0,
+                                    );
 
-                                        match res {
-                                            Ok(res) => res,
-                                            Err(err) => {
-                                                error!("{:?}", err);
-                                                continue;
-                                            }
+                                    match res {
+                                        Ok(res) => res,
+                                        Err(err) => {
+                                            error!("{:?}", err);
+                                            continue;
                                         }
                                     }
-                                    None => {
-                                        error!("handler_map has no handler for token:{}", token.0);
-                                        false
-                                    }
                                 }
-                            } else {
-                                // Sporadic events happen.
-                                false
-                            };
+                                None => {
+                                    error!("handler_map has no handler for token:{}", token.0);
+                                    false
+                                }
+                            }
+                        } else {
+                            // Sporadic events happen.
+                            false
+                        };
                         if done {
-                            conn_map.lock().unwrap().remove(&token.0);
-                            handler_map.lock().unwrap().remove(&token.0);
+                            conn_map_lock.remove(&token.0);
+                            handler_map_lock.remove(&token.0);
                         }
                     }
                 }
@@ -236,7 +238,7 @@ pub mod tcp_server {
     fn read_sender_mess<T: Handler + 'static>(
         rec: Receiver<Data>,
         handler_map: Arc<Mutex<HashMap<usize, T>>>,
-        connections: Arc<Mutex<HashMap<usize, MioTcpStream>>>,
+        conn_map: Arc<Mutex<HashMap<usize, MioTcpStream>>>,
     ) {
         let m = move || {
             loop {
@@ -245,39 +247,39 @@ pub mod tcp_server {
                     Ok(data) => {
                         let token = data.token;
                         let bytes = data.bytes;
-                        let connections_lock = connections.lock();
-                        if let Err(e) = connections_lock {
-                            error!("{:?}", e);
-                            continue;
-                        }
-                        let mut connections_lock = connections_lock.unwrap();
-
-                        let res: Option<&mut MioTcpStream> = connections_lock.get_mut(&token);
+                        let mut conn_map_lock = conn_map.lock().unwrap();
+                        let mut handler_map_lock = handler_map.lock().unwrap();
+                        let res: Option<&mut MioTcpStream> = conn_map_lock.get_mut(&token);
                         match res {
                             Some(ts) => {
                                 if bytes.is_empty() {
-                                    let mut handler_map_lock = handler_map.lock().unwrap();
                                     let address = ts.peer_addr();
                                     match address {
                                         Ok(add) => {
                                             info!(
-                                                "client kick out!so remove client peer:{:?}",
-                                                add
+                                                "client kick out!so remove client!peer:{:?},token:{}",
+                                                add,token
                                             );
                                         }
-                                        Err(_) => {}
+                                        Err(_) => {
+                                            info!(
+                                                "client kick out!so remove client!token:{}",
+                                                token
+                                            );
+                                        }
                                     }
                                     let _ = ts.shutdown(Shutdown::Both);
-                                    connections_lock.remove(&token);
+                                    conn_map_lock.remove(&token);
                                     handler_map_lock.remove(&token);
-
                                     continue;
                                 }
 
                                 //send mess to client
                                 let res = ts.write(bytes.as_slice());
                                 match res {
-                                    Ok(_) => {}
+                                    Ok(size) => {
+                                        info!("写入tcp!size:{}", size);
+                                    }
                                     Err(ref err)
                                         if reset(err)
                                             | connection_refused(err)
@@ -290,9 +292,8 @@ pub mod tcp_server {
                                         if let Err(e) = res {
                                             warn!("{:?}", e);
                                         }
-                                        let mut handler_map_lock = handler_map.lock().unwrap();
                                         handler_map_lock.remove(&token);
-                                        connections_lock.remove(&token);
+                                        conn_map_lock.remove(&token);
                                         continue;
                                     }
                                     Err(e) => {
@@ -333,6 +334,7 @@ pub mod tcp_server {
         connection: &mut MioTcpStream,
         event: &Event,
         handler: &mut T,
+        token: usize,
     ) -> io::Result<bool> {
         // We can (maybe) read from the connection.
         if event.is_readable() {
@@ -343,10 +345,12 @@ pub mod tcp_server {
                     Ok(0) => {
                         // Reading 0 bytes means the other side has closed the
                         // connection or is done writing, then so are we.
+                        info!("read size is 0!tcp disconnect!token:{}", token);
                         close_connect(connection, handler, None);
                         return Ok(true);
                     }
                     Ok(n) => {
+                        info!("收到客户端消息！");
                         let mut received_data = Vec::new();
                         received_data.extend_from_slice(&buf[..n]);
                         let res = block_on(handler.on_message(received_data));
@@ -403,17 +407,16 @@ pub mod tcp_server {
         err: Option<&dyn Error>,
     ) {
         let addr = connect.peer_addr();
-        let err_str;
         match err {
-            Some(e) => err_str = e.to_string(),
-            _ => err_str = "".to_owned(),
+            Some(e) => warn!("{:?}", e),
+            _ => {}
         }
         match addr {
             Ok(add) => {
                 info!("client disconnect!so remove client peer:{:?}", add);
             }
-            Err(_) => {
-                warn!("{:?},then remove client", err_str);
+            Err(e) => {
+                warn!("could not get socket_addr!{:?}", e);
             }
         }
         let _ = connect.shutdown(Shutdown::Both);

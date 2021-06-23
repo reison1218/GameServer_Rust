@@ -3,7 +3,7 @@ use crate::mgr::RankInfo;
 use crate::room::character::Character;
 use crate::room::member::MemberState;
 use crate::room::member::{Member, PunishMatch};
-use crate::room::room::{MemberLeaveNoticeType, Room, RoomSettingType, RoomState, MEMBER_MAX};
+use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{RoomModel, RoomSetting, RoomType, TeamId};
 use crate::task_timer::build_match_room_ready_task;
 use crate::SEASON;
@@ -528,9 +528,9 @@ pub fn battle_kick_member(rm: &mut RoomMgr, packet: Packet) {
 ///开始游戏
 pub fn start(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-
+    let rm_ptr = rm as *mut RoomMgr;
     //校验房间
-    let room = rm.get_mut_ref().get_room_mut_by_user_id(&user_id);
+    let room = rm.get_room_mut_by_user_id(&user_id);
     if let None = room {
         warn!("this player is not in the room!user_id:{}", user_id);
         return;
@@ -562,9 +562,13 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
         );
         return;
     }
+    let room_id = room.get_room_id();
 
     //校验是否加载机器人
-    check_add_robot(rm, room);
+    unsafe {
+        let rm_mut = rm_ptr.as_mut().unwrap();
+        check_add_robot(rm_mut, room_id);
+    }
     //执行开始逻辑
     room.start();
 
@@ -574,7 +578,13 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
 }
 
 ///检查添加机器人
-pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
+pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
+    let rm_ptr = rm as *mut RoomMgr;
+    let room = rm.get_room_mut(RoomType::OneVOneVOneVOneCustom, room_id);
+    if room.is_err() {
+        return;
+    }
+    let room = room.unwrap();
     //如果没有开启ai则直接return
     if !room.setting.is_open_ai {
         return;
@@ -586,50 +596,33 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
     }
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.robot_temp_mgr();
-    //角色模版管理器
-    let cter_temp_mgr = crate::TEMPLATES.character_temp_mgr();
     //克隆一份机器人角色数组
-    let mut cters_res = robot_temp_mgr.cters.clone();
+    let cters_res = &robot_temp_mgr.cters;
     let mut cters_c = Vec::new();
     //添加已经选择了的角色
     for member in room.members.values() {
         cters_c.push(member.chose_cter.cter_id);
     }
     //删掉已经选择了的角色
-    let mut delete_v = Vec::new();
+    let mut rand_cters = vec![];
     for i in cters_c.iter() {
-        for index in 0..cters_res.len() {
-            let j = cters_res.get(index).unwrap();
-            if i != j {
+        for (cter_id, _) in cters_res.iter() {
+            if i == cter_id {
                 continue;
             }
-            delete_v.push(index);
+            rand_cters.push(cter_id);
         }
     }
-    //删除
-    for index in delete_v {
-        cters_res.remove(index);
-    }
     let mut rand = rand::thread_rng();
-
     //生成机器人
     for _ in 0..need_num {
         //随机出下标
-        let index = rand.gen_range(0..cters_res.len());
-        let cter_id = cters_res.remove(index);
-        let cter_temp = cter_temp_mgr.get_temp_ref(&cter_id);
-        if cter_temp.is_none() {
-            error!("could not find this cter!cter_id={}", cter_id);
-            continue;
-        }
-        let cter_temp = cter_temp.unwrap();
+        let cter_index = rand.gen_range(0..rand_cters.len());
+        let cter_id = rand_cters.remove(cter_index);
+        let robot_temp = cters_res.get(cter_id).unwrap();
+        let skill_index = rand.gen_range(0..robot_temp.len());
 
-        let robot_temp = robot_temp_mgr.get_temp_ref(&cter_id);
-        if let None = robot_temp {
-            warn!("can not find robot_temp!cter_id:{}", cter_id);
-            continue;
-        }
-        let robot_temp = robot_temp.unwrap();
+        let robot_temp = robot_temp.get(skill_index).unwrap();
 
         //机器人id自增
         crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
@@ -645,21 +638,10 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         //初始化选择的角色
         let mut cter = Character::default();
         cter.user_id = robot_id;
-        cter.cter_id = cter_id;
+        cter.cter_id = *cter_id;
 
         //初始化角色技能
-        let skill_count = cter_temp.usable_skill_count;
-        for i in 0..skill_count {
-            let skill_group = robot_temp.skills.get(i as usize);
-            if skill_group.is_none() {
-                error!("can not find skill!group:{}", i);
-                continue;
-            }
-            let skill_group = skill_group.unwrap();
-            let index = rand.gen_range(0..skill_group.group.len());
-            let skill_id = skill_group.group.get(index).unwrap();
-            cter.skills.push(*skill_id);
-        }
+        cter.skills.extend_from_slice(robot_temp.skills.as_slice());
         //将角色加入到成员里
         member.chose_cter = cter;
         let res = room.add_member(member);
@@ -670,7 +652,10 @@ pub fn check_add_robot(rm: &mut RoomMgr, room: &mut Room) {
         let room_id = room.get_room_id();
         let value =
             tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
-        rm.player_room.insert(robot_id, value);
+        unsafe {
+            let rm_mut = rm_ptr.as_mut().unwrap();
+            rm_mut.player_room.insert(robot_id, value);
+        }
     }
 }
 

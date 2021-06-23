@@ -1,18 +1,18 @@
+use crate::Test;
+use async_h1::client;
 use async_std::net::{TcpListener, TcpStream};
 use async_std::prelude::*;
 use async_std::task;
-use http_types::{Error as HttpTypesError,Body, Url, Method, Request,Response, StatusCode};
-use std::ops::Index;
-use async_h1::client;
-use serde_json::{Error, Map, Value};
+use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
 use serde_json::value::Value as JsonValue;
+use serde_json::{Error, Map, Value};
+use std::ops::Index;
 use std::str::FromStr;
 use std::sync::{Arc, RwLock};
-use crate::Test;
 
-pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
-    // let stream = TcpStream::connect("localhost:8888").await?;
-    let stream = TcpStream::connect("192.168.1.100:8888").await?;
+pub async fn test_http_client(pid: &str) -> Result<u32, HttpTypesError> {
+    let stream = TcpStream::connect("localhost:8888").await?;
+    // let stream = TcpStream::connect("192.168.1.100:8888").await?;
     let peer_addr = stream.peer_addr()?;
     println!("connecting to {}", peer_addr);
 
@@ -30,6 +30,7 @@ pub async fn test_http_client(pid:&str)->Result<u32, HttpTypesError>{
 
     let mut map: Map<String, JsonValue> = Map::new();
     map.insert("register_platform".to_owned(), JsonValue::from("test"));
+    map.insert("platform_value".to_owned(), JsonValue::from("test"));
     map.insert("game_id".to_owned(), JsonValue::from(101));
     map.insert("nick_name".to_owned(), JsonValue::from("test"));
     map.insert("phone_no".to_owned(), JsonValue::from("1231312414"));
@@ -61,7 +62,7 @@ pub async fn test_http_server() -> http_types::Result<()> {
     while let Some(stream) = incoming.next().await {
         let stream = stream?;
         task::spawn(async {
-            if let Err(err) = accept( stream).await {
+            if let Err(err) = accept(stream).await {
                 eprintln!("{}", err);
             }
         });
@@ -71,40 +72,48 @@ pub async fn test_http_server() -> http_types::Result<()> {
 
 // Take a TCP stream, and convert it into sequential HTTP request / response pairs.
 async fn accept(stream: TcpStream) -> http_types::Result<()> {
-    println!("starting new connection from {}", stream.peer_addr().unwrap());
+    println!(
+        "starting new connection from {}",
+        stream.peer_addr().unwrap()
+    );
     async_h1::accept(stream.clone(), |mut _req| async move {
-        _req.insert_header("Content-Type", "application/json").unwrap();
-       let url = _req.url();
+        _req.insert_header("Content-Type", "application/json")
+            .unwrap();
+        let url = _req.url();
 
         //获取path
         let mut path_segments = url.path_segments().ok_or_else(|| "cannot be base").unwrap();
-        if "action".eq(path_segments.next().unwrap()){
+        if "action".eq(path_segments.next().unwrap()) {
             println!("action");
         }
-        let str= url.query();
+        let str = url.query();
         match str {
-            None=>{},
-            Some(s)=>{println!("{:?}",str);}
+            None => {}
+            Some(s) => {
+                println!("{:?}", str);
+            }
         }
 
         let mut body: Body = _req.take_body();
         let mut string = String::new();
         body.read_to_string(&mut string).await.unwrap();
-        println!("{:?}",string);
-        let mut json:Result<serde_json::Value,Error> = serde_json::from_str(string.as_str());
-        if json.is_err(){
-            println!("{:?}",json.as_ref().err().unwrap());
-        }else{
-            println!("{:?}",json.unwrap());
+        println!("{:?}", string);
+        let mut json: Result<serde_json::Value, Error> = serde_json::from_str(string.as_str());
+        if json.is_err() {
+            println!("{:?}", json.as_ref().err().unwrap());
+        } else {
+            println!("{:?}", json.unwrap());
         }
 
         //获取参数
         let mut res = Response::new(StatusCode::Ok);
         //res.insert_header("Content-Type", "text/plain")?;
-        res.insert_header("Content-Type", "application/json").unwrap();
+        res.insert_header("Content-Type", "application/json")
+            .unwrap();
         res.set_body("Hello");
         Ok(res)
-    }).await?;
+    })
+    .await?;
     Ok(())
 }
 // async fn new_tokio_client(mut stream:TokioTcpStream){
@@ -150,18 +159,15 @@ async fn accept(stream: TcpStream) -> http_types::Result<()> {
 //     runtime.block_on(tcp_server);
 // }
 
-
 //
-pub fn test_faster(){
-
-    let (sender,rec) = std::sync::mpsc::sync_channel(1024000);
+pub fn test_faster() {
+    let (sender, rec) = std::sync::mpsc::sync_channel(1024000);
 
     let time = std::time::SystemTime::now();
-    for _ in 0..1000
-    {
+    for _ in 0..1000 {
         let sender_cp = sender.clone();
-        let m = move ||{
-            for _ in 0..1000{
+        let m = move || {
+            for _ in 0..1000 {
                 sender_cp.send(1);
             }
         };
@@ -170,22 +176,22 @@ pub fn test_faster(){
     }
 
     let mut i = 1;
-    loop{
+    loop {
         let res = rec.recv();
         i += res.unwrap();
-        if i >= 1000000{
+        if i >= 1000000 {
             break;
         }
     }
 
-    println!("channel:{}ms,{}",time.elapsed().unwrap().as_millis(),i);
+    println!("channel:{}ms,{}", time.elapsed().unwrap().as_millis(), i);
 
     let time = std::time::SystemTime::now();
-    let test=Arc::new(RwLock::new(Test::default()));
-    for _ in 0..1000{
+    let test = Arc::new(RwLock::new(Test::default()));
+    for _ in 0..1000 {
         let t_cp = test.clone();
-        let m = move ||{
-            for _ in 0..1000{
+        let m = move || {
+            for _ in 0..1000 {
                 let _ = t_cp.write().unwrap().i;
                 t_cp.write().unwrap().i.fetch_add(1);
             }
@@ -193,5 +199,9 @@ pub fn test_faster(){
         let handler = std::thread::spawn(m);
         handler.join();
     }
-    println!("thread:{}ms,{}",time.elapsed().unwrap().as_millis(),test.write().unwrap().i.load());
+    println!(
+        "thread:{}ms,{}",
+        time.elapsed().unwrap().as_millis(),
+        test.write().unwrap().i.load()
+    );
 }

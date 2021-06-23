@@ -1,4 +1,3 @@
-use crate::templates::character_temp::Group;
 use crate::templates::template::{Template, TemplateMgrTrait};
 use std::collections::HashMap;
 
@@ -6,7 +5,8 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct RobotTemp {
     id: u32,
-    pub skills: Vec<Group>,
+    cter_id: u32,
+    pub skills: Vec<u32>,
 }
 
 impl Template for RobotTemp {}
@@ -21,14 +21,22 @@ impl RobotTemp {
 #[derive(Debug, Default, Clone)]
 pub struct RobotTempMgr {
     pub temps: HashMap<u32, RobotTemp>,
-    pub cters: Vec<u32>,
+    pub cter_ids: Vec<u32>,
+    pub cters: HashMap<u32, Vec<RobotTemp>>,
 }
 
 impl RobotTempMgr {
     pub fn init(&mut self, t: Vec<RobotTemp>) {
         let v: Vec<RobotTemp> = t;
         for ct in v {
-            self.cters.push(ct.id);
+            if !self.cter_ids.contains(&ct.id) {
+                self.cter_ids.push(ct.id);
+            }
+            if !self.cters.contains_key(&ct.id) {
+                self.cters.insert(ct.id, vec![]);
+            }
+            let v = self.cters.get_mut(&ct.id).unwrap();
+            v.push(ct.clone());
             self.temps.insert(ct.id, ct);
         }
     }
