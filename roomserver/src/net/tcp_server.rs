@@ -1,10 +1,9 @@
 use crate::Lock;
 use async_std::task;
-use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info};
-use tools::tcp::tcp_server;
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
+use tools::tcp_message_io::TransportWay;
 use tools::util::packet::Packet;
 
 ///处理客户端所有请求,每个客户端单独分配一个handler
@@ -18,14 +17,14 @@ unsafe impl Send for TcpServerHandler {}
 unsafe impl Sync for TcpServerHandler {}
 
 #[async_trait]
-impl tools::tcp::Handler for TcpServerHandler {
+impl tools::tcp_message_io::MessageHandler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
     ///客户端tcp链接激活事件
-    async fn on_open(&mut self, sender: TcpSender) {
-        self.rm.lock().await.set_sender(sender);
+    async fn on_open(&mut self, sender: TcpHandler) {
+        self.rm.lock().await.set_tcp_handler(sender);
     }
 
     ///客户端tcp链接关闭事件
@@ -34,12 +33,12 @@ impl tools::tcp::Handler for TcpServerHandler {
     }
 
     ///客户端读取事件
-    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
-        let packet_array = Packet::build_array_from_server(mess);
+    async fn on_message(&mut self, mess: &[u8]) {
+        let packet_array = Packet::build_array_from_server(mess.to_vec());
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return true;
+            return;
         }
         let packet_array = packet_array.unwrap();
 
@@ -47,7 +46,6 @@ impl tools::tcp::Handler for TcpServerHandler {
             //异步处理业务逻辑
             task::spawn(handler_mess_s(self.rm.clone(), packet));
         }
-        true
     }
 }
 
@@ -60,9 +58,5 @@ async fn handler_mess_s(rm: Lock, packet: Packet) {
 ///创建新的tcp服务器,如果有问题，终端进程
 pub fn new(address: &str, rm: Lock) {
     let sh = TcpServerHandler { rm };
-    let res = block_on(tcp_server::new(address.to_string(), sh));
-    if let Err(e) = res {
-        error!("{:?}", e);
-        std::process::abort();
-    }
+    tools::tcp_message_io::run(TransportWay::Tcp, address, sh);
 }

@@ -7,10 +7,10 @@ pub mod room_tcp_client;
 use std::collections::VecDeque;
 
 use crate::Lock;
-use async_std::task::block_on;
 use async_trait::async_trait;
-use log::{error, warn};
+use log::warn;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RankCode, RoomCode};
+use tools::tcp_message_io::TransportWay;
 use tools::util::packet::Packet;
 
 use self::battle_tcp_server::BattleTcpServerHandler;
@@ -26,19 +26,8 @@ trait Forward {
 
     ///数据包转发
     async fn forward_packet(&mut self, packet_array: VecDeque<Packet>) {
-        let gate_token;
-        let res = self.get_gate_token();
-        match res {
-            Some(token) => gate_token = token,
-            None => gate_token = 0,
-        }
-
-        let battle_token;
-        let res = self.get_battle_token();
-        match res {
-            Some(token) => battle_token = token,
-            None => battle_token = 0,
-        }
+        let gate_token = self.get_gate_token();
+        let battle_token = self.get_battle_token();
         let lock = self.get_game_center_mut();
         let mut lock = lock.lock().await;
         for mut packet in packet_array {
@@ -48,25 +37,25 @@ trait Forward {
             let is_broad = packet.is_broad();
             //需要自己处理的数据
             lock.handler(&packet, gate_token);
-
+            let bytes_slice = bytes.as_slice();
             //处理公共的命令
             if cmd > ClientCode::Min.into_u32() && cmd < ClientCode::Max.into_u32() {
                 //发送给客户端
                 if is_broad {
-                    for client in lock.gate_clients.values_mut() {
-                        client.send(bytes.clone());
+                    for client in lock.gate_clients.values() {
+                        client.send(bytes_slice);
                     }
                 } else {
-                    let res = lock.get_gate_client_mut(user_id);
+                    let res = lock.get_gate_client(user_id);
                     match res {
-                        Ok(gc) => gc.send(bytes),
+                        Ok(gc) => gc.send(bytes_slice),
                         Err(e) => warn!("{:?},cmd:{}", e, cmd),
                     }
                 }
             } else if cmd > RoomCode::Min.into_u32()//转发给房间服
                 && cmd < RoomCode::Max.into_u32()
             {
-                if gate_token > 0 {
+                if let Some(gate_token) = gate_token {
                     packet.set_server_token(gate_token as u32);
                     bytes = packet.build_server_bytes();
                 }
@@ -84,7 +73,7 @@ trait Forward {
                     let gate_client = lock.gate_clients.get_mut(&server_token);
                     match gate_client {
                         Some(gate_client) => {
-                            gate_client.send(bytes);
+                            gate_client.send(bytes_slice);
                         }
                         None => {
                             warn!("could not find gate client by token:{}!", server_token);
@@ -92,14 +81,14 @@ trait Forward {
                     }
                 } else if is_broad {
                     //推送给所有游戏服
-                    for gate_client in lock.gate_clients.values_mut() {
-                        gate_client.send(bytes.clone());
+                    for gate_client in lock.gate_clients.values() {
+                        gate_client.send(bytes_slice);
                     }
                 } else {
                     //发给玩家所在游戏服
-                    let res = lock.get_gate_client_mut(user_id);
+                    let res = lock.get_gate_client(user_id);
                     match res {
-                        Ok(gc) => gc.send(bytes),
+                        Ok(gc) => gc.send(bytes_slice),
                         Err(e) => warn!("{:?},cmd:{}", e, cmd),
                     }
                 }
@@ -107,20 +96,20 @@ trait Forward {
                 && cmd < BattleCode::Max.into_u32()
             {
                 if is_broad {
-                    for battle_client in lock.battle_clients.values_mut() {
-                        battle_client.send(bytes.clone());
+                    for battle_client in lock.battle_clients.values() {
+                        battle_client.send(bytes_slice);
                     }
                 } else {
-                    let res = lock.get_battle_client_mut(user_id);
+                    let res = lock.get_battle_client(user_id);
                     match res {
-                        Ok(gc) => gc.send(bytes),
+                        Ok(gc) => gc.send(bytes_slice),
                         Err(e) => warn!("{:?},cmd:{:?}", e, cmd),
                     }
                 }
             } else if cmd > RankCode::Min.into_u32()//转发给排行榜服
                 && cmd < RankCode::Max.into_u32()
             {
-                if gate_token > 0 {
+                if let Some(gate_token) = gate_token {
                     packet.set_server_token(gate_token as u32);
                     bytes = packet.build_server_bytes();
                 }
@@ -144,17 +133,9 @@ trait Forward {
 }
 
 async fn new_battle_server_tcp(address: String, handler: BattleTcpServerHandler) {
-    let res = block_on(tools::tcp::tcp_server::new(address, handler));
-    if let Err(e) = res {
-        error!("{:?}", e);
-        std::process::abort();
-    }
+    tools::tcp_message_io::run(TransportWay::Tcp, address.as_str(), handler);
 }
 
 async fn new_gate_server_tcp(address: String, handler: GateTcpServerHandler) {
-    let res = block_on(tools::tcp::tcp_server::new(address, handler));
-    if let Err(e) = res {
-        error!("{:?}", e);
-        std::process::abort();
-    }
+    tools::tcp_message_io::run(TransportWay::Tcp, address.as_str(), handler);
 }

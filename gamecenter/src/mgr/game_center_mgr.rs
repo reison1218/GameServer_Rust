@@ -5,7 +5,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, RoomCode, ServerCommonCode};
 use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON};
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 #[derive(Default)]
@@ -78,8 +78,9 @@ impl GameCenterMgr {
     pub fn stop_all_server_handler(&mut self) {
         let bytes =
             Packet::build_packet_bytes(GateCode::StopServer.into_u32(), 0, Vec::new(), true, false);
-        for gate_client in self.gate_clients.values_mut() {
-            gate_client.send(bytes.clone());
+        let bytes = bytes.as_slice();
+        for gate_client in self.gate_clients.values() {
+            gate_client.send(bytes);
         }
     }
 
@@ -95,8 +96,9 @@ impl GameCenterMgr {
             true,
             false,
         );
-        for gate_client in self.gate_clients.values_mut() {
-            gate_client.send(bytes.clone());
+        let bytes = bytes.as_slice();
+        for gate_client in self.gate_clients.values() {
+            gate_client.send(bytes);
         }
     }
 
@@ -108,14 +110,15 @@ impl GameCenterMgr {
             true,
             false,
         );
+        let bytes_slice = bytes.as_slice();
         //通知gate reload_temps
         for gate_client in self.gate_clients.values_mut() {
-            gate_client.send(bytes.clone());
+            gate_client.send(bytes_slice);
         }
 
         //通知战斗服
         for battle_client in self.battle_clients.values_mut() {
-            battle_client.send(bytes.clone());
+            battle_client.send(bytes_slice);
         }
 
         //通知房间服
@@ -125,7 +128,7 @@ impl GameCenterMgr {
         }
     }
 
-    pub fn handler(&mut self, packet: &Packet, gate_token: usize) {
+    pub fn handler(&mut self, packet: &Packet, gate_token: Option<usize>) {
         let cmd = packet.get_cmd();
         //开始战斗,负载均衡，分配战斗服务器
         if cmd == BattleCode::Start.into_u32() {
@@ -133,18 +136,18 @@ impl GameCenterMgr {
         }
         //绑定玩家到gate
         let user_id = packet.get_user_id();
-        if user_id <= 0 || gate_token <= 0 {
+        if user_id <= 0 {
             return;
         }
-        self.bound_user_w_gate(user_id, gate_token);
+        if gate_token.is_none() {
+            return;
+        }
+        self.bound_user_w_gate(user_id, gate_token.unwrap());
     }
 
     ///将玩家绑定到路由服
     pub fn bound_user_w_gate(&mut self, user_id: u32, token: usize) {
         if user_id <= 0 {
-            return;
-        }
-        if token == 0 {
             return;
         }
 
@@ -181,7 +184,7 @@ impl GameCenterMgr {
             return;
         }
         let bc_res = bc_res.unwrap();
-        let battle_token = bc_res.sender.token;
+        let battle_token = bc_res.tcp_handler.endpoint.resource_id().raw();
         for member in proto.get_room_pt().members.iter() {
             let user_id = member.user_id;
             self.user_w_battle.insert(user_id, battle_token);
@@ -198,9 +201,9 @@ impl GameCenterMgr {
     }
 
     ///负载均衡资源回收
-    pub fn slb_back(&mut self, cmd: u32, battle_token: usize) {
-        if cmd == RoomCode::Summary.into_u32() {
-            let battle_client = self.battle_clients.get_mut(&battle_token);
+    pub fn slb_back(&mut self, cmd: u32, battle_token: Option<usize>) {
+        if cmd == RoomCode::Summary.into_u32() && battle_token.is_some() {
+            let battle_client = self.battle_clients.get_mut(&battle_token.unwrap());
             if let Some(battle_client) = battle_client {
                 if battle_client.room_num > 0 {
                     battle_client.room_num -= 1;
@@ -217,13 +220,13 @@ impl GameCenterMgr {
         self.rank_server.as_mut().unwrap()
     }
 
-    pub fn get_gate_client_mut(&mut self, user_id: u32) -> anyhow::Result<&mut GateClient> {
+    pub fn get_gate_client(&self, user_id: u32) -> anyhow::Result<&GateClient> {
         let res = self.user_w_gate.get(&user_id);
         if let None = res {
             anyhow::bail!("could not find gate's token by user_id:{}!", user_id)
         }
         let token = res.unwrap();
-        let res = self.gate_clients.get_mut(token);
+        let res = self.gate_clients.get(token);
         if let None = res {
             anyhow::bail!("could not find GateClient by token:{}!", token)
         }
@@ -231,13 +234,13 @@ impl GameCenterMgr {
         Ok(gc)
     }
 
-    pub fn get_battle_client_mut(&mut self, user_id: u32) -> anyhow::Result<&mut BattleClient> {
+    pub fn get_battle_client(&self, user_id: u32) -> anyhow::Result<&BattleClient> {
         let res = self.user_w_battle.get(&user_id);
         if let None = res {
             anyhow::bail!("could not find battle's token by user_id:{}!", user_id)
         }
         let token = res.unwrap();
-        let res = self.battle_clients.get_mut(token);
+        let res = self.battle_clients.get(token);
         if let None = res {
             anyhow::bail!("could not find BattleClient by token:{}!", token)
         }
@@ -253,49 +256,57 @@ impl GameCenterMgr {
         self.rank_server = Some(sender);
     }
 
-    pub fn add_gate_client(&mut self, sender: TcpSender) {
-        let key = sender.token;
-        let gc = GateClient::new(sender);
+    pub fn add_gate_client(&mut self, tcp_handler: TcpHandler) {
+        let key = tcp_handler.endpoint.resource_id().raw();
+        let gc = GateClient::new(tcp_handler);
         self.gate_clients.insert(key, gc);
     }
 
-    pub fn add_battle_client(&mut self, sender: TcpSender) {
-        let key = sender.token;
-        let rc = BattleClient::new(sender);
+    pub fn add_battle_client(&mut self, tcp_handler: TcpHandler) {
+        let key = tcp_handler.endpoint.resource_id().raw();
+        let rc = BattleClient::new(tcp_handler);
         self.battle_clients.insert(key, rc);
     }
 }
 
 pub struct GateClient {
-    sender: TcpSender,
+    tcp_handler: TcpHandler,
 }
 
 impl GateClient {
-    pub fn new(sender: TcpSender) -> Self {
-        let gc = GateClient { sender };
+    pub fn new(tcp_handler: TcpHandler) -> Self {
+        let gc = GateClient { tcp_handler };
         gc
     }
 
-    pub fn send(&mut self, bytes: Vec<u8>) {
-        self.sender.send(bytes);
+    pub fn send(&self, bytes: &[u8]) {
+        let endpoint = self.tcp_handler.endpoint;
+        self.tcp_handler
+            .node_handler
+            .network()
+            .send(endpoint, bytes);
     }
 }
 
 pub struct BattleClient {
-    sender: TcpSender,
+    tcp_handler: TcpHandler,
     room_num: u32,
 }
 
 impl BattleClient {
-    pub fn new(sender: TcpSender) -> Self {
+    pub fn new(tcp_handler: TcpHandler) -> Self {
         let rc = BattleClient {
-            sender,
+            tcp_handler,
             room_num: 0,
         };
         rc
     }
 
-    pub fn send(&mut self, bytes: Vec<u8>) {
-        self.sender.send(bytes);
+    pub fn send(&self, bytes: &[u8]) {
+        let endpoint = self.tcp_handler.endpoint;
+        self.tcp_handler
+            .node_handler
+            .network()
+            .send(endpoint, bytes);
     }
 }

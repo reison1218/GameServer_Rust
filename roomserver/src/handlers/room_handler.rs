@@ -196,7 +196,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             let res = rm.custom_room.create_room(
                 owner,
                 Some(room_setting),
-                rm.get_sender_clone(),
+                rm.get_tcp_handler_clone(),
                 rm.get_task_sender_clone(),
             );
             match res {
@@ -377,7 +377,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     //执行正常流程
-    let sender = rm.get_sender_clone();
+    let sender = rm.get_tcp_handler_clone();
     let task_sender = rm.get_task_sender_clone();
 
     let mut member = Member::from(grs.get_pbp());

@@ -12,7 +12,7 @@ use rayon::slice::ParallelSliceMut;
 use std::collections::HashMap;
 use std::{collections::hash_map::RandomState, convert::TryFrom};
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>;
@@ -23,7 +23,7 @@ pub struct RoomMgr {
     pub match_room: MatchRoom,             //公共房
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
-    sender: Option<TcpSender>,          //tcp channel的发送方
+    tcp_handler: Option<TcpHandler>,    //tcp channel的发送方
     pub task_sender: Option<Sender<Task>>, //task channel的发送方
 }
 
@@ -39,7 +39,7 @@ impl RoomMgr {
             custom_room,
             match_room: match_rooms,
             player_room,
-            sender: None,
+            tcp_handler: None,
             task_sender: None,
             cmd_map,
         };
@@ -157,24 +157,24 @@ impl RoomMgr {
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
-        self.get_sender_mut().send(bytes);
+        let tcp = self.tcp_handler.as_ref().unwrap();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
-        self.get_sender_mut().send(bytes);
+        let tcp = self.tcp_handler.as_ref().unwrap();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
-    pub fn set_sender(&mut self, sender: TcpSender) {
-        self.sender = Some(sender);
+    pub fn set_tcp_handler(&mut self, sender: TcpHandler) {
+        self.tcp_handler = Some(sender);
     }
 
-    pub fn get_sender_clone(&self) -> TcpSender {
-        self.sender.clone().unwrap()
-    }
-
-    pub fn get_sender_mut(&mut self) -> &mut TcpSender {
-        self.sender.as_mut().unwrap()
+    pub fn get_tcp_handler_clone(&self) -> TcpHandler {
+        self.tcp_handler.clone().unwrap()
     }
 
     ///检查玩家是否已经在房间里

@@ -25,6 +25,7 @@ pub mod redis_pool;
 pub mod rpc_client;
 pub mod rpc_server;
 pub mod tcp;
+pub mod tcp_message_io;
 pub mod templates;
 pub mod thread_pool;
 pub mod util;

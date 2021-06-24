@@ -1,5 +1,5 @@
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::{TcpHandler, TransportWay};
 
 use crate::entity::character::Characters;
 use crate::entity::grade_frame::GradeFrame;
@@ -11,7 +11,6 @@ use crate::entity::user_info::User;
 use crate::helper::redis_helper::get_user_from_redis;
 use crate::mgr::game_mgr::GameMgr;
 use crate::Lock;
-use async_std::task::block_on;
 use async_trait::async_trait;
 use log::{error, info, warn};
 use protobuf::Message;
@@ -29,26 +28,26 @@ unsafe impl Send for TcpServerHandler {}
 unsafe impl Sync for TcpServerHandler {}
 
 #[async_trait]
-impl tools::tcp::Handler for TcpServerHandler {
+impl tools::tcp_message_io::MessageHandler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
-    async fn on_open(&mut self, sender: TcpSender) {
+    async fn on_open(&mut self, tcp_handler: TcpHandler) {
         let mut lock = self.gm.lock().await;
-        lock.set_sender(sender);
+        lock.set_tcp_handler(tcp_handler);
     }
 
     async fn on_close(&mut self) {
         info!("与tcp客户端断开连接");
     }
 
-    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
-        let packet_array = Packet::build_array_from_server(mess);
+    async fn on_message(&mut self, mess: &[u8]) {
+        let packet_array = Packet::build_array_from_server(mess.to_vec());
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return true;
+            return;
         }
         let packet_array = packet_array.unwrap();
 
@@ -56,7 +55,6 @@ impl tools::tcp::Handler for TcpServerHandler {
             let gm = self.gm.clone();
             handler_mess_s(gm, packet).await;
         }
-        true
     }
 }
 
@@ -225,10 +223,5 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
 
 pub fn new(address: &str, gm: Lock) {
     let sh = TcpServerHandler { gm };
-    let res = tools::tcp::tcp_server::new(address.to_string(), sh);
-    let res = block_on(res);
-    if let Err(e) = res {
-        error!("{:?}", e);
-        std::process::abort();
-    }
+    tools::tcp_message_io::run(TransportWay::Tcp, address, sh);
 }

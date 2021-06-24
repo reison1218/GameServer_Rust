@@ -5,11 +5,9 @@ use crossbeam::channel::Sender;
 use log::warn;
 use log::{error, info};
 use std::collections::HashMap;
-use std::sync::Arc;
 use tools::cmd_code::RoomCode;
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
-use ws::Sender as WsSender;
 
 ///channel管理结构体
 pub struct ChannelMgr {
@@ -24,7 +22,7 @@ pub struct ChannelMgr {
     //token,user_id
     pub channels: HashMap<usize, u32>,
     //临时会话map
-    pub temp_channels: HashMap<u32, Option<TcpSender>>,
+    pub temp_channels: HashMap<u32, Option<TcpHandler>>,
 }
 
 impl ChannelMgr {
@@ -113,11 +111,13 @@ impl ChannelMgr {
         if let None = gate_user {
             return false;
         }
-        let gate_user = gate_user.unwrap();
-        let token = gate_user.get_token();
-        gate_user.close();
-        self.off_line(token);
-        true
+        let gate_user = gate_user;
+        if let Some(gate_user) = gate_user {
+            let token = gate_user.get_token();
+            self.off_line(token);
+            return true;
+        }
+        false
     }
 
     ///写到游戏中心服
@@ -144,27 +144,19 @@ impl ChannelMgr {
             return;
         }
         let res = res.unwrap();
-        self.add_gate_user(user_id, None, res);
+        self.add_gate_user(user_id, res);
         //通知用户中心
         async_std::task::spawn(notice_user_center(user_id, UserCenterNoticeType::Login));
     }
 
     //添加gateuser
-    pub fn add_gate_user(
-        &mut self,
-        user_id: u32,
-        ws: Option<Arc<WsSender>>,
-        tcp: Option<TcpSender>,
-    ) {
+    pub fn add_gate_user(&mut self, user_id: u32, tcp: Option<TcpHandler>) {
         let mut token = 0;
-        if ws.is_some() {
-            token = ws.as_ref().unwrap().token().0;
-        }
         if tcp.is_some() {
-            token = tcp.as_ref().unwrap().token;
+            token = tcp.as_ref().unwrap().endpoint.resource_id().raw();
         }
         self.insert_channels(token, user_id);
-        self.insert_user_channel(user_id, GateUser::new(ws, tcp));
+        self.insert_user_channel(user_id, GateUser::new(tcp));
     }
 
     ///插入channel,key：userid,v:channel
@@ -197,7 +189,10 @@ impl ChannelMgr {
             return;
         }
         let user_id = &user_id.unwrap();
-        self.user_channel.remove(user_id);
+        let gate_user = self.user_channel.remove(user_id);
+        if let Some(mut gate_user) = gate_user {
+            gate_user.close();
+        }
         self.temp_channels.remove(user_id);
         info!("channel_mgr:玩家断开连接，关闭句柄释放资源：{}", user_id);
     }

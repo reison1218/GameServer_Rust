@@ -14,7 +14,6 @@ codegen-units = 1
 split-debuginfo = "unpacked"
 
 [dependencies]
-ws="0.9.1"
 #postgres ={version="0.15.2"}
 num_cpus="1.10.1"
 protobuf="2.23.0"

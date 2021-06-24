@@ -83,7 +83,11 @@ fn handler_mess_s(cp: Lock, packet_array: VecDeque<Packet>) {
             let gate_user = lock.get_mut_user_channel(&user_id);
             match gate_user {
                 Some(user) => {
-                    user.get_tcp_mut_ref().send(packet.build_client_bytes());
+                    let tcp = user.get_tcp_mut_ref();
+                    let endpoint = tcp.endpoint;
+                    tcp.node_handler
+                        .network()
+                        .send(endpoint, packet.build_client_bytes().as_slice());
                     info!("回给客户端消息,user_id:{},cmd:{}", user_id, cmd,);
                 }
                 None => {
@@ -128,10 +132,10 @@ fn arrange_packet(cp: async_std::sync::MutexGuard<ChannelMgr>, packet: Packet) {
     } else if cmd == GateCode::StopServer.into_u32() {
         lock.stop_server();
     } else if cmd == GateCode::KickPlayer.into_u32() {
-        // let user_id = packet.get_user_id();
-        // let res = lock.kick_player(user_id);
-        // if res {
-        //     info!("kick player success!user_id:{}", user_id);
-        // }
+        let user_id = packet.get_user_id();
+        let res = lock.kick_player(user_id);
+        if res {
+            info!("kick player success!user_id:{}", user_id);
+        }
     }
 }

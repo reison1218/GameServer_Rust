@@ -1,3 +1,4 @@
+mod message_io;
 mod sig_rec;
 mod tcp_client;
 mod test_async;
@@ -5,6 +6,7 @@ mod test_tokio;
 mod web;
 mod web_socket;
 
+use ::message_io::network::Transport;
 use log::info;
 use num_enum::FromPrimitive;
 use num_enum::IntoPrimitive;
@@ -13,7 +15,10 @@ use protobuf::Message;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 use slab::Slab;
+use std::net::IpAddr;
+use std::net::Ipv4Addr;
 use std::net::Shutdown;
+use std::net::SocketAddr;
 use std::time::{Duration, Instant, SystemTime};
 use tools::http::HttpMethod;
 use tools::protos::base::{RankInfoPt, WorldCellPt};
@@ -543,10 +548,36 @@ fn main() -> anyhow::Result<()> {
     //     }
     // }
     // println!("over");
-    for i in 0..100 {
-        let tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
-    }
+    // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
+    // let m = move || {
+    //     message_io::run(Transport::Tcp, socket);
+    // };
+    // std::thread::spawn(m);
+    // std::thread::sleep(Duration::from_micros(1));
+    // let mut tcp = std::net::TcpStream::connect("localhost:16888").unwrap();
+    // let buf = "hello".as_bytes();
+    // tcp.write(buf);
+    // tcp.flush();
+    // loop {
+    //     std::thread::sleep(Duration::from_micros(2));
+    //     let mut bytes: [u8; 128] = [0; 128];
+    //     let size = tcp.read(&mut bytes);
+    //     if let Ok(size) = size {
+    //         if size > 0 {
+    //             println!("client Received: {}", String::from_utf8_lossy(&bytes));
+    //         } else {
+    //             println!("client disconnect");
+    //             break;
+    //         }
+    //     }
+    //     tcp.write(buf);
+    //     tcp.flush();
+    // }
+    // std::thread::sleep(Duration::from_micros(10));
 
+    for _ in 0..100 {
+        let stream = std::net::TcpStream::connect("localhost:16801").unwrap();
+    }
     tcp_client::test_tcp_client("reison2");
 
     // let ticket="140000002122985e271b14182b7e180001001001c1d4b06018000000010000000200000055a1c4a738e3c606c029070001000000b200000032000000040000002b7e180001001001067d18003cb20fb77302a8c000000000ed6ca4606d1cc060010005af080000000000c5379ac1ac49f4b5488c02e5a327a2759d52a8da892f1d649c69745a8a530d6b3ad1128a6864db03eb5a7de7c30562c822ac646886091bdbe0c6cf5629266d06e4898dee90bcadf139ceb73103b5a694f17fae162b2d5971b2734cc3acf88f9e76a4767e7c4c156666d6f54e1c9d9a2dc8fa7d9d2454a0dbe94ee7f73f0cd9c2";

@@ -6,10 +6,8 @@ use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
 use async_std::sync::Mutex;
 use log::info;
-use net::websocket::WebSocketHandler;
 use std::sync::Arc;
 use tools::conf::Conf;
-use ws::{Builder, Sender as WsSender, Settings};
 
 use crate::net::http::KickPlayerHttpHandler;
 use crate::net::tcp_client::TcpClientType;
@@ -103,7 +101,6 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
         }
         "webSocket" => {
             //初始化websocket
-            init_web_socket(cm);
         }
         _ => {
             //初始化tcp服务端
@@ -138,27 +135,4 @@ fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
 fn init_tcp_server(cm: Arc<Mutex<ChannelMgr>>) {
     let str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(str, cm);
-}
-
-///初始化websocket
-fn init_web_socket(cp: Arc<Mutex<ChannelMgr>>) {
-    let mut setting = Settings::default();
-    setting.max_connections = 2048;
-    //websocket队列大小
-    setting.queue_size = setting.max_connections * 2;
-    //是否组合数据包
-    setting.tcp_nodelay = true;
-    let server = Builder::new()
-        .with_settings(setting)
-        .build(|out| {
-            let arc: Arc<WsSender> = Arc::new(out);
-            WebSocketHandler {
-                ws: arc,
-                add: None,
-                cm: cp.clone(),
-            }
-        })
-        .unwrap();
-    let str = CONF_MAP.get_str("web_socket_port");
-    let _web_socket = server.listen(str).unwrap();
 }

@@ -17,7 +17,7 @@ use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::RoomSettingPt;
 use tools::protos::room::S_LEAVE_ROOM;
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::templates::template::TemplateMgrTrait;
 use tools::templates::tile_map_temp::TileMapTempMgr;
 
@@ -142,7 +142,7 @@ pub trait RoomModel {
         &mut self,
         owner: Member,
         room_setting: Option<RoomSetting>,
-        sender: TcpSender,
+        sender: TcpHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32>;
 
@@ -205,7 +205,7 @@ impl RoomModel for CustomRoom {
         &mut self,
         owner: Member,
         room_setting: Option<RoomSetting>,
-        sender: TcpSender,
+        sender: TcpHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
@@ -308,7 +308,7 @@ impl RoomModel for MatchRoom {
         &mut self,
         owner: Member,
         _: Option<RoomSetting>,
-        sender: TcpSender,
+        sender: TcpHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room = Room::new(owner, RoomType::OneVOneVOneVOneMatch, sender, task_sender)?;
@@ -426,7 +426,7 @@ impl MatchRoom {
     pub fn quickly_start(
         &mut self,
         member: Member,
-        sender: TcpSender,
+        sender: TcpHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;

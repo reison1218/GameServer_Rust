@@ -1,18 +1,12 @@
 pub mod http;
 pub mod tcp_client;
 pub mod tcp_server;
-pub mod websocket;
-pub mod websocket_channel;
 use crate::{CONF_MAP, REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID};
 use crate::{REDIS_KEY_USERS, REDIS_POOL};
 use log::{debug, error, info, warn};
 use protobuf::Message;
 use std::sync::Arc;
 use tools::tcp::ClientHandler;
-use ws::{
-    CloseCode, Error as WsError, Handler, Handshake, Message as WMessage, Result,
-    Sender as WsSender,
-};
 
 use crate::mgr::channel_mgr::ChannelMgr;
 

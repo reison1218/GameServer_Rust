@@ -61,7 +61,7 @@ fn init_tcp_server(gm: Lock) {
     gate_tcp_server::new(tcp_port.to_string(), gm.clone());
 
     let tcp_port: &str = CONF_MAP.get_str("tcp_port_battle");
-    battle_tcp_server::new(tcp_port.to_string(), gm);
+    battle_tcp_server::new(tcp_port.to_owned(), gm);
 }
 
 ///初始化tcp客户端

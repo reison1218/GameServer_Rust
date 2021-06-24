@@ -8,48 +8,49 @@ use async_trait::async_trait;
 use chrono::Local;
 use tools::cmd_code::{BattleCode, ClientCode, RoomCode};
 use tools::protos::protocol::HEART_BEAT;
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
+use tools::tcp_message_io::TransportWay;
 
 #[derive(Clone)]
 struct TcpServerHandler {
-    pub tcp: Option<TcpSender>, //相当于channel
-    cm: Arc<Mutex<ChannelMgr>>, //channel管理器
+    pub tcp_handler: Option<TcpHandler>, //相当于channel
+    cm: Arc<Mutex<ChannelMgr>>,          //channel管理器
 }
-
-tools::get_mut_ref!(TcpServerHandler);
 
 unsafe impl Send for TcpServerHandler {}
 
 unsafe impl Sync for TcpServerHandler {}
 
 #[async_trait]
-impl tools::tcp::Handler for TcpServerHandler {
+impl tools::tcp_message_io::MessageHandler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
-    async fn on_open(&mut self, sender: TcpSender) {
-        self.tcp = Some(sender);
+    async fn on_open(&mut self, tcp_handler: TcpHandler) {
+        self.tcp_handler = Some(tcp_handler);
     }
 
     async fn on_close(&mut self) {
-        let token = self.tcp.as_ref().unwrap().token;
+        let token = self.get_token();
+
         let mut lock = self.cm.lock().await;
         lock.off_line(token);
     }
 
     ///此处返回一个bool，表示校验数据包结果，若为false,则tcp底层将T出客户端，为true则不会
-    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
+    async fn on_message(&mut self, mess: &[u8]) {
         //校验包长度
         if mess.is_empty() || mess.len() < 16 {
             error!("client packet len is wrong!");
-            return false;
+            self.shut_down();
+            return;
         }
-        let packet_array = Packet::build_array_from_client(mess);
+        let packet_array = Packet::build_array_from_client(mess.to_vec());
 
         if packet_array.is_err() {
             error!("{:?}", packet_array.err().unwrap().to_string());
-            return false;
+            return;
         }
         let packet_array = packet_array.unwrap();
 
@@ -59,30 +60,48 @@ impl tools::tcp::Handler for TcpServerHandler {
             info!("GateServer receive data of client!cmd:{}", cmd);
             res = self.handle_binary(packet).await;
             if !res {
-                return res;
+                self.shut_down();
+                return;
             }
         }
-        true
     }
 }
 
 impl TcpServerHandler {
+    pub fn shut_down(&self) {
+        let tcp = self.tcp_handler.as_ref().unwrap();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().remove(endpoint.resource_id());
+    }
+
+    pub fn get_token(&self) -> usize {
+        self.tcp_handler
+            .as_ref()
+            .unwrap()
+            .endpoint
+            .resource_id()
+            .raw()
+    }
+
     ///写到客户端
-    fn write_to_client(&mut self, bytes: Vec<u8>) {
-        let res = self.tcp.as_mut();
-        match res {
-            Some(ts) => {
-                ts.send(bytes);
-            }
-            None => {
-                warn!("TcpServerHandler's tcp is None!");
-            }
-        }
+    fn write_to_client(&mut self, bytes: &[u8]) {
+        let tcp = self.tcp_handler.as_ref().unwrap();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().send(endpoint, bytes);
+        // let res = self.tcp.as_mut();
+        // match res {
+        //     Some(ts) => {
+        //         ts.send(bytes);
+        //     }
+        //     None => {
+        //         warn!("TcpServerHandler's tcp is None!");
+        //     }
+        // }
     }
 
     ///处理二进制数据
     async fn handle_binary(&mut self, mut packet: Packet) -> bool {
-        let token = self.tcp.as_ref().unwrap().token;
+        let token = self.get_token();
         let mut lock = self.cm.lock().await;
         let user_id = lock.get_channels_user_id(&token);
 
@@ -124,11 +143,11 @@ impl TcpServerHandler {
                     packet.set_cmd(ClientCode::Login as u32);
                     packet.set_data_from_vec(sul.write_to_bytes().unwrap());
                     std::mem::drop(lock);
-                    self.write_to_client(packet.build_client_bytes());
+                    self.write_to_client(packet.build_client_bytes().as_slice());
                     return false;
                 }
             }
-            lock.temp_channels.insert(u_id, self.tcp.clone());
+            lock.temp_channels.insert(u_id, self.tcp_handler.clone());
         } else {
             u_id = *user_id.unwrap();
         }
@@ -147,7 +166,9 @@ impl TcpServerHandler {
                 return true;
             }
             let gate_user = gate_user.unwrap();
-            gate_user.get_tcp_mut_ref().send(res);
+            let tcp = gate_user.get_tcp_mut_ref();
+            let endpoint = tcp.endpoint;
+            tcp.node_handler.network().send(endpoint, res.as_slice());
             info!(
                 "回给客户端消息,user_id:{},cmd:{}",
                 packet.get_user_id(),
@@ -182,13 +203,11 @@ impl TcpServerHandler {
 
 ///创建新的tcpserver并开始监听
 pub fn new(address: &str, cm: Lock) {
-    let sh = TcpServerHandler { tcp: None, cm };
-    let res = tools::tcp::tcp_server::new(address.to_string(), sh);
-    let res = block_on(res);
-    if res.is_err() {
-        error!("{:?}", res.err().unwrap().to_string());
-        std::process::abort();
-    }
+    let sh = TcpServerHandler {
+        tcp_handler: None,
+        cm,
+    };
+    tools::tcp_message_io::run(TransportWay::Tcp, address, sh);
 }
 
 ///处理登陆逻辑

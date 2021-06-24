@@ -2,7 +2,7 @@ use crate::net::Forward;
 use crate::Lock;
 use async_trait::async_trait;
 use log::{error, info};
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 use super::new_gate_server_tcp;
@@ -33,15 +33,15 @@ impl Forward for GateTcpServerHandler {
 }
 
 #[async_trait]
-impl tools::tcp::Handler for GateTcpServerHandler {
+impl tools::tcp_message_io::MessageHandler for GateTcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
     ///客户端tcp链接激活事件
-    async fn on_open(&mut self, sender: TcpSender) {
-        self.token = sender.token;
-        self.gm.lock().await.add_gate_client(sender);
+    async fn on_open(&mut self, tcp_handler: TcpHandler) {
+        self.token = tcp_handler.endpoint.resource_id().raw();
+        self.gm.lock().await.add_gate_client(tcp_handler);
         info!("new gate_client is connect!token:{}", self.token);
     }
 
@@ -66,16 +66,15 @@ impl tools::tcp::Handler for GateTcpServerHandler {
     }
 
     ///客户端读取事件
-    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
-        let packet_array = Packet::build_array_from_server(mess);
+    async fn on_message(&mut self, mess: &[u8]) {
+        let packet_array = Packet::build_array_from_server(mess.to_vec());
 
         if let Err(e) = packet_array {
             error!("{:?}", e);
-            return true;
+            return;
         }
         let packet_array = packet_array.unwrap();
         self.forward_packet(packet_array).await;
-        true
     }
 }
 

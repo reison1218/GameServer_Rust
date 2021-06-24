@@ -20,7 +20,7 @@ use tools::protos::room::{
     S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
 };
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
-use tools::tcp::TcpSender;
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 ///最大成员数量
@@ -70,7 +70,7 @@ pub enum RoomState {
 }
 
 ///房间结构体，封装房间必要信息
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Room {
     id: u32,                                      //房间id
     room_type: RoomType,                          //房间类型
@@ -79,7 +79,7 @@ pub struct Room {
     pub members: HashMap<u32, Member>,            //玩家对应的队伍
     pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
     pub setting: RoomSetting,                     //房间设置
-    pub tcp_sender: TcpSender,                    //tcpsender
+    pub tcp_handler: TcpHandler,                  //tcpsender
     task_sender: Sender<Task>,                    //任务sender
     time: DateTime<Utc>,                          //房间创建时间
 }
@@ -108,7 +108,7 @@ impl Room {
     pub fn new(
         mut owner: Member,
         room_type: RoomType,
-        sender: TcpSender,
+        sender: TcpHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<Room> {
         //转换成tilemap数据
@@ -128,7 +128,7 @@ impl Room {
             state: room_state,
             setting: RoomSetting::default(),
             room_type,
-            tcp_sender: sender,
+            tcp_handler: sender,
             task_sender,
             time,
         };
@@ -222,7 +222,9 @@ impl Room {
     ///转发到游戏中心服
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
-        self.tcp_sender.send(bytes);
+        let tcp = self.tcp_handler.borrow();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
     pub fn get_member_vec(&self) -> Vec<u32> {
@@ -244,7 +246,9 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.tcp_sender.send(bytes);
+        let tcp = self.tcp_handler.borrow();
+        let endpoint = tcp.endpoint;
+        tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
     pub fn push_match_success(&mut self) {
@@ -272,14 +276,16 @@ impl Room {
             member_id = member.user_id;
             smsn.set_count(confirm_count);
             let bytes = smsn.write_to_bytes().unwrap();
-            let res = Packet::build_packet_bytes(
+            let datas = Packet::build_packet_bytes(
                 ClientCode::MatchSuccessNotice.into_u32(),
                 member_id,
                 bytes.clone(),
                 true,
                 true,
             );
-            self.tcp_sender.send(res);
+            let tcp = self.tcp_handler.borrow();
+            let endpoint = tcp.endpoint;
+            tcp.node_handler.network().send(endpoint, datas.as_slice());
         }
     }
 
@@ -292,7 +298,9 @@ impl Room {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
-            self.tcp_sender.send(bytes);
+            let tcp = self.tcp_handler.borrow();
+            let endpoint = tcp.endpoint;
+            tcp.node_handler.network().send(endpoint, bytes.as_slice());
         }
     }
 
