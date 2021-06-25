@@ -1,5 +1,5 @@
 use super::*;
-use crate::robot::RobotActionType;
+use crate::{robot::RobotActionType, room::map_data::MapCellType};
 use log::warn;
 use tools::cmd_code::BattleCode;
 
@@ -25,10 +25,10 @@ impl ChoiceIndexRobotAction {
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
-        let mut attack_action = ChoiceIndexRobotAction::default();
-        attack_action.battle_data = Some(battle_data);
-        attack_action.sender = Some(sender);
-        attack_action
+        let mut choice_index_action = ChoiceIndexRobotAction::default();
+        choice_index_action.battle_data = Some(battle_data);
+        choice_index_action.sender = Some(sender);
+        choice_index_action
     }
 }
 
@@ -54,18 +54,22 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
         }
         let battle_data = battle_data.unwrap();
         let mut v = Vec::new();
-        let size = battle_data.tile_map.un_pair_map.len();
-        let mut index;
-        for i in battle_data.tile_map.un_pair_map.keys() {
-            index = *i;
+        for (&index, _) in battle_data.tile_map.un_pair_map.iter() {
             let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
             if map_cell.user_id > 0 {
+                continue;
+            }
+            if map_cell.is_world() {
+                continue;
+            }
+            if map_cell.id <= MapCellType::UnUse.into_u32() {
                 continue;
             }
             v.push(index);
         }
         let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0..size);
+        let res = rand.gen_range(0..v.len());
+        let index = v.remove(res);
 
         //创建机器人任务执行选择站位
         self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);

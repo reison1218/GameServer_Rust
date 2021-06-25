@@ -145,13 +145,24 @@ impl Room {
         Ok(room)
     }
 
+    pub fn is_all_robot(&self) -> bool {
+        for member in self.members.values() {
+            if !member.is_robot {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn check_need_rm_room(&self) -> bool {
         let room_type = self.room_type;
         let state = self.state;
         if self.is_empty() {
             return true;
         }
-
+        if self.is_all_robot() {
+            return true;
+        }
         match room_type {
             RoomType::OneVOneVOneVOneCustom => {
                 if self.get_owner_id() == 0 && state != RoomState::ChoiceIndex {

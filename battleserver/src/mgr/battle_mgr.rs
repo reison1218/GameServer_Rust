@@ -155,7 +155,7 @@ impl BattleMgr {
         room.remove_member(notice_type, &user_id, need_push_self);
         info!("玩家离线战斗服务!room_id={},user_id={}", room_id, user_id);
         //判断战斗是否结束
-        if room.is_empty() || room.state == RoomState::BattleOvered {
+        if room.is_empty() || room.is_all_robot() || room.state == RoomState::BattleOvered {
             self.rm_room(room_id);
         }
     }

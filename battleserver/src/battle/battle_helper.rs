@@ -81,7 +81,7 @@ impl BattleData {
                 return;
             }
 
-            let battle_player_res = self.get_battle_player(Some(user_id), false);
+            let battle_player_res = self.get_battle_player_mut(Some(user_id), false);
             match battle_player_res {
                 Ok(battle_player) => {
                     if battle_player.is_died() {
@@ -120,7 +120,7 @@ impl BattleData {
                 return;
             }
 
-            let battle_player_res = self.get_battle_player(Some(user_id), false);
+            let battle_player_res = self.get_battle_player_mut(Some(user_id), false);
             match battle_player_res {
                 Ok(battle_player) => {
                     if battle_player.is_died() {

@@ -221,6 +221,20 @@ impl BattleData {
         }
     }
 
+    pub fn next_turn_is_robot(&self) -> bool {
+        let user_id = self.get_turn_user(None);
+        match user_id {
+            Ok(user_id) => {
+                let battle_plsyer = self.battle_player.get(&user_id);
+                match battle_plsyer {
+                    Some(battle_player) => battle_player.is_robot(),
+                    None => false,
+                }
+            }
+            Err(_) => false,
+        }
+    }
+
     pub fn get_sender_mut(&mut self) -> &mut Sender<Vec<u8>> {
         self.tcp_sender.borrow_mut()
     }

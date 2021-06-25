@@ -58,7 +58,7 @@ impl RobotStatusAction for BuyRobotAction {
         }
         let res = res.unwrap();
         let robot = res.get_battle_player(Some(self.robot_id), true);
-        if let Err(e) = robot {
+        if let Err(_) = robot {
             return;
         }
         self.send_2_battle(1, RobotActionType::Buy, BattleCode::Action);

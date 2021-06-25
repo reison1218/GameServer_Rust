@@ -11,7 +11,6 @@ use crate::robot::goal_evaluator::skip_goal_evaluator::SkipGoalEvaluator;
 use crate::robot::goal_evaluator::use_item_goal_evaluator::UseItemGoalEvaluator;
 use crate::robot::goal_evaluator::use_skill_goal_evaluator::UseSkillGoalEvaluator;
 
-#[derive(Default)]
 pub struct GoalThink {
     goal_evaluators: Vec<Box<dyn GoalEvaluator>>,
 }
@@ -24,7 +23,9 @@ impl Clone for GoalThink {
 
 impl GoalThink {
     pub fn new() -> Self {
-        let mut gt = GoalThink::default();
+        let mut gt = GoalThink {
+            goal_evaluators: vec![],
+        };
         gt.goal_evaluators
             .push(Box::new(AttackTargetGoalEvaluator::default()));
         gt.goal_evaluators
@@ -42,8 +43,8 @@ impl GoalThink {
 
     ///仲裁goal
     pub fn arbitrate(
-        &self,
-        battle_player: &BattlePlayer,
+        &mut self,
+        robot: &mut BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
@@ -56,7 +57,7 @@ impl GoalThink {
         //开始执行仲裁
         for index in 0..self.goal_evaluators.len() {
             let ge = self.goal_evaluators.get(index).unwrap();
-            let desirabilty = ge.calculate_desirability(battle_player);
+            let desirabilty = ge.calculate_desirability(robot);
             if desirabilty > best_desirabilty {
                 best_desirabilty = desirabilty;
                 best_index = index;
@@ -65,6 +66,6 @@ impl GoalThink {
         //获得仲裁结果
         let best_goal_evaluator = self.goal_evaluators.get(best_index).unwrap();
         //设置状态
-        best_goal_evaluator.set_status(battle_player, sender, battle_data);
+        best_goal_evaluator.set_status(robot, sender, battle_data);
     }
 }

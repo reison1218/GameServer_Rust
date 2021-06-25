@@ -137,6 +137,7 @@ impl TcpServerHandler {
                     u_id = user_id;
                 }
                 Err(e) => {
+                    error!("{:?}", e);
                     let mut sul = S_USER_LOGIN::new();
                     sul.set_is_succ(false);
                     sul.set_err_mess(e.to_string());

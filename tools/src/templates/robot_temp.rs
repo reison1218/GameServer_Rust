@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct RobotTemp {
     id: u32,
-    cter_id: u32,
+    pub cter_id: u32,
     pub skills: Vec<u32>,
 }
 

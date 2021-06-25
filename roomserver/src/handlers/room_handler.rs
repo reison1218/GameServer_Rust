@@ -606,11 +606,13 @@ pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
     //删掉已经选择了的角色
     let mut rand_cters = vec![];
     for i in cters_c.iter() {
-        for (cter_id, _) in cters_res.iter() {
-            if i == cter_id {
-                continue;
+        for (_, temps) in cters_res.iter() {
+            for temp in temps.iter() {
+                if i == &temp.cter_id {
+                    continue;
+                }
+                rand_cters.push(temp.get_id());
             }
-            rand_cters.push(cter_id);
         }
     }
     let mut rand = rand::thread_rng();
@@ -618,11 +620,12 @@ pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
     for _ in 0..need_num {
         //随机出下标
         let cter_index = rand.gen_range(0..rand_cters.len());
-        let cter_id = rand_cters.remove(cter_index);
-        let robot_temp = cters_res.get(cter_id).unwrap();
+        let temp_id = rand_cters.remove(cter_index);
+        let robot_temp = cters_res.get(&temp_id).unwrap();
         let skill_index = rand.gen_range(0..robot_temp.len());
 
         let robot_temp = robot_temp.get(skill_index).unwrap();
+        let cter_id = robot_temp.cter_id;
 
         //机器人id自增
         crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
@@ -634,11 +637,13 @@ pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
         member.user_id = robot_id;
         member.state = MemberState::Ready;
         member.nick_name = "robot".to_owned();
+        member.grade = 1;
+        member.grade_frame = 1;
 
         //初始化选择的角色
         let mut cter = Character::default();
         cter.user_id = robot_id;
-        cter.cter_id = *cter_id;
+        cter.cter_id = cter_id;
 
         //初始化角色技能
         cter.skills.extend_from_slice(robot_temp.skills.as_slice());

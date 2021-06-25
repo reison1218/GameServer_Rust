@@ -284,7 +284,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     }
 
     unsafe {
-        let battle_player = room.battle_data.get_battle_player(None, false).unwrap();
+        let battle_player = room.battle_data.get_battle_player_mut(None, false).unwrap();
         let current_cter_is_died = battle_player.is_died();
         //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
         if !current_cter_is_died || battle_player.robot_data.is_some() {
@@ -340,6 +340,14 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) {
     for user_id in room.members.keys() {
         bm.player_room.insert(*user_id, room_id);
     }
+
+    let is_robot = room.battle_data.next_turn_is_robot();
+    if is_robot {
+        let robot_id = room.battle_data.get_turn_user(None).unwrap();
+        let battle_player = room.battle_data.battle_player.get_mut(&robot_id).unwrap();
+        battle_player.robot_start_action();
+    }
+
     bm.rooms.insert(room.get_room_id(), room);
 
     info!(

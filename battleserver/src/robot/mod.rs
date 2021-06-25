@@ -15,7 +15,6 @@ use crossbeam::channel::Sender;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::VecDeque;
-use tools::macros::GetMutRef;
 
 pub const MAX_MEMORY_SIZE: usize = 5;
 
@@ -70,22 +69,20 @@ impl RememberCell {
 ///机器人数据结构体
 pub struct RobotData {
     pub robot_id: u32,
-    pub battle_data: *const BattleData,
+    pub battle_data: *mut BattleData,
     pub goal_think: GoalThink,                            //机器人think
     pub robot_status: Option<Box<dyn RobotStatusAction>>, //状态,
     pub remember_map_cell: VecDeque<RememberCell>,        //记忆地图块
     pub sender: Sender<RobotTask>,                        //机器人任务sender
 }
 
-tools::get_mut_ref!(RobotData);
-
 impl RobotData {
     ///创建robotdata结构体
-    pub fn new(robot_id: u32, battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+    pub fn new(robot_id: u32, battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         RobotData {
             robot_id,
             battle_data,
-            goal_think: GoalThink::default(),
+            goal_think: GoalThink::new(),
             robot_status: None,
             remember_map_cell: VecDeque::new(),
             sender,
@@ -117,34 +114,38 @@ impl RobotData {
         }
     }
 
-    pub fn clone_battle_data_ptr(&self) -> *const BattleData {
+    pub fn clone_battle_data_ptr(&self) -> *mut BattleData {
         self.battle_data.clone()
     }
 
-    pub fn get_battle_player_mut_ref(&self) -> &mut BattlePlayer {
+    pub fn get_battle_player_mut_ref(&mut self) -> &mut BattlePlayer {
         unsafe {
             let res = self
                 .battle_data
-                .as_ref()
+                .as_mut()
                 .unwrap()
                 .battle_player
-                .get(&self.robot_id)
+                .get_mut(&self.robot_id)
                 .unwrap();
-            res.get_mut_ref()
+            res
         }
     }
 
     ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
-    pub fn thinking_do_something(&self) {
-        let battle_player = self.get_battle_player_mut_ref();
-        self.goal_think.arbitrate(
-            battle_player,
-            self.sender.clone(),
-            self.clone_battle_data_ptr(),
-        );
+    pub fn thinking_do_something(&mut self) {
+        let robot_id = self.robot_id;
+        let sender = self.sender.clone();
+        let battle_data_cp = self.clone_battle_data_ptr();
+        let self_ptr = self as *mut RobotData;
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            let battle_data = self_mut.battle_data.as_mut().unwrap();
+            let robot = battle_data.battle_player.get_mut(&robot_id).unwrap();
+            self_mut.goal_think.arbitrate(robot, sender, battle_data_cp);
+        }
     }
 
-    pub fn trigger(&self, rc: RememberCell, trigger_type: RobotTriggerType) {
+    pub fn trigger(&mut self, rc: RememberCell, trigger_type: RobotTriggerType) {
         match trigger_type {
             RobotTriggerType::SeeMapCell => {
                 self.trigger_see_map_cell(rc);

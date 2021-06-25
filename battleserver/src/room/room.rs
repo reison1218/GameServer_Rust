@@ -341,6 +341,15 @@ impl Room {
         }
     }
 
+    pub fn is_all_robot(&self) -> bool {
+        for member in self.members.values() {
+            if !member.is_robot {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn insert_turn_orders(&mut self, index: usize, user_id: u32) {
         let size = self.battle_data.turn_orders.len() as isize;
         if index as isize > size - 1 {
@@ -550,14 +559,14 @@ impl Room {
         for index in self.battle_data.turn_orders.iter() {
             ssn.turn_order.push(*index);
         }
+        // for battle_cter in self.battle_data.battle_player.values() {
+        //     let cter_pt = battle_cter.convert_to_battle_cter_pt();
+        //     ssn.battle_cters.push(cter_pt);
+        // }
         let bytes = ssn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
             self_mut_ref.send_2_client(ClientCode::StartNotice, *id, bytes.clone());
-        }
-        for battle_cter in self.battle_data.battle_player.values() {
-            let cter_pt = battle_cter.convert_to_battle_cter_pt();
-            ssn.battle_cters.push(cter_pt);
         }
     }
 
@@ -768,7 +777,7 @@ impl Room {
     pub fn cter_2_battle_cter(&mut self) {
         for member in self.members.values_mut() {
             let battle_player =
-                BattlePlayer::init(&member, &self.battle_data, self.robot_sender.clone());
+                BattlePlayer::init(&member, &mut self.battle_data, self.robot_sender.clone());
             match battle_player {
                 Ok(battle_player) => {
                     self.battle_data

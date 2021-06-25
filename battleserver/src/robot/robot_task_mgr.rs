@@ -11,11 +11,21 @@ use tools::util::packet::Packet;
 
 use super::RobotActionType;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct RobotTask {
     pub action_type: RobotActionType, //要执行的命令
     pub delay: u64,                   //要延迟执行的时间
     pub data: JsonValue,              //数据
+}
+
+impl Default for RobotTask {
+    fn default() -> Self {
+        RobotTask {
+            action_type: RobotActionType::Attack,
+            delay: 3000,
+            data: JsonValue::default(),
+        }
+    }
 }
 
 ///初始化定时执行任务

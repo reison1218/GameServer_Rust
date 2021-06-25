@@ -33,7 +33,7 @@ pub trait TriggerEvent {
     ) -> anyhow::Result<Option<(u32, ActionUnitPt)>>;
 
     ///看到地图块触发
-    fn map_cell_trigger_for_robot(&self, index: usize, robot_trigger_type: RobotTriggerType);
+    fn map_cell_trigger_for_robot(&mut self, index: usize, robot_trigger_type: RobotTriggerType);
 
     ///被移动前触发buff
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()>;
@@ -222,16 +222,16 @@ impl TriggerEvent for BattleData {
         Ok(None)
     }
 
-    fn map_cell_trigger_for_robot(&self, index: usize, robot_trigger_type: RobotTriggerType) {
+    fn map_cell_trigger_for_robot(&mut self, index: usize, robot_trigger_type: RobotTriggerType) {
         let map_cell = self.tile_map.map_cells.get(index).unwrap();
         let rc = RememberCell::new(index, map_cell.id);
-        for cter in self.battle_player.values() {
+        for cter in self.battle_player.values_mut() {
             //如果不是机器人就continue；
             if !cter.is_robot() {
                 continue;
             }
             cter.robot_data
-                .as_ref()
+                .as_mut()
                 .unwrap()
                 .trigger(rc.clone(), robot_trigger_type);
         }

@@ -1,7 +1,6 @@
 use crate::robot::{RememberCell, RobotData};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use tools::macros::GetMutRef;
 
 use super::MAX_MEMORY_SIZE;
 
@@ -27,11 +26,10 @@ impl RobotTriggerType {
 }
 
 impl RobotData {
-    pub fn trigger_see_map_cell(&self, rc: RememberCell) {
-        let self_mut_ref = self.get_mut_ref();
+    pub fn trigger_see_map_cell(&mut self, rc: RememberCell) {
         //如果数量大于5则忘记尾端
-        if self_mut_ref.remember_map_cell.len() > MAX_MEMORY_SIZE {
-            self_mut_ref.remember_map_cell.pop_back();
+        if self.remember_map_cell.len() > MAX_MEMORY_SIZE {
+            self.remember_map_cell.pop_back();
         }
         //如果这个块已经被记忆，则刷新位置
         let mut rm_index = 0_usize;
@@ -41,12 +39,11 @@ impl RobotData {
                 break;
             }
         }
-        self_mut_ref.remember_map_cell.remove(rm_index);
-        self_mut_ref.remember_map_cell.push_front(rc);
+        self.remember_map_cell.remove(rm_index);
+        self.remember_map_cell.push_front(rc);
     }
 
-    pub fn trigger_pair_map_cell(&self, rc: RememberCell) {
-        let self_mut_ref = self.get_mut_ref();
+    pub fn trigger_pair_map_cell(&mut self, rc: RememberCell) {
         let mut index = 0_usize;
         for i in self.remember_map_cell.iter() {
             if i.cell_index == rc.cell_index {
@@ -54,6 +51,6 @@ impl RobotData {
             }
             index += 1;
         }
-        self_mut_ref.remember_map_cell.remove(index);
+        self.remember_map_cell.remove(index);
     }
 }

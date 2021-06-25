@@ -19,11 +19,13 @@ impl GoalEvaluator for UseItemGoalEvaluator {
 
     fn set_status(
         &self,
-        battle_player: &BattlePlayer,
+        robot: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
-        let aa = UseItemRobotAction::new(battle_data, sender);
-        battle_player.change_robot_status(Box::new(aa));
+        let mut res = UseItemRobotAction::new(battle_data, sender);
+        res.cter_id = robot.get_cter_id();
+        res.robot_id = robot.get_user_id();
+        robot.change_robot_status(Box::new(res));
     }
 }

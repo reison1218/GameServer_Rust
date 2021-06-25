@@ -201,7 +201,7 @@ impl BattlePlayer {
     ///初始化战斗角色数据
     pub fn init(
         member: &Member,
-        battle_data: &BattleData,
+        battle_data: &mut BattleData,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
         let mut battle_player = BattlePlayer::default();
@@ -217,7 +217,7 @@ impl BattlePlayer {
         if is_robot {
             let robot_data = RobotData::new(
                 battle_player.user_id,
-                battle_data as *const BattleData,
+                battle_data as *mut BattleData,
                 robot_sender,
             );
             battle_player.robot_data = Some(robot_data);
@@ -244,10 +244,14 @@ impl BattlePlayer {
 
     pub fn change_robot_status(&self, robot_action: Box<dyn RobotStatusAction>) {
         let res = self.get_robot_action();
-        res.exit();
+        if let Some(res) = res {
+            res.exit();
+        }
         self.set_robot_action(robot_action);
         let res = self.get_robot_action();
-        res.enter();
+        if let Some(res) = res {
+            res.enter();
+        }
     }
 
     pub fn get_cter_id(&self) -> u32 {
@@ -294,16 +298,16 @@ impl BattlePlayer {
         Ok(self.robot_data.as_ref().unwrap())
     }
 
-    pub fn robot_start_action(&self) {
+    pub fn robot_start_action(&mut self) {
         if self.robot_data.is_none() {
             return;
         }
-        let res = self.get_mut_ref().robot_data.as_mut().unwrap();
+        let res = self.robot_data.as_mut().unwrap();
         //开始仲裁
         res.thinking_do_something();
     }
 
-    pub fn get_robot_action(&self) -> &mut Box<dyn RobotStatusAction> {
+    pub fn get_robot_action(&self) -> Option<&mut Box<dyn RobotStatusAction>> {
         let self_mut_ref = self.get_mut_ref();
         self_mut_ref
             .robot_data
@@ -311,7 +315,6 @@ impl BattlePlayer {
             .unwrap()
             .robot_status
             .as_mut()
-            .unwrap()
     }
 
     pub fn set_robot_action(&self, action: Box<dyn RobotStatusAction>) {

@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use super::GoalEvaluator;
 
 use crate::battle::battle::BattleData;
@@ -15,7 +13,6 @@ pub struct BuyGoalEvaluator {
 
 impl GoalEvaluator for BuyGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        std::thread::sleep(Duration::from_secs(2));
         let robot_index = robot.get_map_cell_index();
         let battle_data = robot.robot_data.as_ref().unwrap().battle_data;
         unsafe {
@@ -32,11 +29,13 @@ impl GoalEvaluator for BuyGoalEvaluator {
 
     fn set_status(
         &self,
-        battle_player: &BattlePlayer,
+        robot: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
-        let aa = BuyRobotAction::new(battle_data, sender);
-        battle_player.change_robot_status(Box::new(aa));
+        let mut res = BuyRobotAction::new(battle_data, sender);
+        res.cter_id = robot.get_cter_id();
+        res.robot_id = robot.get_user_id();
+        robot.change_robot_status(Box::new(res));
     }
 }

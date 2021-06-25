@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_skill::skill_condition;
@@ -26,7 +24,6 @@ pub fn get_battle_data_ref(battle_player: &BattlePlayer) -> &BattleData {
 
 impl GoalEvaluator for UseSkillGoalEvaluator {
     fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
-        std::thread::sleep(Duration::from_secs(2));
         //如果可以使用技能，则直接期望值拉满
         let robot = battle_player.robot_data.as_ref().unwrap();
         let battle_data = get_battle_data_ref(battle_player);
@@ -41,11 +38,13 @@ impl GoalEvaluator for UseSkillGoalEvaluator {
 
     fn set_status(
         &self,
-        battle_player: &BattlePlayer,
+        robot: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
-        let aa = UseSkillRobotAction::new(battle_data, sender);
-        battle_player.change_robot_status(Box::new(aa));
+        let mut res = UseSkillRobotAction::new(battle_data, sender);
+        res.cter_id = robot.get_cter_id();
+        res.robot_id = robot.get_user_id();
+        robot.change_robot_status(Box::new(res));
     }
 }
