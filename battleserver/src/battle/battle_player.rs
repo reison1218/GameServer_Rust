@@ -298,11 +298,14 @@ impl BattlePlayer {
         Ok(self.robot_data.as_ref().unwrap())
     }
 
-    pub fn robot_start_action(&mut self) {
+    pub fn robot_start_action(&mut self, battle_data: *mut BattleData) {
         if self.robot_data.is_none() {
             return;
         }
         let res = self.robot_data.as_mut().unwrap();
+        if res.battle_data.is_null() {
+            res.battle_data = battle_data;
+        }
         //开始仲裁
         res.thinking_do_something();
     }

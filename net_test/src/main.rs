@@ -513,21 +513,6 @@ fn abc<'b, 'a: 'b>(mut st: &'b mut StructTest, st1: &'a mut StructTest) {
 }
 
 pub struct TcpClientTest;
-use async_trait::async_trait;
-#[async_trait]
-impl tools::tcp::ClientHandler for TcpClientTest {
-    async fn on_open(&mut self, sender: crossbeam::channel::Sender<Vec<u8>>) {
-        println!("open");
-    }
-
-    async fn on_close(&mut self) {
-        println!("close");
-    }
-
-    async fn on_message(&mut self, mess: Vec<u8>) {
-        println!("message");
-    }
-}
 
 pub fn abcd<T: Debug + 'static>(str: T) {
     let mut map = HashMap::new();

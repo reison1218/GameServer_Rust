@@ -1,6 +1,7 @@
 pub mod goal_evaluator;
 pub mod goal_think;
 pub mod robot_action;
+pub mod robot_data;
 pub mod robot_skill;
 pub mod robot_status;
 pub mod robot_task_mgr;
@@ -12,6 +13,7 @@ use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crossbeam::channel::Sender;
+use log::warn;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::VecDeque;
@@ -115,20 +117,7 @@ impl RobotData {
     }
 
     pub fn clone_battle_data_ptr(&self) -> *mut BattleData {
-        self.battle_data.clone()
-    }
-
-    pub fn get_battle_player_mut_ref(&mut self) -> &mut BattlePlayer {
-        unsafe {
-            let res = self
-                .battle_data
-                .as_mut()
-                .unwrap()
-                .battle_player
-                .get_mut(&self.robot_id)
-                .unwrap();
-            res
-        }
+        self.battle_data
     }
 
     ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
@@ -136,12 +125,15 @@ impl RobotData {
         let robot_id = self.robot_id;
         let sender = self.sender.clone();
         let battle_data_cp = self.clone_battle_data_ptr();
-        let self_ptr = self as *mut RobotData;
         unsafe {
-            let self_mut = self_ptr.as_mut().unwrap();
-            let battle_data = self_mut.battle_data.as_mut().unwrap();
+            let battle_data = battle_data_cp.as_mut();
+            if let None = battle_data {
+                warn!("battle_data is None!");
+                return;
+            }
+            let battle_data = battle_data.unwrap();
             let robot = battle_data.battle_player.get_mut(&robot_id).unwrap();
-            self_mut.goal_think.arbitrate(robot, sender, battle_data_cp);
+            self.goal_think.arbitrate(robot, sender, battle_data_cp);
         }
     }
 

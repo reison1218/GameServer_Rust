@@ -69,6 +69,7 @@ impl BattleData {
     }
 
     pub fn choice_index_next_turn(&mut self) {
+        let battle_data_ptr = self as *mut BattleData;
         self.next_turn_index += 1;
         let index = self.next_turn_index;
         if index >= MEMBER_MAX as usize {
@@ -89,7 +90,7 @@ impl BattleData {
                         return;
                     }
                     if battle_player.robot_data.is_some() {
-                        battle_player.robot_start_action();
+                        battle_player.robot_start_action(battle_data_ptr);
                     }
                 }
                 Err(e) => {
@@ -103,6 +104,7 @@ impl BattleData {
 
     ///下一个
     pub fn add_next_turn(&mut self) {
+        let battle_data_ptr = self as *mut BattleData;
         self.next_turn_index += 1;
         self.turn += 1;
         self.add_total_turn_times();
@@ -128,7 +130,7 @@ impl BattleData {
                         return;
                     }
                     if battle_player.robot_data.is_some() {
-                        battle_player.robot_start_action();
+                        battle_player.robot_start_action(battle_data_ptr);
                     }
                 }
                 Err(e) => {
@@ -1045,7 +1047,12 @@ impl BattleData {
     ) -> (Vec<usize>, Vec<u32>) {
         let mut v_u = Vec::new();
         let mut v = Vec::new();
-        let center_map_cell = self.tile_map.map_cells.get(center_index as usize).unwrap();
+        let center_map_cell = self.tile_map.map_cells.get(center_index as usize);
+        if let None = center_map_cell {
+            warn!("cal_scope,cal_scope is none!center_index:{}", center_index);
+            return (Vec::new(), Vec::new());
+        }
+        let center_map_cell = center_map_cell.unwrap();
         if targets.is_none() && scope_temp.is_none() {
             let res = TEMPLATES
                 .skill_scope_temp_mgr()

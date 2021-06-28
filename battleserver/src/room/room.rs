@@ -432,6 +432,13 @@ impl Room {
         //都选择完了占位，进入选择回合顺序
         if res {
             self.push_start_battle();
+            let battle_data_ptr = &mut self.battle_data as *mut BattleData;
+            let battle_player = self.battle_data.get_battle_player_mut(None, false).unwrap();
+            let current_cter_is_died = battle_player.is_died();
+            //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
+            if !current_cter_is_died || battle_player.robot_data.is_some() {
+                battle_player.robot_start_action(battle_data_ptr);
+            }
         } else {
             //没选择完，继续选
             self.build_choice_index_task();
