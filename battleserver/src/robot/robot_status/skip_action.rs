@@ -42,7 +42,7 @@ impl RobotStatusAction for SkipRobotAction {
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出跳过状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {

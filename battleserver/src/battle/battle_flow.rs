@@ -191,7 +191,7 @@ impl BattleData {
             //校验目标类型
             let res = self.check_target_array(user_id, target_type, &target_array);
             if let Err(e) = res {
-                warn!("{:?}", e);
+                warn!("{:?},skill_id:{}", e, skill_id);
                 anyhow::bail!("")
             }
 

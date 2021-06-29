@@ -4,11 +4,12 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_player::BattlePlayer;
 use crate::robot::robot_status::buy_action::BuyRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
+// use crossbeam::atomic::AtomicCell;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
 pub struct BuyGoalEvaluator {
-    //desirability: AtomicCell<u32>,
+    // desirability: AtomicCell<u32>,
 }
 
 impl GoalEvaluator for BuyGoalEvaluator {

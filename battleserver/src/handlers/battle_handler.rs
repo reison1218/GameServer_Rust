@@ -236,7 +236,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
 
     //如果有问题就返回
     if let Err(e) = res {
-        warn!("{:?}", e);
+        warn!("{:?}!action_type:{:?},user_id:{}", e, action_type, user_id);
         return;
     }
 
@@ -851,7 +851,9 @@ fn unlock_oper(
     //先校验玩家是否可以进行攻击
     let battle_player = rm.battle_data.battle_player.get_mut(&user_id).unwrap();
     let v = *au.action_value.get(0).unwrap();
-    if battle_player.status.locked_oper == 0 || battle_player.status.locked_oper != v {
+    if battle_player.status.locked_oper == 0
+        || (battle_player.status.locked_oper != v && !battle_player.is_robot())
+    {
         anyhow::bail!("{there is no show cell skill activate!}")
     }
     battle_player.status.locked_oper = 0;
@@ -906,7 +908,7 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
 }
 
 ///校验技能可用状态
-fn check_skill_useable(battle_player: &BattlePlayer, skill: &Skill) -> anyhow::Result<()> {
+pub fn check_skill_useable(battle_player: &BattlePlayer, skill: &Skill) -> anyhow::Result<()> {
     //校验cd
     if skill.skill_temp.consume_type != SkillConsumeType::Energy.into_u8() && skill.cd_times > 0 {
         anyhow::bail!(

@@ -1225,7 +1225,7 @@ impl BattleData {
                         .pair_usable_skills
                         .contains(&skill_id.unwrap())
                 {
-                    let err_str = format!("could not use this skill!palyer not pair!user_id:{},skill_id:{},skill_judge_id:{}",
+                    let err_str = format!("could not use this skill!player not pair!user_id:{},skill_id:{},skill_judge_id:{}",
                     battle_player.get_user_id(),
                     skill_id.unwrap(),
                     skill_judge);

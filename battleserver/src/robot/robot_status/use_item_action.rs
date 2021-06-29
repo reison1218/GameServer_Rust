@@ -42,7 +42,7 @@ impl RobotStatusAction for UseItemRobotAction {
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出使用道具状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {

@@ -1,6 +1,6 @@
 use super::*;
 use crate::{robot::RobotActionType, room::map_data::MapCellType};
-use log::warn;
+use log::{info, warn};
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
@@ -76,7 +76,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出选择展位状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {

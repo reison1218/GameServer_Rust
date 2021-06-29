@@ -22,7 +22,7 @@ impl Default for RobotTask {
     fn default() -> Self {
         RobotTask {
             action_type: RobotActionType::Attack,
-            delay: 3000,
+            delay: 5000,
             data: JsonValue::default(),
         }
     }
@@ -55,6 +55,7 @@ pub fn robot_init_timer(bm: Lock) {
                 RobotActionType::UseItem => use_item,
                 RobotActionType::ChoiceIndex => choice_index,
                 RobotActionType::Buy => buy,
+                RobotActionType::Unlock => unlock,
                 _ => attack,
             };
             let m = move || fnc(rm_clone, task);
@@ -108,6 +109,29 @@ pub fn buy(rm: Lock, task: RobotTask) {
     let mut packet = Packet::new(cmd, 0, user_id);
     let mut ca = C_BUY::new();
     ca.merchandise_id = merchandise_id;
+    packet.set_data(ca.write_to_bytes().unwrap().as_slice());
+    //解锁,获得函数指针，执行普通攻击逻辑
+    let lock = block_on(rm.lock());
+    //拿到BattleMgr的可变指针
+    let rm_mut_ref = lock.get_mut_ref();
+    let func = lock.cmd_map.get(&cmd).unwrap();
+    func(rm_mut_ref, packet);
+}
+
+pub fn unlock(rm: Lock, task: RobotTask) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
+    let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
+    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut ca = C_ACTION::new();
+    ca.target_index.push(target_index);
+    ca.action_type = ActionType::EndShowMapCell.into_u32();
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
     //解锁,获得函数指针，执行普通攻击逻辑
     let lock = block_on(rm.lock());
@@ -191,7 +215,33 @@ pub fn skip_turn(rm: Lock, task: RobotTask) {
 }
 
 ///使用技能
-pub fn use_skill(_: Lock, _: RobotTask) {}
+pub fn use_skill(rm: Lock, task: RobotTask) {
+    let json_value = task.data;
+    let res = json_value.as_object();
+    if res.is_none() {
+        return;
+    }
+    let map = res.unwrap();
+    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let target_index = map.get("target_index").unwrap().as_array().unwrap();
+    let skill_id = map.get("skill_id").unwrap().as_u64().unwrap() as u32;
+    let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
+
+    let mut proto = C_ACTION::new();
+    proto.action_type = ActionType::Skill.into_u32();
+    for target in target_index {
+        proto.target_index.push(target.as_u64().unwrap() as u32);
+    }
+    proto.value = skill_id;
+
+    let mut packet = Packet::new(cmd, 0, user_id);
+    packet.set_data(proto.write_to_bytes().unwrap().as_slice());
+    let lock = block_on(rm.lock());
+    //拿到BattleMgr的可变指针
+    let rm_mut_ref = lock.get_mut_ref();
+    let func = lock.cmd_map.get(&cmd).unwrap();
+    func(rm_mut_ref, packet);
+}
 
 ///使用道具
 pub fn use_item(_: Lock, _: RobotTask) {}

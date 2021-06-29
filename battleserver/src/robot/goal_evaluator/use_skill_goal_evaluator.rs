@@ -1,6 +1,6 @@
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
-use crate::robot::robot_skill::skill_condition;
+use crate::robot::robot_skill::{skill_condition, skill_target};
 use crate::robot::robot_status::use_skill_action::UseSkillRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crossbeam::channel::Sender;
@@ -29,9 +29,14 @@ impl GoalEvaluator for UseSkillGoalEvaluator {
         let battle_data = get_battle_data_ref(battle_player);
         for skill in battle_player.cter.skills.values() {
             let res = skill_condition(battle_data, skill, robot);
-            if res {
-                return 100;
+            if !res {
+                continue;
             }
+            let targets = skill_target(battle_data, skill, robot);
+            if let Err(_) = targets {
+                continue;
+            }
+            return 100;
         }
         0
     }

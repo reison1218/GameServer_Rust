@@ -303,9 +303,7 @@ impl BattlePlayer {
             return;
         }
         let res = self.robot_data.as_mut().unwrap();
-        if res.battle_data.is_null() {
-            res.battle_data = battle_data;
-        }
+        res.battle_data = battle_data;
         //开始仲裁
         res.thinking_do_something();
     }
@@ -751,15 +749,6 @@ impl BattleCharacter {
             .for_each(|x| {
                 x.add_cd(res);
             })
-    }
-
-    pub fn can_use_skill(&self) -> bool {
-        for skill in self.skills.values() {
-            if skill.cd_times > 0 {
-                return false;
-            }
-        }
-        true
     }
 
     pub fn add_energy(&mut self, value: i8) {

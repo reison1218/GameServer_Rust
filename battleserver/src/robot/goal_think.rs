@@ -1,6 +1,8 @@
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::attack_goal_evaluator::AttackTargetGoalEvaluator;
+use crate::robot::goal_evaluator::buy_goal_evaluator::BuyGoalEvaluator;
 use crate::robot::goal_evaluator::open_cell_goal_evaluator::OpenCellGoalEvaluator;
+use crate::robot::goal_evaluator::unlock_goal_evaluator::UnlockGoalEvaluator;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_task_mgr::RobotTask;
 use crossbeam::channel::Sender;
@@ -38,12 +40,16 @@ impl GoalThink {
             .push(Box::new(UseSkillGoalEvaluator::default()));
         gt.goal_evaluators
             .push(Box::new(UseItemGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(BuyGoalEvaluator::default()));
+        gt.goal_evaluators
+            .push(Box::new(UnlockGoalEvaluator::default()));
         gt
     }
 
     ///仲裁goal
     pub fn arbitrate(
-        &mut self,
+        &self,
         robot: &mut BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,

@@ -1,25 +1,21 @@
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
 use crate::robot::goal_evaluator::GoalEvaluator;
-use crate::robot::robot_status::open_cell_action::OpenCellRobotAction;
+use crate::robot::robot_status::unlock_action::UnlockRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crossbeam::channel::Sender;
 
 #[derive(Default)]
-pub struct OpenCellGoalEvaluator {
-    // desirability: AtomicCell<u32>,
+pub struct UnlockGoalEvaluator {
+    //desirability: AtomicCell<u32>,
 }
 
-impl GoalEvaluator for OpenCellGoalEvaluator {
+impl GoalEvaluator for UnlockGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        let robot_data = robot.robot_data.as_ref().unwrap();
-        let pair_index = robot_data.can_pair_index();
-
-        if pair_index.is_some() && robot.flow_data.residue_movement_points > 0 {
-            return 70;
-        } else if robot.flow_data.residue_movement_points == 0 {
-            return 0;
+        //如果状态是可以攻击，期望值大于0，当没有其他高优先级的事件，则执行攻击
+        if robot.is_locked() {
+            return 200;
         }
-        50
+        0
     }
 
     fn set_status(
@@ -28,7 +24,7 @@ impl GoalEvaluator for OpenCellGoalEvaluator {
         sender: Sender<RobotTask>,
         battle_data: *const BattleData,
     ) {
-        let mut res = OpenCellRobotAction::new(battle_data, sender);
+        let mut res = UnlockRobotAction::new(battle_data, sender);
         res.cter_id = robot.get_cter_id();
         res.robot_id = robot.get_user_id();
         robot.change_robot_status(Box::new(res));

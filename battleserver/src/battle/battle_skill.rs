@@ -515,7 +515,12 @@ pub unsafe fn add_buff(
         | TargetType::OpenedMapCell
         | TargetType::UnOpenMapCellAndUnLock
         | TargetType::UnLockNullMapCell => {
-            let index = *target_array.get(0).unwrap() as usize;
+            let index = target_array.get(0);
+            if let None = index {
+                warn!("the target_array is empty!skill_id:{}", skill_id);
+                return None;
+            }
+            let index = *index.unwrap() as usize;
             let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
             let mut buff = Buff::new(

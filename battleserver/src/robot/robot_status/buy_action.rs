@@ -65,7 +65,7 @@ impl RobotStatusAction for BuyRobotAction {
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出购买状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {

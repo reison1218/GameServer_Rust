@@ -1,5 +1,5 @@
 use super::*;
-use crate::robot::robot_skill::robot_use_skill;
+use crate::robot::robot_skill::{robot_use_skill, skill_condition, skill_target};
 use log::warn;
 
 #[derive(Default)]
@@ -62,13 +62,40 @@ impl RobotStatusAction for UseSkillRobotAction {
             return;
         }
         let robot = battle_player.robot_data.as_ref().unwrap();
+        let mut v = vec![];
         for skill in battle_player.cter.skills.values() {
-            let _ = robot_use_skill(battle_data, skill, robot);
+            //先判断技能释放条件
+            let res = skill_condition(battle_data, skill, robot);
+            //可以释放就往下走
+            if !res {
+                continue;
+            }
+            //获取技能释放目标
+            let targets = skill_target(battle_data, skill, robot);
+            if let Err(_) = targets {
+                continue;
+            }
+            v.push(skill);
+        }
+        if v.is_empty() {
+            battle_player
+                .robot_data
+                .as_ref()
+                .unwrap()
+                .thinking_do_something();
+            return;
+        }
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0..v.len());
+        let skill = v.get(index).unwrap();
+        let res = robot_use_skill(battle_data, skill, robot);
+        if res {
+            info!("机器人释放技能成功！skill_id:{}", skill.id);
         }
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出使用技能状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {

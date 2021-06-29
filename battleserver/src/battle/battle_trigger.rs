@@ -239,7 +239,11 @@ impl TriggerEvent for BattleData {
 
     fn before_moved_trigger(&self, from_user: u32, target_user: u32) -> anyhow::Result<()> {
         //先判断目标位置的角色是否有不动泰山被动技能
-        let target_cter = self.get_battle_player(Some(target_user), true).unwrap();
+        let target_cter = self.get_battle_player(Some(target_user), true);
+        if let Err(_) = target_cter {
+            return Ok(());
+        }
+        let target_cter = target_cter.unwrap();
         let mut buff_function_id;
         for buff in target_cter.cter.battle_buffs.buffs().values() {
             buff_function_id = buff.function_id;

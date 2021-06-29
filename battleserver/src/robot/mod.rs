@@ -1,13 +1,12 @@
 pub mod goal_evaluator;
 pub mod goal_think;
 pub mod robot_action;
-pub mod robot_data;
 pub mod robot_skill;
 pub mod robot_status;
 pub mod robot_task_mgr;
 pub mod robot_trigger;
 
-use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
+use crate::battle::battle::BattleData;
 use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
@@ -32,6 +31,8 @@ pub enum RobotActionType {
     Attack,
     ///使用道具
     UseItem,
+    ///解锁操作
+    Unlock,
     ///跳过turn
     Skip,
     ///翻块
@@ -121,7 +122,7 @@ impl RobotData {
     }
 
     ///思考做做什么，这里会执行仲裁，数值最高的会挑出来进行执行
-    pub fn thinking_do_something(&mut self) {
+    pub fn thinking_do_something(&self) {
         let robot_id = self.robot_id;
         let sender = self.sender.clone();
         let battle_data_cp = self.clone_battle_data_ptr();

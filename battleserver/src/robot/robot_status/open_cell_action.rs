@@ -1,8 +1,13 @@
 use std::borrow::Borrow;
 
 use super::*;
-use crate::{battle::battle_player::BattlePlayer, robot::RobotActionType};
+use crate::{
+    battle::{battle_player::BattlePlayer, battle_trigger::TriggerEvent},
+    robot::RobotActionType,
+    JsonValue,
+};
 use log::{error, warn};
+use serde_json::Map;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
@@ -44,7 +49,7 @@ impl RobotStatusAction for OpenCellRobotAction {
     }
 
     fn enter(&self) {
-        info!("robot:{},进入翻地图块状态", self.robot_id);
+        info!("robot:{} 进入翻地图块状态", self.robot_id);
         self.execute();
     }
 
@@ -57,17 +62,23 @@ impl RobotStatusAction for OpenCellRobotAction {
         let battle_data = battle_data.unwrap();
         //校验为配对的地图块数量
         if battle_data.tile_map.un_pair_map.is_empty() {
+            warn!("un_pair_map is empty!");
             return;
         }
         let mut v = Vec::new();
+        let robot_id = self.robot_id;
+        let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
         for key in battle_data.tile_map.un_pair_map.keys() {
+            let map_cell = battle_data.tile_map.map_cells.get(*key).unwrap();
+            //跳过自己已翻开的
+            if map_cell.open_user == robot_id || map_cell.user_id == robot_id {
+                continue;
+            }
             v.push(*key);
         }
         let mut rand = rand::thread_rng();
-        let mut index = 0;
+        let mut index = None;
 
-        let robot_id = self.robot_id;
-        let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
         let mut action_type = RobotActionType::Open;
 
         //剩余翻块次数
@@ -75,6 +86,7 @@ impl RobotStatusAction for OpenCellRobotAction {
 
         //剩余次数等于0，则啥也不干，直接返回
         if residue_open_times == 0 {
+            warn!("residue_open_times is 0!robot_id:{}", self.robot_id);
             return;
         }
         //计算可以配对多少个
@@ -88,14 +100,14 @@ impl RobotStatusAction for OpenCellRobotAction {
         //大于1个时，优先配对与自己元素相同的地图块
         if pair_v.len() > 1 {
             if let Some(element_index) = element_index {
-                index = element_index;
+                index = Some(element_index);
             } else {
-                index = rand.gen_range(0..pair_v.len());
-                index = *pair_v.get(index).unwrap();
+                let rand_index = rand.gen_range(0..pair_v.len());
+                index = Some(*pair_v.get(rand_index).unwrap());
             }
         } else if pair_v.len() == 1 {
             //翻开能够配对的地图块
-            index = *pair_v.get(0).unwrap();
+            index = Some(*pair_v.get(0).unwrap());
         } else {
             let mut is_cd = false;
             for skill in battle_player.cter.skills.values() {
@@ -106,23 +118,36 @@ impl RobotStatusAction for OpenCellRobotAction {
             }
             //如果有技能cd的话就随机在地图里面翻开一个地图块
             if is_cd {
-                index = rand.gen_range(0..v.len());
+                let rand_index = rand.gen_range(0..v.len());
+                index = Some(*v.get(rand_index).unwrap());
             } else {
-                //否则
+                //否则进行随机，0到100
                 let res = rand.gen_range(0..101);
                 if res >= 0 && res <= 60 {
-                    index = rand.gen_range(0..v.len());
+                    let rand_index = rand.gen_range(0..v.len());
+                    index = Some(*v.get(rand_index).unwrap());
                 } else {
                     //跳过turn
                     action_type = RobotActionType::Skip;
                 }
             }
         }
-        self.send_2_battle(index, action_type, BattleCode::Action);
+        let indes_res;
+        match index {
+            Some(index) => {
+                indes_res = index;
+                info!("选中index:{}", indes_res);
+            }
+            None => {
+                indes_res = 0;
+                info!("没选中，执行跳过");
+            }
+        }
+        self.send_2_battle(indes_res, action_type, BattleCode::Action);
     }
 
     fn exit(&self) {
-        unimplemented!()
+        // info!("robot:{} 退出打开地块状态！", self.robot_id);
     }
 
     fn get_status(&self) -> RobotStatus {
@@ -135,6 +160,25 @@ impl RobotStatusAction for OpenCellRobotAction {
 
     fn get_sender(&self) -> &Sender<RobotTask> {
         self.sender.as_ref().unwrap()
+    }
+
+    fn send_2_battle(
+        &self,
+        target_index: usize,
+        robot_action_type: RobotActionType,
+        cmd: BattleCode,
+    ) {
+        let mut robot_task = RobotTask::default();
+        robot_task.action_type = robot_action_type;
+        let mut map = Map::new();
+        map.insert("user_id".to_owned(), JsonValue::from(self.get_robot_id()));
+        map.insert("value".to_owned(), JsonValue::from(target_index));
+        map.insert("cmd".to_owned(), JsonValue::from(cmd.into_u32()));
+        robot_task.data = JsonValue::from(map);
+        let res = self.get_sender().send(robot_task);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 }
 
@@ -156,7 +200,7 @@ pub fn cal_pair_num(
 
     //机器人记忆的地图块
     let remember_cells = robot_data.remember_map_cell.borrow();
-
+    let robot_id = battle_player.get_user_id();
     //这个turn放开的地图块下标
     let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec_history;
     //去掉已经翻开过的,并且添加可以配对的
@@ -168,6 +212,12 @@ pub fn cal_pair_num(
             if cell_index == re_cell.cell_index {
                 continue;
             }
+
+            let res = battle_data.before_moved_trigger(robot_id, map_cell.user_id);
+            if let Err(_) = res {
+                continue;
+            }
+
             //添加可以配对的
             if map_cell.id == re_cell.cell_id {
                 index_v.push(cell_index);

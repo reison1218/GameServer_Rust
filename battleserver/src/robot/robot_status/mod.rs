@@ -3,6 +3,7 @@ pub mod buy_action;
 pub mod choice_index_action;
 pub mod open_cell_action;
 pub mod skip_action;
+pub mod unlock_action;
 pub mod use_item_action;
 pub mod use_skill_action;
 

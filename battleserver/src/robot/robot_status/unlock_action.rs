@@ -4,7 +4,7 @@ use log::warn;
 use tools::cmd_code::BattleCode;
 
 #[derive(Default)]
-pub struct AttackRobotAction {
+pub struct UnlockRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
     pub battle_data: Option<*const BattleData>,
@@ -12,9 +12,9 @@ pub struct AttackRobotAction {
     pub sender: Option<Sender<RobotTask>>,
 }
 
-get_mut_ref!(AttackRobotAction);
+get_mut_ref!(UnlockRobotAction);
 
-impl AttackRobotAction {
+impl UnlockRobotAction {
     pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {
@@ -25,14 +25,14 @@ impl AttackRobotAction {
     }
 
     pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
-        let mut attack_action = AttackRobotAction::default();
+        let mut attack_action = UnlockRobotAction::default();
         attack_action.battle_data = Some(battle_data);
         attack_action.sender = Some(sender);
         attack_action
     }
 }
 
-impl RobotStatusAction for AttackRobotAction {
+impl RobotStatusAction for UnlockRobotAction {
     fn set_sender(&mut self, sender: Sender<RobotTask>) {
         self.sender = Some(sender);
     }
@@ -42,7 +42,7 @@ impl RobotStatusAction for AttackRobotAction {
     }
 
     fn enter(&self) {
-        info!("robot:{} 进入攻击状态！", self.robot_id);
+        info!("robot:{} 进入解除锁定状态！", self.robot_id);
         self.execute();
     }
 
@@ -53,18 +53,10 @@ impl RobotStatusAction for AttackRobotAction {
             return;
         }
         let res = res.unwrap();
-        let mut target_index: usize = 0;
-        let mut cter_hp_max: i16 = 0;
-        for battle_player in res.battle_player.values() {
-            if battle_player.get_cter_id() == self.cter_id {
-                continue;
-            }
-            if battle_player.cter.base_attr.hp > cter_hp_max {
-                cter_hp_max = battle_player.cter.base_attr.hp;
-                target_index = battle_player.get_map_cell_index();
-            }
-        }
-        self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);
+
+        let battle_player = res.battle_player.get(&self.robot_id).unwrap();
+        let target_index: usize = battle_player.get_map_cell_index();
+        self.send_2_battle(target_index, RobotActionType::Unlock, BattleCode::Action);
     }
 
     fn exit(&self) {
