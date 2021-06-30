@@ -1004,7 +1004,7 @@ pub struct MemberPt {
     pub team_id: u32,
     pub join_time: u64,
     pub league: ::protobuf::SingularPtrField<LeaguePt>,
-    pub is_robot: bool,
+    pub robot_temp_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1218,19 +1218,19 @@ impl MemberPt {
         self.league.take().unwrap_or_else(|| LeaguePt::new())
     }
 
-    // bool is_robot = 11;
+    // uint32 robot_temp_id = 11;
 
 
-    pub fn get_is_robot(&self) -> bool {
-        self.is_robot
+    pub fn get_robot_temp_id(&self) -> u32 {
+        self.robot_temp_id
     }
-    pub fn clear_is_robot(&mut self) {
-        self.is_robot = false;
+    pub fn clear_robot_temp_id(&mut self) {
+        self.robot_temp_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_is_robot(&mut self, v: bool) {
-        self.is_robot = v;
+    pub fn set_robot_temp_id(&mut self, v: u32) {
+        self.robot_temp_id = v;
     }
 }
 
@@ -1315,8 +1315,8 @@ impl ::protobuf::Message for MemberPt {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_bool()?;
-                    self.is_robot = tmp;
+                    let tmp = is.read_uint32()?;
+                    self.robot_temp_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1362,8 +1362,8 @@ impl ::protobuf::Message for MemberPt {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
-        if self.is_robot != false {
-            my_size += 2;
+        if self.robot_temp_id != 0 {
+            my_size += ::protobuf::rt::value_size(11, self.robot_temp_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1405,8 +1405,8 @@ impl ::protobuf::Message for MemberPt {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
-        if self.is_robot != false {
-            os.write_bool(11, self.is_robot)?;
+        if self.robot_temp_id != 0 {
+            os.write_uint32(11, self.robot_temp_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1496,10 +1496,10 @@ impl ::protobuf::Message for MemberPt {
                 |m: &MemberPt| { &m.league },
                 |m: &mut MemberPt| { &mut m.league },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                "is_robot",
-                |m: &MemberPt| { &m.is_robot },
-                |m: &mut MemberPt| { &mut m.is_robot },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "robot_temp_id",
+                |m: &MemberPt| { &m.robot_temp_id },
+                |m: &mut MemberPt| { &mut m.robot_temp_id },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<MemberPt>(
                 "MemberPt",
@@ -1527,7 +1527,7 @@ impl ::protobuf::Clear for MemberPt {
         self.team_id = 0;
         self.join_time = 0;
         self.league.clear();
-        self.is_robot = false;
+        self.robot_temp_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6398,7 +6398,7 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x05R\x08bestRank\x12(\n\x06league\x18\x08\x20\x01(\x0b2\x10.protos.Leag\
     uePtR\x06league\x12\x10\n\x03dlc\x18\t\x20\x03(\rR\x03dlc\"C\n\x0bResour\
     cesPt\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\
-    \x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xc5\
+    \x02\x20\x01(\rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xce\
     \x02\n\x08MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
     \x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\
     \x03\x20\x01(\x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\
@@ -6407,10 +6407,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x04soul\x18\x07\x20\x01(\rR\x04soul\x12\x17\n\x07team_id\x18\x08\x20\
     \x01(\rR\x06teamId\x12\x1b\n\tjoin_time\x18\t\x20\x01(\x04R\x08joinTime\
     \x12(\n\x06league\x18\n\x20\x01(\x0b2\x10.protos.LeaguePtR\x06league\x12\
-    \x19\n\x08is_robot\x18\x0b\x20\x01(\x08R\x07isRobot\"G\n\x0bWorldCellPt\
-    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_id\
-    \x18\x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07r\
-    oom_id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\
+    \"\n\rrobot_temp_id\x18\x0b\x20\x01(\rR\x0brobotTempId\"G\n\x0bWorldCell\
+    Pt\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rworld_cell_i\
+    d\x18\x02\x20\x01(\rR\x0bworldCellId\"\xd7\x01\n\x06RoomPt\x12\x17\n\x07\
+    room_id\x18\x01\x20\x01(\rR\x06roomId\x12\x19\n\x08owner_id\x18\x02\x20\
     \x01(\rR\x07ownerId\x12\x1b\n\troom_type\x18\x03\x20\x01(\rR\x08roomType\
     \x12\x1f\n\x0broom_status\x18\x04\x20\x01(\rR\nroomStatus\x12/\n\x07sett\
     ing\x18\x05\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\x12*\n\

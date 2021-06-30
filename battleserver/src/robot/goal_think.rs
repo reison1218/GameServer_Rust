@@ -52,7 +52,7 @@ impl GoalThink {
         &self,
         robot: &mut BattlePlayer,
         sender: Sender<RobotTask>,
-        battle_data: *const BattleData,
+        battle_data: *mut BattleData,
     ) {
         info!("开始执行仲裁");
         let mut best_desirabilty = 0;

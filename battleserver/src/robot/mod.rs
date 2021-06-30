@@ -1,6 +1,7 @@
 pub mod goal_evaluator;
 pub mod goal_think;
 pub mod robot_action;
+pub mod robot_helper;
 pub mod robot_skill;
 pub mod robot_status;
 pub mod robot_task_mgr;
@@ -11,13 +12,16 @@ use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
+use crossbeam::atomic::AtomicCell;
 use crossbeam::channel::Sender;
 use log::warn;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::VecDeque;
 
-pub const MAX_MEMORY_SIZE: usize = 5;
+use self::robot_helper::check_can_open;
+
+pub const MAX_MEMORY_SIZE: usize = 10;
 
 ///回合行为类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -72,6 +76,8 @@ impl RememberCell {
 ///机器人数据结构体
 pub struct RobotData {
     pub robot_id: u32,
+    pub temp_id: u32,
+    pub is_action: bool, //是否正在行动
     pub battle_data: *mut BattleData,
     pub goal_think: GoalThink,                            //机器人think
     pub robot_status: Option<Box<dyn RobotStatusAction>>, //状态,
@@ -81,9 +87,16 @@ pub struct RobotData {
 
 impl RobotData {
     ///创建robotdata结构体
-    pub fn new(robot_id: u32, battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
+    pub fn new(
+        robot_id: u32,
+        temp_id: u32,
+        battle_data: *mut BattleData,
+        sender: Sender<RobotTask>,
+    ) -> Self {
         RobotData {
             robot_id,
+            temp_id,
+            is_action: false,
             battle_data,
             goal_think: GoalThink::new(),
             robot_status: None,
@@ -100,13 +113,28 @@ impl RobotData {
                 return None;
             }
             let robot = robot.unwrap();
+            let robot_id = robot.user_id;
             for &open_index in robot.flow_data.open_map_cell_vec.iter() {
                 let res = battle_data.tile_map.map_cells.get(open_index);
                 if res.is_none() {
                     continue;
                 }
                 let match_map_cell = res.unwrap();
+
+                let res = check_can_open(match_map_cell, battle_data);
+                if !res {
+                    continue;
+                }
+
                 for re_map_cell in self.remember_map_cell.iter() {
+                    //翻过的跳过
+                    if match_map_cell.index == re_map_cell.cell_index
+                        || match_map_cell.open_user == robot_id
+                    {
+                        continue;
+                    }
+
+                    //不相等的跳过
                     if match_map_cell.id != re_map_cell.cell_id {
                         continue;
                     }
@@ -134,6 +162,10 @@ impl RobotData {
             }
             let battle_data = battle_data.unwrap();
             let robot = battle_data.battle_player.get_mut(&robot_id).unwrap();
+            if robot.robot_data.as_ref().unwrap().is_action {
+                warn!("机器人正在执行!直接返回等待执行完毕！robot_id:{}", robot_id);
+                return;
+            }
             self.goal_think.arbitrate(robot, sender, battle_data_cp);
         }
     }
@@ -157,6 +189,8 @@ impl Clone for RobotData {
     fn clone(&self) -> Self {
         RobotData {
             robot_id: self.robot_id,
+            temp_id: self.temp_id,
+            is_action: self.is_action,
             battle_data: self.battle_data.clone(),
             goal_think: self.goal_think.clone(),
             robot_status: None,

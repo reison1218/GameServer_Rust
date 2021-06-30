@@ -28,6 +28,8 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, TargetPt};
 use tools::templates::character_temp::{CharacterTemp, TransformInheritType};
 
+use super::battle_enum::buff_type::CAN_NOT_MOVED;
+
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
 pub struct BaseAttr {
@@ -211,12 +213,12 @@ impl BattlePlayer {
         battle_player.grade = member.grade;
         let cter = BattleCharacter::init(member)?;
         battle_player.cter = cter;
-        let is_robot = member.is_robot;
 
         //处理机器人部分
-        if is_robot {
+        if member.robot_temp_id > 0 {
             let robot_data = RobotData::new(
                 battle_player.user_id,
+                member.robot_temp_id,
                 battle_data as *mut BattleData,
                 robot_sender,
             );
@@ -224,6 +226,17 @@ impl BattlePlayer {
         }
         battle_player.reset_residue_movement_points();
         Ok(battle_player)
+    }
+
+    pub fn can_be_move(&self) -> bool {
+        let mut buff_function_id;
+        for buff in self.cter.battle_buffs.buffs().values() {
+            buff_function_id = buff.function_id;
+            if buff_function_id == CAN_NOT_MOVED {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn player_die(&mut self, str: String) {

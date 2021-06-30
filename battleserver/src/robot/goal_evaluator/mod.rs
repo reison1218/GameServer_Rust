@@ -20,6 +20,6 @@ pub trait GoalEvaluator: Send + Sync + 'static {
         &self,
         robot: &BattlePlayer,
         sender: Sender<RobotTask>,
-        battle_data: *const BattleData,
+        battle_data: *mut BattleData,
     );
 }

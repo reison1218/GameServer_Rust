@@ -6,7 +6,8 @@ use log::warn;
 pub struct UseSkillRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<*const BattleData>,
+    pub temp_id: u32,
+    pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
@@ -23,7 +24,17 @@ impl UseSkillRobotAction {
         }
     }
 
-    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+    pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
+
+            Some(self.battle_data.unwrap().as_mut().unwrap())
+        }
+    }
+
+    pub fn new(battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         let mut use_skill_action = UseSkillRobotAction::default();
         use_skill_action.battle_data = Some(battle_data);
         use_skill_action.sender = Some(sender);
@@ -46,7 +57,7 @@ impl RobotStatusAction for UseSkillRobotAction {
     }
 
     fn execute(&self) {
-        let battle_data = self.get_battle_data_ref();
+        let battle_data = self.get_battle_data_mut_ref();
         if battle_data.is_none() {
             warn!("the point *const BattleData is null!");
             return;
@@ -78,16 +89,12 @@ impl RobotStatusAction for UseSkillRobotAction {
             v.push(skill);
         }
         if v.is_empty() {
-            battle_player
-                .robot_data
-                .as_ref()
-                .unwrap()
-                .thinking_do_something();
             return;
         }
         let mut rand = rand::thread_rng();
         let index = rand.gen_range(0..v.len());
         let skill = v.get(index).unwrap();
+        let battle_data = self.get_battle_data_mut_ref().unwrap();
         let res = robot_use_skill(battle_data, skill, robot);
         if res {
             info!("机器人释放技能成功！skill_id:{}", skill.id);

@@ -6,7 +6,8 @@ use tools::cmd_code::BattleCode;
 pub struct UseItemRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<*const BattleData>,
+    pub temp_id: u32,
+    pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
@@ -14,11 +15,21 @@ pub struct UseItemRobotAction {
 get_mut_ref!(UseItemRobotAction);
 
 impl UseItemRobotAction {
-    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+    pub fn new(battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         let mut use_item_action = UseItemRobotAction::default();
         use_item_action.battle_data = Some(battle_data);
         use_item_action.sender = Some(sender);
         use_item_action
+    }
+
+    pub fn get_battle_data_mut_ref(&mut self) -> Option<&mut BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
+
+            Some(self.battle_data.unwrap().as_mut().unwrap())
+        }
     }
 }
 

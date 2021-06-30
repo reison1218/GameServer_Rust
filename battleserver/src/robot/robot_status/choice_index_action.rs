@@ -1,5 +1,8 @@
 use super::*;
-use crate::{robot::RobotActionType, room::map_data::MapCellType};
+use crate::{
+    robot::{robot_helper::modify_robot_state, RobotActionType},
+    room::map_data::MapCellType,
+};
 use log::{info, warn};
 use tools::cmd_code::BattleCode;
 
@@ -7,7 +10,8 @@ use tools::cmd_code::BattleCode;
 pub struct ChoiceIndexRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<*const BattleData>,
+    pub temp_id: u32,
+    pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
@@ -23,8 +27,17 @@ impl ChoiceIndexRobotAction {
             Some(self.battle_data.unwrap().as_ref().unwrap())
         }
     }
+    pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
 
-    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+            Some(self.battle_data.unwrap().as_mut().unwrap())
+        }
+    }
+
+    pub fn new(battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         let mut choice_index_action = ChoiceIndexRobotAction::default();
         choice_index_action.battle_data = Some(battle_data);
         choice_index_action.sender = Some(sender);
@@ -47,7 +60,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
     }
 
     fn execute(&self) {
-        let battle_data = self.get_battle_data_ref();
+        let battle_data = self.get_battle_data_mut_ref();
         if battle_data.is_none() {
             warn!("the point *const BattleData is null!");
             return;
@@ -70,7 +83,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
         let mut rand = rand::thread_rng();
         let res = rand.gen_range(0..v.len());
         let index = v.remove(res);
-
+        modify_robot_state(self.robot_id, battle_data);
         //创建机器人任务执行选择站位
         self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
     }

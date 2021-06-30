@@ -11,12 +11,12 @@ use crate::{
     room::map_data::TileMap,
 };
 
-use super::goal_evaluator::use_skill_goal_evaluator::get_battle_data_ref;
+use super::robot_helper::modify_robot_state;
 use super::robot_task_mgr::RobotTask;
 use super::{RobotActionType, RobotData};
 
 ///机器人使用技能
-pub fn robot_use_skill(battle_data: &BattleData, skill: &Skill, robot: &RobotData) -> bool {
+pub fn robot_use_skill(battle_data: &mut BattleData, skill: &Skill, robot: &RobotData) -> bool {
     let robot_id = robot.robot_id;
     //先判断技能释放条件
     let res = skill_condition(battle_data, skill, robot);
@@ -34,12 +34,13 @@ pub fn robot_use_skill(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     //创建机器人任务执行
     let mut robot_task = RobotTask::default();
     robot_task.action_type = RobotActionType::Skill;
+    robot_task.robot_id = robot_id;
     let mut map = Map::new();
-    map.insert("user_id".to_owned(), Value::from(robot_id));
     map.insert("target_index".to_owned(), Value::from(targets));
     map.insert("cmd".to_owned(), Value::from(BattleCode::Action.into_u32()));
     map.insert("skill_id".to_owned(), Value::from(skill_id));
     robot_task.data = Value::from(map);
+    modify_robot_state(robot_id, battle_data);
     let res = robot.sender.send(robot_task);
     if let Err(e) = res {
         error!("{:?}", e);
@@ -130,10 +131,10 @@ pub fn skill_target(
         //除自己外最大血量的目标
         i if [123, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
             let res = get_hp_max_cter(battle_data, robot_id);
-            if res.is_none() {
-                warn!("get_hp_max_cter res is None!")
+            match res {
+                Some(res) => targets.push(res),
+                None => warn!("get_hp_max_cter res is None!"),
             }
-            targets.push(res.unwrap());
         }
         //随机未知地图块
         i if [113].contains(&i) => {
@@ -145,10 +146,9 @@ pub fn skill_target(
         //获得记忆队列中的地图块
         i if [223].contains(&i) => {
             let res = skill_open_near_cell_robot(battle_data, robot);
-            if res.is_none() {
-                warn!("")
+            if let Some(res) = res {
+                targets.push(res);
             }
-            targets.push(res.unwrap());
         }
         //直线三个aoe
         i if [411].contains(&i) => {
@@ -214,6 +214,10 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
         }
         //过滤商店
         if map_cell.cell_type == MapCellType::MarketCell {
+            continue;
+        }
+        //过滤已经翻开的
+        if map_cell.open_user > 0 || map_cell.pair_index.is_some() {
             continue;
         }
         let mut is_con = false;
@@ -624,7 +628,6 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
 
 pub fn can_use_skill(battle_data: &BattleData, battle_player: &BattlePlayer) -> bool {
     let robot = battle_player.robot_data.as_ref().unwrap();
-    let battle_data = get_battle_data_ref(battle_player);
     for skill in battle_player.cter.skills.values() {
         let res = skill_condition(battle_data, skill, robot);
         if !res {

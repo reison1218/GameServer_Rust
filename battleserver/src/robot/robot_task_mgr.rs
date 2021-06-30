@@ -14,14 +14,16 @@ use super::RobotActionType;
 #[derive(Debug, Clone)]
 pub struct RobotTask {
     pub action_type: RobotActionType, //要执行的命令
-    pub delay: u64,                   //要延迟执行的时间
-    pub data: JsonValue,              //数据
+    pub robot_id: u32,
+    pub delay: u64,      //要延迟执行的时间
+    pub data: JsonValue, //数据
 }
 
 impl Default for RobotTask {
     fn default() -> Self {
         RobotTask {
             action_type: RobotActionType::Attack,
+            robot_id: 0,
             delay: 5000,
             data: JsonValue::default(),
         }
@@ -35,7 +37,6 @@ pub fn robot_init_timer(bm: Lock) {
         let mut lock = block_on(bm.lock());
         lock.robot_task_sender = Some(sender);
         std::mem::drop(lock);
-
         loop {
             let res = rec.recv();
             if let Err(e) = res {
@@ -78,11 +79,11 @@ pub fn choice_index(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     let mut proto = C_CHOOSE_INDEX::new();
     proto.set_index(target_index);
     packet.set_data(proto.write_to_bytes().unwrap().as_slice());
@@ -102,11 +103,11 @@ pub fn buy(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let merchandise_id = map.get("merchandise_id").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     let mut ca = C_BUY::new();
     ca.merchandise_id = merchandise_id;
     packet.set_data(ca.write_to_bytes().unwrap().as_slice());
@@ -125,10 +126,10 @@ pub fn unlock(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     let mut ca = C_ACTION::new();
     ca.target_index.push(target_index);
     ca.action_type = ActionType::EndShowMapCell.into_u32();
@@ -149,11 +150,11 @@ pub fn attack(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let target_index = map.get("target_index").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     let mut ca = C_ACTION::new();
     ca.target_index.push(target_index);
     ca.action_type = ActionType::Attack.into_u32();
@@ -174,11 +175,11 @@ pub fn open_cell(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let value = map.get("value").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     let mut ca = C_ACTION::new();
     ca.value = value;
     ca.action_type = ActionType::Open.into_u32();
@@ -199,7 +200,7 @@ pub fn skip_turn(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let user_id = task.robot_id;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
 
     let mut packet = Packet::new(cmd, 0, user_id);
@@ -222,7 +223,7 @@ pub fn use_skill(rm: Lock, task: RobotTask) {
         return;
     }
     let map = res.unwrap();
-    let user_id = map.get("user_id").unwrap().as_u64().unwrap() as u32;
+    let robot_id = task.robot_id;
     let target_index = map.get("target_index").unwrap().as_array().unwrap();
     let skill_id = map.get("skill_id").unwrap().as_u64().unwrap() as u32;
     let cmd = map.get("cmd").unwrap().as_u64().unwrap() as u32;
@@ -234,7 +235,7 @@ pub fn use_skill(rm: Lock, task: RobotTask) {
     }
     proto.value = skill_id;
 
-    let mut packet = Packet::new(cmd, 0, user_id);
+    let mut packet = Packet::new(cmd, 0, robot_id);
     packet.set_data(proto.write_to_bytes().unwrap().as_slice());
     let lock = block_on(rm.lock());
     //拿到BattleMgr的可变指针

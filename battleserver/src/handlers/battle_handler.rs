@@ -289,8 +289,11 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         let battle_player = room.battle_data.get_battle_player_mut(None, false).unwrap();
         let current_cter_is_died = battle_player.is_died();
         //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
-        if !current_cter_is_died || battle_player.robot_data.is_some() {
-            battle_player.robot_start_action(battle_data_ptr);
+        if !current_cter_is_died && battle_player.is_robot() {
+            let robot_data = battle_player.robot_data.as_ref().unwrap();
+            if !robot_data.is_action {
+                battle_player.robot_start_action(battle_data_ptr);
+            }
         }
         //判断是否进行结算
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
@@ -464,6 +467,10 @@ fn open_map_cell(
     target_map_cell_index: usize,
     au: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
+    info!(
+        "open_map_cell!user_id:{},index:{}",
+        user_id, target_map_cell_index
+    );
     let battle_data = rm.battle_data.borrow();
     let battle_player = rm.battle_data.battle_player.get(&user_id).unwrap();
     let cter_index = battle_player.get_map_cell_index();

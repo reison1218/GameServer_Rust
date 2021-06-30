@@ -7,6 +7,7 @@ pub struct RobotTemp {
     id: u32,
     pub cter_id: u32,
     pub skills: Vec<u32>,
+    pub merchandises: Vec<u32>,
 }
 
 impl Template for RobotTemp {}
@@ -53,5 +54,6 @@ impl TemplateMgrTrait for RobotTempMgr {
     fn clear(&mut self) {
         self.temps.clear();
         self.cters.clear();
+        self.cter_ids.clear();
     }
 }

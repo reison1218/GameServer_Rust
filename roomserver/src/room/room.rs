@@ -147,7 +147,7 @@ impl Room {
 
     pub fn is_all_robot(&self) -> bool {
         for member in self.members.values() {
-            if !member.is_robot {
+            if member.robot_temp_id > 0 {
                 return false;
             }
         }
@@ -253,7 +253,7 @@ impl Room {
         }
         let member = member.unwrap();
         //如果是机器人，则返回，不发送
-        if member.is_robot {
+        if member.robot_temp_id > 0 {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
@@ -267,7 +267,7 @@ impl Room {
         let mut confirm_count = 0;
         for member in self.members.values() {
             //如果是机器人，跳过
-            if member.is_robot {
+            if member.robot_temp_id > 0 {
                 continue;
             }
             if member.state == MemberState::AwaitConfirm {
@@ -278,7 +278,7 @@ impl Room {
         let mut member_id;
         for member in self.members.values() {
             //如果是机器人，跳过
-            if member.is_robot {
+            if member.robot_temp_id > 0 {
                 continue;
             }
             if member.state != MemberState::AwaitConfirm {
@@ -305,7 +305,7 @@ impl Room {
         for member in self.members.values() {
             user_id = member.user_id;
             //如果是机器人，则返回，不发送
-            if member.is_robot {
+            if member.robot_temp_id > 0 {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
@@ -578,7 +578,7 @@ impl Room {
     pub fn get_user(&self) -> u32 {
         let mut res = 0;
         for member in self.members.values() {
-            if member.is_robot {
+            if member.robot_temp_id > 0 {
                 continue;
             }
             let member_id = member.user_id;

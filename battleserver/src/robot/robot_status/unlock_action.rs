@@ -1,5 +1,5 @@
 use super::*;
-use crate::robot::RobotActionType;
+use crate::robot::{robot_helper::modify_robot_state, RobotActionType};
 use log::warn;
 use tools::cmd_code::BattleCode;
 
@@ -7,7 +7,8 @@ use tools::cmd_code::BattleCode;
 pub struct UnlockRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<*const BattleData>,
+    pub temp_id: u32,
+    pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
@@ -23,8 +24,17 @@ impl UnlockRobotAction {
             Some(self.battle_data.unwrap().as_ref().unwrap())
         }
     }
+    pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
 
-    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+            Some(self.battle_data.unwrap().as_mut().unwrap())
+        }
+    }
+
+    pub fn new(battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         let mut attack_action = UnlockRobotAction::default();
         attack_action.battle_data = Some(battle_data);
         attack_action.sender = Some(sender);
@@ -47,15 +57,16 @@ impl RobotStatusAction for UnlockRobotAction {
     }
 
     fn execute(&self) {
-        let res = self.get_battle_data_ref();
+        let res = self.get_battle_data_mut_ref();
         if res.is_none() {
             warn!("the *const BattleData is null!");
             return;
         }
-        let res = res.unwrap();
+        let battle_data = res.unwrap();
 
-        let battle_player = res.battle_player.get(&self.robot_id).unwrap();
+        let battle_player = battle_data.battle_player.get(&self.robot_id).unwrap();
         let target_index: usize = battle_player.get_map_cell_index();
+        modify_robot_state(self.robot_id, battle_data);
         self.send_2_battle(target_index, RobotActionType::Unlock, BattleCode::Action);
     }
 

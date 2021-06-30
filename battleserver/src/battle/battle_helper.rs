@@ -677,10 +677,12 @@ impl BattleData {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let battle_player = self.get_battle_player(Some(user_id), false);
+        let battle_player = self.get_battle_player_mut(Some(user_id), false);
         match battle_player {
             Ok(battle_player) => {
                 if battle_player.is_robot() {
+                    let robot_data = battle_player.robot_data.as_mut().unwrap();
+                    robot_data.is_action = false;
                     return;
                 }
             }
@@ -695,8 +697,10 @@ impl BattleData {
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let cmd = cmd.into_u32();
-        for battle_player in self.battle_player.values() {
+        for battle_player in self.battle_player.values_mut() {
             if battle_player.robot_data.is_some() {
+                let robot_data = battle_player.robot_data.as_mut().unwrap();
+                robot_data.is_action = false;
                 continue;
             }
             let user_id = battle_player.user_id;
@@ -1179,7 +1183,6 @@ impl BattleData {
         let judge_temp = TEMPLATES.skill_judge_temp_mgr().get_temp(&skill_judge)?;
         let target_type = TargetType::try_from(judge_temp.target);
         if let Err(e) = target_type {
-            warn!("{:?}", e);
             anyhow::bail!("{:?}", e)
         }
         let battle_player = self.get_battle_player(Some(user_id), true).unwrap();
@@ -1193,7 +1196,6 @@ impl BattleData {
                         "HP_LIMIT_GT!hp of cter <= {}!skill_judge_id:{}",
                         judge_temp.par1, judge_temp.id
                     );
-                    warn!("{:?}", err_str);
                     anyhow::bail!("{:?}", err_str)
                 } else if LIMIT_TURN_TIMES == judge_temp.id
                     && battle_player
@@ -1205,7 +1207,6 @@ impl BattleData {
                     battle_player.get_user_id(),
                     skill_id.unwrap(),
                     skill_judge);
-                    warn!("{:?}", err_str);
                     anyhow::bail!("{:?}", err_str)
                 } else if LIMIT_ROUND_TIMES == judge_temp.id
                     && battle_player
@@ -1217,7 +1218,6 @@ impl BattleData {
                     battle_player.get_user_id(),
                     skill_id.unwrap(),
                     skill_judge);
-                    warn!("{:?}", err_str);
                     anyhow::bail!("{:?}", err_str)
                 } else if PAIR_LIMIT == judge_temp.id
                     && !battle_player
@@ -1229,7 +1229,6 @@ impl BattleData {
                     battle_player.get_user_id(),
                     skill_id.unwrap(),
                     skill_judge);
-                    warn!("{:?}", err_str);
                     anyhow::bail!("{:?}", err_str)
                 }
             }

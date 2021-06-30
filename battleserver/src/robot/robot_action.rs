@@ -25,8 +25,8 @@ pub trait RobotStatusAction {
     ) {
         let mut robot_task = RobotTask::default();
         robot_task.action_type = robot_action_type;
+        robot_task.robot_id = self.get_robot_id();
         let mut map = Map::new();
-        map.insert("user_id".to_owned(), JsonValue::from(self.get_robot_id()));
         map.insert("target_index".to_owned(), JsonValue::from(target_index));
         map.insert("cmd".to_owned(), JsonValue::from(cmd.into_u32()));
         robot_task.data = JsonValue::from(map);

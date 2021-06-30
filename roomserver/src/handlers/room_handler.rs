@@ -633,7 +633,7 @@ pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
 
         //初始化成员
         let mut member = Member::default();
-        member.is_robot = true;
+        member.robot_temp_id = temp_id;
         member.user_id = robot_id;
         member.state = MemberState::Ready;
         member.nick_name = "robot".to_owned();

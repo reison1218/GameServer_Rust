@@ -10,7 +10,7 @@ pub struct Member {
     pub grade: u8,                      //玩家grade
     pub league: League,                 //段位数据
     pub team_id: u8,                    //玩家所属队伍id
-    pub is_robot: bool,                 //是否的机器人
+    pub robot_temp_id: u32,             //是否的机器人,配置id
     pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
     pub chose_cter: Character,          //玩家已经选择的角色
     pub punish_match: PunishMatch,      //匹配惩罚数据
@@ -28,7 +28,7 @@ impl From<&MemberPt> for Member {
         m.join_time = mp.join_time;
         m.team_id = mp.team_id as u8;
         m.chose_cter = Character::from(mp.cter.as_ref().unwrap());
-        m.is_robot = mp.is_robot;
+        m.robot_temp_id = mp.robot_temp_id;
         m
     }
 }

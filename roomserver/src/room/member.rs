@@ -45,7 +45,7 @@ pub struct Member {
     pub league: League,                 //段位数据
     pub state: MemberState,             //玩家状态
     pub team_id: u8,                    //玩家所属队伍id
-    pub is_robot: bool,                 //是否的机器人
+    pub robot_temp_id: u32,             //是否的机器人,配置id
     pub cters: HashMap<u32, Character>, //玩家拥有的角色数组
     pub chose_cter: Character,          //玩家已经选择的角色
     pub punish_match: PunishMatch,      //匹配惩罚数据
@@ -128,7 +128,7 @@ impl Into<MemberPt> for &Member {
         mp.team_id = self.team_id as u32;
         mp.join_time = self.join_time;
         mp.set_league(self.league.into_pt());
-        mp.is_robot = self.is_robot;
+        mp.robot_temp_id = self.robot_temp_id;
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
         mp

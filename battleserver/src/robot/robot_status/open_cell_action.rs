@@ -2,8 +2,11 @@ use std::borrow::Borrow;
 
 use super::*;
 use crate::{
-    battle::{battle_player::BattlePlayer, battle_trigger::TriggerEvent},
-    robot::RobotActionType,
+    battle::battle_player::BattlePlayer,
+    robot::{
+        robot_helper::{check_can_open, modify_robot_state},
+        RobotActionType,
+    },
     JsonValue,
 };
 use log::{error, warn};
@@ -14,7 +17,8 @@ use tools::cmd_code::BattleCode;
 pub struct OpenCellRobotAction {
     pub robot_id: u32,
     pub cter_id: u32,
-    pub battle_data: Option<*const BattleData>,
+    pub temp_id: u32,
+    pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
     pub sender: Option<Sender<RobotTask>>,
 }
@@ -28,8 +32,17 @@ impl OpenCellRobotAction {
             Some(self.battle_data.unwrap().as_ref().unwrap())
         }
     }
+    pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
+        unsafe {
+            if self.battle_data.unwrap().is_null() {
+                return None;
+            }
 
-    pub fn new(battle_data: *const BattleData, sender: Sender<RobotTask>) -> Self {
+            Some(self.battle_data.unwrap().as_mut().unwrap())
+        }
+    }
+
+    pub fn new(battle_data: *mut BattleData, sender: Sender<RobotTask>) -> Self {
         let mut open_cell = OpenCellRobotAction::default();
         open_cell.battle_data = Some(battle_data);
         open_cell.sender = Some(sender);
@@ -54,7 +67,7 @@ impl RobotStatusAction for OpenCellRobotAction {
     }
 
     fn execute(&self) {
-        let battle_data = self.get_battle_data_ref();
+        let battle_data = self.get_battle_data_mut_ref();
         if battle_data.is_none() {
             warn!("the point *const BattleData is null!");
             return;
@@ -73,6 +86,18 @@ impl RobotStatusAction for OpenCellRobotAction {
             //跳过自己已翻开的
             if map_cell.open_user == robot_id || map_cell.user_id == robot_id {
                 continue;
+            }
+            //跳过锁住的地图块
+            let res = check_can_open(map_cell, battle_data);
+            if !res {
+                continue;
+            }
+            //判断地图块上面是否有人
+            let player = battle_data.battle_player.get(&map_cell.open_user);
+            if let Some(player) = player {
+                if !player.can_be_move() {
+                    continue;
+                }
             }
             v.push(*key);
         }
@@ -143,6 +168,7 @@ impl RobotStatusAction for OpenCellRobotAction {
                 info!("没选中，执行跳过");
             }
         }
+        modify_robot_state(self.robot_id, battle_data);
         self.send_2_battle(indes_res, action_type, BattleCode::Action);
     }
 
@@ -170,8 +196,8 @@ impl RobotStatusAction for OpenCellRobotAction {
     ) {
         let mut robot_task = RobotTask::default();
         robot_task.action_type = robot_action_type;
+        robot_task.robot_id = self.robot_id;
         let mut map = Map::new();
-        map.insert("user_id".to_owned(), JsonValue::from(self.get_robot_id()));
         map.insert("value".to_owned(), JsonValue::from(target_index));
         map.insert("cmd".to_owned(), JsonValue::from(cmd.into_u32()));
         robot_task.data = JsonValue::from(map);
@@ -208,13 +234,13 @@ pub fn cal_pair_num(
         let cell_index = *cell_index;
         let map_cell = battle_data.tile_map.map_cells.get(cell_index).unwrap();
         for re_cell in remember_cells.iter() {
-            //如果是已经翻开了的，就跳过
-            if cell_index == re_cell.cell_index {
+            //跳过自己已翻开的
+            if map_cell.open_user == robot_id || map_cell.user_id == robot_id {
                 continue;
             }
 
-            let res = battle_data.before_moved_trigger(robot_id, map_cell.user_id);
-            if let Err(_) = res {
+            let res = check_can_open(map_cell, battle_data);
+            if !res {
                 continue;
             }
 

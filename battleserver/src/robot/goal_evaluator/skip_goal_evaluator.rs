@@ -35,11 +35,12 @@ impl GoalEvaluator for SkipGoalEvaluator {
         &self,
         robot: &BattlePlayer,
         sender: Sender<RobotTask>,
-        battle_data: *const BattleData,
+        battle_data: *mut BattleData,
     ) {
         let mut res = SkipRobotAction::new(battle_data, sender);
         res.cter_id = robot.get_cter_id();
         res.robot_id = robot.get_user_id();
+        res.temp_id = robot.robot_data.as_ref().unwrap().temp_id;
         robot.change_robot_status(Box::new(res));
     }
 }

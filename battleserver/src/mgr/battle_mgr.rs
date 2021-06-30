@@ -51,12 +51,14 @@ impl BattleMgr {
     }
 
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
-        let room = self.get_room_ref(&user_id);
+        let room = self.get_room_mut(&user_id);
         match room {
             Some(room) => {
-                let battle_player = room.get_battle_player_ref(&user_id);
+                let battle_player = room.get_battle_player_mut_ref(&user_id);
                 if let Some(battle_player) = battle_player {
                     if battle_player.is_robot() {
+                        let robot_data = battle_player.robot_data.as_mut().unwrap();
+                        robot_data.is_action = false;
                         return;
                     }
                 }
