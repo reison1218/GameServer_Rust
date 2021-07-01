@@ -6,7 +6,7 @@ use crate::{
     battle::battle::BattleData,
     robot::{
         goal_evaluator::buy_goal_evaluator::check_buy, robot_action::RobotStatusAction,
-        robot_helper::modify_robot_state, robot_task_mgr::RobotTask, RobotActionType,
+        robot_task_mgr::RobotTask, RobotActionType,
     },
 };
 
@@ -23,15 +23,6 @@ pub struct BuyRobotAction {
 }
 
 impl BuyRobotAction {
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
-    }
-
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {
@@ -107,10 +98,8 @@ impl RobotStatusAction for BuyRobotAction {
         let res = check_buy(robot, self.temp_id);
         if !res.is_empty() && is_at_market {
             let merchandise_id = *res.get(0).unwrap() as usize;
-            modify_robot_state(self.robot_id, battle_data);
             self.send_2_battle(0, merchandise_id, RobotActionType::Buy, BattleCode::Buy);
         } else if !res.is_empty() && !is_at_market && robot.flow_data.residue_movement_points > 0 {
-            modify_robot_state(self.robot_id, battle_data);
             self.send_2_battle(
                 market_cell_index,
                 0,

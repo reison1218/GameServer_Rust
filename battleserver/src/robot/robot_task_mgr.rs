@@ -24,7 +24,7 @@ impl Default for RobotTask {
         RobotTask {
             action_type: RobotActionType::Attack,
             robot_id: 0,
-            delay: 5000,
+            delay: 3000,
             data: JsonValue::default(),
         }
     }

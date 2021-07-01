@@ -1,6 +1,7 @@
 use crate::robot::{RememberCell, RobotData};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use rand::Rng;
 
 use super::MAX_MEMORY_SIZE;
 
@@ -29,28 +30,40 @@ impl RobotData {
     pub fn trigger_see_map_cell(&mut self, rc: RememberCell) {
         //如果数量大于5则忘记尾端
         if self.remember_map_cell.len() > MAX_MEMORY_SIZE {
-            self.remember_map_cell.pop_back();
+            let mut rand = rand::thread_rng();
+            let res = rand.gen_range(0..100);
+            //50%机率忘记队列前面的
+            if res <= 50 {
+                self.remember_map_cell.pop_back();
+            }
         }
         //如果这个块已经被记忆，则刷新位置
-        let mut rm_index = 0_usize;
-        for i in self.remember_map_cell.iter() {
-            rm_index += 1;
-            if i.cell_index == rc.cell_index {
+        let mut rm_index = None;
+        for index in 0..self.remember_map_cell.len() {
+            let cell = self.remember_map_cell.get(index).unwrap();
+            if cell.cell_index == rc.cell_index {
+                rm_index = Some(index);
                 break;
             }
         }
-        self.remember_map_cell.remove(rm_index);
+        if let Some(rm_index) = rm_index {
+            self.remember_map_cell.remove(rm_index);
+        }
         self.remember_map_cell.push_front(rc);
+        println!("robot:{},re:{:?}", self.robot_id, self.remember_map_cell)
     }
 
     pub fn trigger_pair_map_cell(&mut self, rc: RememberCell) {
-        let mut index = 0_usize;
-        for i in self.remember_map_cell.iter() {
-            if i.cell_index == rc.cell_index {
+        let mut rm_index = None;
+        for index in 0..self.remember_map_cell.len() {
+            let cell = self.remember_map_cell.get(index).unwrap();
+            if cell.cell_index == rc.cell_index {
+                rm_index = Some(index);
                 break;
             }
-            index += 1;
         }
-        self.remember_map_cell.remove(index);
+        if let Some(rm_index) = rm_index {
+            self.remember_map_cell.remove(rm_index);
+        }
     }
 }

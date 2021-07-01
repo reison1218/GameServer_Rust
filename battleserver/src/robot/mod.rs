@@ -12,7 +12,6 @@ use crate::robot::goal_think::GoalThink;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::robot_trigger::RobotTriggerType;
-use crossbeam::atomic::AtomicCell;
 use crossbeam::channel::Sender;
 use log::warn;
 use num_enum::IntoPrimitive;
@@ -58,7 +57,7 @@ impl Default for RobotActionType {
 }
 
 ///记忆地图块结构体
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct RememberCell {
     pub cell_index: usize, //地图块下标
     pub cell_id: u32,      //地图块id
@@ -77,7 +76,6 @@ impl RememberCell {
 pub struct RobotData {
     pub robot_id: u32,
     pub temp_id: u32,
-    pub is_action: bool, //是否正在行动
     pub battle_data: *mut BattleData,
     pub goal_think: GoalThink,                            //机器人think
     pub robot_status: Option<Box<dyn RobotStatusAction>>, //状态,
@@ -96,7 +94,6 @@ impl RobotData {
         RobotData {
             robot_id,
             temp_id,
-            is_action: false,
             battle_data,
             goal_think: GoalThink::new(),
             robot_status: None,
@@ -121,7 +118,7 @@ impl RobotData {
                 }
                 let match_map_cell = res.unwrap();
 
-                let res = check_can_open(match_map_cell, battle_data);
+                let res = check_can_open(robot_id, match_map_cell, battle_data);
                 if !res {
                     continue;
                 }
@@ -162,10 +159,6 @@ impl RobotData {
             }
             let battle_data = battle_data.unwrap();
             let robot = battle_data.battle_player.get_mut(&robot_id).unwrap();
-            if robot.robot_data.as_ref().unwrap().is_action {
-                warn!("机器人正在执行!直接返回等待执行完毕！robot_id:{}", robot_id);
-                return;
-            }
             self.goal_think.arbitrate(robot, sender, battle_data_cp);
         }
     }
@@ -190,7 +183,6 @@ impl Clone for RobotData {
         RobotData {
             robot_id: self.robot_id,
             temp_id: self.temp_id,
-            is_action: self.is_action,
             battle_data: self.battle_data.clone(),
             goal_think: self.goal_think.clone(),
             robot_status: None,

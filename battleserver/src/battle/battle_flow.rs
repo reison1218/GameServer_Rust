@@ -7,7 +7,6 @@ use crate::battle::battle_enum::SkillConsumeType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
-use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
 use crate::room::RoomType;
@@ -508,15 +507,6 @@ impl BattleData {
             if let Err(e) = res {
                 anyhow::bail!("{:?}", e)
             }
-
-            let robot_trigger_type;
-            if is_pair {
-                robot_trigger_type = RobotTriggerType::MapCellPair;
-            } else {
-                robot_trigger_type = RobotTriggerType::SeeMapCell;
-            }
-            //调用触发器
-            self.map_cell_trigger_for_robot(index, robot_trigger_type);
             Ok(Some(v))
         }
     }

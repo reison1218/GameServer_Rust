@@ -4,6 +4,7 @@ use crate::battle::battle_enum::skill_judge_type::{
 };
 use crate::battle::battle_enum::{AttackState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_trigger::TriggerEvent;
+use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::map_data::{MapCell, MapCellType, TileMap};
 use crate::room::MEMBER_MAX;
 use crate::task_timer::{Task, TaskCmd};
@@ -515,13 +516,10 @@ impl BattleData {
         let map_cell_ptr = map_cell.unwrap() as *mut MapCell;
         unsafe {
             let mut is_pair = false;
-            let mut rm_index = 0;
             let map_cell_mut = map_cell_ptr.as_mut().unwrap();
             let map_cell_id = map_cell_mut.id;
-
-            for (vec_index, &open_index) in
-                battle_player.flow_data.open_map_cell_vec.iter().enumerate()
-            {
+            let mut delete_v = vec![];
+            for (_, &open_index) in battle_player.flow_data.open_map_cell_vec.iter().enumerate() {
                 //处理配对逻辑
                 let res = self.tile_map.map_cells.get_mut(open_index);
                 if res.is_none() {
@@ -552,21 +550,39 @@ impl BattleData {
                 }
                 self.tile_map.un_pair_map.remove(&match_map_cell.index);
                 self.tile_map.un_pair_map.remove(&map_cell_mut.index);
+                delete_v.push(match_map_cell.index);
+                delete_v.push(map_cell_mut.index);
                 info!(
                     "user:{} open map_cell pair! last_map_cell:{},now_map_cell:{}",
                     battle_player.get_user_id(),
                     match_map_cell_index,
                     index
                 );
-                is_pair = true;
-                rm_index = vec_index;
                 break;
             }
+
+            let robot_trigger_type;
             if !is_pair {
+                robot_trigger_type = RobotTriggerType::SeeMapCell;
                 battle_player.flow_data.open_map_cell_vec.push(index);
+                //调用触发器
+                self.map_cell_trigger_for_robot(index, robot_trigger_type);
             } else {
-                battle_player.flow_data.open_map_cell_vec.remove(rm_index);
                 battle_player.pair_reward_movement_points();
+                let open_map_cell_vec = battle_player.flow_data.open_map_cell_vec.clone();
+                robot_trigger_type = RobotTriggerType::MapCellPair;
+                for &d_index in delete_v.iter() {
+                    //调用触发器
+                    for (index, &cell_index) in open_map_cell_vec.iter().enumerate() {
+                        if d_index != cell_index {
+                            continue;
+                        }
+                        battle_player.flow_data.open_map_cell_vec.remove(index);
+                    }
+                }
+                for &index in delete_v.iter() {
+                    self.map_cell_trigger_for_robot(index, robot_trigger_type);
+                }
             }
             is_pair
         }
@@ -677,12 +693,10 @@ impl BattleData {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let battle_player = self.get_battle_player_mut(Some(user_id), false);
+        let battle_player = self.get_battle_player(Some(user_id), false);
         match battle_player {
             Ok(battle_player) => {
                 if battle_player.is_robot() {
-                    let robot_data = battle_player.robot_data.as_mut().unwrap();
-                    robot_data.is_action = false;
                     return;
                 }
             }
@@ -697,10 +711,8 @@ impl BattleData {
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let cmd = cmd.into_u32();
-        for battle_player in self.battle_player.values_mut() {
+        for battle_player in self.battle_player.values() {
             if battle_player.robot_data.is_some() {
-                let robot_data = battle_player.robot_data.as_mut().unwrap();
-                robot_data.is_action = false;
                 continue;
             }
             let user_id = battle_player.user_id;

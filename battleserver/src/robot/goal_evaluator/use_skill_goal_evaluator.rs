@@ -24,10 +24,14 @@ pub fn get_battle_data_ref(battle_player: &BattlePlayer) -> &BattleData {
 
 impl GoalEvaluator for UseSkillGoalEvaluator {
     fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
+        if !battle_player.cter.map_cell_index_is_choiced() {
+            return 0;
+        }
         //如果可以使用技能，则直接期望值拉满
         let robot = battle_player.robot_data.as_ref().unwrap();
         let battle_data = get_battle_data_ref(battle_player);
         for skill in battle_player.cter.skills.values() {
+            //变身技能先跳过
             let res = skill_condition(battle_data, skill, robot);
             if !res {
                 continue;

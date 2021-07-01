@@ -11,9 +11,12 @@ pub struct SkipGoalEvaluator {
 }
 
 impl GoalEvaluator for SkipGoalEvaluator {
-    fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
+    fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
+        if !robot.cter.map_cell_index_is_choiced() {
+            return 0;
+        }
         unsafe {
-            let battle_data = battle_player
+            let battle_data = robot
                 .robot_data
                 .as_ref()
                 .unwrap()
@@ -21,9 +24,9 @@ impl GoalEvaluator for SkipGoalEvaluator {
                 .as_ref()
                 .unwrap();
             //如果什么都干不了了，则结束turn期望值拉满
-            if battle_player.flow_data.residue_movement_points == 0
-                && !battle_player.is_can_attack()
-                && !can_use_skill(battle_data, battle_player)
+            if robot.flow_data.residue_movement_points == 0
+                && !robot.is_can_attack()
+                && !can_use_skill(battle_data, robot)
             {
                 return 100;
             }

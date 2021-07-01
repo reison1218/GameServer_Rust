@@ -436,6 +436,13 @@ impl BattlePlayer {
         self.clear_turn_open_map_cell();
         self.cter.index_data.last_map_cell_index = None;
         self.flow_data.round_limit_skills.clear();
+        self.robot_reset();
+    }
+
+    pub fn robot_reset(&mut self) {
+        if self.is_robot() {
+            self.robot_data.as_mut().unwrap().remember_map_cell.clear();
+        }
     }
 
     ///回合结算

@@ -27,6 +27,7 @@ pub enum MerchandisType {
 
 ///购物
 pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u32) {
+    let battle_data_ptr = battle_data as *mut BattleData;
     let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
     let merchandise_temp = crate::TEMPLATES.merchandise_temp_mgr();
     let temp = merchandise_temp.get_temp(&merchandise_id).unwrap();
@@ -68,5 +69,10 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
         Err(e) => {
             error!("{:?}", e);
         }
+    }
+    let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
+    //如果是机器人，继续行动
+    if battle_player.is_robot() {
+        battle_player.robot_start_action(battle_data_ptr);
     }
 }

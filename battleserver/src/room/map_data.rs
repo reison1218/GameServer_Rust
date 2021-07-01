@@ -112,6 +112,11 @@ impl MapCell {
     pub fn is_world(&self) -> bool {
         self.cell_type == MapCellType::WorldCell
     }
+
+    pub fn is_market(&self) -> bool {
+        self.cell_type == MapCellType::MarketCell
+    }
+
     pub fn check_is_locked(&self) -> bool {
         for buff in self.buffs.values() {
             if buff.function_id == LOCKED {

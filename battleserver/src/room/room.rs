@@ -263,12 +263,10 @@ impl Room {
 
     ///回其他服消息
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
-        let battle_player = self.get_battle_player_mut_ref(&user_id);
+        let battle_player = self.get_battle_player_ref(&user_id);
         match battle_player {
             Some(battle_player) => {
                 if battle_player.is_robot() {
-                    let robot_data = battle_player.robot_data.as_mut().unwrap();
-                    robot_data.is_action = false;
                     return;
                 }
             }
@@ -345,7 +343,7 @@ impl Room {
 
     pub fn is_all_robot(&self) -> bool {
         for member in self.members.values() {
-            if member.robot_temp_id > 0 {
+            if member.robot_temp_id == 0 {
                 return false;
             }
         }
@@ -501,15 +499,13 @@ impl Room {
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
-        let member = self.battle_data.battle_player.get_mut(&user_id);
+        let member = self.battle_data.battle_player.get(&user_id);
         if let None = member {
             return;
         }
         let member = member.unwrap();
         //如果是机器人，则返回，不发送
         if member.robot_data.is_some() {
-            let robot_data = member.robot_data.as_mut().unwrap();
-            robot_data.is_action = false;
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
@@ -523,15 +519,13 @@ impl Room {
         let mut user_id;
         for member in self.members.values_mut() {
             user_id = member.user_id;
-            let battle_player = self.battle_data.battle_player.get_mut(&user_id);
+            let battle_player = self.battle_data.battle_player.get(&user_id);
             //如果是机器人，则返回，不发送
             if battle_player.is_none() {
                 continue;
             }
             let battle_player = battle_player.unwrap();
             if battle_player.robot_data.is_some() {
-                let robot_data = battle_player.robot_data.as_mut().unwrap();
-                robot_data.is_action = false;
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
@@ -882,6 +876,10 @@ impl Room {
         for battle_cter in self.battle_data.battle_player.values() {
             let cter_pt = battle_cter.convert_to_battle_cter_pt();
             sbsn.battle_cters.push(cter_pt);
+        }
+        if debug {
+            sbsn.map_data = self.battle_data.tile_map.to_json_for_debug().to_string();
+            println!("{:?}", sbsn.map_data);
         }
         let res = sbsn.write_to_bytes();
         if let Err(e) = res {

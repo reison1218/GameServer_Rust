@@ -50,7 +50,7 @@ impl GoalThink {
     ///仲裁goal
     pub fn arbitrate(
         &self,
-        robot: &mut BattlePlayer,
+        robot: &BattlePlayer,
         sender: Sender<RobotTask>,
         battle_data: *mut BattleData,
     ) {

@@ -15,15 +15,6 @@ pub struct UseSkillRobotAction {
 get_mut_ref!(UseSkillRobotAction);
 
 impl UseSkillRobotAction {
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
-    }
-
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {

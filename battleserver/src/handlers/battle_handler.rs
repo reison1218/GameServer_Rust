@@ -289,11 +289,15 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         let battle_player = room.battle_data.get_battle_player_mut(None, false).unwrap();
         let current_cter_is_died = battle_player.is_died();
         //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
-        if !current_cter_is_died && battle_player.is_robot() {
-            let robot_data = battle_player.robot_data.as_ref().unwrap();
-            if !robot_data.is_action {
-                battle_player.robot_start_action(battle_data_ptr);
-            }
+        if !current_cter_is_died
+            && battle_player.is_robot()
+            && battle_player.get_user_id() == user_id
+        {
+            // let robot_data = battle_player.robot_data.as_ref().unwrap();
+            // if !robot_data.is_action {
+            //     battle_player.robot_start_action(battle_data_ptr);
+            // }
+            battle_player.robot_start_action(battle_data_ptr);
         }
         //判断是否进行结算
         let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
@@ -634,8 +638,8 @@ fn skip_turn(
     let need_refresh_map = rm.battle_data.check_refresh_map();
     //如果需要刷新地图，走地图刷新next turn逻辑
     if need_refresh_map {
-        rm.battle_data.choice_index_next_turn();
         rm.refresh_map();
+        rm.battle_data.choice_index_next_turn();
     } else {
         //否则走战斗next turn逻辑
         rm.battle_data.next_turn(false);

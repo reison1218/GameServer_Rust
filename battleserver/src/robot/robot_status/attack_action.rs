@@ -1,5 +1,5 @@
 use super::*;
-use crate::robot::{robot_helper::modify_robot_state, RobotActionType};
+use crate::robot::RobotActionType;
 use log::warn;
 use tools::cmd_code::BattleCode;
 
@@ -16,15 +16,6 @@ pub struct AttackRobotAction {
 get_mut_ref!(AttackRobotAction);
 
 impl AttackRobotAction {
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
-    }
-
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {
@@ -75,7 +66,6 @@ impl RobotStatusAction for AttackRobotAction {
                 target_index = battle_player.get_map_cell_index();
             }
         }
-        modify_robot_state(self.robot_id, battle_data);
         self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);
     }
 

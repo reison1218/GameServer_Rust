@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    robot::{robot_helper::modify_robot_state, RobotActionType},
-    room::map_data::MapCellType,
-};
+use crate::{robot::RobotActionType, room::map_data::MapCellType};
 use log::{info, warn};
 use tools::cmd_code::BattleCode;
 
@@ -19,14 +16,6 @@ pub struct ChoiceIndexRobotAction {
 get_mut_ref!(ChoiceIndexRobotAction);
 
 impl ChoiceIndexRobotAction {
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
-    }
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {
@@ -83,7 +72,6 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
         let mut rand = rand::thread_rng();
         let res = rand.gen_range(0..v.len());
         let index = v.remove(res);
-        modify_robot_state(self.robot_id, battle_data);
         //创建机器人任务执行选择站位
         self.send_2_battle(index, RobotActionType::ChoiceIndex, BattleCode::ChoiceIndex);
     }

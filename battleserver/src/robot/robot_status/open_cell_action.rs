@@ -3,10 +3,7 @@ use std::borrow::Borrow;
 use super::*;
 use crate::{
     battle::battle_player::BattlePlayer,
-    robot::{
-        robot_helper::{check_can_open, modify_robot_state},
-        RobotActionType,
-    },
+    robot::{robot_helper::check_can_open, RobotActionType},
     JsonValue,
 };
 use log::{error, warn};
@@ -24,14 +21,6 @@ pub struct OpenCellRobotAction {
 }
 
 impl OpenCellRobotAction {
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
-    }
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
             if self.battle_data.unwrap().is_null() {
@@ -88,7 +77,7 @@ impl RobotStatusAction for OpenCellRobotAction {
                 continue;
             }
             //跳过锁住的地图块
-            let res = check_can_open(map_cell, battle_data);
+            let res = check_can_open(robot_id, map_cell, battle_data);
             if !res {
                 continue;
             }
@@ -134,27 +123,46 @@ impl RobotStatusAction for OpenCellRobotAction {
             //翻开能够配对的地图块
             index = Some(*pair_v.get(0).unwrap());
         } else {
-            let mut is_cd = false;
-            for skill in battle_player.cter.skills.values() {
-                if skill.cd_times > 0_i8 {
-                    is_cd = true;
-                    break;
+            //如果没有，则随机翻开一个未知地图块
+            let mut user_id;
+            let mut map_cell;
+            let robot_data = battle_player.robot_data.as_ref().unwrap();
+            let mut unknown_v = vec![];
+            for (&map_cell_index, _) in battle_data.tile_map.un_pair_map.iter() {
+                map_cell = battle_data.tile_map.map_cells.get(map_cell_index).unwrap();
+                user_id = map_cell.user_id;
+                if user_id > 0 {
+                    let player = battle_data.battle_player.get(&user_id).unwrap();
+                    if !player.is_can_attack() {
+                        continue;
+                    }
+                }
+
+                if map_cell.is_world() {
+                    continue;
+                }
+
+                if map_cell.is_market() {
+                    continue;
+                }
+
+                if map_cell.check_is_locked() {
+                    continue;
+                }
+                if !robot_data.remember_map_cell.is_empty() {
+                    for re_cell in robot_data.remember_map_cell.iter() {
+                        if re_cell.cell_index == map_cell_index {
+                            continue;
+                        }
+                        unknown_v.push(map_cell_index);
+                    }
+                } else {
+                    unknown_v.push(map_cell_index);
                 }
             }
-            //如果有技能cd的话就随机在地图里面翻开一个地图块
-            if is_cd {
-                let rand_index = rand.gen_range(0..v.len());
-                index = Some(*v.get(rand_index).unwrap());
-            } else {
-                //否则进行随机，0到100
-                let res = rand.gen_range(0..101);
-                if res >= 0 && res <= 60 {
-                    let rand_index = rand.gen_range(0..v.len());
-                    index = Some(*v.get(rand_index).unwrap());
-                } else {
-                    //跳过turn
-                    action_type = RobotActionType::Skip;
-                }
+            if unknown_v.len() > 0 {
+                let rand_index = rand.gen_range(0..unknown_v.len());
+                index = Some(*unknown_v.get(rand_index).unwrap());
             }
         }
         let indes_res;
@@ -165,10 +173,10 @@ impl RobotStatusAction for OpenCellRobotAction {
             }
             None => {
                 indes_res = 0;
+                action_type = RobotActionType::Skip;
                 info!("没选中，执行跳过");
             }
         }
-        modify_robot_state(self.robot_id, battle_data);
         self.send_2_battle(indes_res, action_type, BattleCode::Action);
     }
 
@@ -215,7 +223,7 @@ pub fn cal_pair_num(
 ) -> anyhow::Result<(Vec<usize>, Option<usize>)> {
     let mut index_v = Vec::new();
     let mut element_index: Option<usize> = None;
-
+    let robot_id = battle_player.get_user_id();
     //拿到机器人数据
     let robot_data = battle_player.get_robot_data_ref();
     if let Err(e) = robot_data {
@@ -226,33 +234,37 @@ pub fn cal_pair_num(
 
     //机器人记忆的地图块
     let remember_cells = robot_data.remember_map_cell.borrow();
-    let robot_id = battle_player.get_user_id();
     //这个turn放开的地图块下标
-    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec_history;
-    //去掉已经翻开过的,并且添加可以配对的
-    for cell_index in open_map_cell_vec.iter() {
-        let cell_index = *cell_index;
+    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec;
+    let element = battle_player.cter.base_attr.element;
+    let mut cell_index;
+    for cell in remember_cells.iter() {
+        cell_index = cell.cell_index;
+        //去掉已经翻开过的
+        if open_map_cell_vec.contains(&cell_index) {
+            continue;
+        }
         let map_cell = battle_data.tile_map.map_cells.get(cell_index).unwrap();
+        let res = check_can_open(robot_id, map_cell, battle_data);
+        if !res {
+            continue;
+        }
         for re_cell in remember_cells.iter() {
-            //跳过自己已翻开的
-            if map_cell.open_user == robot_id || map_cell.user_id == robot_id {
+            //去掉自己
+            if re_cell.cell_index == cell_index {
                 continue;
             }
-
-            let res = check_can_open(map_cell, battle_data);
-            if !res {
-                continue;
-            }
-
             //添加可以配对的
             if map_cell.id == re_cell.cell_id {
                 index_v.push(cell_index);
             }
             //添加元素相同的
-            if element_index.is_none() && map_cell.element == battle_player.cter.base_attr.element {
+            if map_cell.element == element {
                 element_index = Some(map_cell.index);
+                break;
             }
         }
     }
+
     Ok((index_v, element_index))
 }

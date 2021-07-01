@@ -11,7 +11,6 @@ use crate::{
     room::map_data::TileMap,
 };
 
-use super::robot_helper::modify_robot_state;
 use super::robot_task_mgr::RobotTask;
 use super::{RobotActionType, RobotData};
 
@@ -40,7 +39,6 @@ pub fn robot_use_skill(battle_data: &mut BattleData, skill: &Skill, robot: &Robo
     map.insert("cmd".to_owned(), Value::from(BattleCode::Action.into_u32()));
     map.insert("skill_id".to_owned(), Value::from(skill_id));
     robot_task.data = Value::from(map);
-    modify_robot_state(robot_id, battle_data);
     let res = robot.sender.send(robot_task);
     if let Err(e) = res {
         error!("{:?}", e);
@@ -50,7 +48,13 @@ pub fn robot_use_skill(battle_data: &mut BattleData, skill: &Skill, robot: &Robo
 
 ///判断释放条件
 pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotData) -> bool {
+    if skill.function_id == 431 {
+        return false;
+    }
     let skill_id = skill.id;
+
+    let skill_function_id = skill.function_id;
+
     let mut can_use = false;
     let robot_id = robot.robot_id;
     let skill_judge = skill.skill_temp.skill_judge as u32;
@@ -71,7 +75,7 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         return false;
     }
     //特殊使用条件
-    match skill_id {
+    match skill_function_id {
         //判断是否有未知地图快
         i if [113].contains(&i) => {
             can_use = check_unknow_map_cell(&battle_data.tile_map, robot).is_some();
@@ -92,7 +96,11 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         }
         //判断周围有没有人
         i if [313].contains(&i) => {
-            can_use = no_near_user(battle_data, robot_id);
+            can_use = !no_near_user(battle_data, robot_id);
+        }
+        i if [331].contains(&i) => {
+            let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+            can_use = pair_useable_skill(battle_player);
         }
         //选中至少2个目标
         i if [411].contains(&i) => {
@@ -119,17 +127,17 @@ pub fn skill_target(
     skill: &Skill,
     robot: &RobotData,
 ) -> anyhow::Result<Vec<usize>> {
-    let skill_id = skill.id;
+    let skill_function_id = skill.function_id;
     let robot_id = robot.robot_id;
     let mut targets = vec![];
     //匹配技能id进行不同的目标选择
-    match skill_id {
+    match skill_function_id {
         //目标是自己
         i if [211, 313, 321].contains(&i) => {
             // targets.push(battle_player.cter.index_data.map_cell_index.unwrap());
         }
         //除自己外最大血量的目标
-        i if [123, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
+        i if [123, 331, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
             let res = get_hp_max_cter(battle_data, robot_id);
             match res {
                 Some(res) => targets.push(res),
@@ -138,10 +146,10 @@ pub fn skill_target(
         }
         //随机未知地图块
         i if [113].contains(&i) => {
-            let res = check_unknow_map_cell(&battle_data.tile_map, robot);
-            if let Some(index) = res {
-                targets.push(index);
-            }
+            // let res = check_unknow_map_cell(&battle_data.tile_map, robot);
+            // if let Some(index) = res {
+            //     targets.push(index);
+            // }
         }
         //获得记忆队列中的地图块
         i if [223].contains(&i) => {
@@ -202,37 +210,15 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
 
     let mut not_c_v = vec![];
     let mut v = vec![];
-
-    for map_cell in tile_map.map_cells.iter() {
-        //过滤世界块
-        if map_cell.is_world() {
-            continue;
-        }
-        //过滤无效块
-        if map_cell.id <= MapCellType::UnUse.into_u32() {
-            continue;
-        }
-        //过滤商店
-        if map_cell.cell_type == MapCellType::MarketCell {
-            continue;
-        }
-        //过滤已经翻开的
-        if map_cell.open_user > 0 || map_cell.pair_index.is_some() {
-            continue;
-        }
-        let mut is_con = false;
+    for (&map_cell_index, _) in tile_map.un_pair_map.iter() {
         for rem_map_cell in remember_map_cell.iter() {
             //过滤掉记忆队列的地图块
-            if map_cell.index != rem_map_cell.cell_index {
+            if map_cell_index == rem_map_cell.cell_index {
                 continue;
             }
-            is_con = true;
-            break;
+            not_c_v.push(map_cell_index);
         }
-        if !is_con {
-            not_c_v.push(map_cell.index);
-        }
-        v.push(map_cell.index);
+        v.push(map_cell_index);
     }
     let mut rand = rand::thread_rng();
 
@@ -346,12 +332,16 @@ pub fn check_pair(cter: &BattlePlayer) -> bool {
     cter.status.is_pair
 }
 
+pub fn pair_useable_skill(robot: &BattlePlayer) -> bool {
+    robot.flow_data.pair_usable_skills.contains(&331)
+}
+
 ///有没有相邻的玩家
 pub fn no_near_user(battle_data: &BattleData, robot_id: u32) -> bool {
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
     let index = battle_player.get_map_cell_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
-    res.0.len() > 0
+    res.1.len() > 0
 }
 
 ///检测是否还有未知地图块，有就随机一块出来并返回
@@ -532,11 +522,11 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
     let mut res_v = vec![];
     for &index in v.iter() {
         let map = battle_data.tile_map.map_cells.get(index).unwrap();
+        let mut temp_v = vec![];
+        temp_v.push(index);
         //从六个方向计算
         for i in 0..6 {
-            let mut temp_v = vec![];
             //先把起点的人加进去
-            temp_v.push(index);
             //每个方向从中心点延伸出去两个格子
             for j in 0..2 {
                 let mut coord_index = (map.x, map.y);
@@ -615,15 +605,42 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
                         if map_cell.user_id <= 0 || map_cell.user_id == user_id {
                             continue;
                         }
+                        if temp_v.contains(&map_cell.index) {
+                            continue;
+                        }
                         temp_v.push(map_cell.index);
                     }
                     None => {}
                 }
             }
+        }
+        if !temp_v.is_empty() {
             res_v.push(temp_v);
         }
     }
-    res_v.iter().max().cloned()
+    if res_v.is_empty() {
+        return None;
+    }
+    let mut res_2 = vec![];
+    let mut res_3 = vec![];
+    for v in res_v.iter() {
+        if v.len() == 2 {
+            res_2.push(v.clone());
+        } else if v.len() == 3 {
+            res_3.push(v.clone());
+        }
+    }
+    if !res_3.is_empty() {
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0..res_3.len());
+        return Some(res_3.get(index).unwrap().clone());
+    } else if !res_2.is_empty() {
+        let mut rand = rand::thread_rng();
+        let index = rand.gen_range(0..res_2.len());
+        return Some(res_2.get(index).unwrap().clone());
+    } else {
+        return None;
+    }
 }
 
 pub fn can_use_skill(battle_data: &BattleData, battle_player: &BattlePlayer) -> bool {

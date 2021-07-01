@@ -21,16 +21,6 @@ impl UseItemRobotAction {
         use_item_action.sender = Some(sender);
         use_item_action
     }
-
-    pub fn get_battle_data_mut_ref(&mut self) -> Option<&mut BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-
-            Some(self.battle_data.unwrap().as_mut().unwrap())
-        }
-    }
 }
 
 impl RobotStatusAction for UseItemRobotAction {

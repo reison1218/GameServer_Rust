@@ -1,5 +1,5 @@
 use super::*;
-use crate::robot::{robot_helper::modify_robot_state, RobotActionType};
+use crate::robot::RobotActionType;
 use log::warn;
 use tools::cmd_code::BattleCode;
 
@@ -21,14 +21,6 @@ impl SkipRobotAction {
         attack_action.battle_data = Some(battle_data);
         attack_action.sender = Some(sender);
         attack_action
-    }
-    pub fn get_battle_data_ref(&self) -> Option<&BattleData> {
-        unsafe {
-            if self.battle_data.unwrap().is_null() {
-                return None;
-            }
-            Some(self.battle_data.unwrap().as_ref().unwrap())
-        }
     }
     pub fn get_battle_data_mut_ref(&self) -> Option<&mut BattleData> {
         unsafe {
@@ -63,7 +55,6 @@ impl RobotStatusAction for SkipRobotAction {
         }
         let battle_data = battle_data.unwrap();
         //创建机器人任务执行结束turn
-        modify_robot_state(self.robot_id, battle_data);
         self.send_2_battle(0, RobotActionType::Skip, BattleCode::Action);
     }
 

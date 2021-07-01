@@ -11,15 +11,22 @@ pub struct OpenCellGoalEvaluator {
 
 impl GoalEvaluator for OpenCellGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        let robot_data = robot.robot_data.as_ref().unwrap();
-        let pair_index = robot_data.can_pair_index();
-
-        if pair_index.is_some() && robot.flow_data.residue_movement_points > 0 {
-            return 70;
-        } else if robot.flow_data.residue_movement_points == 0 {
+        if !robot.cter.map_cell_index_is_choiced() {
             return 0;
         }
-        50
+        let robot_data = robot.robot_data.as_ref().unwrap();
+        let pair_index = robot_data.can_pair_index();
+        unsafe {
+            let battle_data = robot_data.battle_data.as_ref().unwrap();
+            if pair_index.is_some() && robot.flow_data.residue_movement_points > 0 {
+                return 70;
+            } else if battle_data.tile_map.un_pair_map.is_empty()
+                || robot.flow_data.residue_movement_points == 0
+            {
+                return 0;
+            }
+            50
+        }
     }
 
     fn set_status(

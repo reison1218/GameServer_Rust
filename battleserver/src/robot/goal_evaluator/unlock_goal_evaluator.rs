@@ -11,6 +11,9 @@ pub struct UnlockGoalEvaluator {
 
 impl GoalEvaluator for UnlockGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
+        if !robot.cter.map_cell_index_is_choiced() {
+            return 0;
+        }
         //如果状态是可以攻击，期望值大于0，当没有其他高优先级的事件，则执行攻击
         if robot.is_locked() {
             return 200;

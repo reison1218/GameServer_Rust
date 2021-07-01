@@ -14,6 +14,9 @@ pub struct BuyGoalEvaluator {
 
 impl GoalEvaluator for BuyGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
+        if !robot.cter.map_cell_index_is_choiced() {
+            return 0;
+        }
         let robot_index = robot.get_map_cell_index();
         let robot_data = robot.robot_data.as_ref().unwrap();
         let battle_data = robot.robot_data.as_ref().unwrap().battle_data;
