@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use log::{error, warn};
 use rand::Rng;
 use serde_json::{Map, Value};
@@ -78,12 +80,12 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     match skill_function_id {
         //判断是否有未知地图快
         i if [113].contains(&i) => {
-            can_use = check_unknow_map_cell(&battle_data.tile_map, robot).is_some();
+            // can_use = check_unknow_map_cell(&battle_data.tile_map, robot).is_some();
         }
         //判断是否配对
         i if [211].contains(&i) => {
             let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
-            can_use = check_pair(battle_player);
+            can_use = battle_player.is_can_attack();
         }
         //判断有没有地图块可以翻
         i if [223].contains(&i) => {
@@ -94,9 +96,13 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
                 can_use = true;
             }
         }
-        //判断周围有没有人
+        //周围必须没人
         i if [313].contains(&i) => {
-            can_use = !no_near_user(battle_data, robot_id);
+            can_use = !near_user(battle_data, robot_id);
+        }
+        //周围必须有人
+        i if [321].contains(&i) => {
+            can_use = near_user(battle_data, robot_id);
         }
         i if [331].contains(&i) => {
             let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
@@ -107,8 +113,13 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
             let res = get_line_aoe(robot_id, battle_data);
             match res {
                 Some(v) => {
+                    let alive_num = battle_data.get_alive_player_num();
                     if v.len() > 1 {
                         can_use = true;
+                    } else if v.len() == 1 && alive_num == 2 {
+                        can_use = true;
+                    } else {
+                        can_use = false;
                     }
                 }
                 None => {
@@ -327,17 +338,12 @@ pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize>
     Some(res.1)
 }
 
-///检测是否匹配了
-pub fn check_pair(cter: &BattlePlayer) -> bool {
-    cter.status.is_pair
-}
-
 pub fn pair_useable_skill(robot: &BattlePlayer) -> bool {
     robot.flow_data.pair_usable_skills.contains(&331)
 }
 
 ///有没有相邻的玩家
-pub fn no_near_user(battle_data: &BattleData, robot_id: u32) -> bool {
+pub fn near_user(battle_data: &BattleData, robot_id: u32) -> bool {
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
     let index = battle_player.get_map_cell_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
@@ -519,78 +525,79 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
         v.push(index);
     }
 
-    let mut res_v = vec![];
+    let mut res_v = HashMap::new();
     for &index in v.iter() {
         let map = battle_data.tile_map.map_cells.get(index).unwrap();
-        let mut temp_v = vec![];
-        temp_v.push(index);
         //从六个方向计算
         for i in 0..6 {
+            let mut temp_v = (1, vec![]);
+            temp_v.1.push(index);
             //先把起点的人加进去
             //每个方向从中心点延伸出去两个格子
             for j in 0..2 {
-                let mut coord_index = (map.x, map.y);
+                let (mut coord_index_x, mut coord_index_y) = (map.x, map.y);
                 match i {
                     0 => match j {
                         0 => {
-                            coord_index.0 -= 1;
-                            coord_index.1 += 1;
+                            coord_index_x -= 1;
+                            coord_index_y += 1;
                         }
                         1 => {
-                            coord_index.0 -= 2;
-                            coord_index.1 += 2;
+                            coord_index_x -= 2;
+                            coord_index_y += 2;
                         }
                         _ => {}
                     },
                     1 => match j {
                         0 => {
-                            coord_index.1 += 1;
+                            coord_index_y += 1;
                         }
                         1 => {
-                            coord_index.1 += 2;
+                            coord_index_y += 2;
                         }
                         _ => {}
                     },
                     2 => match j {
                         0 => {
-                            coord_index.0 += 1;
+                            coord_index_x += 1;
                         }
                         1 => {
-                            coord_index.0 += 2;
+                            coord_index_x += 2;
                         }
                         _ => {}
                     },
                     3 => match j {
                         0 => {
-                            coord_index.0 += 1;
-                            coord_index.0 -= 1;
+                            coord_index_x += 1;
+                            coord_index_x -= 1;
                         }
                         1 => {
-                            coord_index.0 += 2;
-                            coord_index.0 -= 2;
+                            coord_index_x += 2;
+                            coord_index_x -= 2;
                         }
                         _ => {}
                     },
                     4 => match j {
                         0 => {
-                            coord_index.0 -= 1;
+                            coord_index_x -= 1;
                         }
                         1 => {
-                            coord_index.0 -= 2;
+                            coord_index_x -= 2;
                         }
                         _ => {}
                     },
                     5 => match j {
                         0 => {
-                            coord_index.0 += 1;
+                            coord_index_x += 1;
                         }
                         1 => {
-                            coord_index.0 += 2;
+                            coord_index_x += 2;
                         }
                         _ => {}
                     },
                     _ => {}
                 }
+                let coord_index = (coord_index_x, coord_index_y);
                 let res = battle_data.tile_map.coord_map.get(&coord_index);
                 if res.is_none() {
                     continue;
@@ -599,45 +606,102 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
                 let map_cell = battle_data.tile_map.map_cells.get(index);
                 match map_cell {
                     Some(map_cell) => {
+                        //不能是世界树
                         if map_cell.is_world() {
                             continue;
                         }
-                        if map_cell.user_id <= 0 || map_cell.user_id == user_id {
+
+                        if map_cell.cell_type != MapCellType::Valid {
                             continue;
                         }
-                        if temp_v.contains(&map_cell.index) {
+
+                        if map_cell.user_id == user_id {
                             continue;
                         }
-                        temp_v.push(map_cell.index);
+
+                        if temp_v.1.contains(&map_cell.index) {
+                            continue;
+                        }
+                        if map_cell.user_id > 0 {
+                            temp_v.0 += 1;
+                        }
+                        temp_v.1.push(map_cell.index);
                     }
                     None => {}
                 }
             }
-        }
-        if !temp_v.is_empty() {
-            res_v.push(temp_v);
+            if !res_v.contains_key(&temp_v.0) {
+                res_v.insert(temp_v.0, Vec::new());
+            }
+            res_v.get_mut(&temp_v.0).unwrap().push(temp_v.1);
         }
     }
     if res_v.is_empty() {
         return None;
     }
+    let mut res_1 = vec![];
     let mut res_2 = vec![];
     let mut res_3 = vec![];
-    for v in res_v.iter() {
-        if v.len() == 2 {
+    for (&count, v) in res_v.iter() {
+        if count == 1 {
+            res_1.push(v.clone());
+        } else if count == 2 {
             res_2.push(v.clone());
-        } else if v.len() == 3 {
+        } else if count == 3 {
             res_3.push(v.clone());
         }
     }
     if !res_3.is_empty() {
         let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0..res_3.len());
-        return Some(res_3.get(index).unwrap().clone());
+        let mut index = rand.gen_range(0..res_3.len());
+        let mut res = res_3.remove(index);
+
+        index = rand.gen_range(0..res.len());
+        let res = res.remove(index);
+        let mut fin_res = vec![];
+        fin_res.push(*res.get(1).unwrap());
+        fin_res.push(*res.get(0).unwrap());
+        let last = res.get(2);
+        if let Some(&last) = last {
+            fin_res.push(last);
+        }
+
+        return Some(fin_res);
     } else if !res_2.is_empty() {
         let mut rand = rand::thread_rng();
-        let index = rand.gen_range(0..res_2.len());
-        return Some(res_2.get(index).unwrap().clone());
+        let mut index = rand.gen_range(0..res_2.len());
+        let mut res = res_2.remove(index);
+
+        index = rand.gen_range(0..res.len());
+        let res = res.remove(index);
+        let mut fin_res = vec![];
+
+        fin_res.push(*res.get(1).unwrap());
+        fin_res.push(*res.get(0).unwrap());
+        let last = res.get(2);
+        if let Some(&last) = last {
+            fin_res.push(last);
+        }
+        return Some(fin_res);
+    } else if !res_1.is_empty() {
+        let mut rand = rand::thread_rng();
+        let mut index = rand.gen_range(0..res_1.len());
+        let mut res = res_1.remove(index);
+
+        index = rand.gen_range(0..res.len());
+        let res = res.remove(index);
+        let mut fin_res = vec![];
+
+        let mut last = res.get(1);
+        if let Some(&last) = last {
+            fin_res.push(last);
+        }
+        fin_res.push(*res.get(0).unwrap());
+        last = res.get(2);
+        if let Some(&last) = last {
+            fin_res.push(last);
+        }
+        return Some(fin_res);
     } else {
         return None;
     }

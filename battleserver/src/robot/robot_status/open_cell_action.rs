@@ -113,8 +113,9 @@ impl RobotStatusAction for OpenCellRobotAction {
 
         //大于1个时，优先配对与自己元素相同的地图块
         if pair_v.len() > 1 {
-            if let Some(element_index) = element_index {
-                index = Some(element_index);
+            if element_index.len() > 1 {
+                let rand_index = rand.gen_range(0..element_index.len());
+                index = Some(*element_index.get(rand_index).unwrap());
             } else {
                 let rand_index = rand.gen_range(0..pair_v.len());
                 index = Some(*pair_v.get(rand_index).unwrap());
@@ -128,7 +129,7 @@ impl RobotStatusAction for OpenCellRobotAction {
             let mut map_cell;
             let robot_data = battle_player.robot_data.as_ref().unwrap();
             let mut unknown_v = vec![];
-            for (&map_cell_index, _) in battle_data.tile_map.un_pair_map.iter() {
+            'out: for (&map_cell_index, _) in battle_data.tile_map.un_pair_map.iter() {
                 map_cell = battle_data.tile_map.map_cells.get(map_cell_index).unwrap();
                 user_id = map_cell.user_id;
                 if user_id > 0 {
@@ -149,10 +150,11 @@ impl RobotStatusAction for OpenCellRobotAction {
                 if map_cell.check_is_locked() {
                     continue;
                 }
+
                 if !robot_data.remember_map_cell.is_empty() {
                     for re_cell in robot_data.remember_map_cell.iter() {
                         if re_cell.cell_index == map_cell_index {
-                            continue;
+                            continue 'out;
                         }
                         unknown_v.push(map_cell_index);
                     }
@@ -220,9 +222,9 @@ impl RobotStatusAction for OpenCellRobotAction {
 pub fn cal_pair_num(
     battle_data: &BattleData,
     battle_player: &BattlePlayer,
-) -> anyhow::Result<(Vec<usize>, Option<usize>)> {
+) -> anyhow::Result<(Vec<usize>, Vec<usize>)> {
     let mut index_v = Vec::new();
-    let mut element_index: Option<usize> = None;
+    let mut element_v = Vec::new();
     let robot_id = battle_player.get_user_id();
     //拿到机器人数据
     let robot_data = battle_player.get_robot_data_ref();
@@ -235,16 +237,15 @@ pub fn cal_pair_num(
     //机器人记忆的地图块
     let remember_cells = robot_data.remember_map_cell.borrow();
     //这个turn放开的地图块下标
-    let open_map_cell_vec = &battle_player.flow_data.open_map_cell_vec;
     let element = battle_player.cter.base_attr.element;
     let mut cell_index;
     for cell in remember_cells.iter() {
         cell_index = cell.cell_index;
+        let map_cell = battle_data.tile_map.map_cells.get(cell_index).unwrap();
         //去掉已经翻开过的
-        if open_map_cell_vec.contains(&cell_index) {
+        if map_cell.open_user > 0 {
             continue;
         }
-        let map_cell = battle_data.tile_map.map_cells.get(cell_index).unwrap();
         let res = check_can_open(robot_id, map_cell, battle_data);
         if !res {
             continue;
@@ -257,14 +258,16 @@ pub fn cal_pair_num(
             //添加可以配对的
             if map_cell.id == re_cell.cell_id {
                 index_v.push(cell_index);
-            }
-            //添加元素相同的
-            if map_cell.element == element {
-                element_index = Some(map_cell.index);
-                break;
+                //添加元素相同的
+                if map_cell.element == element {
+                    element_v.push(map_cell.index);
+                    break;
+                }
             }
         }
     }
-
-    Ok((index_v, element_index))
+    if index_v.len() > 1 {
+        info!("机器人找出配对:{:?},robot:{}", index_v, robot_id);
+    }
+    Ok((index_v, element_v))
 }

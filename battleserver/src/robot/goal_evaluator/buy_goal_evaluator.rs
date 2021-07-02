@@ -6,6 +6,7 @@ use crate::robot::robot_status::buy_action::BuyRobotAction;
 use crate::robot::robot_task_mgr::RobotTask;
 // use crossbeam::atomic::AtomicCell;
 use crossbeam::channel::Sender;
+use rand::Rng;
 
 #[derive(Default)]
 pub struct BuyGoalEvaluator {
@@ -39,15 +40,19 @@ impl GoalEvaluator for BuyGoalEvaluator {
                 }
             }
 
-            //获取能够买的商品
             let res = check_buy(robot, robot_data.temp_id);
-            if !res.is_empty() && is_at_market {
-                return 90;
-            } else if !res.is_empty()
-                && !is_at_market
-                && robot.flow_data.residue_movement_points > 0
+            //只能买一个的时候，并且不在商店，并且有行动点数的时候
+            if res.len() == 1 && !is_at_market && robot.flow_data.residue_movement_points > 0 {
+                let mut rand = rand::thread_rng();
+                let res = rand.gen_range(40..56);
+                return res;
+            } else if res.len() > 1 && !is_at_market && robot.flow_data.residue_movement_points > 0
             {
+                //能买多个，并且不在商店，并且有行动点数的时候
                 return 60;
+            } else if !res.is_empty() && is_at_market {
+                //在商店，并且可以购买的时候
+                return 90;
             }
         }
         0

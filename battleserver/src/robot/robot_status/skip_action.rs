@@ -53,7 +53,6 @@ impl RobotStatusAction for SkipRobotAction {
             warn!("the point *const BattleData is null!");
             return;
         }
-        let battle_data = battle_data.unwrap();
         //创建机器人任务执行结束turn
         self.send_2_battle(0, RobotActionType::Skip, BattleCode::Action);
     }

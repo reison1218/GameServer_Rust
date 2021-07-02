@@ -28,15 +28,8 @@ impl RobotTriggerType {
 
 impl RobotData {
     pub fn trigger_see_map_cell(&mut self, rc: RememberCell) {
-        //如果数量大于5则忘记尾端
-        if self.remember_map_cell.len() > MAX_MEMORY_SIZE {
-            let mut rand = rand::thread_rng();
-            let res = rand.gen_range(0..100);
-            //50%机率忘记队列前面的
-            if res <= 50 {
-                self.remember_map_cell.pop_back();
-            }
-        }
+        let size = self.remember_map_cell.len();
+
         //如果这个块已经被记忆，则刷新位置
         let mut rm_index = None;
         for index in 0..self.remember_map_cell.len() {
@@ -50,6 +43,16 @@ impl RobotData {
             self.remember_map_cell.remove(rm_index);
         }
         self.remember_map_cell.push_front(rc);
+        //如果数量大于5则忘记尾端
+        if size > MAX_MEMORY_SIZE {
+            let mut rand = rand::thread_rng();
+            let res = rand.gen_range(0..100);
+            let forget = (size - 2) * 10;
+            //50%机率忘记队列前面的
+            if res < forget {
+                self.remember_map_cell.pop_back();
+            }
+        }
         println!("robot:{},re:{:?}", self.robot_id, self.remember_map_cell)
     }
 

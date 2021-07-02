@@ -20,7 +20,7 @@ use std::collections::VecDeque;
 
 use self::robot_helper::check_can_open;
 
-pub const MAX_MEMORY_SIZE: usize = 10;
+pub const MAX_MEMORY_SIZE: usize = 5;
 
 ///回合行为类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -111,33 +111,33 @@ impl RobotData {
             }
             let robot = robot.unwrap();
             let robot_id = robot.user_id;
-            for &open_index in robot.flow_data.open_map_cell_vec.iter() {
-                let res = battle_data.tile_map.map_cells.get(open_index);
-                if res.is_none() {
-                    continue;
-                }
-                let match_map_cell = res.unwrap();
 
-                let res = check_can_open(robot_id, match_map_cell, battle_data);
+            for re_map_cell1 in self.remember_map_cell.iter() {
+                let map_cell = battle_data
+                    .tile_map
+                    .map_cells
+                    .get(re_map_cell1.cell_index)
+                    .unwrap();
+                let res = check_can_open(robot_id, map_cell, battle_data);
                 if !res {
                     continue;
                 }
-
-                for re_map_cell in self.remember_map_cell.iter() {
+                for re_map_cell2 in self.remember_map_cell.iter() {
                     //翻过的跳过
-                    if match_map_cell.index == re_map_cell.cell_index
-                        || match_map_cell.open_user == robot_id
+                    if re_map_cell1.cell_index == re_map_cell2.cell_index
+                        || map_cell.open_user == robot_id
                     {
                         continue;
                     }
 
                     //不相等的跳过
-                    if match_map_cell.id != re_map_cell.cell_id {
+                    if re_map_cell1.cell_id != re_map_cell2.cell_id {
                         continue;
                     }
-                    return Some(re_map_cell.cell_index);
+                    return Some(re_map_cell1.cell_index);
                 }
             }
+
             None
         }
     }
