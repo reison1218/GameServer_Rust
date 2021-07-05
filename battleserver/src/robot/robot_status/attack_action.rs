@@ -1,5 +1,8 @@
 use super::*;
-use crate::robot::RobotActionType;
+use crate::{
+    battle::battle_enum::{TargetType, TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID},
+    robot::{robot_skill::get_hp_max_cter, RobotActionType},
+};
 use log::warn;
 use tools::cmd_code::BattleCode;
 
@@ -55,16 +58,56 @@ impl RobotStatusAction for AttackRobotAction {
             return;
         }
         let battle_data = res.unwrap();
-        let mut target_index: usize = 0;
-        let mut cter_hp_max: i16 = 0;
-        for battle_player in battle_data.battle_player.values() {
-            if battle_player.get_cter_id() == self.cter_id {
-                continue;
+        let target_index: usize;
+        let robot_id = self.robot_id;
+        let robot = battle_data.battle_player.get(&robot_id).unwrap();
+        let skill_scope_temp = crate::TEMPLATES
+            .skill_scope_temp_mgr()
+            .get_temp(&TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID)
+            .unwrap();
+        //如果有这个buff，就找人最多的
+        if robot.cter.is_has_add_attack_and_aoe() {
+            let mut player_index;
+            let mut user_id;
+            let mut player_count = (0, 0);
+            for player in battle_data.battle_player.values() {
+                player_index = player.get_map_cell_index();
+                user_id = player.get_user_id();
+                if user_id == robot_id {
+                    continue;
+                }
+                let (_, count_v) = battle_data.cal_scope(
+                    robot_id,
+                    player_index as isize,
+                    TargetType::SelfScopeOthers,
+                    None,
+                    Some(skill_scope_temp),
+                );
+                if count_v.len() > player_count.1 {
+                    player_count.0 = player_index;
+                    player_count.1 = count_v.len();
+                }
             }
-            if battle_player.cter.base_attr.hp > cter_hp_max {
-                cter_hp_max = battle_player.cter.base_attr.hp;
-                target_index = battle_player.get_map_cell_index();
+
+            if player_count.1 > 1 {
+                target_index = player_count.0;
+            } else {
+                //如果没有就找血最多的
+                let res = get_hp_max_cter(battle_data, robot_id);
+                if let None = res {
+                    warn!("attack counld not find target!robot_id:{}", robot_id);
+                    return;
+                }
+                target_index = res.unwrap();
             }
+        } else {
+            //如果没有就找血最多的
+            let res = get_hp_max_cter(battle_data, robot_id);
+            if let None = res {
+                warn!("attack counld not find target!robot_id:{}", robot_id);
+                return;
+            }
+            target_index = res.unwrap();
         }
         self.send_2_battle(target_index, RobotActionType::Attack, BattleCode::Action);
     }

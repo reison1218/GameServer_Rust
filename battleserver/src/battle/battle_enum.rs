@@ -12,6 +12,9 @@ pub const TRIGGER_SCOPE_NEAR: [isize; 6] = [-6, -5, -1, 1, 5, 6];
 ///触发范围一圈不包括中心
 pub const TRIGGER_SCOPE_NEAR_TEMP_ID: u32 = 2;
 
+///触发范围一圈包括中心
+pub const TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID: u32 = 3;
+
 ///技能限制类型
 pub mod skill_judge_type {
     ///hp限定：大于

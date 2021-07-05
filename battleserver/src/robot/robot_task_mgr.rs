@@ -57,7 +57,7 @@ pub fn robot_init_timer(bm: Lock) {
                 RobotActionType::ChoiceIndex => choice_index,
                 RobotActionType::Buy => buy,
                 RobotActionType::Unlock => unlock,
-                _ => attack,
+                RobotActionType::None => none,
             };
             let m = move || fnc(rm_clone, task);
             ROBOT_SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
@@ -141,6 +141,9 @@ pub fn unlock(rm: Lock, task: RobotTask) {
     let func = lock.cmd_map.get(&cmd).unwrap();
     func(rm_mut_ref, packet);
 }
+
+///普通攻击
+pub fn none(_: Lock, _: RobotTask) {}
 
 ///普通攻击
 pub fn attack(rm: Lock, task: RobotTask) {

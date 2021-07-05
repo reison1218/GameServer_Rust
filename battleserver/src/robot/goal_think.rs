@@ -55,22 +55,20 @@ impl GoalThink {
         battle_data: *mut BattleData,
     ) {
         info!("开始执行仲裁");
-        let mut best_desirabilty = 0;
-        let mut best_index = 0;
         if self.goal_evaluators.len() == 0 {
             return;
         }
+        let mut ge_res = None;
+        let mut ge_des = 0;
         //开始执行仲裁
-        for index in 0..self.goal_evaluators.len() {
-            let ge = self.goal_evaluators.get(index).unwrap();
-            let desirabilty = ge.calculate_desirability(robot);
-            if desirabilty > best_desirabilty {
-                best_desirabilty = desirabilty;
-                best_index = index;
+        for ge in self.goal_evaluators.iter() {
+            if ge.calculate_desirability(robot) > ge_des {
+                ge_res = Some(ge);
+                ge_des = ge_res.as_ref().unwrap().calculate_desirability(robot);
             }
         }
         //获得仲裁结果
-        let best_goal_evaluator = self.goal_evaluators.get(best_index).unwrap();
+        let best_goal_evaluator = ge_res.unwrap();
         //设置状态
         best_goal_evaluator.set_status(robot, sender, battle_data);
     }

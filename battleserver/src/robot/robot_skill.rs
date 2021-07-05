@@ -28,6 +28,7 @@ pub fn robot_use_skill(battle_data: &mut BattleData, skill: &Skill, robot: &Robo
     //获取技能释放目标
     let targets = skill_target(battle_data, skill, robot);
     if targets.is_err() {
+        warn!("{:?}", targets.err().unwrap());
         return false;
     }
     let targets = targets.unwrap();
@@ -112,11 +113,12 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         i if [411].contains(&i) => {
             let res = get_line_aoe(robot_id, battle_data);
             match res {
-                Some(v) => {
+                Some((count, _)) => {
                     let alive_num = battle_data.get_alive_player_num();
-                    if v.len() > 1 {
+
+                    if count > 1 {
                         can_use = true;
-                    } else if v.len() == 1 && alive_num == 2 {
+                    } else if count == 1 && alive_num == 2 {
                         can_use = true;
                     } else {
                         can_use = false;
@@ -173,8 +175,8 @@ pub fn skill_target(
         i if [411].contains(&i) => {
             let res = get_line_aoe(robot_id, battle_data);
             match res {
-                Some(res) => {
-                    targets.extend_from_slice(res.as_slice());
+                Some((_, v)) => {
+                    targets.extend_from_slice(v.as_slice());
                 }
                 None => {
                     warn!("get_triangle_aoe could not find any target!")
@@ -184,7 +186,9 @@ pub fn skill_target(
         //随机不在记忆队列中的地图块
         i if [423].contains(&i) => {
             let res = rand_not_remember_map_cell(&battle_data.tile_map, robot);
-            targets.push(res);
+            if let Some(index) = res {
+                targets.push(index);
+            }
         }
         //变身技能，计算⭕️
         i if [431].contains(&i) => {
@@ -216,7 +220,7 @@ pub fn skill_target(
 }
 
 ///随机一个不在记忆队列中的地图块
-pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usize {
+pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<usize> {
     let remember_map_cell = &robot.remember_map_cell;
 
     let mut not_c_v = vec![];
@@ -233,13 +237,14 @@ pub fn rand_not_remember_map_cell(tile_map: &TileMap, robot: &RobotData) -> usiz
     }
     let mut rand = rand::thread_rng();
 
-    let mut index;
+    let index;
+    let rand_index;
     if !not_c_v.is_empty() {
-        index = rand.gen_range(0..not_c_v.len());
-        index = *not_c_v.get(index).unwrap();
+        rand_index = rand.gen_range(0..not_c_v.len());
+        index = Some(*not_c_v.get(rand_index).unwrap());
     } else {
-        index = rand.gen_range(0..v.len());
-        index = *v.get(index).unwrap();
+        rand_index = rand.gen_range(0..v.len());
+        index = Some(*v.get(rand_index).unwrap());
     }
     index
 }
@@ -263,15 +268,18 @@ pub fn skill_open_near_cell_robot(
 
     let mut res_v = vec![];
     for &index in map_cells.iter() {
-        let res_index = index as u32;
-        let res = battle_data.check_target_array(
-            robot_id,
-            TargetType::UnOpenMapCellAndUnLock,
-            vec![res_index].as_slice(),
-        );
-        if let Err(_) = res {
+        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
+        if map_cell.open_user > 0 {
             continue;
         }
+        if map_cell.check_is_locked() {
+            continue;
+        }
+
+        if map_cell.cell_type != MapCellType::Valid {
+            continue;
+        }
+
         res_v.push(index);
     }
 
@@ -511,7 +519,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
 
 ///获得打一排三个的位置
 /// 选取规则，除了自己所有人为起点，转一圈，包含人最多，就选中
-pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>> {
+pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<usize>)> {
     let mut v = Vec::new();
     let map_cells = &battle_data.tile_map.map_cells;
     for index in 0..map_cells.len() {
@@ -666,7 +674,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
             fin_res.push(last);
         }
 
-        return Some(fin_res);
+        return Some((3, fin_res));
     } else if !res_2.is_empty() {
         let mut rand = rand::thread_rng();
         let mut index = rand.gen_range(0..res_2.len());
@@ -682,7 +690,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
         if let Some(&last) = last {
             fin_res.push(last);
         }
-        return Some(fin_res);
+        return Some((2, fin_res));
     } else if !res_1.is_empty() {
         let mut rand = rand::thread_rng();
         let mut index = rand.gen_range(0..res_1.len());
@@ -701,7 +709,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>
         if let Some(&last) = last {
             fin_res.push(last);
         }
-        return Some(fin_res);
+        return Some((1, fin_res));
     } else {
         return None;
     }

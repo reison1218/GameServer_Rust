@@ -28,7 +28,7 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, TargetPt};
 use tools::templates::character_temp::{CharacterTemp, TransformInheritType};
 
-use super::battle_enum::buff_type::CAN_NOT_MOVED;
+use super::battle_enum::buff_type::{ADD_ATTACK_AND_AOE, CAN_NOT_MOVED};
 
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
@@ -704,6 +704,15 @@ impl BattleCharacter {
             battle_cter.battle_buffs.init(buff);
         });
         Ok(battle_cter)
+    }
+
+    pub fn is_has_add_attack_and_aoe(&self) -> bool {
+        for (_, buff) in self.battle_buffs.buffs.iter() {
+            if ADD_ATTACK_AND_AOE.contains(&buff.get_id()) {
+                return true;
+            }
+        }
+        false
     }
 
     ///从静态配置中初始化

@@ -42,10 +42,6 @@ pub enum RobotActionType {
     Open,
     ///使用技能
     Skill,
-    ///触发buff
-    Buff,
-    ///结束展示地图块(解锁玩家状态)
-    EndShowMapCell,
     ///结束展示地图块(解锁玩家状态)
     Buy,
 }

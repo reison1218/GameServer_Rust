@@ -68,7 +68,7 @@ impl RobotStatusAction for UseSkillRobotAction {
         for skill in battle_player.cter.skills.values() {
             //先判断技能释放条件
             let res = skill_condition(battle_data, skill, robot);
-            //可以释放就往下走
+            //不能释放就跳过
             if !res {
                 continue;
             }
@@ -80,6 +80,7 @@ impl RobotStatusAction for UseSkillRobotAction {
             v.push(skill);
         }
         if v.is_empty() {
+            warn!("the targets is empty!");
             return;
         }
         let mut rand = rand::thread_rng();
