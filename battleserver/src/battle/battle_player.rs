@@ -1,7 +1,5 @@
 use crate::battle::battle_enum::buff_type::GD_ATTACK_DAMAGE;
-use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK, CHANGE_SKILL, NEAR_SUB_ATTACK_DAMAGE, SUB_ATTACK_DAMAGE,
-};
+use crate::battle::battle_enum::buff_type::{ADD_ATTACK, CHANGE_SKILL, SUB_ATTACK_DAMAGE};
 use crate::battle::battle_enum::{
     AttackState, BattleCterState, BattlePlayerState, TURN_DEFAULT_MOVEMENT_POINTS,
 };
@@ -28,7 +26,7 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, TargetPt};
 use tools::templates::character_temp::{CharacterTemp, TransformInheritType};
 
-use super::battle_enum::buff_type::{ADD_ATTACK_AND_AOE, CAN_NOT_MOVED};
+use super::battle_enum::buff_type::{ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED};
 
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
@@ -73,6 +71,9 @@ impl BattleBuff {
         if SUB_ATTACK_DAMAGE.contains(&buff_id) {
             self.add_sub_damage_buff(buff_id);
         }
+        if ATTACKED_SUB_DAMAGE == buff_id {
+            self.add_sub_damage_buff(buff_id);
+        }
     }
 
     pub fn add_add_damage_buffs(&mut self, buff_id: u32) {
@@ -97,6 +98,10 @@ impl BattleBuff {
 
     pub fn add_buff_for_buffs(&mut self, buff: Buff) {
         self.buffs.insert(buff.get_id(), buff);
+    }
+
+    pub fn sub_damage_buffs(&self) -> &HashMap<u32, u8> {
+        &self.sub_damage_buffs
     }
 
     pub fn buffs(&self) -> &HashMap<u32, Buff> {
@@ -204,6 +209,7 @@ impl BattlePlayer {
     pub fn init(
         member: &Member,
         battle_data: &mut BattleData,
+        remember_size: u32,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Self> {
         let mut battle_player = BattlePlayer::default();
@@ -220,6 +226,7 @@ impl BattlePlayer {
                 battle_player.user_id,
                 member.robot_temp_id,
                 battle_data as *mut BattleData,
+                remember_size,
                 robot_sender,
             );
             battle_player.robot_data = Some(robot_data);
@@ -865,27 +872,6 @@ impl BattleCharacter {
             }
         }
         damage as i16
-    }
-
-    ///计算减伤
-    pub fn calc_reduce_damage(&self, attack_is_near: bool) -> i16 {
-        let mut value = self.base_attr.defence;
-        let mut buff_function_id;
-        for (buff_id, times) in self.battle_buffs.sub_damage_buffs.iter() {
-            let buff = self.battle_buffs.buffs.get(buff_id);
-            if buff.is_none() {
-                continue;
-            }
-            let buff = buff.unwrap();
-            buff_function_id = buff.function_id;
-            if buff_function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
-                continue;
-            }
-            for _ in 0..*times {
-                value += buff.buff_temp.par1 as u8;
-            }
-        }
-        value as i16
     }
 
     ///添加buff

@@ -782,9 +782,14 @@ impl Room {
     }
 
     pub fn cter_2_battle_cter(&mut self) {
+        let ai_level = self.setting.ai_level as u32;
         for member in self.members.values_mut() {
-            let battle_player =
-                BattlePlayer::init(&member, &mut self.battle_data, self.robot_sender.clone());
+            let battle_player = BattlePlayer::init(
+                &member,
+                &mut self.battle_data,
+                ai_level,
+                self.robot_sender.clone(),
+            );
             match battle_player {
                 Ok(battle_player) => {
                     self.battle_data

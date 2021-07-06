@@ -20,8 +20,6 @@ use std::collections::VecDeque;
 
 use self::robot_helper::check_can_open;
 
-pub const MAX_MEMORY_SIZE: usize = 5;
-
 ///回合行为类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -76,6 +74,7 @@ pub struct RobotData {
     pub goal_think: GoalThink,                            //机器人think
     pub robot_status: Option<Box<dyn RobotStatusAction>>, //状态,
     pub remember_map_cell: VecDeque<RememberCell>,        //记忆地图块
+    pub remember_size: u32,                               //记忆队列长度
     pub sender: Sender<RobotTask>,                        //机器人任务sender
 }
 
@@ -85,6 +84,7 @@ impl RobotData {
         robot_id: u32,
         temp_id: u32,
         battle_data: *mut BattleData,
+        remember_size: u32,
         sender: Sender<RobotTask>,
     ) -> Self {
         RobotData {
@@ -94,6 +94,7 @@ impl RobotData {
             goal_think: GoalThink::new(),
             robot_status: None,
             remember_map_cell: VecDeque::new(),
+            remember_size,
             sender,
         }
     }
@@ -183,6 +184,7 @@ impl Clone for RobotData {
             goal_think: self.goal_think.clone(),
             robot_status: None,
             remember_map_cell: self.remember_map_cell.clone(),
+            remember_size: self.remember_size,
             sender: self.sender.clone(),
         }
     }

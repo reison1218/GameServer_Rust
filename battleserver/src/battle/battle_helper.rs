@@ -21,7 +21,7 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
-use super::battle_enum::buff_type::TRAPS;
+use super::battle_enum::buff_type::{ATTACKED_SUB_DAMAGE, NEAR_SUB_ATTACK_DAMAGE, TRAPS};
 use super::battle_enum::{ActionType, BattlePlayerState};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
@@ -339,6 +339,20 @@ impl BattleData {
         Ok(target_pt)
     }
 
+    pub fn is_min_hp(&self, user_id: u32) -> bool {
+        let battle_player = self.battle_player.get(&user_id).unwrap();
+        let hp = battle_player.cter.base_attr.hp;
+        for bp in self.battle_player.values() {
+            if bp.get_user_id() == user_id {
+                continue;
+            }
+            if hp >= bp.cter.base_attr.hp {
+                return false;
+            }
+        }
+        true
+    }
+
     ///计算减伤
     pub fn calc_reduce_damage(&self, from_user: u32, target_player: &mut BattlePlayer) -> i16 {
         let target_user = target_player.get_user_id();
@@ -356,8 +370,33 @@ impl BattleData {
             None,
             Some(scope_temp),
         );
-        let res = user_v.contains(&from_user);
-        target_player.cter.calc_reduce_damage(res)
+        let attack_is_near = user_v.contains(&from_user);
+
+        let mut value = target_player.cter.base_attr.defence;
+        let mut buff_function_id;
+        let mut par;
+        for (&buff_id, &times) in target_player.cter.battle_buffs.sub_damage_buffs().iter() {
+            let buff = target_player.cter.battle_buffs.get_buff(buff_id);
+            if buff.is_none() {
+                continue;
+            }
+            let buff = buff.unwrap();
+            buff_function_id = buff.function_id;
+            if buff_function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
+                continue;
+            }
+            par = buff.buff_temp.par1 as u8;
+            if buff_function_id == ATTACKED_SUB_DAMAGE {
+                let is_min_hp = self.is_min_hp(target_user);
+                if is_min_hp {
+                    par = buff.buff_temp.par2 as u8;
+                }
+            }
+            for _ in 0..times {
+                value += par;
+            }
+        }
+        value as i16
     }
 
     pub fn get_alive_player_num(&self) -> usize {

@@ -11,7 +11,6 @@ use log::error;
 use log::info;
 use log::warn;
 use protobuf::Message;
-use rand::Rng;
 use std::borrow::BorrowMut;
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -19,10 +18,10 @@ use std::sync::atomic::Ordering;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::room::{
-    C_CHANGE_TEAM, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI, C_KICK_MEMBER,
-    C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOOSE_CHARACTER, S_CHOOSE_CHARACTER_NOTICE,
-    S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM, S_PUNISH_MATCH_NOTICE, S_ROOM_SETTING,
-    S_START,
+    C_CHANGE_TEAM, C_CHOICE_AI, C_CHOOSE_CHARACTER, C_CHOOSE_SKILL, C_CONFIRM_INTO_ROOM, C_EMOJI,
+    C_KICK_MEMBER, C_PREPARE_CANCEL, C_ROOM_SETTING, S_CHOICE_AI_NOTICE, S_CHOOSE_CHARACTER,
+    S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM,
+    S_PUNISH_MATCH_NOTICE, S_ROOM_SETTING, S_START,
 };
 use tools::protos::server_protocol::B_R_SUMMARY;
 use tools::protos::server_protocol::{
@@ -146,11 +145,6 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             //校验房间设置
             let room_setting_pt = grc.get_setting();
             let season_id = room_setting_pt.season_id;
-            let victory_condition = room_setting_pt.victory_condition;
-            if victory_condition == 0 || victory_condition > 6 {
-                warn!("victory_condition is error!");
-                return;
-            }
             if season_id > 0 {
                 let season_temp = crate::TEMPLATES
                     .season_temp_mgr()
@@ -525,10 +519,98 @@ pub fn battle_kick_member(rm: &mut RoomMgr, packet: Packet) {
     rm.remove_member_without_push(user_id);
 }
 
+pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
+    let user_id = packet.get_user_id();
+    let mut proto = C_CHOICE_AI::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
+    //判断释放是房主
+    let room = rm.get_room_mut_by_user_id(&user_id);
+    if let None = room {
+        warn!("could not find room!user_id:{}", user_id);
+        return;
+    }
+    let room = room.unwrap();
+    let room_id = room.get_room_id();
+    let owner_id = room.get_owner_id();
+    if owner_id != user_id {
+        warn!(
+            "this player is not owner!owner_id:{},user_id:{}",
+            owner_id, user_id
+        );
+        return;
+    }
+
+    let index = proto.get_index() as usize;
+    let robot_temp_id = proto.get_robot_temp_id();
+
+    let robot_temp = crate::TEMPLATES
+        .robot_temp_mgr()
+        .get_temp_ref(&robot_temp_id);
+    if let None = robot_temp {
+        warn!(
+            "this robot_temp is not find!robot_temp_id:{}",
+            robot_temp_id
+        );
+        return;
+    }
+    let robot_temp = robot_temp.unwrap();
+    let cter_id = robot_temp.cter_id;
+    //判断该位置上有没有人
+    let res = room.member_index.get(index);
+    if let None = res {
+        warn!("the index is error!index:{}", index);
+        return;
+    }
+    let &user = res.unwrap();
+    if user > 0 {
+        warn!("the index already has user!index:{},user:{}", index, user);
+        return;
+    }
+
+    //判断是否可以选择这个角色
+    let member = room.get_member_ref(&user_id).unwrap();
+    if !member.cters.contains_key(&cter_id) {
+        warn!("could not choice this cter_id as ai!cter_id:{}", cter_id);
+        return;
+    }
+    //判断这个角色是否已经被选了
+    for member in room.members.values() {
+        if member.chose_cter.cter_id == cter_id {
+            warn!("this cter is already choiced!cter_id:{}", cter_id);
+            return;
+        }
+    }
+
+    //添加机器人
+    let robot = add_robot(rm, room_id, index, robot_temp_id);
+    if let Err(err) = robot {
+        error!("{:?}", err);
+        return;
+    }
+    let robot = robot.unwrap();
+
+    //推送给所有人
+    let mut proto = S_CHOICE_AI_NOTICE::new();
+    proto.set_index(index as u32);
+    proto.set_robot_temp_id(robot_temp_id);
+    proto.set_user_id(robot.get_user_id());
+    let bytes = proto.write_to_bytes();
+    match bytes {
+        Ok(bytes) => {
+            let room = rm.get_room_mut_by_user_id(&user_id).unwrap();
+            room.send_2_all_client(ClientCode::ChoiceAINotice, bytes)
+        }
+        Err(e) => error!("{:?}", e),
+    }
+}
+
 ///开始游戏
 pub fn start(rm: &mut RoomMgr, packet: Packet) {
     let user_id = packet.get_user_id();
-    let rm_ptr = rm as *mut RoomMgr;
     //校验房间
     let room = rm.get_room_mut_by_user_id(&user_id);
     if let None = room {
@@ -562,13 +644,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
         );
         return;
     }
-    let room_id = room.get_room_id();
 
-    //校验是否加载机器人
-    unsafe {
-        let rm_mut = rm_ptr.as_mut().unwrap();
-        check_add_robot(rm_mut, room_id);
-    }
     //执行开始逻辑
     room.start();
 
@@ -578,90 +654,46 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
 }
 
 ///检查添加机器人
-pub fn check_add_robot(rm: &mut RoomMgr, room_id: u32) {
-    let rm_ptr = rm as *mut RoomMgr;
-    let room = rm.get_room_mut(RoomType::OneVOneVOneVOneCustom, room_id);
-    if room.is_err() {
-        return;
-    }
-    let room = room.unwrap();
-    //如果没有开启ai则直接return
-    if !room.setting.is_open_ai {
-        return;
-    }
-    let need_num = MEMBER_MAX - room.members.len() as u8;
-    //需要机器人的数量，为0则直接return
-    if need_num == 0 {
-        return;
-    }
+pub fn add_robot(
+    rm: &mut RoomMgr,
+    room_id: u32,
+    index: usize,
+    robot_temp_id: u32,
+) -> anyhow::Result<Member> {
+    let room = rm.get_room_mut(RoomType::OneVOneVOneVOneCustom, room_id)?;
+
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.robot_temp_mgr();
-    //克隆一份机器人角色数组
-    let cters_res = &robot_temp_mgr.cters;
-    let mut cters_c = Vec::new();
-    //添加已经选择了的角色
-    for member in room.members.values() {
-        cters_c.push(member.chose_cter.cter_id);
-    }
-    //删掉已经选择了的角色
-    let mut rand_cters = vec![];
-    for i in cters_c.iter() {
-        for (_, temps) in cters_res.iter() {
-            for temp in temps.iter() {
-                if i == &temp.cter_id {
-                    continue;
-                }
-                rand_cters.push(temp.get_id());
-            }
-        }
-    }
-    let mut rand = rand::thread_rng();
-    //生成机器人
-    for _ in 0..need_num {
-        //随机出下标
-        let cter_index = rand.gen_range(0..rand_cters.len());
-        let temp_id = rand_cters.remove(cter_index);
-        let robot_temp = cters_res.get(&temp_id).unwrap();
-        let skill_index = rand.gen_range(0..robot_temp.len());
+    let robot_temp = robot_temp_mgr.get_temp_ref(&robot_temp_id).unwrap();
+    let cter_id = robot_temp.cter_id;
 
-        let robot_temp = robot_temp.get(skill_index).unwrap();
-        let cter_id = robot_temp.cter_id;
+    //机器人id自增
+    crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
+    let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
 
-        //机器人id自增
-        crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
-        let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+    //初始化成员
+    let mut member = Member::default();
+    member.robot_temp_id = robot_temp_id;
+    member.user_id = robot_id;
+    member.state = MemberState::Ready;
+    member.nick_name = "robot".to_owned();
+    member.grade = 1;
+    member.grade_frame = 1;
 
-        //初始化成员
-        let mut member = Member::default();
-        member.robot_temp_id = temp_id;
-        member.user_id = robot_id;
-        member.state = MemberState::Ready;
-        member.nick_name = "robot".to_owned();
-        member.grade = 1;
-        member.grade_frame = 1;
+    //初始化选择的角色
+    let mut cter = Character::default();
+    cter.user_id = robot_id;
+    cter.cter_id = cter_id;
 
-        //初始化选择的角色
-        let mut cter = Character::default();
-        cter.user_id = robot_id;
-        cter.cter_id = cter_id;
-
-        //初始化角色技能
-        cter.skills.extend_from_slice(robot_temp.skills.as_slice());
-        //将角色加入到成员里
-        member.chose_cter = cter;
-        let res = room.add_member(member);
-        if let Err(e) = res {
-            error!("{:?}", e);
-            return;
-        }
-        let room_id = room.get_room_id();
-        let value =
-            tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
-        unsafe {
-            let rm_mut = rm_ptr.as_mut().unwrap();
-            rm_mut.player_room.insert(robot_id, value);
-        }
-    }
+    //初始化角色技能
+    cter.skills.extend_from_slice(robot_temp.skills.as_slice());
+    //将角色加入到成员里
+    member.chose_cter = cter;
+    room.add_member(member.clone(), Some(index))?;
+    let room_id = room.get_room_id();
+    let value = tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
+    rm.player_room.insert(robot_id, value);
+    Ok(member)
 }
 
 ///换队伍
@@ -834,9 +866,6 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
         let proto_value = rs.value;
         let room_set_type = RoomSettingType::from(set_type);
         match room_set_type {
-            RoomSettingType::IsOpenAI => {
-                room.setting.is_open_ai = proto_value == 1;
-            }
             RoomSettingType::SeasonId => {
                 let season_id = proto_value;
                 if season_id > 0 {
@@ -865,6 +894,25 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
                             room.setting.turn_limit_time = 120000;
                         }
                     }
+                }
+            }
+            RoomSettingType::AILevel => {
+                let id = proto_value as u8;
+                let mut res = crate::TEMPLATES
+                    .constant_temp_mgr()
+                    .temps
+                    .get("ai_level_easy")
+                    .unwrap();
+                let re_id1 = u8::from_str(res.value.as_str()).unwrap();
+                res = crate::TEMPLATES
+                    .constant_temp_mgr()
+                    .temps
+                    .get("ai_level_hard")
+                    .unwrap();
+                let re_id2 = u8::from_str(res.value.as_str()).unwrap();
+                if id != re_id1 && id != re_id2 {
+                    warn!("the ai level is error!id:{}", id);
+                    return;
                 }
             }
             _ => {
@@ -984,7 +1032,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     }
     let member = Member::from(grj.get_pbp());
     //将玩家加入到房间
-    let res = room.add_member(member);
+    let res = room.add_member(member, None);
     if let Err(e) = res {
         error!("{:?}", e);
         return;

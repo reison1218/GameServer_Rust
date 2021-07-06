@@ -101,6 +101,8 @@ pub enum RoomCode {
     CancelSearch = 20016,
     //战斗T人通知
     BattleKickMember = 20017,
+    //选择ai角色
+    ChoiceAI = 20018,
     //--------------------------------------以下战斗相关---------------------------
     //战斗结算
     Summary = 21000,
@@ -268,6 +270,8 @@ pub enum ClientCode {
     BuyNoice = 10102,
     //匹配惩罚推送
     PunishPatchPush = 10103,
+    //选择ai角色通知
+    ChoiceAINotice = 10201,
     //最大命令号
     Max = 20000,
 }

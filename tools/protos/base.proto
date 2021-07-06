@@ -19,8 +19,7 @@ package protos;
 message RoomSettingPt{
     uint32 turn_limit_time = 1;//回合时间限制
     int32 season_id = 2;//赛季id
-    bool is_open_ai = 3;//是否开启ai
-    uint32 victory_condition = 4;//胜利条件
+    uint32 ai_level = 3;//ai等级
 }
 
 //玩家信息

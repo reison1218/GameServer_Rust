@@ -1,7 +1,8 @@
 use crate::handlers::room_handler::{
-    battle_kick_member, cancel_search_room, change_team, choice_skills, choose_character,
-    confirm_into_room, create_room, emoji, join_room, kick_member, leave_room, off_line,
-    prepare_cancel, reload_temps, room_setting, search_room, start, summary, update_season,
+    battle_kick_member, cancel_search_room, change_team, choice_ai, choice_skills,
+    choose_character, confirm_into_room, create_room, emoji, join_room, kick_member, leave_room,
+    off_line, prepare_cancel, reload_temps, room_setting, search_room, start, summary,
+    update_season,
 };
 use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
@@ -303,5 +304,8 @@ impl RoomMgr {
         //战斗服通知T人
         self.cmd_map
             .insert(RoomCode::BattleKickMember.into_u32(), battle_kick_member);
+        //战斗服通知T人
+        self.cmd_map
+            .insert(RoomCode::ChoiceAI.into_u32(), choice_ai);
     }
 }

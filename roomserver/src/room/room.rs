@@ -30,17 +30,17 @@ pub const MEMBER_MAX: u8 = 4;
 #[repr(u8)]
 pub enum RoomSettingType {
     None = 0,
-    IsOpenAI = 1,
-    SeasonId = 2,
-    TurnLimitTime = 3,
+    SeasonId = 1,
+    TurnLimitTime = 2,
+    AILevel = 3,
 }
 
 impl From<u32> for RoomSettingType {
     fn from(value: u32) -> Self {
         match value {
-            1 => RoomSettingType::IsOpenAI,
-            2 => RoomSettingType::SeasonId,
-            3 => RoomSettingType::TurnLimitTime,
+            1 => RoomSettingType::SeasonId,
+            2 => RoomSettingType::TurnLimitTime,
+            3 => RoomSettingType::AILevel,
             _ => RoomSettingType::None,
         }
     }
@@ -463,22 +463,22 @@ impl Room {
     }
 
     ///检查准备状态
-    pub fn check_ready(&self) -> bool {
+    pub fn check_ready(&mut self) -> bool {
         let mut index = 0;
         let mut size = self.members.len();
+        let owner_id = self.owner_id;
         if self.room_type == RoomType::OneVOneVOneVOneMatch {
             size = MEMBER_MAX as usize;
         }
-        for member in self.members.values() {
+        for member in self.members.values_mut() {
             let res = member.state == MemberState::Ready;
+            if owner_id == member.user_id {
+                member.state = MemberState::Ready;
+            }
             if !res {
                 continue;
             }
             index += 1;
-        }
-        //只有一个人的时候，如果ai关闭状态，不能开始
-        if size == 1 && !self.setting.is_open_ai {
-            return false;
         }
         index >= size
     }
@@ -519,19 +519,24 @@ impl Room {
     }
 
     ///添加成员
-    pub fn add_member(&mut self, mut member: Member) -> anyhow::Result<u32> {
+    pub fn add_member(&mut self, mut member: Member, index: Option<usize>) -> anyhow::Result<u32> {
         let mut size = self.members.len() as u8;
         let user_id = member.user_id;
         size += 1;
         member.team_id = size;
         member.join_time = Local::now().timestamp_millis() as u64;
         self.members.insert(user_id, member);
-        for i in 0..self.member_index.len() {
-            if self.member_index[i] != 0 {
-                continue;
+        match index {
+            Some(index) => self.member_index[index] = user_id,
+            None => {
+                for i in 0..self.member_index.len() {
+                    if self.member_index[i] != 0 {
+                        continue;
+                    }
+                    self.member_index[i] = user_id;
+                    break;
+                }
             }
-            self.member_index[i] = user_id;
-            break;
         }
 
         //不是匹配房就通知其他成员

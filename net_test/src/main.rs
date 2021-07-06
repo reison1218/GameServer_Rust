@@ -521,7 +521,21 @@ pub fn abcd<T: Debug + 'static>(str: T) {
     println!("{:?}", map.get("1").unwrap());
 }
 
+fn test_close(mut a: impl FnMut(u32)) {
+    a(1);
+}
+
 fn main() -> anyhow::Result<()> {
+    test_close(move |x| {
+        println!("{}", x);
+    });
+    let key = format!("{:?}-{:?}", "history_rank", "4".to_owned());
+    println!("{:?}", key);
+    let mut key = String::new();
+    key.push_str("history_rank");
+    key.push_str("-");
+    key.push_str("4".to_string().as_str());
+    println!("{:?}", key);
     // let mut tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
     // let mut bytes: [u8; 512] = [0; 512];
     // loop {
@@ -533,10 +547,10 @@ fn main() -> anyhow::Result<()> {
     //     }
     // }
     // println!("over");
-    // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
-    // let m = move || {
-    //     message_io::run(Transport::Tcp, socket);
-    // };
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
+    let m = move || {
+        message_io::run(Transport::Tcp, socket);
+    };
     // std::thread::spawn(m);
     // std::thread::sleep(Duration::from_micros(1));
     // let mut tcp = std::net::TcpStream::connect("localhost:16888").unwrap();
@@ -560,10 +574,10 @@ fn main() -> anyhow::Result<()> {
     // }
     // std::thread::sleep(Duration::from_micros(10));
 
-    for _ in 0..100 {
-        let stream = std::net::TcpStream::connect("localhost:16801").unwrap();
-    }
-    tcp_client::test_tcp_client("reison2");
+    // for _ in 0..100 {
+    //     let stream = std::net::TcpStream::connect("localhost:16801").unwrap();
+    // }
+    // tcp_client::test_tcp_client("reison2");
 
     // let ticket="140000002122985e271b14182b7e180001001001c1d4b06018000000010000000200000055a1c4a738e3c606c029070001000000b200000032000000040000002b7e180001001001067d18003cb20fb77302a8c000000000ed6ca4606d1cc060010005af080000000000c5379ac1ac49f4b5488c02e5a327a2759d52a8da892f1d649c69745a8a530d6b3ad1128a6864db03eb5a7de7c30562c822ac646886091bdbe0c6cf5629266d06e4898dee90bcadf139ceb73103b5a694f17fae162b2d5971b2734cc3acf88f9e76a4767e7c4c156666d6f54e1c9d9a2dc8fa7d9d2454a0dbe94ee7f73f0cd9c2";
 

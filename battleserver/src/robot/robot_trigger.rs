@@ -3,8 +3,6 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use rand::Rng;
 
-use super::MAX_MEMORY_SIZE;
-
 ///触发器类型
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -29,7 +27,7 @@ impl RobotTriggerType {
 impl RobotData {
     pub fn trigger_see_map_cell(&mut self, rc: RememberCell) {
         let size = self.remember_map_cell.len();
-
+        let max_size = self.remember_size as usize;
         //如果这个块已经被记忆，则刷新位置
         let mut rm_index = None;
         for index in 0..self.remember_map_cell.len() {
@@ -44,7 +42,7 @@ impl RobotData {
         }
         self.remember_map_cell.push_front(rc);
         //如果数量大于5则忘记尾端
-        if size > MAX_MEMORY_SIZE {
+        if size > max_size {
             let mut rand = rand::thread_rng();
             let res = rand.gen_range(0..100);
             let forget = (size - 2) * 10;

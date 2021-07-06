@@ -55,10 +55,9 @@ impl RoomType {
 ///房间设置
 #[derive(Debug, Copy, Clone)]
 pub struct RoomSetting {
-    pub turn_limit_time: u32,   //回合限制时间
-    pub season_id: i32,         //赛季id
-    pub is_open_ai: bool,       //是否开启ai
-    pub victory_condition: u32, //胜利条件
+    pub turn_limit_time: u32, //回合限制时间
+    pub season_id: i32,       //赛季id
+    pub ai_level: u8,         //ai等级
 }
 
 impl Default for RoomSetting {
@@ -90,24 +89,21 @@ impl Default for RoomSetting {
         }
         RoomSetting {
             season_id: 0,
-            is_open_ai: false,
+            ai_level: 3,
             turn_limit_time,
-            victory_condition: 1,
         }
     }
 }
 
 impl From<&RoomSettingPt> for RoomSetting {
     fn from(rs_pt: &RoomSettingPt) -> Self {
-        let is_open_ai = rs_pt.is_open_ai;
-        let victory_condition = rs_pt.victory_condition;
+        let ai_level = rs_pt.ai_level as u8;
         let turn_limit_time = rs_pt.turn_limit_time;
         let season_id = rs_pt.season_id;
         let rs = RoomSetting {
             turn_limit_time,
             season_id,
-            is_open_ai,
-            victory_condition,
+            ai_level,
         };
         rs
     }
@@ -116,10 +112,9 @@ impl From<&RoomSettingPt> for RoomSetting {
 impl From<&RoomSetting> for RoomSettingPt {
     fn from(r: &RoomSetting) -> Self {
         let mut rsp = RoomSettingPt::new();
-        rsp.set_victory_condition(r.victory_condition);
         rsp.set_season_id(r.season_id);
         rsp.set_turn_limit_time(r.turn_limit_time);
-        rsp.set_is_open_ai(r.is_open_ai);
+        rsp.set_ai_level(r.ai_level as u32);
         rsp
     }
 }
@@ -449,7 +444,7 @@ impl MatchRoom {
             }
             let user_id = member.user_id;
             //将成员加入到房间中
-            room_mut.add_member(member)?;
+            room_mut.add_member(member, None)?;
             //解决房间队列缓存
             let room_cache = self.room_cache.get_mut(0).unwrap();
             //cache人数加1

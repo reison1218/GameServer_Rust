@@ -87,7 +87,10 @@ pub async fn handler_season_update(
         );
         //更新历史排行榜
         if index < 100 {
-            let key = format!("{:?}-,{:?}", REDIS_KEY_HISTORY_RANK, round.to_string());
+            let mut key = String::new();
+            key.push_str(REDIS_KEY_HISTORY_RANK);
+            key.push_str("-");
+            key.push_str(round.to_string().as_str());
             let _: Option<String> = redis_lock.hset(
                 REDIS_INDEX_HISTORY,
                 key.as_str(),
