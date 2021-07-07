@@ -342,15 +342,16 @@ impl BattleData {
     pub fn is_min_hp(&self, user_id: u32) -> bool {
         let battle_player = self.battle_player.get(&user_id).unwrap();
         let hp = battle_player.cter.base_attr.hp;
-        for bp in self.battle_player.values() {
-            if bp.get_user_id() == user_id {
-                continue;
-            }
-            if hp >= bp.cter.base_attr.hp {
-                return false;
-            }
+
+        let res = self
+            .battle_player
+            .values()
+            .filter(|player| player.get_user_id() != user_id && !player.is_died())
+            .min_by(|&x, &y| x.cter.base_attr.hp.cmp(&y.cter.base_attr.hp));
+        match res {
+            Some(battle_player) => hp < battle_player.cter.base_attr.hp,
+            None => true,
         }
-        true
     }
 
     ///计算减伤

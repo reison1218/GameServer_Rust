@@ -204,12 +204,7 @@ impl RoomModel for CustomRoom {
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
-        let mut room = Room::new(
-            owner.clone(),
-            RoomType::OneVOneVOneVOneCustom,
-            sender,
-            task_sender,
-        )?;
+        let mut room = Room::new(owner, RoomType::OneVOneVOneVOneCustom, sender, task_sender)?;
         if let Some(room_setting) = room_setting {
             room.setting = room_setting;
         }

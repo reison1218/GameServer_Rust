@@ -58,17 +58,16 @@ impl GoalThink {
         if self.goal_evaluators.len() == 0 {
             return;
         }
-        let mut ge_res = None;
-        let mut ge_des = 0;
-        //开始执行仲裁
-        for ge in self.goal_evaluators.iter() {
-            if ge.calculate_desirability(robot) > ge_des {
-                ge_res = Some(ge);
-                ge_des = ge_res.as_ref().unwrap().calculate_desirability(robot);
-            }
-        }
+
         //获得仲裁结果
-        let best_goal_evaluator = ge_res.unwrap();
+        let best_goal_evaluator = self
+            .goal_evaluators
+            .iter()
+            .max_by(|x, y| {
+                x.calculate_desirability(robot)
+                    .cmp(&y.calculate_desirability(robot))
+            })
+            .unwrap();
         //设置状态
         best_goal_evaluator.set_status(robot, sender, battle_data);
     }

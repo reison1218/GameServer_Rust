@@ -526,16 +526,17 @@ fn test_close(mut a: impl FnMut(u32)) {
 }
 
 fn main() -> anyhow::Result<()> {
-    test_close(move |x| {
-        println!("{}", x);
-    });
-    let key = format!("{:?}-{:?}", "history_rank", "4".to_owned());
-    println!("{:?}", key);
-    let mut key = String::new();
-    key.push_str("history_rank");
-    key.push_str("-");
-    key.push_str("4".to_string().as_str());
-    println!("{:?}", key);
+    // test_close(move |x| {
+    //     println!("{}", x);
+    // });
+    let mut v = vec![1, 2];
+    let res = v
+        .iter()
+        .filter(|x| x > &&1)
+        .min_by(|x, y| x.cmp(&y))
+        .unwrap();
+    println!("{}", res);
+
     // let mut tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
     // let mut bytes: [u8; 512] = [0; 512];
     // loop {
