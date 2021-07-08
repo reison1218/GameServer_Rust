@@ -1,6 +1,7 @@
 use crate::entity::gateuser::GateUser;
 use crate::net::http::notice_user_center;
 use crate::net::http::UserCenterNoticeType;
+use crossbeam::channel::Sender;
 use log::warn;
 use log::{error, info};
 use std::collections::HashMap;
@@ -11,11 +12,11 @@ use tools::util::packet::Packet;
 ///channel管理结构体
 pub struct ChannelMgr {
     //游戏服tcpstream
-    pub game_client_channel: Option<TcpHandler>,
+    pub game_client_channel: Option<Sender<Vec<u8>>>,
     //房间服stream
     // pub room_client_channel: Option<TcpStream>,
     //游戏中心stream
-    pub game_center_client_channel: Option<TcpHandler>,
+    pub game_center_client_channel: Option<Sender<Vec<u8>>>,
     //玩家channels user_id GateUser
     pub user_channel: HashMap<u32, GateUser>,
     //token,user_id
@@ -39,7 +40,7 @@ impl ChannelMgr {
         cm
     }
 
-    pub fn set_game_client_channel(&mut self, ts: TcpHandler) {
+    pub fn set_game_client_channel(&mut self, ts: Sender<Vec<u8>>) {
         self.game_client_channel = Some(ts);
     }
 
@@ -47,7 +48,7 @@ impl ChannelMgr {
     //     self.room_client_channel = Some(ts);
     // }
 
-    pub fn set_game_center_client_channel(&mut self, ts: TcpHandler) {
+    pub fn set_game_center_client_channel(&mut self, ts: Sender<Vec<u8>>) {
         self.game_center_client_channel = Some(ts);
     }
 
@@ -94,7 +95,10 @@ impl ChannelMgr {
             return;
         }
         let gc = self.game_client_channel.as_mut().unwrap();
-        gc.send(packet.build_server_bytes().as_slice());
+        let size = gc.send(packet.build_server_bytes());
+        if let Err(e) = size {
+            error!("{:?}", e);
+        }
     }
 
     ///停服
@@ -123,7 +127,10 @@ impl ChannelMgr {
             return;
         }
         let rc = self.game_center_client_channel.as_mut().unwrap();
-        rc.send(packet.build_server_bytes().as_slice());
+        let size = rc.send(packet.build_server_bytes());
+        if let Err(e) = size {
+            error!("{:?}", e);
+        }
     }
 
     ///将临时到tcpsender转化到gateuser
@@ -183,7 +190,7 @@ impl ChannelMgr {
         }
         let user_id = &user_id.unwrap();
         let gate_user = self.user_channel.remove(user_id);
-        if let Some(gate_user) = gate_user {
+        if let Some(mut gate_user) = gate_user {
             gate_user.close();
         }
         self.temp_channels.remove(user_id);

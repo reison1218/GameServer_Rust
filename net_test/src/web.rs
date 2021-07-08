@@ -98,7 +98,7 @@ async fn accept(stream: TcpStream) -> http_types::Result<()> {
         let mut string = String::new();
         body.read_to_string(&mut string).await.unwrap();
         println!("{:?}", string);
-        let json: Result<serde_json::Value, Error> = serde_json::from_str(string.as_str());
+        let mut json: Result<serde_json::Value, Error> = serde_json::from_str(string.as_str());
         if json.is_err() {
             println!("{:?}", json.as_ref().err().unwrap());
         } else {

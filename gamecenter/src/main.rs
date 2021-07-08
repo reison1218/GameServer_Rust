@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tools::conf::Conf;
 use tools::http::HttpServerHandler;
-use tools::tcp_message_io::{MessageHandler, TransportWay};
+use tools::tcp::ClientHandler;
 
 #[macro_use]
 extern crate lazy_static;
@@ -69,12 +69,12 @@ fn init_tcp_client(gm: Lock) {
     let mut rth = RoomTcpClientHandler { gm: gm.clone() };
     let address: &str = CONF_MAP.get_str("room_port");
     let m = async move {
-        rth.connect(TransportWay::Tcp, address).await;
+        rth.on_read(address.to_string()).await;
     };
     async_std::task::spawn(m);
     let address: &str = CONF_MAP.get_str("rank_port");
     let mut rth = RankTcpClientHandler { gm };
-    let res = rth.connect(TransportWay::Tcp, address);
+    let res = rth.on_read(address.to_string());
     async_std::task::block_on(res);
 }
 

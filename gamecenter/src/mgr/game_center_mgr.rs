@@ -1,3 +1,4 @@
+use crossbeam::channel::Sender;
 use log::warn;
 use protobuf::Message;
 use serde_json::Value;
@@ -9,8 +10,8 @@ use tools::util::packet::Packet;
 
 #[derive(Default)]
 pub struct GameCenterMgr {
-    pub rank_server: Option<TcpHandler>,              //排行榜服
-    pub room_center: Option<TcpHandler>,              //房间中心
+    pub rank_server: Option<Sender<Vec<u8>>>,         //排行榜服
+    pub room_center: Option<Sender<Vec<u8>>>,         //房间中心
     pub gate_clients: HashMap<usize, GateClient>,     //gate路由服客户端,key:token,value:GateClient
     pub battle_clients: HashMap<usize, BattleClient>, //战斗服客户端,key:token,value:BattleClient
     pub user_w_gate: HashMap<u32, usize>,             //玩家对应gate
@@ -67,7 +68,10 @@ impl GameCenterMgr {
         packet.set_data(&usn.write_to_bytes().unwrap()[..]);
         let bytes = packet.build_server_bytes();
         //通知排行榜服
-        self.get_rank_center().send(bytes.as_slice());
+        let res = self.get_rank_center_mut().send(bytes);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+        }
     }
 
     ///停服
@@ -118,7 +122,10 @@ impl GameCenterMgr {
         }
 
         //通知房间服
-        self.get_room_center().send(bytes.as_slice());
+        let res = self.get_room_center_mut().send(bytes);
+        if let Err(e) = res {
+            warn!("{:?}", e);
+        }
     }
 
     pub fn handler(&mut self, packet: &Packet, gate_token: Option<usize>) {
@@ -205,12 +212,12 @@ impl GameCenterMgr {
         }
     }
 
-    pub fn get_room_center(&self) -> &TcpHandler {
-        self.room_center.as_ref().unwrap()
+    pub fn get_room_center_mut(&mut self) -> &mut Sender<Vec<u8>> {
+        self.room_center.as_mut().unwrap()
     }
 
-    pub fn get_rank_center(&self) -> &TcpHandler {
-        self.rank_server.as_ref().unwrap()
+    pub fn get_rank_center_mut(&mut self) -> &mut Sender<Vec<u8>> {
+        self.rank_server.as_mut().unwrap()
     }
 
     pub fn get_gate_client(&self, user_id: u32) -> anyhow::Result<&GateClient> {
@@ -241,11 +248,11 @@ impl GameCenterMgr {
         Ok(gc)
     }
 
-    pub fn set_room_sender(&mut self, sender: TcpHandler) {
+    pub fn set_room_sender(&mut self, sender: Sender<Vec<u8>>) {
         self.room_center = Some(sender);
     }
 
-    pub fn set_rank_sender(&mut self, sender: TcpHandler) {
+    pub fn set_rank_sender(&mut self, sender: Sender<Vec<u8>>) {
         self.rank_server = Some(sender);
     }
 

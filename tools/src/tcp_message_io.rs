@@ -13,40 +13,7 @@ use serde::{Deserialize, Serialize};
 
 #[async_trait]
 pub trait MessageHandler {
-    ///tcp client should not impl this func
     async fn try_clone(&self) -> Self;
-
-    ///this func just for tcp client
-    async fn connect(&mut self, transport: TransportWay, addr: &str) {
-        let transport = match transport {
-            TransportWay::Tcp => Transport::Tcp,
-            TransportWay::Udp => Transport::Udp,
-        };
-        let (handler, listener) = node::split::<()>();
-
-        let (server, _) = handler.network().connect(transport, addr).unwrap();
-
-        listener.for_each(move |event| match event.network() {
-            NetEvent::Connected(endpoint, ok) => match ok {
-                true => {
-                    let th = TcpHandler::new(handler.clone(), server);
-                    block_on(self.on_open(th));
-                    info!("connect server({:?}) success!", endpoint.addr());
-                }
-                false => {
-                    warn!("connect server({:?}) fail!", endpoint.addr());
-                }
-            },
-            NetEvent::Message(_endpoint, data) => {
-                block_on(self.on_message(data));
-            }
-            NetEvent::Disconnected(endpoint) => {
-                block_on(self.on_close());
-                info!("disconnect with server({:?})!", endpoint.addr());
-            }
-            _ => {}
-        });
-    }
 
     ///Triggered when there is a new client connection
     async fn on_open(&mut self, tcp_handler: TcpHandler);
@@ -71,11 +38,6 @@ impl TcpHandler {
             node_handler: node_handler,
             endpoint: endpoint,
         }
-    }
-
-    pub fn send(&self, mess: &[u8]) {
-        let endpoint = self.endpoint;
-        self.node_handler.network().send(endpoint, mess);
     }
 }
 

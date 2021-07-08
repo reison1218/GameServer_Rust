@@ -732,7 +732,7 @@ impl BattleData {
         Ok(battle_player)
     }
 
-    pub fn send_2_client(&self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
+    pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let battle_player = self.get_battle_player(Some(user_id), false);
         match battle_player {
             Ok(battle_player) => {
@@ -743,10 +743,13 @@ impl BattleData {
             Err(_) => {}
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        self.get_sender().send(bytes.as_slice());
+        let res = self.get_sender_mut().send(bytes);
+        if let Err(e) = res {
+            error!("{:?}", e);
+        }
     }
 
-    pub fn send_2_all_client(&self, cmd: ClientCode, bytes: Vec<u8>) {
+    pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let cmd = cmd.into_u32();
         for battle_player in self.battle_player.values() {
             if battle_player.robot_data.is_some() {
@@ -755,7 +758,10 @@ impl BattleData {
             let user_id = battle_player.user_id;
 
             let bytes_res = Packet::build_packet_bytes(cmd, user_id, bytes.clone(), true, true);
-            self.tcp_sender.send(bytes_res.as_slice());
+            let res = self.tcp_sender.send(bytes_res);
+            if let Err(e) = res {
+                error!("{:?}", e);
+            }
         }
     }
 
