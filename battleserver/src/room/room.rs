@@ -24,6 +24,7 @@ use tools::protos::battle::{
 };
 use tools::protos::room::{S_EMOJI, S_EMOJI_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE};
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, B_R_SUMMARY};
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 use super::MemberLeaveNoticeType;
@@ -39,7 +40,7 @@ pub struct Room {
     pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
     pub setting: RoomSetting,                     //房间设置
     pub battle_data: BattleData,                  //战斗相关数据封装
-    pub tcp_sender: Sender<Vec<u8>>,              //tcpsender
+    pub tcp_sender: TcpHandler,                   //tcpsender
     task_sender: Sender<Task>,                    //任务sender
     robot_sender: Sender<RobotTask>,              //机器人sender
     time: DateTime<Utc>,                          //房间创建时间
@@ -51,7 +52,7 @@ impl Room {
     ///构建一个房间的结构体
     pub fn new(
         rp: &RoomPt,
-        tcp_sender: Sender<Vec<u8>>,
+        tcp_sender: TcpHandler,
         task_sender: Sender<Task>,
         robot_sender: Sender<RobotTask>,
     ) -> anyhow::Result<Room> {
@@ -273,10 +274,7 @@ impl Room {
             _ => {}
         }
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
-        let res = self.tcp_sender.send(bytes);
-        if let Err(e) = res {
-            error!("{:?}", e);
-        }
+        self.tcp_sender.send(bytes.as_slice());
     }
 
     ///开始选择占位
@@ -509,10 +507,7 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        let res = self.tcp_sender.send(bytes);
-        if let Err(e) = res {
-            error!("{:?}", e);
-        }
+        self.tcp_sender.send(bytes.as_slice());
     }
 
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
@@ -529,10 +524,7 @@ impl Room {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
-            let res = self.tcp_sender.send(bytes);
-            if let Err(e) = res {
-                error!("{:?}", e);
-            }
+            self.tcp_sender.send(bytes.as_slice());
         }
     }
 

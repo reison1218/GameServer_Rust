@@ -8,6 +8,7 @@ use async_std::sync::Mutex;
 use log::info;
 use std::sync::Arc;
 use tools::conf::Conf;
+use tools::tcp_message_io::{MessageHandler, TransportWay};
 
 use crate::net::http::KickPlayerHttpHandler;
 use crate::net::tcp_client::TcpClientType;
@@ -16,7 +17,6 @@ use std::env;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 use tools::redis_pool::RedisPoolTool;
-use tools::tcp::ClientHandler;
 use tools::thread_pool::MyThreadPool;
 
 #[macro_use]
@@ -115,7 +115,7 @@ fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
         let address = CONF_MAP.get_str("game_port");
         info!("开始链接游戏服:{:?}...", address);
-        tch.on_read(address.to_string()).await;
+        tch.connect(TransportWay::Tcp, address).await;
     };
     async_std::task::spawn(game);
 }
@@ -126,7 +126,7 @@ fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameCenter);
         let address = CONF_MAP.get_str("game_center_port");
         info!("开始链接游戏中心服:{:?}...", address);
-        tch.on_read(address.to_string()).await;
+        tch.connect(TransportWay::Tcp, address).await;
     };
     async_std::task::spawn(room);
 }

@@ -17,9 +17,9 @@ use crate::room::{RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crossbeam::channel::Sender;
 use log::error;
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
+use tools::tcp_message_io::TcpHandler;
 use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_player::BattlePlayer;
@@ -108,7 +108,7 @@ pub struct BattleData {
     pub total_turn_times: u16,                     //总的turn次数
     pub last_map_id: u32,                          //上次地图id
     pub task_sender: Sender<Task>,                 //任务sender
-    pub tcp_sender: Sender<Vec<u8>>,               //sender
+    pub tcp_sender: TcpHandler,                    //sender
 }
 
 tools::get_mut_ref!(BattleData);
@@ -140,11 +140,7 @@ impl BattleData {
     }
 
     ///初始化战斗数据
-    pub fn new(
-        room_type: RoomType,
-        task_sender: Sender<Task>,
-        tcp_sender: Sender<Vec<u8>>,
-    ) -> Self {
+    pub fn new(room_type: RoomType, task_sender: Sender<Task>, tcp_sender: TcpHandler) -> Self {
         let mut v = Vec::new();
         for _ in 0..MEMBER_MAX {
             v.push(Vec::new());
@@ -235,8 +231,8 @@ impl BattleData {
         }
     }
 
-    pub fn get_sender_mut(&mut self) -> &mut Sender<Vec<u8>> {
-        self.tcp_sender.borrow_mut()
+    pub fn get_sender(&self) -> &TcpHandler {
+        &self.tcp_sender
     }
 
     ///获得战斗角色借用指针

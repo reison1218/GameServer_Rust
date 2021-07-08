@@ -4,18 +4,22 @@ use super::*;
 use async_std::sync::Mutex;
 use async_std::task::block_on;
 use async_trait::async_trait;
-use crossbeam::channel::Sender;
 use log::error;
-use tools::cmd_code::{ClientCode, GateCode, RankCode, RoomCode, ServerCommonCode};
+use tools::{
+    cmd_code::{ClientCode, GateCode, RankCode, RoomCode, ServerCommonCode},
+    tcp_message_io::{MessageHandler, TcpHandler, TransportWay},
+};
 
+#[derive(Clone)]
 pub enum TcpClientType {
     GameServer,
     GameCenter,
 }
 
+#[derive(Clone)]
 pub struct TcpClientHandler {
     client_type: TcpClientType,
-    ts: Option<Sender<Vec<u8>>>,
+    ts: Option<TcpHandler>,
     cp: Arc<Mutex<ChannelMgr>>,
 }
 
@@ -31,11 +35,11 @@ impl TcpClientHandler {
 }
 
 #[async_trait]
-impl ClientHandler for TcpClientHandler {
-    async fn on_open(&mut self, ts: Sender<Vec<u8>>) {
+impl MessageHandler for TcpClientHandler {
+    async fn on_open(&mut self, ts: TcpHandler) {
         match self.client_type {
             TcpClientType::GameServer => {
-                block_on(self.cp.lock()).set_game_client_channel(ts.clone());
+                self.cp.lock().await.set_game_client_channel(ts.clone());
             }
             TcpClientType::GameCenter => {
                 block_on(self.cp.lock()).set_game_center_client_channel(ts.clone());
@@ -54,11 +58,11 @@ impl ClientHandler for TcpClientHandler {
                 address = Some(CONF_MAP.get_str("game_center_port"));
             }
         }
-        self.on_read(address.unwrap().to_string()).await;
+        self.connect(TransportWay::Tcp, address.unwrap()).await;
     }
 
-    async fn on_message(&mut self, mess: Vec<u8>) {
-        let packet_array = Packet::build_array_from_server(mess);
+    async fn on_message(&mut self, mess: &[u8]) {
+        let packet_array = Packet::build_array_from_server(mess.to_vec());
 
         if let Err(e) = packet_array {
             error!("{:?}", e.to_string());
@@ -66,6 +70,10 @@ impl ClientHandler for TcpClientHandler {
         }
         let packet_array = packet_array.unwrap();
         handler_mess_s(self.cp.clone(), packet_array)
+    }
+
+    async fn try_clone(&self) -> Self {
+        self.clone()
     }
 }
 

@@ -10,6 +10,7 @@ use log::{info, warn};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, ServerCommonCode};
+use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut BattleMgr, Packet), RandomState>;
@@ -20,7 +21,7 @@ pub struct BattleMgr {
     pub player_room: HashMap<u32, u32>,               //玩家对应房间
     pub rooms: HashMap<u32, Room>,                    //房间map
     pub cmd_map: CmdFn,                               //命令函数指针
-    pub game_center_channel: Option<Sender<Vec<u8>>>, //tcp客户的
+    pub game_center_channel: Option<TcpHandler>,      //tcp客户的
     pub task_sender: Option<Sender<Task>>,            //task channel的发送方
     pub robot_task_sender: Option<Sender<RobotTask>>, //机器人task channel的发送方
 }
@@ -28,8 +29,8 @@ pub struct BattleMgr {
 tools::get_mut_ref!(BattleMgr);
 
 impl BattleMgr {
-    pub fn set_game_center_channel(&mut self, ts: Sender<Vec<u8>>) {
-        self.game_center_channel = Some(ts);
+    pub fn set_game_center_channel(&mut self, tcp_handler: TcpHandler) {
+        self.game_center_channel = Some(tcp_handler);
     }
 
     pub fn new() -> BattleMgr {
@@ -38,7 +39,7 @@ impl BattleMgr {
         bm
     }
 
-    pub fn get_game_center_channel_clone(&self) -> crossbeam::channel::Sender<Vec<u8>> {
+    pub fn get_game_center_channel_clone(&self) -> TcpHandler {
         self.game_center_channel.as_ref().unwrap().clone()
     }
 
@@ -65,13 +66,11 @@ impl BattleMgr {
         }
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
         let res = self.get_game_center_channel_mut();
-        let size = res.send(bytes);
-        if let Err(e) = size {
-            warn!("{:?}", e);
-        }
+        let endpoint = res.endpoint;
+        res.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
-    pub fn get_game_center_channel_mut(&mut self) -> &mut Sender<Vec<u8>> {
+    pub fn get_game_center_channel_mut(&mut self) -> &mut TcpHandler {
         self.game_center_channel.as_mut().unwrap()
     }
 

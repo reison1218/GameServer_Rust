@@ -60,10 +60,7 @@ trait Forward {
                     bytes = packet.build_server_bytes();
                 }
                 //发消息到房间服
-                let res = lock.get_room_center_mut().send(bytes);
-                if let Err(e) = res {
-                    warn!("{:?}", e);
-                }
+                lock.get_room_center().send(bytes.as_slice());
             } else if cmd > GameCode::Min.into_u32()//转发给游戏服
                 && cmd < GameCode::Max.into_u32()
             {
@@ -114,12 +111,8 @@ trait Forward {
                     bytes = packet.build_server_bytes();
                 }
 
-                let rs = lock.get_rank_center_mut();
-                let res = rs.send(bytes);
-                match res {
-                    Ok(_) => {}
-                    Err(e) => warn!("{:?},cmd:{:?}", e, cmd),
-                }
+                let rs = lock.get_rank_center();
+                rs.send(bytes.as_slice());
             } else {
                 warn!("could not find cmd {}!", cmd);
                 return;

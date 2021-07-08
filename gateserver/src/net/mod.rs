@@ -3,10 +3,9 @@ pub mod tcp_client;
 pub mod tcp_server;
 use crate::{CONF_MAP, REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID};
 use crate::{REDIS_KEY_USERS, REDIS_POOL};
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use protobuf::Message;
 use std::sync::Arc;
-use tools::tcp::ClientHandler;
 
 use crate::mgr::channel_mgr::ChannelMgr;
 
