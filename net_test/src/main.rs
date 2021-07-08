@@ -7,87 +7,46 @@ mod web;
 mod web_socket;
 
 use ::message_io::network::Transport;
-use log::info;
-use num_enum::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use protobuf::Message;
-use serde::{Deserialize, Serialize, Serializer};
-use serde_json::json;
-use slab::Slab;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
-use std::net::Shutdown;
 use std::net::SocketAddr;
-use std::time::{Duration, Instant, SystemTime};
-use tools::http::HttpMethod;
-use tools::protos::base::{RankInfoPt, WorldCellPt};
+use std::str::FromStr;
+use std::sync::atomic::Ordering;
+use std::time::{Duration, SystemTime};
+use tools::tcp::ClientHandler;
+use tools::tcp_message_io::MessageHandler;
+use tools::tcp_message_io::TransportWay;
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
 // use tcp::util::bytebuf::ByteBuf;
 // use tcp::util::packet::Packet;
 
-use std::collections::{BinaryHeap, HashMap, HashSet, LinkedList};
-use std::sync::mpsc::{channel, Receiver};
+use std::collections::HashMap;
 
 //use tokio::net::{TcpListener as TokioTcpListener,TcpStream as TokioTcpStream};
 //use tokio::prelude::*;
 //use tokio::runtime::Runtime as TokioRuntime;
 //use tokio::net::tcp::{ReadHalf,WriteHalf};
-use std::error::Error;
 //use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
-
-use async_std::io;
-use async_std::net::{TcpListener as AsyncTcpListener, TcpStream as AsyncTcpStream};
-use async_std::prelude::*;
-use async_std::task;
 
 use crate::web::test_http_client;
-use crate::web::{test_faster, test_http_server};
-use actix::{Actor, ContextFutureSpawner, SyncArbiter};
-use chrono::{Datelike, Local, Timelike};
-use crossbeam::atomic::{AtomicCell, AtomicConsume};
-use crossbeam::sync::ShardedLock;
-use envmnt::{ExpandOptions, ExpansionType};
+use crossbeam::atomic::AtomicCell;
 use futures::executor::block_on;
-use futures::future::join3;
-use futures::SinkExt;
-use futures::{join, FutureExt};
 use rand::prelude::*;
 use rayon::prelude::ParallelSliceMut;
-use serde_json::Value;
-use std::alloc::System;
-use std::any::Any;
-use std::borrow::{Borrow, BorrowMut, Cow};
-use std::cell::{Cell, RefCell, RefMut};
-use std::collections::binary_heap::PeekMut;
-use std::collections::btree_map::Entry::Vacant;
-use std::collections::btree_map::Range;
-use std::collections::BTreeMap;
-use std::convert::{TryFrom, TryInto};
+use std::borrow::Borrow;
+use std::cell::Cell;
+use std::env;
 use std::fmt::{Debug, Display};
-use std::fs::File;
 use std::hash::Hasher;
-use std::io::{Read, Write};
-use std::mem::Discriminant;
-use std::ops::{Deref, DerefMut};
-use std::panic::catch_unwind;
-use std::rc::Rc;
-use std::str::FromStr;
+use std::ops::Deref;
 use std::sync::atomic::AtomicU32;
-use std::sync::{Arc, Condvar, Mutex, RwLock};
-use std::thread::{JoinHandle, Thread};
-use std::{env, ptr};
-use threadpool::ThreadPool;
-use tools::macros::GetMutRef;
-use tools::protos::room::C_LEAVE_ROOM;
-use tools::redis_pool::RedisPoolTool;
-use tools::tcp::ClientHandler;
+use std::sync::{Arc, RwLock};
+
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
-use tools::util::bytebuf::ByteBuf;
-use tools::util::packet::Packet;
 
 #[macro_use]
 extern crate lazy_static;
@@ -121,20 +80,6 @@ fn foo(words: &[&str]) {
 
         rest => println!("{:?}", rest),
     }
-}
-
-fn test_tcp_client() {
-    for i in 0..=1 {
-        let m = move || {
-            let mut str = "test".to_owned();
-            str.push_str(i.to_string().as_str());
-            tcp_client::test_tcp_client(str.as_str());
-        };
-        std::thread::spawn(m);
-        std::thread::sleep(Duration::from_millis(2000));
-    }
-    //std::thread::sleep(Duration::from_millis(40000));
-    tcp_client::test_tcp_client("test");
 }
 
 fn test_binary() {
@@ -354,12 +299,6 @@ pub fn test_unsafe2() {
     println!("res {:?}", t.as_ref().unwrap().temp);
 }
 
-#[derive(Default)]
-pub struct TestSize {
-    a: u32,
-    b: u32,
-    c: u32,
-}
 #[cfg(feature = "bar")]
 mod bar {
     pub fn bar() {
@@ -373,29 +312,6 @@ mod ss {
         println!("test");
     }
 }
-
-#[derive(Default, Debug, Clone)]
-struct STest {
-    str: String,
-    v: Vec<String>,
-}
-
-#[derive(Default)]
-struct TestS {
-    a: AtomicCell<u32>,
-    b: AtomicCell<u32>,
-    c: AtomicCell<u32>,
-    d: String,
-    e: Vec<u32>,
-    f: Test,
-    g: HashMap<u32, Test>,
-}
-
-impl TestS {
-    pub fn test(&mut self) {}
-}
-
-tools::get_mut_ref!(TestS);
 
 fn calc_n(n: i64) {
     print!("N={},", n);
@@ -525,18 +441,67 @@ fn test_close(mut a: impl FnMut(u32)) {
     a(1);
 }
 
+#[derive(Clone)]
+pub struct MessageClient;
+use async_trait::async_trait;
+#[async_trait]
+impl tools::tcp_message_io::MessageHandler for MessageClient {
+    async fn try_clone(&self) -> Self {
+        todo!()
+    }
+
+    async fn on_open(&mut self, tcp_handler: tools::tcp_message_io::TcpHandler) {
+        println!("链接上了");
+        let str = String::from_str("ss").unwrap();
+        tcp_handler.send(str.as_bytes());
+        unsafe {
+            client_num.fetch_add(1, Ordering::SeqCst);
+
+            println!("{}", client_num.load(Ordering::SeqCst));
+        }
+    }
+
+    async fn on_close(&mut self) {
+        println!("断开了");
+        self.connect(TransportWay::Tcp, "127.0.0.1:16801").await;
+    }
+
+    async fn on_message(&mut self, mess: &[u8]) {}
+}
+
+#[derive(Default)]
+pub struct TcpClientTestt {
+    pub sender: Option<crossbeam::channel::Sender<Vec<u8>>>,
+}
+#[async_trait]
+impl tools::tcp::ClientHandler for TcpClientTestt {
+    async fn on_open(&mut self, sender: crossbeam::channel::Sender<Vec<u8>>) {
+        println!("连上了");
+        let str = String::from_str("ss").unwrap();
+        sender.send(str.as_bytes().to_vec());
+        client_num.fetch_add(1, Ordering::SeqCst);
+
+        println!("{}", client_num.load(Ordering::SeqCst));
+    }
+
+    async fn on_close(&mut self) {
+        println!("断开了");
+        self.on_read("127.0.0.1:16801".to_string()).await;
+    }
+
+    async fn on_message(&mut self, mess: Vec<u8>) {}
+}
+
+static client_num: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
+
 fn main() -> anyhow::Result<()> {
+    let mut mc = MessageClient;
+    async_std::task::block_on(mc.connect(TransportWay::Tcp, "127.0.0.1:16801"));
+    // let mut tct = TcpClientTestt::default();
+    // async_std::task::block_on(tct.on_read("127.0.0.1:16801".to_string()));
     // test_close(move |x| {
     //     println!("{}", x);
     // });
-    let mut v = vec![1, 2];
-    let res = v
-        .iter()
-        .filter(|x| x > &&1)
-        .min_by(|x, y| x.cmp(&y))
-        .unwrap();
-    println!("{}", res);
-
     // let mut tcp = std::net::TcpStream::connect("localhost:16801").unwrap();
     // let mut bytes: [u8; 512] = [0; 512];
     // loop {
@@ -548,10 +513,10 @@ fn main() -> anyhow::Result<()> {
     //     }
     // }
     // println!("over");
-    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
-    let m = move || {
-        message_io::run(Transport::Tcp, socket);
-    };
+    // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
+    // let m = move || {
+    //     message_io::run(Transport::Tcp, socket);
+    // };
     // std::thread::spawn(m);
     // std::thread::sleep(Duration::from_micros(1));
     // let mut tcp = std::net::TcpStream::connect("localhost:16888").unwrap();
