@@ -171,6 +171,25 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             }
             room_setting = RoomSetting::from(room_setting_pt);
             room_setting.turn_limit_time = turn_limit_time;
+
+            let ai_level = room_setting_pt.ai_level as u8;
+            let mut res = crate::TEMPLATES
+                .constant_temp_mgr()
+                .temps
+                .get("ai_level_easy")
+                .unwrap();
+            let re_id1 = u8::from_str(res.value.as_str()).unwrap();
+            res = crate::TEMPLATES
+                .constant_temp_mgr()
+                .temps
+                .get("ai_level_hard")
+                .unwrap();
+            let re_id2 = u8::from_str(res.value.as_str()).unwrap();
+            if ai_level != re_id1 && ai_level != re_id2 {
+                warn!("the ai level is error!id:{}", ai_level);
+                return;
+            }
+            room_setting.ai_level = ai_level;
         }
         RoomType::WorldBossCustom => {
             warn!("this function is not open yet!");
@@ -235,7 +254,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::OneVOneVOneVOneMatch
-        && member_count == MEMBER_MAX as usize
+        && member_count == MEMBER_MAX
         && room_state == RoomState::AwaitConfirm
     {
         warn!(
@@ -247,7 +266,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
     if room_type == RoomType::OneVOneVOneVOneMatch
-        && member_count == MEMBER_MAX as usize
+        && member_count == MEMBER_MAX
         && room_state == RoomState::AwaitReady
     {
         warn!(
@@ -463,8 +482,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_state = room.get_state();
     //匹配房，玩家到齐了才可以准备
-    if room_type == RoomType::OneVOneVOneVOneMatch && room.get_member_count() != MEMBER_MAX as usize
-    {
+    if room_type == RoomType::OneVOneVOneVOneMatch && room.get_member_count() != MEMBER_MAX {
         warn!(
             "prepare_cancel:this room is not full,so can not prepare!room_id:{}.user_id:{}",
             room_id, user_id
@@ -545,6 +563,11 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let index = proto.get_index() as usize;
+
+    if index > MEMBER_MAX - 1 {
+        warn!("index is error!index:{}", index);
+        return;
+    }
     let robot_temp_id = proto.get_robot_temp_id();
 
     let robot_temp = crate::TEMPLATES
@@ -565,12 +588,6 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
         warn!("the index is error!index:{}", index);
         return;
     }
-    let &user = res.unwrap();
-    if user > 0 {
-        warn!("the index already has user!index:{},user:{}", index, user);
-        return;
-    }
-
     //判断是否可以选择这个角色
     let member = room.get_member_ref(&user_id).unwrap();
     if !member.cters.contains_key(&cter_id) {
@@ -591,13 +608,13 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
         error!("{:?}", err);
         return;
     }
-    let robot = robot.unwrap();
+    let robot_id = robot.unwrap();
 
     //推送给所有人
     let mut proto = S_CHOICE_AI_NOTICE::new();
     proto.set_index(index as u32);
     proto.set_robot_temp_id(robot_temp_id);
-    proto.set_user_id(robot.get_user_id());
+    proto.set_user_id(robot_id);
     let bytes = proto.write_to_bytes();
     match bytes {
         Ok(bytes) => {
@@ -659,26 +676,37 @@ pub fn add_robot(
     room_id: u32,
     index: usize,
     robot_temp_id: u32,
-) -> anyhow::Result<Member> {
+) -> anyhow::Result<u32> {
     let room = rm.get_room_mut(RoomType::OneVOneVOneVOneCustom, room_id)?;
 
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.robot_temp_mgr();
     let robot_temp = robot_temp_mgr.get_temp_ref(&robot_temp_id).unwrap();
     let cter_id = robot_temp.cter_id;
+    let robot_id;
+    let mut member_new = None;
+    let mut member;
 
-    //机器人id自增
-    crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
-    let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+    let &user_id = room.member_index.get(index).unwrap();
 
-    //初始化成员
-    let mut member = Member::default();
-    member.robot_temp_id = robot_temp_id;
-    member.user_id = robot_id;
-    member.state = MemberState::Ready;
-    member.nick_name = "robot".to_owned();
-    member.grade = 1;
-    member.grade_frame = 1;
+    //等于0就直接初始化一个出来
+    if user_id == 0 {
+        //机器人id自增
+        crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
+        robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+        //初始化成员
+        member_new = Some(Member::default());
+        member = member_new.as_mut().unwrap();
+        member.robot_temp_id = robot_temp_id;
+        member.user_id = robot_id;
+        member.state = MemberState::Ready;
+        member.nick_name = "robot".to_owned();
+        member.grade = 1;
+        member.grade_frame = 1;
+    } else {
+        robot_id = user_id;
+        member = room.members.get_mut(&user_id).unwrap();
+    }
 
     //初始化选择的角色
     let mut cter = Character::default();
@@ -689,11 +717,14 @@ pub fn add_robot(
     cter.skills.extend_from_slice(robot_temp.skills.as_slice());
     //将角色加入到成员里
     member.chose_cter = cter;
-    room.add_member(member.clone(), Some(index))?;
-    let room_id = room.get_room_id();
-    let value = tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
-    rm.player_room.insert(robot_id, value);
-    Ok(member)
+    if member_new.is_some() {
+        room.add_member(member_new.unwrap(), Some(index))?;
+        let room_id = room.get_room_id();
+        let value =
+            tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
+        rm.player_room.insert(robot_id, value);
+    }
+    Ok(robot_id)
 }
 
 ///换队伍
@@ -914,6 +945,7 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
                     warn!("the ai level is error!id:{}", id);
                     return;
                 }
+                room.setting.ai_level = id;
             }
             _ => {
                 warn!("room_setting:the proto' value is invalid!");
@@ -1004,7 +1036,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //校验房间人数
-    if room.members.len() >= MEMBER_MAX as usize {
+    if room.members.len() >= MEMBER_MAX {
         warn!("this room already have max player num!,room_id:{}", room_id);
         //返回客户端消息
         let mut sr = tools::protos::room::S_ROOM::new();
@@ -1169,7 +1201,6 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
         warn!("can not choice skill now!room_state:{:?}", room_state);
         return;
     }
-
     //校验成员状态
     if member.state == MemberState::Ready {
         warn!(
@@ -1274,7 +1305,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
     let confirm = ccir.confirm;
 
     //如果房间成员不满，不允许发这个命令
-    if room.members.len() < MEMBER_MAX as usize {
+    if room.members.len() < MEMBER_MAX {
         warn!(
             "this room is not full,could not handler confirm!room_type:{:?},room_id:{}",
             room_type, room_id

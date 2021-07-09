@@ -950,23 +950,15 @@ pub trait Find<T: Clone + Debug> {
 
 impl Find<Skill> for Vec<Skill> {
     fn find(&self, key: usize) -> Option<&Skill> {
-        for value in self.iter() {
-            if value.id != key as u32 {
-                continue;
-            }
-            return Some(value);
-        }
-        None
+        let key = key as u32;
+        let res = self.iter().find(|skill| skill.id == key);
+        return res;
     }
 
     fn find_mut(&mut self, key: usize) -> Option<&mut Skill> {
-        for value in self.iter_mut() {
-            if value.id != key as u32 {
-                continue;
-            }
-            return Some(value);
-        }
-        None
+        let key = key as u32;
+        let res = self.iter_mut().find(|skill| skill.id == key);
+        return res;
     }
 }
 
@@ -976,14 +968,13 @@ pub trait Delete<T: Clone + Debug> {
 
 impl Delete<Skill> for Vec<Skill> {
     fn delete(&mut self, key: usize) {
-        for index in 0..self.len() {
-            let res = self.find(key);
-            if res.is_none() {
-                continue;
-            }
-            self.remove(index);
-            break;
+        let key = key as u32;
+        let res = self.iter().enumerate().find(|(_, skill)| skill.id == key);
+        if res.is_none() {
+            return;
         }
+        let index = res.unwrap().0;
+        self.remove(index);
     }
 }
 

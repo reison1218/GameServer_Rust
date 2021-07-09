@@ -73,7 +73,7 @@ impl BattleData {
         let battle_data_ptr = self as *mut BattleData;
         self.next_turn_index += 1;
         let index = self.next_turn_index;
-        if index >= MEMBER_MAX as usize {
+        if index >= MEMBER_MAX {
             self.next_turn_index = 0;
         }
         let user_id = self.get_turn_user(None);
@@ -110,7 +110,7 @@ impl BattleData {
         self.turn += 1;
         self.add_total_turn_times();
         let index = self.next_turn_index;
-        if index >= MEMBER_MAX as usize {
+        if index >= MEMBER_MAX {
             self.next_turn_index = 0;
         }
         //开始回合触发

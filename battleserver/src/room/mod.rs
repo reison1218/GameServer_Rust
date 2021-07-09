@@ -8,7 +8,7 @@ use num_enum::TryFromPrimitive;
 use tools::protos::base::RoomSettingPt;
 
 ///最大成员数量
-pub const MEMBER_MAX: u8 = 4;
+pub const MEMBER_MAX: usize = 4;
 
 ///teamID枚举
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]

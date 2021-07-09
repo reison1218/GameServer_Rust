@@ -94,7 +94,7 @@ pub struct BattleData {
     pub room_type: RoomType,
     pub tile_map: TileMap,                         //地图数据
     pub next_turn_index: usize,                    //下个turn的下标
-    pub turn_orders: [u32; MEMBER_MAX as usize],   //turn行动队列，里面放玩家id
+    pub turn_orders: [u32; MEMBER_MAX],            //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,           //刷新地图时的turn下标
     pub battle_player: HashMap<u32, BattlePlayer>, //玩家战斗数据
     pub summary_vec: Vec<Vec<SummaryUser>>,        //排名  user_id
@@ -153,7 +153,7 @@ impl BattleData {
             room_type,
             tile_map: TileMap::default(),
             next_turn_index: 0,
-            turn_orders: [0; MEMBER_MAX as usize],
+            turn_orders: [0; MEMBER_MAX],
             reflash_map_turn: None,
             battle_player: HashMap::new(),
             summary_vec: v,

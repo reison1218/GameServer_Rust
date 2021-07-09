@@ -753,38 +753,26 @@ impl BattleData {
 
 impl Find<Buff> for Vec<Buff> {
     fn find(&self, key: usize) -> Option<&Buff> {
-        for buff in self.iter() {
-            if buff.id != key as u32 {
-                continue;
-            }
-            return Some(buff);
-        }
-        return None;
+        let key = key as u32;
+        let res = self.iter().find(|buff| buff.id == key);
+        return res;
     }
 
     fn find_mut(&mut self, key: usize) -> Option<&mut Buff> {
-        for buff in self.iter_mut() {
-            if buff.id != key as u32 {
-                continue;
-            }
-            return Some(buff);
-        }
-        return None;
+        let key = key as u32;
+        let res = self.iter_mut().find(|buff| buff.id == key);
+        return res;
     }
 }
 
 impl Delete<Buff> for Vec<Buff> {
     fn delete(&mut self, key: usize) {
-        for index in 0..self.len() {
-            let res = self.get(index);
-            if res.is_none() {
-                continue;
-            }
-            let res = res.unwrap();
-            if res.id != key as u32 {
-                continue;
-            }
-            self.remove(index);
+        let key = key as u32;
+        let res = self.iter().enumerate().find(|(_, buff)| buff.id == key);
+        if res.is_none() {
+            return;
         }
+        let index = res.unwrap().0;
+        self.remove(index);
     }
 }

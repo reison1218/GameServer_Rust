@@ -29,17 +29,16 @@ impl RobotData {
         let size = self.remember_map_cell.len();
         let max_size = self.remember_size as usize;
         //如果这个块已经被记忆，则刷新位置
-        let mut rm_index = None;
-        for index in 0..self.remember_map_cell.len() {
-            let cell = self.remember_map_cell.get(index).unwrap();
-            if cell.cell_index == rc.cell_index {
-                rm_index = Some(index);
-                break;
-            }
-        }
-        if let Some(rm_index) = rm_index {
+        let res = self
+            .remember_map_cell
+            .iter()
+            .enumerate()
+            .find(|(_, re)| re.cell_index == rc.cell_index);
+
+        if let Some((rm_index, _)) = res {
             self.remember_map_cell.remove(rm_index);
         }
+
         self.remember_map_cell.push_front(rc);
         //如果数量大于5则忘记尾端
         if size > max_size {
@@ -55,15 +54,13 @@ impl RobotData {
     }
 
     pub fn trigger_pair_map_cell(&mut self, rc: RememberCell) {
-        let mut rm_index = None;
-        for index in 0..self.remember_map_cell.len() {
-            let cell = self.remember_map_cell.get(index).unwrap();
-            if cell.cell_index == rc.cell_index {
-                rm_index = Some(index);
-                break;
-            }
-        }
-        if let Some(rm_index) = rm_index {
+        let res = self
+            .remember_map_cell
+            .iter()
+            .enumerate()
+            .find(|(_, re)| re.cell_index == rc.cell_index);
+
+        if let Some((rm_index, _)) = res {
             self.remember_map_cell.remove(rm_index);
         }
     }

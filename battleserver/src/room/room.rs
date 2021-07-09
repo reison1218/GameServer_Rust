@@ -31,18 +31,18 @@ use super::MemberLeaveNoticeType;
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
-    id: u32,                                      //房间id
-    room_type: RoomType,                          //房间类型
-    owner_id: u32,                                //房主id
-    pub state: RoomState,                         //房间状态
-    pub members: HashMap<u32, Member>,            //玩家id对应角色id
-    pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
-    pub setting: RoomSetting,                     //房间设置
-    pub battle_data: BattleData,                  //战斗相关数据封装
-    pub tcp_sender: Sender<Vec<u8>>,              //tcpsender
-    task_sender: Sender<Task>,                    //任务sender
-    robot_sender: Sender<RobotTask>,              //机器人sender
-    time: DateTime<Utc>,                          //房间创建时间
+    id: u32,                             //房间id
+    room_type: RoomType,                 //房间类型
+    owner_id: u32,                       //房主id
+    pub state: RoomState,                //房间状态
+    pub members: HashMap<u32, Member>,   //玩家id对应角色id
+    pub member_index: [u32; MEMBER_MAX], //玩家对应的位置
+    pub setting: RoomSetting,            //房间设置
+    pub battle_data: BattleData,         //战斗相关数据封装
+    pub tcp_sender: Sender<Vec<u8>>,     //tcpsender
+    task_sender: Sender<Task>,           //任务sender
+    robot_sender: Sender<RobotTask>,     //机器人sender
+    time: DateTime<Utc>,                 //房间创建时间
 }
 
 tools::get_mut_ref!(Room);
@@ -63,7 +63,7 @@ impl Room {
         }
         let room_type = room_type.unwrap();
         let mut members = HashMap::new();
-        let mut member_index: [u32; MEMBER_MAX as usize] = [0; MEMBER_MAX as usize];
+        let mut member_index: [u32; MEMBER_MAX] = [0; MEMBER_MAX];
         let mut index = 0;
         for member_pt in rp.members.iter() {
             members.insert(member_pt.user_id, Member::from(member_pt));
@@ -453,7 +453,7 @@ impl Room {
         self.cter_2_battle_cter();
         //先选出可以随机的下标
         let mut index_v: Vec<usize> = Vec::new();
-        for index in 0..MEMBER_MAX as usize {
+        for index in 0..MEMBER_MAX {
             let user_id = self.get_turn_user(Some(index));
             if user_id.is_err() {
                 continue;

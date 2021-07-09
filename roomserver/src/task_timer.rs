@@ -171,7 +171,7 @@ fn match_room_ready(rm: Lock, task: Task) {
     }
 
     //如果人未满，则取消准备
-    if room.get_member_count() as u8 != MEMBER_MAX {
+    if room.get_member_count() != MEMBER_MAX {
         let mut v = Vec::new();
         for member in room.members.values() {
             if member.state == MemberState::Ready {

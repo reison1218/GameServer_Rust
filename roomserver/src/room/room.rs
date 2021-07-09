@@ -24,7 +24,7 @@ use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 ///最大成员数量
-pub const MEMBER_MAX: u8 = 4;
+pub const MEMBER_MAX: usize = 4;
 
 #[derive(Debug, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -72,16 +72,16 @@ pub enum RoomState {
 ///房间结构体，封装房间必要信息
 #[derive(Clone)]
 pub struct Room {
-    id: u32,                                      //房间id
-    room_type: RoomType,                          //房间类型
-    owner_id: u32,                                //房主id
-    pub state: RoomState,                         //房间状态
-    pub members: HashMap<u32, Member>,            //玩家对应的队伍
-    pub member_index: [u32; MEMBER_MAX as usize], //玩家对应的位置
-    pub setting: RoomSetting,                     //房间设置
-    pub tcp_handler: TcpHandler,                  //tcpsender
-    task_sender: Sender<Task>,                    //任务sender
-    time: DateTime<Utc>,                          //房间创建时间
+    id: u32,                             //房间id
+    room_type: RoomType,                 //房间类型
+    owner_id: u32,                       //房主id
+    pub state: RoomState,                //房间状态
+    pub members: HashMap<u32, Member>,   //玩家对应的队伍
+    pub member_index: [u32; MEMBER_MAX], //玩家对应的位置
+    pub setting: RoomSetting,            //房间设置
+    pub tcp_handler: TcpHandler,         //tcpsender
+    task_sender: Sender<Task>,           //任务sender
+    time: DateTime<Utc>,                 //房间创建时间
 }
 
 tools::get_mut_ref!(Room);
@@ -124,7 +124,7 @@ impl Room {
             id,
             owner_id: user_id,
             members: HashMap::new(),
-            member_index: [0; MEMBER_MAX as usize],
+            member_index: [0; MEMBER_MAX],
             state: room_state,
             setting: RoomSetting::default(),
             room_type,
@@ -147,7 +147,7 @@ impl Room {
 
     pub fn is_all_robot(&self) -> bool {
         for member in self.members.values() {
-            if member.robot_temp_id > 0 {
+            if member.robot_temp_id == 0 {
                 return false;
             }
         }
@@ -468,13 +468,39 @@ impl Room {
         let mut size = self.members.len();
         let owner_id = self.owner_id;
         if self.room_type == RoomType::OneVOneVOneVOneMatch {
-            size = MEMBER_MAX as usize;
+            size = MEMBER_MAX;
         }
         for member in self.members.values_mut() {
-            let res = member.state == MemberState::Ready;
-            if owner_id == member.user_id {
+            if owner_id == member.user_id && self.room_type == RoomType::OneVOneVOneVOneCustom {
+                if member.chose_cter.cter_id == 0 {
+                    warn!(
+                        "check_ready: this player has not choose character yet!user_id:{}",
+                        member.get_user_id()
+                    );
+                    return false;
+                }
+
+                let cter_temp = crate::TEMPLATES
+                    .character_temp_mgr()
+                    .temps
+                    .get(&member.chose_cter.cter_id)
+                    .unwrap();
+
+                //校验玩家是否选了技能
+                if member.chose_cter.skills.len() < cter_temp.usable_skill_count as usize {
+                    warn!(
+                        "check_ready: this player has not choose character'skill yet!user_id:{}",
+                        member.get_user_id()
+                    );
+                    false;
+                }
+                if member.chose_cter.skills.len() == 0 {
+                    return false;
+                }
                 member.state = MemberState::Ready;
             }
+            let res = member.state == MemberState::Ready;
+
             if !res {
                 continue;
             }
@@ -632,13 +658,12 @@ impl Room {
                 }
             }
         }
-        let mut index = 0_usize;
-        for i in self.member_index.iter() {
-            if *i == user_id {
-                break;
-            }
-            index += 1;
-        }
+        let (index, _) = self
+            .member_index
+            .iter()
+            .enumerate()
+            .find(|(_, &id)| id == user_id)
+            .unwrap();
         self.member_index[index] = 0;
     }
 

@@ -335,7 +335,7 @@ impl RoomModel for MatchRoom {
         let now_count = room.get_member_count();
         let mut need_add_cache = false;
         //如果房间之前是满都，就给所有人取消准备
-        if room.get_state() == RoomState::AwaitConfirm && now_count < MEMBER_MAX as usize {
+        if room.get_state() == RoomState::AwaitConfirm && now_count < MEMBER_MAX {
             room.do_cancel_prepare();
             need_add_cache = true;
         }
@@ -399,17 +399,19 @@ impl MatchRoom {
 
     ///删除缓存房间
     pub fn remove_room_cache(&mut self, room_id: &u32) {
-        let mut index;
-        for (i, room) in self.room_cache.iter().enumerate() {
-            index = i;
-            if room.room_id != *room_id {
-                continue;
-            }
-            self.room_cache.remove(index);
-            //重新排序
-            self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
-            break;
+        let index = self
+            .room_cache
+            .iter()
+            .enumerate()
+            .find(|(_, room)| room.room_id == *room_id);
+
+        if index.is_none() {
+            return;
         }
+        let (index, _) = index.unwrap();
+        self.room_cache.remove(index);
+        //重新排序
+        self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));
     }
 
     ///快速加入
@@ -434,7 +436,7 @@ impl MatchRoom {
             room_id = self.get_room_cache_last_room_id()?;
             //将成员加进房间
             let room_mut = self.get_mut_room_by_room_id(&room_id)?;
-            if room_mut.get_member_count() >= MEMBER_MAX as usize {
+            if room_mut.get_member_count() >= MEMBER_MAX {
                 anyhow::bail!("room is None,room_id:{}", room_id)
             }
             let user_id = member.user_id;
@@ -444,7 +446,7 @@ impl MatchRoom {
             let room_cache = self.room_cache.get_mut(0).unwrap();
             //cache人数加1
             room_cache.count += 1;
-            let room_cache_count = room_cache.count;
+            let room_cache_count = room_cache.count as usize;
             //如果人满里，则从缓存房间列表中弹出
             if room_cache_count >= MEMBER_MAX {
                 //人满了就从队列里面弹出去
