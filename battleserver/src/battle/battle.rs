@@ -22,7 +22,9 @@ use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
 
+use super::battle_enum::skill_type::SUMMON_MINON;
 use super::battle_player::BattlePlayer;
+use super::battle_skill::summon_minon;
 
 ///物品结构体
 #[derive(Clone, Debug)]
@@ -117,6 +119,18 @@ unsafe impl Send for BattleData {}
 unsafe impl Sync for BattleData {}
 
 impl BattleData {
+    pub fn get_teammates(&self, user_id: u32) -> Vec<u32> {
+        let player = self.battle_player.get(&user_id).unwrap();
+        let team_id = player.team_id;
+        let mut res_v = vec![];
+
+        self.battle_player
+            .values()
+            .filter(|x| x.team_id == team_id)
+            .for_each(|f| res_v.push(f.get_user_id()));
+        res_v
+    }
+
     ///添加总turn的次数
     pub fn add_total_turn_times(&mut self) {
         self.total_turn_times += 1;
@@ -198,6 +212,9 @@ impl BattleData {
         bd.skill_function_cmd_map
             .insert(&SCOPE_CURE[..], scope_cure);
         bd.skill_function_cmd_map.insert(&TRANSFORM[..], transform);
+        bd.skill_function_cmd_map
+            .insert(&SUMMON_MINON[..], summon_minon);
+
         bd
     }
 

@@ -505,7 +505,7 @@ impl Room {
         }
         let member = member.unwrap();
         //如果是机器人，则返回，不发送
-        if member.robot_data.is_some() {
+        if member.is_robot() || member.is_minon() {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
@@ -525,7 +525,7 @@ impl Room {
                 continue;
             }
             let battle_player = battle_player.unwrap();
-            if battle_player.robot_data.is_some() {
+            if battle_player.is_robot() || battle_player.is_minon() {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);

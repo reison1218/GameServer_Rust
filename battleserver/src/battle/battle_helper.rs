@@ -21,7 +21,9 @@ use tools::protos::battle::S_BATTLE_TURN_NOTICE;
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
-use super::battle_enum::buff_type::{ATTACKED_SUB_DAMAGE, NEAR_SUB_ATTACK_DAMAGE, TRAPS};
+use super::battle_enum::buff_type::{
+    ATTACKED_SUB_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NEAR_SUB_ATTACK_DAMAGE, TRAPS,
+};
 use super::battle_enum::{ActionType, BattlePlayerState};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
@@ -383,7 +385,10 @@ impl BattleData {
             }
             let buff = buff.unwrap();
             buff_function_id = buff.function_id;
-            if buff_function_id == NEAR_SUB_ATTACK_DAMAGE && !attack_is_near {
+            if (buff_function_id == NEAR_SUB_ATTACK_DAMAGE
+                || buff_function_id == NEAR_ATTACKED_DAMAGE_ZERO)
+                && !attack_is_near
+            {
                 continue;
             }
             par = buff.buff_temp.par1 as u8;
@@ -393,6 +398,7 @@ impl BattleData {
                     par = buff.buff_temp.par2 as u8;
                 }
             }
+
             for _ in 0..times {
                 value += par;
             }
@@ -404,7 +410,7 @@ impl BattleData {
         let alive_count = self
             .battle_player
             .values()
-            .filter(|x| x.status.battle_state == BattlePlayerState::Normal)
+            .filter(|x| x.status.battle_state == BattlePlayerState::Normal && x.owner == 0)
             .count();
         alive_count
     }
@@ -736,7 +742,7 @@ impl BattleData {
         let battle_player = self.get_battle_player(Some(user_id), false);
         match battle_player {
             Ok(battle_player) => {
-                if battle_player.is_robot() {
+                if battle_player.is_robot() || battle_player.is_minon() {
                     return;
                 }
             }
@@ -752,7 +758,7 @@ impl BattleData {
     pub fn send_2_all_client(&mut self, cmd: ClientCode, bytes: Vec<u8>) {
         let cmd = cmd.into_u32();
         for battle_player in self.battle_player.values() {
-            if battle_player.robot_data.is_some() {
+            if battle_player.is_robot() || battle_player.is_minon() {
                 continue;
             }
             let user_id = battle_player.user_id;

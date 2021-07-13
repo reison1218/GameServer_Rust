@@ -1,6 +1,7 @@
+use crate::room::match_room::MatchRoom;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::{MatchRoom, RoomModel};
+use crate::room::room_model::RoomModel;
 use crate::{Lock, SCHEDULED_MGR};
 use async_std::task::block_on;
 use chrono::Local;

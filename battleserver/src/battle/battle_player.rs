@@ -14,6 +14,7 @@ use crate::mgr::League;
 use crate::robot::robot_action::RobotStatusAction;
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::robot::RobotData;
+use crate::room::character::Character;
 use crate::room::member::Member;
 use crate::TEMPLATES;
 use crossbeam::channel::Sender;
@@ -26,7 +27,9 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{BattleCharacterPt, TargetPt};
 use tools::templates::character_temp::{CharacterTemp, TransformInheritType};
 
-use super::battle_enum::buff_type::{ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED};
+use super::battle_enum::buff_type::{
+    ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED, NEAR_ATTACKED_DAMAGE_ZERO,
+};
 
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
@@ -72,6 +75,9 @@ impl BattleBuff {
             self.add_sub_damage_buff(buff_id);
         }
         if ATTACKED_SUB_DAMAGE == buff_id {
+            self.add_sub_damage_buff(buff_id);
+        }
+        if NEAR_ATTACKED_DAMAGE_ZERO == buff_id {
             self.add_sub_damage_buff(buff_id);
         }
     }
@@ -200,6 +206,9 @@ pub struct BattlePlayer {
     pub flow_data: TurnFlowData,           //战斗流程相关数据
     pub status: BattleStatus,              //战斗状态
     pub robot_data: Option<RobotData>,     //机器人数据;如果有值，则是机器人，没有则是玩家
+    pub owner: u32,                        //主人id（如果大于0，则表明是召唤物）
+    pub minon: u32,                        //宠物id（如果大于0，则表明有召唤物）
+    pub team_id: u8,                       //队伍id
 }
 
 tools::get_mut_ref!(BattlePlayer);
@@ -232,6 +241,35 @@ impl BattlePlayer {
             battle_player.robot_data = Some(robot_data);
         }
         battle_player.reset_residue_movement_points();
+        battle_player.team_id = member.team_id;
+        Ok(battle_player)
+    }
+
+    pub fn init_for_minon(
+        cter_id: u32,
+        owner: u32,
+        user_id: u32,
+        team_id: u8,
+        index: usize,
+    ) -> anyhow::Result<Self> {
+        let mut battle_player = BattlePlayer::default();
+        battle_player.user_id = user_id;
+        battle_player.name = "minon".to_string();
+        battle_player.grade = 1;
+
+        let mut member = Member::default();
+        let mut c = Character::default();
+        c.cter_id = cter_id;
+        member.user_id = user_id;
+        member.chose_cter = c;
+        member.grade = 1;
+        member.team_id = team_id;
+        let battle_cter = BattleCharacter::init(&member)?;
+        battle_player.cter = battle_cter;
+        battle_player.reset_residue_movement_points();
+        battle_player.team_id = member.team_id;
+        battle_player.owner = owner;
+        battle_player.cter.index_data.map_cell_index = Some(index);
         Ok(battle_player)
     }
 
@@ -249,7 +287,7 @@ impl BattlePlayer {
     pub fn player_die(&mut self, str: String) {
         self.cter.base_attr.hp = 0;
         self.cter.state = BattleCterState::Die;
-        self.status.battle_state = BattlePlayerState::Eliminate;
+        self.status.battle_state = BattlePlayerState::Died;
         info!("{:?}", str);
     }
 
@@ -432,6 +470,10 @@ impl BattlePlayer {
 
     pub fn is_robot(&self) -> bool {
         self.robot_data.is_some()
+    }
+
+    pub fn is_minon(&self) -> bool {
+        self.owner > 0
     }
 
     ///重制角色数据
@@ -621,7 +663,7 @@ impl BattlePlayer {
             );
             self.player_die(str);
         }
-        self.status.battle_state == BattlePlayerState::Eliminate
+        self.status.battle_state == BattlePlayerState::Died
     }
 
     ///将自身转换成protobuf结构体

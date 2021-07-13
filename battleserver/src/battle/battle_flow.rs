@@ -399,6 +399,14 @@ impl BattleData {
                     continue;
                 }
                 battle_player.round_reset();
+                if battle_player.is_minon() {
+                    let str = format!(
+                        "refresh map!so the minon({}) is died!",
+                        battle_player.get_cter_id()
+                    );
+                    battle_player.player_die(str);
+                    continue;
+                }
                 let from_user = battle_player.get_user_id();
                 let battle_player_ptr = battle_player as *mut BattlePlayer;
                 for buff in battle_player_ptr
@@ -607,6 +615,7 @@ impl BattleData {
                     );
                 }
             }
+            self_mut.turn_start_trigger();
         }
     }
 }

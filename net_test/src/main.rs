@@ -495,10 +495,14 @@ impl tools::tcp::ClientHandler for TcpClientTestt {
 static client_num: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
 
 fn main() -> anyhow::Result<()> {
+    let mut v = vec![1, 1];
+    v.iter().map(|x| x * 2);
+    println!("{:?}", v);
+
     // let mut mc = MessageClient;
     // async_std::task::block_on(mc.connect(TransportWay::Tcp, "127.0.0.1:16801"));
-    let mut tct = TcpClientTestt::default();
-    async_std::task::block_on(tct.on_read("127.0.0.1:16801".to_string()));
+    // let mut tct = TcpClientTestt::default();
+    // async_std::task::block_on(tct.on_read("127.0.0.1:16801".to_string()));
     // test_close(move |x| {
     //     println!("{}", x);
     // });

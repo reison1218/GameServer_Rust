@@ -14,16 +14,26 @@ use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
+use protobuf::Message;
 use std::str::FromStr;
+use tools::cmd_code::ClientCode;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
+use tools::protos::battle::S_ACTION_NOTICE;
 
+use super::battle_enum::buff_type::{
+    DIE_END_TURN, DIE_SKILL_CD, OPEND_OR_NOT_CELL_SKILL_DAMAGE, OPEN_ELEMENT_CELL_CLEAR_CD,
+    TURN_STAT_HEAL_FRIEND,
+};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::buff_type::ATTACKED_SUB_CD, battle_player::BattlePlayer};
 
 ///触发事件trait
 pub trait TriggerEvent {
+    ///回合开始时候触发，主要触发buff
+    fn turn_start_trigger(&mut self);
+
     ///翻开地图块时候触发,主要触发buff和游戏机制上的东西
     fn open_map_cell_trigger(
         &mut self,
@@ -219,6 +229,36 @@ impl TriggerEvent for BattleData {
                 (element, 0),
             );
         }
+
+        //翻开地图块触发buff
+        let mut buff_function_id;
+        let mut cter_index;
+        let mut buff_id;
+        for battle_player in self.battle_player.values_mut() {
+            cter_index = battle_player.get_map_cell_index();
+
+            for (_, buff) in battle_player.cter.battle_buffs.buffs() {
+                buff_function_id = buff.function_id;
+                buff_id = buff.get_id();
+                if buff_function_id == OPEN_ELEMENT_CELL_CLEAR_CD {
+                    let temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff.get_id())?;
+                    if temp.par1 == element {
+                        let mut target_pt = TargetPt::new();
+                        target_pt.target_value.push(cter_index as u32);
+                        let mut tep = TriggerEffectPt::new();
+
+                        let skill = battle_player.cter.skills.get_mut(&temp.par1).unwrap();
+                        tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
+                        tep.buff_id = buff_id;
+                        tep.set_value(skill.id);
+                        skill.clean_cd();
+                        target_pt.passiveEffect.push(tep);
+                        au.targets.push(target_pt);
+                    }
+                }
+            }
+        }
+
         Ok(None)
     }
 
@@ -614,6 +654,8 @@ impl TriggerEvent for BattleData {
             return;
         }
         let battle_player = battle_player.unwrap();
+        let owner = battle_player.owner;
+        let minon = battle_player.minon;
         let gold = battle_player.gold;
         let self_league = battle_player.league.get_league_id();
         let mut punishment_score = -50;
@@ -642,7 +684,7 @@ impl TriggerEvent for BattleData {
         let rank_vec_temp = &mut self.summary_vec_temp;
         rank_vec_temp.push(sp);
         //判断是否需要排行,如果需要则从第最后
-        if is_last_one {
+        if is_last_one && owner == 0 {
             let index = player_count as usize;
             let res = self.summary_vec.get_mut(index);
             if let None = res {
@@ -753,6 +795,145 @@ impl TriggerEvent for BattleData {
         let from_cter = self.get_battle_player_mut(Some(from_user), true);
         if let Ok(from_cter) = from_cter {
             from_cter.add_gold(gold);
+        }
+
+        //如果是随从死了，就触发相关buff
+        if owner > 0 {
+            let battle_data_ptr = self as *mut BattleData;
+            unsafe {
+                let battle_player = battle_data_ptr
+                    .as_mut()
+                    .unwrap()
+                    .get_battle_player(Some(user_id), false)
+                    .unwrap();
+                let mut buff_function_id;
+                for buff in battle_player.cter.battle_buffs.buffs().values() {
+                    buff_function_id = buff.function_id;
+                    if buff_function_id == DIE_SKILL_CD {
+                        let player = self.get_battle_player_mut(buff.from_user, true);
+                        match player {
+                            Ok(player) => {
+                                let skill = player.cter.skills.get_mut(&buff.buff_temp.par1);
+                                match skill {
+                                    Some(skill) => skill.is_active = false,
+                                    None => {
+                                        warn!(
+                                            "could not find skill({}) in cter_id:{}",
+                                            buff.buff_temp.par1,
+                                            player.get_cter_id()
+                                        )
+                                    }
+                                }
+                            }
+                            Err(err) => warn!("{:?}", err),
+                        }
+                    }
+                    if buff_function_id == DIE_END_TURN {
+                        self.next_turn(false);
+                    }
+                }
+                let battle_player = battle_data_ptr
+                    .as_mut()
+                    .unwrap()
+                    .get_battle_player_mut(Some(owner), false);
+                if let Ok(battle_player) = battle_player {
+                    battle_player.minon = 0;
+                }
+            }
+        }
+        //判断当前死亡角色有没有召唤物
+        if minon > 0 {
+            let minon_data = self.battle_player.get_mut(&minon);
+            if let Some(minon_data) = minon_data {
+                let str = format!(
+                    "owner is died!so the minon({}) died!",
+                    minon_data.get_cter_id()
+                );
+                minon_data.player_die(str);
+            }
+        }
+    }
+
+    fn turn_start_trigger(&mut self) {
+        let battle_data_ptr = self as *mut BattleData;
+
+        unsafe {
+            let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+            let battle_data_mut2 = battle_data_ptr.as_mut().unwrap();
+            let mut user_id;
+            let mut buff_function_id;
+            let mut buff_id;
+            let mut team_id;
+            for battle_player in battle_data_mut.battle_player.values_mut() {
+                user_id = battle_player.get_user_id();
+                team_id = battle_player.team_id;
+                for buff in battle_player.cter.battle_buffs.buffs().values() {
+                    buff_function_id = buff.function_id;
+                    buff_id = buff.get_id();
+                    let mut proto = S_ACTION_NOTICE::default();
+                    if buff_function_id == TURN_STAT_HEAL_FRIEND {
+                        let teammates = battle_data_mut2.get_teammates(user_id);
+                        let mut au = ActionUnitPt::new();
+                        for team_user in teammates {
+                            let res = battle_data_mut2.add_hp(
+                                Some(user_id),
+                                team_user,
+                                buff.buff_temp.par1 as i16,
+                                Some(buff_id),
+                            );
+                            if let Err(_) = res {
+                                continue;
+                            }
+                            let target_pt = res.unwrap();
+                            au.targets.push(target_pt);
+                        }
+                        proto.action_uints.push(au);
+                    }
+                    if buff_function_id == OPEND_OR_NOT_CELL_SKILL_DAMAGE {
+                        let mut au = ActionUnitPt::new();
+                        let mut damage;
+                        let mut target_user;
+                        for cell in self.tile_map.map_cells.iter() {
+                            target_user = cell.user_id;
+                            if target_user <= 0 {
+                                continue;
+                            }
+                            let player =
+                                battle_data_mut2.get_battle_player(Some(target_user), true);
+                            if let Err(_) = player {
+                                continue;
+                            }
+                            let player = player.unwrap();
+                            if player.team_id == team_id {
+                                continue;
+                            }
+                            if cell.pair_index.is_some() || cell.is_market() {
+                                damage = buff.buff_temp.par1 as i16;
+                            } else {
+                                damage = buff.buff_temp.par2 as i16;
+                            }
+                            let res = battle_data_mut2.add_hp(
+                                Some(user_id),
+                                target_user,
+                                damage,
+                                Some(buff_id),
+                            );
+                            if let Err(_) = res {
+                                continue;
+                            }
+                            let target_pt = res.unwrap();
+                            au.targets.push(target_pt);
+                        }
+                        proto.action_uints.push(au);
+                    }
+                    if proto.action_uints.len() > 0 {
+                        self.send_2_all_client(
+                            ClientCode::ActionNotice,
+                            proto.write_to_bytes().unwrap(),
+                        )
+                    }
+                }
+            }
         }
     }
 }

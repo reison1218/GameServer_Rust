@@ -4,14 +4,18 @@ use crate::handlers::room_handler::{
     off_line, prepare_cancel, reload_temps, room_setting, search_room, start, summary,
     update_season,
 };
+use crate::room::custom_room::CustomRoom;
+use crate::room::match_room::MatchRoom;
 use crate::room::room::{Room, RoomState};
-use crate::room::room_model::{CustomRoom, MatchRoom, RoomModel, RoomType};
+use crate::room::room_model::{RoomModel, RoomType};
+use crate::room::world_boss_custom_room::WorldBossCustomRoom;
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
 use rayon::slice::ParallelSliceMut;
+use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
-use std::{collections::hash_map::RandomState, convert::TryFrom};
+use std::convert::TryFrom;
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
 use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
@@ -20,8 +24,9 @@ type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>;
 
 ///房间服管理器
 pub struct RoomMgr {
-    pub custom_room: CustomRoom,           //自定义房
-    pub match_room: MatchRoom,             //公共房
+    pub custom_room: CustomRoom,                     //自定义房
+    pub match_room: MatchRoom,                       //公共房
+    pub world_boss_custom_room: WorldBossCustomRoom, //世界boss自定义房间
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
     tcp_handler: Option<TcpHandler>,    //tcp channel的发送方
@@ -35,10 +40,12 @@ impl RoomMgr {
         let cmd_map: HashMap<u32, fn(&mut RoomMgr, Packet), RandomState> = HashMap::new();
         let custom_room = CustomRoom::default();
         let match_rooms = MatchRoom::default();
+        let world_boss_custom_room = WorldBossCustomRoom::default();
         let player_room: HashMap<u32, u64> = HashMap::new();
         let mut rm = RoomMgr {
             custom_room,
             match_room: match_rooms,
+            world_boss_custom_room,
             player_room,
             tcp_handler: None,
             task_sender: None,

@@ -37,7 +37,7 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 8] = [122, 211, 221, 311, 312, 322, 324, 20002];
+    pub const ADD_BUFF: [u32; 9] = [122, 211, 221, 311, 312, 322, 324, 11003, 20002];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
@@ -47,7 +47,7 @@ pub mod skill_type {
     ///相临玩家造成技能伤害并恢复生命
     pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 7] = [999, 123, 20004, 20005, 323, 433, 331];
+    pub const SKILL_DAMAGE: [u32; 8] = [999, 123, 20004, 20005, 323, 433, 331, 11001];
     ///技能aoe
     pub const SKILL_AOE: [u32; 4] = [121, 411, 412, 432];
     ///减技能cd
@@ -80,6 +80,8 @@ pub mod skill_type {
     pub const SHOW_INDEX_SAME_ELEMENT: u32 = 422;
     ///配对可用，造成伤害
     pub const SKILL_PAIR_LIMIT_DAMAGE: [u32; 1] = [331];
+    ///召唤宠物
+    pub const SUMMON_MINON: [u32; 1] = [11002];
 }
 
 ///buff类型
@@ -147,6 +149,24 @@ pub mod buff_type {
 
     ///被攻击时减伤
     pub const ATTACKED_SUB_DAMAGE: u32 = 17;
+
+    ///对已翻开地图块或者未翻开地图块玩家造成技能伤害
+    pub const OPEND_OR_NOT_CELL_SKILL_DAMAGE: u32 = 18;
+
+    ///死亡时指定技能进入cd，主要是给召唤物用的
+    pub const DIE_SKILL_CD: u32 = 19;
+
+    ///受到攻击伤害变成0
+    pub const NEAR_ATTACKED_DAMAGE_ZERO: u32 = 20001;
+
+    ///每当有指定元素地图块被翻开，刷新技能cd
+    pub const OPEN_ELEMENT_CELL_CLEAR_CD: u32 = 20002;
+
+    ///回合开始时，回复所有友方单位血
+    pub const TURN_STAT_HEAL_FRIEND: u32 = 20003;
+
+    ///死了就结束回合
+    pub const DIE_END_TURN: u32 = 20004;
 
     ///世界树buff,在战斗开始的时候就开始加载，
     pub const WORLD_CELL_BUFFS: u32 = 30051;
@@ -230,7 +250,7 @@ impl SkillConsumeType {
 #[repr(u8)]
 pub enum BattlePlayerState {
     Normal = 0,
-    Eliminate = 1,
+    Died = 1,    //淘汰
     OffLine = 2, //离线
 }
 

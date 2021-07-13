@@ -56,7 +56,7 @@ impl BattleMgr {
             Some(room) => {
                 let battle_player = room.get_battle_player_ref(&user_id);
                 if let Some(battle_player) = battle_player {
-                    if battle_player.is_robot() {
+                    if battle_player.is_robot() || battle_player.is_minon() {
                         return;
                     }
                 }

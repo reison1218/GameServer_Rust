@@ -619,7 +619,7 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
     match bytes {
         Ok(bytes) => {
             let room = rm.get_room_mut_by_user_id(&user_id).unwrap();
-            room.send_2_all_client(ClientCode::ChoiceAINotice, bytes)
+            room.send_2_all_client(ClientCode::ChoiceAINotice, bytes);
         }
         Err(e) => error!("{:?}", e),
     }
@@ -1381,9 +1381,22 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
                 rm.rm_room_without_push(room_type, room_id);
             } else {
                 room.state = RoomState::AwaitReady;
-                for member in room.members.values_mut() {
-                    member.chose_cter = Character::default();
-                    member.state = MemberState::NotReady;
+                room.members
+                    .values_mut()
+                    .filter(|member| member.robot_temp_id == 0)
+                    .for_each(|member| {
+                        member.chose_cter = Character::default();
+                        member.state = MemberState::NotReady;
+                    });
+
+                let ai_v: Vec<Member> = room
+                    .members
+                    .values()
+                    .filter(|member| member.robot_temp_id > 0)
+                    .cloned()
+                    .collect();
+                for member in ai_v {
+                    room.remove_member_without_push(member.get_user_id());
                 }
             }
         }

@@ -1323,3 +1323,60 @@ pub unsafe fn transform(
 
     Some(v)
 }
+
+///召唤宠物
+pub unsafe fn summon_minon(
+    battle_data: &mut BattleData,
+    user_id: u32,
+    skill_id: u32,
+    targets: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> Option<Vec<(u32, ActionUnitPt)>> {
+    let index = targets.get(0);
+    if index.is_none() {
+        warn!("the targets is empty!");
+        return None;
+    }
+    let index = *index.unwrap() as usize;
+    let res = battle_data.check_choice_index(index, false, false, false, true, true, true);
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return None;
+    }
+    let max_id: u32 = battle_data.battle_player.keys().cloned().sum();
+
+    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
+    if let Err(e) = battle_player {
+        error!("{:?}", e);
+        return None;
+    }
+    let battle_player = battle_player.unwrap();
+    battle_player.minon = max_id;
+
+    let skill_temp = crate::TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
+    if let Err(e) = skill_temp {
+        error!("{:?}", e);
+        return None;
+    }
+    let team_id = battle_player.team_id;
+
+    let skill_temp = skill_temp.unwrap();
+    let minon_id = skill_temp.par1;
+    let buff_id = skill_temp.par2;
+
+    let minon = BattlePlayer::init_for_minon(minon_id, user_id, max_id, team_id, index);
+    if let Err(e) = minon {
+        error!("{:?}", e);
+        return None;
+    }
+    let mut minon = minon.unwrap();
+    minon
+        .cter
+        .add_buff(Some(user_id), Some(skill_id), buff_id, None);
+    let mut target_pt = TargetPt::default();
+    target_pt.target_value.push(index as u32);
+    target_pt.add_buffs.push(buff_id);
+    au.targets.push(target_pt);
+    battle_data.battle_player.insert(minon.user_id, minon);
+    None
+}
