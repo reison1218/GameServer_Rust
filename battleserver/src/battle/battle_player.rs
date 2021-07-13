@@ -69,15 +69,16 @@ pub struct BattleBuff {
 impl BattleBuff {
     pub fn init(&mut self, buff: Buff) {
         let buff_id = buff.get_id();
+        let buff_function_id = buff.function_id;
         self.buffs.insert(buff.get_id(), buff.clone());
         self.passive_buffs.insert(buff.get_id(), buff.clone());
-        if SUB_ATTACK_DAMAGE.contains(&buff_id) {
+        if SUB_ATTACK_DAMAGE.contains(&buff_function_id) {
             self.add_sub_damage_buff(buff_id);
         }
-        if ATTACKED_SUB_DAMAGE == buff_id {
+        if ATTACKED_SUB_DAMAGE == buff_function_id {
             self.add_sub_damage_buff(buff_id);
         }
-        if NEAR_ATTACKED_DAMAGE_ZERO == buff_id {
+        if NEAR_ATTACKED_DAMAGE_ZERO == buff_function_id {
             self.add_sub_damage_buff(buff_id);
         }
     }
