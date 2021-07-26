@@ -11,7 +11,7 @@ pub struct OpenCellGoalEvaluator {
 
 impl GoalEvaluator for OpenCellGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        if !robot.cter.map_cell_index_is_choiced() {
+        if !robot.get_current_cter().map_cell_index_is_choiced() {
             return 0;
         }
         let robot_data = robot.robot_data.as_ref().unwrap();
@@ -36,7 +36,7 @@ impl GoalEvaluator for OpenCellGoalEvaluator {
         battle_data: *mut BattleData,
     ) {
         let mut res = OpenCellRobotAction::new(battle_data, sender);
-        res.cter_id = robot.get_cter_id();
+        res.cter_id = robot.get_cter_temp_id();
         res.robot_id = robot.get_user_id();
         res.temp_id = robot.robot_data.as_ref().unwrap().temp_id;
         robot.change_robot_status(Box::new(res));

@@ -39,7 +39,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -58,7 +58,7 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
         let mut v = Vec::new();
         for (&index, _) in battle_data.tile_map.un_pair_map.iter() {
             let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-            if map_cell.user_id > 0 {
+            if map_cell.cter_id > 0 {
                 continue;
             }
             if map_cell.is_world() {

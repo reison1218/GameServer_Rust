@@ -107,7 +107,7 @@ impl RobotData {
                 return None;
             }
             let robot = robot.unwrap();
-            let robot_id = robot.user_id;
+            let (cter_id, _) = robot.major_cter;
 
             for re_map_cell1 in self.remember_map_cell.iter() {
                 let map_cell = battle_data
@@ -115,14 +115,14 @@ impl RobotData {
                     .map_cells
                     .get(re_map_cell1.cell_index)
                     .unwrap();
-                let res = check_can_open(robot_id, map_cell, battle_data);
+                let res = check_can_open(cter_id, map_cell, battle_data);
                 if !res {
                     continue;
                 }
                 for re_map_cell2 in self.remember_map_cell.iter() {
                     //翻过的跳过
                     if re_map_cell1.cell_index == re_map_cell2.cell_index
-                        || map_cell.open_user == robot_id
+                        || map_cell.open_cter == cter_id
                     {
                         continue;
                     }

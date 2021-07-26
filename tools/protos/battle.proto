@@ -83,7 +83,7 @@ message S_START_NOTICE{
     uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
     repeated uint32 turn_order = 4;//turn顺序
-    repeated BattleCharacterPt battle_cters = 5;//战斗角色数据
+    repeated BattlePlayerPt battle_players = 5;//玩家战斗数据
 }
 
 //选择位置请求
@@ -103,7 +103,8 @@ message S_CHOOSE_INDEX{
 //cmd:10025
 message S_CHOOSE_INDEX_NOTICE{
     uint32 user_id = 1;//玩家id
-    uint32 index = 2;//玩家所选择的位置
+    uint32 cter_id = 2;//玩家的主要角色id
+    uint32 index = 3;//玩家所选择的位置
 }
 
 //行动请求
@@ -117,7 +118,7 @@ message C_ACTION{
 //战斗开始通知
 //cmd=10030
 message S_BATTLE_START_NOTICE{
-    repeated BattleCharacterPt battle_cters = 1;//战斗角色数据
+    repeated BattlePlayerPt battle_players = 1;//玩家战斗数据
     string map_data = 2;//地图数据
 }
 
@@ -131,7 +132,7 @@ message S_ACTION_NOTICE{
 //cmd = 10032
 message S_BATTLE_TURN_NOTICE{
     uint32 user_id = 1;//当前turn的玩家id
-    repeated BattleCharacterPt cters = 2;//所有玩家角色
+    repeated BattlePlayerPt battle_players = 2;//所有玩家战斗数据
     repeated CellBuffPt cell_buffs = 3;//地图块上的buff
 }
 
@@ -145,7 +146,7 @@ message C_POS{
 //架势请求
 //cmd = 10033
 message S_POS_NOTICE{
-    uint32 user_id = 1;//玩家ID
+    uint32 cter_id = 1;//角色ID
     uint32 type = 2;//1:切换架势，2:取消架势
     uint32 skill_id = 3;//技能id
 }

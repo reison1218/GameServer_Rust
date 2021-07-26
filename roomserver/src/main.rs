@@ -3,13 +3,12 @@ mod mgr;
 mod net;
 mod room;
 mod task_timer;
-#[macro_use]
-extern crate lazy_static;
 
 use crate::mgr::room_mgr::RoomMgr;
 use crate::net::tcp_server;
 use crate::task_timer::init_timer;
 use async_std::sync::{Arc, Mutex};
+use lazy_static::lazy_static;
 use log::{error, info, warn};
 use scheduled_thread_pool::ScheduledThreadPool;
 use serde_json::Value;

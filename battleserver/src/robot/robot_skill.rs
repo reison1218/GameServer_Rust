@@ -68,7 +68,7 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
 
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
 
-    let res = check_skill_useable(battle_player, skill);
+    let res = check_skill_useable(battle_player.get_current_cter(), skill);
     if let Err(_) = res {
         return false;
     }
@@ -147,7 +147,7 @@ pub fn skill_target(
     match skill_function_id {
         //目标是自己
         i if [211, 313, 321].contains(&i) => {
-            // targets.push(battle_player.cter.index_data.map_cell_index.unwrap());
+            // targets.push(battle_player.get_current_cter_mut().index_data.map_cell_index.unwrap());
         }
         //除自己外最大血量的目标
         i if [123, 331, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
@@ -256,7 +256,7 @@ pub fn skill_open_near_cell_robot(
 ) -> Option<usize> {
     let robot_id = robot_data.robot_id;
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
-    let robot_index = battle_player.get_map_cell_index();
+    let robot_index = battle_player.get_current_cter_index();
 
     let (map_cells, _) = battle_data.cal_scope(
         robot_id,
@@ -269,7 +269,7 @@ pub fn skill_open_near_cell_robot(
     let mut res_v = vec![];
     for &index in map_cells.iter() {
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        if map_cell.open_user > 0 {
+        if map_cell.open_cter > 0 {
             continue;
         }
         if map_cell.check_is_locked() {
@@ -329,14 +329,28 @@ pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize>
         if battle_player.is_died() {
             continue;
         }
-        //排除给定robot_id的
-        if battle_player.user_id == robot_id {
+        //排除自己所有的角色
+        if battle_player.get_user_id() == robot_id {
             continue;
         }
-        //对比血量
-        if battle_player.cter.base_attr.hp > res.0 {
-            res.0 = battle_player.cter.base_attr.hp;
-            res.1 = battle_player.cter.index_data.map_cell_index.unwrap();
+        let mut cter_id = 0;
+        for battle_cter in battle_player.cters.values() {
+            //排除给定robot_id的
+            if cter_id == 0 {
+                cter_id = battle_cter.base_attr.cter_id;
+            }
+            if cter_id == battle_cter.base_attr.cter_id {
+                continue;
+            }
+            //对比血量
+            if battle_player.get_current_cter().base_attr.hp > res.0 {
+                res.0 = battle_player.get_current_cter().base_attr.hp;
+                res.1 = battle_player
+                    .get_current_cter()
+                    .index_data
+                    .map_cell_index
+                    .unwrap();
+            }
         }
     }
     //校验返回结果
@@ -353,7 +367,7 @@ pub fn pair_useable_skill(robot: &BattlePlayer) -> bool {
 ///有没有相邻的玩家
 pub fn near_user(battle_data: &BattleData, robot_id: u32) -> bool {
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
-    let index = battle_player.get_map_cell_index() as isize;
+    let index = battle_player.get_current_cter_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
     res.1.len() > 0
 }
@@ -404,16 +418,16 @@ pub fn get_roundness_aoe(
         if is_check_lock && map_cell.check_is_locked() {
             continue;
         }
-        if is_opened && (map_cell.open_user > 0 || map_cell.pair_index.is_some()) {
+        if is_opened && (map_cell.open_cter > 0 || map_cell.pair_index.is_some()) {
             continue;
         }
         let mut v = vec![];
-        if is_check_null && map_cell.user_id > 0 {
+        if is_check_null && map_cell.cter_id > 0 {
             continue;
-        } else if map_cell.user_id == user_id {
+        } else if map_cell.cter_id == user_id {
             //排除自己
             continue;
-        } else if map_cell.user_id > 0 {
+        } else if map_cell.cter_id > 0 {
             v.push(map_cell.index);
         }
 
@@ -454,7 +468,7 @@ pub fn get_roundness_aoe(
                 continue;
             }
             let cell = cell.unwrap();
-            if cell.user_id > 0 && cell.user_id != user_id {
+            if cell.cter_id > 0 && cell.cter_id != user_id {
                 v.push(cell.index);
             }
         }
@@ -472,11 +486,11 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
         if map_cell.id <= MapCellType::UnUse.into_u32() {
             continue;
         }
-        if map_cell.user_id == user_id {
+        if map_cell.cter_id == user_id {
             continue;
         }
         //把中心点加进去
-        if map_cell.user_id > 0 {
+        if map_cell.cter_id > 0 {
             v.push(map_cell.index);
         }
         let mut coord_index = (map_cell.x, map_cell.y);
@@ -507,7 +521,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
             }
             let res_cell = res_cell.unwrap();
             //排除无效目标
-            if res_cell.user_id <= 0 || res_cell.user_id == user_id {
+            if res_cell.cter_id <= 0 || res_cell.cter_id == user_id {
                 continue;
             }
             v.push(res_cell.index);
@@ -524,10 +538,10 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
     let map_cells = &battle_data.tile_map.map_cells;
     for index in 0..map_cells.len() {
         let cell = map_cells.get(index).unwrap();
-        if cell.user_id <= 0 {
+        if cell.cter_id <= 0 {
             continue;
         }
-        if cell.user_id == user_id {
+        if cell.cter_id == user_id {
             continue;
         }
         v.push(index);
@@ -623,14 +637,14 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
                             continue;
                         }
 
-                        if map_cell.user_id == user_id {
+                        if map_cell.cter_id == user_id {
                             continue;
                         }
 
                         if temp_v.1.contains(&map_cell.index) {
                             continue;
                         }
-                        if map_cell.user_id > 0 {
+                        if map_cell.cter_id > 0 {
                             temp_v.0 += 1;
                         }
                         temp_v.1.push(map_cell.index);
@@ -717,7 +731,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
 
 pub fn can_use_skill(battle_data: &BattleData, battle_player: &BattlePlayer) -> bool {
     let robot = battle_player.robot_data.as_ref().unwrap();
-    for skill in battle_player.cter.skills.values() {
+    for skill in battle_player.get_current_cter().skills.values() {
         let res = skill_condition(battle_data, skill, robot);
         if !res {
             continue;

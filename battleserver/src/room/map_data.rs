@@ -101,8 +101,8 @@ pub struct MapCell {
     pub cell_type: MapCellType,    //地图块类型
     pub element: u8,               //地图块的属性
     pub passive_buffs: Vec<u32>,   //额外玩家对其添加的buff
-    pub user_id: u32,              //这个地图块上面的玩家
-    pub open_user: u32,            //翻开这个地图块的玩家
+    pub cter_id: u32,              //这个地图块上面的角色
+    pub open_cter: u32,            //翻开这个地图块的角色
     pub pair_index: Option<usize>, //与之配对的下标
     pub x: isize,                  //x轴坐标
     pub y: isize,                  //y轴坐标
@@ -167,7 +167,7 @@ impl TileMap {
     ///通过user_id获得地图块
     pub fn get_map_cell_mut_by_user_id(&mut self, user_id: u32) -> Option<&mut MapCell> {
         for map_cell in self.map_cells.iter_mut() {
-            if map_cell.user_id != user_id {
+            if map_cell.cter_id != user_id {
                 continue;
             }
             return Some(map_cell);
@@ -178,8 +178,8 @@ impl TileMap {
     ///删除玩家
     pub fn remove_user(&mut self, user_id: u32) {
         for map_cell in self.map_cells.iter_mut() {
-            if map_cell.user_id == user_id {
-                map_cell.user_id = 0;
+            if map_cell.cter_id == user_id {
+                map_cell.cter_id = 0;
             }
             for buff in map_cell.buffs.values_mut() {
                 if !buff.trap_view_users.contains(&user_id) {

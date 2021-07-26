@@ -1516,7 +1516,7 @@ impl ::protobuf::reflect::ProtobufValue for S_LEAVE_ROOM {
 #[derive(PartialEq,Clone,Default)]
 pub struct C_CHOOSE_CHARACTER {
     // message fields
-    pub cter_id: u32,
+    pub cter_temp_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1533,19 +1533,19 @@ impl C_CHOOSE_CHARACTER {
         ::std::default::Default::default()
     }
 
-    // uint32 cter_id = 1;
+    // uint32 cter_temp_id = 1;
 
 
-    pub fn get_cter_id(&self) -> u32 {
-        self.cter_id
+    pub fn get_cter_temp_id(&self) -> u32 {
+        self.cter_temp_id
     }
-    pub fn clear_cter_id(&mut self) {
-        self.cter_id = 0;
+    pub fn clear_cter_temp_id(&mut self) {
+        self.cter_temp_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_cter_id(&mut self, v: u32) {
-        self.cter_id = v;
+    pub fn set_cter_temp_id(&mut self, v: u32) {
+        self.cter_temp_id = v;
     }
 }
 
@@ -1563,7 +1563,7 @@ impl ::protobuf::Message for C_CHOOSE_CHARACTER {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.cter_id = tmp;
+                    self.cter_temp_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1577,8 +1577,8 @@ impl ::protobuf::Message for C_CHOOSE_CHARACTER {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.cter_temp_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.cter_temp_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1586,8 +1586,8 @@ impl ::protobuf::Message for C_CHOOSE_CHARACTER {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.cter_id != 0 {
-            os.write_uint32(1, self.cter_id)?;
+        if self.cter_temp_id != 0 {
+            os.write_uint32(1, self.cter_temp_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1628,9 +1628,9 @@ impl ::protobuf::Message for C_CHOOSE_CHARACTER {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "cter_id",
-                |m: &C_CHOOSE_CHARACTER| { &m.cter_id },
-                |m: &mut C_CHOOSE_CHARACTER| { &mut m.cter_id },
+                "cter_temp_id",
+                |m: &C_CHOOSE_CHARACTER| { &m.cter_temp_id },
+                |m: &mut C_CHOOSE_CHARACTER| { &mut m.cter_temp_id },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_CHOOSE_CHARACTER>(
                 "C_CHOOSE_CHARACTER",
@@ -1648,7 +1648,7 @@ impl ::protobuf::Message for C_CHOOSE_CHARACTER {
 
 impl ::protobuf::Clear for C_CHOOSE_CHARACTER {
     fn clear(&mut self) {
-        self.cter_id = 0;
+        self.cter_temp_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -1863,7 +1863,7 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_CHARACTER {
 pub struct S_CHOOSE_CHARACTER_NOTICE {
     // message fields
     pub user_id: u32,
-    pub cter_id: u32,
+    pub cter_temp_id: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1895,19 +1895,19 @@ impl S_CHOOSE_CHARACTER_NOTICE {
         self.user_id = v;
     }
 
-    // uint32 cter_id = 2;
+    // uint32 cter_temp_id = 2;
 
 
-    pub fn get_cter_id(&self) -> u32 {
-        self.cter_id
+    pub fn get_cter_temp_id(&self) -> u32 {
+        self.cter_temp_id
     }
-    pub fn clear_cter_id(&mut self) {
-        self.cter_id = 0;
+    pub fn clear_cter_temp_id(&mut self) {
+        self.cter_temp_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_cter_id(&mut self, v: u32) {
-        self.cter_id = v;
+    pub fn set_cter_temp_id(&mut self, v: u32) {
+        self.cter_temp_id = v;
     }
 }
 
@@ -1932,7 +1932,7 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.cter_id = tmp;
+                    self.cter_temp_id = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1949,8 +1949,8 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.cter_id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.cter_temp_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.cter_temp_id, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1961,8 +1961,8 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
-        if self.cter_id != 0 {
-            os.write_uint32(2, self.cter_id)?;
+        if self.cter_temp_id != 0 {
+            os.write_uint32(2, self.cter_temp_id)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -2008,9 +2008,9 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
                 |m: &mut S_CHOOSE_CHARACTER_NOTICE| { &mut m.user_id },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "cter_id",
-                |m: &S_CHOOSE_CHARACTER_NOTICE| { &m.cter_id },
-                |m: &mut S_CHOOSE_CHARACTER_NOTICE| { &mut m.cter_id },
+                "cter_temp_id",
+                |m: &S_CHOOSE_CHARACTER_NOTICE| { &m.cter_temp_id },
+                |m: &mut S_CHOOSE_CHARACTER_NOTICE| { &mut m.cter_temp_id },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_CHOOSE_CHARACTER_NOTICE>(
                 "S_CHOOSE_CHARACTER_NOTICE",
@@ -2029,7 +2029,7 @@ impl ::protobuf::Message for S_CHOOSE_CHARACTER_NOTICE {
 impl ::protobuf::Clear for S_CHOOSE_CHARACTER_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
-        self.cter_id = 0;
+        self.cter_temp_id = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6541,50 +6541,51 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     _ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
     \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROO\
     M\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
-    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"-\n\x12C_CHOOS\
-    E_CHARACTER\x12\x17\n\x07cter_id\x18\x01\x20\x01(\rR\x06cterId\"H\n\x12S\
-    _CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
-    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"M\n\x19S_CHOOSE_C\
-    HARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\
-    \x17\n\x07cter_id\x18\x02\x20\x01(\rR\x06cterId\"(\n\x0eC_CHOOSE_SKILL\
-    \x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_CHOOSE_SKI\
-    LL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
-    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\x03\x20\x03\
-    (\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\
-    \rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\x18\x01\x20\x01\
-    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"5\
-    \n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctarget\
-    TeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
-    (\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\rR\x06teamId\",\n\
-    \x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepa\
-    re\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
-    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"L\n\x17\
-    S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
-    Id\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07prepare\"\t\n\x07C_STAR\
-    T\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
-    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"Z\n\x18S_ROOM_ADD\
-    _MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12(\n\
-    \x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_\
-    ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\
-    \x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"\
-    $\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\
-    \x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
-    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\
-    \x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEMBER_LEAVE_NOTICE\x12\
-    \x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x17\n\x07user_\
-    id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUCCESS_NOTICE\x12\x14\
-    \n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CONFIRM_INTO_ROOM\x12\
-    \x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INT\
-    O_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\
-    \x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CA\
-    NCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\x01(\x0b2\x15.\
-    protos.PunishMatchPtR\x0bpunishMatch\"G\n\x0bC_CHOICE_AI\x12\x14\n\x05in\
-    dex\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\x20\x01(\
-    \rR\x0brobotTempId\"g\n\x12S_CHOICE_AI_NOTICE\x12\x14\n\x05index\x18\x01\
-    \x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\x20\x01(\rR\x0brobo\
-    tTempId\x12\x17\n\x07user_id\x18\x03\x20\x01(\rR\x06userIdb\x06proto3\
+    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"6\n\x12C_CHOOS\
+    E_CHARACTER\x12\x20\n\x0ccter_temp_id\x18\x01\x20\x01(\rR\ncterTempId\"H\
+    \n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06i\
+    sSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"V\n\x19S_CHO\
+    OSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12\x20\n\x0ccter_temp_id\x18\x02\x20\x01(\rR\ncterTempId\"(\n\x0eC_CHO\
+    OSE_SKILL\x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_C\
+    HOOSE_SKILL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
+    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\
+    \x03\x20\x03(\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\
+    \x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\
+    \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
+    \tR\x07errMess\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\
+    \x01(\rR\x0ctargetTeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_\
+    id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\r\
+    R\x06teamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\
+    \x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\
+    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
+    \x07errMess\"L\n\x17S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userId\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07pre\
+    pare\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\
+    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
+    s\"Z\n\x18S_ROOM_ADD_MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\r\
+    R\x05index\x12(\n\x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\
+    \x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\
+    \x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSetti\
+    ngPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\
+    \rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08\
+    R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\
+    \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
+    \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
+    BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
+    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUC\
+    CESS_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CO\
+    NFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\
+    \n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\
+    \x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARC\
+    H\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07\
+    user_id\x18\x01\x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\
+    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"G\n\x0bC_CHOICE_AI\
+    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\
+    \x18\x02\x20\x01(\rR\x0brobotTempId\"g\n\x12S_CHOICE_AI_NOTICE\x12\x14\n\
+    \x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\
+    \x20\x01(\rR\x0brobotTempId\x12\x17\n\x07user_id\x18\x03\x20\x01(\rR\x06\
+    userIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

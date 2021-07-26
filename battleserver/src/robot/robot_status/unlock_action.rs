@@ -39,7 +39,7 @@ impl RobotStatusAction for UnlockRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -57,7 +57,7 @@ impl RobotStatusAction for UnlockRobotAction {
         let battle_data = res.unwrap();
 
         let battle_player = battle_data.battle_player.get(&self.robot_id).unwrap();
-        let target_index: usize = battle_player.get_map_cell_index();
+        let target_index: usize = battle_player.get_current_cter_index();
         self.send_2_battle(target_index, RobotActionType::Unlock, BattleCode::Action);
     }
 

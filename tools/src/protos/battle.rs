@@ -30,7 +30,7 @@ pub struct S_START_NOTICE {
     pub tile_map_id: u32,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
     pub turn_order: ::std::vec::Vec<u32>,
-    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
+    pub battle_players: ::protobuf::RepeatedField<super::base::BattlePlayerPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -127,29 +127,29 @@ impl S_START_NOTICE {
         ::std::mem::replace(&mut self.turn_order, ::std::vec::Vec::new())
     }
 
-    // repeated .protos.BattleCharacterPt battle_cters = 5;
+    // repeated .protos.BattlePlayerPt battle_players = 5;
 
 
-    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
-        &self.battle_cters
+    pub fn get_battle_players(&self) -> &[super::base::BattlePlayerPt] {
+        &self.battle_players
     }
-    pub fn clear_battle_cters(&mut self) {
-        self.battle_cters.clear();
+    pub fn clear_battle_players(&mut self) {
+        self.battle_players.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
-        self.battle_cters = v;
+    pub fn set_battle_players(&mut self, v: ::protobuf::RepeatedField<super::base::BattlePlayerPt>) {
+        self.battle_players = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        &mut self.battle_cters
+    pub fn mut_battle_players(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        &mut self.battle_players
     }
 
     // Take field
-    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
+    pub fn take_battle_players(&mut self) -> ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        ::std::mem::replace(&mut self.battle_players, ::protobuf::RepeatedField::new())
     }
 }
 
@@ -160,7 +160,7 @@ impl ::protobuf::Message for S_START_NOTICE {
                 return false;
             }
         };
-        for v in &self.battle_cters {
+        for v in &self.battle_players {
             if !v.is_initialized() {
                 return false;
             }
@@ -193,7 +193,7 @@ impl ::protobuf::Message for S_START_NOTICE {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.turn_order)?;
                 },
                 5 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -220,7 +220,7 @@ impl ::protobuf::Message for S_START_NOTICE {
         for value in &self.turn_order {
             my_size += ::protobuf::rt::value_size(4, *value, ::protobuf::wire_format::WireTypeVarint);
         };
-        for value in &self.battle_cters {
+        for value in &self.battle_players {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -244,7 +244,7 @@ impl ::protobuf::Message for S_START_NOTICE {
         for v in &self.turn_order {
             os.write_uint32(4, *v)?;
         };
-        for v in &self.battle_cters {
+        for v in &self.battle_players {
             os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -307,10 +307,10 @@ impl ::protobuf::Message for S_START_NOTICE {
                 |m: &S_START_NOTICE| { &m.turn_order },
                 |m: &mut S_START_NOTICE| { &mut m.turn_order },
             ));
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
-                "battle_cters",
-                |m: &S_START_NOTICE| { &m.battle_cters },
-                |m: &mut S_START_NOTICE| { &mut m.battle_cters },
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattlePlayerPt>>(
+                "battle_players",
+                |m: &S_START_NOTICE| { &m.battle_players },
+                |m: &mut S_START_NOTICE| { &mut m.battle_players },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_START_NOTICE>(
                 "S_START_NOTICE",
@@ -332,7 +332,7 @@ impl ::protobuf::Clear for S_START_NOTICE {
         self.tile_map_id = 0;
         self.world_cell.clear();
         self.turn_order.clear();
-        self.battle_cters.clear();
+        self.battle_players.clear();
         self.unknown_fields.clear();
     }
 }
@@ -699,6 +699,7 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOOSE_INDEX {
 pub struct S_CHOOSE_INDEX_NOTICE {
     // message fields
     pub user_id: u32,
+    pub cter_id: u32,
     pub index: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -731,7 +732,22 @@ impl S_CHOOSE_INDEX_NOTICE {
         self.user_id = v;
     }
 
-    // uint32 index = 2;
+    // uint32 cter_id = 2;
+
+
+    pub fn get_cter_id(&self) -> u32 {
+        self.cter_id
+    }
+    pub fn clear_cter_id(&mut self) {
+        self.cter_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cter_id(&mut self, v: u32) {
+        self.cter_id = v;
+    }
+
+    // uint32 index = 3;
 
 
     pub fn get_index(&self) -> u32 {
@@ -768,6 +784,13 @@ impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
+                    self.cter_id = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
                     self.index = tmp;
                 },
                 _ => {
@@ -785,8 +808,11 @@ impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.cter_id != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.index != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.index, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(3, self.index, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -797,8 +823,11 @@ impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
+        if self.cter_id != 0 {
+            os.write_uint32(2, self.cter_id)?;
+        }
         if self.index != 0 {
-            os.write_uint32(2, self.index)?;
+            os.write_uint32(3, self.index)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -844,6 +873,11 @@ impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
                 |m: &mut S_CHOOSE_INDEX_NOTICE| { &mut m.user_id },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "cter_id",
+                |m: &S_CHOOSE_INDEX_NOTICE| { &m.cter_id },
+                |m: &mut S_CHOOSE_INDEX_NOTICE| { &mut m.cter_id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "index",
                 |m: &S_CHOOSE_INDEX_NOTICE| { &m.index },
                 |m: &mut S_CHOOSE_INDEX_NOTICE| { &mut m.index },
@@ -865,6 +899,7 @@ impl ::protobuf::Message for S_CHOOSE_INDEX_NOTICE {
 impl ::protobuf::Clear for S_CHOOSE_INDEX_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
+        self.cter_id = 0;
         self.index = 0;
         self.unknown_fields.clear();
     }
@@ -1113,7 +1148,7 @@ impl ::protobuf::reflect::ProtobufValue for C_ACTION {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_BATTLE_START_NOTICE {
     // message fields
-    pub battle_cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
+    pub battle_players: ::protobuf::RepeatedField<super::base::BattlePlayerPt>,
     pub map_data: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1131,29 +1166,29 @@ impl S_BATTLE_START_NOTICE {
         ::std::default::Default::default()
     }
 
-    // repeated .protos.BattleCharacterPt battle_cters = 1;
+    // repeated .protos.BattlePlayerPt battle_players = 1;
 
 
-    pub fn get_battle_cters(&self) -> &[super::base::BattleCharacterPt] {
-        &self.battle_cters
+    pub fn get_battle_players(&self) -> &[super::base::BattlePlayerPt] {
+        &self.battle_players
     }
-    pub fn clear_battle_cters(&mut self) {
-        self.battle_cters.clear();
+    pub fn clear_battle_players(&mut self) {
+        self.battle_players.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
-        self.battle_cters = v;
+    pub fn set_battle_players(&mut self, v: ::protobuf::RepeatedField<super::base::BattlePlayerPt>) {
+        self.battle_players = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_battle_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        &mut self.battle_cters
+    pub fn mut_battle_players(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        &mut self.battle_players
     }
 
     // Take field
-    pub fn take_battle_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        ::std::mem::replace(&mut self.battle_cters, ::protobuf::RepeatedField::new())
+    pub fn take_battle_players(&mut self) -> ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        ::std::mem::replace(&mut self.battle_players, ::protobuf::RepeatedField::new())
     }
 
     // string map_data = 2;
@@ -1185,7 +1220,7 @@ impl S_BATTLE_START_NOTICE {
 
 impl ::protobuf::Message for S_BATTLE_START_NOTICE {
     fn is_initialized(&self) -> bool {
-        for v in &self.battle_cters {
+        for v in &self.battle_players {
             if !v.is_initialized() {
                 return false;
             }
@@ -1198,7 +1233,7 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_cters)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
                 },
                 2 => {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.map_data)?;
@@ -1215,7 +1250,7 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        for value in &self.battle_cters {
+        for value in &self.battle_players {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -1228,7 +1263,7 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        for v in &self.battle_cters {
+        for v in &self.battle_players {
             os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -1274,10 +1309,10 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
         static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
-                "battle_cters",
-                |m: &S_BATTLE_START_NOTICE| { &m.battle_cters },
-                |m: &mut S_BATTLE_START_NOTICE| { &mut m.battle_cters },
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattlePlayerPt>>(
+                "battle_players",
+                |m: &S_BATTLE_START_NOTICE| { &m.battle_players },
+                |m: &mut S_BATTLE_START_NOTICE| { &mut m.battle_players },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
                 "map_data",
@@ -1300,7 +1335,7 @@ impl ::protobuf::Message for S_BATTLE_START_NOTICE {
 
 impl ::protobuf::Clear for S_BATTLE_START_NOTICE {
     fn clear(&mut self) {
-        self.battle_cters.clear();
+        self.battle_players.clear();
         self.map_data.clear();
         self.unknown_fields.clear();
     }
@@ -1488,7 +1523,7 @@ impl ::protobuf::reflect::ProtobufValue for S_ACTION_NOTICE {
 pub struct S_BATTLE_TURN_NOTICE {
     // message fields
     pub user_id: u32,
-    pub cters: ::protobuf::RepeatedField<super::base::BattleCharacterPt>,
+    pub battle_players: ::protobuf::RepeatedField<super::base::BattlePlayerPt>,
     pub cell_buffs: ::protobuf::RepeatedField<super::base::CellBuffPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -1521,29 +1556,29 @@ impl S_BATTLE_TURN_NOTICE {
         self.user_id = v;
     }
 
-    // repeated .protos.BattleCharacterPt cters = 2;
+    // repeated .protos.BattlePlayerPt battle_players = 2;
 
 
-    pub fn get_cters(&self) -> &[super::base::BattleCharacterPt] {
-        &self.cters
+    pub fn get_battle_players(&self) -> &[super::base::BattlePlayerPt] {
+        &self.battle_players
     }
-    pub fn clear_cters(&mut self) {
-        self.cters.clear();
+    pub fn clear_battle_players(&mut self) {
+        self.battle_players.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_cters(&mut self, v: ::protobuf::RepeatedField<super::base::BattleCharacterPt>) {
-        self.cters = v;
+    pub fn set_battle_players(&mut self, v: ::protobuf::RepeatedField<super::base::BattlePlayerPt>) {
+        self.battle_players = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        &mut self.cters
+    pub fn mut_battle_players(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        &mut self.battle_players
     }
 
     // Take field
-    pub fn take_cters(&mut self) -> ::protobuf::RepeatedField<super::base::BattleCharacterPt> {
-        ::std::mem::replace(&mut self.cters, ::protobuf::RepeatedField::new())
+    pub fn take_battle_players(&mut self) -> ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
+        ::std::mem::replace(&mut self.battle_players, ::protobuf::RepeatedField::new())
     }
 
     // repeated .protos.CellBuffPt cell_buffs = 3;
@@ -1574,7 +1609,7 @@ impl S_BATTLE_TURN_NOTICE {
 
 impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
     fn is_initialized(&self) -> bool {
-        for v in &self.cters {
+        for v in &self.battle_players {
             if !v.is_initialized() {
                 return false;
             }
@@ -1599,7 +1634,7 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
                     self.user_id = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
                 },
                 3 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cell_buffs)?;
@@ -1619,7 +1654,7 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
         if self.user_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.cters {
+        for value in &self.battle_players {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -1636,7 +1671,7 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
         if self.user_id != 0 {
             os.write_uint32(1, self.user_id)?;
         }
-        for v in &self.cters {
+        for v in &self.battle_players {
             os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -1689,10 +1724,10 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
                 |m: &S_BATTLE_TURN_NOTICE| { &m.user_id },
                 |m: &mut S_BATTLE_TURN_NOTICE| { &mut m.user_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattleCharacterPt>>(
-                "cters",
-                |m: &S_BATTLE_TURN_NOTICE| { &m.cters },
-                |m: &mut S_BATTLE_TURN_NOTICE| { &mut m.cters },
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattlePlayerPt>>(
+                "battle_players",
+                |m: &S_BATTLE_TURN_NOTICE| { &m.battle_players },
+                |m: &mut S_BATTLE_TURN_NOTICE| { &mut m.battle_players },
             ));
             fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::CellBuffPt>>(
                 "cell_buffs",
@@ -1716,7 +1751,7 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
 impl ::protobuf::Clear for S_BATTLE_TURN_NOTICE {
     fn clear(&mut self) {
         self.user_id = 0;
-        self.cters.clear();
+        self.battle_players.clear();
         self.cell_buffs.clear();
         self.unknown_fields.clear();
     }
@@ -1924,7 +1959,7 @@ impl ::protobuf::reflect::ProtobufValue for C_POS {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_POS_NOTICE {
     // message fields
-    pub user_id: u32,
+    pub cter_id: u32,
     pub field_type: u32,
     pub skill_id: u32,
     // special fields
@@ -1943,19 +1978,19 @@ impl S_POS_NOTICE {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // uint32 cter_id = 1;
 
 
-    pub fn get_user_id(&self) -> u32 {
-        self.user_id
+    pub fn get_cter_id(&self) -> u32 {
+        self.cter_id
     }
-    pub fn clear_user_id(&mut self) {
-        self.user_id = 0;
+    pub fn clear_cter_id(&mut self) {
+        self.cter_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_user_id(&mut self, v: u32) {
-        self.user_id = v;
+    pub fn set_cter_id(&mut self, v: u32) {
+        self.cter_id = v;
     }
 
     // uint32 type = 2;
@@ -2003,7 +2038,7 @@ impl ::protobuf::Message for S_POS_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
+                    self.cter_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -2031,8 +2066,8 @@ impl ::protobuf::Message for S_POS_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+        if self.cter_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.cter_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if self.field_type != 0 {
             my_size += ::protobuf::rt::value_size(2, self.field_type, ::protobuf::wire_format::WireTypeVarint);
@@ -2046,8 +2081,8 @@ impl ::protobuf::Message for S_POS_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
+        if self.cter_id != 0 {
+            os.write_uint32(1, self.cter_id)?;
         }
         if self.field_type != 0 {
             os.write_uint32(2, self.field_type)?;
@@ -2094,9 +2129,9 @@ impl ::protobuf::Message for S_POS_NOTICE {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "user_id",
-                |m: &S_POS_NOTICE| { &m.user_id },
-                |m: &mut S_POS_NOTICE| { &mut m.user_id },
+                "cter_id",
+                |m: &S_POS_NOTICE| { &m.cter_id },
+                |m: &mut S_POS_NOTICE| { &mut m.cter_id },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "type",
@@ -2124,7 +2159,7 @@ impl ::protobuf::Message for S_POS_NOTICE {
 
 impl ::protobuf::Clear for S_POS_NOTICE {
     fn clear(&mut self) {
-        self.user_id = 0;
+        self.cter_id = 0;
         self.field_type = 0;
         self.skill_id = 0;
         self.unknown_fields.clear();
@@ -3107,41 +3142,42 @@ impl ::protobuf::reflect::ProtobufValue for S_BUY_NOTICE {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"\xe2\x01\n\x0eS_START_\
+    \n\x0cbattle.proto\x12\x06protos\x1a\nbase.proto\"\xe3\x01\n\x0eS_START_\
     NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\
     \n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\
     \x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\x12\x1d\n\nturn_or\
-    der\x18\x04\x20\x03(\rR\tturnOrder\x12<\n\x0cbattle_cters\x18\x05\x20\
-    \x03(\x0b2\x19.protos.BattleCharacterPtR\x0bbattleCters\"&\n\x0eC_CHOOSE\
-    _INDEX\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_\
-    INDEX\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08\
-    err_mess\x18\x02\x20\x01(\tR\x07errMess\"F\n\x15S_CHOOSE_INDEX_NOTICE\
-    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x14\n\x05index\
-    \x18\x02\x20\x01(\rR\x05index\"d\n\x08C_ACTION\x12\x1f\n\x0baction_type\
-    \x18\x01\x20\x01(\rR\nactionType\x12\x14\n\x05value\x18\x02\x20\x01(\rR\
-    \x05value\x12!\n\x0ctarget_index\x18\x03\x20\x03(\rR\x0btargetIndex\"p\n\
-    \x15S_BATTLE_START_NOTICE\x12<\n\x0cbattle_cters\x18\x01\x20\x03(\x0b2\
-    \x19.protos.BattleCharacterPtR\x0bbattleCters\x12\x19\n\x08map_data\x18\
-    \x02\x20\x01(\tR\x07mapData\"J\n\x0fS_ACTION_NOTICE\x127\n\x0caction_uin\
-    ts\x18\x01\x20\x03(\x0b2\x14.protos.ActionUnitPtR\x0bactionUints\"\x93\
-    \x01\n\x14S_BATTLE_TURN_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\
-    \x06userId\x12/\n\x05cters\x18\x02\x20\x03(\x0b2\x19.protos.BattleCharac\
-    terPtR\x05cters\x121\n\ncell_buffs\x18\x03\x20\x03(\x0b2\x12.protos.Cell\
-    BuffPtR\tcellBuffs\"6\n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\x01(\rR\
-    \x04type\x12\x19\n\x08skill_id\x18\x02\x20\x01(\rR\x07skillId\"V\n\x0cS_\
-    POS_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x12\n\
-    \x04type\x18\x02\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x03\x20\
-    \x01(\rR\x07skillId\"\x8b\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broo\
-    m_status\x18\x01\x20\x01(\rR\nroomStatus\x12\x1e\n\x0btile_map_id\x18\
-    \x02\x20\x01(\rR\ttileMapId\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13\
-    .protos.WorldCellPtR\tworldCell\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary\
-    _datas\x18\x01\x20\x03(\x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"\
-    k\n\x10S_MISSION_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
-    Id\x12\x1d\n\nmission_id\x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnot\
-    ice_type\x18\x03\x20\x01(\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchan\
-    dise_id\x18\x01\x20\x01(\rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\
-    \n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\
-    \x02\x20\x01(\rR\rmerchandiseIdb\x06proto3\
+    der\x18\x04\x20\x03(\rR\tturnOrder\x12=\n\x0ebattle_players\x18\x05\x20\
+    \x03(\x0b2\x16.protos.BattlePlayerPtR\rbattlePlayers\"&\n\x0eC_CHOOSE_IN\
+    DEX\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\"D\n\x0eS_CHOOSE_IND\
+    EX\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
+    _mess\x18\x02\x20\x01(\tR\x07errMess\"_\n\x15S_CHOOSE_INDEX_NOTICE\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07cter_id\x18\
+    \x02\x20\x01(\rR\x06cterId\x12\x14\n\x05index\x18\x03\x20\x01(\rR\x05ind\
+    ex\"d\n\x08C_ACTION\x12\x1f\n\x0baction_type\x18\x01\x20\x01(\rR\naction\
+    Type\x12\x14\n\x05value\x18\x02\x20\x01(\rR\x05value\x12!\n\x0ctarget_in\
+    dex\x18\x03\x20\x03(\rR\x0btargetIndex\"q\n\x15S_BATTLE_START_NOTICE\x12\
+    =\n\x0ebattle_players\x18\x01\x20\x03(\x0b2\x16.protos.BattlePlayerPtR\r\
+    battlePlayers\x12\x19\n\x08map_data\x18\x02\x20\x01(\tR\x07mapData\"J\n\
+    \x0fS_ACTION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.pro\
+    tos.ActionUnitPtR\x0bactionUints\"\xa1\x01\n\x14S_BATTLE_TURN_NOTICE\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12=\n\x0ebattle_players\
+    \x18\x02\x20\x03(\x0b2\x16.protos.BattlePlayerPtR\rbattlePlayers\x121\n\
+    \ncell_buffs\x18\x03\x20\x03(\x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\
+    \n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08s\
+    kill_id\x18\x02\x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\
+    \x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x12\n\x04type\x18\x02\x20\
+    \x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\
+    \x8b\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\
+    \x01(\rR\nroomStatus\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileM\
+    apId\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tw\
+    orldCell\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\
+    \x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"k\n\x10S_MISSION_NOTICE\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1d\n\nmission_i\
+    d\x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnotice_type\x18\x03\x20\
+    \x01(\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchandise_id\x18\x01\x20\
+    \x01(\rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\x02\x20\x01(\rR\
+    \rmerchandiseIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

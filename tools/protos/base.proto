@@ -85,27 +85,44 @@ message NoticeMessPt{
 
 //玩家角色数据
 message CharacterPt{
-    uint32 cter_id = 1;//角色的配置id
+    uint32 cter_temp_id = 1;//角色的配置id
     repeated uint32 last_use_skills = 2;
     repeated uint32 skills = 3;//玩家次角色所有已解锁的技能id
 }
 
 //玩家战斗角色数据
 message BattleCharacterPt{
-    uint64 room_id = 1;                 //房间id
-    uint32 user_id = 2;                 //玩家id
-    uint32 cter_id = 3;                 //角色id
+    uint32 user_id = 1;                 //玩家id
+    uint32 cter_id = 2;                 //角色id（服务器生成的唯一id）
+    uint32 cter_temp_id = 3;            //角色配置id
     uint32 atk = 4;                     //攻击力
     uint32 hp = 5;                      //角色血量
     uint32 defence = 6;                 //角色防御
     uint32 energy = 7;                  //角色当前能量
     uint32 index = 8;                   //角色当前位置
-    uint32 gold = 9;                    //玩家金币数量
-    MissionPt mission = 10;             //任务 如果任务id为0代表没有任务，当角色初始化当时候，此结构体里面的任务id为0
-    repeated uint32 buffs = 11;          //角色身上的buff
-    repeated uint32 skills = 12;         //玩家选择的技能
-    repeated uint32 items = 13;          //玩家身上的道具
+    bool is_major=9;                    //是否是主角色
+    repeated uint32 buffs = 10;         //角色身上的buff
+    repeated uint32 skills = 11;        //玩家选择的技能
+    repeated uint32 items = 12;         //玩家身上的道具
+    repeated uint32 minons = 13;        //召唤物集合
 }
+
+//玩家战斗数据
+message BattlePlayerPt{
+    uint32 user_id = 1;                     //玩家id
+    string name = 2;                        //玩家名字
+    LeaguePt league = 3;                    //段位数据
+    uint32 gold = 4;                        //金币
+    uint32 grade = 5;                       //玩家grade
+    uint32 major_cter=6;                    //主角色id（服务器生成的唯一id）
+    uint32 current_cter=7;                  //当前角色id（服务器生成的唯一id）
+    MissionPt mission = 8;                  //任务数据
+    bool is_robot = 9;                      //是否机器人
+    bool is_died = 10;                      //玩家是否已经淘汰
+    repeated BattleCharacterPt cters = 11;  //玩家所有的战斗角色
+}
+
+
 
 //任务
 message MissionPt{
@@ -139,7 +156,7 @@ message TriggerEffectPt{
 
 //行动单元封装
 message ActionUnitPt{
-    uint32 from_user = 1;//发起的玩家,如果玩家id为0，则代表纯显示的消息
+    uint32 from_cter = 1;//发起的玩家,如果玩家id为0，则代表纯显示的消息
     uint32 action_type = 2;//行动类型，如果from_user=0,则此值也一定为0
     repeated uint32 action_value = 3;//行动对应类型的值，如果action_type=0，则此值一定为0
     repeated TargetPt targets = 4;//目标列表，对目标造成对影响

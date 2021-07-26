@@ -11,7 +11,7 @@ pub struct AttackTargetGoalEvaluator {
 
 impl GoalEvaluator for AttackTargetGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        if !robot.cter.map_cell_index_is_choiced() {
+        if !robot.get_current_cter().map_cell_index_is_choiced() {
             return 0;
         }
         //如果状态是可以攻击，期望值大于0，当没有其他高优先级的事件，则执行攻击
@@ -28,7 +28,7 @@ impl GoalEvaluator for AttackTargetGoalEvaluator {
         battle_data: *mut BattleData,
     ) {
         let mut res = AttackRobotAction::new(battle_data, sender);
-        res.cter_id = robot.get_cter_id();
+        res.cter_id = robot.get_cter_temp_id();
         res.robot_id = robot.get_user_id();
         res.temp_id = robot.robot_data.as_ref().unwrap().temp_id;
         robot.change_robot_status(Box::new(res));

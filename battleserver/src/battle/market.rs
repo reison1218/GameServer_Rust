@@ -43,14 +43,14 @@ pub fn handler_buy(battle_data: &mut BattleData, user_id: u32, merchandise_id: u
             let _ = battle_data.add_hp(Some(user_id), user_id, effect_value as i16, None);
         }
         MerchandisType::Attack => {
-            battle_player.cter.base_attr.atk += temp.effect_value as u8;
+            battle_player.get_current_cter_mut().base_attr.atk += temp.effect_value as u8;
         }
         MerchandisType::SkillCd => {
             //玩家技能cd
-            battle_player.cter.sub_skill_cd(Some(effect_value as i8));
+            battle_player.get_current_cter_mut().sub_skill_cd(Some(effect_value as i8));
         }
         MerchandisType::Energy => {
-            battle_player.cter.add_energy(effect_value as i8);
+            battle_player.get_current_cter_mut().add_energy(effect_value as i8);
         }
         MerchandisType::Mission => {
             random_mission(battle_data, user_id);

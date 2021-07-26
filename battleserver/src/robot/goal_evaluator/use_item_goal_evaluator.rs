@@ -11,7 +11,7 @@ pub struct UseItemGoalEvaluator {
 
 impl GoalEvaluator for UseItemGoalEvaluator {
     fn calculate_desirability(&self, battle_player: &BattlePlayer) -> u32 {
-        if battle_player.cter.items.len() > 0 {
+        if battle_player.get_current_cter().items.len() > 0 {
             return 0;
         }
         0
@@ -24,7 +24,7 @@ impl GoalEvaluator for UseItemGoalEvaluator {
         battle_data: *mut BattleData,
     ) {
         let mut res = UseItemRobotAction::new(battle_data, sender);
-        res.cter_id = robot.get_cter_id();
+        res.cter_id = robot.get_cter_temp_id();
         res.robot_id = robot.get_user_id();
         res.temp_id = robot.robot_data.as_ref().unwrap().temp_id;
         robot.change_robot_status(Box::new(res));

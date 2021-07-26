@@ -321,7 +321,7 @@ impl Room {
             if cter.user_id == user_id {
                 continue;
             }
-            if cter.chose_cter.cter_id == cter_id && cter_id != 0 {
+            if cter.chose_cter.cter_temp_id == cter_id && cter_id != 0 {
                 let str = format!("this character was choiced!cter_id:{}", cter_id);
                 anyhow::bail!(str)
             }
@@ -472,7 +472,7 @@ impl Room {
         }
         for member in self.members.values_mut() {
             if owner_id == member.user_id && self.room_type == RoomType::OneVOneVOneVOneCustom {
-                if member.chose_cter.cter_id == 0 {
+                if member.chose_cter.cter_temp_id == 0 {
                     warn!(
                         "check_ready: this player has not choose character yet!user_id:{}",
                         member.get_user_id()
@@ -483,7 +483,7 @@ impl Room {
                 let cter_temp = crate::TEMPLATES
                     .character_temp_mgr()
                     .temps
-                    .get(&member.chose_cter.cter_id)
+                    .get(&member.chose_cter.cter_temp_id)
                     .unwrap();
 
                 //校验玩家是否选了技能

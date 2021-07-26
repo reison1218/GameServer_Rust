@@ -15,10 +15,10 @@ pub struct BuyGoalEvaluator {
 
 impl GoalEvaluator for BuyGoalEvaluator {
     fn calculate_desirability(&self, robot: &BattlePlayer) -> u32 {
-        if !robot.cter.map_cell_index_is_choiced() {
+        if !robot.get_current_cter().map_cell_index_is_choiced() {
             return 0;
         }
-        let robot_index = robot.get_map_cell_index();
+        let robot_index = robot.get_current_cter_index();
         let robot_data = robot.robot_data.as_ref().unwrap();
         let battle_data = robot.robot_data.as_ref().unwrap().battle_data;
         unsafe {
@@ -31,10 +31,10 @@ impl GoalEvaluator for BuyGoalEvaluator {
                 .get(market_cell_index)
                 .unwrap();
             //判断商店上面的人是否有稳如泰山被动
-            if market.user_id != robot.get_user_id() {
-                let player = battle_data.battle_player.get(&market.user_id);
-                if let Some(player) = player {
-                    if !player.can_be_move() {
+            if market.cter_id != robot.current_cter.0 {
+                let cter = battle_data.get_battle_cter(market.cter_id, true);
+                if let Ok(cter) = cter {
+                    if !cter.can_be_move() {
                         return 0;
                     }
                 }
@@ -65,7 +65,7 @@ impl GoalEvaluator for BuyGoalEvaluator {
         battle_data: *mut BattleData,
     ) {
         let mut res = BuyRobotAction::new(battle_data, sender);
-        res.cter_id = robot.get_cter_id();
+        res.cter_id = robot.get_cter_temp_id();
         res.robot_id = robot.get_user_id();
         res.temp_id = robot.robot_data.as_ref().unwrap().temp_id;
         robot.change_robot_status(Box::new(res));

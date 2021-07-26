@@ -56,7 +56,7 @@ impl BattleMgr {
             Some(room) => {
                 let battle_player = room.get_battle_player_ref(&user_id);
                 if let Some(battle_player) = battle_player {
-                    if battle_player.is_robot() || battle_player.is_minon() {
+                    if battle_player.is_robot() {
                         return;
                     }
                 }
@@ -186,9 +186,9 @@ impl BattleMgr {
         //------------------------------------以下是战斗相关的--------------------------------
         //请求行动
         self.cmd_map.insert(BattleCode::Action.into_u32(), action);
-
         //请求pos
         self.cmd_map.insert(BattleCode::Pos.into_u32(), pos);
+        //购物
         self.cmd_map.insert(BattleCode::Buy.into_u32(), buy);
     }
 }

@@ -504,7 +504,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let member = member.unwrap();
-    let cter_id = member.chose_cter.cter_id;
+    let cter_id = member.chose_cter.cter_temp_id;
     if cter_id == 0 {
         warn!(
             "prepare_cancel: this player has not choose character yet!user_id:{}",
@@ -596,7 +596,7 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
     }
     //判断这个角色是否已经被选了
     for member in room.members.values() {
-        if member.chose_cter.cter_id == cter_id {
+        if member.chose_cter.cter_temp_id == cter_id {
             warn!("this cter is already choiced!cter_id:{}", cter_id);
             return;
         }
@@ -711,7 +711,7 @@ pub fn add_robot(
     //初始化选择的角色
     let mut cter = Character::default();
     cter.user_id = robot_id;
-    cter.cter_id = cter_id;
+    cter.cter_temp_id = cter_id;
 
     //初始化角色技能
     cter.skills.extend_from_slice(robot_temp.skills.as_slice());
@@ -1099,20 +1099,20 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         error!("{:?}", e);
         return;
     }
-    let cter_id = ccc.cter_id;
+    let cter_temp_id = ccc.cter_temp_id;
 
     let member = room.get_member_ref(&user_id).unwrap();
     //不能发无效的选择
-    if member.chose_cter.cter_id == cter_id {
+    if member.chose_cter.cter_temp_id == cter_temp_id {
         warn!(
             "choose_character-the param is error!cter_id is repeated!!user_id:{},cter_id:{}",
-            user_id, cter_id
+            user_id, cter_temp_id
         );
         return;
     }
 
     //校验角色
-    let res = room.check_character(user_id, cter_id);
+    let res = room.check_character(user_id, cter_temp_id);
     if let Err(e) = res {
         warn!("{:?}", e);
         return;
@@ -1125,12 +1125,12 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
 
-    let cter = member.cters.get(&cter_id);
+    let cter = member.cters.get(&cter_temp_id);
     //校验角色
-    if cter_id > 0 && cter.is_none() {
+    if cter_temp_id > 0 && cter.is_none() {
         warn!(
             "this player do not have this character!user_id:{},cter_id:{}",
-            user_id, cter_id
+            user_id, cter_temp_id
         );
         return;
     }
@@ -1139,7 +1139,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
         let mut res = cter.clone();
         res.skills.clear();
         member.chose_cter = res;
-    } else if cter_id == 0 {
+    } else if cter_temp_id == 0 {
         let choice_cter = Character::default();
         member.chose_cter = choice_cter;
     }
@@ -1156,7 +1156,7 @@ pub fn choose_character(rm: &mut RoomMgr, packet: Packet) {
     //通知其他成员
     let mut sccn = S_CHOOSE_CHARACTER_NOTICE::new();
     sccn.user_id = user_id;
-    sccn.cter_id = cter_id;
+    sccn.cter_temp_id = cter_temp_id;
     let bytes = sccn.write_to_bytes().unwrap();
     let room_mut_ref = room.get_mut_ref();
     for member_id in room.members.keys() {
@@ -1184,7 +1184,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
     let room = room.unwrap();
     let room_state = room.get_state();
     let member = room.get_member_mut(&user_id).unwrap();
-    if member.chose_cter.cter_id == 0 {
+    if member.chose_cter.cter_temp_id == 0 {
         warn!(
             "this player not choice cter yet!can not choice skill of cter!user_id:{}",
             user_id
@@ -1192,7 +1192,7 @@ pub fn choice_skills(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
 
-    let cter_id = member.chose_cter.cter_id;
+    let cter_id = member.chose_cter.cter_temp_id;
 
     let cter = member.cters.get(&cter_id).unwrap();
 
@@ -1451,11 +1451,11 @@ pub fn emoji(rm: &mut RoomMgr, packet: Packet) {
         return;
     } else if emoji.condition == 0
         && emoji.cter_id > 0
-        && emoji.cter_id != member.chose_cter.cter_id
+        && emoji.cter_id != member.chose_cter.cter_temp_id
     {
         warn!(
             "this character can not send this emoji!cter_id:{},emoji_id:{}",
-            member.chose_cter.cter_id, emoji_id
+            member.chose_cter.cter_temp_id, emoji_id
         );
         return;
     }

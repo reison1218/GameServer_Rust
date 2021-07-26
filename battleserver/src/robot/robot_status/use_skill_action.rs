@@ -38,7 +38,7 @@ impl RobotStatusAction for UseSkillRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -65,7 +65,7 @@ impl RobotStatusAction for UseSkillRobotAction {
         }
         let robot = battle_player.robot_data.as_ref().unwrap();
         let mut v = vec![];
-        for skill in battle_player.cter.skills.values() {
+        for skill in battle_player.get_current_cter().skills.values() {
             //先判断技能释放条件
             let res = skill_condition(battle_data, skill, robot);
             //不能释放就跳过

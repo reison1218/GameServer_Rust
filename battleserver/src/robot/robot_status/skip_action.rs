@@ -38,7 +38,7 @@ impl RobotStatusAction for SkipRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 

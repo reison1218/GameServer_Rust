@@ -70,7 +70,7 @@ impl RobotStatusAction for BuyRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -93,7 +93,7 @@ impl RobotStatusAction for BuyRobotAction {
         let robot = robot.unwrap();
 
         let market_cell_index = battle_data.tile_map.market_cell.0;
-        let is_at_market = market_cell_index == robot.get_map_cell_index();
+        let is_at_market = market_cell_index == robot.get_current_cter_index();
 
         let res = check_buy(robot, self.temp_id);
         if !res.is_empty() && is_at_market {

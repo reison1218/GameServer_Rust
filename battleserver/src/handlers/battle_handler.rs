@@ -1,6 +1,7 @@
 use crate::battle::battle::BattleData;
+use crate::battle::battle_cter::BattleCharacter;
 use crate::battle::battle_enum::{ActionType, PosType, SkillConsumeType};
-use crate::battle::battle_player::BattlePlayer;
+use crate::battle::battle_helper::build_action_unit_pt;
 use crate::battle::battle_skill::Skill;
 use crate::battle::market::handler_buy;
 use crate::mgr::battle_mgr::BattleMgr;
@@ -52,13 +53,16 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
     let battle_data = &mut room.battle_data;
     let turn_user = battle_data.get_turn_user(None);
     let battle_player = battle_data.battle_player.get_mut(&user_id).unwrap();
-    let cter_id = battle_player.get_cter_id();
+    let cter_id = battle_player.get_cter_temp_id();
     //校验玩家死了没
     if battle_player.is_died() {
         return;
     }
     //校验选了站位没
-    let cter_index = battle_player.cter.index_data.map_cell_index;
+    let cter_index = battle_player
+        .get_current_cter_mut()
+        .index_data
+        .map_cell_index;
     if cter_index.is_none() {
         error!("this player index is None!user_id:{}", user_id);
         return;
@@ -110,7 +114,7 @@ pub fn buy(bm: &mut BattleMgr, packet: Packet) {
             "the room_type is error!merchandis_id:{},room_type:{:?};cter_id:{} room_type:{}",
             merchandise_id,
             merchandise_temp.room_type,
-            battle_player.get_cter_id(),
+            battle_player.get_cter_temp_id(),
             room_type
         );
         return;
@@ -152,6 +156,13 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let room = res.unwrap();
+    let battle_player = room.battle_data.get_battle_player(None, true);
+    if let Err(e) = battle_player {
+        warn!("{:?}", e);
+        return;
+    }
+    let battle_player = battle_player.unwrap();
+    let (cter_id, _) = battle_player.current_cter;
     //校验房间状态
     if room.get_state() != RoomState::BattleStarted {
         warn!(
@@ -183,9 +194,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     let value = ca.value;
 
     //行动方actionunitpt
-    let mut au = ActionUnitPt::new();
-    au.action_value.push(ca.value);
-    au.from_user = user_id;
+    let mut au = build_action_unit_pt(cter_id, ActionType::None, ca.value);
 
     let res;
     let action_type = ActionType::try_from(action_type as u8).unwrap();
@@ -389,7 +398,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let battle_player = battle_player.unwrap();
-
+    let (cter_id, _) = battle_player.current_cter;
     let mut cp = C_POS::new();
     let res = cp.merge_from_bytes(packet.get_data());
     if let Err(e) = res {
@@ -399,11 +408,14 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
     let skill_id = cp.skill_id;
     let pos_type = cp.field_type;
     //校验技能
-    let res = battle_player.cter.skills.contains_key(&skill_id);
+    let res = battle_player
+        .get_current_cter_mut()
+        .skills
+        .contains_key(&skill_id);
     if !res {
         warn!(
             "this battle_cter has no this skill!cter_id:{},skill_id:{}",
-            battle_player.get_cter_id(),
+            battle_player.get_cter_temp_id(),
             skill_id
         );
         return;
@@ -417,7 +429,7 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let mut spn = S_POS_NOTICE::new();
-    spn.set_user_id(user_id);
+    spn.set_cter_id(cter_id);
     spn.set_field_type(pos_type);
     spn.set_skill_id(skill_id);
     let bytes = spn.write_to_bytes().unwrap();
@@ -426,42 +438,46 @@ pub fn pos(rm: &mut BattleMgr, packet: Packet) {
 
 ///使用道具
 fn use_item(
-    rm: &mut Room,
-    user_id: u32,
-    item_id: u32,
-    targets: Vec<u32>,
-    au: &mut ActionUnitPt,
+    _: &mut Room,
+    _: u32,
+    _: u32,
+    _: Vec<u32>,
+    _: &mut ActionUnitPt,
 ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
-    let battle_player = rm.battle_data.battle_player.get(&user_id);
-    if let None = battle_player {
-        let str = format!("battle_cter is not find!user_id:{}", user_id);
-        warn!("{:?}", str);
-        anyhow::bail!(str)
-    }
-    let battle_player = battle_player.unwrap();
+    // let battle_player = rm.battle_data.battle_player.get(&user_id);
+    // if let None = battle_player {
+    //     let str = format!("battle_cter is not find!user_id:{}", user_id);
+    //     warn!("{:?}", str);
+    //     anyhow::bail!(str)
+    // }
+    // let battle_player = battle_player.unwrap();
 
-    if battle_player.is_locked() {
-        let str = format!("battle_cter is locked!user_id:{}", user_id);
-        warn!("{:?}", str);
-        anyhow::bail!(str)
-    }
+    // if battle_player.is_locked() {
+    //     let str = format!("battle_cter is locked!user_id:{}", user_id);
+    //     warn!("{:?}", str);
+    //     anyhow::bail!(str)
+    // }
 
-    if battle_player.cter.items.is_empty() {
-        let str = format!("battle_cter is not find!user_id:{}", user_id);
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
-    }
-    let res = battle_player.cter.items.contains_key(&item_id);
-    if !res {
-        let str = format!(
-            "this user not have this item!item_id:{},user_id:{}",
-            item_id, user_id
-        );
-        warn!("{:?}", str.as_str());
-        anyhow::bail!(str)
-    }
-    let res = rm.battle_data.use_item(user_id, item_id, targets, au)?;
-    Ok(res)
+    // if battle_player.get_current_cter().items.is_empty() {
+    //     let str = format!("battle_cter is not find!user_id:{}", user_id);
+    //     warn!("{:?}", str.as_str());
+    //     anyhow::bail!(str)
+    // }
+    // let res = battle_player
+    //     .get_current_cter()
+    //     .items
+    //     .contains_key(&item_id);
+    // if !res {
+    //     let str = format!(
+    //         "this user not have this item!item_id:{},user_id:{}",
+    //         item_id, user_id
+    //     );
+    //     warn!("{:?}", str.as_str());
+    //     anyhow::bail!(str)
+    // }
+    // let res = rm.battle_data.use_item(user_id, item_id, targets, au)?;
+    // Ok(res)
+    Ok(None)
 }
 
 ///翻地图块
@@ -477,7 +493,8 @@ fn open_map_cell(
     );
     let battle_data = rm.battle_data.borrow();
     let battle_player = rm.battle_data.battle_player.get(&user_id).unwrap();
-    let cter_index = battle_player.get_map_cell_index();
+
+    let cter_index = battle_player.get_current_cter_index();
     if battle_player.is_locked() {
         let str = format!("battle_cter is locked!user_id:{}", user_id);
         warn!("{:?}", str);
@@ -524,9 +541,10 @@ fn open_map_cell(
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)
     }
+    let (cter_id, _) = battle_player.current_cter;
 
     let battle_data = rm.battle_data.borrow_mut();
-    let res = battle_data.open_map_cell(target_map_cell_index, au);
+    let res = battle_data.open_map_cell(cter_id, target_map_cell_index, au);
     match res {
         Ok(res) => Ok(res),
         Err(e) => anyhow::bail!(e),
@@ -559,7 +577,8 @@ fn attack(
         anyhow::bail!(str)
     }
     unsafe {
-        rm.battle_data.attack(user_id, target_array, au)?;
+        let (cter_id, _) = battle_player.current_cter;
+        rm.battle_data.attack(cter_id, target_array, au)?;
         Ok(None)
     }
 }
@@ -579,14 +598,16 @@ fn use_skill(
         warn!("{:?}", str);
         anyhow::bail!(str)
     }
-    let skill = battle_player.cter.skills.get(&skill_id);
+    let current_cter = battle_player.get_current_cter();
+    let cter_id = current_cter.base_attr.cter_id;
+    let skill = current_cter.skills.get(&skill_id);
     if skill.is_none() {
         warn!("this skill is none!skill_id:{}", user_id);
         anyhow::bail!("")
     }
     //校验技能可用状态
     let skill = skill.unwrap();
-    let res = check_skill_useable(battle_player, skill);
+    let res = check_skill_useable(current_cter, skill);
     if let Err(e) = res {
         warn!("{:?}", e);
         anyhow::bail!("")
@@ -594,7 +615,7 @@ fn use_skill(
     //使用技能，走正常逻辑
     let res = rm
         .battle_data
-        .use_skill(user_id, skill_id, false, target_array, au)?;
+        .use_skill(cter_id, skill_id, false, target_array, au)?;
 
     Ok(res)
 }
@@ -662,7 +683,7 @@ pub fn emoji(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let battle_player = battle_player.unwrap();
-    let cter_id = battle_player.get_cter_id();
+    let cter_id = battle_player.get_cter_temp_id();
 
     let mut ce = C_EMOJI::new();
     let res = ce.merge_from_bytes(packet.get_data());
@@ -845,12 +866,16 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) {
     }
 
     //校验他选过没有
-    let member = room.get_battle_player_ref(&user_id).unwrap();
-    if member.cter.map_cell_index_is_choiced() {
-        warn!("this player is already choice index!user_id:{}", user_id);
+    let battle_player = room.get_battle_player_ref(&user_id).unwrap();
+    let (major_cter, _) = battle_player.major_cter;
+    if battle_player.get_major_cter().map_cell_index_is_choiced() {
+        warn!(
+            "this player's major_cter is already choice index!user_id:{}",
+            user_id
+        );
         return;
     }
-    room.choice_index(user_id, index);
+    room.choice_index(major_cter, index);
 }
 
 ///结束操作
@@ -894,7 +919,12 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
         return false;
     }
     //校验是否选择了占位
-    if battle_player.cter.index_data.map_cell_index.is_none() {
+    if battle_player
+        .get_current_cter()
+        .index_data
+        .map_cell_index
+        .is_none()
+    {
         warn!(
             "user is not choice index!room_id:{},user_id:{}",
             rm.get_room_id(),
@@ -919,23 +949,23 @@ fn check_user(rm: &Room, user_id: u32) -> bool {
 }
 
 ///校验技能可用状态
-pub fn check_skill_useable(battle_player: &BattlePlayer, skill: &Skill) -> anyhow::Result<()> {
+pub fn check_skill_useable(battle_cter: &BattleCharacter, skill: &Skill) -> anyhow::Result<()> {
     //校验cd
     if skill.skill_temp.consume_type != SkillConsumeType::Energy.into_u8() && skill.cd_times > 0 {
         anyhow::bail!(
             "this skill cd is not ready!cter_id:{},skill_id:{},cd:{}",
-            battle_player.get_cter_id(),
+            battle_cter.base_attr.cter_id,
             skill.id,
             skill.cd_times
         )
     } else if skill.skill_temp.consume_type == SkillConsumeType::Energy.into_u8()
-        && battle_player.cter.base_attr.energy < skill.skill_temp.consume_value
+        && battle_cter.base_attr.energy < skill.skill_temp.consume_value
     {
         anyhow::bail!(
             "this cter's energy is not enough!cter_id:{},skill_id:{},energy:{},cost_energy:{}",
-            battle_player.get_cter_id(),
+            battle_cter.base_attr.cter_id,
             skill.id,
-            battle_player.cter.base_attr.energy,
+            battle_cter.base_attr.energy,
             skill.skill_temp.consume_value
         )
     }

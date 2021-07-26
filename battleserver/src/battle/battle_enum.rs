@@ -272,7 +272,7 @@ impl BattlePlayerState {
 #[repr(u8)]
 pub enum BattleCterState {
     Alive = 0,
-    Die = 1,
+    Died = 1,
 }
 
 impl Default for BattleCterState {

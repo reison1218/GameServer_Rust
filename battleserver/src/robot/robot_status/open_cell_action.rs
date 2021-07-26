@@ -46,7 +46,7 @@ impl RobotStatusAction for OpenCellRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -70,10 +70,11 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut v = Vec::new();
         let robot_id = self.robot_id;
         let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+        let (cter_id, _) = battle_player.major_cter;
         for key in battle_data.tile_map.un_pair_map.keys() {
             let map_cell = battle_data.tile_map.map_cells.get(*key).unwrap();
             //跳过自己已翻开的
-            if map_cell.open_user == robot_id || map_cell.user_id == robot_id {
+            if map_cell.open_cter == cter_id || map_cell.cter_id == robot_id {
                 continue;
             }
             //跳过锁住的地图块
@@ -82,9 +83,9 @@ impl RobotStatusAction for OpenCellRobotAction {
                 continue;
             }
             //判断地图块上面是否有人
-            let player = battle_data.battle_player.get(&map_cell.open_user);
-            if let Some(player) = player {
-                if !player.can_be_move() {
+            let cter = battle_data.get_battle_cter(map_cell.open_cter, true);
+            if let Ok(cter) = cter {
+                if !cter.can_be_move() {
                     continue;
                 }
             }
@@ -125,14 +126,15 @@ impl RobotStatusAction for OpenCellRobotAction {
             index = Some(*pair_v.get(0).unwrap());
         } else {
             //如果没有，则随机翻开一个未知地图块
-            let mut user_id;
+            let mut cter_id;
             let mut map_cell;
             let robot_data = battle_player.robot_data.as_ref().unwrap();
             let mut unknown_v = vec![];
             'out: for (&map_cell_index, _) in battle_data.tile_map.un_pair_map.iter() {
                 map_cell = battle_data.tile_map.map_cells.get(map_cell_index).unwrap();
-                user_id = map_cell.user_id;
-                if user_id > 0 {
+                cter_id = map_cell.cter_id;
+                if cter_id > 0 {
+                    let user_id = battle_data.get_user_id(cter_id).unwrap();
                     let player = battle_data.battle_player.get(&user_id).unwrap();
                     if !player.is_can_attack() {
                         continue;
@@ -237,13 +239,13 @@ pub fn cal_pair_num(
     //机器人记忆的地图块
     let remember_cells = robot_data.remember_map_cell.borrow();
     //这个turn放开的地图块下标
-    let element = battle_player.cter.base_attr.element;
+    let element = battle_player.get_current_cter().base_attr.element;
     let mut cell_index;
     for cell in remember_cells.iter() {
         cell_index = cell.cell_index;
         let map_cell = battle_data.tile_map.map_cells.get(cell_index).unwrap();
         //去掉已经翻开过的
-        if map_cell.open_user > 0 {
+        if map_cell.open_cter > 0 {
             continue;
         }
         let res = check_can_open(robot_id, map_cell, battle_data);

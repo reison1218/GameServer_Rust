@@ -42,7 +42,7 @@ impl RobotStatusAction for AttackRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_id(&self) -> u32 {
+    fn get_cter_temp_id(&self) -> u32 {
         self.cter_id
     }
 
@@ -66,12 +66,12 @@ impl RobotStatusAction for AttackRobotAction {
             .get_temp(&TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID)
             .unwrap();
         //如果有这个buff，就找人最多的
-        if robot.cter.is_has_add_attack_and_aoe() {
+        if robot.get_current_cter().is_has_add_attack_and_aoe() {
             let mut player_index;
             let mut user_id;
             let mut player_count = (0, 0);
             for player in battle_data.battle_player.values() {
-                player_index = player.get_map_cell_index();
+                player_index = player.get_current_cter_index();
                 user_id = player.get_user_id();
                 if user_id == robot_id {
                     continue;

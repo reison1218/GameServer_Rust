@@ -409,7 +409,7 @@ fn attack_trigger_mission(
         return false;
     }
     let battle_player = battle_player.unwrap();
-    if battle_player.cter.revenge_user_id == mission_parm.0 {
+    if battle_player.get_current_cter_mut().revenge_user_id == mission_parm.0 {
         //复仇
         return battle_player.add_mission_progress(
             value,

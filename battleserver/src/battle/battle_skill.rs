@@ -20,7 +20,8 @@ use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
-use super::{battle_enum::SkillConsumeType, battle_player::BattlePlayer};
+use super::battle_cter::BattleCharacter;
+use super::battle_enum::SkillConsumeType;
 
 #[derive(Clone, Debug)]
 pub struct Skill {
@@ -66,15 +67,15 @@ impl From<&'static SkillTemp> for Skill {
 ///地图块换位置
 pub unsafe fn change_map_cell_index(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     _: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
     if target_array.len() < 2 {
         warn!(
-            "target_array size is error!skill_id:{},user_id:{}",
-            skill_id, user_id
+            "target_array size is error!skill_id:{},cter_id:{}",
+            skill_id, cter_id
         );
         return None;
     }
@@ -121,14 +122,14 @@ pub unsafe fn change_map_cell_index(
 
     //源地图块数据
     let source_map_cell = map_ptr.as_mut().unwrap().get_mut(source_index).unwrap();
-    let source_user_id = source_map_cell.user_id;
+    let source_cter_id = source_map_cell.cter_id;
     let (s_x, s_y) = (source_map_cell.x, source_map_cell.y);
     let source_has_lock_buff = source_map_cell.has_lock_buff();
     let source_traps = source_map_cell.get_traps_mut();
 
     //目标地图看数据
     let target_map_cell = map_ptr.as_mut().unwrap().get_mut(target_index).unwrap();
-    let target_user_id = target_map_cell.user_id;
+    let target_cter_id = target_map_cell.cter_id;
     let (t_x, t_y) = (target_map_cell.x, target_map_cell.y);
     let target_has_lock_buff = target_map_cell.has_lock_buff();
     let target_traps = target_map_cell.get_traps_mut();
@@ -198,8 +199,8 @@ pub unsafe fn change_map_cell_index(
     target_map_cell.index = target_index;
     target_map_cell.x = t_x;
     target_map_cell.x = t_y;
-    source_map_cell.user_id = source_user_id;
-    target_map_cell.user_id = target_user_id;
+    source_map_cell.cter_id = source_cter_id;
+    target_map_cell.cter_id = target_cter_id;
 
     //调用机器人触发器,这里走匹配地图块逻辑(删除记忆中的地图块)
     battle_data.map_cell_trigger_for_robot(source_index, RobotTriggerType::MapCellPair);
@@ -209,7 +210,7 @@ pub unsafe fn change_map_cell_index(
 ///展示地图块
 pub fn show_index(
     battle_data: &mut BattleData,
-    user_id: u32,
+    _: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -226,7 +227,7 @@ pub fn show_index(
             return None;
         }
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let battle_player = battle_data.get_battle_player(Some(user_id), true);
+        let battle_player = battle_data.get_battle_player(None, true);
         if let Err(e) = battle_player {
             warn!("{:?}", e);
             return None;
@@ -281,7 +282,7 @@ pub fn show_index(
 ///展示地图块
 pub fn show_map_cell(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -290,194 +291,200 @@ pub fn show_map_cell(
     let skill_function_id = temp.function_id;
     if skill_function_id != SHOW_ALL_USERS_CELL && target_array.is_empty() {
         warn!(
-            "target_array is empty!skill_id:{},user_id:{}",
-            skill_id, user_id
+            "target_array is empty!skill_id:{},cter_id:{}",
+            skill_id, cter_id
         );
         return None;
     }
-    let battle_player = battle_data.get_battle_player(Some(user_id), true);
-    if let Err(e) = battle_player {
-        warn!("{:?}", e);
-        return None;
-    }
+    let user_id = battle_data.get_user_id(cter_id).unwrap();
 
-    let view_target_type = TargetType::try_from(temp.view_target);
-    if let Err(e) = view_target_type {
-        error!("{:?}", e);
-        return None;
-    }
-    let mut au_vec = vec![];
-    let view_target_type = view_target_type.unwrap();
-
-    let battle_player = battle_player.unwrap();
-    let show_index;
-    let mut target_pt;
-
-    //向所有玩家随机展示一个地图块，优先生命元素
-    if SHOW_ALL_USERS_CELL == skill_function_id {
-        let mut v = Vec::new();
-        let mut nature_index = None;
-        for index in battle_data.tile_map.un_pair_map.iter() {
-            let (index, map_cell_id) = (*index.0, *index.1);
-            //排除是自己当前turn翻了的
-            if battle_player
-                .flow_data
-                .open_map_cell_vec_history
-                .contains(&index)
-            {
-                continue;
-            }
-            let res =
-                battle_data.check_choice_index(index, false, true, false, false, false, false);
-            if let Err(_) = res {
-                continue;
-            }
-            //放到列表里面
-            v.push((index, map_cell_id));
-            //判断是否是生命元素,如果是，则直接跳出循环
-            let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-            if map_cell.element == ElementType::Nature.into_u8() {
-                nature_index = Some(v.len() - 1);
-                break;
-            }
-        }
-        let index;
-        if let Some(nature_index) = nature_index {
-            index = nature_index;
-        } else if !v.is_empty() {
-            let mut rand = rand::thread_rng();
-            index = rand.gen_range(0..v.len());
-            let res = v.get(index);
-            if let None = res {
-                warn!("there is no map_cell can show!");
-                return None;
-            }
-        } else {
-            warn!("there is no nature_index and v_vec is empty!");
-            return None;
-        }
-
-        let map_cell = v.get(index).unwrap();
-        show_index = map_cell.0;
-        let map_cell_id = map_cell.1;
-        target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell.0 as u32);
-        target_pt.target_value.push(map_cell_id);
-    } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_function_id {
-        let index = *target_array.get(0).unwrap() as usize;
-        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let element = map_cell.element;
-        let map_cell_id = map_cell.id;
-        let map_cell_index = map_cell.index;
-        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
-        if let Err(e) = skill_temp {
+    let battle_data_ptr = battle_data as *mut BattleData;
+    unsafe {
+        let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+        let battle_data_ref = battle_data_ptr.as_ref().unwrap();
+        let battle_player = battle_data_mut.get_battle_player_mut(None, true).unwrap();
+        let battle_cter = battle_data.get_battle_cter_mut(cter_id, true);
+        if let Err(e) = battle_cter {
             warn!("{:?}", e);
             return None;
         }
-        let skill_temp = skill_temp.unwrap();
-        let battle_player = battle_data
-            .get_battle_player_mut(Some(user_id), true)
-            .unwrap();
-        if skill_temp.par1 as u8 == element {
-            let mut target_pt = TargetPt::new();
-            target_pt
-                .target_value
-                .push(battle_player.get_map_cell_index() as u32);
-            let mut ep = EffectPt::new();
-            ep.set_effect_type(EffectType::AddEnergy.into_u32());
-            ep.set_effect_value(skill_temp.par2);
-            target_pt.effects.push(ep);
-            au.targets.push(target_pt);
-            battle_player.cter.add_energy(skill_temp.par2 as i8);
-        }
 
-        target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell_index as u32);
-        target_pt.target_value.push(map_cell_id);
-        show_index = map_cell_index;
-    } else {
-        //展示地图块
-        let index = *target_array.get(0).unwrap() as usize;
-        //校验index合法性
-        let res = battle_data.check_choice_index(index, false, true, true, true, false, false);
-        if let Err(e) = res {
-            warn!("show_index {:?}", e);
+        let view_target_type = TargetType::try_from(temp.view_target);
+        if let Err(e) = view_target_type {
+            error!("{:?}", e);
             return None;
         }
+        let mut au_vec = vec![];
+        let view_target_type = view_target_type.unwrap();
 
-        let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
-        let map_cell_id = map_cell.id;
-        show_index = map_cell.index;
-        target_pt = TargetPt::new();
-        target_pt.target_value.push(map_cell.index as u32);
-        target_pt.target_value.push(map_cell_id);
-    }
+        let battle_cter = battle_cter.unwrap();
+        let show_index;
+        let mut target_pt;
 
-    //判断地图块有没有陷阱
-    let map_cell = battle_data.tile_map.map_cells.get_mut(show_index);
-    let mut au_trap_pt = build_action_unit_pt(0, ActionType::None, 0);
-    if let Some(map_cell) = map_cell {
-        let map_cell_index = map_cell.index;
-        let traps = map_cell.get_traps_mut();
-        for buff in traps {
-            let buff_id = buff.get_id();
-            let mut target_pt = TargetPt::new();
-            target_pt.add_buffs.push(buff_id);
-            target_pt.target_value.push(map_cell_index as u32);
-            au_trap_pt.targets.push(target_pt);
-
-            //处理陷阱可见玩家
-            if view_target_type == TargetType::PlayerSelf {
-                buff.trap_view_users.insert(user_id);
+        //向所有玩家随机展示一个地图块，优先生命元素
+        if SHOW_ALL_USERS_CELL == skill_function_id {
+            let mut v = Vec::new();
+            let mut nature_index = None;
+            for index in battle_data.tile_map.un_pair_map.iter() {
+                let (index, map_cell_id) = (*index.0, *index.1);
+                //排除是自己当前turn翻了的
+                if battle_player
+                    .flow_data
+                    .open_map_cell_vec_history
+                    .contains(&index)
+                {
+                    continue;
+                }
+                let res =
+                    battle_data.check_choice_index(index, false, true, false, false, false, false);
+                if let Err(_) = res {
+                    continue;
+                }
+                //放到列表里面
+                v.push((index, map_cell_id));
+                //判断是否是生命元素,如果是，则直接跳出循环
+                let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
+                if map_cell.element == ElementType::Nature.into_u8() {
+                    nature_index = Some(v.len() - 1);
+                    break;
+                }
+            }
+            let index;
+            if let Some(nature_index) = nature_index {
+                index = nature_index;
+            } else if !v.is_empty() {
+                let mut rand = rand::thread_rng();
+                index = rand.gen_range(0..v.len());
+                let res = v.get(index);
+                if let None = res {
+                    warn!("there is no map_cell can show!");
+                    return None;
+                }
             } else {
-                for &user_id in battle_data.battle_player.keys() {
+                warn!("there is no nature_index and v_vec is empty!");
+                return None;
+            }
+
+            let map_cell = v.get(index).unwrap();
+            show_index = map_cell.0;
+            let map_cell_id = map_cell.1;
+            target_pt = TargetPt::new();
+            target_pt.target_value.push(map_cell.0 as u32);
+            target_pt.target_value.push(map_cell_id);
+        } else if SHOW_SAME_ELMENT_CELL_ALL_AND_CURE == skill_function_id {
+            let index = *target_array.get(0).unwrap() as usize;
+            let map_cell = battle_data_ref.tile_map.map_cells.get(index).unwrap();
+            let element = map_cell.element;
+            let map_cell_id = map_cell.id;
+            let map_cell_index = map_cell.index;
+            let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
+            if let Err(e) = skill_temp {
+                warn!("{:?}", e);
+                return None;
+            }
+            let skill_temp = skill_temp.unwrap();
+            if skill_temp.par1 as u8 == element {
+                let mut target_pt = TargetPt::new();
+                target_pt
+                    .target_value
+                    .push(battle_cter.get_map_cell_index() as u32);
+                let mut ep = EffectPt::new();
+                ep.set_effect_type(EffectType::AddEnergy.into_u32());
+                ep.set_effect_value(skill_temp.par2);
+                target_pt.effects.push(ep);
+                au.targets.push(target_pt);
+                battle_cter.add_energy(skill_temp.par2 as i8);
+            }
+
+            target_pt = TargetPt::new();
+            target_pt.target_value.push(map_cell_index as u32);
+            target_pt.target_value.push(map_cell_id);
+            show_index = map_cell_index;
+        } else {
+            //展示地图块
+            let index = *target_array.get(0).unwrap() as usize;
+            //校验index合法性
+            let res = battle_data.check_choice_index(index, false, true, true, true, false, false);
+            if let Err(e) = res {
+                warn!("show_index {:?}", e);
+                return None;
+            }
+
+            let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
+            let map_cell_id = map_cell.id;
+            show_index = map_cell.index;
+            target_pt = TargetPt::new();
+            target_pt.target_value.push(map_cell.index as u32);
+            target_pt.target_value.push(map_cell_id);
+        }
+
+        //判断地图块有没有陷阱
+        let map_cell = battle_data.tile_map.map_cells.get_mut(show_index);
+        let mut au_trap_pt = build_action_unit_pt(0, ActionType::None, 0);
+        if let Some(map_cell) = map_cell {
+            let map_cell_index = map_cell.index;
+            let traps = map_cell.get_traps_mut();
+            for buff in traps {
+                let buff_id = buff.get_id();
+                let mut target_pt = TargetPt::new();
+                target_pt.add_buffs.push(buff_id);
+                target_pt.target_value.push(map_cell_index as u32);
+                au_trap_pt.targets.push(target_pt);
+
+                //处理陷阱可见玩家
+                if view_target_type == TargetType::PlayerSelf {
                     buff.trap_view_users.insert(user_id);
+                } else {
+                    for &temp_user_id in battle_data.battle_player.keys() {
+                        buff.trap_view_users.insert(temp_user_id);
+                    }
                 }
             }
         }
-    }
-    //判断是不是只推送给自己
-    if view_target_type == TargetType::PlayerSelf {
-        let mut au_pt = build_action_unit_pt(user_id, ActionType::Skill, skill_id);
-        au_pt.from_user = user_id;
-        au_pt.targets.push(target_pt);
-        au_vec.push((user_id, au_pt));
-        if !au_trap_pt.targets.is_empty() {
-            au_vec.push((user_id, au_trap_pt));
-        }
-    } else {
-        au.targets.push(target_pt);
-        if !au_trap_pt.targets.is_empty() {
-            au_vec.push((0, au_trap_pt));
-        }
-    }
+        //判断是不是只推送给自己
+        if view_target_type == TargetType::PlayerSelf {
+            let mut au_pt = build_action_unit_pt(cter_id, ActionType::Skill, skill_id);
+            au_pt.targets.push(target_pt);
 
-    let battle_player = battle_data.get_battle_player_mut(None, true).unwrap();
-    battle_player.status.locked_oper = skill_id;
-    battle_player.set_is_can_end_turn(false);
-    //调用触发器
-    battle_data.map_cell_trigger_for_robot(show_index, RobotTriggerType::SeeMapCell);
-    Some(au_vec)
+            au_vec.push((user_id, au_pt));
+            if !au_trap_pt.targets.is_empty() {
+                au_vec.push((user_id, au_trap_pt));
+            }
+        } else {
+            au.targets.push(target_pt);
+            if !au_trap_pt.targets.is_empty() {
+                au_vec.push((0, au_trap_pt));
+            }
+        }
+
+        battle_player.status.locked_oper = skill_id;
+        battle_player.set_is_can_end_turn(false);
+        //调用触发器
+        battle_data.map_cell_trigger_for_robot(show_index, RobotTriggerType::SeeMapCell);
+        Some(au_vec)
+    }
 }
 
 ///上buff,121, 211, 221, 311, 322, 20002
 pub unsafe fn add_buff(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
+    let user_id = battle_data.get_user_id(cter_id).unwrap();
+    let battle_data_ptr = battle_data as *mut BattleData;
+    let battle_data_mut = battle_data_ptr.as_mut().unwrap();
     let turn_index = battle_data.next_turn_index;
 
-    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = battle_player {
+    let battle_cter = battle_data.get_battle_cter_mut(cter_id, true);
+    if let Err(e) = battle_cter {
         warn!("{:?}", e);
         return None;
     }
-    let battle_player = battle_player.unwrap();
-    let battle_player = battle_player as *mut BattlePlayer;
-    let cter_index = battle_player.as_mut().unwrap().get_map_cell_index();
+    let battle_cter = battle_cter.unwrap();
+    let cter_index = battle_cter.get_map_cell_index();
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //先计算单体的
     let buff_id = skill_temp.buff as u32;
@@ -497,12 +504,7 @@ pub unsafe fn add_buff(
 
     match target_type {
         TargetType::PlayerSelf => {
-            battle_player.as_mut().unwrap().cter.add_buff(
-                Some(user_id),
-                Some(skill_id),
-                buff_id,
-                Some(turn_index),
-            );
+            battle_cter.add_buff(Some(cter_id), Some(skill_id), buff_id, Some(turn_index));
             target_pt.target_value.push(cter_index as u32);
             target_pt.add_buffs.push(buff_id);
             au.targets.push(target_pt);
@@ -521,19 +523,19 @@ pub unsafe fn add_buff(
                 return None;
             }
             let index = *index.unwrap() as usize;
-            let map_cell = battle_data.tile_map.map_cells.get_mut(index).unwrap();
+            let map_cell = battle_data_mut.tile_map.map_cells.get_mut(index).unwrap();
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
             let mut buff = Buff::new(
                 buff_temp,
-                Some(battle_data.next_turn_index),
-                Some(user_id),
+                Some(battle_data_mut.next_turn_index),
+                Some(cter_id),
                 Some(skill_id),
             );
             target_pt.target_value.push(index as u32);
             target_pt.add_buffs.push(buff_id);
             //处理视野目标
             if view_target_type == TargetType::PlayerSelf {
-                let mut au_pt = build_action_unit_pt(user_id, ActionType::Skill, skill_id);
+                let mut au_pt = build_action_unit_pt(cter_id, ActionType::Skill, skill_id);
                 au_pt.targets.push(target_pt);
                 au_vec.push((user_id, au_pt));
                 if TRAPS.contains(&buff_function_id) {
@@ -542,7 +544,7 @@ pub unsafe fn add_buff(
             } else {
                 au.targets.push(target_pt);
                 if TRAPS.contains(&buff_function_id) {
-                    for &user_id in battle_data.battle_player.keys() {
+                    for &user_id in battle_data_mut.battle_player.keys() {
                         buff.trap_view_users.insert(user_id);
                     }
                 }
@@ -553,22 +555,17 @@ pub unsafe fn add_buff(
     }
 
     //处理技能激活状态
-    let skill = battle_player
-        .as_mut()
-        .unwrap()
-        .cter
-        .skills
-        .get_mut(&skill_id);
+    let skill = battle_cter.skills.get_mut(&skill_id);
     if let Some(skill) = skill {
         skill.is_active = true;
     }
 
     //处理其他的全局要看到的，此处为自残扣血
     if HURT_SELF_ADD_BUFF.contains(&skill_function_id) {
-        let mut target_pt = battle_data.new_target_pt(user_id).unwrap();
+        let mut target_pt = battle_data.new_target_pt(cter_id).unwrap();
         let res = battle_data.deduct_hp(
-            user_id,
-            user_id,
+            cter_id,
+            cter_id,
             Some(skill_temp.par1 as i16),
             &mut target_pt,
             true,
@@ -586,19 +583,17 @@ pub unsafe fn add_buff(
 ///对翻开指定元素地图块上对玩家造成技能伤害
 pub fn skill_damage_opened_element(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     _: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
-    let battle_player = battle_data
-        .get_battle_player_mut(Some(user_id), true)
-        .unwrap();
-    let skill = battle_player.cter.skills.get(&skill_id);
+    let battle_cter = battle_data.get_battle_cter_mut(cter_id, true).unwrap();
+    let skill = battle_cter.skills.get(&skill_id);
     if skill.is_none() {
         warn!(
             "can not find cter's skill!cter_id:{} skill_id:{}",
-            battle_player.get_cter_id(),
+            battle_cter.get_cter_temp_id(),
             skill_id
         );
         return None;
@@ -606,7 +601,7 @@ pub fn skill_damage_opened_element(
     let skill = skill.unwrap();
     let skill_damage = skill.skill_temp.par1 as i16;
 
-    let target_array = battle_data.get_target_array(user_id, skill_id);
+    let target_array = battle_data.get_target_array(cter_id, skill_id);
     if let Err(e) = target_array {
         warn!("{:?}", e);
         return None;
@@ -626,11 +621,11 @@ pub fn skill_damage_opened_element(
             if let None = map_cell {
                 continue;
             }
-            let target_id = map_cell.unwrap().user_id;
-            let mut target_pt = battle_data.new_target_pt(target_id).unwrap();
+            let target_cter_id = map_cell.unwrap().cter_id;
+            let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
             let res = battle_data.deduct_hp(
-                user_id,
-                target_id,
+                cter_id,
+                target_cter_id,
                 Some(skill_damage),
                 &mut target_pt,
                 is_last_one,
@@ -648,7 +643,7 @@ pub fn skill_damage_opened_element(
 ///使用技能翻地图块
 pub fn skill_open_map_cell(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -661,12 +656,10 @@ pub fn skill_open_map_cell(
             return None;
         }
         let index = *target_array.get(0).unwrap() as usize;
-        let battle_player = battle_data
-            .get_battle_player_mut(Some(user_id), true)
-            .unwrap();
-        let cter_index = battle_player.get_map_cell_index() as isize;
+        let battle_cter = battle_data.get_battle_cter_mut(cter_id, true).unwrap();
+        let cter_index = battle_cter.get_map_cell_index() as isize;
         let (map_cells, _) =
-            battle_data.cal_scope(user_id, cter_index, TargetType::PlayerSelf, None, None);
+            battle_data.cal_scope(cter_id, cter_index, TargetType::PlayerSelf, None, None);
 
         //校验目标位置
         if !map_cells.contains(&index) {
@@ -675,10 +668,10 @@ pub fn skill_open_map_cell(
         }
 
         //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
-        battle_data.exec_open_map_cell(user_id, index);
+        battle_data.exec_open_map_cell(cter_id, index);
 
         //处理配对逻辑
-        let is_pair = battle_data.handler_map_cell_pair(user_id, index);
+        let is_pair = battle_data.handler_map_cell_pair(cter_id, index);
 
         //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -687,7 +680,7 @@ pub fn skill_open_map_cell(
         target_pt.target_value.push(map_cell.id);
         au.targets.push(target_pt);
         //处理配对触发逻辑
-        let res = battle_data.open_map_cell_trigger(user_id, au, is_pair);
+        let res = battle_data.open_map_cell_trigger(cter_id, au, is_pair);
 
         match res {
             Ok(res) => {
@@ -707,7 +700,7 @@ pub fn skill_open_map_cell(
 ///自动配对地图块
 pub unsafe fn auto_pair_map_cell(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -733,16 +726,31 @@ pub unsafe fn auto_pair_map_cell(
         warn!("{:?}", e);
         return None;
     }
+
+    let battle_data_ptr = battle_data as *mut BattleData;
+    let battle_data_mut = battle_data_ptr.as_mut().unwrap();
     let map = &mut battle_data.tile_map.map_cells as *mut [MapCell; 30];
 
     //校验目标下标的地图块
-    let map_cell = map.as_mut().unwrap().get_mut(target_index).unwrap();
+    let map_cell = battle_data_mut
+        .tile_map
+        .map_cells
+        .get_mut(target_index)
+        .unwrap();
 
-    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = battle_player {
+    let battle_cter = battle_data.get_battle_cter_mut(cter_id, true);
+    if let Err(e) = battle_cter {
         error!("{:?}", e);
         return None;
     }
+    let battle_cter = battle_cter.unwrap();
+    let user_id = battle_cter.base_attr.user_id;
+    let battle_player = battle_data_ptr
+        .as_mut()
+        .unwrap()
+        .get_battle_player_mut(Some(user_id), true)
+        .unwrap();
+
     let mut pair_map_cell: Option<&mut MapCell> = None;
     let map_cell_index = map_cell.index;
     let mut map_cell_target_index = 0;
@@ -759,8 +767,8 @@ pub unsafe fn auto_pair_map_cell(
         _map_cell.pair_index = Some(map_cell_index);
         map_cell.pair_index = Some(map_cell_target_index);
         //设置打开的人
-        _map_cell.open_user = user_id;
-        map_cell.open_user = user_id;
+        _map_cell.open_cter = cter_id;
+        map_cell.open_cter = cter_id;
         //设置匹配的块
         pair_map_cell = Some(_map_cell);
         break;
@@ -775,15 +783,13 @@ pub unsafe fn auto_pair_map_cell(
     }
 
     let pair_map_cell = pair_map_cell.unwrap();
-    let battle_player = battle_player.unwrap();
+
     //设置配对状态
     battle_player.status.is_pair = true;
     //处理本turn不能攻击
     battle_player.change_attack_locked();
-    battle_player
-        .cter
-        .add_buff(None, None, buff_id, Some(next_turn_index));
-    let cter_map_cell_index = battle_player.get_map_cell_index() as u32;
+    battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
+    let cter_map_cell_index = battle_cter.get_map_cell_index() as u32;
     //清除已配对的
     battle_data.tile_map.un_pair_map.remove(&map_cell_index);
     battle_data
@@ -806,7 +812,7 @@ pub unsafe fn auto_pair_map_cell(
     au.targets.push(target_pt);
 
     //处理配对触发逻辑
-    let res = battle_data.open_map_cell_trigger(user_id, au, true);
+    let res = battle_data.open_map_cell_trigger(cter_id, au, true);
     if let Err(e) = res {
         warn!("{:?}", e);
         return None;
@@ -821,7 +827,7 @@ pub unsafe fn auto_pair_map_cell(
 ///移动玩家
 pub fn move_user(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -829,8 +835,8 @@ pub fn move_user(
     //选择一个玩家，将其移动到一个空地图块上。
     if target_array.len() < 2 {
         warn!(
-            "move_user,the target_array size is error! skill_id:{},user_id:{}",
-            skill_id, user_id
+            "move_user,the target_array size is error! skill_id:{},cter_id:{}",
+            skill_id, cter_id
         );
         return None;
     }
@@ -843,17 +849,17 @@ pub fn move_user(
         return None;
     }
 
-    let target_cter = battle_data.get_battle_player_mut_by_map_cell_index(target_user_index);
+    let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(target_user_index);
     if let Err(e) = target_cter {
         warn!("{:?}", e);
         return None;
     }
     let target_cter = target_cter.unwrap();
-    let target_user = target_cter.get_user_id();
+    let target_cter_id = target_cter.get_cter_id();
 
     //处理移动后事件
     unsafe {
-        let v = battle_data.handler_cter_move(target_user, target_index, au);
+        let v = battle_data.handler_cter_move(target_cter_id, target_index, au);
         if let Err(e) = v {
             warn!("{:?}", e);
             return None;
@@ -870,15 +876,22 @@ pub fn move_user(
 ///对相邻的所有玩家造成1点技能伤害，并回复等于造成伤害值的生命值。
 pub unsafe fn skill_damage_and_cure(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     _: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
-    let battle_players = &mut battle_data.battle_player as *mut HashMap<u32, BattlePlayer>;
-    let battle_player = battle_players.as_mut().unwrap().get_mut(&user_id).unwrap();
-    let cter_index = battle_player.get_map_cell_index() as isize;
-    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
+    let battle_data_ptr = battle_data as *mut BattleData;
+    let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+
+    let battle_cter = battle_data.get_battle_cter_mut(cter_id, true);
+    if let Err(e) = battle_cter {
+        error!("{:?}", e);
+        return None;
+    }
+    let battle_cter = battle_cter.unwrap();
+    let cter_index = battle_cter.get_map_cell_index() as isize;
+    let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let res = TEMPLATES
         .skill_scope_temp_mgr()
         .get_temp(&skill.skill_temp.scope);
@@ -888,22 +901,22 @@ pub unsafe fn skill_damage_and_cure(
     }
     let scope_temp = res.unwrap();
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
-    let (_, v) = battle_data.cal_scope(user_id, cter_index, target_type, None, Some(scope_temp));
+    let (_, v) =
+        battle_data_mut.cal_scope(cter_id, cter_index, target_type, None, Some(scope_temp));
 
     let mut add_hp = 0_u32;
     let mut is_last_one = false;
 
     for index in 0..v.len() {
-        let target_user = v.get(index).unwrap();
-        let target_user = *target_user;
+        let &target_cter_id = v.get(index).unwrap();
         if index == v.len() - 1 {
             is_last_one = true;
         }
-        let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
+        let mut target_pt = battle_data_mut.new_target_pt(target_cter_id).unwrap();
         //扣血
-        let res = battle_data.deduct_hp(
-            user_id,
-            target_user,
+        let res = battle_data_mut.deduct_hp(
+            cter_id,
+            target_cter_id,
             Some(skill.skill_temp.par1 as i16),
             &mut target_pt,
             is_last_one,
@@ -918,7 +931,7 @@ pub unsafe fn skill_damage_and_cure(
     }
 
     //给自己加血
-    let target_pt = battle_data.add_hp(Some(user_id), user_id, add_hp as i16, None);
+    let target_pt = battle_data.add_hp(Some(cter_id), cter_id, add_hp as i16, None);
     match target_pt {
         Ok(target_pt) => {
             au.targets.push(target_pt);
@@ -933,14 +946,14 @@ pub unsafe fn skill_damage_and_cure(
 ///技能aoe伤害
 pub unsafe fn skill_aoe_damage(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
-    let battle_player = battle_data.get_battle_player(Some(user_id), true).unwrap();
-    let self_index = battle_player.get_map_cell_index();
-    let skill = battle_player.cter.skills.get(&skill_id).unwrap();
+    let battle_cter = battle_data.get_battle_cter(cter_id, true).unwrap();
+    let self_index = battle_cter.get_map_cell_index();
+    let skill = battle_cter.skills.get(&skill_id).unwrap();
     let skill_function_id = skill.function_id;
     let par1 = skill.skill_temp.par1 as i16;
     let par2 = skill.skill_temp.par2 as i16;
@@ -958,7 +971,7 @@ pub unsafe fn skill_aoe_damage(
 
     //计算符合中心范围内的玩家
     let (_, v) = battle_data.cal_scope(
-        user_id,
+        cter_id,
         center_index,
         target_type,
         Some(target_array),
@@ -969,27 +982,24 @@ pub unsafe fn skill_aoe_damage(
     let mut count = 0i16;
 
     for index in 0..v.len() {
-        let target_user = v.get(index).unwrap();
-        let target_user = *target_user;
+        let &target_cter_id = v.get(index).unwrap();
         if index == v.len() - 1 {
             is_last_one = true;
         }
-        let battle_player = battle_data
-            .get_battle_player_mut(Some(target_user), true)
-            .unwrap();
+        let battle_cter = battle_data.get_battle_cter(cter_id, true).unwrap();
         let damage_res;
         //判断是否中心位置
-        let cter_index = battle_player.get_map_cell_index();
+        let cter_index = battle_cter.get_map_cell_index();
         if cter_index == center_index as usize && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
         {
             damage_res = par2;
         } else {
             damage_res = par1;
         }
-        let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
+        let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
         let res = battle_data.deduct_hp(
-            user_id,
-            target_user,
+            cter_id,
+            target_cter_id,
             Some(damage_res),
             &mut target_pt,
             is_last_one,
@@ -1007,10 +1017,10 @@ pub unsafe fn skill_aoe_damage(
     if skill_function_id == SKILL_AOE_RED_SKILL_CD {
         //处理减cd逻辑,如果造成伤害人数大于参数
         if count >= par2 {
-            let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
-            match battle_player {
-                Ok(battle_player) => {
-                    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
+            let battle_cter = battle_data.get_battle_cter_mut(cter_id, true);
+            match battle_cter {
+                Ok(battle_cter) => {
+                    let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
                     skill.reset_cd();
                     let reduce_cd = -(par3 as i8);
                     skill.add_cd(reduce_cd);
@@ -1034,33 +1044,26 @@ pub unsafe fn skill_aoe_damage(
 ///单体技能伤害
 pub unsafe fn single_skill_damage(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
     if target_array.is_empty() {
         warn!(
-            "single_skill_damage-target_array is empty!skill_id:{},user_id:{}",
-            skill_id, user_id
+            "single_skill_damage-target_array is empty!skill_id:{}",
+            skill_id
         );
         return None;
     }
     let target_index = *target_array.get(0).unwrap();
-    let target_player = battle_data.get_battle_player_mut_by_map_cell_index(target_index as usize);
-    if let Err(e) = target_player {
+    let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(target_index as usize);
+    if let Err(e) = target_cter {
         warn!("{:?}", e);
         return None;
     }
-    let target_player = target_player.unwrap();
-    let target_user = target_player.get_user_id();
-    if target_player.is_died() {
-        warn!(
-            "this target is died!user_id:{}",
-            target_player.get_user_id()
-        );
-        return None;
-    }
+    let target_cter = target_cter.unwrap();
+    let target_cter_id = target_cter.get_cter_id();
     let skill_damage;
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
@@ -1068,13 +1071,13 @@ pub unsafe fn single_skill_damage(
     //目标在附近伤害加深
     if skill_function_id == SKILL_DAMAGE_NEAR_DEEP {
         let (_, users) = battle_data.cal_scope(
-            user_id,
+            cter_id,
             target_index as isize,
             TargetType::try_from(skill_temp.target).unwrap(),
             None,
             None,
         );
-        if users.contains(&target_user) {
+        if users.contains(&target_cter_id) {
             skill_damage = skill_temp.par2 as i16;
         } else {
             skill_damage = skill_temp.par1 as i16;
@@ -1083,10 +1086,10 @@ pub unsafe fn single_skill_damage(
         skill_damage = skill_temp.par1 as i16;
     }
 
-    let mut target_pt = battle_data.new_target_pt(target_user).unwrap();
+    let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
     let res = battle_data.deduct_hp(
-        user_id,
-        target_user,
+        cter_id,
+        target_cter_id,
         Some(skill_damage),
         &mut target_pt,
         true,
@@ -1108,18 +1111,18 @@ pub unsafe fn sub_cd(
     target_array: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
-    let target_user = *target_array.get(0).unwrap();
+    let target_cter_id = *target_array.get(0).unwrap();
     //目标的技能CD-2。
-    let battle_player = battle_data.get_battle_player_mut(Some(target_user), true);
-    if let Err(e) = battle_player {
+    let battle_cter = battle_data.get_battle_cter_mut(target_cter_id, true);
+    if let Err(e) = battle_cter {
         warn!("{:?}", e);
         return None;
     }
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
 
-    let battle_player = battle_player.unwrap();
-    let battle_player_index = battle_player.get_map_cell_index();
+    let battle_cter = battle_cter.unwrap();
+    let battle_player_index = battle_cter.get_map_cell_index();
     let mut target_pt = TargetPt::new();
     target_pt.target_value.push(battle_player_index as u32);
     let mut ep = EffectPt::new();
@@ -1127,8 +1130,7 @@ pub unsafe fn sub_cd(
     ep.effect_value = skill_temp.par1;
     target_pt.effects.push(ep);
     au.targets.push(target_pt);
-    battle_player
-        .cter
+    battle_cter
         .skills
         .values_mut()
         .for_each(|skill| skill.add_cd(-(skill_temp.par1 as i8)));
@@ -1138,19 +1140,19 @@ pub unsafe fn sub_cd(
 ///范围治疗
 pub unsafe fn scope_cure(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     _: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
     let battle_data = battle_data.borrow_mut() as *mut BattleData;
-    let battle_player = battle_data
+    let battle_cter = battle_data
         .as_mut()
         .unwrap()
-        .get_battle_player_mut(Some(user_id), true)
+        .get_battle_cter_mut(cter_id, true)
         .unwrap();
-    let cter_index = battle_player.get_map_cell_index();
-    let skill = battle_player.cter.skills.get(&skill_id).unwrap();
+    let cter_index = battle_cter.get_map_cell_index();
+    let skill = battle_cter.skills.get(&skill_id).unwrap();
     let self_cure = skill.skill_temp.par1 as i16;
     let other_cure = skill.skill_temp.par2 as i16;
     let scope_id = skill.skill_temp.scope;
@@ -1168,23 +1170,24 @@ pub unsafe fn scope_cure(
 
     let scope_temp = scope_temp.unwrap();
     let (_, users) = battle_data.as_mut().unwrap().cal_scope(
-        user_id,
+        cter_id,
         cter_index as isize,
         target_type,
         None,
         Some(scope_temp),
     );
-    for other_id in users {
+    for other_cter_id in users {
         let res;
-        if other_id == user_id {
+        if other_cter_id == cter_id {
             res = self_cure;
         } else {
             res = other_cure;
         }
-        let target_pt = battle_data
-            .as_mut()
-            .unwrap()
-            .add_hp(Some(user_id), other_id, res, None);
+        let target_pt =
+            battle_data
+                .as_mut()
+                .unwrap()
+                .add_hp(Some(cter_id), other_cter_id, res, None);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
@@ -1198,7 +1201,7 @@ pub unsafe fn scope_cure(
 ///变身系列技能
 pub unsafe fn transform(
     battle_data: &mut BattleData,
-    user_id: u32,
+    cter_id: u32,
     skill_id: u32,
     targets: Vec<u32>,
     au: &mut ActionUnitPt,
@@ -1206,10 +1209,10 @@ pub unsafe fn transform(
     let battle_data = battle_data.borrow_mut() as *mut BattleData;
     let next_turn_index = battle_data.as_ref().unwrap().next_turn_index;
 
-    let battle_player = battle_data
+    let battle_cter = battle_data
         .as_mut()
         .unwrap()
-        .get_battle_player_mut(Some(user_id), true)
+        .get_battle_cter_mut(cter_id, true)
         .unwrap();
     //处理移动到空地图块并变身技能
     let index = targets.get(0);
@@ -1228,7 +1231,7 @@ pub unsafe fn transform(
         return None;
     }
 
-    let skill = battle_player.cter.skills.get_mut(&skill_id).unwrap();
+    let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
     let scope_id = skill.skill_temp.scope;
     let skill_damage = skill.skill_temp.par1 as i16;
     let consume_type = skill.skill_temp.consume_type;
@@ -1248,10 +1251,10 @@ pub unsafe fn transform(
     } else {
         let mut v = consume_value as i8;
         v = v * -1;
-        battle_player.cter.add_energy(v);
+        battle_cter.add_energy(v);
     }
     //处理变身
-    let res = battle_player.transform(user_id, transform_cter_id, buff_id, next_turn_index);
+    let res = battle_cter.transform(cter_id, transform_cter_id, buff_id, next_turn_index);
     match res {
         Err(e) => {
             error!("{:?}", e);
@@ -1267,7 +1270,7 @@ pub unsafe fn transform(
     let v = battle_data
         .as_mut()
         .unwrap()
-        .handler_cter_move(user_id, index, au);
+        .handler_cter_move(cter_id, index, au);
 
     if let Err(e) = v {
         warn!("{:?}", e.to_string());
@@ -1288,7 +1291,7 @@ pub unsafe fn transform(
     let scope_temp = scope_temp.unwrap();
     //对周围对人造成伤害
     let (_, other_users) = battle_data.as_ref().unwrap().cal_scope(
-        user_id,
+        cter_id,
         index as isize,
         target_type,
         None,
@@ -1300,7 +1303,7 @@ pub unsafe fn transform(
         let user = other_users.get(index).unwrap();
         let user = *user;
         //排除自己
-        if user == user_id {
+        if user == cter_id {
             continue;
         }
         if index == other_users.len() - 1 {
@@ -1308,7 +1311,7 @@ pub unsafe fn transform(
         }
         let mut target_pt = battle_data.as_ref().unwrap().new_target_pt(user).unwrap();
         let res = battle_data.as_mut().unwrap().deduct_hp(
-            user_id,
+            cter_id,
             user,
             Some(skill_damage),
             &mut target_pt,
@@ -1327,10 +1330,10 @@ pub unsafe fn transform(
 ///召唤宠物
 pub unsafe fn summon_minon(
     battle_data: &mut BattleData,
-    user_id: u32,
+    _: u32,
     skill_id: u32,
     targets: Vec<u32>,
-    au: &mut ActionUnitPt,
+    _: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
     let index = targets.get(0);
     if index.is_none() {
@@ -1343,40 +1346,30 @@ pub unsafe fn summon_minon(
         error!("{:?}", e);
         return None;
     }
-    let max_id: u32 = battle_data.battle_player.keys().cloned().sum();
+    let cter_id: u32 = battle_data.generate_cter_id();
 
-    let battle_player = battle_data.get_battle_player_mut(Some(user_id), true);
-    if let Err(e) = battle_player {
-        error!("{:?}", e);
+    let user_id = battle_data.get_user_id(cter_id);
+    if let None = user_id {
+        error!("there is no user_id for cter_id:{}!", cter_id);
         return None;
     }
-    let battle_player = battle_player.unwrap();
-    battle_player.minon = max_id;
+    let user_id = user_id.unwrap();
 
     let skill_temp = crate::TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
     if let Err(e) = skill_temp {
         error!("{:?}", e);
         return None;
     }
-    let team_id = battle_player.team_id;
 
     let skill_temp = skill_temp.unwrap();
-    let minon_id = skill_temp.par1;
-    let buff_id = skill_temp.par2;
+    let cter_temp_id = skill_temp.par1;
 
-    let minon = BattlePlayer::init_for_minon(minon_id, user_id, max_id, team_id, index);
+    let minon = BattleCharacter::init_for_minon(user_id, cter_id, cter_temp_id);
     if let Err(e) = minon {
         error!("{:?}", e);
         return None;
     }
-    let mut minon = minon.unwrap();
-    minon
-        .cter
-        .add_buff(Some(user_id), Some(skill_id), buff_id, None);
-    let mut target_pt = TargetPt::default();
-    target_pt.target_value.push(index as u32);
-    target_pt.add_buffs.push(buff_id);
-    au.targets.push(target_pt);
-    battle_data.battle_player.insert(minon.user_id, minon);
+    let _ = minon.unwrap();
+
     None
 }

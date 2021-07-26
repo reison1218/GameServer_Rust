@@ -1,3 +1,4 @@
+use crate::battle::battle_cter::BattleCharacter;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::battle::mission::random_mission;
 use crate::battle::{battle::BattleData, battle_player::BattlePlayer};
@@ -151,6 +152,7 @@ impl Room {
             return;
         }
         let battle_player = res.unwrap();
+        let cter_id = battle_player.get_major_cter_id();
 
         //房间必须为选择占位阶段和开始战斗阶段
         if room_state == RoomState::ChoiceIndex || room_state == RoomState::BattleStarted {
@@ -168,7 +170,7 @@ impl Room {
         //走惩罚触发
         if need_summary && punishment {
             self.battle_data
-                .after_cter_died_trigger(user_id, user_id, true, true);
+                .after_cter_died_trigger(cter_id, cter_id, true, true);
         }
     }
 
@@ -323,7 +325,7 @@ impl Room {
                 if battle_player.is_died() {
                     continue;
                 }
-                if !battle_player.cter.map_cell_index_is_choiced() {
+                if !battle_player.get_current_cter().map_cell_index_is_choiced() {
                     res = false;
                     break;
                 }
@@ -382,38 +384,58 @@ impl Room {
         self.battle_data.battle_player.get_mut(key)
     }
 
+    pub fn get_battle_cter_ref(&self, key: &u32) -> Option<&BattleCharacter> {
+        let res = self.battle_data.battle_player.get(key);
+        if res.is_none() {
+            return None;
+        }
+        let battle_player = res.unwrap();
+        battle_player.cters.get(key)
+    }
+
+    pub fn get_battle_cter_mut(&mut self, key: &u32) -> Option<&mut BattleCharacter> {
+        let res = self.battle_data.battle_player.get_mut(key);
+        if res.is_none() {
+            return None;
+        }
+        let battle_player = res.unwrap();
+        battle_player.cters.get_mut(key)
+    }
+
     pub fn check_index_over(&mut self) -> bool {
         self.state == RoomState::BattleStarted
     }
 
     ///选择占位
-    pub fn choice_index(&mut self, user_id: u32, index: u32) {
+    pub fn choice_index(&mut self, cter_id: u32, index: u32) {
+        let user_id = self.battle_data.get_user_id(cter_id).unwrap();
         let turn_index = self.get_next_turn_index();
         let turn_order = self.battle_data.turn_orders;
-        let member = self.get_battle_player_mut_ref(&user_id);
-        if member.is_none() {
-            error!("choice_index member is none!user_id:{}", user_id);
+        let battle_cter = self.get_battle_cter_mut(&cter_id);
+        if battle_cter.is_none() {
+            error!("battle_cter is none!cter_id:{}", cter_id);
             return;
         }
-        let member = member.unwrap();
+        let battle_cter = battle_cter.unwrap();
 
         info!(
-            "choice choice_index user_id:{},index:{},turn_order:{:?}",
-            user_id, turn_index, turn_order
+            "choice choice_index battle_cter:{},index:{},turn_order:{:?}",
+            cter_id, turn_index, turn_order
         );
 
         //更新角色下标和地图块上面的角色id
-        member.cter.set_map_cell_index(index as usize);
+        battle_cter.set_map_cell_index(index as usize);
         let map_cell = self
             .battle_data
             .tile_map
             .map_cells
             .get_mut(index as usize)
             .unwrap();
-        map_cell.user_id = user_id;
+        map_cell.cter_id = cter_id;
         let mut scln = S_CHOOSE_INDEX_NOTICE::new();
+        scln.set_cter_id(cter_id);
         scln.set_user_id(user_id);
-        scln.index = index;
+        scln.set_index(index);
         let bytes = scln.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         //通知给房间成员
@@ -505,7 +527,7 @@ impl Room {
         }
         let member = member.unwrap();
         //如果是机器人，则返回，不发送
-        if member.is_robot() || member.is_minon() {
+        if member.is_robot() {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
@@ -525,7 +547,7 @@ impl Room {
                 continue;
             }
             let battle_player = battle_player.unwrap();
-            if battle_player.is_robot() || battle_player.is_minon() {
+            if battle_player.is_robot() {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
@@ -567,7 +589,7 @@ impl Room {
             ssn.turn_order.push(*index);
         }
         // for battle_cter in self.battle_data.battle_player.values() {
-        //     let cter_pt = battle_cter.convert_to_battle_cter_pt();
+        //     let cter_pt = battle_get_current_cter_mut().convert_to_battle_cter_pt();
         //     ssn.battle_cters.push(cter_pt);
         // }
         let bytes = ssn.write_to_bytes().unwrap();
@@ -866,7 +888,7 @@ impl Room {
                 let buff = buff.unwrap();
                 if buff.par1 > 0 {
                     for (_, battle_player) in self.battle_data.battle_player.iter_mut() {
-                        battle_player.cter.add_buff(
+                        battle_player.get_current_cter_mut().add_buff(
                             None,
                             None,
                             buff.par1,
@@ -878,9 +900,9 @@ impl Room {
         }
         let mut sbsn = S_BATTLE_START_NOTICE::new();
         let debug = crate::CONF_MAP.borrow().get_bool("debug");
-        for battle_cter in self.battle_data.battle_player.values() {
-            let cter_pt = battle_cter.convert_to_battle_cter_pt();
-            sbsn.battle_cters.push(cter_pt);
+        for battle_player in self.battle_data.battle_player.values() {
+            let battle_player_pt = battle_player.convert_to_battle_cter_pt();
+            sbsn.battle_players.push(battle_player_pt);
         }
         if debug {
             sbsn.map_data = self.battle_data.tile_map.to_json_for_debug().to_string();

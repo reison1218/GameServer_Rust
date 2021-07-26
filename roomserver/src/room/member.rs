@@ -108,7 +108,7 @@ impl From<&PlayerBattlePt> for Member {
         for i in v {
             let mut cter = Character::from(i);
             cter.user_id = pbp.user_id;
-            cters.insert(cter.cter_id, cter);
+            cters.insert(cter.cter_temp_id, cter);
         }
         member.cters = cters;
         member.punish_match = PunishMatch::from(pbp.get_punish_match());

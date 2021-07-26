@@ -11,6 +11,7 @@ use crate::net::tcp_client;
 use crate::robot::robot_task_mgr::robot_init_timer;
 use crate::task_timer::init_timer;
 use async_std::sync::Mutex;
+use lazy_static::lazy_static;
 use log::{error, info, warn};
 use scheduled_thread_pool::ScheduledThreadPool;
 use std::env;
@@ -18,9 +19,6 @@ use std::sync::Arc;
 use tools::conf::Conf;
 use tools::redis_pool::RedisPoolTool;
 use tools::templates::template::{init_temps_mgr, TemplatesMgr};
-
-#[macro_use]
-extern crate lazy_static;
 
 //初始化全局线程池
 lazy_static! {

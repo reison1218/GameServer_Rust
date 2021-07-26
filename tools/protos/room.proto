@@ -74,7 +74,7 @@ message S_LEAVE_ROOM{
 //选择角色请求
 //cmd:20012
 message C_CHOOSE_CHARACTER{
-    uint32 cter_id = 1;//选择的角色id
+    uint32 cter_temp_id = 1;//选择的角色id
 }
 
 //选择角色返回
@@ -88,7 +88,7 @@ message S_CHOOSE_CHARACTER{
 //cmd:10019
 message S_CHOOSE_CHARACTER_NOTICE{
     uint32 user_id = 1;//玩家id;
-    uint32 cter_id = 2;//选择的角色id
+    uint32 cter_temp_id = 2;//选择的角色id
 }
 
 //选择技能

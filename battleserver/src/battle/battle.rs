@@ -22,6 +22,7 @@ use std::collections::HashMap;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
 
+use super::battle_cter::BattleCharacter;
 use super::battle_enum::skill_type::SUMMON_MINON;
 use super::battle_player::BattlePlayer;
 use super::battle_skill::summon_minon;
@@ -45,7 +46,7 @@ type SkillFn = HashMap<
     &'static [u32],
     unsafe fn(
         &mut BattleData,
-        user_id: u32,
+        cter_id: u32,
         skill_id: u32,
         target_array: Vec<u32>,
         au: &mut ActionUnitPt,
@@ -56,7 +57,7 @@ type SkillFn = HashMap<
 pub struct SummaryUser {
     pub user_id: u32,         //玩家id
     pub name: String,         //名称
-    pub cter_id: u32,         //角色id
+    pub cter_temp_id: u32,    //角色id
     pub grade: u8,            //玩家等级
     pub summary_rank: u8,     //玩家当局排名
     pub league: League,       //段位数据
@@ -69,7 +70,7 @@ impl From<&BattlePlayer> for SummaryUser {
         let mut sp = SummaryUser::default();
         sp.user_id = battle_player.get_user_id();
         sp.name = battle_player.name.clone();
-        sp.cter_id = battle_player.get_cter_id();
+        sp.cter_temp_id = battle_player.get_cter_temp_id();
         sp.grade = battle_player.grade;
         sp.league = battle_player.league.clone();
         sp
@@ -80,7 +81,7 @@ impl Into<SummaryDataPt> for SummaryUser {
         let mut smp = SummaryDataPt::new();
         smp.user_id = self.user_id;
         smp.name = self.name;
-        smp.cter_id = self.cter_id;
+        smp.cter_id = self.cter_temp_id;
         smp.rank = self.summary_rank as u32;
         smp.grade = self.grade as u32;
         smp.reward_score = self.reward_score;
@@ -99,6 +100,7 @@ pub struct BattleData {
     pub turn_orders: [u32; MEMBER_MAX],            //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,           //刷新地图时的turn下标
     pub battle_player: HashMap<u32, BattlePlayer>, //玩家战斗数据
+    pub cter_player: HashMap<u32, u32>,            //角色对应玩家
     pub summary_vec: Vec<Vec<SummaryUser>>,        //排名  user_id
     pub summary_vec_temp: Vec<SummaryUser>,        //同一批挂掉的人
     pub leave_user: (u32, bool),                   //离开玩家id,是否惩罚
@@ -111,6 +113,7 @@ pub struct BattleData {
     pub last_map_id: u32,                          //上次地图id
     pub task_sender: Sender<Task>,                 //任务sender
     pub tcp_sender: Sender<Vec<u8>>,               //sender
+    pub cter_id: u32,                              //角色id动态id,从101开始
 }
 
 tools::get_mut_ref!(BattleData);
@@ -119,16 +122,84 @@ unsafe impl Send for BattleData {}
 unsafe impl Sync for BattleData {}
 
 impl BattleData {
-    pub fn get_teammates(&self, user_id: u32) -> Vec<u32> {
-        let player = self.battle_player.get(&user_id).unwrap();
-        let team_id = player.team_id;
+    pub fn get_teammates(&self, team_id: u8) -> Vec<u32> {
         let mut res_v = vec![];
 
-        self.battle_player
-            .values()
-            .filter(|x| x.team_id == team_id)
-            .for_each(|f| res_v.push(f.get_user_id()));
+        for battle_player in self.battle_player.values() {
+            if battle_player.team_id != team_id {
+                continue;
+            }
+            for &cter_id in battle_player.cters.keys() {
+                res_v.push(cter_id);
+            }
+        }
         res_v
+    }
+
+    pub fn get_battle_cter_mut(
+        &mut self,
+        cter_id: u32,
+        is_alive: bool,
+    ) -> anyhow::Result<&mut BattleCharacter> {
+        let user_id = self.cter_player.get(&cter_id);
+        if user_id.is_none() {
+            anyhow::bail!("could not find user_id!cter_id:{}", cter_id)
+        }
+        let &user_id = user_id.unwrap();
+        let battle_player = self.battle_player.get_mut(&user_id);
+        if battle_player.is_none() {
+            anyhow::bail!("could not find battle_player!user_id:{}", user_id)
+        }
+        let battle_player = battle_player.unwrap();
+        let res = battle_player.cters.get_mut(&cter_id);
+        if res.is_none() {
+            anyhow::bail!("could not find battle_cter!cter_id:{}", cter_id)
+        }
+        let battle_cter = res.unwrap();
+        if battle_cter.is_died() && is_alive {
+            anyhow::bail!("this battle_cter is died!cter_id:{}", cter_id)
+        }
+        Ok(battle_cter)
+    }
+
+    pub fn get_battle_cter(
+        &self,
+        cter_id: u32,
+        is_alive: bool,
+    ) -> anyhow::Result<&BattleCharacter> {
+        let user_id = self.cter_player.get(&cter_id);
+        if user_id.is_none() {
+            anyhow::bail!("could not find user_id!cter_id:{}", cter_id)
+        }
+        let &user_id = user_id.unwrap();
+        let battle_player = self.battle_player.get(&user_id);
+        if battle_player.is_none() {
+            anyhow::bail!("could not find battle_player!user_id:{}", user_id)
+        }
+        let battle_player = battle_player.unwrap();
+        let res = battle_player.cters.get(&cter_id);
+        if res.is_none() {
+            anyhow::bail!("could not find battle_cter!cter_id:{}", cter_id)
+        }
+        let battle_cter = res.unwrap();
+        if battle_cter.is_died() && is_alive {
+            anyhow::bail!("this battle_cter is died!cter_id:{}", cter_id)
+        }
+        Ok(battle_cter)
+    }
+
+    pub fn get_user_id(&self, cter_id: u32) -> Option<u32> {
+        let user_id = self.cter_player.get(&cter_id);
+        if user_id.is_none() {
+            return None;
+        }
+        let &user_id = user_id.unwrap();
+        Some(user_id)
+    }
+
+    pub fn generate_cter_id(&mut self) -> u32 {
+        self.cter_id += 1;
+        self.cter_id
     }
 
     ///添加总turn的次数
@@ -141,8 +212,8 @@ impl BattleData {
         task.cmd = TaskCmd::MaxBattleTurnTimes.into();
         let mut map = serde_json::Map::new();
         let mut user_id = 0;
-        for cter in self.battle_player.values() {
-            user_id = cter.get_user_id();
+        for battle_player in self.battle_player.values() {
+            user_id = battle_player.get_user_id();
             break;
         }
         map.insert("user_id".to_owned(), JsonValue::from(user_id));
@@ -170,6 +241,7 @@ impl BattleData {
             turn_orders: [0; MEMBER_MAX],
             reflash_map_turn: None,
             battle_player: HashMap::new(),
+            cter_player: HashMap::new(),
             summary_vec: v,
             summary_vec_temp: Vec::new(),
             leave_user: (0, false),
@@ -182,6 +254,7 @@ impl BattleData {
             last_map_id: 0,
             task_sender,
             tcp_sender,
+            cter_id: 100,
         };
 
         //初始化函数指针，封装到map里
@@ -281,7 +354,7 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_player is already died!user_id:{},cter_id:{}",
                 _user_id,
-                battle_player.get_cter_id()
+                battle_player.get_cter_temp_id()
             )
         }
         Ok(battle_player)
@@ -296,7 +369,7 @@ impl BattleData {
             anyhow::bail!("there is no map_cell!index:{}", index)
         }
         let map_cell = res.unwrap();
-        let user_id = map_cell.user_id;
+        let user_id = map_cell.cter_id;
         if user_id <= 0 {
             anyhow::bail!("this map_cell's user_id is 0!map_cell_index:{}", index)
         }
@@ -309,7 +382,7 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_player is already died!user_id:{},cter_id:{}",
                 user_id,
-                battle_player.get_cter_id()
+                battle_player.get_cter_temp_id()
             )
         }
         Ok(battle_player)
@@ -317,32 +390,24 @@ impl BattleData {
 
     ///根据地图下标获得上面的战斗角色
     ///如果找不到该下标的地图块或者该地图块上面的玩家id为0，则返回错误信息
-    pub fn get_battle_player_mut_by_map_cell_index(
+    pub fn get_battle_cter_mut_by_map_cell_index(
         &mut self,
         index: usize,
-    ) -> anyhow::Result<&mut BattlePlayer> {
+    ) -> anyhow::Result<&mut BattleCharacter> {
         let res = self.tile_map.map_cells.get(index);
         if res.is_none() {
             anyhow::bail!("there is no map_cell!index:{}", index)
         }
         let map_cell = res.unwrap();
-        let user_id = map_cell.user_id;
-        if user_id <= 0 {
-            anyhow::bail!("this map_cell's user_id is 0!map_cell_index:{}", index)
+        let cter_id = map_cell.cter_id;
+        if cter_id <= 0 {
+            anyhow::bail!("this map_cell's cter_id is 0!map_cell_index:{}", index)
         }
-        let battle_player = self.battle_player.get_mut(&user_id);
-        if battle_player.is_none() {
-            anyhow::bail!("cter not find!user_id:{}", user_id)
+        let battle_cter = self.get_battle_cter_mut(cter_id, true);
+        if let Err(e) = battle_cter {
+            anyhow::bail!("{:?}", e)
         }
-        let battle_player = battle_player.unwrap();
-        if battle_player.is_died() {
-            anyhow::bail!(
-                "this battle_player is already died!user_id:{},cter_id:{}",
-                user_id,
-                battle_player.get_cter_id()
-            )
-        }
-        Ok(battle_player)
+        Ok(battle_cter.unwrap())
     }
 
     pub fn get_battle_players_vec(&self) -> Vec<u32> {
