@@ -44,9 +44,10 @@ impl Handler for ServerHandler {
         println!("oh,tcp client was disconnect");
     }
 
-    async fn on_message(&mut self, mess: Vec<u8>) {
+    async fn on_message(&mut self, mess: Vec<u8>) -> bool {
         //todo u can do someting at here
         handler_mess(self.data.clone(), mess).await;
+        true
     }
 }
 

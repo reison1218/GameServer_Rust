@@ -5,7 +5,6 @@ use async_std::prelude::*;
 use async_std::sync::{Arc as AsyncArc, RwLock as AsyncRwLock};
 use async_std::task;
 use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
-use serde::export::Result::Err;
 use serde_json::{Error, Value};
 
 pub trait HttpServerHandler: Send + Sync {

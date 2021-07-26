@@ -2014,7 +2014,6 @@ dependencies = [
  "num_cpus",
  "num_enum",
  "protobuf",
- "protobuf-codegen",
  "protoc-rust",
  "rayon",
  "redis",

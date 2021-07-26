@@ -1,9 +1,4 @@
 pub mod base;
-pub mod battle;
-pub mod protocol;
-pub mod robot;
-pub mod room;
-pub mod server_protocol;
 
 use log::error;
 use std::path::PathBuf;
