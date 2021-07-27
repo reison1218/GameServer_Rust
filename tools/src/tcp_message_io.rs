@@ -136,7 +136,11 @@ pub fn run(transport: TransportWay, addr: &str, handler: impl MessageHandler) {
             let th = TcpHandler::new(node_handler.clone(), endpoint);
             block_on(hd.on_open(th));
             handler_map.insert(endpoint, hd);
-            info!("Accepted connection from: {:?}", endpoint.addr());
+            info!(
+                "Accepted connection from: {:?}，clients: {}",
+                endpoint.addr(),
+                clients.len()
+            );
         }
         NetEvent::Message(endpoint, input_data) => {
             let message: Result<FromClientMessage, Box<ErrorKind>> =
