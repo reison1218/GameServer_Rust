@@ -2,9 +2,9 @@ use threadpool::ThreadPool;
 
 //thread pool type emun
 pub enum ThreadPoolType {
-    Game = 1,
-    User = 2,
-    Sys = 3,
+    Game,
+    User,
+    Sys,
 }
 
 //thread pool struct
