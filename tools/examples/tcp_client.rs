@@ -9,7 +9,22 @@ pub struct MyData {}
 #[derive(Default)]
 pub struct TcpClientHandler {
     ts: Option<Sender<Vec<u8>>>,
-    cp: MyData,
+}
+
+impl TcpClientHandler {
+    ///todo u can do something here
+    async fn handler_mess(&mut self, mess: Vec<u8>) {
+        //todo do something
+        println!("read mess from tcp server!size:{}", mess.len());
+        let res = self
+            .ts
+            .as_mut()
+            .unwrap()
+            .send(b"hello,client,i am server!".to_vec());
+        if let Err(e) = res {
+            println!("{:?}", e);
+        }
+    }
 }
 
 #[async_trait]
@@ -21,19 +36,14 @@ impl ClientHandler for TcpClientHandler {
     }
 
     async fn on_close(&mut self) {
-        //todo u can do something here
+        // u can do something here when the tcp was disconnect
         println!("disconnect with tcp server!");
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {
-        async_std::task::spawn(handler_mess(mess));
+        // u can do something here
+        self.handler_mess(mess).await;
     }
-}
-
-///todo u can do something here
-async fn handler_mess(mess: Vec<u8>) {
-    //todo do something
-    println!("read mess from tcp server!size:{}", mess.len());
 }
 
 fn main() {

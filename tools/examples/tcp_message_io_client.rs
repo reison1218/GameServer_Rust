@@ -26,8 +26,7 @@ impl MessageHandler for MyServerHandler {
 
     async fn on_message(&mut self, mess: &[u8]) {
         println!("get mess({:?}) from server!now send back!", mess);
-        let str = "hello".to_owned();
-        self.tcp.as_mut().unwrap().send(str.as_bytes());
+        self.tcp.as_mut().unwrap().send(b"hello i am client!");
     }
 }
 

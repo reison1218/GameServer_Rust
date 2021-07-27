@@ -3,7 +3,7 @@ use tools::util::bytebuf::ByteBuf;
 pub fn main() {
     let mut bb = ByteBuf::new();
     //push
-    bb.push_char('1');
+    bb.push(1);
     bb.push(8);
     bb.push_u16(16);
     bb.push_u32(32);

@@ -54,9 +54,8 @@ impl Handler for ServerHandler {
 async fn handler_mess(data: Arc<RwLock<MyData>>, mess: Vec<u8>) {
     //todo and then,write back to client.like this:
     println!("from client,size:{}", mess.len());
-    let str = String::from("hello,client,i am server!");
     let mut write_lock = data.write().await;
-    write_lock.write_2_client(str.as_bytes().to_vec());
+    write_lock.write_2_client(b"hello,client,i am server!".to_vec());
 }
 
 fn main() {
