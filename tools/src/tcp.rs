@@ -380,6 +380,7 @@ pub mod tcp_server {
                             close_connect(connection, handler, None);
                             return Ok(true);
                         }
+                        break;
                     }
                     // Would block "errors" are the OS's way of saying that the
                     // connection is  unavailable ready to perform this I/O operation.
