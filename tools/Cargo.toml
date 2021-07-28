@@ -49,5 +49,6 @@ tokio = "1.1"
 rand = "0.8"
 message-io = { version = "0.14", default-features = false, features = ["tcp", "udp"] }
 bincode = "1.3.3"
+color-eyre = "0.5"
 [build-dependencies]
 tonic-build = "0.4"

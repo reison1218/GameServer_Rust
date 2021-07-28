@@ -93,9 +93,8 @@ const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 type Lock = Arc<Mutex<BattleMgr>>;
 type JsonValue = serde_json::Value;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let bm = Arc::new(Mutex::new(BattleMgr::new()));
-
     //初始化日志模块
     init_log();
 
@@ -113,6 +112,8 @@ fn main() {
 
     //初始化网络
     init_tcp_client(bm);
+
+    Ok(())
 }
 
 fn init_log() {

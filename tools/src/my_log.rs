@@ -4,10 +4,19 @@ use simplelog::{CombinedLogger, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::time;
 
+///修改堆栈错误信息格式和颜色让它看起来像以下这样
+fn setup() {
+    if std::env::var("RUST_LIB_BACKTRACE").is_err() {
+        std::env::set_var("RUST_LIB_BACKTRACE", "1")
+    }
+    color_eyre::install().unwrap();
+}
+
 ///初始化日志
 /// 传入info_path作为 info文件路径
 /// 传入error_path作为 error文件路径
 pub fn init_log(info_path: &str, error_path: &str) {
+    setup();
     let log_time = time::SystemTime::now();
     let mut config = simplelog::ConfigBuilder::new();
     config.set_time_format_str("%Y-%m-%d %H:%M:%S");

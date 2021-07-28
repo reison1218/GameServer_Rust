@@ -7,6 +7,7 @@ mod web;
 mod web_socket;
 
 use ::message_io::network::Transport;
+use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::net::IpAddr;
@@ -18,6 +19,7 @@ use std::time::{Duration, SystemTime};
 use tools::tcp::ClientHandler;
 use tools::tcp_message_io::MessageHandler;
 use tools::tcp_message_io::TransportWay;
+use tracing_subscriber::EnvFilter;
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
 // use tcp::tcp::ClientHandler;
@@ -494,7 +496,24 @@ impl tools::tcp::ClientHandler for TcpClientTestt {
 
 static client_num: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
 
+fn setup() {
+    if std::env::var("RUST_LIB_BACKTRACE").is_err() {
+        std::env::set_var("RUST_LIB_BACKTRACE", "1")
+    }
+    color_eyre::install().unwrap();
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info")
+    }
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+}
 fn main() -> anyhow::Result<()> {
+    setup();
+    let a = async {
+        info!("oh no!");
+    };
+    async_std::task::block_on(a);
     // let mut mc = MessageClient;
     // async_std::task::block_on(mc.connect(TransportWay::Tcp, "127.0.0.1:16801"));
     // let mut tct = TcpClientTestt::default();
