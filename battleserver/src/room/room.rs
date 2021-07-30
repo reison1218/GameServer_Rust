@@ -183,7 +183,7 @@ impl Room {
         let is_battle_over;
         let summary_protos = self.battle_data.summary();
         //发给游戏服同步结算数据
-        if summary_protos.len() > 0 && self.room_type == RoomType::OneVOneVOneVOneMatch {
+        if !summary_protos.is_empty() && self.room_type == RoomType::OneVOneVOneVOneMatch {
             for sp in summary_protos {
                 let user_id = sp.get_summary_data().user_id;
                 let res = sp.write_to_bytes();
@@ -575,7 +575,7 @@ impl Room {
     //战斗通知
     pub fn start_notice(&mut self) {
         let mut ssn = S_START_NOTICE::new();
-        ssn.set_room_status(self.state.clone() as u32);
+        ssn.set_room_status(self.state as u32);
         ssn.set_tile_map_id(self.battle_data.tile_map.id);
         //封装世界块
         if self.battle_data.tile_map.world_cell.1 > 0 {
@@ -905,7 +905,7 @@ impl Room {
             sbsn.battle_players.push(battle_player_pt);
         }
         if debug {
-            sbsn.map_data = self.battle_data.tile_map.to_json_for_debug().to_string();
+            sbsn.map_data = self.battle_data.tile_map.to_json_for_debug();
             println!("{:?}", sbsn.map_data);
         }
         let res = sbsn.write_to_bytes();

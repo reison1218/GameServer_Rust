@@ -313,11 +313,11 @@ pub fn skill_open_near_cell_robot(
     if v.is_empty() {
         let index = rand.gen_range(0..res_v.len());
         let index = res_v.get(index).unwrap();
-        return Some(*index);
+        Some(*index)
     } else {
         let index = rand.gen_range(0..v.len());
         let index = v.get(index).unwrap();
-        return Some(*index);
+        Some(*index)
     }
 }
 
@@ -369,7 +369,7 @@ pub fn near_user(battle_data: &BattleData, robot_id: u32) -> bool {
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
     let index = battle_player.get_current_cter_index() as isize;
     let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
-    res.1.len() > 0
+    !res.1.is_empty()
 }
 
 ///检测是否还有未知地图块，有就随机一块出来并返回
@@ -387,7 +387,7 @@ pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<us
             v.push(index);
         }
     }
-    if v.len() == 0 {
+    if v.is_empty() {
         return None;
     }
     let rand_index = rand::thread_rng().gen_range(0..v.len());
@@ -521,7 +521,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
             }
             let res_cell = res_cell.unwrap();
             //排除无效目标
-            if res_cell.cter_id <= 0 || res_cell.cter_id == user_id {
+            if res_cell.cter_id == 0 || res_cell.cter_id == user_id {
                 continue;
             }
             v.push(res_cell.index);
@@ -538,7 +538,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
     let map_cells = &battle_data.tile_map.map_cells;
     for index in 0..map_cells.len() {
         let cell = map_cells.get(index).unwrap();
-        if cell.cter_id <= 0 {
+        if cell.cter_id == 0 {
             continue;
         }
         if cell.cter_id == user_id {
@@ -723,9 +723,9 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
         if let Some(&last) = last {
             fin_res.push(last);
         }
-        return Some((1, fin_res));
+        Some((1, fin_res))
     } else {
-        return None;
+        None
     }
 }
 

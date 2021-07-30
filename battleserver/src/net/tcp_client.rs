@@ -43,7 +43,7 @@ impl ClientHandler for TcpClientHandler {
         //遍历命令，并执行
         for packet in packet_array {
             let cmd = packet.get_cmd();
-            if cmd <= 0 {
+            if cmd == 0 {
                 warn!("cmd is invalid!cmd = {}", cmd);
                 continue;
             }

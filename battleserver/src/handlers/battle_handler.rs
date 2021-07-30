@@ -509,7 +509,7 @@ fn open_map_cell(
         anyhow::bail!(str)
     }
     //校验剩余翻块次数
-    if battle_player.flow_data.residue_movement_points <= 0 {
+    if battle_player.flow_data.residue_movement_points == 0 {
         let str = format!("this player's residue_open_times is 0!user_id:{}", user_id);
         warn!("{:?}", str.as_str());
         anyhow::bail!(str)

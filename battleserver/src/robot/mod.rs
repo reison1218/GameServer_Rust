@@ -180,7 +180,7 @@ impl Clone for RobotData {
         RobotData {
             robot_id: self.robot_id,
             temp_id: self.temp_id,
-            battle_data: self.battle_data.clone(),
+            battle_data: self.battle_data,
             goal_think: self.goal_think.clone(),
             robot_status: None,
             remember_map_cell: self.remember_map_cell.clone(),

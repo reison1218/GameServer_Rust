@@ -7,6 +7,7 @@ mod web;
 mod web_socket;
 
 use ::message_io::network::Transport;
+use futures::Future;
 use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -15,6 +16,7 @@ use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 use std::str::FromStr;
 use std::sync::atomic::Ordering;
+use std::task::Poll;
 use std::time::{Duration, SystemTime};
 use tools::tcp::ClientHandler;
 use tools::tcp_message_io::MessageHandler;
@@ -508,12 +510,27 @@ fn setup() {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 }
+
+pub struct DumbFuture;
+
+impl Future for DumbFuture {
+    type Output = ();
+
+    fn poll(
+        self: std::pin::Pin<&mut Self>,
+        _: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
+        Poll::Ready(())
+    }
+}
+
 fn main() -> anyhow::Result<()> {
-    setup();
-    let a = async {
-        info!("oh no!");
-    };
-    async_std::task::block_on(a);
+    let mut map = HashMap::new();
+    map.insert(1, 1);
+    let keys = map.into_keys();
+    for key in keys {}
+    // let a = DumbFuture;
+    // async_std::task::block_on(a);
     // let mut mc = MessageClient;
     // async_std::task::block_on(mc.connect(TransportWay::Tcp, "127.0.0.1:16801"));
     // let mut tct = TcpClientTestt::default();
