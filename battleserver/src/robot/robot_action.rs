@@ -10,7 +10,7 @@ use tools::cmd_code::BattleCode;
 ///机器人状态行为trait
 pub trait RobotStatusAction {
     fn set_sender(&mut self, sender: Sender<RobotTask>);
-    fn get_cter_temp_id(&self) -> u32;
+
     fn enter(&self);
     fn execute(&self);
     fn exit(&self);

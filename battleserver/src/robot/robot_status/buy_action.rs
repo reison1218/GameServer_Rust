@@ -70,10 +70,6 @@ impl RobotStatusAction for BuyRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_temp_id(&self) -> u32 {
-        self.cter_id
-    }
-
     fn enter(&self) {
         info!("robot:{} 进入购物状态！", self.robot_id);
         self.execute();

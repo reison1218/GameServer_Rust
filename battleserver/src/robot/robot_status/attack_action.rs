@@ -9,7 +9,6 @@ use tools::cmd_code::BattleCode;
 #[derive(Default)]
 pub struct AttackRobotAction {
     pub robot_id: u32,
-    pub cter_id: u32,
     pub temp_id: u32,
     pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
@@ -42,10 +41,6 @@ impl RobotStatusAction for AttackRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_temp_id(&self) -> u32 {
-        self.cter_id
-    }
-
     fn enter(&self) {
         info!("robot:{} 进入攻击状态！", self.robot_id);
         self.execute();
@@ -61,6 +56,7 @@ impl RobotStatusAction for AttackRobotAction {
         let target_index: usize;
         let robot_id = self.robot_id;
         let robot = battle_data.battle_player.get(&robot_id).unwrap();
+        let cter_id = robot.current_cter.0;
         let skill_scope_temp = crate::TEMPLATES
             .skill_scope_temp_mgr()
             .get_temp(&TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID)
@@ -77,7 +73,7 @@ impl RobotStatusAction for AttackRobotAction {
                     continue;
                 }
                 let (_, count_v) = battle_data.cal_scope(
-                    robot_id,
+                    cter_id,
                     player_index as isize,
                     TargetType::SelfScopeOthers,
                     None,

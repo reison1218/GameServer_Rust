@@ -182,7 +182,7 @@ impl BattleData {
                 .map_cells
                 .get_mut(source_battle_cter_index)
                 .unwrap();
-            source_map_cell.cter_id = target_cter.get_user_id();
+            source_map_cell.cter_id = target_cter_id;
             is_change_index_both = true;
         } else {
             //重制之前地图块上的玩家id
@@ -333,7 +333,7 @@ impl BattleData {
         &mut self,
         from_cter_id: Option<u32>,
         target_cter_id: u32,
-        hp: i16,
+        hp: u16,
         buff_id: Option<u32>,
     ) -> anyhow::Result<TargetPt> {
         let battle_cter = self.get_battle_cter_mut(target_cter_id, true).unwrap();
@@ -344,7 +344,7 @@ impl BattleData {
                 battle_cter.base_attr.cter_id
             )
         }
-        battle_cter.add_hp(hp);
+        battle_cter.add_hp(hp as i16);
 
         let target_pt = self.build_target_pt(
             from_cter_id,
@@ -470,7 +470,7 @@ impl BattleData {
             anyhow::bail!("{:?}", str)
         }
         let target_cter = target_cter.unwrap();
-
+        let target_user_id = target_cter.get_user_id();
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
@@ -513,6 +513,13 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
+            //处理玩家死亡
+            let target_battle_player = self
+                .get_battle_player_mut(Some(target_user_id), false)
+                .unwrap();
+            if target_battle_player.major_cter.0 == target_cter_id {
+                target_battle_player.player_die(None);
+            }
             let player_count = self.get_alive_player_num();
             if player_count == 1 {
                 is_last_one = true;
@@ -635,7 +642,8 @@ impl BattleData {
                 //调用触发器
                 self.map_cell_trigger_for_robot(index, robot_trigger_type);
             } else {
-                battle_player.pair_reward_movement_points();
+                //配对清空移动点数
+                battle_player.clear_residue_movement_points();
                 let open_map_cell_vec = battle_player.flow_data.open_map_cell_vec.clone();
                 robot_trigger_type = RobotTriggerType::MapCellPair;
                 for &d_index in delete_v.iter() {
@@ -674,7 +682,7 @@ impl BattleData {
         //角色身上的
         for sbtn in push_map.values_mut() {
             for battle_player in self.battle_player.values() {
-                let batlte_player_pt = battle_player.convert_to_battle_cter_pt();
+                let batlte_player_pt = battle_player.convert_to_battle_player_pt();
                 sbtn.battle_players.push(batlte_player_pt);
             }
         }
@@ -860,8 +868,8 @@ impl BattleData {
             TargetType::AnyPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(battle_player.get_user_id());
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    v.push(battle_cter.get_user_id());
                     break;
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
@@ -871,8 +879,8 @@ impl BattleData {
                     anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                 }
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    if battle_player.get_user_id() != user_id {
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    if battle_cter.get_user_id() != user_id {
                         anyhow::bail!("this target_type is invaild!target_type:{:?}", target_type)
                     }
                 }
@@ -881,16 +889,16 @@ impl BattleData {
             TargetType::AllPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(battle_player.get_user_id());
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    v.push(battle_cter.get_user_id());
                 }
                 self.check_user_target(&v[..], None)?; //不包括自己的其他玩家
             }
             TargetType::OtherAllPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(battle_player.get_user_id());
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    v.push(battle_cter.get_user_id());
                 }
                 //除自己所有玩家
                 self.check_user_target(&v[..], Some(user_id))?
@@ -898,8 +906,8 @@ impl BattleData {
             TargetType::OtherAnyPlayer => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(battle_player.get_user_id());
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    v.push(battle_cter.get_user_id());
                     break;
                 }
                 //除自己所有玩家
@@ -908,8 +916,8 @@ impl BattleData {
             TargetType::SelfScopeOthers => {
                 let mut v = Vec::new();
                 for &index in target_array {
-                    let battle_player = self.get_battle_player_by_map_cell_index(index as usize)?;
-                    v.push(battle_player.get_user_id());
+                    let battle_cter = self.get_battle_cter_by_map_cell_index(index as usize)?;
+                    v.push(battle_cter.get_user_id());
                     break;
                 }
                 //除自己所有玩家

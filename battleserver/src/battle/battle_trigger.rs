@@ -14,19 +14,13 @@ use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
-use protobuf::Message;
 use std::str::FromStr;
-use tools::cmd_code::ClientCode;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
-use tools::protos::battle::S_ACTION_NOTICE;
 
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::ATTACKED_SUB_CD;
-use super::battle_enum::buff_type::{
-    DIE_END_TURN, DIE_SKILL_CD, OPEND_OR_NOT_CELL_SKILL_DAMAGE, OPEN_ELEMENT_CELL_CLEAR_CD,
-    TURN_STAT_HEAL_FRIEND,
-};
+use super::battle_enum::buff_type::{DIE_END_TURN, DIE_SKILL_CD, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
 use super::battle_helper::build_action_unit_pt;
 use super::mission::{trigger_mission, MissionTriggerType};
@@ -178,10 +172,12 @@ impl TriggerEvent for BattleData {
         unsafe {
             let self_mut = self_ptr.as_mut().unwrap();
             let battle_cter = self_mut.get_battle_cter_mut(cter_id, true)?;
+            let user_id = battle_cter.base_attr.user_id;
             let index = battle_cter.get_map_cell_index();
             //匹配玩家身上的buff和地图快上面的buff
             self.trigger_open_map_cell_buff(index, cter_id, au, is_pair);
-            let battle_player = self.battle_player.get_mut(&cter_id).unwrap();
+
+            let battle_player = self.battle_player.get_mut(&user_id).unwrap();
             let user_id = battle_player.get_user_id();
             let map_cell = self.tile_map.map_cells.get(index).unwrap();
             let element = map_cell.element as u32;
@@ -435,7 +431,7 @@ impl TriggerEvent for BattleData {
             return;
         }
         let battle_cter = battle_cter.unwrap();
-
+        let user_id = battle_cter.get_user_id();
         unsafe {
             let self_mut = self_ptr.as_mut().unwrap();
             let battle_player = self_mut.get_battle_player_mut(None, true).unwrap();
@@ -506,7 +502,7 @@ impl TriggerEvent for BattleData {
         //使用技能任务
         trigger_mission(
             self,
-            cter_id,
+            user_id,
             vec![(MissionTriggerType::UseSkill, 1)],
             (0, 0),
         );
@@ -799,7 +795,7 @@ impl TriggerEvent for BattleData {
             rank_vec.extend_from_slice(&rank_vec_temp[..]);
             rank_vec_temp.clear();
         }
-        let map_cell = self.tile_map.get_map_cell_mut_by_user_id(target_user);
+        let map_cell = self.tile_map.get_map_cell_mut_by_cter_id(cter_id);
         if let Some(map_cell) = map_cell {
             map_cell.cter_id = 0;
         }
@@ -887,91 +883,5 @@ impl TriggerEvent for BattleData {
         }
     }
 
-    fn turn_start_trigger(&mut self) {
-        let battle_data_ptr = self as *mut BattleData;
-
-        unsafe {
-            let battle_data_mut = battle_data_ptr.as_mut().unwrap();
-            let battle_data_mut2 = battle_data_ptr.as_mut().unwrap();
-            let mut user_id;
-            let mut buff_function_id;
-            let mut buff_id;
-            let mut team_id;
-            let mut cter_id;
-            for battle_player in battle_data_mut.battle_player.values_mut() {
-                user_id = battle_player.get_user_id();
-                team_id = battle_player.team_id;
-
-                for battle_cter in battle_player.cters.values_mut() {
-                    cter_id = battle_cter.get_cter_id();
-                    for buff in battle_cter.battle_buffs.buffs().values() {
-                        buff_function_id = buff.function_id;
-                        buff_id = buff.get_id();
-                        let mut proto = S_ACTION_NOTICE::default();
-                        if buff_function_id == TURN_STAT_HEAL_FRIEND {
-                            let teammates = battle_data_mut2.get_teammates(team_id);
-                            let mut au = build_action_unit_pt(0, ActionType::None, 0);
-                            for team_cter_id in teammates {
-                                let res = battle_data_mut2.add_hp(
-                                    Some(cter_id),
-                                    team_cter_id,
-                                    buff.buff_temp.par1 as i16,
-                                    Some(buff_id),
-                                );
-                                if let Err(_) = res {
-                                    continue;
-                                }
-                                let target_pt = res.unwrap();
-                                au.targets.push(target_pt);
-                            }
-                            proto.action_uints.push(au);
-                        }
-                        if buff_function_id == OPEND_OR_NOT_CELL_SKILL_DAMAGE {
-                            let mut au = build_action_unit_pt(0, ActionType::None, 0);
-                            let mut damage;
-                            let mut target_user;
-                            for cell in self.tile_map.map_cells.iter() {
-                                target_user = cell.cter_id;
-                                if target_user <= 0 {
-                                    continue;
-                                }
-                                let player =
-                                    battle_data_mut2.get_battle_player(Some(target_user), true);
-                                if let Err(_) = player {
-                                    continue;
-                                }
-                                let player = player.unwrap();
-                                if player.team_id == team_id {
-                                    continue;
-                                }
-                                if cell.pair_index.is_some() || cell.is_market() {
-                                    damage = buff.buff_temp.par1 as i16;
-                                } else {
-                                    damage = buff.buff_temp.par2 as i16;
-                                }
-                                let res = battle_data_mut2.add_hp(
-                                    Some(user_id),
-                                    target_user,
-                                    damage,
-                                    Some(buff_id),
-                                );
-                                if let Err(_) = res {
-                                    continue;
-                                }
-                                let target_pt = res.unwrap();
-                                au.targets.push(target_pt);
-                            }
-                            proto.action_uints.push(au);
-                        }
-                        if proto.action_uints.len() > 0 {
-                            self.send_2_all_client(
-                                ClientCode::ActionNotice,
-                                proto.write_to_bytes().unwrap(),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+    fn turn_start_trigger(&mut self) {}
 }

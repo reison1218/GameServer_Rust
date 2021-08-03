@@ -132,7 +132,7 @@ impl Into<CharacterPt> for Character {
         let mut cter_pt = CharacterPt::default();
         let res = self.get_skills();
         cter_pt.set_skills(res);
-        cter_pt.set_cter_id(self.character_id);
+        cter_pt.set_cter_temp_id(self.character_id);
         let last_use_skills = self.get_last_use_skills();
         cter_pt.set_last_use_skills(last_use_skills);
         cter_pt

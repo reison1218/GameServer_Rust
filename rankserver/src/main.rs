@@ -71,6 +71,7 @@ const REDIS_KEY_HISTORY_RANK: &str = "history_rank";
 
 ///最佳排行
 const REDIS_KEY_BEST_RANK: &str = "best_rank";
+
 fn main() {
     let rm = Arc::new(Mutex::new(RankMgr::new()));
 

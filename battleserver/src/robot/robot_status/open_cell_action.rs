@@ -46,10 +46,6 @@ impl RobotStatusAction for OpenCellRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_temp_id(&self) -> u32 {
-        self.cter_id
-    }
-
     fn enter(&self) {
         info!("robot:{} 进入翻地图块状态", self.robot_id);
         self.execute();
@@ -70,15 +66,15 @@ impl RobotStatusAction for OpenCellRobotAction {
         let mut v = Vec::new();
         let robot_id = self.robot_id;
         let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
-        let (cter_id, _) = battle_player.major_cter;
+        let cter_id = battle_player.current_cter.0;
         for key in battle_data.tile_map.un_pair_map.keys() {
             let map_cell = battle_data.tile_map.map_cells.get(*key).unwrap();
             //跳过自己已翻开的
-            if map_cell.open_cter == cter_id || map_cell.cter_id == robot_id {
+            if map_cell.open_cter == cter_id || map_cell.cter_id == cter_id {
                 continue;
             }
             //跳过锁住的地图块
-            let res = check_can_open(robot_id, map_cell, battle_data);
+            let res = check_can_open(cter_id, map_cell, battle_data);
             if !res {
                 continue;
             }

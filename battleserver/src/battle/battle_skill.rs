@@ -657,6 +657,7 @@ pub fn skill_open_map_cell(
         }
         let index = *target_array.get(0).unwrap() as usize;
         let battle_cter = battle_data.get_battle_cter_mut(cter_id, true).unwrap();
+        let robot_id = battle_cter.get_user_id();
         let cter_index = battle_cter.get_map_cell_index() as isize;
         let (map_cells, _) =
             battle_data.cal_scope(cter_id, cter_index, TargetType::PlayerSelf, None, None);
@@ -668,10 +669,10 @@ pub fn skill_open_map_cell(
         }
 
         //更新翻的地图块下标,使用技能翻格子不消耗翻块次数
-        battle_data.exec_open_map_cell(cter_id, index);
+        battle_data.exec_open_map_cell(robot_id, index);
 
         //处理配对逻辑
-        let is_pair = battle_data.handler_map_cell_pair(cter_id, index);
+        let is_pair = battle_data.handler_map_cell_pair(robot_id, index);
 
         //封装target proto
         let map_cell = battle_data.tile_map.map_cells.get(index).unwrap();
@@ -931,7 +932,7 @@ pub unsafe fn skill_damage_and_cure(
     }
 
     //给自己加血
-    let target_pt = battle_data.add_hp(Some(cter_id), cter_id, add_hp as i16, None);
+    let target_pt = battle_data.add_hp(Some(cter_id), cter_id, add_hp as u16, None);
     match target_pt {
         Ok(target_pt) => {
             au.targets.push(target_pt);
@@ -1187,7 +1188,7 @@ pub unsafe fn scope_cure(
             battle_data
                 .as_mut()
                 .unwrap()
-                .add_hp(Some(cter_id), other_cter_id, res, None);
+                .add_hp(Some(cter_id), other_cter_id, res as u16, None);
         if let Err(e) = target_pt {
             warn!("{:?}", e);
             continue;
@@ -1237,7 +1238,7 @@ pub unsafe fn transform(
     let consume_type = skill.skill_temp.consume_type;
     let consume_value = skill.skill_temp.consume_value;
     let buff_id = skill.skill_temp.buff;
-    let transform_cter_id = skill.skill_temp.par2;
+    let transform_cter_temp_id = skill.skill_temp.par2;
     let target_type = TargetType::try_from(skill.skill_temp.target);
     if let Err(e) = target_type {
         warn!("{:?}", e);
@@ -1254,7 +1255,7 @@ pub unsafe fn transform(
         battle_cter.add_energy(v);
     }
     //处理变身
-    let res = battle_cter.transform(cter_id, transform_cter_id, buff_id, next_turn_index);
+    let res = battle_cter.transform(cter_id, transform_cter_temp_id, buff_id, next_turn_index);
     match res {
         Err(e) => {
             error!("{:?}", e);

@@ -164,7 +164,7 @@ impl Room {
             }
             //离开房间，当死亡处理
             let str = format!("player is died!because league_summary,user_id:{}", user_id);
-            battle_player.player_die(str);
+            battle_player.player_die(Some(str));
             self.battle_data.leave_user = (user_id, punishment);
         }
         //走惩罚触发
@@ -393,13 +393,8 @@ impl Room {
         battle_player.cters.get(key)
     }
 
-    pub fn get_battle_cter_mut(&mut self, key: &u32) -> Option<&mut BattleCharacter> {
-        let res = self.battle_data.battle_player.get_mut(key);
-        if res.is_none() {
-            return None;
-        }
-        let battle_player = res.unwrap();
-        battle_player.cters.get_mut(key)
+    pub fn get_battle_cter_mut(&mut self, cter_id: u32) -> anyhow::Result<&mut BattleCharacter> {
+        self.battle_data.get_battle_cter_mut(cter_id, true)
     }
 
     pub fn check_index_over(&mut self) -> bool {
@@ -411,9 +406,9 @@ impl Room {
         let user_id = self.battle_data.get_user_id(cter_id).unwrap();
         let turn_index = self.get_next_turn_index();
         let turn_order = self.battle_data.turn_orders;
-        let battle_cter = self.get_battle_cter_mut(&cter_id);
-        if battle_cter.is_none() {
-            error!("battle_cter is none!cter_id:{}", cter_id);
+        let battle_cter = self.get_battle_cter_mut(cter_id);
+        if let Err(e) = battle_cter {
+            error!("{:?}", e);
             return;
         }
         let battle_cter = battle_cter.unwrap();
@@ -588,10 +583,10 @@ impl Room {
         for index in self.battle_data.turn_orders.iter() {
             ssn.turn_order.push(*index);
         }
-        // for battle_cter in self.battle_data.battle_player.values() {
-        //     let cter_pt = battle_get_current_cter_mut().convert_to_battle_cter_pt();
-        //     ssn.battle_cters.push(cter_pt);
-        // }
+        for battle_player in self.battle_data.battle_player.values() {
+            let battle_player_pt = battle_player.convert_to_battle_player_pt();
+            ssn.battle_players.push(battle_player_pt);
+        }
         let bytes = ssn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
         for id in self.members.keys() {
@@ -709,9 +704,7 @@ impl Room {
         self.remove_turn_orders(turn_index);
 
         //移除战斗角色
-        self.battle_data.battle_player.remove(&user_id);
-        //去掉地图块上的玩家id
-        self.battle_data.tile_map.remove_user(user_id);
+        self.battle_data.remove_player(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
             return;
@@ -746,8 +739,7 @@ impl Room {
         //移除顺位数据
         self.remove_turn_orders(turn_index);
         //移除玩家战斗数据
-        self.battle_data.battle_player.remove(&user_id);
-        self.battle_data.tile_map.remove_user(user_id);
+        self.battle_data.remove_player(user_id);
         //如果当前离开的玩家不是当前顺序就退出
         if next_turn_user != user_id {
             return;
@@ -814,9 +806,12 @@ impl Room {
             );
             match battle_player {
                 Ok(battle_player) => {
+                    let cter_id = battle_player.current_cter.0;
+                    let user_id = member.user_id;
                     self.battle_data
                         .battle_player
                         .insert(member.user_id, battle_player);
+                    self.battle_data.cter_player.insert(cter_id, user_id);
                 }
                 Err(_) => {
                     return;
@@ -901,7 +896,7 @@ impl Room {
         let mut sbsn = S_BATTLE_START_NOTICE::new();
         let debug = crate::CONF_MAP.borrow().get_bool("debug");
         for battle_player in self.battle_data.battle_player.values() {
-            let battle_player_pt = battle_player.convert_to_battle_cter_pt();
+            let battle_player_pt = battle_player.convert_to_battle_player_pt();
             sbsn.battle_players.push(battle_player_pt);
         }
         if debug {

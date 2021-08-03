@@ -165,29 +165,14 @@ impl MapCell {
 
 impl TileMap {
     ///通过user_id获得地图块
-    pub fn get_map_cell_mut_by_user_id(&mut self, user_id: u32) -> Option<&mut MapCell> {
+    pub fn get_map_cell_mut_by_cter_id(&mut self, cter_id: u32) -> Option<&mut MapCell> {
         for map_cell in self.map_cells.iter_mut() {
-            if map_cell.cter_id != user_id {
+            if map_cell.cter_id != cter_id {
                 continue;
             }
             return Some(map_cell);
         }
         None
-    }
-
-    ///删除玩家
-    pub fn remove_user(&mut self, user_id: u32) {
-        for map_cell in self.map_cells.iter_mut() {
-            if map_cell.cter_id == user_id {
-                map_cell.cter_id = 0;
-            }
-            for buff in map_cell.buffs.values_mut() {
-                if !buff.trap_view_users.contains(&user_id) {
-                    continue;
-                }
-                buff.trap_view_users.remove(&user_id);
-            }
-        }
     }
 
     ///初始化战斗地图数据

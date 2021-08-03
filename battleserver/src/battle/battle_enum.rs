@@ -37,7 +37,7 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 9] = [122, 211, 221, 311, 312, 322, 324, 11003, 20002];
+    pub const ADD_BUFF: [u32; 8] = [122, 211, 221, 311, 312, 322, 324, 20002];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
@@ -150,9 +150,6 @@ pub mod buff_type {
     ///被攻击时减伤
     pub const ATTACKED_SUB_DAMAGE: u32 = 17;
 
-    ///对已翻开地图块或者未翻开地图块玩家造成技能伤害
-    pub const OPEND_OR_NOT_CELL_SKILL_DAMAGE: u32 = 18;
-
     ///死亡时指定技能进入cd，主要是给召唤物用的
     pub const DIE_SKILL_CD: u32 = 19;
 
@@ -161,9 +158,6 @@ pub mod buff_type {
 
     ///每当有指定元素地图块被翻开，刷新技能cd
     pub const OPEN_ELEMENT_CELL_CLEAR_CD: u32 = 20002;
-
-    ///回合开始时，回复所有友方单位血
-    pub const TURN_STAT_HEAL_FRIEND: u32 = 20003;
 
     ///死了就结束回合
     pub const DIE_END_TURN: u32 = 20004;

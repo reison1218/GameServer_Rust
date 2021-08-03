@@ -7,7 +7,10 @@ mod web;
 mod web_socket;
 
 use ::message_io::network::Transport;
+use futures::future::Fuse;
+use futures::select;
 use futures::Future;
+use futures::FutureExt;
 use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -498,37 +501,50 @@ impl tools::tcp::ClientHandler for TcpClientTestt {
 
 static client_num: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
 
-fn setup() {
-    if std::env::var("RUST_LIB_BACKTRACE").is_err() {
-        std::env::set_var("RUST_LIB_BACKTRACE", "1")
-    }
-    color_eyre::install().unwrap();
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info")
-    }
-    tracing_subscriber::fmt::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
+pub struct DumbFuture {
+    a: String,
+    b: *const String,
 }
 
-pub struct DumbFuture;
+impl DumbFuture {
+    fn init(&mut self) {
+        let self_ref: *const String = &self.a;
+        self.b = self_ref;
+    }
+    fn a(&self) -> &str {
+        &self.a
+    }
 
-impl Future for DumbFuture {
-    type Output = ();
-
-    fn poll(
-        self: std::pin::Pin<&mut Self>,
-        _: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
-        Poll::Ready(())
+    fn b(&self) -> &String {
+        assert!(
+            !self.b.is_null(),
+            "Test::b called without Test::init being called first"
+        );
+        unsafe { &*(self.b) }
     }
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut map = HashMap::new();
-    map.insert(1, 1);
-    let keys = map.into_keys();
-    for key in keys {}
+    let mut test1 = DumbFuture {
+        a: String::from_str("test1").unwrap(),
+        b: std::ptr::null(),
+    };
+    test1.init();
+    let mut test2 = DumbFuture {
+        a: String::from_str("test2").unwrap(),
+        b: std::ptr::null(),
+    };
+    test2.init();
+    println!("test1-a: {}, b: {}", test1.a(), test1.b());
+    println!("test2-a: {}, b: {}", test2.a(), test2.b());
+
+    println!("------------------------------------------------");
+    println!("test1-a: {}, b: {}", test1.a(), test1.b());
+    std::mem::swap(&mut test1, &mut test2);
+    println!("test2-a: {}, b: {}", test2.a(), test2.b());
+
+    let m = async { println!("test") };
+
     // let a = DumbFuture;
     // async_std::task::block_on(a);
     // let mut mc = MessageClient;

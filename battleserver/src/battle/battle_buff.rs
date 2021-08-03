@@ -184,7 +184,7 @@ impl BattleData {
             let target_pt = self.add_hp(
                 from_cter,
                 last_map_cell_cter_id,
-                buff_temp.par1 as i16,
+                buff_temp.par1 as u16,
                 Some(buff_id),
             );
 
@@ -196,7 +196,7 @@ impl BattleData {
             }
         }
         //恢复生命值
-        let target_pt = self.add_hp(from_cter, cter_id, buff_temp.par1 as i16, Some(buff_id));
+        let target_pt = self.add_hp(from_cter, cter_id, buff_temp.par1 as u16, Some(buff_id));
         match target_pt {
             Ok(target_pt) => {
                 au.targets.push(target_pt);
@@ -380,11 +380,12 @@ impl BattleData {
             return;
         }
         let battle_cter = battle_cter.unwrap();
+        let user_id = battle_cter.get_user_id();
         let skill = battle_cter.skills.get_mut(&skill_id);
         if let None = skill {
             warn!(
                 "skill is not find!skill_id:{},cter_id:{},user_id:{}",
-                skill_id, battle_cter.base_attr.cter_temp_id, cter_id
+                skill_id, battle_cter.base_attr.cter_temp_id, user_id
             );
             return;
         }
@@ -477,7 +478,7 @@ impl BattleData {
         let target_pt = self.add_hp(
             from_cter_id,
             target_cter_id,
-            buff_temp.par1 as i16,
+            buff_temp.par1 as u16,
             Some(buff_id),
         );
         match target_pt {

@@ -122,6 +122,27 @@ unsafe impl Send for BattleData {}
 unsafe impl Sync for BattleData {}
 
 impl BattleData {
+    pub fn remove_player(&mut self, user_id: u32) {
+        //移除战斗角色
+        let battle_player = self.battle_player.remove(&user_id);
+        if let Some(battle_player) = battle_player {
+            for &cter_id in battle_player.cters.keys() {
+                //去掉地图块上的玩家id
+                for map_cell in self.tile_map.map_cells.iter_mut() {
+                    if map_cell.cter_id == cter_id {
+                        map_cell.cter_id = 0;
+                    }
+                    for buff in map_cell.buffs.values_mut() {
+                        if !buff.trap_view_users.contains(&user_id) {
+                            continue;
+                        }
+                        buff.trap_view_users.remove(&user_id);
+                    }
+                }
+            }
+        }
+    }
+
     pub fn get_teammates(&self, team_id: u8) -> Vec<u32> {
         let mut res_v = vec![];
 
@@ -360,25 +381,23 @@ impl BattleData {
         Ok(battle_player)
     }
 
-    pub fn get_battle_player_by_map_cell_index(
+    ///获得战斗角色借用指针
+    pub fn get_battle_player_by_cter_id(
         &self,
-        index: usize,
+        cter_id: u32,
+        is_alive: bool,
     ) -> anyhow::Result<&BattlePlayer> {
-        let res = self.tile_map.map_cells.get(index);
-        if res.is_none() {
-            anyhow::bail!("there is no map_cell!index:{}", index)
+        let user_id = self.cter_player.get(&cter_id);
+        if let None = user_id {
+            anyhow::bail!("there is no user_id!cter_id:{}", cter_id)
         }
-        let map_cell = res.unwrap();
-        let user_id = map_cell.cter_id;
-        if user_id <= 0 {
-            anyhow::bail!("this map_cell's user_id is 0!map_cell_index:{}", index)
-        }
+        let user_id = user_id.unwrap();
         let battle_player = self.battle_player.get(&user_id);
-        if battle_player.is_none() {
-            anyhow::bail!("cter not find!user_id:{}", user_id)
+        if let None = battle_player {
+            anyhow::bail!("there is no battle_player!user_id:{}", user_id)
         }
         let battle_player = battle_player.unwrap();
-        if battle_player.is_died() {
+        if is_alive && battle_player.is_died() {
             anyhow::bail!(
                 "this battle_player is already died!user_id:{},cter_id:{}",
                 user_id,
@@ -386,6 +405,56 @@ impl BattleData {
             )
         }
         Ok(battle_player)
+    }
+
+    pub fn get_battle_player_mut_by_cter_id(
+        &mut self,
+        cter_id: u32,
+        is_alive: bool,
+    ) -> anyhow::Result<&mut BattlePlayer> {
+        let user_id = self.cter_player.get(&cter_id);
+        if let None = user_id {
+            anyhow::bail!("there is no user_id!cter_id:{}", cter_id)
+        }
+        let user_id = user_id.unwrap();
+        let battle_player = self.battle_player.get_mut(&user_id);
+        if let None = battle_player {
+            anyhow::bail!("there is no battle_player!user_id:{}", user_id)
+        }
+        let battle_player = battle_player.unwrap();
+        if is_alive && battle_player.is_died() {
+            anyhow::bail!(
+                "this battle_player is already died!user_id:{},cter_id:{}",
+                user_id,
+                battle_player.get_cter_temp_id()
+            )
+        }
+        Ok(battle_player)
+    }
+
+    pub fn get_battle_cter_by_map_cell_index(
+        &self,
+        index: usize,
+    ) -> anyhow::Result<&BattleCharacter> {
+        let res = self.tile_map.map_cells.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no map_cell!index:{}", index)
+        }
+        let map_cell = res.unwrap();
+        let cter_id = map_cell.cter_id;
+        if cter_id <= 0 {
+            anyhow::bail!("this map_cell's cter_id is 0!map_cell_index:{}", index)
+        }
+        let battle_cter = self.get_battle_cter(cter_id, true)?;
+
+        if battle_cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                battle_cter.get_user_id(),
+                battle_cter.get_cter_id()
+            )
+        }
+        Ok(battle_cter)
     }
 
     ///根据地图下标获得上面的战斗角色

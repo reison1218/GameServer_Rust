@@ -23,13 +23,13 @@ use super::battle_cter::BattleCharacter;
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
 pub struct BattleStatus {
-    pub is_pair: bool,                   //最近一次翻块是否匹配  玩家
-    pub is_attacked: bool,               //一轮有没有受到攻击伤害
-    is_can_end_turn: bool,               //是否可以结束turn
-    pub locked_oper: u32,                //锁住的操作，如果有值，玩家什么都做不了
-    attack_state: AttackState,           //是否可以攻击
-    pub pair_open_count: bool,           //配对攻击后奖励翻地图块次数,表示是否奖励过翻拍次数
-    pub battle_state: BattlePlayerState, //玩家战斗状态
+    pub is_pair: bool,                       //最近一次翻块是否匹配  玩家
+    pub is_attacked: bool,                   //一轮有没有受到攻击伤害
+    is_can_end_turn: bool,                   //是否可以结束turn
+    pub locked_oper: u32,                    //锁住的操作，如果有值，玩家什么都做不了
+    attack_state: AttackState,               //是否可以攻击
+    pub attack_reward_movement_points: bool, //配对攻击后奖励翻地图块次数,表示是否奖励过翻拍次数
+    pub battle_state: BattlePlayerState,     //玩家战斗状态
 }
 
 ///角色战斗流程相关数据
@@ -128,7 +128,7 @@ impl BattlePlayer {
         let cter = BattleCharacter::init(member, cter_id)?;
         battle_player.major_cter = (cter.base_attr.cter_id, cter.base_attr.cter_temp_id);
         battle_player.current_cter = (cter.base_attr.cter_id, cter.base_attr.cter_temp_id);
-
+        battle_player.cters.insert(cter.base_attr.cter_id, cter);
         //处理机器人部分
         if member.robot_temp_id > 0 {
             let robot_data = RobotData::new(
@@ -145,7 +145,7 @@ impl BattlePlayer {
         Ok(battle_player)
     }
 
-    pub fn convert_to_battle_cter_pt(&self) -> BattlePlayerPt {
+    pub fn convert_to_battle_player_pt(&self) -> BattlePlayerPt {
         let mut battle_player_pt = BattlePlayerPt::new();
         battle_player_pt.set_user_id(self.get_user_id());
         battle_player_pt.set_name(self.name.clone());
@@ -163,6 +163,10 @@ impl BattlePlayer {
                 .push(cter.convert_to_battle_cter_pt());
         }
         battle_player_pt
+    }
+
+    pub fn clear_residue_movement_points(&mut self) {
+        self.flow_data.residue_movement_points = 0;
     }
 
     pub fn get_major_cter_mut(&mut self) -> &mut BattleCharacter {
@@ -185,11 +189,13 @@ impl BattlePlayer {
         self.cters.get(&self.current_cter.0).unwrap()
     }
 
-    pub fn player_die(&mut self, str: String) {
+    pub fn player_die(&mut self, str: Option<String>) {
         self.get_major_cter_mut().base_attr.hp = 0;
         self.get_major_cter_mut().state = BattleCterState::Died;
         self.status.battle_state = BattlePlayerState::Died;
-        info!("{:?}", str);
+        if let Some(str) = str {
+            info!("{:?}", str);
+        }
     }
 
     pub fn add_open_map_cell(&mut self, index: usize) {
@@ -283,14 +289,11 @@ impl BattlePlayer {
     }
 
     ///奖励移动点数
-    pub fn pair_reward_movement_points(&mut self) {
-        if !self.status.is_pair {
+    pub fn attack_reward_movement_points(&mut self) {
+        if self.status.attack_reward_movement_points {
             return;
         }
-        if self.status.pair_open_count {
-            return;
-        }
-        self.status.pair_open_count = true;
+        self.status.attack_reward_movement_points = true;
         let temp = TEMPLATES.constant_temp_mgr();
         let res = temp.temps.get("turn_default_movement_points");
         let reward_count;
@@ -313,7 +316,7 @@ impl BattlePlayer {
             }
         }
 
-        self.flow_data.residue_movement_points += reward_count;
+        self.flow_data.residue_movement_points = reward_count;
     }
 
     pub fn get_current_cter_index(&self) -> usize {
@@ -377,7 +380,7 @@ impl BattlePlayer {
     pub fn round_reset(&mut self) {
         self.status.is_attacked = false;
         self.change_attack_none();
-        self.status.pair_open_count = false;
+        self.status.attack_reward_movement_points = false;
         self.get_current_cter_mut().index_data.map_cell_index = None;
         self.clear_turn_open_map_cell();
         self.get_current_cter_mut().index_data.last_map_cell_index = None;
@@ -420,7 +423,7 @@ impl BattlePlayer {
         //重制剩余移动点数
         self.reset_residue_movement_points();
         //重制配对攻击奖励翻地图块次数
-        self.status.pair_open_count = false;
+        self.status.attack_reward_movement_points = false;
         //重制是否翻过地图块
         self.clear_turn_open_map_cell();
         //清空turn限制

@@ -55,7 +55,7 @@ impl BattleData {
                         "player died!because is battle_over,user_id:{}",
                         battle_player.get_user_id()
                     );
-                    battle_player.player_die(str);
+                    battle_player.player_die(Some(str));
                     let cter_id = battle_player.get_major_cter_id();
                     self_mut.after_cter_died_trigger(cter_id, cter_id, true, false);
                 }
@@ -160,6 +160,7 @@ impl BattleData {
                 anyhow::bail!("")
             }
             let battle_cter = res.unwrap();
+            let user_id = battle_cter.get_user_id();
             //战斗角色身上的技能
             let mut skill_s;
             let skill;
@@ -188,7 +189,7 @@ impl BattleData {
             let skill_judge = skill.skill_temp.skill_judge as u32;
             let skill_function_id = skill.function_id;
             //校验目标类型
-            let res = self.check_target_array(cter_id, target_type, &target_array);
+            let res = self.check_target_array(user_id, target_type, &target_array);
             if let Err(e) = res {
                 warn!("{:?},skill_id:{}", e, skill_id);
                 anyhow::bail!("")
@@ -279,6 +280,7 @@ impl BattleData {
             return Ok(());
         }
         let battle_cter = battle_cter.unwrap();
+        let user_id = battle_cter.get_user_id();
         let mut aoe_buff: Option<u32> = None;
         //塞选出ape的buff
         battle_cter
@@ -360,10 +362,12 @@ impl BattleData {
 
         let battle_player = self_mut.get_battle_player_mut(None, true).unwrap();
         battle_player.change_attack_none();
+        //攻击奖励移动点数
+        battle_player.attack_reward_movement_points();
         //触发翻地图块任务
         trigger_mission(
             self,
-            cter_id,
+            user_id,
             vec![(MissionTriggerType::Attack, 1)],
             (target_cter_id, 0),
         );

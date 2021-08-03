@@ -60,6 +60,8 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
 
     let mut can_use = false;
     let robot_id = robot.robot_id;
+    let robot_player = battle_data.get_battle_player(Some(robot_id), true).unwrap();
+    let cter_id = robot_player.current_cter.0;
     let skill_judge = skill.skill_temp.skill_judge as u32;
     //如果cd好了就设置状态
     if skill.cd_times == 0 {
@@ -73,7 +75,7 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         return false;
     }
 
-    let res = battle_data.check_skill_judge(robot_id, skill_judge, Some(skill_id), None);
+    let res = battle_data.check_skill_judge(cter_id, skill_judge, Some(skill_id), None);
     if let Err(_) = res {
         return false;
     }
@@ -99,11 +101,11 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         }
         //周围必须没人
         i if [313].contains(&i) => {
-            can_use = !near_user(battle_data, robot_id);
+            can_use = !near_user(battle_data, cter_id);
         }
         //周围必须有人
         i if [321].contains(&i) => {
-            can_use = near_user(battle_data, robot_id);
+            can_use = near_user(battle_data, cter_id);
         }
         i if [331].contains(&i) => {
             let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
@@ -142,6 +144,9 @@ pub fn skill_target(
 ) -> anyhow::Result<Vec<usize>> {
     let skill_function_id = skill.function_id;
     let robot_id = robot.robot_id;
+
+    let battle_robot = battle_data.get_battle_player(Some(robot_id), true).unwrap();
+    let cter_id = battle_robot.current_cter.0;
     let mut targets = vec![];
     //匹配技能id进行不同的目标选择
     match skill_function_id {
@@ -173,7 +178,7 @@ pub fn skill_target(
         }
         //直线三个aoe
         i if [411].contains(&i) => {
-            let res = get_line_aoe(robot_id, battle_data);
+            let res = get_line_aoe(cter_id, battle_data);
             match res {
                 Some((_, v)) => {
                     targets.extend_from_slice(v.as_slice());
@@ -192,7 +197,7 @@ pub fn skill_target(
         }
         //变身技能，计算⭕️
         i if [431].contains(&i) => {
-            let res = get_roundness_aoe(robot_id, battle_data, true, false, true, true);
+            let res = get_roundness_aoe(cter_id, battle_data, true, false, true, true);
             match res {
                 Some(res) => {
                     targets.extend_from_slice(res.as_slice());
@@ -204,7 +209,7 @@ pub fn skill_target(
         }
         //⭕️aoe，包括中心，人数越多越好
         i if [432].contains(&i) => {
-            let res = get_roundness_aoe(robot_id, battle_data, false, false, false, false);
+            let res = get_roundness_aoe(cter_id, battle_data, false, false, false, false);
             match res {
                 Some(res) => {
                     targets.extend_from_slice(res.as_slice());
@@ -333,23 +338,12 @@ pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize>
         if battle_player.get_user_id() == robot_id {
             continue;
         }
-        let mut cter_id = 0;
         for battle_cter in battle_player.cters.values() {
-            //排除给定robot_id的
-            if cter_id == 0 {
-                cter_id = battle_cter.base_attr.cter_id;
-            }
-            if cter_id == battle_cter.base_attr.cter_id {
-                continue;
-            }
+            let hp = battle_cter.base_attr.hp;
             //对比血量
-            if battle_player.get_current_cter().base_attr.hp > res.0 {
-                res.0 = battle_player.get_current_cter().base_attr.hp;
-                res.1 = battle_player
-                    .get_current_cter()
-                    .index_data
-                    .map_cell_index
-                    .unwrap();
+            if hp > res.0 {
+                res.0 = hp;
+                res.1 = battle_cter.get_map_cell_index();
             }
         }
     }
@@ -365,10 +359,10 @@ pub fn pair_useable_skill(robot: &BattlePlayer) -> bool {
 }
 
 ///有没有相邻的玩家
-pub fn near_user(battle_data: &BattleData, robot_id: u32) -> bool {
-    let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
-    let index = battle_player.get_current_cter_index() as isize;
-    let res = battle_data.cal_scope(robot_id, index, TargetType::PlayerSelf, None, None);
+pub fn near_user(battle_data: &BattleData, cter_id: u32) -> bool {
+    let battle_cter = battle_data.get_battle_cter(cter_id, true).unwrap();
+    let index = battle_cter.get_map_cell_index() as isize;
+    let res = battle_data.cal_scope(cter_id, index, TargetType::PlayerSelf, None, None);
     !res.1.is_empty()
 }
 
@@ -397,7 +391,7 @@ pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<us
 
 ///获得圆形范围aoe范围
 pub fn get_roundness_aoe(
-    user_id: u32,
+    cter_id: u32,
     battle_data: &BattleData,
     is_check_null: bool,
     is_check_lock: bool,
@@ -424,7 +418,7 @@ pub fn get_roundness_aoe(
         let mut v = vec![];
         if is_check_null && map_cell.cter_id > 0 {
             continue;
-        } else if map_cell.cter_id == user_id {
+        } else if map_cell.cter_id == cter_id {
             //排除自己
             continue;
         } else if map_cell.cter_id > 0 {
@@ -468,7 +462,7 @@ pub fn get_roundness_aoe(
                 continue;
             }
             let cell = cell.unwrap();
-            if cell.cter_id > 0 && cell.cter_id != user_id {
+            if cell.cter_id > 0 && cell.cter_id != cter_id {
                 v.push(cell.index);
             }
         }
@@ -478,7 +472,7 @@ pub fn get_roundness_aoe(
 }
 
 ///获得三角aoe范围
-pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<usize>> {
+pub fn get_triangle_aoe(cter_id: u32, battle_data: &BattleData) -> Option<Vec<usize>> {
     let mut res_v = vec![];
     for map_cell in battle_data.tile_map.map_cells.iter() {
         let mut v = vec![];
@@ -486,7 +480,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
         if map_cell.id <= MapCellType::UnUse.into_u32() {
             continue;
         }
-        if map_cell.cter_id == user_id {
+        if map_cell.cter_id == cter_id {
             continue;
         }
         //把中心点加进去
@@ -521,7 +515,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
             }
             let res_cell = res_cell.unwrap();
             //排除无效目标
-            if res_cell.cter_id == 0 || res_cell.cter_id == user_id {
+            if res_cell.cter_id == 0 || res_cell.cter_id == cter_id {
                 continue;
             }
             v.push(res_cell.index);
@@ -533,7 +527,7 @@ pub fn get_triangle_aoe(user_id: u32, battle_data: &BattleData) -> Option<Vec<us
 
 ///获得打一排三个的位置
 /// 选取规则，除了自己所有人为起点，转一圈，包含人最多，就选中
-pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<usize>)> {
+pub fn get_line_aoe(cter_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<usize>)> {
     let mut v = Vec::new();
     let map_cells = &battle_data.tile_map.map_cells;
     for index in 0..map_cells.len() {
@@ -541,7 +535,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
         if cell.cter_id == 0 {
             continue;
         }
-        if cell.cter_id == user_id {
+        if cell.cter_id == cter_id {
             continue;
         }
         v.push(index);
@@ -637,7 +631,7 @@ pub fn get_line_aoe(user_id: u32, battle_data: &BattleData) -> Option<(u32, Vec<
                             continue;
                         }
 
-                        if map_cell.cter_id == user_id {
+                        if map_cell.cter_id == cter_id {
                             continue;
                         }
 

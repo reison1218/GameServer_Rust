@@ -5,7 +5,6 @@ use tools::cmd_code::BattleCode;
 #[derive(Default)]
 pub struct UseItemRobotAction {
     pub robot_id: u32,
-    pub cter_id: u32,
     pub temp_id: u32,
     pub battle_data: Option<*mut BattleData>,
     pub status: RobotStatus,
@@ -26,10 +25,6 @@ impl UseItemRobotAction {
 impl RobotStatusAction for UseItemRobotAction {
     fn set_sender(&mut self, sender: Sender<RobotTask>) {
         self.sender = Some(sender);
-    }
-
-    fn get_cter_temp_id(&self) -> u32 {
-        self.cter_id
     }
 
     fn enter(&self) {

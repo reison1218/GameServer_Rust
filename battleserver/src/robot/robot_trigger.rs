@@ -50,7 +50,6 @@ impl RobotData {
                 self.remember_map_cell.pop_back();
             }
         }
-        println!("robot:{},re:{:?}", self.robot_id, self.remember_map_cell)
     }
 
     pub fn trigger_pair_map_cell(&mut self, rc: RememberCell) {

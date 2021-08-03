@@ -39,10 +39,6 @@ impl RobotStatusAction for UnlockRobotAction {
         self.sender = Some(sender);
     }
 
-    fn get_cter_temp_id(&self) -> u32 {
-        self.cter_id
-    }
-
     fn enter(&self) {
         info!("robot:{} 进入解除锁定状态！", self.robot_id);
         self.execute();

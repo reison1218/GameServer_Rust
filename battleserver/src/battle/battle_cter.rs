@@ -550,7 +550,8 @@ impl BattleCharacter {
     pub fn convert_to_battle_cter_pt(&self) -> BattleCharacterPt {
         let mut battle_cter_pt = BattleCharacterPt::new();
         battle_cter_pt.user_id = self.base_attr.user_id;
-        battle_cter_pt.cter_id = self.base_attr.cter_temp_id;
+        battle_cter_pt.cter_id = self.base_attr.cter_id;
+        battle_cter_pt.cter_temp_id = self.base_attr.cter_temp_id;
         battle_cter_pt.atk = self.base_attr.atk as u32;
         battle_cter_pt.hp = self.base_attr.hp as u32;
         battle_cter_pt.defence = self.base_attr.defence.into();
@@ -641,18 +642,18 @@ impl BattleCharacter {
     ///变身
     pub fn transform(
         &mut self,
-        from_user: u32,
-        cter_id: u32,
+        from_cter: u32,
+        cter_temp_id: u32,
         buff_id: u32,
         next_turn_index: usize,
     ) -> anyhow::Result<TargetPt> {
-        let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_id);
+        let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_temp_id);
         if cter_temp.is_none() {
-            anyhow::bail!("cter_temp can not find!cter_id:{}", cter_id)
+            anyhow::bail!("cter_temp can not find!cter_id:{}", cter_temp_id)
         }
         let cter_temp = cter_temp.unwrap();
         //拷贝需要继承的属性
-        let transform_inherits = transform_inherit_copy(self, cter_id);
+        let transform_inherits = transform_inherit_copy(self, cter_temp_id);
 
         //保存原本角色
         if self.self_cter.is_none() {
@@ -671,7 +672,7 @@ impl BattleCharacter {
             anyhow::bail!("")
         }
         let buff_temp = buff_temp.unwrap();
-        self.add_buff(Some(from_user), None, buff_id, Some(next_turn_index));
+        self.add_buff(Some(from_cter), None, buff_id, Some(next_turn_index));
 
         //添加变身附带的攻击buff
         let attack_buff_id = buff_temp.par1;
@@ -690,7 +691,7 @@ impl BattleCharacter {
         }
 
         //保存自己变身的角色
-        if self.base_attr.user_id == from_user {
+        if self.base_attr.cter_id == from_cter {
             self.self_transform_cter = Some(Box::new(self.clone()));
         }
         let mut target_pt = TargetPt::new();
@@ -708,11 +709,11 @@ pub struct TransformInherit(TransformInheritType, TransformInheritValue);
 
 pub fn transform_inherit_copy(
     battle_cter: &BattleCharacter,
-    target_cter: u32,
+    target_cter_temp_id: u32,
 ) -> Vec<TransformInherit> {
     let target_cter_temp = crate::TEMPLATES
         .character_temp_mgr()
-        .get_temp_ref(&target_cter)
+        .get_temp_ref(&target_cter_temp_id)
         .unwrap();
     let transform_inherit = target_cter_temp.transform_inherit.clone();
     let mut v = vec![];
