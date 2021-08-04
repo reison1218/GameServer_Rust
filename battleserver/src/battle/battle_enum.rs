@@ -37,7 +37,7 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 8] = [122, 211, 221, 311, 312, 322, 324, 20002];
+    pub const ADD_BUFF: [u32; 9] = [122, 211, 221, 311, 312, 322, 324, 11004, 20002];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
@@ -49,7 +49,7 @@ pub mod skill_type {
     ///技能伤害
     pub const SKILL_DAMAGE: [u32; 8] = [999, 123, 20004, 20005, 323, 433, 331, 11001];
     ///技能aoe
-    pub const SKILL_AOE: [u32; 4] = [121, 411, 412, 432];
+    pub const SKILL_AOE: [u32; 5] = [121, 411, 412, 432, 11005];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///对已其他翻开元素块上对玩家造成技能伤害
@@ -82,6 +82,12 @@ pub mod skill_type {
     pub const SKILL_PAIR_LIMIT_DAMAGE: [u32; 1] = [331];
     ///召唤宠物
     pub const SUMMON_MINON: [u32; 1] = [11002];
+
+    ///减少最大行动点数
+    pub const SUB_MAX_MOVE_POINT: u32 = 11004;
+
+    ///范围变化的aoe技能
+    pub const SCOPE_CHANGE_SKILL_AOE: u32 = 11005;
 }
 
 ///buff类型
@@ -153,6 +159,9 @@ pub mod buff_type {
     ///死亡时指定技能进入cd，主要是给召唤物用的
     pub const DIE_SKILL_CD: u32 = 19;
 
+    ///扣行动点数上限
+    pub const SUB_MOVE_POINT: u32 = 20;
+
     ///受到攻击伤害变成0
     pub const NEAR_ATTACKED_DAMAGE_ZERO: u32 = 20001;
 
@@ -161,6 +170,12 @@ pub mod buff_type {
 
     ///死了就结束回合
     pub const DIE_END_TURN: u32 = 20004;
+
+    ///将攻击伤害返伤成技能伤害
+    pub const RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE: u32 = 20005;
+
+    ///自杀造成技能伤害
+    pub const SUICIDE_SKILL_DAMAGE: u32 = 20006;
 
     ///世界树buff,在战斗开始的时候就开始加载，
     pub const WORLD_CELL_BUFFS: u32 = 30051;
@@ -362,6 +377,12 @@ pub enum TargetType {
     UnOpenMapCellAndUnLock = 18, //未翻开，且未锁定
     UnLockNullMapCell = 19,      //未锁定空地图块
     UnOpenNullMapCell = 20,      //未翻开的空地图快
+    AllEnemyCters = 21,          //所有敌方角色
+    AllTeamCters = 22,           //所有友方角色
+    AnyEnemyCter = 23,           //任意敌方角色
+    AnyTeamCter = 24,            //任意友方角色
+    SelfScopeAllEnemyCters = 25, //以自身为一圈的所有敌方角色
+    SelfScopeAnyEnemyCters = 26, //以自身为一圈的任意敌方角色
 }
 
 impl TargetType {

@@ -14,14 +14,18 @@ use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 
 use super::battle_cter::BattleCharacter;
-use super::battle_enum::buff_type::ATTACKED_SUB_CD;
+use super::battle_enum::buff_type::{
+    ATTACKED_SUB_CD, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, SUICIDE_SKILL_DAMAGE,
+};
 use super::battle_enum::buff_type::{DIE_END_TURN, DIE_SKILL_CD, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
+use super::battle_enum::TargetType;
 use super::battle_helper::build_action_unit_pt;
 use super::mission::{trigger_mission, MissionTriggerType};
 
@@ -67,10 +71,17 @@ pub trait TriggerEvent {
     fn attacked_before_trigger(&mut self, cter_id: u32, target_pt: &mut TargetPt);
 
     ///被攻击后触发
-    fn attacked_after_trigger(&mut self, cter_id: u32, target_pt: &mut TargetPt);
+    fn attacked_after_trigger(&mut self, target_cter_id: u32, target_pt: &mut TargetPt);
 
     ///受到攻击伤害后触发
-    fn attacked_hurted_trigger(&mut self, cter_id: u32, target_pt: &mut TargetPt);
+    fn attacked_hurted_trigger(
+        &mut self,
+        from_cter_id: u32,
+        target_cter_id: u32,
+        damage: u32,
+        target_pt: &mut TargetPt,
+        au: &mut ActionUnitPt,
+    );
 
     ///地图刷新时候触发buff
     fn before_map_refresh_buff_trigger(&mut self);
@@ -79,12 +90,16 @@ pub trait TriggerEvent {
     fn buff_lost_trigger(&mut self, cter_id: u32, buff_id: u32);
 
     ///角色死亡触发
-    fn after_cter_died_trigger(
+    fn after_cter_died_trigger(&mut self, cter_id: u32);
+
+    ///玩家死亡触发
+    fn after_player_died_trigger(
         &mut self,
-        from_cter: u32,
-        cter_id: u32,
+        from_user_id: u32,
+        die_user_id: u32,
         is_last_one: bool,
         is_punishment: bool,
+        str: Option<String>,
     );
 }
 
@@ -531,18 +546,27 @@ impl TriggerEvent for BattleData {
     fn attacked_before_trigger(&mut self, _: u32, _: &mut TargetPt) {}
 
     ///被攻击后触发
-    fn attacked_after_trigger(&mut self, cter_id: u32, target_pt: &mut TargetPt) {
-        let battle_cter = self.get_battle_cter_mut(cter_id, true);
-        if let Err(e) = battle_cter {
+    fn attacked_after_trigger(&mut self, target_cter_id: u32, target_pt: &mut TargetPt) {
+        let target_battle_cter = self.get_battle_cter_mut(target_cter_id, true);
+        if let Err(e) = target_battle_cter {
             warn!("{:?}", e);
             return;
         }
-        let battle_cter = battle_cter.unwrap();
-        let max_energy = battle_cter.base_attr.max_energy;
+        let target_battle_cter = target_battle_cter.unwrap();
+        let max_energy = target_battle_cter.base_attr.max_energy;
         let mut buff_function_id;
-        let buff_ids: Vec<u32> = battle_cter.battle_buffs.buffs().keys().copied().collect();
+        let buff_ids: Vec<u32> = target_battle_cter
+            .battle_buffs
+            .buffs()
+            .keys()
+            .copied()
+            .collect();
         for buff_id in buff_ids {
-            let buff = battle_cter.battle_buffs.buffs().get(&buff_id).unwrap();
+            let buff = target_battle_cter
+                .battle_buffs
+                .buffs()
+                .get(&buff_id)
+                .unwrap();
             let par1 = buff.buff_temp.par1;
             buff_function_id = buff.function_id;
 
@@ -552,7 +576,7 @@ impl TriggerEvent for BattleData {
                 tep.set_field_type(EffectType::AddEnergy.into_u32());
                 tep.set_buff_id(buff_id);
                 tep.set_value(par1);
-                battle_cter.add_energy(par1 as i8);
+                target_battle_cter.add_energy(par1 as i8);
                 target_pt.passiveEffect.push(tep);
             }
 
@@ -562,36 +586,79 @@ impl TriggerEvent for BattleData {
                 tep.set_field_type(EffectType::SubSkillCd.into_u32());
                 tep.set_buff_id(buff_id);
                 tep.set_value(par1);
-                battle_cter.sub_skill_cd(Some(par1 as i8));
+                target_battle_cter.sub_skill_cd(Some(par1 as i8));
                 target_pt.passiveEffect.push(tep);
             }
         }
     }
 
     ///受到普通攻击触发的buff
-    fn attacked_hurted_trigger(&mut self, cter_id: u32, target_pt: &mut TargetPt) {
-        let battle_data = self as *mut BattleData;
-        let battle_cter = self.get_battle_cter_mut(cter_id, true);
-        if let Err(e) = battle_cter {
+    fn attacked_hurted_trigger(
+        &mut self,
+        _: u32,
+        target_cter_id: u32,
+        damage: u32,
+        target_pt: &mut TargetPt,
+        au: &mut ActionUnitPt,
+    ) {
+        let battle_data_ptr = self as *mut BattleData;
+        let target_battle_cter = self.get_battle_cter_mut(target_cter_id, true);
+        if let Err(e) = target_battle_cter {
             warn!("{:?}", e);
             return;
         }
-        let battle_cter = battle_cter.unwrap();
+        let target_battle_cter = target_battle_cter.unwrap();
+        let target_cter_index = target_battle_cter.get_map_cell_index();
         let mut buff_id;
         let mut buff_function_id;
-        for buff in battle_cter.battle_buffs.buffs().values() {
-            buff_id = buff.get_id();
-            buff_function_id = buff.function_id;
+        unsafe {
+            for buff in target_battle_cter.battle_buffs.buffs().values() {
+                buff_id = buff.get_id();
+                buff_function_id = buff.function_id;
 
-            //被攻击打断技能
-            if CHANGE_SKILL.contains(&buff_function_id) {
-                unsafe {
-                    battle_data
-                        .as_mut()
-                        .unwrap()
-                        .consume_buff(buff_id, Some(cter_id), None, false);
+                //被攻击打断技能
+                if CHANGE_SKILL.contains(&buff_function_id) {
+                    battle_data_ptr.as_mut().unwrap().consume_buff(
+                        buff_id,
+                        Some(target_cter_id),
+                        None,
+                        false,
+                    );
+                    target_pt.lost_buffs.push(buff_id);
                 }
-                target_pt.lost_buffs.push(buff_id);
+                //返伤
+                if RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE == buff_function_id {
+                    let target_type = TargetType::try_from(buff.buff_temp.target).unwrap();
+                    let res = battle_data_ptr.as_ref().unwrap().cal_scope(
+                        target_cter_id,
+                        target_cter_index as isize,
+                        target_type,
+                        None,
+                        None,
+                    );
+
+                    for cter_id in res.1 {
+                        let mut target_pt = battle_data_ptr
+                            .as_mut()
+                            .unwrap()
+                            .build_target_pt(
+                                Some(target_cter_id),
+                                cter_id,
+                                EffectType::SkillDamage,
+                                damage,
+                                Some(buff_id),
+                            )
+                            .unwrap();
+                        let _ = battle_data_ptr.as_mut().unwrap().deduct_hp(
+                            target_cter_id,
+                            cter_id,
+                            Some(damage as i16),
+                            &mut target_pt,
+                            true,
+                        );
+                        au.targets.push(target_pt);
+                    }
+                }
             }
         }
     }
@@ -646,17 +713,10 @@ impl TriggerEvent for BattleData {
         }
     }
 
-    fn after_cter_died_trigger(
-        &mut self,
-        from_cter: u32,
-        cter_id: u32,
-        is_last_one: bool,
-        is_punishment: bool,
-    ) {
+    fn after_cter_died_trigger(&mut self, cter_id: u32) {
         let self_mut_ptr = self as *mut BattleData;
-        let from_user = self.get_user_id(from_cter).unwrap();
-        let &target_user = self.cter_player.get(&cter_id).unwrap();
-        let battle_player = self.get_battle_player(Some(target_user), false);
+        let &user_id = self.cter_player.get(&cter_id).unwrap();
+        let battle_player = self.get_battle_player(Some(user_id), false);
         if let Err(e) = battle_player {
             warn!("{:?}", e);
             return;
@@ -667,144 +727,9 @@ impl TriggerEvent for BattleData {
         let is_major = cter.is_major;
         let owner = cter.owner;
         let has_minons = !cter.minons.is_empty();
-        let gold = battle_player.gold;
-        let self_league = battle_player.league.get_league_id();
-        let mut punishment_score = -50;
-        let mut reward_score;
-        let con_temp = crate::TEMPLATES
-            .constant_temp_mgr()
-            .temps
-            .get("punishment_summary");
-        if let Some(con_temp) = con_temp {
-            let reward_score_temp = f64::from_str(con_temp.value.as_str());
-            match reward_score_temp {
-                Ok(reward_score_temp) => punishment_score = reward_score_temp as i32,
-                Err(e) => warn!("{:?}", e),
-            }
-        }
-
-        //如果是惩罚结算
-        let player_count = self.get_alive_player_num() as i32;
-
-        let mut sp = SummaryUser::default();
-        sp.user_id = target_user;
-        sp.name = battle_player.name.clone();
-        sp.cter_temp_id = battle_player.get_cter_temp_id();
-        sp.league = battle_player.league.clone();
-        sp.grade = battle_player.grade;
-        let rank_vec_temp = &mut self.summary_vec_temp;
-        rank_vec_temp.push(sp);
-        //判断是否需要排行,如果需要则从第最后
-        if is_last_one && is_major {
-            let index = player_count as usize;
-            let res = self.summary_vec.get_mut(index);
-            if let None = res {
-                warn!(
-                    "the rank_vec's len is {},but the index is {}",
-                    self.summary_vec.len(),
-                    index
-                );
-                return;
-            }
-            let rank_vec = res.unwrap();
-            let count = rank_vec_temp.len();
-            let summary_award_temp_mgr = crate::TEMPLATES.summary_award_temp_mgr();
-            let con_temp_mgr = crate::TEMPLATES.constant_temp_mgr();
-            let res = con_temp_mgr.temps.get("max_grade");
-            let mut max_grade = 2;
-            if self.room_type == RoomType::OneVOneVOneVOneMatch {
-                match res {
-                    None => {
-                        warn!("max_grade config is None!");
-                    }
-                    Some(res) => {
-                        max_grade = match u8::from_str(res.value.as_str()) {
-                            Ok(res) => res,
-                            Err(e) => {
-                                warn!("{:?}", e);
-                                max_grade
-                            }
-                        }
-                    }
-                }
-            }
-
-            for sp in rank_vec_temp.iter_mut() {
-                sp.summary_rank = index as u8;
-                //不是匹配房间不结算段位，积分
-                if self.room_type != RoomType::OneVOneVOneVOneMatch {
-                    continue;
-                }
-                //进行结算
-                if is_punishment {
-                    reward_score = punishment_score;
-                    sp.grade -= 1;
-                    if sp.grade <= 0 {
-                        sp.grade = 1;
-                    }
-                } else {
-                    //计算基础分
-                    let mut rank = sp.summary_rank + 1;
-                    if rank == 1 {
-                        sp.grade += 1;
-                        if sp.grade > 2 {
-                            sp.grade = max_grade;
-                        }
-                    } else {
-                        sp.grade -= 1;
-                        if sp.grade <= 0 {
-                            sp.grade = 1;
-                        }
-                    }
-                    let mut base_score = 0;
-                    for index in 0..count {
-                        rank += index as u8;
-                        let score_temp = summary_award_temp_mgr.get_score_by_rank(rank);
-                        if let Err(e) = score_temp {
-                            warn!("{:?}", e);
-                            continue;
-                        }
-                        base_score += score_temp.unwrap();
-                    }
-                    base_score /= count as i16;
-                    //计算浮动分
-                    let mut average_league = 0;
-                    let mut league_count = 0;
-                    for (cter_id, league_id) in self.leave_map.iter() {
-                        if *cter_id == target_user {
-                            continue;
-                        }
-                        league_count += 1;
-                        average_league += *league_id;
-                    }
-                    average_league /= league_count;
-                    let mut unstable = 0;
-                    if self_league >= average_league {
-                        unstable = 0;
-                    } else if average_league > self_league {
-                        unstable = (average_league - self_league) * 10;
-                    }
-                    reward_score = (base_score + unstable as i16) as i32;
-                }
-                sp.reward_score = reward_score;
-                let res = sp.league.update_score(reward_score);
-                if res == 0 {
-                    sp.reward_score = 0;
-                }
-            }
-            rank_vec.extend_from_slice(&rank_vec_temp[..]);
-            rank_vec_temp.clear();
-        }
         let map_cell = self.tile_map.get_map_cell_mut_by_cter_id(cter_id);
         if let Some(map_cell) = map_cell {
             map_cell.cter_id = 0;
-        }
-        //将死掉的玩家金币都给攻击方
-        if from_user != target_user && is_major {
-            let from_cter = self.get_battle_player_mut(Some(from_user), true);
-            if let Ok(from_cter) = from_cter {
-                from_cter.add_gold(gold);
-            }
         }
 
         //-----------------------以下处理召唤物相关的死亡逻辑
@@ -849,18 +774,14 @@ impl TriggerEvent for BattleData {
                     .get_battle_cter_mut(owner_cter, true);
                 if let Ok(battle_cter) = battle_cter {
                     battle_cter.minons.remove(&cter_id);
-                    let battle_player = self
-                        .get_battle_player_mut(Some(target_user), false)
-                        .unwrap();
+                    let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
                     battle_player.cters.remove(&cter_id);
                 }
             }
         }
         //判断当前死亡角色有没有召唤物
         if has_minons && !is_major {
-            let battle_player = self
-                .get_battle_player_mut(Some(target_user), false)
-                .unwrap();
+            let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
             let cter = battle_player.cters.get_mut(&cter_id).unwrap();
             let minons = cter.minons.clone();
             cter.minons.clear();
@@ -875,7 +796,7 @@ impl TriggerEvent for BattleData {
                             cter_id, minon_cter.base_attr.cter_id
                         );
                         minon_cter.died(str.as_str());
-                        self_mut.after_cter_died_trigger(from_cter, minon_id, true, false);
+                        self_mut.after_cter_died_trigger(minon_id);
                     }
                     battle_player.cters.remove(&minon_id);
                 }
@@ -883,5 +804,232 @@ impl TriggerEvent for BattleData {
         }
     }
 
-    fn turn_start_trigger(&mut self) {}
+    ///玩家死亡触发
+    fn after_player_died_trigger(
+        &mut self,
+        from_user_id: u32,
+        die_user_id: u32,
+        mut is_last_one: bool,
+        is_punishment: bool,
+        str: Option<String>,
+    ) {
+        let self_ptr = self as *mut BattleData;
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+
+            let die_battle_player = self
+                .get_battle_player_mut(Some(die_user_id), false)
+                .unwrap();
+            die_battle_player.player_die(str);
+
+            let self_league = die_battle_player.league.get_league_id();
+            let player_name = die_battle_player.name.clone();
+            let mut punishment_score = -50;
+            let mut reward_score;
+            let con_temp = crate::TEMPLATES
+                .constant_temp_mgr()
+                .temps
+                .get("punishment_summary");
+            if let Some(con_temp) = con_temp {
+                let reward_score_temp = f64::from_str(con_temp.value.as_str());
+                match reward_score_temp {
+                    Ok(reward_score_temp) => punishment_score = reward_score_temp as i32,
+                    Err(e) => warn!("{:?}", e),
+                }
+            }
+
+            let mut sp = SummaryUser::default();
+            sp.user_id = die_user_id;
+            sp.name = player_name;
+            sp.cter_temp_id = die_battle_player.get_cter_temp_id();
+            sp.league = die_battle_player.league.clone();
+            sp.grade = die_battle_player.grade;
+            let gold = die_battle_player.gold;
+            let player_count = self.get_alive_player_num() as i32;
+            let rank_vec_temp = &mut self.summary_vec_temp;
+            rank_vec_temp.push(sp);
+
+            //将死掉的玩家金币都给攻击方
+            if from_user_id != die_user_id {
+                let from_cter = self_mut.get_battle_player_mut(Some(from_user_id), true);
+                if let Ok(from_cter) = from_cter {
+                    from_cter.add_gold(gold);
+                }
+            }
+            if player_count == 1 {
+                is_last_one = true;
+            }
+            //处理结算
+            if is_last_one {
+                let index = player_count as usize;
+                let res = self.summary_vec.get_mut(index);
+                if let None = res {
+                    warn!(
+                        "the rank_vec's len is {},but the index is {}",
+                        self.summary_vec.len(),
+                        index
+                    );
+                    return;
+                }
+                let rank_vec = res.unwrap();
+                let count = rank_vec_temp.len();
+                let summary_award_temp_mgr = crate::TEMPLATES.summary_award_temp_mgr();
+                let con_temp_mgr = crate::TEMPLATES.constant_temp_mgr();
+                let res = con_temp_mgr.temps.get("max_grade");
+                let mut max_grade = 2;
+                if self.room_type == RoomType::OneVOneVOneVOneMatch {
+                    match res {
+                        None => {
+                            warn!("max_grade config is None!");
+                        }
+                        Some(res) => {
+                            max_grade = match u8::from_str(res.value.as_str()) {
+                                Ok(res) => res,
+                                Err(e) => {
+                                    warn!("{:?}", e);
+                                    max_grade
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for sp in rank_vec_temp.iter_mut() {
+                    sp.summary_rank = index as u8;
+                    //不是匹配房间不结算段位，积分
+                    if self.room_type != RoomType::OneVOneVOneVOneMatch {
+                        continue;
+                    }
+                    //进行结算
+                    if is_punishment {
+                        reward_score = punishment_score;
+                        sp.grade -= 1;
+                        if sp.grade <= 0 {
+                            sp.grade = 1;
+                        }
+                    } else {
+                        //计算基础分
+                        let mut rank = sp.summary_rank + 1;
+                        if rank == 1 {
+                            sp.grade += 1;
+                            if sp.grade > 2 {
+                                sp.grade = max_grade;
+                            }
+                        } else {
+                            sp.grade -= 1;
+                            if sp.grade <= 0 {
+                                sp.grade = 1;
+                            }
+                        }
+                        let mut base_score = 0;
+                        for index in 0..count {
+                            rank += index as u8;
+                            let score_temp = summary_award_temp_mgr.get_score_by_rank(rank);
+                            if let Err(e) = score_temp {
+                                warn!("{:?}", e);
+                                continue;
+                            }
+                            base_score += score_temp.unwrap();
+                        }
+                        base_score /= count as i16;
+                        //计算浮动分
+                        let mut average_league = 0;
+                        let mut league_count = 0;
+                        for (&id, league_id) in self.leave_map.iter() {
+                            if id == die_user_id {
+                                continue;
+                            }
+                            league_count += 1;
+                            average_league += *league_id;
+                        }
+                        average_league /= league_count;
+                        let mut unstable = 0;
+                        if self_league >= average_league {
+                            unstable = 0;
+                        } else if average_league > self_league {
+                            unstable = (average_league - self_league) * 10;
+                        }
+                        reward_score = (base_score + unstable as i16) as i32;
+                    }
+                    sp.reward_score = reward_score;
+                    let res = sp.league.update_score(reward_score);
+                    if res == 0 {
+                        sp.reward_score = 0;
+                    }
+                }
+                rank_vec.extend_from_slice(&rank_vec_temp[..]);
+                rank_vec_temp.clear();
+            }
+        }
+    }
+
+    fn turn_start_trigger(&mut self) {
+        let mut res_cter_id = None;
+        let mut team_id = None;
+        let mut skill_demage = 0;
+        let mut buff_id = None;
+        for &cter_id in self.cter_player.keys() {
+            let battle_cter = self.get_battle_cter(cter_id, true);
+            if let Err(_) = battle_cter {
+                continue;
+            }
+            let battle_cter = battle_cter.unwrap();
+
+            let buff = battle_cter
+                .battle_buffs
+                .buffs()
+                .values()
+                .find(|buff| buff.function_id == SUICIDE_SKILL_DAMAGE);
+            if let None = buff {
+                continue;
+            }
+            let buff = buff.unwrap();
+            team_id = Some(battle_cter.base_attr.team_id);
+            skill_demage = battle_cter.base_attr.hp;
+            res_cter_id = Some(cter_id);
+            buff_id = Some(buff.get_id());
+            break;
+        }
+        //没有找到就直接返回
+        if res_cter_id.is_none() {
+            return;
+        }
+        let cter_id = res_cter_id.unwrap();
+        let mut target_pt = self
+            .build_target_pt(
+                Some(cter_id),
+                cter_id,
+                EffectType::SkillDamage,
+                skill_demage as u32,
+                Some(buff_id.unwrap()),
+            )
+            .unwrap();
+        unsafe {
+            let _ = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
+
+            //扣血
+            let mut au = build_action_unit_pt(cter_id, ActionType::Buff, buff_id.unwrap());
+            au.targets.push(target_pt);
+            let cters = self.get_teammates(team_id.unwrap());
+            for target_cter_id in cters {
+                let mut target_pt = self
+                    .build_target_pt(
+                        Some(cter_id),
+                        target_cter_id,
+                        EffectType::SkillDamage,
+                        skill_demage as u32,
+                        Some(buff_id.unwrap()),
+                    )
+                    .unwrap();
+                let _ = self.deduct_hp(
+                    cter_id,
+                    target_cter_id,
+                    Some(skill_demage),
+                    &mut target_pt,
+                    true,
+                );
+                au.targets.push(target_pt);
+            }
+        }
+    }
 }

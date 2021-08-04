@@ -39,6 +39,7 @@ pub struct BaseAttr {
     pub max_energy: u8,    //能量上限
     pub element: u8,       //角色元素
     pub item_max: u8,      //道具数量上限
+    pub team_id: u8,       //队伍id
 }
 
 ///角色战斗buff
@@ -180,6 +181,7 @@ impl BattleCharacter {
         battle_cter.base_attr.energy = cter_temp.start_energy;
         battle_cter.base_attr.max_energy = cter_temp.max_energy;
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
+        battle_cter.base_attr.team_id = member.team_id;
         battle_cter.is_major = true;
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
@@ -189,7 +191,12 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
-    pub fn init_for_minon(user_id: u32, cter_id: u32, cter_temp_id: u32) -> anyhow::Result<Self> {
+    pub fn init_for_minon(
+        user_id: u32,
+        team_id: u8,
+        cter_id: u32,
+        cter_temp_id: u32,
+    ) -> anyhow::Result<Self> {
         let mut battle_cter = BattleCharacter::default();
 
         let buff_ref = TEMPLATES.buff_temp_mgr();
@@ -211,6 +218,7 @@ impl BattleCharacter {
         battle_cter.base_attr.energy = cter_temp.start_energy;
         battle_cter.base_attr.max_energy = cter_temp.max_energy;
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
+        battle_cter.base_attr.team_id = team_id;
         battle_cter.is_major = false;
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();

@@ -19,6 +19,7 @@ use tools::macros::GetMutRef;
 use tools::protos::base::BattlePlayerPt;
 
 use super::battle_cter::BattleCharacter;
+use super::battle_enum::buff_type::SUB_MOVE_POINT;
 
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
@@ -177,10 +178,6 @@ impl BattlePlayer {
         self.cters.get(&self.major_cter.0).unwrap()
     }
 
-    pub fn get_major_cter_id(&self) -> u32 {
-        self.major_cter.0
-    }
-
     pub fn get_current_cter_mut(&mut self) -> &mut BattleCharacter {
         self.cters.get_mut(&self.current_cter.0).unwrap()
     }
@@ -294,29 +291,7 @@ impl BattlePlayer {
             return;
         }
         self.status.attack_reward_movement_points = true;
-        let temp = TEMPLATES.constant_temp_mgr();
-        let res = temp.temps.get("turn_default_movement_points");
-        let reward_count;
-        match res {
-            Some(res) => {
-                let res = u8::from_str(res.value.as_str());
-                match res {
-                    Ok(res) => {
-                        reward_count = res;
-                    }
-                    Err(e) => {
-                        error!("{:?}", e);
-                        reward_count = 2;
-                    }
-                }
-            }
-            None => {
-                warn!("ConstantTemp could not find!the key is 'turn_default_movement_points'");
-                reward_count = 2;
-            }
-        }
-
-        self.flow_data.residue_movement_points = reward_count;
+        self.reset_residue_movement_points();
     }
 
     pub fn get_current_cter_index(&self) -> usize {
@@ -333,7 +308,40 @@ impl BattlePlayer {
 
     ///重制翻块次数
     pub fn reset_residue_movement_points(&mut self) {
-        self.flow_data.residue_movement_points = TURN_DEFAULT_MOVEMENT_POINTS;
+        let temp = TEMPLATES.constant_temp_mgr();
+        let res = temp.temps.get("turn_default_movement_points");
+        let mut reward_count;
+        match res {
+            Some(res) => {
+                let res = u8::from_str(res.value.as_str());
+                match res {
+                    Ok(res) => {
+                        reward_count = res;
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                        reward_count = TURN_DEFAULT_MOVEMENT_POINTS;
+                    }
+                }
+            }
+            None => {
+                warn!("ConstantTemp could not find!the key is 'turn_default_movement_points'");
+                reward_count = TURN_DEFAULT_MOVEMENT_POINTS;
+            }
+        }
+        //判断是否有扣行动点数上限的buff
+        for cter in self.cters.values() {
+            let res = cter
+                .battle_buffs
+                .buffs()
+                .values()
+                .find(|buff| buff.function_id == SUB_MOVE_POINT);
+            if let Some(buff) = res {
+                reward_count = reward_count - buff.buff_temp.par1 as u8;
+                break;
+            }
+        }
+        self.flow_data.residue_movement_points = reward_count;
     }
 
     pub fn set_is_can_end_turn(&mut self, value: bool) {

@@ -46,6 +46,7 @@ impl BattleData {
             let self_ptr = self as *mut BattleData;
             unsafe {
                 let self_mut = self_ptr.as_mut().unwrap();
+                let mut user_id;
                 for battle_player in self.battle_player.values_mut() {
                     if battle_player.is_died() {
                         continue;
@@ -55,9 +56,8 @@ impl BattleData {
                         "player died!because is battle_over,user_id:{}",
                         battle_player.get_user_id()
                     );
-                    battle_player.player_die(Some(str));
-                    let cter_id = battle_player.get_major_cter_id();
-                    self_mut.after_cter_died_trigger(cter_id, cter_id, true, false);
+                    user_id = battle_player.get_user_id();
+                    self_mut.after_player_died_trigger(user_id, user_id, true, false, Some(str));
                 }
             }
         } else if leave_user > 0 {
@@ -254,7 +254,13 @@ impl BattleData {
 
             //收到攻击伤害触发
             if hurt_damge > 0 {
-                self.attacked_hurted_trigger(target_cter_id, &mut target_pt);
+                self.attacked_hurted_trigger(
+                    cter_id,
+                    target_cter_id,
+                    hurt_damge,
+                    &mut target_pt,
+                    au,
+                );
             }
         }
 

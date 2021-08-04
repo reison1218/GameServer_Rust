@@ -145,6 +145,7 @@ message TargetPt{
     repeated uint32 lost_buffs = 5;//目标失效的buff
     repeated uint32 lost_skills= 6;//玩家丢失的技能
     BattleCharacterPt transform_cter = 7;//变身之后的角色
+    BattleCharacterPt new_cter = 8;//战斗中生成的新角色，一般都是召唤出来的
 }
 
 //触发效果

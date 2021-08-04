@@ -152,7 +152,6 @@ impl Room {
             return;
         }
         let battle_player = res.unwrap();
-        let cter_id = battle_player.get_major_cter_id();
 
         //房间必须为选择占位阶段和开始战斗阶段
         if room_state == RoomState::ChoiceIndex || room_state == RoomState::BattleStarted {
@@ -169,8 +168,14 @@ impl Room {
         }
         //走惩罚触发
         if need_summary && punishment {
-            self.battle_data
-                .after_cter_died_trigger(cter_id, cter_id, true, true);
+            let str = format!("player die!because leave and summary!user_id:{}", user_id);
+            self.battle_data.after_player_died_trigger(
+                user_id,
+                user_id,
+                true,
+                punishment,
+                Some(str),
+            );
         }
     }
 

@@ -151,6 +151,10 @@ impl BattleData {
                 continue;
             }
             for &cter_id in battle_player.cters.keys() {
+                let cter = self.get_battle_cter(cter_id, true);
+                if cter.is_err() {
+                    continue;
+                }
                 res_v.push(cter_id);
             }
         }
@@ -455,6 +459,37 @@ impl BattleData {
             )
         }
         Ok(battle_cter)
+    }
+
+    pub fn get_battle_player_by_map_cell_index(
+        &self,
+        index: usize,
+    ) -> anyhow::Result<&BattlePlayer> {
+        let res = self.tile_map.map_cells.get(index);
+        if res.is_none() {
+            anyhow::bail!("there is no map_cell!index:{}", index)
+        }
+        let map_cell = res.unwrap();
+        let cter_id = map_cell.cter_id;
+        if cter_id <= 0 {
+            anyhow::bail!("this map_cell's cter_id is 0!map_cell_index:{}", index)
+        }
+        let battle_cter = self.get_battle_cter(cter_id, true)?;
+
+        if battle_cter.is_died() {
+            anyhow::bail!(
+                "this battle_cter is already died!user_id:{},cter_id:{}",
+                battle_cter.get_user_id(),
+                battle_cter.get_cter_id()
+            )
+        }
+        let user_id = battle_cter.get_user_id();
+        let battle_player = self.battle_player.get(&user_id);
+        if let None = battle_player {
+            anyhow::bail!("could not find battle_player!user_id:{}", user_id)
+        }
+        let battle_player = battle_player.unwrap();
+        Ok(battle_player)
     }
 
     ///根据地图下标获得上面的战斗角色

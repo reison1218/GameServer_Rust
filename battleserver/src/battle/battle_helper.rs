@@ -453,7 +453,7 @@ impl BattleData {
         target_cter_id: u32,
         skill_damege: Option<i16>,
         target_pt: &mut TargetPt,
-        mut is_last_one: bool,
+        is_last_one: bool,
     ) -> anyhow::Result<u32> {
         let battle_data_ptr = self as *mut BattleData;
 
@@ -469,15 +469,17 @@ impl BattleData {
             error!("{:?}", str);
             anyhow::bail!("{:?}", str)
         }
+
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.get_user_id();
+        let from_cter = battle_data_ptr
+            .as_mut()
+            .unwrap()
+            .get_battle_cter_mut(from_cter_id, true)?;
+        let from_user_id = from_cter.get_user_id();
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
-            let from_cter = battle_data_ptr
-                .as_mut()
-                .unwrap()
-                .get_battle_cter_mut(from_cter_id, true)?;
             let attack_damage = from_cter.calc_damage();
             let reduce_damage = self.calc_reduce_damage(from_cter.get_user_id(), target_cter);
             ep.effect_type = EffectType::AttackDamage as u32;
@@ -513,18 +515,21 @@ impl BattleData {
 
         //判断目标角色是否死亡
         if is_die {
+            self.after_cter_died_trigger(target_cter_id);
             //处理玩家死亡
             let target_battle_player = self
                 .get_battle_player_mut(Some(target_user_id), false)
                 .unwrap();
+
             if target_battle_player.major_cter.0 == target_cter_id {
-                target_battle_player.player_die(None);
+                self.after_player_died_trigger(
+                    from_user_id,
+                    target_user_id,
+                    is_last_one,
+                    false,
+                    None,
+                );
             }
-            let player_count = self.get_alive_player_num();
-            if player_count == 1 {
-                is_last_one = true;
-            }
-            self.after_cter_died_trigger(from_cter_id, target_cter_id, is_last_one, false);
         }
         Ok(res as u32)
     }
@@ -990,6 +995,48 @@ impl BattleData {
                     self.check_choice_index(index, false, true, true, true, false, true)?;
                 }
             }
+            TargetType::AllEnemyCters
+            | TargetType::SelfScopeAllEnemyCters
+            | TargetType::AnyEnemyCter
+            | TargetType::SelfScopeAnyEnemyCters => {
+                let team_id = self.battle_player.get(&user_id).unwrap().team_id;
+                for &index in target_array {
+                    let index = index as usize;
+                    let battle_player = self.get_battle_player_by_map_cell_index(index);
+
+                    match battle_player {
+                        Ok(battle_player) => {
+                            if battle_player.team_id == team_id {
+                                anyhow::bail!(
+                                    "this target_type must be EnemyCters!target_type:{:?}",
+                                    target_type
+                                )
+                            }
+                        }
+                        Err(e) => anyhow::bail!("{:?}", e),
+                    }
+                }
+            }
+            TargetType::AllTeamCters | TargetType::AnyTeamCter => {
+                let team_id = self.battle_player.get(&user_id).unwrap().team_id;
+                for &index in target_array {
+                    let index = index as usize;
+                    let battle_player = self.get_battle_player_by_map_cell_index(index);
+
+                    match battle_player {
+                        Ok(battle_player) => {
+                            if battle_player.team_id != team_id {
+                                anyhow::bail!(
+                                    "this target_type must be  TeamCters!target_type:{:?}",
+                                    target_type
+                                )
+                            }
+                        }
+                        Err(e) => anyhow::bail!("{:?}", e),
+                    }
+                }
+            }
+
             _ => {}
         }
         Ok(())
@@ -1155,6 +1202,12 @@ impl BattleData {
             let res = res.unwrap();
             scope_temp = Some(res);
         }
+
+        let team_id = self
+            .get_battle_cter(cter_id, false)
+            .unwrap()
+            .base_attr
+            .team_id;
         //没有目标，只有范围
         if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();
@@ -1186,6 +1239,7 @@ impl BattleData {
                     {
                         continue;
                     }
+
                     let other_cter = map_cell.cter_id;
                     //如果玩家id大于0
                     if other_cter == 0 {
@@ -1195,6 +1249,30 @@ impl BattleData {
                     let battle_cter = self.get_battle_cter(other_cter, true);
                     if let Err(e) = battle_cter {
                         warn!("{:?}", e);
+                        continue;
+                    }
+
+                    //判断敌方队伍信息
+                    let battle_cter = battle_cter.unwrap();
+                    if target_type == TargetType::AllEnemyCters
+                        || target_type == TargetType::AnyEnemyCter
+                        || target_type == TargetType::SelfScopeAllEnemyCters
+                        || target_type == TargetType::SelfScopeAnyEnemyCters
+                    {
+                        if battle_cter.base_attr.team_id == team_id {
+                            continue;
+                        }
+                    }
+
+                    //判断友方队伍信息
+                    if target_type == TargetType::AllTeamCters
+                        || target_type == TargetType::AnyTeamCter
+                    {
+                        if battle_cter.base_attr.team_id != team_id {
+                            continue;
+                        }
+                    }
+                    if v_u.contains(&other_cter) {
                         continue;
                     }
                     v_u.push(other_cter);
@@ -1243,6 +1321,26 @@ impl BattleData {
                         if let Err(e) = battle_cter {
                             warn!("{:?}", e);
                             continue;
+                        }
+                        //判断敌方队伍信息
+                        let battle_cter = battle_cter.unwrap();
+                        if target_type == TargetType::AllEnemyCters
+                            || target_type == TargetType::AnyEnemyCter
+                            || target_type == TargetType::SelfScopeAllEnemyCters
+                            || target_type == TargetType::SelfScopeAnyEnemyCters
+                        {
+                            if battle_cter.base_attr.team_id == team_id {
+                                continue;
+                            }
+                        }
+
+                        //判断友方队伍信息
+                        if target_type == TargetType::AllTeamCters
+                            || target_type == TargetType::AnyTeamCter
+                        {
+                            if battle_cter.base_attr.team_id != team_id {
+                                continue;
+                            }
                         }
                         if v_u.contains(&other_cter) {
                             continue;

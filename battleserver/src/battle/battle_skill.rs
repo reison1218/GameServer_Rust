@@ -4,7 +4,7 @@ use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::battle::battle_enum::skill_type::{
     HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_INDEX_SAME_ELEMENT,
     SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
-    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL,
+    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
 };
 use crate::battle::battle_enum::{ActionType, EffectType, ElementType, TargetType};
 use crate::battle::battle_helper::build_action_unit_pt;
@@ -21,6 +21,7 @@ use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_cter::BattleCharacter;
+use super::battle_enum::skill_type::SCOPE_CHANGE_SKILL_AOE;
 use super::battle_enum::SkillConsumeType;
 
 #[derive(Clone, Debug)]
@@ -484,6 +485,7 @@ pub unsafe fn add_buff(
         return None;
     }
     let battle_cter = battle_cter.unwrap();
+
     let cter_index = battle_cter.get_map_cell_index();
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     //先计算单体的
@@ -501,13 +503,39 @@ pub unsafe fn add_buff(
     let view_target_type = TargetType::try_from(skill_temp.view_target).unwrap();
     let mut target_pt = TargetPt::new();
     let mut au_vec = vec![];
-
+    let mut index = 0;
+    if target_type != TargetType::PlayerSelf {
+        let res = target_array.get(0);
+        if let None = res {
+            warn!("the target_array is empty!skill_id:{}", skill_id);
+            return None;
+        }
+        index = *res.unwrap() as usize;
+    }
     match target_type {
         TargetType::PlayerSelf => {
             battle_cter.add_buff(Some(cter_id), Some(skill_id), buff_id, Some(turn_index));
             target_pt.target_value.push(cter_index as u32);
             target_pt.add_buffs.push(buff_id);
             au.targets.push(target_pt);
+        }
+        TargetType::AnyEnemyCter => {
+            let target_cter = battle_data_ptr
+                .as_mut()
+                .unwrap()
+                .get_battle_cter_mut_by_map_cell_index(index);
+            match target_cter {
+                Ok(target_cter) => {
+                    target_cter.add_buff(Some(cter_id), Some(skill_id), buff_id, Some(turn_index));
+                    target_pt.target_value.push(cter_index as u32);
+                    target_pt.add_buffs.push(buff_id);
+                    au.targets.push(target_pt);
+                }
+                Err(e) => {
+                    warn!("{:?}", e);
+                    return None;
+                }
+            }
         }
         TargetType::MapCell
         | TargetType::UnOpenMapCell
@@ -517,12 +545,6 @@ pub unsafe fn add_buff(
         | TargetType::OpenedMapCell
         | TargetType::UnOpenMapCellAndUnLock
         | TargetType::UnLockNullMapCell => {
-            let index = target_array.get(0);
-            if let None = index {
-                warn!("the target_array is empty!skill_id:{}", skill_id);
-                return None;
-            }
-            let index = *index.unwrap() as usize;
             let map_cell = battle_data_mut.tile_map.map_cells.get_mut(index).unwrap();
             let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
             let mut buff = Buff::new(
@@ -560,12 +582,25 @@ pub unsafe fn add_buff(
         skill.is_active = true;
     }
 
-    //处理其他的全局要看到的，此处为自残扣血
-    if HURT_SELF_ADD_BUFF.contains(&skill_function_id) {
-        let mut target_pt = battle_data.new_target_pt(cter_id).unwrap();
+    //处理其他的全局要看到的，此处为自残扣血和｜｜除最大行动点数技能
+    if HURT_SELF_ADD_BUFF.contains(&skill_function_id) || SUB_MAX_MOVE_POINT == skill_function_id {
+        let target_cter_id;
+        if SUB_MAX_MOVE_POINT == skill_function_id {
+            let target_cter = battle_data_ptr
+                .as_ref()
+                .unwrap()
+                .get_battle_cter_by_map_cell_index(index)
+                .unwrap();
+            target_cter_id = target_cter.get_cter_id();
+        } else if HURT_SELF_ADD_BUFF.contains(&skill_function_id) {
+            target_cter_id = cter_id;
+        } else {
+            target_cter_id = 0;
+        }
+        let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
         let res = battle_data.deduct_hp(
             cter_id,
-            cter_id,
+            target_cter_id,
             Some(skill_temp.par1 as i16),
             &mut target_pt,
             true,
@@ -959,7 +994,21 @@ pub unsafe fn skill_aoe_damage(
     let par1 = skill.skill_temp.par1 as i16;
     let par2 = skill.skill_temp.par2 as i16;
     let par3 = skill.skill_temp.par3 as i16;
-    let scope_id = skill.skill_temp.scope;
+    let par4 = skill.skill_temp.par3 as i16;
+    let mut scope_id = skill.skill_temp.scope;
+    let round = battle_data.round;
+    if skill_function_id == SCOPE_CHANGE_SKILL_AOE {
+        if round == 1 {
+            scope_id = 1;
+        } else if round == 2 {
+            scope_id = par2 as u32;
+        } else if round == 3 {
+            scope_id = par3 as u32;
+        } else if round >= 4 {
+            scope_id = par4 as u32;
+        }
+    }
+
     let scope_temp = TEMPLATES.skill_scope_temp_mgr().get_temp(&scope_id);
     if let Err(e) = scope_temp {
         error!("{:?}", e);
@@ -1331,46 +1380,54 @@ pub unsafe fn transform(
 ///召唤宠物
 pub unsafe fn summon_minon(
     battle_data: &mut BattleData,
-    _: u32,
+    cter_id: u32,
     skill_id: u32,
     targets: Vec<u32>,
-    _: &mut ActionUnitPt,
+    au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
-    let index = targets.get(0);
-    if index.is_none() {
-        warn!("the targets is empty!");
-        return None;
-    }
-    let index = *index.unwrap() as usize;
-    let res = battle_data.check_choice_index(index, false, false, false, true, true, true);
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return None;
-    }
-    let cter_id: u32 = battle_data.generate_cter_id();
-
-    let user_id = battle_data.get_user_id(cter_id);
-    if let None = user_id {
-        error!("there is no user_id for cter_id:{}!", cter_id);
-        return None;
-    }
-    let user_id = user_id.unwrap();
-
     let skill_temp = crate::TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
     if let Err(e) = skill_temp {
         error!("{:?}", e);
         return None;
     }
-
+    let battle_data_ptr = battle_data as *mut BattleData;
+    let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+    let battle_player = battle_data
+        .get_battle_player_mut_by_cter_id(cter_id, true)
+        .unwrap();
     let skill_temp = skill_temp.unwrap();
     let cter_temp_id = skill_temp.par1;
+    let team_id = battle_player.team_id;
+    let from_user_id = battle_player.get_user_id();
 
-    let minon = BattleCharacter::init_for_minon(user_id, cter_id, cter_temp_id);
-    if let Err(e) = minon {
-        error!("{:?}", e);
-        return None;
+    //遍历选中的地图块下标
+    for index in targets {
+        let index = index as usize;
+        let res = battle_data_mut.check_choice_index(index, false, false, false, true, true, true);
+        if let Err(e) = res {
+            error!("{:?}", e);
+            return None;
+        }
+        //生成新的角色id
+        let new_cter_id: u32 = battle_data_mut.generate_cter_id();
+        //创建新角色
+        let minon =
+            BattleCharacter::init_for_minon(from_user_id, team_id, new_cter_id, cter_temp_id);
+        if let Err(e) = minon {
+            error!("{:?}", e);
+            return None;
+        }
+        //封装客户的消息
+        let minon = minon.unwrap();
+        let mut target_pt = battle_data_mut.new_target_pt(new_cter_id).unwrap();
+        target_pt.set_new_cter(minon.convert_to_battle_cter_pt());
+        au.targets.push(target_pt);
+        //封装数据
+        battle_data_mut
+            .cter_player
+            .insert(new_cter_id, from_user_id);
+        battle_player.cters.insert(new_cter_id, minon);
     }
-    let _ = minon.unwrap();
 
     None
 }
