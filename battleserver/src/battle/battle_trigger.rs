@@ -34,6 +34,9 @@ pub trait TriggerEvent {
     ///回合开始时候触发，主要触发buff
     fn turn_start_trigger(&mut self);
 
+    ///回合结束时候触发
+    fn turn_end_trigger(&mut self);
+
     ///翻开地图块时候触发,主要触发buff和游戏机制上的东西
     fn open_map_cell_trigger(
         &mut self,
@@ -247,34 +250,35 @@ impl TriggerEvent for BattleData {
             let mut buff_function_id;
             let mut cter_index;
             let mut buff_id;
-            //所有玩家
-            for battle_player in self.battle_player.values_mut() {
-                cter_index = battle_player.get_current_cter_index();
-                //所有角色
-                for battle_cter in battle_player.cters.values_mut() {
-                    for (_, buff) in battle_cter.battle_buffs.buffs() {
-                        buff_function_id = buff.function_id;
-                        buff_id = buff.get_id();
-                        if buff_function_id == OPEN_ELEMENT_CELL_CLEAR_CD {
-                            let temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff.get_id())?;
-                            if temp.par1 == element {
-                                let mut target_pt = TargetPt::new();
-                                target_pt.target_value.push(cter_index as u32);
-                                let mut tep = TriggerEffectPt::new();
 
-                                let skill = battle_cter.skills.get_mut(&temp.par1).unwrap();
-                                tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
-                                tep.buff_id = buff_id;
-                                tep.set_value(skill.id);
-                                skill.clean_cd();
-                                target_pt.passiveEffect.push(tep);
-                                au.targets.push(target_pt);
-                            }
+            for &temp_cter_id in self.cter_player.keys() {
+                let cter = self_mut.get_battle_cter_mut(temp_cter_id, true);
+                if cter.is_err() {
+                    continue;
+                }
+                let battle_cter = cter.unwrap();
+                cter_index = battle_cter.get_map_cell_index();
+                for (_, buff) in battle_cter.battle_buffs.buffs() {
+                    buff_function_id = buff.function_id;
+                    buff_id = buff.get_id();
+                    if buff_function_id == OPEN_ELEMENT_CELL_CLEAR_CD {
+                        let temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff.get_id())?;
+                        if temp.par1 == element {
+                            let mut target_pt = TargetPt::new();
+                            target_pt.target_value.push(cter_index as u32);
+                            let mut tep = TriggerEffectPt::new();
+
+                            let skill = battle_cter.skills.get_mut(&temp.par1).unwrap();
+                            tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
+                            tep.buff_id = buff_id;
+                            tep.set_value(skill.id);
+                            skill.clean_cd();
+                            target_pt.passiveEffect.push(tep);
+                            au.targets.push(target_pt);
                         }
                     }
                 }
             }
-
             Ok(None)
         }
     }
@@ -964,6 +968,10 @@ impl TriggerEvent for BattleData {
     }
 
     fn turn_start_trigger(&mut self) {
+        let battle_player = self.get_battle_player_mut(None, true);
+        if let Ok(battle_player) = battle_player {
+            battle_player.turn_start_reset();
+        }
         let mut res_cter_id = None;
         let mut team_id = None;
         let mut skill_demage = 0;
@@ -1031,5 +1039,17 @@ impl TriggerEvent for BattleData {
                 au.targets.push(target_pt);
             }
         }
+    }
+
+    fn turn_end_trigger(&mut self) {
+        //清空翻开地图玩家id
+        self.clear_open_cells();
+        let battle_player = self.get_battle_player_mut(None, true);
+        if battle_player.is_err() {
+            return;
+        }
+        let battle_player = battle_player.unwrap();
+        //turn结束重制
+        battle_player.turn_end_reset();
     }
 }

@@ -196,10 +196,8 @@ impl BattleCharacter {
         team_id: u8,
         cter_id: u32,
         cter_temp_id: u32,
+        index: usize,
     ) -> anyhow::Result<Self> {
-        let mut battle_cter = BattleCharacter::default();
-
-        let buff_ref = TEMPLATES.buff_temp_mgr();
         let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_temp_id);
         if cter_temp.is_none() {
             let str = format!("cter_temp is none for cter_id:{}!", cter_temp_id);
@@ -207,6 +205,24 @@ impl BattleCharacter {
             anyhow::bail!(str)
         }
         let cter_temp = cter_temp.unwrap();
+        let mut battle_cter = BattleCharacter::default();
+
+        let buff_ref = TEMPLATES.buff_temp_mgr();
+        let skill_ref = TEMPLATES.skill_temp_mgr();
+        for skill_group in cter_temp.skills.iter() {
+            for skill_id in skill_group.group.iter() {
+                let res = skill_ref.temps.get(skill_id);
+                if res.is_none() {
+                    let str = format!("there is no skill for skill_id:{}!", skill_id);
+                    warn!("{:?}", str.as_str());
+                    anyhow::bail!(str)
+                }
+                let skill_temp = res.unwrap();
+                let skill = Skill::from(skill_temp);
+                battle_cter.skills.insert(*skill_id, skill);
+            }
+        }
+
         //初始化战斗属性,这里需要根据占位进行buff加成，但buff还没设计完，先放在这儿
         battle_cter.base_attr.user_id = user_id;
         battle_cter.base_attr.cter_id = cter_id;
@@ -220,6 +236,7 @@ impl BattleCharacter {
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
         battle_cter.base_attr.team_id = team_id;
         battle_cter.is_major = false;
+        battle_cter.index_data.map_cell_index = Some(index);
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
             let buff = Buff::from(buff_temp);

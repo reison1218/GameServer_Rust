@@ -421,6 +421,8 @@ impl BattlePlayer {
 
     ///回合结算
     pub fn turn_start_reset(&mut self) {
+        //重制剩余移动点数
+        self.reset_residue_movement_points();
         //回合开始触发buff
         for cter in self.cters.values_mut() {
             cter.trigger_turn_start();
@@ -428,8 +430,6 @@ impl BattlePlayer {
     }
 
     pub fn turn_end_reset(&mut self) {
-        //重制剩余移动点数
-        self.reset_residue_movement_points();
         //重制配对攻击奖励翻地图块次数
         self.status.attack_reward_movement_points = false;
         //重制是否翻过地图块

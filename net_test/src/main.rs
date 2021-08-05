@@ -14,9 +14,11 @@ use futures::FutureExt;
 use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
+use std::cell::RefCell;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
+use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use std::task::Poll;
@@ -525,25 +527,23 @@ impl DumbFuture {
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut test1 = DumbFuture {
-        a: String::from_str("test1").unwrap(),
-        b: std::ptr::null(),
-    };
-    test1.init();
-    let mut test2 = DumbFuture {
-        a: String::from_str("test2").unwrap(),
-        b: std::ptr::null(),
-    };
-    test2.init();
-    println!("test1-a: {}, b: {}", test1.a(), test1.b());
-    println!("test2-a: {}, b: {}", test2.a(), test2.b());
+    // let mut test1 = DumbFuture {
+    //     a: String::from_str("test1").unwrap(),
+    //     b: std::ptr::null(),
+    // };
+    // test1.init();
+    // let mut test2 = DumbFuture {
+    //     a: String::from_str("test2").unwrap(),
+    //     b: std::ptr::null(),
+    // };
+    // test2.init();
+    // println!("test1-a: {}, b: {}", test1.a(), test1.b());
+    // println!("test2-a: {}, b: {}", test2.a(), test2.b());
 
-    println!("------------------------------------------------");
-    println!("test1-a: {}, b: {}", test1.a(), test1.b());
-    std::mem::swap(&mut test1, &mut test2);
-    println!("test2-a: {}, b: {}", test2.a(), test2.b());
-
-    let m = async { println!("test") };
+    // println!("------------------------------------------------");
+    // println!("test1-a: {}, b: {}", test1.a(), test1.b());
+    // std::mem::swap(&mut test1, &mut test2);
+    // println!("test2-a: {}, b: {}", test2.a(), test2.b());
 
     // let a = DumbFuture;
     // async_std::task::block_on(a);

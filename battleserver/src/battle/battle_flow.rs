@@ -535,7 +535,7 @@ impl BattleData {
     ///下个turn
     pub fn next_turn(&mut self, need_push_battle_turn_notice: bool) {
         //本回合结束
-        self.turn_end();
+        self.turn_end_trigger();
         //计算下一个回合
         self.add_next_turn();
         //给客户端推送战斗turn推送
@@ -544,19 +544,6 @@ impl BattleData {
         }
         //创建战斗turn定时器任务
         self.build_battle_turn_task();
-    }
-
-    ///本turn结束,结算一些回合结束该干的事情
-    pub fn turn_end(&mut self) {
-        //清空翻开地图玩家id
-        self.clear_open_cells();
-        let battle_player = self.get_battle_player_mut(None, true);
-        if battle_player.is_err() {
-            return;
-        }
-        let battle_player = battle_player.unwrap();
-        //turn结束重制
-        battle_player.turn_end_reset();
     }
 
     ///回合开始触发
@@ -591,7 +578,7 @@ impl BattleData {
 
                     //turn结算玩家
                     let battle_player = self_mut.battle_player.get_mut(&user_id).unwrap();
-                    battle_player.turn_start_reset();
+
                     battle_player.set_is_can_end_turn(is_can_skip_turn);
                 }
             }

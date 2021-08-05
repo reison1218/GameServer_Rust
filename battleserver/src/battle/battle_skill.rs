@@ -527,7 +527,7 @@ pub unsafe fn add_buff(
             match target_cter {
                 Ok(target_cter) => {
                     target_cter.add_buff(Some(cter_id), Some(skill_id), buff_id, Some(turn_index));
-                    target_pt.target_value.push(cter_index as u32);
+                    target_pt.target_value.push(index as u32);
                     target_pt.add_buffs.push(buff_id);
                     au.targets.push(target_pt);
                 }
@@ -1411,22 +1411,29 @@ pub unsafe fn summon_minon(
         //生成新的角色id
         let new_cter_id: u32 = battle_data_mut.generate_cter_id();
         //创建新角色
-        let minon =
-            BattleCharacter::init_for_minon(from_user_id, team_id, new_cter_id, cter_temp_id);
+        let minon = BattleCharacter::init_for_minon(
+            from_user_id,
+            team_id,
+            new_cter_id,
+            cter_temp_id,
+            index,
+        );
         if let Err(e) = minon {
             error!("{:?}", e);
             return None;
         }
-        //封装客户的消息
         let minon = minon.unwrap();
-        let mut target_pt = battle_data_mut.new_target_pt(new_cter_id).unwrap();
-        target_pt.set_new_cter(minon.convert_to_battle_cter_pt());
-        au.targets.push(target_pt);
+        let battle_cter_pt = minon.convert_to_battle_cter_pt();
         //封装数据
         battle_data_mut
             .cter_player
             .insert(new_cter_id, from_user_id);
         battle_player.cters.insert(new_cter_id, minon);
+
+        //封装客户的消息
+        let mut target_pt = battle_data_mut.new_target_pt(new_cter_id).unwrap();
+        target_pt.set_new_cter(battle_cter_pt);
+        au.targets.push(target_pt);
     }
 
     None

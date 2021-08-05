@@ -379,7 +379,12 @@ impl BattleData {
     }
 
     ///计算减伤
-    pub fn calc_reduce_damage(&self, from_cter_id: u32, target_cter: &mut BattleCharacter) -> i16 {
+    pub fn calc_reduce_damage(
+        &self,
+        from_cter_id: u32,
+        target_cter: &mut BattleCharacter,
+        damage: i16,
+    ) -> i16 {
         let scope_temp = TEMPLATES
             .skill_scope_temp_mgr()
             .get_temp(&TRIGGER_SCOPE_NEAR_TEMP_ID);
@@ -414,6 +419,10 @@ impl BattleData {
                 continue;
             }
             par = buff.buff_temp.par1 as u8;
+            if buff_function_id == NEAR_ATTACKED_DAMAGE_ZERO {
+                par = damage as u8;
+            }
+
             if buff_function_id == ATTACKED_SUB_DAMAGE {
                 let is_min_hp = self.is_min_hp(target_cter_id);
                 if is_min_hp {
@@ -481,7 +490,8 @@ impl BattleData {
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
             let attack_damage = from_cter.calc_damage();
-            let reduce_damage = self.calc_reduce_damage(from_cter.get_user_id(), target_cter);
+            let reduce_damage =
+                self.calc_reduce_damage(from_cter.get_user_id(), target_cter, attack_damage);
             ep.effect_type = EffectType::AttackDamage as u32;
             res = attack_damage - reduce_damage;
             if res < 0 {
