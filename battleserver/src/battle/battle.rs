@@ -96,7 +96,7 @@ impl Into<SummaryDataPt> for SummaryUser {
 pub struct BattleData {
     pub room_type: RoomType,
     pub tile_map: TileMap,                         //地图数据
-    pub next_turn_index: usize,                    //下个turn的下标
+    pub next_turn_index: usize,                    //下个turn的下标,从0-4循环
     pub turn_orders: [u32; MEMBER_MAX],            //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,           //刷新地图时的turn下标
     pub battle_player: HashMap<u32, BattlePlayer>, //玩家战斗数据
@@ -148,6 +148,24 @@ impl BattleData {
 
         for battle_player in self.battle_player.values() {
             if battle_player.team_id != team_id {
+                continue;
+            }
+            for &cter_id in battle_player.cters.keys() {
+                let cter = self.get_battle_cter(cter_id, true);
+                if cter.is_err() {
+                    continue;
+                }
+                res_v.push(cter_id);
+            }
+        }
+        res_v
+    }
+
+    pub fn get_enemys(&self, team_id: u8) -> Vec<u32> {
+        let mut res_v = vec![];
+
+        for battle_player in self.battle_player.values() {
+            if battle_player.team_id == team_id {
                 continue;
             }
             for &cter_id in battle_player.cters.keys() {

@@ -197,6 +197,7 @@ impl BattleCharacter {
         cter_id: u32,
         cter_temp_id: u32,
         index: usize,
+        turn_index: usize,
     ) -> anyhow::Result<Self> {
         let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_temp_id);
         if cter_temp.is_none() {
@@ -239,7 +240,8 @@ impl BattleCharacter {
         battle_cter.index_data.map_cell_index = Some(index);
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
-            let buff = Buff::from(buff_temp);
+            let mut buff = Buff::from(buff_temp);
+            buff.turn_index = Some(turn_index);
             battle_cter.battle_buffs.init(buff);
         });
         Ok(battle_cter)

@@ -14,10 +14,13 @@ use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
+use protobuf::Message;
 use std::convert::TryFrom;
 use std::str::FromStr;
+use tools::cmd_code::ClientCode;
 use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
+use tools::protos::battle::S_ACTION_NOTICE;
 
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
@@ -976,7 +979,18 @@ impl TriggerEvent for BattleData {
         let mut team_id = None;
         let mut skill_demage = 0;
         let mut buff_id = None;
+        let turn_index = self.next_turn_index;
+        let turn_user = self.get_turn_user(None).unwrap();
+        let mut user_id;
         for &cter_id in self.cter_player.keys() {
+            user_id = self.get_user_id(cter_id);
+            if user_id.is_none() {
+                continue;
+            }
+            //如果不是当前玩家的turn，直接跳过
+            if user_id.unwrap() != turn_user {
+                continue;
+            }
             let battle_cter = self.get_battle_cter(cter_id, true);
             if let Err(_) = battle_cter {
                 continue;
@@ -992,6 +1006,12 @@ impl TriggerEvent for BattleData {
                 continue;
             }
             let buff = buff.unwrap();
+            if buff.turn_index.is_none() {
+                continue;
+            }
+            if buff.turn_index.unwrap() != turn_index {
+                continue;
+            }
             team_id = Some(battle_cter.base_attr.team_id);
             skill_demage = battle_cter.base_attr.hp;
             res_cter_id = Some(cter_id);
@@ -1018,7 +1038,7 @@ impl TriggerEvent for BattleData {
             //扣血
             let mut au = build_action_unit_pt(cter_id, ActionType::Buff, buff_id.unwrap());
             au.targets.push(target_pt);
-            let cters = self.get_teammates(team_id.unwrap());
+            let cters = self.get_enemys(team_id.unwrap());
             for target_cter_id in cters {
                 let mut target_pt = self
                     .build_target_pt(
@@ -1038,6 +1058,9 @@ impl TriggerEvent for BattleData {
                 );
                 au.targets.push(target_pt);
             }
+            let mut proto = S_ACTION_NOTICE::new();
+            proto.action_uints.push(au);
+            self.send_2_all_client(ClientCode::ActionNotice, proto.write_to_bytes().unwrap());
         }
     }
 

@@ -1390,6 +1390,7 @@ pub unsafe fn summon_minon(
         error!("{:?}", e);
         return None;
     }
+    let turn_index = battle_data.next_turn_index;
     let battle_data_ptr = battle_data as *mut BattleData;
     let battle_data_mut = battle_data_ptr.as_mut().unwrap();
     let battle_player = battle_data
@@ -1417,6 +1418,7 @@ pub unsafe fn summon_minon(
             new_cter_id,
             cter_temp_id,
             index,
+            turn_index,
         );
         if let Err(e) = minon {
             error!("{:?}", e);

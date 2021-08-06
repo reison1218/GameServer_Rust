@@ -537,11 +537,8 @@ impl BattleData {
         //本回合结束
         self.turn_end_trigger();
         //计算下一个回合
-        self.add_next_turn();
-        //给客户端推送战斗turn推送
-        if need_push_battle_turn_notice {
-            self.send_battle_turn_notice();
-        }
+        self.add_next_turn(need_push_battle_turn_notice);
+
         //创建战斗turn定时器任务
         self.build_battle_turn_task();
     }

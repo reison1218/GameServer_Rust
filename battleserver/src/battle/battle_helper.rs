@@ -107,7 +107,7 @@ impl BattleData {
     }
 
     ///下一个
-    pub fn add_next_turn(&mut self) {
+    pub fn add_next_turn(&mut self, need_push_battle_turn_notice: bool) {
         let battle_data_ptr = self as *mut BattleData;
         self.next_turn_index += 1;
         self.turn += 1;
@@ -116,13 +116,17 @@ impl BattleData {
         if index >= MEMBER_MAX {
             self.next_turn_index = 0;
         }
+        //给客户端推送战斗turn推送
+        if need_push_battle_turn_notice {
+            self.send_battle_turn_notice();
+        }
         //开始回合触发
         self.turn_start_summary();
 
         let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {
             if user_id == 0 {
-                self.add_next_turn();
+                self.add_next_turn(false);
                 return;
             }
 
@@ -130,7 +134,7 @@ impl BattleData {
             match battle_player_res {
                 Ok(battle_player) => {
                     if battle_player.is_died() {
-                        self.add_next_turn();
+                        self.add_next_turn(false);
                         return;
                     }
                     if battle_player.robot_data.is_some() {
@@ -484,7 +488,7 @@ impl BattleData {
         let from_cter = battle_data_ptr
             .as_mut()
             .unwrap()
-            .get_battle_cter_mut(from_cter_id, true)?;
+            .get_battle_cter_mut(from_cter_id, false)?;
         let from_user_id = from_cter.get_user_id();
         let mut res;
         //如果是普通攻击，要算上减伤
