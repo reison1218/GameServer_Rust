@@ -474,8 +474,9 @@ impl Room {
         //初始化战斗角色
         self.cter_2_battle_cter();
         //先选出可以随机的下标
+        let member_count = self.members.len();
         let mut index_v: Vec<usize> = Vec::new();
-        for index in 0..MEMBER_MAX {
+        for index in 0..member_count {
             let user_id = self.get_turn_user(Some(index));
             if user_id.is_err() {
                 continue;

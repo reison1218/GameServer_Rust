@@ -126,7 +126,7 @@ impl BattleData {
         let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {
             if user_id == 0 {
-                self.add_next_turn(false);
+                self.add_next_turn(true);
                 return;
             }
 
