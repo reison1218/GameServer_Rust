@@ -565,11 +565,13 @@ fn main() -> anyhow::Result<()> {
     //     }
     // }
     // println!("over");
-    // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 16888);
+    // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3042);
     // let m = move || {
+    //     std::thread::sleep(Duration::from_secs(10));
     //     message_io::run(Transport::Tcp, socket);
     // };
     // std::thread::spawn(m);
+    message_io::connect();
     // std::thread::sleep(Duration::from_micros(1));
     // let mut tcp = std::net::TcpStream::connect("localhost:16888").unwrap();
     // let buf = "hello".as_bytes();
