@@ -136,7 +136,7 @@ pub struct BattleCharacter {
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
     pub self_cter: Option<Box<BattleCharacter>>,           //原本的角色
-    pub owner: Option<u32>,                                //主人id
+    pub owner: Option<(u32, u32)>,                         //主人id,技能id
     pub minons: HashSet<u32>,                              //宠物id
     pub is_major: bool,                                    //是否是主角色
 }
@@ -194,6 +194,8 @@ impl BattleCharacter {
     pub fn init_for_minon(
         user_id: u32,
         team_id: u8,
+        from_cter_id: u32,
+        from_skill_id: u32,
         cter_id: u32,
         cter_temp_id: u32,
         index: usize,
@@ -237,6 +239,7 @@ impl BattleCharacter {
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
         battle_cter.base_attr.team_id = team_id;
         battle_cter.is_major = false;
+        battle_cter.owner = Some((from_cter_id, from_skill_id));
         battle_cter.index_data.map_cell_index = Some(index);
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();

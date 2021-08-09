@@ -156,9 +156,6 @@ pub mod buff_type {
     ///被攻击时减伤
     pub const ATTACKED_SUB_DAMAGE: u32 = 17;
 
-    ///死亡时指定技能进入cd，主要是给召唤物用的
-    pub const DIE_SKILL_CD: u32 = 19;
-
     ///扣行动点数上限
     pub const SUB_MOVE_POINT: u32 = 20;
 

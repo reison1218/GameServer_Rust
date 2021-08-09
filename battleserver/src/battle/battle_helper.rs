@@ -1170,12 +1170,14 @@ impl BattleData {
         target_pt
             .target_value
             .push(target_cter.get_map_cell_index() as u32);
-        if from_cter_id.is_some() && from_cter_id.unwrap() == target_cter_id && buff_id.is_some() {
-            let mut tep = TriggerEffectPt::new();
-            tep.set_field_type(effect_type.into_u32());
-            tep.set_value(effect_value);
-            tep.buff_id = buff_id.unwrap();
-            target_pt.passiveEffect.push(tep);
+        if let Some(from_cter_id) = from_cter_id {
+            if from_cter_id == target_cter_id && buff_id.is_some() {
+                let mut tep = TriggerEffectPt::new();
+                tep.set_field_type(effect_type.into_u32());
+                tep.set_value(effect_value);
+                tep.buff_id = buff_id.unwrap();
+                target_pt.passiveEffect.push(tep);
+            }
         } else {
             let mut ep = EffectPt::new();
             ep.effect_type = effect_type.into_u32();

@@ -26,7 +26,7 @@ use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
     ATTACKED_SUB_CD, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, SUICIDE_SKILL_DAMAGE,
 };
-use super::battle_enum::buff_type::{DIE_END_TURN, DIE_SKILL_CD, OPEN_ELEMENT_CELL_CLEAR_CD};
+use super::battle_enum::buff_type::{DIE_END_TURN, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
 use super::battle_enum::TargetType;
 use super::battle_helper::build_action_unit_pt;
@@ -720,74 +720,58 @@ impl TriggerEvent for BattleData {
         }
     }
 
+    ///此函数只管角色死亡，不要管玩家死亡
     fn after_cter_died_trigger(&mut self, cter_id: u32) {
-        let self_mut_ptr = self as *mut BattleData;
-        let &user_id = self.cter_player.get(&cter_id).unwrap();
-        let battle_player = self.get_battle_player(Some(user_id), false);
-        if let Err(e) = battle_player {
-            warn!("{:?}", e);
-            return;
-        }
-        let battle_player = battle_player.unwrap();
-
-        let cter = battle_player.cters.get(&cter_id).unwrap();
-        let is_major = cter.is_major;
-        let owner = cter.owner;
-        let has_minons = !cter.minons.is_empty();
         let map_cell = self.tile_map.get_map_cell_mut_by_cter_id(cter_id);
         if let Some(map_cell) = map_cell {
             map_cell.cter_id = 0;
         }
+        let self_mut_ptr = self as *mut BattleData;
+        let &user_id = self.cter_player.get(&cter_id).unwrap();
+        let battle_cter = self.get_battle_cter(cter_id, false);
+        if let Err(e) = battle_cter {
+            warn!("{:?}", e);
+            return;
+        }
+        let battle_cter = battle_cter.unwrap();
+        //是否主角色
+        let is_major = battle_cter.is_major;
+        //是否是宠物
+        let is_minon = battle_cter.owner.is_some();
+        //是否是主人
+        let is_owner = !battle_cter.minons.is_empty();
 
         //-----------------------以下处理召唤物相关的死亡逻辑
         //如果是随从死了，就触发相关buff
-        if owner.is_some() {
-            let battle_data_ptr = self as *mut BattleData;
+        if is_minon {
+            let (owner_cter_id, from_skill_id) = battle_cter.owner.unwrap();
             unsafe {
-                let battle_cter = battle_data_ptr
+                let self_mut = self_mut_ptr.as_mut().unwrap();
+                let owner_battle_cter = self_mut.get_battle_cter_mut(owner_cter_id, true).unwrap();
+                //删除宠物id
+                owner_battle_cter.minons.remove(&cter_id);
+                let battle_player = self_mut_ptr
                     .as_mut()
                     .unwrap()
-                    .get_battle_cter(cter_id, true)
+                    .get_battle_player_mut(Some(user_id), false)
                     .unwrap();
+                battle_player.cters.remove(&cter_id);
+                if owner_battle_cter.minons.is_empty() {
+                    let skill = owner_battle_cter.skills.get_mut(&from_skill_id).unwrap();
+                    skill.is_active = false;
+                }
+
                 let mut buff_function_id;
                 for buff in battle_cter.battle_buffs.buffs().values() {
                     buff_function_id = buff.function_id;
-                    if buff_function_id == DIE_SKILL_CD {
-                        let cter = self.get_battle_cter_mut(buff.from_cter.unwrap(), true);
-                        match cter {
-                            Ok(cter) => {
-                                let skill = cter.skills.get_mut(&buff.buff_temp.par1);
-                                match skill {
-                                    Some(skill) => skill.is_active = false,
-                                    None => {
-                                        warn!(
-                                            "could not find skill({}) in cter_id:{}",
-                                            buff.buff_temp.par1, cter.base_attr.cter_temp_id
-                                        )
-                                    }
-                                }
-                            }
-                            Err(err) => warn!("{:?}", err),
-                        }
-                    }
                     if buff_function_id == DIE_END_TURN {
-                        self.next_turn(false);
+                        self_mut_ptr.as_mut().unwrap().next_turn(false);
                     }
-                }
-                let owner_cter = owner.unwrap();
-                let battle_cter = battle_data_ptr
-                    .as_mut()
-                    .unwrap()
-                    .get_battle_cter_mut(owner_cter, true);
-                if let Ok(battle_cter) = battle_cter {
-                    battle_cter.minons.remove(&cter_id);
-                    let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
-                    battle_player.cters.remove(&cter_id);
                 }
             }
         }
         //判断当前死亡角色有没有召唤物
-        if has_minons && !is_major {
+        if is_owner && !is_major {
             let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
             let cter = battle_player.cters.get_mut(&cter_id).unwrap();
             let minons = cter.minons.clone();
@@ -805,13 +789,13 @@ impl TriggerEvent for BattleData {
                         minon_cter.died(str.as_str());
                         self_mut.after_cter_died_trigger(minon_id);
                     }
-                    battle_player.cters.remove(&minon_id);
                 }
             }
         }
+        self.cter_player.remove(&cter_id);
     }
 
-    ///玩家死亡触发
+    ///此函数只管玩家死亡逻辑
     fn after_player_died_trigger(
         &mut self,
         from_user_id: u32,
@@ -1033,11 +1017,9 @@ impl TriggerEvent for BattleData {
             )
             .unwrap();
         unsafe {
-            let _ = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
-
             //扣血
             let mut au = build_action_unit_pt(cter_id, ActionType::Buff, buff_id.unwrap());
-            au.targets.push(target_pt);
+
             let cters = self.get_enemys(team_id.unwrap());
             for target_cter_id in cters {
                 let mut target_pt = self
@@ -1058,6 +1040,10 @@ impl TriggerEvent for BattleData {
                 );
                 au.targets.push(target_pt);
             }
+            let _ = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
+            //此处不需要effect
+            target_pt.effects.clear();
+            au.targets.insert(0, target_pt);
             let mut proto = S_ACTION_NOTICE::new();
             proto.action_uints.push(au);
             self.send_2_all_client(ClientCode::ActionNotice, proto.write_to_bytes().unwrap());

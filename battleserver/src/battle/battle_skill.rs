@@ -1400,7 +1400,10 @@ pub unsafe fn summon_minon(
     let cter_temp_id = skill_temp.par1;
     let team_id = battle_player.team_id;
     let from_user_id = battle_player.get_user_id();
-
+    {
+        let battle_cter = battle_data_mut.get_battle_cter_mut(cter_id, true).unwrap();
+        battle_cter.skills.get_mut(&skill_id).unwrap().is_active = true;
+    }
     //遍历选中的地图块下标
     for index in targets {
         let index = index as usize;
@@ -1415,6 +1418,8 @@ pub unsafe fn summon_minon(
         let minon = BattleCharacter::init_for_minon(
             from_user_id,
             team_id,
+            cter_id,
+            skill_id,
             new_cter_id,
             cter_temp_id,
             index,
