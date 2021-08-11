@@ -134,7 +134,7 @@ impl BattleData {
             match battle_player_res {
                 Ok(battle_player) => {
                     if battle_player.is_died() {
-                        self.add_next_turn(false);
+                        self.add_next_turn(true);
                         return;
                     }
                     if battle_player.robot_data.is_some() {
@@ -363,22 +363,21 @@ impl BattleData {
     pub fn is_min_hp(&self, cter_id: u32) -> bool {
         let battle_cter = self.get_battle_cter(cter_id, true).unwrap();
         let hp = battle_cter.base_attr.hp;
-
-        let mut min_hp = 0;
-        for &temp_cter_id in self.cter_player.keys() {
-            let res = self.get_battle_cter(temp_cter_id, true);
+        let mut min_hp = 9999;
+        for &_cter_id in self.cter_player.keys() {
+            //排除自己
+            if _cter_id == cter_id {
+                continue;
+            }
+            let res = self.get_battle_cter(_cter_id, true);
             if let Err(_) = res {
                 continue;
             }
             let cter = res.unwrap();
-            if temp_cter_id == cter_id {
-                continue;
-            }
-            if min_hp < cter.base_attr.hp {
+            if cter.base_attr.hp < min_hp {
                 min_hp = cter.base_attr.hp;
             }
         }
-
         hp < min_hp
     }
 
@@ -494,8 +493,7 @@ impl BattleData {
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
             let attack_damage = from_cter.calc_damage();
-            let reduce_damage =
-                self.calc_reduce_damage(from_cter.get_user_id(), target_cter, attack_damage);
+            let reduce_damage = self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
             ep.effect_type = EffectType::AttackDamage as u32;
             res = attack_damage - reduce_damage;
             if res < 0 {
@@ -1170,14 +1168,12 @@ impl BattleData {
         target_pt
             .target_value
             .push(target_cter.get_map_cell_index() as u32);
-        if let Some(from_cter_id) = from_cter_id {
-            if from_cter_id == target_cter_id && buff_id.is_some() {
-                let mut tep = TriggerEffectPt::new();
-                tep.set_field_type(effect_type.into_u32());
-                tep.set_value(effect_value);
-                tep.buff_id = buff_id.unwrap();
-                target_pt.passiveEffect.push(tep);
-            }
+        if from_cter_id.is_some() && from_cter_id.unwrap() == target_cter_id && buff_id.is_some() {
+            let mut tep = TriggerEffectPt::new();
+            tep.set_field_type(effect_type.into_u32());
+            tep.set_value(effect_value);
+            tep.buff_id = buff_id.unwrap();
+            target_pt.passiveEffect.push(tep);
         } else {
             let mut ep = EffectPt::new();
             ep.effect_type = effect_type.into_u32();
@@ -1288,6 +1284,7 @@ impl BattleData {
                             continue;
                         }
                     }
+
                     if v_u.contains(&other_cter) {
                         continue;
                     }
@@ -1364,6 +1361,17 @@ impl BattleData {
                         v_u.push(other_cter);
                     }
                 }
+            }
+        }
+        //如果是地图块上的地方，塞选出地图块上的敌人
+        if target_type == TargetType::MapCellEnemys {
+            let team_id = self.get_team_id(cter_id);
+            for &id in v_u.clone().iter() {
+                if team_id == self.get_team_id(id) {
+                    continue;
+                }
+                let (index, _) = v_u.iter().enumerate().find(|(_, &_id)| _id == id).unwrap();
+                v_u.remove(index);
             }
         }
         (v, v_u)

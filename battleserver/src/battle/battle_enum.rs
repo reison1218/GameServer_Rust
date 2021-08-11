@@ -380,6 +380,7 @@ pub enum TargetType {
     AnyTeamCter = 24,            //任意友方角色
     SelfScopeAllEnemyCters = 25, //以自身为一圈的所有敌方角色
     SelfScopeAnyEnemyCters = 26, //以自身为一圈的任意敌方角色
+    MapCellEnemys = 27,          //地图块上的敌人
 }
 
 impl TargetType {

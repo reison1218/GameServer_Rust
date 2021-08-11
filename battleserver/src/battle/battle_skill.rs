@@ -1431,6 +1431,8 @@ pub unsafe fn summon_minon(
         }
         let minon = minon.unwrap();
         let battle_cter_pt = minon.convert_to_battle_cter_pt();
+        let map_cell = battle_data_mut.tile_map.map_cells.get_mut(index).unwrap();
+        map_cell.cter_id = minon.get_cter_id();
         //封装数据
         battle_data_mut
             .cter_player

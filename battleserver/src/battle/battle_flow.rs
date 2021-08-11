@@ -247,24 +247,26 @@ impl BattleData {
             hurt_damge =
                 self.deduct_hp(cter_id, target_cter_id, None, &mut target_pt, is_last_one)?;
         }
-        let target_player = self.get_battle_player(Some(target_cter_id), true);
-        if target_player.is_ok() {
+        let target_cter = self.get_battle_cter(target_cter_id, true);
+        let mut v = vec![];
+        if target_cter.is_ok() {
             //被攻击后触发
             self.attacked_after_trigger(target_cter_id, &mut target_pt);
 
             //收到攻击伤害触发
             if hurt_damge > 0 {
-                self.attacked_hurted_trigger(
+                v = self.attacked_hurted_trigger(
                     cter_id,
                     target_cter_id,
                     hurt_damge,
                     &mut target_pt,
-                    au,
                 );
             }
         }
-
         au.targets.push(target_pt);
+        for target_pt in v {
+            au.targets.push(target_pt);
+        }
         Ok(())
     }
 
@@ -404,12 +406,13 @@ impl BattleData {
             let mut buff_function_id;
             let mut buff_id;
             let mut cter_id;
+            let mut rm_minons = vec![];
             //刷新角色状态和触发地图刷新的触发buff
             for battle_player in self.battle_player.values_mut() {
                 if battle_player.is_died() {
                     continue;
                 }
-                battle_player.round_reset();
+                rm_minons.extend_from_slice(battle_player.round_reset().as_slice());
 
                 for cter in battle_player.cters.values() {
                     if cter.is_died() {
@@ -435,6 +438,9 @@ impl BattleData {
                         }
                     }
                 }
+            }
+            for id in rm_minons {
+                self.cter_player.remove(&id);
             }
         }
         Ok(())

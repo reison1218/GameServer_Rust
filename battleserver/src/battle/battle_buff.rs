@@ -316,7 +316,7 @@ impl BattleData {
     }
 
     ///附近造成技能伤害
-    fn near_skill_damage(&mut self, user_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
+    fn near_skill_damage(&mut self, cter_id: u32, index: u32, buff_id: u32, au: &mut ActionUnitPt) {
         let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
         if let Err(e) = buff_temp {
             error!("{:?}", e);
@@ -332,7 +332,7 @@ impl BattleData {
         let scope_temp = scope_temp.unwrap();
         let isize_index = index as isize;
         let target_type = TargetType::try_from(buff_temp.target as u8).unwrap();
-        let (_, v) = self.cal_scope(user_id, isize_index, target_type, None, Some(scope_temp));
+        let (_, v) = self.cal_scope(cter_id, isize_index, target_type, None, Some(scope_temp));
         let mut is_last_one = false;
         unsafe {
             for index in 0..v.len() {
@@ -348,7 +348,7 @@ impl BattleData {
                 let mut target_pt = target_pt.unwrap();
                 //造成技能伤害
                 let res = self.deduct_hp(
-                    user_id,
+                    cter_id,
                     *target_user,
                     Some(buff_temp.par1 as i16),
                     &mut target_pt,

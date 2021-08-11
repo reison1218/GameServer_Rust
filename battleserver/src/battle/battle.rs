@@ -122,6 +122,10 @@ unsafe impl Send for BattleData {}
 unsafe impl Sync for BattleData {}
 
 impl BattleData {
+    pub fn get_team_id(&self, cter_id: u32) -> u8 {
+        let cter = self.get_battle_cter(cter_id, false).unwrap();
+        cter.base_attr.team_id
+    }
     pub fn remove_player(&mut self, user_id: u32) {
         //移除战斗角色
         let battle_player = self.battle_player.remove(&user_id);

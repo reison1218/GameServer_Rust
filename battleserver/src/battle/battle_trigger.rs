@@ -86,8 +86,7 @@ pub trait TriggerEvent {
         target_cter_id: u32,
         damage: u32,
         target_pt: &mut TargetPt,
-        au: &mut ActionUnitPt,
-    );
+    ) -> Vec<TargetPt>;
 
     ///地图刷新时候触发buff
     fn before_map_refresh_buff_trigger(&mut self);
@@ -602,17 +601,17 @@ impl TriggerEvent for BattleData {
     ///受到普通攻击触发的buff
     fn attacked_hurted_trigger(
         &mut self,
-        _: u32,
+        from_cter_id: u32,
         target_cter_id: u32,
         damage: u32,
         target_pt: &mut TargetPt,
-        au: &mut ActionUnitPt,
-    ) {
+    ) -> Vec<TargetPt> {
+        let mut v = vec![];
         let battle_data_ptr = self as *mut BattleData;
         let target_battle_cter = self.get_battle_cter_mut(target_cter_id, true);
         if let Err(e) = target_battle_cter {
             warn!("{:?}", e);
-            return;
+            return v;
         }
         let target_battle_cter = target_battle_cter.unwrap();
         let target_cter_index = target_battle_cter.get_map_cell_index();
@@ -643,31 +642,34 @@ impl TriggerEvent for BattleData {
                         None,
                         None,
                     );
-
-                    for cter_id in res.1 {
-                        let mut target_pt = battle_data_ptr
-                            .as_mut()
-                            .unwrap()
-                            .build_target_pt(
-                                Some(target_cter_id),
+                    if res.1.contains(&from_cter_id) {
+                        for cter_id in res.1 {
+                            let mut target_pt = battle_data_ptr
+                                .as_mut()
+                                .unwrap()
+                                .build_target_pt(
+                                    Some(target_cter_id),
+                                    cter_id,
+                                    EffectType::SkillDamage,
+                                    damage,
+                                    Some(buff_id),
+                                )
+                                .unwrap();
+                            target_pt.effects.clear();
+                            let _ = battle_data_ptr.as_mut().unwrap().deduct_hp(
+                                target_cter_id,
                                 cter_id,
-                                EffectType::SkillDamage,
-                                damage,
-                                Some(buff_id),
-                            )
-                            .unwrap();
-                        let _ = battle_data_ptr.as_mut().unwrap().deduct_hp(
-                            target_cter_id,
-                            cter_id,
-                            Some(damage as i16),
-                            &mut target_pt,
-                            true,
-                        );
-                        au.targets.push(target_pt);
+                                Some(damage as i16),
+                                &mut target_pt,
+                                true,
+                            );
+                            v.push(target_pt);
+                        }
                     }
                 }
             }
         }
+        v
     }
 
     fn before_map_refresh_buff_trigger(&mut self) {
@@ -774,25 +776,18 @@ impl TriggerEvent for BattleData {
         if is_owner && !is_major {
             let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
             let cter = battle_player.cters.get_mut(&cter_id).unwrap();
+            //找出它的随从
             let minons = cter.minons.clone();
             cter.minons.clear();
-
-            unsafe {
-                let self_mut = self_mut_ptr.as_mut().unwrap();
-                for minon_id in minons {
-                    let minon_cter = self_mut.get_battle_cter_mut(minon_id, true);
-                    if let Ok(minon_cter) = minon_cter {
-                        let str = format!(
-                            "owner({}) is died!so the minon({}) died!",
-                            cter_id, minon_cter.base_attr.cter_id
-                        );
-                        minon_cter.died(str.as_str());
-                        self_mut.after_cter_died_trigger(minon_id);
-                    }
-                }
+            for minon_id in minons {
+                battle_player.cters.remove(&minon_id);
             }
         }
         self.cter_player.remove(&cter_id);
+        let battle_player = self.get_battle_player_mut(Some(user_id), false).unwrap();
+        if battle_player.current_cter.0 == cter_id {
+            battle_player.current_cter = battle_player.major_cter;
+        }
     }
 
     ///此函数只管玩家死亡逻辑
@@ -1022,7 +1017,7 @@ impl TriggerEvent for BattleData {
 
             let cters = self.get_enemys(team_id.unwrap());
             for target_cter_id in cters {
-                let mut target_pt = self
+                let mut _target_pt = self
                     .build_target_pt(
                         Some(cter_id),
                         target_cter_id,
@@ -1031,14 +1026,15 @@ impl TriggerEvent for BattleData {
                         Some(buff_id.unwrap()),
                     )
                     .unwrap();
+                _target_pt.effects.clear();
                 let _ = self.deduct_hp(
                     cter_id,
                     target_cter_id,
                     Some(skill_demage),
-                    &mut target_pt,
+                    &mut _target_pt,
                     true,
                 );
-                au.targets.push(target_pt);
+                au.targets.push(_target_pt);
             }
             let _ = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
             //此处不需要effect

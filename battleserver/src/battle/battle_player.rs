@@ -385,7 +385,7 @@ impl BattlePlayer {
     }
 
     ///重制角色数据
-    pub fn round_reset(&mut self) {
+    pub fn round_reset(&mut self) -> Vec<u32> {
         self.status.is_attacked = false;
         self.change_attack_none();
         self.status.attack_reward_movement_points = false;
@@ -394,7 +394,7 @@ impl BattlePlayer {
         self.get_current_cter_mut().index_data.last_map_cell_index = None;
         self.flow_data.round_limit_skills.clear();
         self.robot_reset();
-        self.minon_clear();
+        self.minon_clear()
     }
 
     pub fn robot_reset(&mut self) {
@@ -403,20 +403,29 @@ impl BattlePlayer {
         }
     }
 
-    pub fn minon_clear(&mut self) {
+    pub fn minon_clear(&mut self) -> Vec<u32> {
         let mut rm_v = vec![];
 
+        let mut owner_v = vec![];
         for cter in self.cters.values_mut() {
-            for &minon in cter.minons.iter() {
-                rm_v.push(minon);
+            if cter.owner.is_some() {
+                rm_v.push(cter.get_cter_id());
+                owner_v.push(cter.owner.unwrap());
             }
             cter.minons.clear();
         }
 
-        for cter_id in rm_v {
-            self.cters.remove(&cter_id);
+        for cter_id in rm_v.iter() {
+            self.cters.remove(cter_id);
+        }
+
+        for owner in owner_v {
+            let cter = self.cters.get_mut(&owner.0).unwrap();
+            let skill = cter.skills.get_mut(&owner.1).unwrap();
+            skill.is_active = false;
         }
         self.current_cter = self.major_cter;
+        rm_v
     }
 
     ///回合结算

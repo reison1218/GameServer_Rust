@@ -264,7 +264,7 @@ pub fn skill_open_near_cell_robot(
     let robot_index = battle_player.get_current_cter_index();
 
     let (map_cells, _) = battle_data.cal_scope(
-        robot_id,
+        battle_player.current_cter.0,
         robot_index as isize,
         TargetType::PlayerSelf,
         None,
