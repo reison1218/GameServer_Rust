@@ -207,7 +207,7 @@ impl MatchRoom {
                 let room_mut = self.rooms.get_mut(&room_id).unwrap();
                 room_mut.push_match_success();
                 //创建检测进入房间延迟任务
-                build_confirm_into_room_task(room_id, task_sender);
+                build_confirm_into_room_task(RoomType::OneVOneVOneVOneMatch, room_id, task_sender);
             }
             //重新排序
             self.room_cache.par_sort_by(|a, b| b.count.cmp(&a.count));

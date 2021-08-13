@@ -35,11 +35,16 @@ message PlayerPt{
 	repeated uint32 dlc = 9;//dlc
 }
 
-// 资源封装
-message ResourcesPt{
-    uint32 type = 1;//类型
-    uint32 id = 2;//资源id
-    uint32 num = 3;//数量
+message SeasonPt{
+    uint32 season_id = 1;//当前赛季id
+    uint64 start_time = 2;//开始时间
+    uint64 end_time = 3;//结束时间
+}
+
+message WorldBossPt{
+    uint32 world_boss_id = 1;//当前worldbossid
+    uint64 start_time = 2;//开始时间
+    uint64 end_time = 3;//结束时间
 }
 
 //队伍成员结构体

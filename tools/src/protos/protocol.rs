@@ -268,7 +268,8 @@ pub struct S_USER_LOGIN {
     pub last_login_time: u32,
     pub last_logoff_time: u32,
     pub player_pt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
-    pub resp: ::protobuf::RepeatedField<super::base::ResourcesPt>,
+    pub season_pt: ::protobuf::SingularPtrField<super::base::SeasonPt>,
+    pub world_boss_pt: ::protobuf::SingularPtrField<super::base::WorldBossPt>,
     pub cters: ::protobuf::RepeatedField<super::base::CharacterPt>,
     pub grade_frames: ::std::vec::Vec<u32>,
     pub souls: ::std::vec::Vec<u32>,
@@ -407,32 +408,73 @@ impl S_USER_LOGIN {
         self.player_pt.take().unwrap_or_else(|| super::base::PlayerPt::new())
     }
 
-    // repeated .protos.ResourcesPt resp = 7;
+    // .protos.SeasonPt season_pt = 7;
 
 
-    pub fn get_resp(&self) -> &[super::base::ResourcesPt] {
-        &self.resp
+    pub fn get_season_pt(&self) -> &super::base::SeasonPt {
+        self.season_pt.as_ref().unwrap_or_else(|| <super::base::SeasonPt as ::protobuf::Message>::default_instance())
     }
-    pub fn clear_resp(&mut self) {
-        self.resp.clear();
+    pub fn clear_season_pt(&mut self) {
+        self.season_pt.clear();
+    }
+
+    pub fn has_season_pt(&self) -> bool {
+        self.season_pt.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_resp(&mut self, v: ::protobuf::RepeatedField<super::base::ResourcesPt>) {
-        self.resp = v;
+    pub fn set_season_pt(&mut self, v: super::base::SeasonPt) {
+        self.season_pt = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
-    pub fn mut_resp(&mut self) -> &mut ::protobuf::RepeatedField<super::base::ResourcesPt> {
-        &mut self.resp
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_season_pt(&mut self) -> &mut super::base::SeasonPt {
+        if self.season_pt.is_none() {
+            self.season_pt.set_default();
+        }
+        self.season_pt.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_resp(&mut self) -> ::protobuf::RepeatedField<super::base::ResourcesPt> {
-        ::std::mem::replace(&mut self.resp, ::protobuf::RepeatedField::new())
+    pub fn take_season_pt(&mut self) -> super::base::SeasonPt {
+        self.season_pt.take().unwrap_or_else(|| super::base::SeasonPt::new())
     }
 
-    // repeated .protos.CharacterPt cters = 8;
+    // .protos.WorldBossPt world_boss_pt = 8;
+
+
+    pub fn get_world_boss_pt(&self) -> &super::base::WorldBossPt {
+        self.world_boss_pt.as_ref().unwrap_or_else(|| <super::base::WorldBossPt as ::protobuf::Message>::default_instance())
+    }
+    pub fn clear_world_boss_pt(&mut self) {
+        self.world_boss_pt.clear();
+    }
+
+    pub fn has_world_boss_pt(&self) -> bool {
+        self.world_boss_pt.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_world_boss_pt(&mut self, v: super::base::WorldBossPt) {
+        self.world_boss_pt = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_world_boss_pt(&mut self) -> &mut super::base::WorldBossPt {
+        if self.world_boss_pt.is_none() {
+            self.world_boss_pt.set_default();
+        }
+        self.world_boss_pt.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_world_boss_pt(&mut self) -> super::base::WorldBossPt {
+        self.world_boss_pt.take().unwrap_or_else(|| super::base::WorldBossPt::new())
+    }
+
+    // repeated .protos.CharacterPt cters = 9;
 
 
     pub fn get_cters(&self) -> &[super::base::CharacterPt] {
@@ -457,7 +499,7 @@ impl S_USER_LOGIN {
         ::std::mem::replace(&mut self.cters, ::protobuf::RepeatedField::new())
     }
 
-    // repeated uint32 grade_frames = 9;
+    // repeated uint32 grade_frames = 10;
 
 
     pub fn get_grade_frames(&self) -> &[u32] {
@@ -482,7 +524,7 @@ impl S_USER_LOGIN {
         ::std::mem::replace(&mut self.grade_frames, ::std::vec::Vec::new())
     }
 
-    // repeated uint32 souls = 10;
+    // repeated uint32 souls = 11;
 
 
     pub fn get_souls(&self) -> &[u32] {
@@ -515,7 +557,12 @@ impl ::protobuf::Message for S_USER_LOGIN {
                 return false;
             }
         };
-        for v in &self.resp {
+        for v in &self.season_pt {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.world_boss_pt {
             if !v.is_initialized() {
                 return false;
             }
@@ -567,15 +614,18 @@ impl ::protobuf::Message for S_USER_LOGIN {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.player_pt)?;
                 },
                 7 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.resp)?;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.season_pt)?;
                 },
                 8 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.world_boss_pt)?;
                 },
                 9 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.grade_frames)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cters)?;
                 },
                 10 => {
+                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.grade_frames)?;
+                },
+                11 => {
                     ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.souls)?;
                 },
                 _ => {
@@ -609,19 +659,23 @@ impl ::protobuf::Message for S_USER_LOGIN {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
-        for value in &self.resp {
-            let len = value.compute_size();
+        if let Some(ref v) = self.season_pt.as_ref() {
+            let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
+        }
+        if let Some(ref v) = self.world_boss_pt.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         for value in &self.cters {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
         for value in &self.grade_frames {
-            my_size += ::protobuf::rt::value_size(9, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(10, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         for value in &self.souls {
-            my_size += ::protobuf::rt::value_size(10, *value, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(11, *value, ::protobuf::wire_format::WireTypeVarint);
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -649,21 +703,26 @@ impl ::protobuf::Message for S_USER_LOGIN {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
-        for v in &self.resp {
+        if let Some(ref v) = self.season_pt.as_ref() {
             os.write_tag(7, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
-        };
-        for v in &self.cters {
+        }
+        if let Some(ref v) = self.world_boss_pt.as_ref() {
             os.write_tag(8, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        for v in &self.cters {
+            os.write_tag(9, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
         for v in &self.grade_frames {
-            os.write_uint32(9, *v)?;
+            os.write_uint32(10, *v)?;
         };
         for v in &self.souls {
-            os.write_uint32(10, *v)?;
+            os.write_uint32(11, *v)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -733,10 +792,15 @@ impl ::protobuf::Message for S_USER_LOGIN {
                 |m: &S_USER_LOGIN| { &m.player_pt },
                 |m: &mut S_USER_LOGIN| { &mut m.player_pt },
             ));
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::ResourcesPt>>(
-                "resp",
-                |m: &S_USER_LOGIN| { &m.resp },
-                |m: &mut S_USER_LOGIN| { &mut m.resp },
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::SeasonPt>>(
+                "season_pt",
+                |m: &S_USER_LOGIN| { &m.season_pt },
+                |m: &mut S_USER_LOGIN| { &mut m.season_pt },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::WorldBossPt>>(
+                "world_boss_pt",
+                |m: &S_USER_LOGIN| { &m.world_boss_pt },
+                |m: &mut S_USER_LOGIN| { &mut m.world_boss_pt },
             ));
             fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::CharacterPt>>(
                 "cters",
@@ -775,7 +839,8 @@ impl ::protobuf::Clear for S_USER_LOGIN {
         self.last_login_time = 0;
         self.last_logoff_time = 0;
         self.player_pt.clear();
-        self.resp.clear();
+        self.season_pt.clear();
+        self.world_boss_pt.clear();
         self.cters.clear();
         self.grade_frames.clear();
         self.souls.clear();
@@ -951,7 +1016,6 @@ impl ::protobuf::reflect::ProtobufValue for HEART_BEAT {
 pub struct C_SYNC_DATA {
     // message fields
     pub player_pt: ::protobuf::SingularPtrField<super::base::PlayerPt>,
-    pub resp: ::protobuf::RepeatedField<super::base::ResourcesPt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -1000,41 +1064,11 @@ impl C_SYNC_DATA {
     pub fn take_player_pt(&mut self) -> super::base::PlayerPt {
         self.player_pt.take().unwrap_or_else(|| super::base::PlayerPt::new())
     }
-
-    // repeated .protos.ResourcesPt resp = 2;
-
-
-    pub fn get_resp(&self) -> &[super::base::ResourcesPt] {
-        &self.resp
-    }
-    pub fn clear_resp(&mut self) {
-        self.resp.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_resp(&mut self, v: ::protobuf::RepeatedField<super::base::ResourcesPt>) {
-        self.resp = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_resp(&mut self) -> &mut ::protobuf::RepeatedField<super::base::ResourcesPt> {
-        &mut self.resp
-    }
-
-    // Take field
-    pub fn take_resp(&mut self) -> ::protobuf::RepeatedField<super::base::ResourcesPt> {
-        ::std::mem::replace(&mut self.resp, ::protobuf::RepeatedField::new())
-    }
 }
 
 impl ::protobuf::Message for C_SYNC_DATA {
     fn is_initialized(&self) -> bool {
         for v in &self.player_pt {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
-        for v in &self.resp {
             if !v.is_initialized() {
                 return false;
             }
@@ -1048,9 +1082,6 @@ impl ::protobuf::Message for C_SYNC_DATA {
             match field_number {
                 1 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.player_pt)?;
-                },
-                2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.resp)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1068,10 +1099,6 @@ impl ::protobuf::Message for C_SYNC_DATA {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
-        for value in &self.resp {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -1083,11 +1110,6 @@ impl ::protobuf::Message for C_SYNC_DATA {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
-        for v in &self.resp {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -1131,11 +1153,6 @@ impl ::protobuf::Message for C_SYNC_DATA {
                 |m: &C_SYNC_DATA| { &m.player_pt },
                 |m: &mut C_SYNC_DATA| { &mut m.player_pt },
             ));
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::ResourcesPt>>(
-                "resp",
-                |m: &C_SYNC_DATA| { &m.resp },
-                |m: &mut C_SYNC_DATA| { &mut m.resp },
-            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_SYNC_DATA>(
                 "C_SYNC_DATA",
                 fields,
@@ -1153,7 +1170,6 @@ impl ::protobuf::Message for C_SYNC_DATA {
 impl ::protobuf::Clear for C_SYNC_DATA {
     fn clear(&mut self) {
         self.player_pt.clear();
-        self.resp.clear();
         self.unknown_fields.clear();
     }
 }
@@ -2758,33 +2774,34 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0eprotocol.proto\x12\x06protos\x1a\nbase.proto\"{\n\x0cC_USER_LOGIN\
     \x12+\n\x11register_platform\x18\x01\x20\x01(\tR\x10registerPlatform\x12\
     %\n\x0eplatform_value\x18\x02\x20\x01(\tR\rplatformValue\x12\x17\n\x07us\
-    er_id\x18\x03\x20\x01(\rR\x06userId\"\xed\x02\n\x0cS_USER_LOGIN\x12\x17\
+    er_id\x18\x03\x20\x01(\rR\x06userId\"\xac\x03\n\x0cS_USER_LOGIN\x12\x17\
     \n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
     \x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\x08\
     syncTime\x12&\n\x0flast_login_time\x18\x04\x20\x01(\rR\rlastLoginTime\
     \x12(\n\x10last_logoff_time\x18\x05\x20\x01(\rR\x0elastLogoffTime\x12-\n\
-    \tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\
-    \n\x04resp\x18\x07\x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\x12)\n\
-    \x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\x12!\n\
-    \x0cgrade_frames\x18\t\x20\x03(\rR\x0bgradeFrames\x12\x14\n\x05souls\x18\
-    \n\x20\x03(\rR\x05souls\"'\n\nHEART_BEAT\x12\x19\n\x08sys_time\x18\x01\
-    \x20\x01(\x04R\x07sysTime\"e\n\x0bC_SYNC_DATA\x12-\n\tplayer_pt\x18\x01\
-    \x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12'\n\x04resp\x18\x02\
-    \x20\x03(\x0b2\x13.protos.ResourcesPtR\x04resp\"^\n\x0bS_SYNC_DATA\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\x20\x01(\rR\
-    \x08syncTime\"1\n\x12C_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\
-    \x01(\tR\x08nickName\"H\n\x12S_MODIFY_NICK_NAME\x12\x17\n\x07is_succ\x18\
-    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
-    \x07errMess\"\r\n\x0bC_SHOW_RANK\"h\n\x0bS_SHOW_RANK\x12/\n\tself_rank\
-    \x18\x01\x20\x01(\x0b2\x12.protos.RankInfoPtR\x08selfRank\x12(\n\x05rank\
-    s\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"T\n\x1dC_MODIFY\
-    _GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\rR\x04soul\x12\
-    \x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\n\x1dS_MODIFY_G\
-    RADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
-    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x18\n\x16C_GET_L\
-    AST_SEASON_RANK\"B\n\x16S_GET_LAST_SEASON_RANK\x12(\n\x05ranks\x18\x01\
-    \x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06proto3\
+    \tplayer_pt\x18\x06\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\x12-\
+    \n\tseason_pt\x18\x07\x20\x01(\x0b2\x10.protos.SeasonPtR\x08seasonPt\x12\
+    7\n\rworld_boss_pt\x18\x08\x20\x01(\x0b2\x13.protos.WorldBossPtR\x0bworl\
+    dBossPt\x12)\n\x05cters\x18\t\x20\x03(\x0b2\x13.protos.CharacterPtR\x05c\
+    ters\x12!\n\x0cgrade_frames\x18\n\x20\x03(\rR\x0bgradeFrames\x12\x14\n\
+    \x05souls\x18\x0b\x20\x03(\rR\x05souls\"'\n\nHEART_BEAT\x12\x19\n\x08sys\
+    _time\x18\x01\x20\x01(\x04R\x07sysTime\"<\n\x0bC_SYNC_DATA\x12-\n\tplaye\
+    r_pt\x18\x01\x20\x01(\x0b2\x10.protos.PlayerPtR\x08playerPt\"^\n\x0bS_SY\
+    NC_DATA\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
+    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x1b\n\tsync_time\x18\x03\
+    \x20\x01(\rR\x08syncTime\"1\n\x12C_MODIFY_NICK_NAME\x12\x1b\n\tnick_name\
+    \x18\x01\x20\x01(\tR\x08nickName\"H\n\x12S_MODIFY_NICK_NAME\x12\x17\n\
+    \x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\
+    \x02\x20\x01(\tR\x07errMess\"\r\n\x0bC_SHOW_RANK\"h\n\x0bS_SHOW_RANK\x12\
+    /\n\tself_rank\x18\x01\x20\x01(\x0b2\x12.protos.RankInfoPtR\x08selfRank\
+    \x12(\n\x05ranks\x18\x02\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranks\"\
+    T\n\x1dC_MODIFY_GRADE_FRAME_AND_SOUL\x12\x12\n\x04soul\x18\x01\x20\x01(\
+    \rR\x04soul\x12\x1f\n\x0bgrade_frame\x18\x02\x20\x01(\rR\ngradeFrame\"S\
+    \n\x1dS_MODIFY_GRADE_FRAME_AND_SOUL\x12\x17\n\x07is_succ\x18\x01\x20\x01\
+    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\
+    \x18\n\x16C_GET_LAST_SEASON_RANK\"B\n\x16S_GET_LAST_SEASON_RANK\x12(\n\
+    \x05ranks\x18\x01\x20\x03(\x0b2\x12.protos.RankInfoPtR\x05ranksb\x06prot\
+    o3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

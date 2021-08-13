@@ -21,4 +21,5 @@ pub mod summary_award_temp;
 pub mod template;
 pub mod template_name_constants;
 pub mod tile_map_temp;
+pub mod world_boss_temp;
 pub mod world_cell_temp;

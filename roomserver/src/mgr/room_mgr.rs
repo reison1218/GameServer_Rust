@@ -9,6 +9,7 @@ use crate::room::match_room::MatchRoom;
 use crate::room::room::{Room, RoomState};
 use crate::room::room_model::{RoomModel, RoomType};
 use crate::room::world_boss_custom_room::WorldBossCustomRoom;
+use crate::room::world_boss_match_room::WorldBossMatchRoom;
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{error, info, warn};
@@ -27,6 +28,7 @@ type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>;
 pub struct RoomMgr {
     pub custom_room: CustomRoom,                     //自定义房
     pub match_room: MatchRoom,                       //公共房
+    pub world_boss_match_room: WorldBossMatchRoom,   //世界boss自定义房间
     pub world_boss_custom_room: WorldBossCustomRoom, //世界boss自定义房间
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
@@ -108,6 +110,7 @@ impl RoomMgr {
         let room_id = room.get_room_id();
         let room_type = room.get_room_type();
         room.remove_member_without_push(user_id);
+        room.robots.remove(&user_id);
         self.player_room.remove(&user_id);
         let need_rm_room = room.check_need_rm_room();
         info!(

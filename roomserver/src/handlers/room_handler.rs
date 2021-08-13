@@ -203,24 +203,47 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
 
     let owner = Member::from(grc.get_pbp());
     let mut room_id: u32 = 0;
+    fn err() -> anyhow::Result<u32> {
+        anyhow::bail!("room_type is error!")
+    }
+    let res;
     //创建房间
     match room_type {
         RoomType::OneVOneVOneVOneCustom => {
-            let res = rm.custom_room.create_room(
+            res = rm.custom_room.create_room(
                 owner,
                 Some(room_setting),
                 rm.get_tcp_handler_clone(),
                 rm.get_task_sender_clone(),
             );
-            match res {
-                Ok(id) => room_id = id,
-                Err(e) => {
-                    warn!("{:?}", e);
-                    return;
+        }
+        RoomType::WorldBossCustom => {
+            res = rm.world_boss_custom_room.create_room(
+                owner,
+                Some(room_setting),
+                rm.get_tcp_handler_clone(),
+                rm.get_task_sender_clone(),
+            );
+            if res.is_ok() {
+                let &room_id = res.as_ref().unwrap();
+                let room = rm
+                    .world_boss_custom_room
+                    .get_mut_room_by_room_id(&room_id)
+                    .unwrap();
+                let res = tools::binary::combine_int_2_long(room_type as u32, room_id);
+                for &robot_id in room.robots.iter() {
+                    rm.player_room.insert(robot_id, res);
                 }
             }
         }
-        _ => {}
+        _ => res = err(),
+    }
+    match res {
+        Ok(id) => room_id = id,
+        Err(e) => {
+            warn!("{:?}", e);
+            return;
+        }
     }
 
     let res = tools::binary::combine_int_2_long(room_type as u32, room_id);
@@ -381,6 +404,31 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         );
         return;
     }
+
+    //如果是世界boss匹配
+    if room_type == RoomType::WorldBoseMatch {
+        unsafe {
+            //校验世界boss现在开了没
+            if crate::WORLD_BOSS.world_boss_id == 0 {
+                warn!(
+                    "search_room:the world_boss is None!room_type:{:?}",
+                    room_type
+                );
+                return;
+            }
+            //判断worldboss时间
+            let now_time = chrono::Utc::now();
+            let now_time = (now_time.timestamp_millis() / 1000) as u64;
+            if now_time >= crate::WORLD_BOSS.next_update_time {
+                warn!(
+                    "search_room:the world_boss is Close!room_type:{:?}",
+                    room_type
+                );
+                return;
+            }
+        }
+    }
+
     //校验玩家是否已经在房间里
     if rm.check_player(&user_id) {
         warn!(
@@ -445,15 +493,35 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
             };
             room_id = res.unwrap();
         }
-        RoomType::WorldBossCustom => {
-            room_id = 0;
+        RoomType::WorldBoseMatch => {
+            let match_room = rm.world_boss_match_room.borrow_mut();
+            let res = match_room.quickly_start(member, sender, task_sender);
+            //返回错误信息
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                return;
+            };
+            room_id = res.unwrap();
         }
         _ => {
             room_id = 0;
         }
     }
+    let value = tools::binary::combine_int_2_long(room_type.into_u32(), room_id);
+    //如果是worldboss，则添加机器人
+    if room_type == RoomType::WorldBoseMatch {
+        let room = rm
+            .world_boss_match_room
+            .get_mut_room_by_room_id(&room_id)
+            .unwrap();
+        for &robot_id in room.robots.iter() {
+            if rm.player_room.contains_key(&robot_id) {
+                continue;
+            }
+            rm.player_room.insert(robot_id, value);
+        }
+    }
 
-    let value = tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneMatch as u32, room_id);
     rm.player_room.insert(user_id, value);
 }
 

@@ -12,8 +12,8 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
-use tools::protos::base::RankInfoPt;
-use tools::protos::base::{PlayerPt, PunishMatchPt, ResourcesPt};
+use tools::protos::base::{PlayerPt, PunishMatchPt, WorldBossPt};
+use tools::protos::base::{RankInfoPt, SeasonPt};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA, S_USER_LOGIN};
 use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME};
 use tools::tcp_message_io::TcpHandler;
@@ -298,7 +298,19 @@ impl GameMgr {
             break;
         }
 
-        lr.player_pt = protobuf::SingularPtrField::some(ppt);
+        lr.set_player_pt(ppt);
+
+        //封装赛季和worldboss信息
+        let mut season_pt = SeasonPt::new();
+        let mut world_boss_pt = WorldBossPt::new();
+        unsafe {
+            season_pt.set_season_id(crate::SEASON.season_id as u32);
+            season_pt.set_end_time(crate::SEASON.next_update_time);
+            world_boss_pt.set_world_boss_id(crate::WORLD_BOSS.world_boss_id as u32);
+            world_boss_pt.set_end_time(crate::WORLD_BOSS.next_update_time)
+        }
+        lr.set_season_pt(season_pt);
+        lr.set_world_boss_pt(world_boss_pt);
         time = 0;
 
         if let Ok(res) = last_login_time {
@@ -312,16 +324,6 @@ impl GameMgr {
         }
 
         lr.last_logoff_time = time;
-
-        let mut v = Vec::new();
-        let mut res = ResourcesPt::new();
-        res.id = 1;
-        res.field_type = 1;
-        res.num = 100_u32;
-        v.push(res);
-
-        let resp = protobuf::RepeatedField::from(v);
-        lr.resp = resp;
 
         for cter in user.get_characters_ref().cter_map.values() {
             lr.cters.push(cter.clone().into())

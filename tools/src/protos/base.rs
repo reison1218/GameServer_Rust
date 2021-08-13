@@ -735,74 +735,74 @@ impl ::protobuf::reflect::ProtobufValue for PlayerPt {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct ResourcesPt {
+pub struct SeasonPt {
     // message fields
-    pub field_type: u32,
-    pub id: u32,
-    pub num: u32,
+    pub season_id: u32,
+    pub start_time: u64,
+    pub end_time: u64,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a ResourcesPt {
-    fn default() -> &'a ResourcesPt {
-        <ResourcesPt as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a SeasonPt {
+    fn default() -> &'a SeasonPt {
+        <SeasonPt as ::protobuf::Message>::default_instance()
     }
 }
 
-impl ResourcesPt {
-    pub fn new() -> ResourcesPt {
+impl SeasonPt {
+    pub fn new() -> SeasonPt {
         ::std::default::Default::default()
     }
 
-    // uint32 type = 1;
+    // uint32 season_id = 1;
 
 
-    pub fn get_field_type(&self) -> u32 {
-        self.field_type
+    pub fn get_season_id(&self) -> u32 {
+        self.season_id
     }
-    pub fn clear_field_type(&mut self) {
-        self.field_type = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_field_type(&mut self, v: u32) {
-        self.field_type = v;
-    }
-
-    // uint32 id = 2;
-
-
-    pub fn get_id(&self) -> u32 {
-        self.id
-    }
-    pub fn clear_id(&mut self) {
-        self.id = 0;
+    pub fn clear_season_id(&mut self) {
+        self.season_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_id(&mut self, v: u32) {
-        self.id = v;
+    pub fn set_season_id(&mut self, v: u32) {
+        self.season_id = v;
     }
 
-    // uint32 num = 3;
+    // uint64 start_time = 2;
 
 
-    pub fn get_num(&self) -> u32 {
-        self.num
+    pub fn get_start_time(&self) -> u64 {
+        self.start_time
     }
-    pub fn clear_num(&mut self) {
-        self.num = 0;
+    pub fn clear_start_time(&mut self) {
+        self.start_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_num(&mut self, v: u32) {
-        self.num = v;
+    pub fn set_start_time(&mut self, v: u64) {
+        self.start_time = v;
+    }
+
+    // uint64 end_time = 3;
+
+
+    pub fn get_end_time(&self) -> u64 {
+        self.end_time
+    }
+    pub fn clear_end_time(&mut self) {
+        self.end_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_end_time(&mut self, v: u64) {
+        self.end_time = v;
     }
 }
 
-impl ::protobuf::Message for ResourcesPt {
+impl ::protobuf::Message for SeasonPt {
     fn is_initialized(&self) -> bool {
         true
     }
@@ -816,21 +816,21 @@ impl ::protobuf::Message for ResourcesPt {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.field_type = tmp;
+                    self.season_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
-                    self.id = tmp;
+                    let tmp = is.read_uint64()?;
+                    self.start_time = tmp;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
-                    self.num = tmp;
+                    let tmp = is.read_uint64()?;
+                    self.end_time = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -844,14 +844,14 @@ impl ::protobuf::Message for ResourcesPt {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.field_type != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.field_type, ::protobuf::wire_format::WireTypeVarint);
+        if self.season_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.season_id, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.id != 0 {
-            my_size += ::protobuf::rt::value_size(2, self.id, ::protobuf::wire_format::WireTypeVarint);
+        if self.start_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.start_time, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.num != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.num, ::protobuf::wire_format::WireTypeVarint);
+        if self.end_time != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.end_time, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -859,14 +859,14 @@ impl ::protobuf::Message for ResourcesPt {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.field_type != 0 {
-            os.write_uint32(1, self.field_type)?;
+        if self.season_id != 0 {
+            os.write_uint32(1, self.season_id)?;
         }
-        if self.id != 0 {
-            os.write_uint32(2, self.id)?;
+        if self.start_time != 0 {
+            os.write_uint64(2, self.start_time)?;
         }
-        if self.num != 0 {
-            os.write_uint32(3, self.num)?;
+        if self.end_time != 0 {
+            os.write_uint64(3, self.end_time)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -898,8 +898,8 @@ impl ::protobuf::Message for ResourcesPt {
         Self::descriptor_static()
     }
 
-    fn new() -> ResourcesPt {
-        ResourcesPt::new()
+    fn new() -> SeasonPt {
+        SeasonPt::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -907,50 +907,272 @@ impl ::protobuf::Message for ResourcesPt {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "type",
-                |m: &ResourcesPt| { &m.field_type },
-                |m: &mut ResourcesPt| { &mut m.field_type },
+                "season_id",
+                |m: &SeasonPt| { &m.season_id },
+                |m: &mut SeasonPt| { &mut m.season_id },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "id",
-                |m: &ResourcesPt| { &m.id },
-                |m: &mut ResourcesPt| { &mut m.id },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "start_time",
+                |m: &SeasonPt| { &m.start_time },
+                |m: &mut SeasonPt| { &mut m.start_time },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                "num",
-                |m: &ResourcesPt| { &m.num },
-                |m: &mut ResourcesPt| { &mut m.num },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "end_time",
+                |m: &SeasonPt| { &m.end_time },
+                |m: &mut SeasonPt| { &mut m.end_time },
             ));
-            ::protobuf::reflect::MessageDescriptor::new_pb_name::<ResourcesPt>(
-                "ResourcesPt",
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<SeasonPt>(
+                "SeasonPt",
                 fields,
                 file_descriptor_proto()
             )
         })
     }
 
-    fn default_instance() -> &'static ResourcesPt {
-        static instance: ::protobuf::rt::LazyV2<ResourcesPt> = ::protobuf::rt::LazyV2::INIT;
-        instance.get(ResourcesPt::new)
+    fn default_instance() -> &'static SeasonPt {
+        static instance: ::protobuf::rt::LazyV2<SeasonPt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(SeasonPt::new)
     }
 }
 
-impl ::protobuf::Clear for ResourcesPt {
+impl ::protobuf::Clear for SeasonPt {
     fn clear(&mut self) {
-        self.field_type = 0;
-        self.id = 0;
-        self.num = 0;
+        self.season_id = 0;
+        self.start_time = 0;
+        self.end_time = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for ResourcesPt {
+impl ::std::fmt::Debug for SeasonPt {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for ResourcesPt {
+impl ::protobuf::reflect::ProtobufValue for SeasonPt {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct WorldBossPt {
+    // message fields
+    pub world_boss_id: u32,
+    pub start_time: u64,
+    pub end_time: u64,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a WorldBossPt {
+    fn default() -> &'a WorldBossPt {
+        <WorldBossPt as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl WorldBossPt {
+    pub fn new() -> WorldBossPt {
+        ::std::default::Default::default()
+    }
+
+    // uint32 world_boss_id = 1;
+
+
+    pub fn get_world_boss_id(&self) -> u32 {
+        self.world_boss_id
+    }
+    pub fn clear_world_boss_id(&mut self) {
+        self.world_boss_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_world_boss_id(&mut self, v: u32) {
+        self.world_boss_id = v;
+    }
+
+    // uint64 start_time = 2;
+
+
+    pub fn get_start_time(&self) -> u64 {
+        self.start_time
+    }
+    pub fn clear_start_time(&mut self) {
+        self.start_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_start_time(&mut self, v: u64) {
+        self.start_time = v;
+    }
+
+    // uint64 end_time = 3;
+
+
+    pub fn get_end_time(&self) -> u64 {
+        self.end_time
+    }
+    pub fn clear_end_time(&mut self) {
+        self.end_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_end_time(&mut self, v: u64) {
+        self.end_time = v;
+    }
+}
+
+impl ::protobuf::Message for WorldBossPt {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.world_boss_id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.start_time = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.end_time = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.world_boss_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.world_boss_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.start_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.start_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.end_time != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.end_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.world_boss_id != 0 {
+            os.write_uint32(1, self.world_boss_id)?;
+        }
+        if self.start_time != 0 {
+            os.write_uint64(2, self.start_time)?;
+        }
+        if self.end_time != 0 {
+            os.write_uint64(3, self.end_time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> WorldBossPt {
+        WorldBossPt::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "world_boss_id",
+                |m: &WorldBossPt| { &m.world_boss_id },
+                |m: &mut WorldBossPt| { &mut m.world_boss_id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "start_time",
+                |m: &WorldBossPt| { &m.start_time },
+                |m: &mut WorldBossPt| { &mut m.start_time },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "end_time",
+                |m: &WorldBossPt| { &m.end_time },
+                |m: &mut WorldBossPt| { &mut m.end_time },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<WorldBossPt>(
+                "WorldBossPt",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static WorldBossPt {
+        static instance: ::protobuf::rt::LazyV2<WorldBossPt> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(WorldBossPt::new)
+    }
+}
+
+impl ::protobuf::Clear for WorldBossPt {
+    fn clear(&mut self) {
+        self.world_boss_id = 0;
+        self.start_time = 0;
+        self.end_time = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for WorldBossPt {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for WorldBossPt {
     fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
         ::protobuf::reflect::ReflectValueRef::Message(self)
     }
@@ -6968,11 +7190,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     grade_frame\x18\x05\x20\x01(\rR\ngradeFrame\x12\x12\n\x04soul\x18\x06\
     \x20\x01(\rR\x04soul\x12\x1b\n\tbest_rank\x18\x07\x20\x01(\x05R\x08bestR\
     ank\x12(\n\x06league\x18\x08\x20\x01(\x0b2\x10.protos.LeaguePtR\x06leagu\
-    e\x12\x10\n\x03dlc\x18\t\x20\x03(\rR\x03dlc\"C\n\x0bResourcesPt\x12\x12\
-    \n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x0e\n\x02id\x18\x02\x20\x01(\
-    \rR\x02id\x12\x10\n\x03num\x18\x03\x20\x01(\rR\x03num\"\xce\x02\n\x08Mem\
-    berPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick\
-    _name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
+    e\x12\x10\n\x03dlc\x18\t\x20\x03(\rR\x03dlc\"a\n\x08SeasonPt\x12\x1b\n\t\
+    season_id\x18\x01\x20\x01(\rR\x08seasonId\x12\x1d\n\nstart_time\x18\x02\
+    \x20\x01(\x04R\tstartTime\x12\x19\n\x08end_time\x18\x03\x20\x01(\x04R\
+    \x07endTime\"k\n\x0bWorldBossPt\x12\"\n\rworld_boss_id\x18\x01\x20\x01(\
+    \rR\x0bworldBossId\x12\x1d\n\nstart_time\x18\x02\x20\x01(\x04R\tstartTim\
+    e\x12\x19\n\x08end_time\x18\x03\x20\x01(\x04R\x07endTime\"\xce\x02\n\x08\
+    MemberPt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tn\
+    ick_name\x18\x02\x20\x01(\tR\x08nickName\x12'\n\x04cter\x18\x03\x20\x01(\
     \x0b2\x13.protos.CharacterPtR\x04cter\x12\x14\n\x05state\x18\x04\x20\x01\
     (\rR\x05state\x12\x14\n\x05grade\x18\x05\x20\x01(\rR\x05grade\x12\x1f\n\
     \x0bgrade_frame\x18\x06\x20\x01(\rR\ngradeFrame\x12\x12\n\x04soul\x18\

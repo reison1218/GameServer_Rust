@@ -10,7 +10,7 @@ use num_enum::TryFromPrimitive;
 use protobuf::Message;
 use rand::Rng;
 use std::borrow::{Borrow, BorrowMut};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
 use tools::protos::base::{MemberPt, RoomPt};
@@ -78,6 +78,7 @@ pub struct Room {
     pub state: RoomState,                //房间状态
     pub members: HashMap<u32, Member>,   //玩家对应的队伍
     pub member_index: [u32; MEMBER_MAX], //玩家对应的位置
+    pub robots: HashSet<u32>,            //机器人
     pub setting: RoomSetting,            //房间设置
     pub tcp_handler: TcpHandler,         //tcpsender
     task_sender: Sender<Task>,           //任务sender
@@ -125,6 +126,7 @@ impl Room {
             owner_id: user_id,
             members: HashMap::new(),
             member_index: [0; MEMBER_MAX],
+            robots: HashSet::new(),
             state: room_state,
             setting: RoomSetting::default(),
             room_type,
@@ -549,7 +551,9 @@ impl Room {
         let mut size = self.members.len() as u8;
         let user_id = member.user_id;
         size += 1;
-        member.team_id = size;
+        if member.team_id == 0 {
+            member.team_id = size;
+        }
         member.join_time = Local::now().timestamp_millis() as u64;
         self.members.insert(user_id, member);
         match index {

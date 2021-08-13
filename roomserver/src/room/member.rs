@@ -4,6 +4,7 @@ use log::warn;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
+use std::sync::atomic::Ordering;
 use tools::protos::base::{MemberPt, PunishMatchPt};
 use tools::protos::server_protocol::PlayerBattlePt;
 
@@ -56,6 +57,37 @@ impl Member {
     ///获得玩家id
     pub fn get_user_id(&self) -> u32 {
         self.user_id
+    }
+
+    pub fn new_for_robot(robot_temp_id: u32, team_id: u8) -> Member {
+        let robot_temp = crate::TEMPLATES
+            .robot_temp_mgr()
+            .get_temp_ref(&robot_temp_id)
+            .unwrap();
+        let cter_id = robot_temp.cter_id;
+        let mut member = Member::default();
+
+        //机器人id自增
+        crate::ROBOT_ID.fetch_add(1, Ordering::SeqCst);
+        let robot_id = crate::ROBOT_ID.load(Ordering::SeqCst);
+        //初始化成员
+        member.robot_temp_id = robot_temp_id;
+        member.user_id = robot_id;
+        member.state = MemberState::Ready;
+        member.nick_name = "robot".to_owned();
+        member.grade = 1;
+        member.grade_frame = 1;
+        member.team_id = team_id;
+        //初始化选择的角色
+        let mut cter = Character::default();
+        cter.user_id = robot_id;
+        cter.cter_temp_id = cter_id;
+
+        //初始化角色技能
+        cter.skills.extend_from_slice(robot_temp.skills.as_slice());
+        //将角色加入到成员里
+        member.chose_cter = cter;
+        member
     }
 
     ///处理匹配惩罚

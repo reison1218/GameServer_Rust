@@ -33,7 +33,8 @@ use super::market_temp::MarketTemp;
 use super::market_temp::MarketTempMgr;
 use super::merchandise_temp::{MerchandiseTemp, MerchandiseTempMgr};
 use super::mission_temp::{MissionTemp, MissionTempMgr};
-use super::template_name_constants::{MARKET, MERCHANDISE, MISSION};
+use super::template_name_constants::{MARKET, MERCHANDISE, MISSION, WORLD_BOSS};
+use super::world_boss_temp::{WorldBossTemp, WorldBossTempMgr};
 
 pub trait Template {}
 
@@ -67,6 +68,7 @@ pub struct TemplatesMgr {
     market_temp_mgr: MarketTempMgr,                     //市场配置
     merchandise_temp_mgr: MerchandiseTempMgr,           //商品配置
     mission_temp_mgr: MissionTempMgr,                   //任务配置
+    worldboss_temp_mgr: WorldBossTempMgr,               //worldboss
 }
 
 impl TemplatesMgr {
@@ -100,6 +102,7 @@ impl TemplatesMgr {
             mgr_mut.market_temp_mgr.clear();
             mgr_mut.merchandise_temp_mgr.clear();
             mgr_mut.mission_temp_mgr.clear();
+            mgr_mut.worldboss_temp_mgr.clear();
             let res = read_templates_from_dir(path, mgr_mut);
             if let Err(e) = res {
                 error!("{:?}", e);
@@ -218,6 +221,11 @@ impl TemplatesMgr {
     pub fn mission_temp_mgr(&self) -> &MissionTempMgr {
         &self.mission_temp_mgr
     }
+
+    /// Get a reference to the templates mgr's worldboss temp mgr.
+    pub fn worldboss_temp_mgr(&self) -> &WorldBossTempMgr {
+        &self.worldboss_temp_mgr
+    }
 }
 
 pub fn init_temps_mgr(path: &str) -> TemplatesMgr {
@@ -322,5 +330,8 @@ fn init_temps(temps_mgr: &mut TemplatesMgr, name: String, context: &str) {
     } else if name.eq_ignore_ascii_case(MISSION) {
         let v: Vec<MissionTemp> = serde_json::from_str(context).unwrap();
         temps_mgr.mission_temp_mgr.init(v);
+    } else if name.eq_ignore_ascii_case(WORLD_BOSS) {
+        let v: Vec<WorldBossTemp> = serde_json::from_str(context).unwrap();
+        temps_mgr.worldboss_temp_mgr.init(v);
     }
 }

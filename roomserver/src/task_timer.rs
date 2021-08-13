@@ -1,7 +1,7 @@
 use crate::room::match_room::MatchRoom;
 use crate::room::member::MemberState;
 use crate::room::room::{MemberLeaveNoticeType, RoomState, MEMBER_MAX};
-use crate::room::room_model::RoomModel;
+use crate::room::room_model::{RoomModel, RoomType};
 use crate::{Lock, SCHEDULED_MGR};
 use async_std::task::block_on;
 use chrono::Local;
@@ -94,15 +94,40 @@ fn match_room_confirm_into(rm: Lock, task: Task) {
     }
     let room_id = room_id.unwrap() as u32;
 
-    let mut lock = block_on(rm.lock());
-
-    let match_room = lock.match_room.borrow_mut();
-    let room = match_room.get_room_mut(&room_id);
-    if room.is_none() {
+    let room_type = map.get("room_type");
+    if room_type.is_none() {
         return;
     }
-    let room = room.unwrap();
-    let room_type = room.get_room_type();
+    let room_type = room_type.unwrap();
+    let room_type = room_type.as_u64();
+    if room_type.is_none() {
+        return;
+    }
+    let room_type = room_type.unwrap() as u8;
+    let room_type = RoomType::try_from(room_type).unwrap();
+
+    let mut lock = block_on(rm.lock());
+    let room;
+    match room_type {
+        RoomType::OneVOneVOneVOneMatch => {
+            let match_room = lock.match_room.borrow_mut();
+            let res = match_room.get_room_mut(&room_id);
+            if res.is_none() {
+                return;
+            }
+            room = res.unwrap();
+        }
+        RoomType::WorldBoseMatch => {
+            let match_room = lock.world_boss_match_room.borrow_mut();
+            let res = match_room.get_room_mut(&room_id);
+            if res.is_none() {
+                return;
+            }
+            room = res.unwrap();
+        }
+        _ => todo!(),
+    }
+
     //如果房间已经不再等待阶段了，就什么都不执行
     if room.get_state() != RoomState::AwaitConfirm {
         return;
@@ -270,7 +295,7 @@ pub fn build_match_room_ready_task(room_id: u32, task_sender: Sender<Task>) {
     }
 }
 
-pub fn build_confirm_into_room_task(room_id: u32, task_sender: Sender<Task>) {
+pub fn build_confirm_into_room_task(room_type: RoomType, room_id: u32, task_sender: Sender<Task>) {
     //创建延迟任务，并发送给定时器接收方执行
     let mut task = Task::default();
     let time_limit = crate::TEMPLATES
@@ -293,6 +318,7 @@ pub fn build_confirm_into_room_task(room_id: u32, task_sender: Sender<Task>) {
     task.cmd = TaskCmd::MatchRoomConfirmInto as u16;
     let mut map = Map::new();
     map.insert("room_id".to_owned(), JsonValue::from(room_id));
+    map.insert("room_type".to_owned(), JsonValue::from(room_type.into_u8()));
     task.data = JsonValue::from(map);
     let res = task_sender.send(task);
     if let Err(e) = res {

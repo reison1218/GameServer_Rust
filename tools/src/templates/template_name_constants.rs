@@ -41,3 +41,5 @@ pub const MARKET: &str = "Market";
 pub const MISSION: &str = "Mission";
 
 pub const MERCHANDISE: &str = "Merchandise";
+
+pub const WORLD_BOSS: &str = "WorldBoss";

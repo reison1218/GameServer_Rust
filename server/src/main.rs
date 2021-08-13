@@ -7,6 +7,7 @@ use crate::db::dbtool::DbPool;
 use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
+use async_std::task::block_on;
 use tools::thread_pool::MyThreadPool;
 
 use async_std::sync::Mutex;
@@ -79,6 +80,8 @@ const REDIS_INDEX_RANK: u32 = 2;
 const REDIS_KEY_USERS: &str = "users";
 ///redis 赛季key
 const REDIS_KEY_GAME_SEASON: &str = "game_season";
+///redis worldboss
+const REDIS_KEY_WORLD_BOSS: &str = "world_boss";
 ///redis user_id对应平台id key
 const REDIS_KEY_UID_2_PID: &str = "uid_2_pid";
 
@@ -91,6 +94,9 @@ const REDIS_KEY_CURRENT_RANK: &str = "current_rank";
 ///赛季信息
 pub static mut SEASON: Season = Season::new();
 
+///worldboss
+pub static mut WORLD_BOSS: WorldBoss = WorldBoss::new();
+
 pub struct Season {
     season_id: i32,
     next_update_time: u64,
@@ -100,6 +106,20 @@ impl Season {
     const fn new() -> Self {
         Season {
             season_id: 0,
+            next_update_time: 0,
+        }
+    }
+}
+
+pub struct WorldBoss {
+    world_boss_id: i32,
+    next_update_time: u64,
+}
+
+impl WorldBoss {
+    const fn new() -> Self {
+        WorldBoss {
+            world_boss_id: 0,
             next_update_time: 0,
         }
     }
@@ -124,7 +144,13 @@ fn main() {
     init_timer(game_mgr.clone());
 
     //初始化赛季
-    init_season(game_mgr.clone());
+    init_season();
+
+    //初始化worldboss
+    init_world_boss();
+
+    //初始化排行榜
+    init_rank(game_mgr.clone());
 
     //初始化http服务端
     init_http_server(game_mgr.clone());
@@ -139,10 +165,13 @@ fn init_log() {
     tools::my_log::init_log(info_log, error_log);
 }
 
-///初始化赛季信息
-fn init_season(gm: Lock) {
-    let mut lock = async_std::task::block_on(gm.lock());
+fn init_rank(gm: Lock) {
+    let mut lock = block_on(gm.lock());
     lock.init_rank();
+}
+
+///初始化赛季信息
+fn init_season() {
     let mut lock = REDIS_POOL.lock().unwrap();
     let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_GAME_SEASON, "101");
     if let None = res {
@@ -191,6 +220,59 @@ fn init_season(gm: Lock) {
         }
         let next_update_time = next_update_time.unwrap();
         SEASON.next_update_time = next_update_time;
+    }
+}
+
+///初始化worldboss信息
+fn init_world_boss() {
+    let mut lock = REDIS_POOL.lock().unwrap();
+    let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_WORLD_BOSS, "101");
+    if let None = res {
+        error!("redis do not has season data about game:{}", 101);
+        return;
+    }
+    let res: Option<String> = lock.hget(REDIS_INDEX_GAME_SEASON, REDIS_KEY_WORLD_BOSS, "101");
+    let str = res.unwrap();
+    let value = serde_json::from_str(str.as_str());
+    if let Err(e) = value {
+        error!("{:?}", e);
+        return;
+    }
+    let value: JsonValue = value.unwrap();
+    let map = value.as_object();
+    if map.is_none() {
+        warn!("the map is None for JsonValue!");
+        return;
+    }
+    let map = map.unwrap();
+
+    let cter_id = map.get("cter_id");
+    if cter_id.is_none() {
+        warn!("the season_id is None!");
+        return;
+    }
+    let cter_id = cter_id.unwrap();
+    let cter_id = cter_id.as_u64();
+    if cter_id.is_none() {
+        warn!("the season_id is None!");
+        return;
+    }
+    let cter_id = cter_id.unwrap();
+    unsafe {
+        WORLD_BOSS.world_boss_id = cter_id as i32;
+        let next_update_time = map.get("next_update_time");
+        if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+        let next_update_time = next_update_time.as_u64();
+        if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+        WORLD_BOSS.next_update_time = next_update_time;
     }
 }
 

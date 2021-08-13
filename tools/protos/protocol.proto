@@ -20,10 +20,11 @@ message S_USER_LOGIN {
    uint32 last_login_time = 4; // 当前登录的时间(服务器当前时间)
    uint32 last_logoff_time = 5; // 最后一次退出时间
    PlayerPt player_pt = 6;//玩家记录信息
-   repeated ResourcesPt resp= 7; //玩家资源
-   repeated CharacterPt cters = 8;//玩家角色
-   repeated uint32 grade_frames = 9;//玩家grade相框
-   repeated uint32 souls = 10;//玩家soul头像
+   SeasonPt season_pt = 7;//当前赛季信息
+   WorldBossPt world_boss_pt = 8;//当前worldboss
+   repeated CharacterPt cters = 9;//玩家角色
+   repeated uint32 grade_frames =10;//玩家grade相框
+   repeated uint32 souls = 11;//玩家soul头像
 
 }
 
@@ -37,7 +38,6 @@ message HEART_BEAT{
 //cmd:1004
 message C_SYNC_DATA{
   PlayerPt player_pt = 1;//玩家记录
-	repeated ResourcesPt resp = 2; //玩家资源
 }
 
 //同步数据返回
