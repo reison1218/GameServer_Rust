@@ -17,7 +17,8 @@ message G_R_CREATE_ROOM{
 ///游戏服务器发给房间服务器，加入房间
 message G_R_JOIN_ROOM{
     uint32 room_id = 1;//房间id
-    PlayerBattlePt pbp = 2;//玩家房间需要的数据
+    uint32 room_type = 2;//房间类型
+    PlayerBattlePt pbp = 3;//玩家房间需要的数据
 }
 
 ///游戏服务器发给房间服务器，快速开始

@@ -68,6 +68,9 @@ impl RobotStatusAction for AttackRobotAction {
             let mut player_count = (0, 0);
             for player in battle_data.battle_player.values() {
                 player_index = player.get_current_cter_index();
+                if player.is_died() {
+                    continue;
+                }
                 user_id = player.get_user_id();
                 if user_id == robot_id {
                     continue;
@@ -89,7 +92,7 @@ impl RobotStatusAction for AttackRobotAction {
                 target_index = player_count.0;
             } else {
                 //如果没有就找血最多的
-                let res = get_hp_max_cter(battle_data, robot_id);
+                let res = get_hp_max_cter(battle_data, robot_id, None);
                 if let None = res {
                     warn!("attack counld not find target!robot_id:{}", robot_id);
                     return;
@@ -98,7 +101,7 @@ impl RobotStatusAction for AttackRobotAction {
             }
         } else {
             //如果没有就找血最多的
-            let res = get_hp_max_cter(battle_data, robot_id);
+            let res = get_hp_max_cter(battle_data, robot_id, None);
             if let None = res {
                 warn!("attack counld not find target!robot_id:{}", robot_id);
                 return;

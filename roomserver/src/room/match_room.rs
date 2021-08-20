@@ -192,7 +192,7 @@ impl MatchRoom {
             }
             let user_id = member.user_id;
             //将成员加入到房间中
-            room_mut.add_member(member, None)?;
+            room_mut.add_member(member, None, false)?;
             //解决房间队列缓存
             let room_cache = self.room_cache.get_mut(0).unwrap();
             //cache人数加1

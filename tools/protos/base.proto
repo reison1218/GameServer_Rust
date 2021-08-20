@@ -18,7 +18,7 @@ package protos;
 
 message RoomSettingPt{
     uint32 turn_limit_time = 1;//回合时间限制
-    int32 season_id = 2;//赛季id
+    bool season_is_open = 2;//赛季开关
     uint32 ai_level = 3;//ai等级
 }
 
@@ -60,6 +60,7 @@ message MemberPt{
     uint64 join_time = 9;//玩家进入房间的时间
     LeaguePt league = 10;//段位数据
     uint32 robot_temp_id = 11;//是否机器人,如果值大于0，则表示是机器人
+    uint32 index= 12;//成员所在位置
 }
 
 message WorldCellPt{

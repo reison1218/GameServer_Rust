@@ -136,6 +136,9 @@ impl RobotStatusAction for OpenCellRobotAction {
                         continue;
                     }
                 }
+                if map_cell.open_cter > 0 {
+                    continue;
+                }
 
                 if map_cell.is_world() {
                     continue;

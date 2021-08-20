@@ -27,6 +27,7 @@ message C_CREATE_ROOM{
 //cmd:1007
 message C_JOIN_ROOM{
     uint32 room_id = 1;//房间id
+    uint32 room_type = 2;//房间类型
 }
 
 //快速开始
@@ -47,7 +48,7 @@ message S_ROOM{
 //房间设置请求
 //cmd:20011
 message C_ROOM_SETTING{
-    uint32 set_type = 1;//设定的类型 1:赛季id 2:turn限制时间 3:AI 等级
+    uint32 set_type = 1;//设定的类型 1:赛季开关 2:turn限制时间 3:AI 等级
     int32 value = 2;//对应的值
 }
 

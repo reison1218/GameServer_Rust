@@ -10,7 +10,6 @@ use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::robot::RememberCell;
-use crate::room::RoomType;
 use crate::TEMPLATES;
 use crate::{battle::battle::BattleData, room::map_data::MapCell};
 use log::{error, warn};
@@ -137,7 +136,7 @@ impl BattleData {
                         warn!("{:?}", e);
                         continue;
                     }
-                    battle_cter.add_buff(None, None, buff_id, Some(turn_index));
+                    battle_cter.add_buff(buff.from_cter, None, buff_id, Some(turn_index));
 
                     let mut target_pt_tmp = TargetPt::new();
                     target_pt_tmp
@@ -148,9 +147,15 @@ impl BattleData {
                 } else if TRAP_SKILL_DAMAGE.contains(&buff_function_id) {
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
+
                     let mut target_pt_temp = self.new_target_pt(cter_id).unwrap();
-                    let res =
-                        self.deduct_hp(0, cter_id, Some(skill_damage), &mut target_pt_temp, true);
+                    let res = self.deduct_hp(
+                        buff.from_cter.unwrap(),
+                        cter_id,
+                        Some(skill_damage),
+                        &mut target_pt_temp,
+                        true,
+                    );
                     if let Err(e) = res {
                         error!("{:?}", e);
                         continue;
@@ -554,8 +559,7 @@ impl TriggerEvent for BattleData {
     ///被攻击后触发
     fn attacked_after_trigger(&mut self, target_cter_id: u32, target_pt: &mut TargetPt) {
         let target_battle_cter = self.get_battle_cter_mut(target_cter_id, true);
-        if let Err(e) = target_battle_cter {
-            warn!("{:?}", e);
+        if let Err(_) = target_battle_cter {
             return;
         }
         let target_battle_cter = target_battle_cter.unwrap();
@@ -608,9 +612,8 @@ impl TriggerEvent for BattleData {
     ) -> Vec<TargetPt> {
         let mut v = vec![];
         let battle_data_ptr = self as *mut BattleData;
-        let target_battle_cter = self.get_battle_cter_mut(target_cter_id, true);
-        if let Err(e) = target_battle_cter {
-            warn!("{:?}", e);
+        let target_battle_cter = self.get_battle_cter_mut(target_cter_id, false);
+        if let Err(_) = target_battle_cter {
             return v;
         }
         let target_battle_cter = target_battle_cter.unwrap();
@@ -842,6 +845,10 @@ impl TriggerEvent for BattleData {
                     from_cter.add_gold(gold);
                 }
             }
+            //如果是worldboss房间，不用往下执行，到战斗结束的时候那一刻再结算
+            if self.room_type.is_boss_type() {
+                return;
+            }
             if player_count == 1 {
                 is_last_one = true;
             }
@@ -863,7 +870,7 @@ impl TriggerEvent for BattleData {
                 let con_temp_mgr = crate::TEMPLATES.constant_temp_mgr();
                 let res = con_temp_mgr.temps.get("max_grade");
                 let mut max_grade = 2;
-                if self.room_type == RoomType::OneVOneVOneVOneMatch {
+                if self.room_type.is_match_type() {
                     match res {
                         None => {
                             warn!("max_grade config is None!");
@@ -883,7 +890,7 @@ impl TriggerEvent for BattleData {
                 for sp in rank_vec_temp.iter_mut() {
                     sp.summary_rank = index as u8;
                     //不是匹配房间不结算段位，积分
-                    if self.room_type != RoomType::OneVOneVOneVOneMatch {
+                    if !self.room_type.is_match_type() {
                         continue;
                     }
                     //进行结算

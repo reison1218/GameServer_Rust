@@ -1,5 +1,6 @@
 use super::*;
 use crate::helper::RankInfo;
+use crate::mgr::RoomType;
 use crate::SEASON;
 use crate::TEMPLATES;
 use chrono::Local;
@@ -7,6 +8,7 @@ use protobuf::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, RoomCode};
 use tools::protos::base::PunishMatchPt;
@@ -423,6 +425,8 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) {
         return;
     }
 
+    let room_type = RoomType::try_from(cjr.room_type as u8).unwrap();
+
     let user_data = user_data.unwrap();
     let user_info = user_data.get_user_info_ref();
     let mut pbp = PlayerBattlePt::new();
@@ -443,6 +447,7 @@ pub fn join_room(gm: &mut GameMgr, packet: Packet) {
     }
     let mut grj = G_R_JOIN_ROOM::new();
     grj.set_room_id(cjr.room_id);
+    grj.set_room_type(room_type.into_u32());
     grj.set_pbp(pbp);
     let res = grj.write_to_bytes();
     match res {

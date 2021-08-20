@@ -30,6 +30,17 @@ pub enum RoomType {
 }
 
 impl RoomType {
+    pub fn is_match_type(self) -> bool {
+        self == RoomType::WorldBoseMatch || self == RoomType::OneVOneVOneVOneMatch
+    }
+
+    pub fn is_boss_type(self) -> bool {
+        self == RoomType::WorldBoseMatch || self == RoomType::WorldBossCustom
+    }
+
+    pub fn is_custom_type(self) -> bool {
+        self == RoomType::OneVOneVOneVOneCustom || self == RoomType::WorldBossCustom
+    }
     pub fn into_u8(self) -> u8 {
         let res: u8 = self.into();
         res
@@ -78,7 +89,7 @@ impl MemberLeaveNoticeType {
 #[derive(Debug, Copy, Clone, Default)]
 pub struct RoomSetting {
     pub turn_limit_time: u32, //回合限制时间
-    pub season_id: i32,       //赛季id
+    pub season_is_open: bool, //赛季开关
     pub ai_level: u8,         //ai等级
 }
 
@@ -86,10 +97,10 @@ impl From<&RoomSettingPt> for RoomSetting {
     fn from(rs_pt: &RoomSettingPt) -> Self {
         let ai_level = rs_pt.ai_level as u8;
         let turn_limit_time = rs_pt.turn_limit_time;
-        let season_id = rs_pt.season_id;
+        let season_is_open = rs_pt.season_is_open;
         let rs = RoomSetting {
             turn_limit_time,
-            season_id,
+            season_is_open,
             ai_level,
         };
         rs
@@ -99,7 +110,7 @@ impl From<&RoomSettingPt> for RoomSetting {
 impl From<RoomSetting> for RoomSettingPt {
     fn from(r: RoomSetting) -> Self {
         let mut rsp = RoomSettingPt::new();
-        rsp.set_season_id(r.season_id);
+        rsp.set_season_is_open(r.season_is_open);
         rsp.set_turn_limit_time(r.turn_limit_time);
         rsp.set_ai_level(r.ai_level as u32);
         rsp

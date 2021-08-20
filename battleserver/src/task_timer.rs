@@ -56,7 +56,7 @@ pub fn init_timer(bm: Lock) {
                 TaskCmd::ChoiceIndex => choice_index,
                 TaskCmd::BattleTurnTime => battle_turn_time,
                 TaskCmd::MaxBattleTurnTimes => max_battle_turn_limit,
-                _ => choice_index,
+                _ => none,
             };
             let m = move || f(rm_clone, task);
             SCHEDULED_MGR.execute_after(Duration::from_millis(delay), m);
@@ -70,6 +70,7 @@ pub fn init_timer(bm: Lock) {
     }
     info!("初始化定时器任务执行器成功!");
 }
+fn none(bm: Arc<Mutex<BattleMgr>>, task: Task) {}
 
 ///占位任务，没选的直接t出房间
 fn choice_index(bm: Arc<Mutex<BattleMgr>>, task: Task) {
@@ -150,7 +151,6 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
 
     let room = lock.get_room_mut(&user_id);
     if room.is_none() {
-        warn!("room is None!user_id:{}", user_id);
         return;
     }
     let room = room.unwrap();
@@ -190,8 +190,7 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
     let battle_player = battle_player.unwrap();
 
     //如果玩家啥都没做，就T出房间
-    let need_kick = battle_player.flow_data.residue_movement_points == TURN_DEFAULT_MOVEMENT_POINTS
-        && !battle_player.status.attack_reward_movement_points;
+    let need_kick = battle_player.flow_data.open_map_cell_vec.is_empty();
     if need_kick {
         room.remove_member(MemberLeaveNoticeType::Kicked.into(), &user_id, true);
         info!("定时检turn任务,没有翻的人T出去,user_id:{}", user_id);
@@ -206,8 +205,8 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
         let need_refresh_map = room.battle_data.check_refresh_map();
         //如果需要刷新地图，走地图刷新next turn逻辑
         if need_refresh_map {
-            room.battle_data.choice_index_next_turn();
             room.refresh_map();
+            room.check_next_choice_index();
             info!("定时检测turn任务,刷新地图");
         } else {
             //如果用过移动点数就帮他跳过

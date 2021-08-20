@@ -18,6 +18,11 @@ impl GoalEvaluator for BuyGoalEvaluator {
         if !robot.get_current_cter().map_cell_index_is_choiced() {
             return 0;
         }
+
+        //worldboss不屑于购物
+        if robot.is_world_boss {
+            return 0;
+        }
         let robot_index = robot.get_current_cter_index();
         let robot_data = robot.robot_data.as_ref().unwrap();
         let battle_data = robot.robot_data.as_ref().unwrap().battle_data;

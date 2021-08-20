@@ -24,4 +24,8 @@ impl RoomType {
         let res: u8 = self.into();
         res as u32
     }
+
+    pub fn is_match_type(self) -> bool {
+        self == RoomType::OneVOneVOneVOneMatch || self == RoomType::WorldBoseMatch
+    }
 }

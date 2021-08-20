@@ -360,8 +360,12 @@ pub fn start(bm: &mut BattleMgr, packet: Packet) {
         bm.player_room.insert(*user_id, room_id);
     }
 
-    let is_robot = room.battle_data.next_turn_is_robot();
-    if is_robot {
+    let (is_robot, is_worldboss) = room.battle_data.next_turn_is_robot();
+    //如果是worldboss就跳到下一个
+    if is_worldboss {
+        room.check_next_choice_index();
+        room.init_mission_for_choice_index();
+    } else if is_robot {
         let battle_data_ptr = &mut room.battle_data as *mut BattleData;
         let robot_id = room.battle_data.get_turn_user(None).unwrap();
         let battle_player = room.battle_data.battle_player.get_mut(&robot_id).unwrap();
@@ -840,6 +844,13 @@ pub fn choice_index(bm: &mut BattleMgr, packet: Packet) {
     }
     let room = room.unwrap();
 
+    if room.state != RoomState::ChoiceIndex {
+        warn!(
+            "could not choiceindex now!the room state:{:?},user_id:{}",
+            room.state, user_id
+        );
+        return;
+    }
     //校验是否轮到他了
     if !room.is_can_choice_index_now(user_id) {
         warn!(

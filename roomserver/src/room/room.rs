@@ -30,7 +30,7 @@ pub const MEMBER_MAX: usize = 4;
 #[repr(u8)]
 pub enum RoomSettingType {
     None = 0,
-    SeasonId = 1,
+    SeasonIsOpen = 1,
     TurnLimitTime = 2,
     AILevel = 3,
 }
@@ -38,7 +38,7 @@ pub enum RoomSettingType {
 impl From<u32> for RoomSettingType {
     fn from(value: u32) -> Self {
         match value {
-            1 => RoomSettingType::SeasonId,
+            1 => RoomSettingType::SeasonIsOpen,
             2 => RoomSettingType::TurnLimitTime,
             3 => RoomSettingType::AILevel,
             _ => RoomSettingType::None,
@@ -117,7 +117,7 @@ impl Room {
         let id: u32 = create_room_id();
         let time = Utc::now();
         let mut room_state = RoomState::AwaitReady;
-        if room_type == RoomType::OneVOneVOneVOneMatch {
+        if room_type.is_match_type() {
             room_state = RoomState::AwaitConfirm;
             owner.state = MemberState::AwaitConfirm;
         }
@@ -134,6 +134,7 @@ impl Room {
             task_sender,
             time,
         };
+
         let mut size = room.members.len() as u8;
         size += 1;
         owner.team_id = size;
@@ -166,12 +167,13 @@ impl Room {
             return true;
         }
         match room_type {
-            RoomType::OneVOneVOneVOneCustom => {
+            RoomType::OneVOneVOneVOneCustom | RoomType::WorldBossCustom => {
                 if self.get_owner_id() == 0 && state != RoomState::ChoiceIndex {
                     return true;
                 }
             }
-            RoomType::OneVOneVOneVOneMatch => {
+            RoomType::OneVOneVOneVOneMatch | RoomType::WorldBoseMatch => {
+                //最后一个胜者
                 if state == RoomState::ChoiceIndex && self.members.len() == 1 {
                     return true;
                 }
@@ -185,7 +187,7 @@ impl Room {
 
     ///离开房间检查是否需要添加惩罚
     pub fn check_punish_for_leave(&mut self, user_id: u32) {
-        if self.room_type != RoomType::OneVOneVOneVOneMatch {
+        if !self.room_type.is_match_type() {
             return;
         }
         //判断是否需要重制
@@ -215,7 +217,7 @@ impl Room {
         let bytes = proto.write_to_bytes();
         match bytes {
             Ok(bytes) => {
-                self.send_2_client(ClientCode::PunishPatchPush, user_id, bytes);
+                self.send_2_client(ClientCode::PunishMatchPush, user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);
@@ -360,7 +362,7 @@ impl Room {
             );
         }
 
-        if self.check_ready() && self.room_type == RoomType::OneVOneVOneVOneMatch {
+        if self.check_ready() && self.room_type.is_match_type() {
             self.start();
         }
     }
@@ -469,11 +471,11 @@ impl Room {
         let mut index = 0;
         let mut size = self.members.len();
         let owner_id = self.owner_id;
-        if self.room_type == RoomType::OneVOneVOneVOneMatch {
+        if self.room_type.is_match_type() {
             size = MEMBER_MAX;
         }
         for member in self.members.values_mut() {
-            if owner_id == member.user_id && self.room_type == RoomType::OneVOneVOneVOneCustom {
+            if owner_id == member.user_id && self.room_type.is_custom_type() {
                 if member.chose_cter.cter_temp_id == 0 {
                     warn!(
                         "check_ready: this player has not choose character yet!user_id:{}",
@@ -547,7 +549,12 @@ impl Room {
     }
 
     ///添加成员
-    pub fn add_member(&mut self, mut member: Member, index: Option<usize>) -> anyhow::Result<u32> {
+    pub fn add_member(
+        &mut self,
+        mut member: Member,
+        index: Option<usize>,
+        is_need_notice: bool,
+    ) -> anyhow::Result<u32> {
         let mut size = self.members.len() as u8;
         let user_id = member.user_id;
         size += 1;
@@ -555,7 +562,7 @@ impl Room {
             member.team_id = size;
         }
         member.join_time = Local::now().timestamp_millis() as u64;
-        self.members.insert(user_id, member);
+
         match index {
             Some(index) => self.member_index[index] = user_id,
             None => {
@@ -564,13 +571,13 @@ impl Room {
                         continue;
                     }
                     self.member_index[i] = user_id;
+                    member.index = i as u32;
                     break;
                 }
             }
         }
-
-        //不是匹配房就通知其他成员
-        if self.room_type != RoomType::OneVOneVOneVOneMatch {
+        self.members.insert(user_id, member);
+        if is_need_notice {
             self.notice_new_member(user_id);
         }
         Ok(self.id)
@@ -654,7 +661,7 @@ impl Room {
         self.members.remove(&user_id);
         if self.get_owner_id() == user_id {
             self.owner_id = 0;
-            if self.room_type == RoomType::OneVOneVOneVOneMatch {
+            if self.room_type.is_match_type() {
                 for &id in self.members.keys() {
                     if id != 0 {
                         self.owner_id = id;
@@ -707,7 +714,19 @@ impl Room {
 
     ///判断房间是否有成员
     pub fn is_empty(&self) -> bool {
-        self.members.is_empty()
+        let mut is_empty = self.members.is_empty();
+        if is_empty {
+            return is_empty;
+        }
+        is_empty = true;
+        for member in self.members.values() {
+            if member.robot_temp_id > 0 {
+                continue;
+            }
+            is_empty = false;
+            break;
+        }
+        is_empty
     }
 
     ///转换成protobuf

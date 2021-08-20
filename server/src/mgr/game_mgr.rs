@@ -305,9 +305,9 @@ impl GameMgr {
         let mut world_boss_pt = WorldBossPt::new();
         unsafe {
             season_pt.set_season_id(crate::SEASON.season_id as u32);
-            season_pt.set_end_time(crate::SEASON.next_update_time);
+            season_pt.set_end_time(crate::SEASON.next_update_time * 1000);
             world_boss_pt.set_world_boss_id(crate::WORLD_BOSS.world_boss_id as u32);
-            world_boss_pt.set_end_time(crate::WORLD_BOSS.next_update_time)
+            world_boss_pt.set_end_time(crate::WORLD_BOSS.next_update_time * 1000)
         }
         lr.set_season_pt(season_pt);
         lr.set_world_boss_pt(world_boss_pt);
@@ -462,22 +462,24 @@ pub fn summary(gm: &mut GameMgr, packet: Packet) {
     //处理持久化到数据库
     user_data.add_version();
     //如果是匹配房
-    if room_type == RoomType::OneVOneVOneVOneMatch {
+    if room_type.is_match_type() {
         //第一名就加grade
         user_data.user_info.set_grade(grade);
-        bgs.cters.extend_from_slice(cters.as_slice());
-        let league_pt = summary_data_pt.get_league();
-        //更新段位积分
-        gm.update_user_league_id(user_id, league_pt.clone());
-        if league_pt.league_id > 0 {
-            let res = bgs.write_to_bytes();
-            match res {
-                Ok(bytes) => {
-                    //更新排行榜
-                    gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
-                }
-                Err(e) => {
-                    warn!("{:?}", e)
+        if room_type == RoomType::OneVOneVOneVOneMatch {
+            bgs.cters.extend_from_slice(cters.as_slice());
+            let league_pt = summary_data_pt.get_league();
+            //更新段位积分
+            gm.update_user_league_id(user_id, league_pt.clone());
+            if league_pt.league_id > 0 {
+                let res = bgs.write_to_bytes();
+                match res {
+                    Ok(bytes) => {
+                        //更新排行榜
+                        gm.send_2_server(RankCode::UpdateRank.into_u32(), user_id, bytes);
+                    }
+                    Err(e) => {
+                        warn!("{:?}", e)
+                    }
                 }
             }
         }

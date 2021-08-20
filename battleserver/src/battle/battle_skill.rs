@@ -6,7 +6,7 @@ use crate::battle::battle_enum::skill_type::{
     SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
     SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
 };
-use crate::battle::battle_enum::{ActionType, EffectType, ElementType, TargetType};
+use crate::battle::battle_enum::{ActionType, DamageType, EffectType, ElementType, TargetType};
 use crate::battle::battle_helper::build_action_unit_pt;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
@@ -31,6 +31,7 @@ pub struct Skill {
     pub skill_temp: &'static SkillTemp,
     pub cd_times: i8,    //剩余cd,如果是消耗能量则无视这个值
     pub is_active: bool, //是否激活
+    pub last_target_cter: u32,
 }
 impl Skill {
     ///加减技能cd,
@@ -61,6 +62,7 @@ impl From<&'static SkillTemp> for Skill {
             cd_times: 0,
             skill_temp,
             is_active: false,
+            last_target_cter: 0,
         }
     }
 }
@@ -824,7 +826,7 @@ pub unsafe fn auto_pair_map_cell(
     battle_player.status.is_pair = true;
     //处理本turn不能攻击
     battle_player.change_attack_locked();
-    battle_cter.add_buff(None, None, buff_id, Some(next_turn_index));
+    battle_cter.add_buff(Some(cter_id), None, buff_id, Some(next_turn_index));
     let cter_map_cell_index = battle_cter.get_map_cell_index() as u32;
     //清除已配对的
     battle_data.tile_map.un_pair_map.remove(&map_cell_index);
@@ -1028,41 +1030,24 @@ pub unsafe fn skill_aoe_damage(
         Some(scope_temp),
     );
 
-    let mut is_last_one = false;
-    let mut count = 0i16;
-
+    let mut targets = vec![];
     for index in 0..v.len() {
         let &target_cter_id = v.get(index).unwrap();
-        if index == v.len() - 1 {
-            is_last_one = true;
-        }
-        let battle_cter = battle_data.get_battle_cter(cter_id, true).unwrap();
+        let cter = battle_data.get_battle_cter(target_cter_id, true).unwrap();
         let damage_res;
         //判断是否中心位置
-        let cter_index = battle_cter.get_map_cell_index();
-        if cter_index == center_index as usize && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
+        if cter.get_map_cell_index() == center_index as usize
+            && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
         {
             damage_res = par2;
         } else {
             damage_res = par1;
         }
-        let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
-        let res = battle_data.deduct_hp(
-            cter_id,
-            target_cter_id,
-            Some(damage_res),
-            &mut target_pt,
-            is_last_one,
-        );
-        match res {
-            Ok(_) => {
-                au.targets.push(target_pt);
-                count += 1;
-            }
-            Err(e) => error!("{:?}", e),
-        }
+        targets.push((target_cter_id, DamageType::Skill(damage_res)));
     }
-
+    let count = targets.len() as i16;
+    //扣血
+    battle_data.batch_deduct_hp(cter_id, targets, au);
     //如果技能是造成aoe并减cd
     if skill_function_id == SKILL_AOE_RED_SKILL_CD {
         //处理减cd逻辑,如果造成伤害人数大于参数

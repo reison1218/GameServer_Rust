@@ -7,6 +7,7 @@ use tools::{cmd_code::ClientCode, protos::room::S_LEAVE_ROOM};
 use crate::room::room::recycle_room_id;
 
 use super::{
+    member::Member,
     room::{Room, RoomState},
     room_model::{RoomModel, RoomType},
 };
@@ -39,7 +40,19 @@ impl RoomModel for WorldBossCustomRoom {
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;
         let mut room = Room::new(owner, RoomType::WorldBossCustom, sender, task_sender)?;
+        //加入worldboss
+        unsafe {
+            let world_boss_id = crate::WORLD_BOSS.world_boss_id as u32;
+            let worldboss_temp = crate::TEMPLATES
+                .worldboss_temp_mgr()
+                .temps
+                .get(&world_boss_id)
+                .unwrap();
 
+            let member = Member::new_for_robot(worldboss_temp.robot_id, 2, Some(3));
+            room.robots.insert(member.get_user_id());
+            let _ = room.add_member(member, Some(3), false);
+        }
         if let Some(room_setting) = room_setting {
             room.setting = room_setting;
         }

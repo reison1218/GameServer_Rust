@@ -269,7 +269,7 @@ pub enum ClientCode {
     //购买推送
     BuyNoice = 10102,
     //匹配惩罚推送
-    PunishPatchPush = 10103,
+    PunishMatchPush = 10103,
     //选择ai角色通知
     ChoiceAINotice = 10201,
     //最大命令号

@@ -49,6 +49,8 @@ impl RoomMgr {
         let res = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            RoomType::WorldBossCustom => self.world_boss_custom_room.get_room_mut(&room_id),
+            RoomType::WorldBoseMatch => self.world_boss_match_room.get_room_mut(&room_id),
             _ => None,
         };
         if res.is_none() {
@@ -65,6 +67,8 @@ impl RoomMgr {
         let room = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.rm_room(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.rm_room(&room_id),
+            RoomType::WorldBossCustom => self.world_boss_custom_room.rm_room(&room_id),
+            RoomType::WorldBoseMatch => self.world_boss_match_room.rm_room(&room_id),
             _ => None,
         };
         if room.is_none() {
@@ -98,6 +102,8 @@ impl RoomMgr {
         room = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            RoomType::WorldBossCustom => self.world_boss_custom_room.get_room_mut(&room_id),
+            RoomType::WorldBoseMatch => self.world_boss_match_room.get_room_mut(&room_id),
             _ => None,
         };
 
@@ -118,10 +124,17 @@ impl RoomMgr {
             user_id, room_id
         );
 
-        if room_type == RoomType::OneVOneVOneVOneMatch && room_state == RoomState::AwaitConfirm {
+        if room_type.is_match_type() && room_state == RoomState::AwaitConfirm {
             let mut need_rm_cache = false;
             let mut need_cache_sort = false;
-            for room_cache in self.match_room.room_cache.iter_mut() {
+
+            let room_cache_iter = if room_type == RoomType::OneVOneVOneVOneMatch {
+                self.match_room.room_cache.iter_mut()
+            } else {
+                self.world_boss_match_room.room_cache.iter_mut()
+            };
+
+            for room_cache in room_cache_iter {
                 if room_cache.room_id != room_id {
                     continue;
                 }
@@ -136,17 +149,35 @@ impl RoomMgr {
                 break;
             }
             if !need_rm_room && need_rm_cache {
-                self.match_room.remove_room_cache(&room_id);
+                self.remove_room_cache(room_type, room_id);
             }
             if !need_rm_room && need_cache_sort {
                 //重新排序
-                self.match_room
-                    .room_cache
-                    .par_sort_by(|a, b| b.count.cmp(&a.count));
+                self.sort_for_match_room(room_type);
             }
         }
         if need_rm_room {
             self.rm_room_without_push(room_type, room_id);
+        }
+    }
+
+    pub fn sort_for_match_room(&mut self, room_type: RoomType) {
+        if room_type == RoomType::OneVOneVOneVOneMatch {
+            self.match_room
+                .room_cache
+                .par_sort_by(|a, b| b.count.cmp(&a.count));
+        } else if room_type == RoomType::WorldBoseMatch {
+            self.world_boss_match_room
+                .room_cache
+                .par_sort_by(|a, b| b.count.cmp(&a.count));
+        }
+    }
+
+    pub fn remove_room_cache(&mut self, room_type: RoomType, room_id: u32) {
+        if room_type == RoomType::OneVOneVOneVOneMatch {
+            self.match_room.remove_room_cache(&room_id);
+        } else if room_type == RoomType::WorldBoseMatch {
+            self.world_boss_match_room.remove_room_cache(&room_id);
         }
     }
 
@@ -219,6 +250,8 @@ impl RoomMgr {
         let room = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_mut(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_mut(&room_id),
+            RoomType::WorldBossCustom => self.world_boss_custom_room.get_room_mut(&room_id),
+            RoomType::WorldBoseMatch => self.world_boss_match_room.get_room_mut(&room_id),
             _ => None,
         };
         room
@@ -242,6 +275,8 @@ impl RoomMgr {
         let room = match room_type {
             RoomType::OneVOneVOneVOneCustom => self.custom_room.get_room_ref(&room_id),
             RoomType::OneVOneVOneVOneMatch => self.match_room.get_room_ref(&room_id),
+            RoomType::WorldBossCustom => self.world_boss_custom_room.get_room_ref(&room_id),
+            RoomType::WorldBoseMatch => self.world_boss_match_room.get_room_ref(&room_id),
             _ => None,
         };
         room
@@ -302,7 +337,7 @@ impl RoomMgr {
         //战斗服通知T人
         self.cmd_map
             .insert(RoomCode::BattleKickMember.into_u32(), battle_kick_member);
-        //战斗服通知T人
+        //选择ai
         self.cmd_map
             .insert(RoomCode::ChoiceAI.into_u32(), choice_ai);
     }

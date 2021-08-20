@@ -282,8 +282,11 @@ impl BattleCharacter {
         self.base_attr.hp += hp;
         if self.base_attr.hp <= 0 {
             let str = format!(
-                "cter is died!because hp:{},cter_id:{}",
-                hp, self.base_attr.cter_id
+                "cter is died!because hp:{},cter_id:{},cter_temp_id:{},user_id:{},",
+                hp,
+                self.base_attr.cter_id,
+                self.base_attr.cter_temp_id,
+                self.get_user_id()
             );
             self.state = BattleCterState::Died;
             info!("{:?}", str);

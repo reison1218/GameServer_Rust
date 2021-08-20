@@ -1,6 +1,12 @@
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum DamageType {
+    Attack(i16),
+    Skill(i16),
+}
+
 ///默认每个turn移动点数
 pub const TURN_DEFAULT_MOVEMENT_POINTS: u8 = 2;
 

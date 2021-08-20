@@ -1,6 +1,8 @@
+use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::LOCKED;
 use crate::battle::battle_enum::buff_type::TRAPS;
+use crate::battle::battle_enum::BattlePlayerState;
 use crate::room::RoomType;
 use crate::TEMPLATES;
 use num_enum::IntoPrimitive;
@@ -48,6 +50,7 @@ pub struct TileMap {
     pub market_cell: (usize, u32),                 //商店 index,商店id
     pub season_id: i32,                            //当前地图赛季id
     pub un_pair_map: HashMap<usize, u32>,          //未配对的地图块map
+    pub world_boss_init_index: usize,              //boss出场位置
 }
 
 impl TileMap {
@@ -177,11 +180,16 @@ impl TileMap {
 
     ///初始化战斗地图数据
     pub fn init(
-        room_type: RoomType,
-        mut season_id: i32,
-        mut member_count: u8,
+        battle_data: &mut BattleData,
+        season_is_open: bool,
         last_map_id: u32,
     ) -> anyhow::Result<Self> {
+        let room_type = battle_data.room_type;
+        let mut member_count = battle_data
+            .battle_player
+            .values()
+            .filter(|x| x.status.battle_state == BattlePlayerState::Normal)
+            .count() as u8;
         //先算人数
         if member_count == 3 {
             member_count += 1;
@@ -190,17 +198,19 @@ impl TileMap {
         let mut rand = rand::thread_rng();
         //拿到地图配置管理器
         let tile_map_mgr = TEMPLATES.tile_map_temp_mgr();
+        let mut season_id = 0;
         //第一次初始化地图
         if last_map_id == 0 {
             match room_type {
-                RoomType::OneVOneVOneVOneCustom => {
+                RoomType::OneVOneVOneVOneCustom | RoomType::WorldBossCustom => {
                     //如果赛季id==-1则随机一个出来
-                    if season_id == -1 {
-                        let season_temp = crate::TEMPLATES.season_temp_mgr().random();
-                        season_id = season_temp.id as i32;
+                    if season_is_open {
+                        unsafe {
+                            season_id = crate::SEASON.season_id;
+                        }
                     }
                 }
-                RoomType::OneVOneVOneVOneMatch => {
+                RoomType::OneVOneVOneVOneMatch | RoomType::WorldBoseMatch => {
                     //如果是匹配房,第一次进行随机
                     //否则进行随机，0-1，0代表不开启世界块
                     let res = rand.gen_range(0..2);
@@ -216,7 +226,7 @@ impl TileMap {
             if let Ok(tile_map_temp) = tile_map_temp {
                 if tile_map_temp.world_cell > 0 {
                     match room_type {
-                        RoomType::OneVOneVOneVOneMatch => unsafe {
+                        RoomType::OneVOneVOneVOneMatch | RoomType::WorldBoseMatch => unsafe {
                             season_id = crate::SEASON.season_id;
                         },
                         _ => {}
@@ -363,6 +373,7 @@ impl TileMap {
         let mut index = 0;
         let mut x = 0_isize;
         let mut y = 0_isize;
+        let mut un_pair_v = vec![];
         for (map_cell_id, cell_type) in map.iter() {
             if x > 5 {
                 x = 0;
@@ -393,6 +404,7 @@ impl TileMap {
                 buffs = Some(map_cell_temp.buff.iter());
                 map_cell.element = map_cell_temp.element;
                 tmp.un_pair_map.insert(index, map_cell.id);
+                un_pair_v.push(index);
             }
             if let Some(buffs) = buffs {
                 let mut buff_map = HashMap::new();
@@ -406,6 +418,13 @@ impl TileMap {
             }
             tmp.map_cells[index] = map_cell;
             index += 1;
+        }
+        //先给worldboss放位置
+        if room_type.is_boss_type() {
+            let random = rand.gen_range(0..un_pair_v.len());
+            let &index = un_pair_v.get(random).unwrap();
+            let map_cell = tmp.map_cells.get_mut(index).unwrap();
+            tmp.world_boss_init_index = map_cell.index;
         }
         tmp.season_id = season_id;
         Ok(tmp)

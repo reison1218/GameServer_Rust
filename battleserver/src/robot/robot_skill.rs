@@ -82,16 +82,16 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     //特殊使用条件
     match skill_function_id {
         //判断是否有未知地图快
-        i if [113].contains(&i) => {
+        i if 113 == i => {
             // can_use = check_unknow_map_cell(&battle_data.tile_map, robot).is_some();
         }
         //判断是否配对
-        i if [211].contains(&i) => {
+        i if 211 == i => {
             let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
             can_use = battle_player.is_can_attack();
         }
         //判断有没有地图块可以翻
-        i if [223].contains(&i) => {
+        i if 223 == i => {
             let targets = skill_target(battle_data, skill, robot);
             if let Err(_) = targets {
                 can_use = false;
@@ -100,19 +100,19 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
             }
         }
         //周围必须没人
-        i if [313].contains(&i) => {
+        i if 313 == i => {
             can_use = !near_user(battle_data, cter_id);
         }
         //周围必须有人
-        i if [321].contains(&i) => {
+        i if 321 == i => {
             can_use = near_user(battle_data, cter_id);
         }
-        i if [331].contains(&i) => {
+        i if 331 == i => {
             let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
             can_use = pair_useable_skill(battle_player);
         }
         //选中至少2个目标
-        i if [411].contains(&i) => {
+        i if 411 == i => {
             let res = get_line_aoe(robot_id, battle_data);
             match res {
                 Some((count, _)) => {
@@ -146,7 +146,9 @@ pub fn skill_target(
     let robot_id = robot.robot_id;
 
     let battle_robot = battle_data.get_battle_player(Some(robot_id), true).unwrap();
+
     let cter_id = battle_robot.current_cter.0;
+    let team_id = battle_robot.team_id;
     let mut targets = vec![];
     //匹配技能id进行不同的目标选择
     match skill_function_id {
@@ -156,7 +158,7 @@ pub fn skill_target(
         }
         //除自己外最大血量的目标
         i if [123, 331, 433, 20001, 20002, 20003, 20004, 20005].contains(&i) => {
-            let res = get_hp_max_cter(battle_data, robot_id);
+            let res = get_hp_max_cter(battle_data, robot_id, None);
             match res {
                 Some(res) => targets.push(res),
                 None => warn!("get_hp_max_cter res is None!"),
@@ -197,7 +199,8 @@ pub fn skill_target(
         }
         //变身技能，计算⭕️
         i if [431].contains(&i) => {
-            let res = get_roundness_aoe(cter_id, battle_data, true, false, true, true);
+            let res =
+                get_roundness_aoe(cter_id, battle_data, true, false, true, true, Some(team_id));
             match res {
                 Some(res) => {
                     targets.extend_from_slice(res.as_slice());
@@ -209,13 +212,140 @@ pub fn skill_target(
         }
         //⭕️aoe，包括中心，人数越多越好
         i if [432].contains(&i) => {
-            let res = get_roundness_aoe(cter_id, battle_data, false, false, false, false);
+            let res = get_roundness_aoe(
+                cter_id,
+                battle_data,
+                false,
+                false,
+                false,
+                false,
+                Some(team_id),
+            );
             match res {
                 Some(res) => {
                     targets.extend_from_slice(res.as_slice());
                 }
                 None => {
                     warn!("get_roundness_aoe could not find any target!")
+                }
+            }
+        }
+        i if 11004 == i => {
+            let mut v = vec![];
+            for &cter_id in battle_data.cter_player.keys() {
+                let cter = battle_data.get_battle_cter(cter_id, true);
+                if cter.is_err() {
+                    continue;
+                }
+                let cter = cter.unwrap();
+                if !cter.is_major {
+                    continue;
+                }
+                if cter.get_cter_id() == skill.last_target_cter
+                    && battle_data.battle_player.len() > 2
+                {
+                    continue;
+                }
+                if cter.base_attr.team_id == team_id {
+                    continue;
+                }
+                v.push(cter.get_map_cell_index());
+            }
+            let mut random = rand::thread_rng();
+            let index = random.gen_range(0..v.len());
+            let &target_cter_index = v.get(index).unwrap();
+            targets.push(target_cter_index);
+        }
+        i if 11002 == i => {
+            let mut unopen_v = vec![];
+            let mut open_v = vec![];
+            for map_cell in battle_data.tile_map.map_cells.iter() {
+                if map_cell.cter_id > 0 {
+                    continue;
+                }
+                if map_cell.cell_type != MapCellType::Valid {
+                    continue;
+                }
+                if map_cell.pair_index.is_some() {
+                    open_v.push(map_cell.index);
+                } else {
+                    unopen_v.push(map_cell.index);
+                }
+            }
+            let mut random = rand::thread_rng();
+            let index;
+            let target_index;
+            if !unopen_v.is_empty() {
+                index = random.gen_range(0..unopen_v.len());
+                target_index = *unopen_v.get(index).unwrap();
+            } else {
+                index = random.gen_range(0..open_v.len());
+                target_index = *open_v.get(index).unwrap();
+            }
+            targets.push(target_index);
+        }
+        i if 11005 == i => {
+            let scope_id;
+
+            match battle_data.round {
+                1 => {
+                    scope_id = 1;
+                }
+                2 => {
+                    scope_id = skill.skill_temp.par2;
+                }
+                3 => {
+                    scope_id = skill.skill_temp.par3;
+                }
+                i if i >= 4 => {
+                    scope_id = skill.skill_temp.par4;
+                }
+                _ => {
+                    scope_id = 0;
+                }
+            }
+
+            crate::TEMPLATES
+                .skill_scope_temp_mgr()
+                .get_temp(&scope_id)
+                .unwrap();
+
+            if scope_id == 1 {
+                let target_cter_index = get_hp_max_cter(battle_data, robot_id, Some(team_id));
+                if let Some(target_cter_index) = target_cter_index {
+                    targets.push(target_cter_index);
+                }
+            } else if scope_id == 5 {
+                let res = get_roundness_aoe(
+                    cter_id,
+                    battle_data,
+                    false,
+                    false,
+                    false,
+                    false,
+                    Some(team_id),
+                );
+                if let Some(res) = res {
+                    targets.extend_from_slice(res.as_slice());
+                }
+            } else if scope_id == 3 {
+                let res = get_triangle_aoe(cter_id, battle_data, Some(team_id));
+                if let Some(res) = res {
+                    targets.extend_from_slice(res.as_slice());
+                }
+            } else if scope_id == 6 {
+                for &id in battle_data.cter_player.keys() {
+                    let cter_res = battle_data.get_battle_cter(id, true);
+                    match cter_res {
+                        Ok(cter) => {
+                            if cter.base_attr.team_id == team_id {
+                                continue;
+                            } else {
+                                targets.push(cter.get_map_cell_index());
+                            }
+                        }
+                        Err(_) => continue,
+                    }
                 }
             }
         }
@@ -327,7 +457,11 @@ pub fn skill_open_near_cell_robot(
 }
 
 ///获得除robot_id生命值最高的角色位置
-pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize> {
+pub fn get_hp_max_cter(
+    battle_data: &BattleData,
+    robot_id: u32,
+    team_id: Option<u8>,
+) -> Option<usize> {
     let mut res = (0, 0);
     for battle_player in battle_data.battle_player.values() {
         //排除死掉的
@@ -337,6 +471,11 @@ pub fn get_hp_max_cter(battle_data: &BattleData, robot_id: u32) -> Option<usize>
         //排除自己所有的角色
         if battle_player.get_user_id() == robot_id {
             continue;
+        }
+        if let Some(team_id) = team_id {
+            if battle_player.team_id == team_id {
+                continue;
+            }
         }
         for battle_cter in battle_player.cters.values() {
             let hp = battle_cter.base_attr.hp;
@@ -397,6 +536,7 @@ pub fn get_roundness_aoe(
     is_check_lock: bool,
     is_opened: bool,
     is_check_world_cell: bool,
+    team_id: Option<u8>,
 ) -> Option<Vec<usize>> {
     let mut res_v = vec![];
     for map_cell in battle_data.tile_map.map_cells.iter() {
@@ -462,9 +602,22 @@ pub fn get_roundness_aoe(
                 continue;
             }
             let cell = cell.unwrap();
-            if cell.cter_id > 0 && cell.cter_id != cter_id {
-                v.push(cell.index);
+            let cter_id = cell.cter_id;
+            if cter_id == 0 {
+                continue;
             }
+
+            let cter = battle_data.get_battle_cter(cter_id, true);
+            if cter.is_err() {
+                continue;
+            }
+            let cter = cter.unwrap();
+
+            //一个队伍就跳过
+            if team_id.is_some() && (cter.base_attr.team_id == team_id.unwrap()) {
+                continue;
+            }
+            v.push(cell.index);
         }
         res_v.push(v);
     }
@@ -472,7 +625,11 @@ pub fn get_roundness_aoe(
 }
 
 ///获得三角aoe范围
-pub fn get_triangle_aoe(cter_id: u32, battle_data: &BattleData) -> Option<Vec<usize>> {
+pub fn get_triangle_aoe(
+    cter_id: u32,
+    battle_data: &BattleData,
+    team_id: Option<u8>,
+) -> Option<Vec<usize>> {
     let mut res_v = vec![];
     for map_cell in battle_data.tile_map.map_cells.iter() {
         let mut v = vec![];
@@ -514,10 +671,20 @@ pub fn get_triangle_aoe(cter_id: u32, battle_data: &BattleData) -> Option<Vec<us
                 continue;
             }
             let res_cell = res_cell.unwrap();
-            //排除无效目标
-            if res_cell.cter_id == 0 || res_cell.cter_id == cter_id {
+            if res_cell.cter_id == 0 {
                 continue;
             }
+            let cter = battle_data.get_battle_cter(res_cell.cter_id, true);
+            if cter.is_err() {
+                continue;
+            }
+            let cter = cter.unwrap();
+
+            //排除队友
+            if team_id.is_some() && (team_id.unwrap() == cter.base_attr.team_id) {
+                continue;
+            }
+
             v.push(res_cell.index);
         }
         res_v.push(v);

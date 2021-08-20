@@ -54,11 +54,12 @@ impl WorldBossMatchRoom {
     ///快速加入
     pub fn quickly_start(
         &mut self,
-        member: Member,
+        mut member: Member,
         sender: TcpHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
+        member.team_id = 1;
         //如果房间缓存里没有，则创建新房间
         if self.room_cache.is_empty() {
             //创建房间
@@ -73,7 +74,7 @@ impl WorldBossMatchRoom {
             }
             let user_id = member.user_id;
             //将成员加入到房间中
-            room_mut.add_member(member, None)?;
+            room_mut.add_member(member, None, false)?;
             //解决房间队列缓存
             let room_cache = self.room_cache.get_mut(0).unwrap();
             //cache人数加1
@@ -140,7 +141,7 @@ impl RoomModel for WorldBossMatchRoom {
     fn create_room(
         &mut self,
         owner: Member,
-        room_setting: Option<RoomSetting>,
+        _: Option<RoomSetting>,
         sender: TcpHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
@@ -155,9 +156,9 @@ impl RoomModel for WorldBossMatchRoom {
                 .get(&world_boss_id)
                 .unwrap();
 
-            let member = Member::new_for_robot(worldboss_temp.robot_id, 2);
+            let member = Member::new_for_robot(worldboss_temp.robot_id, 2, Some(3));
             room.robots.insert(member.get_user_id());
-            let _ = room.add_member(member, Some(3));
+            let _ = room.add_member(member, Some(3), false);
         }
         self.rooms.insert(room_id, room);
         let mut rc = RoomCache::default();

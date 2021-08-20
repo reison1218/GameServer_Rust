@@ -186,7 +186,7 @@ impl Room {
         let is_battle_over;
         let summary_protos = self.battle_data.summary();
         //发给游戏服同步结算数据
-        if !summary_protos.is_empty() && self.room_type == RoomType::OneVOneVOneVOneMatch {
+        if !summary_protos.is_empty() && self.room_type.is_match_type() {
             for sp in summary_protos {
                 let user_id = sp.get_summary_data().user_id;
                 let res = sp.write_to_bytes();
@@ -205,6 +205,7 @@ impl Room {
         if size <= 1 {
             is_battle_over = true;
             self.state = RoomState::BattleOvered;
+            self.battle_data.state = RoomState::BattleOvered;
         } else {
             is_battle_over = false;
         }
@@ -238,12 +239,9 @@ impl Room {
             return false;
         }
 
-        let room_type = self.room_type;
-        let season_id = self.setting.season_id;
+        let season_is_open = self.setting.season_is_open;
         let last_map_id = self.battle_data.last_map_id;
-        let res = self
-            .battle_data
-            .reset_map(room_type, season_id, last_map_id);
+        let res = self.battle_data.reset_map(season_is_open, last_map_id);
         if let Err(e) = res {
             error!("{:?}", e);
             return false;
@@ -256,6 +254,10 @@ impl Room {
             wcp.index = self.battle_data.tile_map.world_cell.0 as u32;
             wcp.world_cell_id = self.battle_data.tile_map.world_cell.1;
             smrn.world_cell.push(wcp);
+        }
+        for battle_player in self.battle_data.battle_player.values() {
+            smrn.battle_players
+                .push(battle_player.convert_to_battle_player_pt());
         }
         let bytes = smrn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
@@ -290,6 +292,7 @@ impl Room {
     ///创建选择下标检测任务
     pub fn start_choice_index(&mut self) {
         self.state = RoomState::ChoiceIndex;
+        self.battle_data.state = RoomState::ChoiceIndex;
         info!(
             "change room state RoomState::ChoiceIndex,because start_choice_index!room_id:{}",
             self.id
@@ -321,28 +324,50 @@ impl Room {
 
     ///推进下一个人，并检测状态，如果都选择完了展位，切换到战斗已经开始状态
     pub fn check_next_choice_index(&mut self) {
-        if self.state != RoomState::BattleStarted {
-            let mut res = true;
-            //判断是否都选完了
-            for battle_player in self.battle_data.battle_player.values() {
-                if battle_player.is_died() {
-                    continue;
-                }
-                if !battle_player.get_current_cter().map_cell_index_is_choiced() {
-                    res = false;
-                    break;
-                }
+        let world_boss_init_index = self.battle_data.tile_map.world_boss_init_index;
+
+        let mut res = true;
+
+        //判断是否都选完了
+        for battle_player in self.battle_data.battle_player.values() {
+            if battle_player.is_died() {
+                continue;
             }
-            if res {
-                self.state = RoomState::BattleStarted;
-                info!("change room state RoomState::BattleStarted,because check_next_choice_index and all done!room_id:{}",self.id);
+            if !battle_player.get_major_cter().map_cell_index_is_choiced() {
+                res = false;
+                break;
+            }
+        }
+        if res {
+            self.state = RoomState::BattleStarted;
+            self.battle_data.state = RoomState::BattleStarted;
+            info!("change room state RoomState::BattleStarted,because check_next_choice_index and all done!room_id:{}",self.id);
+        } else {
+            self.battle_data.choice_index_next_turn();
+
+            //帮worldboss选
+            let player = self.battle_data.get_battle_player_mut(None, false);
+            if let Ok(player) = player {
+                if player.is_world_boss {
+                    let cter_id = player.get_major_cter_mut().get_cter_id();
+                    player
+                        .get_major_cter_mut()
+                        .set_map_cell_index(world_boss_init_index);
+                    let map_cell = self
+                        .battle_data
+                        .tile_map
+                        .map_cells
+                        .get_mut(world_boss_init_index)
+                        .unwrap();
+                    map_cell.cter_id = cter_id;
+                    self.check_next_choice_index();
+                    return;
+                }
             }
         }
 
         if self.state == RoomState::BattleStarted {
             self.battle_data.next_turn(false);
-        } else {
-            self.battle_data.choice_index_next_turn();
         }
     }
 
@@ -490,6 +515,35 @@ impl Room {
         //检测出场顺位，没有选的，系统进行随机
         let room = self as *mut Room;
         unsafe {
+            //设置worldboss行动顺序
+            if self.room_type.is_boss_type() {
+                let world_boss = self.battle_data.get_world_boss_ref().unwrap();
+                let cter_temp_id = world_boss.get_major_cter().get_cter_temp_id();
+                let world_boss_temp = crate::TEMPLATES
+                    .worldboss_temp_mgr()
+                    .temps
+                    .get(&cter_temp_id)
+                    .unwrap();
+                let index = world_boss_temp.turn_order_index;
+                let res;
+                match index {
+                    0 => {
+                        res = rand.gen_range(0..index_v.len());
+                    }
+                    1 => {
+                        res = rand.gen_range(0..1);
+                    }
+                    2 => {
+                        res = rand.gen_range(index_v.len() - 1..index_v.len());
+                    }
+                    _ => {
+                        res = rand.gen_range(0..index_v.len());
+                    }
+                }
+                let res_index = index_v.remove(res);
+                let id = world_boss.user_id;
+                self.insert_turn_orders(res_index, id);
+            }
             for member_id in room.as_ref().unwrap().members.keys() {
                 let member_id = *member_id;
                 //选过了就跳过
@@ -564,7 +618,7 @@ impl Room {
             return;
         }
         let battle_player = battle_player.unwrap();
-        if battle_player.mission_data.mission.is_some() {
+        if battle_player.mission_data.mission.is_some() || battle_player.is_world_boss {
             return;
         }
         let user_id = battle_player.get_user_id();
@@ -588,7 +642,14 @@ impl Room {
             ssn.turn_order.push(*index);
         }
         for battle_player in self.battle_data.battle_player.values() {
-            let battle_player_pt = battle_player.convert_to_battle_player_pt();
+            let mut battle_player_pt = battle_player.convert_to_battle_player_pt();
+            if battle_player.is_world_boss {
+                for bp in battle_player_pt.cters.iter_mut() {
+                    if bp.cter_id == battle_player.major_cter.0 {
+                        bp.set_index(self.battle_data.tile_map.world_boss_init_index as u32);
+                    }
+                }
+            }
             ssn.battle_players.push(battle_player_pt);
         }
         let bytes = ssn.write_to_bytes().unwrap();
@@ -655,7 +716,7 @@ impl Room {
     }
 
     pub fn handler_punish(&mut self, user_id: u32) {
-        if self.room_type != RoomType::OneVOneVOneVOneMatch {
+        if !self.room_type.is_match_type() {
             return;
         }
         let battle_player = self.get_battle_player_mut_ref(&user_id).unwrap();
@@ -716,6 +777,7 @@ impl Room {
         //如果当前玩家正好处于最后一个顺序
         if last_order_user == user_id {
             self.state = RoomState::BattleStarted;
+            self.battle_data.state = RoomState::BattleStarted;
             info!("change room state RoomState::BattleStarted,because handler_leave_choice_index last_order_user is:{},room_id:{}",last_order_user,self.id);
             self.set_next_turn_index(0);
             let next_turn_user = self.get_turn_user(None).unwrap();
@@ -826,14 +888,14 @@ impl Room {
 
     ///开始游戏
     pub fn start(&mut self) {
+        //初始化turn顺序
+        self.init_turn_order();
         //生成地图
         let res = self.generate_map();
         if let Err(e) = res {
             error!("{:?}", e);
             return;
         }
-        //初始化turn顺序
-        self.init_turn_order();
         //下发通知
         self.start_notice();
         //初始化玩家任务
@@ -850,16 +912,10 @@ impl Room {
 
     ///生成地图
     pub fn generate_map(&mut self) -> anyhow::Result<()> {
-        let member_count = self.members.len() as u8;
-        let tmd = TileMap::init(
-            self.room_type,
-            self.setting.season_id,
-            member_count,
-            self.battle_data.last_map_id,
-        )?;
-        if self.setting.season_id < 0 {
-            self.setting.season_id = tmd.season_id;
-        }
+        let season_is_open = self.setting.season_is_open;
+        let last_map_id = self.battle_data.last_map_id;
+        let tmd = TileMap::init(&mut self.battle_data, season_is_open, last_map_id)?;
+
         self.battle_data.last_map_id = tmd.id;
         self.battle_data.tile_map = tmd;
         self.battle_data.turn_limit_time = self.setting.turn_limit_time as u64;
@@ -923,7 +979,7 @@ impl Room {
 
     ///创建选择下标定时任务
     pub fn build_choice_index_task(&self) {
-        if self.room_type == RoomType::OneVOneVOneVOneCustom && self.setting.turn_limit_time == 0 {
+        if self.setting.turn_limit_time == 0 {
             return;
         }
         let user_id = self.get_turn_user(None);
@@ -935,7 +991,7 @@ impl Room {
         let time_limit = TEMPLATES.constant_temp_mgr().temps.get("choice_index_time");
         let mut task = Task::default();
 
-        if self.room_type == RoomType::OneVOneVOneVOneCustom {
+        if self.room_type.is_custom_type() {
             task.delay = self.setting.turn_limit_time as u64;
         } else {
             if let Some(time) = time_limit {

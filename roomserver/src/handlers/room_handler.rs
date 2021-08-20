@@ -144,11 +144,9 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             }
             //校验房间设置
             let room_setting_pt = grc.get_setting();
-            let season_id = room_setting_pt.season_id;
-            if season_id > 0 {
-                let season_temp = crate::TEMPLATES
-                    .season_temp_mgr()
-                    .get_temp(&(season_id as u32));
+            let season_is_open = room_setting_pt.season_is_open;
+            if season_is_open {
+                let season_temp = crate::TEMPLATES.season_temp_mgr().get_temp(&(1001 as u32));
                 if let Err(err) = season_temp {
                     warn!("{:?}", err);
                     return;
@@ -192,8 +190,22 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             room_setting.ai_level = ai_level;
         }
         RoomType::WorldBossCustom => {
-            warn!("this function is not open yet!");
-            return;
+            let turn_limit_time;
+            room_setting = RoomSetting::default();
+            let res = crate::TEMPLATES
+                .constant_temp_mgr()
+                .temps
+                .get("worldboss_turn_limit_time");
+            match res {
+                Some(res) => {
+                    turn_limit_time = u32::from_str(res.value.as_str()).unwrap();
+                }
+                None => {
+                    warn!("could not find worldboss_turn_limit_time!");
+                    turn_limit_time = 120000;
+                }
+            }
+            room_setting.turn_limit_time = turn_limit_time;
         }
         _ => {
             warn!("could not create room,the room_type is invalid!");
@@ -202,7 +214,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let owner = Member::from(grc.get_pbp());
-    let mut room_id: u32 = 0;
+    let room_id;
     fn err() -> anyhow::Result<u32> {
         anyhow::bail!("room_type is error!")
     }
@@ -276,7 +288,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     let member_state = member.state;
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
-    if room_type == RoomType::OneVOneVOneVOneMatch
+    if room_type.is_match_type()
         && member_count == MEMBER_MAX
         && room_state == RoomState::AwaitConfirm
     {
@@ -288,7 +300,7 @@ pub fn leave_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //如果是匹配放，房间人满，而且未开始战斗，则不允许退出房间
-    if room_type == RoomType::OneVOneVOneVOneMatch
+    if room_type.is_match_type()
         && member_count == MEMBER_MAX
         && room_state == RoomState::AwaitReady
     {
@@ -392,12 +404,9 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let room_type = room_type.unwrap();
-    let room_type_u8 = room_type.into_u8();
     let user_id = packet.get_user_id();
     //校验模式
-    if room_type_u8 < RoomType::OneVOneVOneVOneMatch.into_u8()
-        || room_type_u8 > RoomType::WorldBossCustom.into_u8()
-    {
+    if !room_type.is_match_type() {
         warn!(
             "search_room:this room type is invaild!room_type:{:?}",
             room_type
@@ -466,7 +475,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         let bytes = proto.write_to_bytes();
         match bytes {
             Ok(bytes) => {
-                rm.send_2_client(ClientCode::PunishPatchPush, user_id, bytes);
+                rm.send_2_client(ClientCode::PunishMatchPush, user_id, bytes);
             }
             Err(e) => {
                 warn!("{:?}", e);
@@ -550,7 +559,7 @@ pub fn prepare_cancel(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_state = room.get_state();
     //匹配房，玩家到齐了才可以准备
-    if room_type == RoomType::OneVOneVOneVOneMatch && room.get_member_count() != MEMBER_MAX {
+    if room_type.is_match_type() && room.get_member_count() != MEMBER_MAX {
         warn!(
             "prepare_cancel:this room is not full,so can not prepare!room_id:{}.user_id:{}",
             room_id, user_id
@@ -620,6 +629,7 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     let room = room.unwrap();
+    let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     let owner_id = room.get_owner_id();
     if owner_id != user_id {
@@ -671,7 +681,7 @@ pub fn choice_ai(rm: &mut RoomMgr, packet: Packet) {
     }
 
     //添加机器人
-    let robot = add_robot(rm, room_id, index, robot_temp_id);
+    let robot = add_robot(rm, room_type, room_id, index, robot_temp_id);
     if let Err(err) = robot {
         error!("{:?}", err);
         return;
@@ -720,7 +730,7 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
     }
     let room_type = room.get_room_type();
     //如果是自定义房间，切不是房主
-    if room_type == RoomType::OneVOneVOneVOneCustom && room.get_owner_id() != user_id {
+    if room_type.is_custom_type() && room.get_owner_id() != user_id {
         warn!(
             "can not start game!this player is not owner!room_type:{:?},owner_id:{},user_id:{}",
             room_type,
@@ -741,11 +751,12 @@ pub fn start(rm: &mut RoomMgr, packet: Packet) {
 ///检查添加机器人
 pub fn add_robot(
     rm: &mut RoomMgr,
+    room_type: RoomType,
     room_id: u32,
     index: usize,
     robot_temp_id: u32,
 ) -> anyhow::Result<u32> {
-    let room = rm.get_room_mut(RoomType::OneVOneVOneVOneCustom, room_id)?;
+    let room = rm.get_room_mut(room_type, room_id)?;
 
     //机器人模版管理器
     let robot_temp_mgr = crate::TEMPLATES.robot_temp_mgr();
@@ -786,10 +797,9 @@ pub fn add_robot(
     //将角色加入到成员里
     member.chose_cter = cter;
     if member_new.is_some() {
-        room.add_member(member_new.unwrap(), Some(index))?;
+        room.add_member(member_new.unwrap(), Some(index), true)?;
         let room_id = room.get_room_id();
-        let value =
-            tools::binary::combine_int_2_long(RoomType::OneVOneVOneVOneCustom as u32, room_id);
+        let value = tools::binary::combine_int_2_long(room_type as u32, room_id);
         rm.player_room.insert(robot_id, value);
     }
     Ok(robot_id)
@@ -868,7 +878,7 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
 
-    if room.get_room_type() != RoomType::OneVOneVOneVOneCustom {
+    if !room.get_room_type().is_custom_type() {
         warn!(
             "kick_member:this room is not custom room,can not kick member!room_id:{}",
             room.get_room_id()
@@ -887,6 +897,13 @@ pub fn kick_member(rm: &mut RoomMgr, packet: Packet) {
             "kick_member:this target player is not in the room!target_user_id:{}",
             target_id
         );
+        return;
+    }
+
+    //判断目标是否为worldboss
+    let member = room.get_member_ref(&target_id).unwrap();
+    if member.is_world_boss() {
+        warn!("kick_member:this target player is worldboss!",);
         return;
     }
 
@@ -965,17 +982,17 @@ pub fn room_setting(rm: &mut RoomMgr, packet: Packet) {
         let proto_value = rs.value;
         let room_set_type = RoomSettingType::from(set_type);
         match room_set_type {
-            RoomSettingType::SeasonId => {
-                let season_id = proto_value;
-                if season_id > 0 {
+            RoomSettingType::SeasonIsOpen => {
+                let season_is_open = proto_value == 1;
+                if season_is_open {
                     let season_temp_mgr = crate::TEMPLATES.season_temp_mgr();
-                    let res = season_temp_mgr.get_temp(&(season_id as u32));
+                    let res = season_temp_mgr.get_temp(&(1001 as u32));
                     if let Err(err) = res {
                         warn!("{:?}", err);
                         return;
                     }
                 }
-                room.setting.season_id = season_id;
+                room.setting.season_is_open = season_is_open;
             }
             RoomSettingType::TurnLimitTime => {
                 let id = proto_value as u8;
@@ -1042,6 +1059,8 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
     }
 
     let room_id = grj.room_id;
+    let room_type = grj.room_type;
+    let room_type = RoomType::try_from(room_type as u8).unwrap();
     //校验玩家是否在房间内
     let res = rm.check_player(&user_id);
     if res {
@@ -1055,8 +1074,13 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
 
+    let room = match room_type {
+        RoomType::OneVOneVOneVOneCustom => rm.custom_room.get_mut_room_by_room_id(&room_id),
+        RoomType::WorldBossCustom => rm.world_boss_custom_room.get_mut_room_by_room_id(&room_id),
+        _ => rm.custom_room.get_mut_room_by_room_id(&0),
+    };
+
     //校验改房间是否存在
-    let room = rm.custom_room.get_mut_room_by_room_id(&room_id);
     if let Err(e) = room {
         warn!("{:?}", e);
         //返回客户端消息
@@ -1087,9 +1111,7 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
 
     let room_type = room.get_room_type();
     //校验房间类型
-    if room_type.into_u8() > RoomType::WorldBossCustom.into_u8()
-        || room_type == RoomType::OneVOneVOneVOneMatch
-    {
+    if !room_type.is_custom_type() {
         warn!(
             "this room can not join in!room_id:{},room_type:{:?}!",
             room.get_room_id(),
@@ -1130,9 +1152,12 @@ pub fn join_room(rm: &mut RoomMgr, packet: Packet) {
         rm.send_2_client(ClientCode::Room, user_id, sr.write_to_bytes().unwrap());
         return;
     }
-    let member = Member::from(grj.get_pbp());
+    let mut member = Member::from(grj.get_pbp());
+    if room.get_room_type().is_world_boss_type() {
+        member.team_id = 1;
+    }
     //将玩家加入到房间
-    let res = room.add_member(member, None);
+    let res = room.add_member(member, None, true);
     if let Err(e) = res {
         error!("{:?}", e);
         return;
@@ -1356,7 +1381,7 @@ pub fn confirm_into_room(rm: &mut RoomMgr, packet: Packet) {
     let room_type = room.get_room_type();
     let room_id = room.get_room_id();
     //校验房间类型
-    if room.get_room_type() != RoomType::OneVOneVOneVOneMatch {
+    if !room.get_room_type().is_match_type() {
         warn!(
             "this room is not Match Room!room_type:{:?},room_id:{}",
             room_type, room_id
@@ -1440,11 +1465,11 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
 
     match room_type {
         //如果是匹配房，直接删除房间数据
-        RoomType::OneVOneVOneVOneMatch => {
+        RoomType::OneVOneVOneVOneMatch | RoomType::WorldBoseMatch => {
             rm.rm_room_without_push(room_type, room_id);
         }
         //如果是自定义房间，重制玩家数据
-        RoomType::OneVOneVOneVOneCustom => {
+        RoomType::OneVOneVOneVOneCustom | RoomType::WorldBossCustom => {
             if room.get_owner_id() == 0 {
                 rm.rm_room_without_push(room_type, room_id);
             } else {
@@ -1456,14 +1481,18 @@ pub fn summary(rm: &mut RoomMgr, packet: Packet) {
                         member.chose_cter = Character::default();
                         member.state = MemberState::NotReady;
                     });
-
+                let world_boss_temps = &crate::TEMPLATES.worldboss_temp_mgr().temps;
                 let ai_v: Vec<Member> = room
                     .members
                     .values()
-                    .filter(|member| member.robot_temp_id > 0)
+                    .filter(|member| {
+                        member.robot_temp_id > 0
+                            && !world_boss_temps.contains_key(&member.robot_temp_id)
+                    })
                     .cloned()
                     .collect();
                 for member in ai_v {
+                    //排除worldboss
                     room.remove_member_without_push(member.get_user_id());
                 }
             }
@@ -1549,20 +1578,37 @@ pub fn handler_leave_room(
 
     //处理退出房间
     let need_rm = match room_type {
-        RoomType::OneVOneVOneVOneCustom => {
-            let res = rm.custom_room.leave_room(
-                MemberLeaveNoticeType::Leave as u8,
-                &room_id,
-                &user_id,
-                need_push_self,
-                false,
-            );
+        RoomType::OneVOneVOneVOneCustom | RoomType::WorldBossCustom => {
+            let res;
+            if room_type == RoomType::OneVOneVOneVOneCustom {
+                res = rm.custom_room.leave_room(
+                    MemberLeaveNoticeType::Leave as u8,
+                    &room_id,
+                    &user_id,
+                    need_push_self,
+                    false,
+                );
+            } else {
+                res = rm.world_boss_custom_room.leave_room(
+                    MemberLeaveNoticeType::Leave as u8,
+                    &room_id,
+                    &user_id,
+                    need_push_self,
+                    false,
+                );
+            }
+
             if let Err(e) = res {
                 error!("{:?}", e);
                 return Ok(());
             }
 
-            let room = rm.custom_room.rooms.get(&room_id).unwrap();
+            let room;
+            if room_type == RoomType::OneVOneVOneVOneCustom {
+                room = rm.custom_room.rooms.get(&room_id).unwrap();
+            } else {
+                room = rm.world_boss_custom_room.rooms.get(&room_id).unwrap();
+            }
             let owner_id = room.get_owner_id();
             if room.is_empty() || (owner_id == 0 && room.state != RoomState::ChoiceIndex) {
                 true
@@ -1570,19 +1616,35 @@ pub fn handler_leave_room(
                 false
             }
         }
-        RoomType::OneVOneVOneVOneMatch => {
-            let room = rm.match_room.rooms.get_mut(&room_id).unwrap();
+        RoomType::OneVOneVOneVOneMatch | RoomType::WorldBoseMatch => {
+            let room;
+            if room_type == RoomType::OneVOneVOneVOneMatch {
+                room = rm.match_room.rooms.get_mut(&room_id).unwrap();
+            } else {
+                room = rm.world_boss_match_room.rooms.get_mut(&room_id).unwrap();
+            }
             if room.is_empty() {
                 return Ok(());
             }
+            let res;
+            if room_type == RoomType::OneVOneVOneVOneMatch {
+                res = rm.match_room.leave_room(
+                    MemberLeaveNoticeType::Leave as u8,
+                    &room_id,
+                    &user_id,
+                    need_push_self,
+                    need_punish,
+                );
+            } else {
+                res = rm.world_boss_match_room.leave_room(
+                    MemberLeaveNoticeType::Leave as u8,
+                    &room_id,
+                    &user_id,
+                    need_push_self,
+                    need_punish,
+                );
+            }
 
-            let res = rm.match_room.leave_room(
-                MemberLeaveNoticeType::Leave as u8,
-                &room_id,
-                &user_id,
-                need_push_self,
-                need_punish,
-            );
             if let Err(e) = res {
                 error!("{:?}", e);
                 return Ok(());
@@ -1596,7 +1658,13 @@ pub fn handler_leave_room(
                     slr.write_to_bytes().unwrap(),
                 );
             }
-            let room = rm.match_room.rooms.get(&room_id).unwrap();
+            let room;
+            if room_type == RoomType::OneVOneVOneVOneMatch {
+                room = rm.match_room.rooms.get(&room_id).unwrap();
+            } else {
+                room = rm.world_boss_match_room.rooms.get(&room_id).unwrap();
+            }
+
             if room.is_empty() {
                 true
             } else {

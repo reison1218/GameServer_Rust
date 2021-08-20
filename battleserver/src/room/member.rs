@@ -15,6 +15,7 @@ pub struct Member {
     pub chose_cter: Character,          //玩家已经选择的角色
     pub punish_match: PunishMatch,      //匹配惩罚数据
     pub join_time: u64,                 //玩家进入房间的时间
+    pub index: u32,                     //玩家所在位置
 }
 
 impl From<&MemberPt> for Member {
@@ -29,6 +30,7 @@ impl From<&MemberPt> for Member {
         m.team_id = mp.team_id as u8;
         m.chose_cter = Character::from(mp.cter.as_ref().unwrap());
         m.robot_temp_id = mp.robot_temp_id;
+        m.index = mp.index;
         m
     }
 }

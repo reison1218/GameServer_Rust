@@ -108,6 +108,7 @@ pub struct BattlePlayer {
     pub status: BattleStatus,                 //战斗状态
     pub robot_data: Option<RobotData>,        //机器人数据;如果有值，则是机器人，没有则是玩家
     pub team_id: u8,                          //队伍id
+    pub is_world_boss: bool,                  //是否是worldboss
 }
 
 tools::get_mut_ref!(BattlePlayer);
@@ -143,6 +144,10 @@ impl BattlePlayer {
         }
         battle_player.reset_residue_movement_points();
         battle_player.team_id = member.team_id;
+        battle_player.is_world_boss = crate::TEMPLATES
+            .worldboss_temp_mgr()
+            .temps
+            .contains_key(&battle_player.major_cter.1);
         Ok(battle_player)
     }
 

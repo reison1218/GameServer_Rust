@@ -25,7 +25,7 @@ use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
     ATTACKED_SUB_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NEAR_SUB_ATTACK_DAMAGE, TRAPS,
 };
-use super::battle_enum::{ActionType, BattlePlayerState};
+use super::battle_enum::{ActionType, BattlePlayerState, DamageType};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
 use crate::JsonValue;
@@ -116,12 +116,13 @@ impl BattleData {
         if index >= MEMBER_MAX {
             self.next_turn_index = 0;
         }
+        //开始回合触发
+        self.turn_start_summary();
+
         //给客户端推送战斗turn推送
         if need_push_battle_turn_notice {
             self.send_battle_turn_notice();
         }
-        //开始回合触发
-        self.turn_start_summary();
 
         let user_id = self.get_turn_user(None);
         if let Ok(user_id) = user_id {
@@ -459,6 +460,150 @@ impl BattleData {
     }
 
     ///扣血
+    pub unsafe fn batch_deduct_hp(
+        &mut self,
+        from_cter_id: u32,
+        targets: Vec<(u32, DamageType)>,
+        au: &mut ActionUnitPt,
+    ) {
+        let battle_data_ptr = self as *mut BattleData;
+
+        let from_cter = battle_data_ptr
+            .as_mut()
+            .unwrap()
+            .get_battle_cter_mut(from_cter_id, false);
+        if from_cter.is_err() {
+            return;
+        }
+        let from_cter = from_cter.unwrap();
+
+        let from_user_id = from_cter.get_user_id();
+        let mut res_map = HashMap::new();
+        let mut res;
+        let mut is_last_one = false;
+
+        let mut damage_v = vec![];
+        for (index, &(target_cter_id, damage_type)) in targets.iter().enumerate() {
+            let target_cter = battle_data_ptr
+                .as_mut()
+                .unwrap()
+                .get_battle_cter_mut(target_cter_id, true);
+            if let Err(_) = target_cter {
+                continue;
+            }
+            if index == targets.len() - 1 {
+                is_last_one = true;
+            }
+            let target_cter = target_cter.unwrap();
+            let mut target_pt = self.new_target_pt(target_cter_id).unwrap();
+            let mut ep = EffectPt::new();
+
+            match damage_type {
+                DamageType::Attack(_) => {
+                    //被攻击前触发
+                    self.attacked_before_trigger(target_cter_id, &mut target_pt);
+
+                    ep.effect_type = EffectType::AttackDamage as u32;
+                    //如果是普通攻击，要算上减伤
+                    let attack_damage = from_cter.calc_damage();
+                    let reduce_damage =
+                        self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
+                    ep.effect_type = EffectType::AttackDamage as u32;
+                    res = attack_damage - reduce_damage;
+                    if res < 0 {
+                        res = 0;
+                    }
+                    let (gd_buff_id, gd_is_remove) = target_cter.trigger_attack_damge_gd();
+                    if gd_buff_id > 0 {
+                        let mut te_pt = TriggerEffectPt::new();
+                        te_pt.set_buff_id(gd_buff_id);
+                        target_pt.passiveEffect.push(te_pt);
+                        if gd_is_remove {
+                            let lost_buff =
+                                self.consume_buff(gd_buff_id, Some(target_cter_id), None, false);
+                            if let Some(lost_buff) = lost_buff {
+                                target_pt.lost_buffs.push(lost_buff);
+                            }
+                        }
+                        res = 0;
+                    } else {
+                        let battle_player = self
+                            .get_battle_player_mut(Some(target_cter.base_attr.user_id), true)
+                            .unwrap();
+                        battle_player.status.is_attacked = true;
+                    }
+                    damage_v.push((target_cter_id, DamageType::Attack(res)));
+                }
+                DamageType::Skill(skill_damage) => {
+                    ep.effect_type = EffectType::SkillDamage as u32;
+                    res = skill_damage;
+                    damage_v.push((target_cter_id, DamageType::Skill(res)));
+                }
+            }
+
+            //扣血
+            target_cter.add_hp(-res);
+            //封装客户端消息
+            ep.effect_value = res as u32;
+            target_pt.effects.push(ep);
+            res_map.insert(target_cter_id, target_pt);
+        }
+        let mut other_target_pt_v = vec![];
+        for &(target_cter_id, damage) in damage_v.iter() {
+            let target_user_id;
+            let is_die;
+            {
+                let target_cter = self.get_battle_cter_mut(target_cter_id, false).unwrap();
+                target_user_id = target_cter.get_user_id();
+                is_die = target_cter.is_died();
+            }
+
+            match damage {
+                DamageType::Attack(res) => {
+                    let target_pt_mut = res_map.get_mut(&target_cter_id).unwrap();
+
+                    //被攻击后触发
+                    self.attacked_after_trigger(target_cter_id, target_pt_mut);
+
+                    //收到攻击伤害触发
+                    if res > 0 {
+                        other_target_pt_v = self.attacked_hurted_trigger(
+                            from_cter_id,
+                            target_cter_id,
+                            res as u32,
+                            target_pt_mut,
+                        );
+                    }
+                }
+                DamageType::Skill(_) => {}
+            }
+            //判断目标角色是否死亡
+            if is_die {
+                self.after_cter_died_trigger(target_cter_id);
+                //处理玩家死亡
+                let target_battle_player = self
+                    .get_battle_player_mut(Some(target_user_id), false)
+                    .unwrap();
+                if target_battle_player.major_cter.0 == target_cter_id {
+                    self.after_player_died_trigger(
+                        from_user_id,
+                        target_user_id,
+                        is_last_one,
+                        false,
+                        None,
+                    );
+                }
+            }
+        }
+        for (_, target_pt) in res_map {
+            au.targets.push(target_pt);
+        }
+        for target_pt in other_target_pt_v {
+            au.targets.push(target_pt);
+        }
+    }
+
+    ///扣血
     pub unsafe fn deduct_hp(
         &mut self,
         from_cter_id: u32,
@@ -484,14 +629,21 @@ impl BattleData {
 
         let target_cter = target_cter.unwrap();
         let target_user_id = target_cter.get_user_id();
-        let from_cter = battle_data_ptr
-            .as_mut()
-            .unwrap()
-            .get_battle_cter_mut(from_cter_id, false)?;
-        let from_user_id = from_cter.get_user_id();
+
+        let from_user_id;
+        match self.get_user_id(from_cter_id) {
+            Some(res) => from_user_id = res,
+            None => from_user_id = 0,
+        }
+
         let mut res;
         //如果是普通攻击，要算上减伤
         if skill_damege.is_none() {
+            let from_cter = battle_data_ptr
+                .as_mut()
+                .unwrap()
+                .get_battle_cter_mut(from_cter_id, false)
+                .unwrap();
             let attack_damage = from_cter.calc_damage();
             let reduce_damage = self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
             ep.effect_type = EffectType::AttackDamage as u32;
@@ -1189,7 +1341,7 @@ impl BattleData {
     /// 当targets和scope_temp都不为None时，校验targets是否在scope_temp范围内
     pub fn cal_scope(
         &self,
-        cter_id: u32,
+        target_cter_id: u32,
         center_index: isize,
         target_type: TargetType,
         targets: Option<Vec<u32>>,
@@ -1216,7 +1368,7 @@ impl BattleData {
         }
 
         let team_id = self
-            .get_battle_cter(cter_id, false)
+            .get_battle_cter(target_cter_id, false)
             .unwrap()
             .base_attr
             .team_id;
@@ -1247,7 +1399,7 @@ impl BattleData {
                         || target_type == TargetType::SelfScopeOthers
                         || target_type == TargetType::SelfScopeAnyOthers
                         || target_type == TargetType::OtherAnyPlayer)
-                        && map_cell.cter_id == cter_id
+                        && map_cell.cter_id == target_cter_id
                     {
                         continue;
                     }
@@ -1322,7 +1474,7 @@ impl BattleData {
                             || target_type == TargetType::SelfScopeOthers
                             || target_type == TargetType::SelfScopeAnyOthers
                             || target_type == TargetType::OtherAnyPlayer)
-                            && map_cell.cter_id == cter_id
+                            && map_cell.cter_id == target_cter_id
                         {
                             continue;
                         }
@@ -1365,9 +1517,9 @@ impl BattleData {
         }
         //如果是地图块上的地方，塞选出地图块上的敌人
         if target_type == TargetType::MapCellEnemys {
-            let team_id = self.get_team_id(cter_id);
+            let team_id = self.get_team_id(target_cter_id);
             for &id in v_u.clone().iter() {
-                if team_id == self.get_team_id(id) {
+                if team_id != self.get_team_id(id) {
                     continue;
                 }
                 let (index, _) = v_u.iter().enumerate().find(|(_, &_id)| _id == id).unwrap();

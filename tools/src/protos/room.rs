@@ -236,6 +236,7 @@ impl ::protobuf::reflect::ProtobufValue for C_CREATE_ROOM {
 pub struct C_JOIN_ROOM {
     // message fields
     pub room_id: u32,
+    pub room_type: u32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -266,6 +267,21 @@ impl C_JOIN_ROOM {
     pub fn set_room_id(&mut self, v: u32) {
         self.room_id = v;
     }
+
+    // uint32 room_type = 2;
+
+
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
+    }
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
+    }
 }
 
 impl ::protobuf::Message for C_JOIN_ROOM {
@@ -284,6 +300,13 @@ impl ::protobuf::Message for C_JOIN_ROOM {
                     let tmp = is.read_uint32()?;
                     self.room_id = tmp;
                 },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -299,6 +322,9 @@ impl ::protobuf::Message for C_JOIN_ROOM {
         if self.room_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.room_type, ::protobuf::wire_format::WireTypeVarint);
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -307,6 +333,9 @@ impl ::protobuf::Message for C_JOIN_ROOM {
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
         if self.room_id != 0 {
             os.write_uint32(1, self.room_id)?;
+        }
+        if self.room_type != 0 {
+            os.write_uint32(2, self.room_type)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -351,6 +380,11 @@ impl ::protobuf::Message for C_JOIN_ROOM {
                 |m: &C_JOIN_ROOM| { &m.room_id },
                 |m: &mut C_JOIN_ROOM| { &mut m.room_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "room_type",
+                |m: &C_JOIN_ROOM| { &m.room_type },
+                |m: &mut C_JOIN_ROOM| { &mut m.room_type },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<C_JOIN_ROOM>(
                 "C_JOIN_ROOM",
                 fields,
@@ -368,6 +402,7 @@ impl ::protobuf::Message for C_JOIN_ROOM {
 impl ::protobuf::Clear for C_JOIN_ROOM {
     fn clear(&mut self) {
         self.room_id = 0;
+        self.room_type = 0;
         self.unknown_fields.clear();
     }
 }
@@ -6530,62 +6565,62 @@ impl ::protobuf::reflect::ProtobufValue for S_CHOICE_AI_NOTICE {
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\nroom.proto\x12\x06protos\x1a\nbase.proto\"]\n\rC_CREATE_ROOM\x12\x1b\
     \n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12/\n\x07setting\x18\x02\
-    \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"&\n\x0bC_JOIN_ROOM\
-    \x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\",\n\rC_SEARCH_ROOM\
-    \x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\"{\n\x06S_ROOM\x12\
-    \x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\
-    \x18\x02\x20\x01(\tR\x07errMess\x12\x19\n\x08err_code\x18\x03\x20\x01(\r\
-    R\x07errCode\x12\"\n\x04room\x18\x04\x20\x01(\x0b2\x0e.protos.RoomPtR\
-    \x04room\"A\n\x0eC_ROOM_SETTING\x12\x19\n\x08set_type\x18\x01\x20\x01(\r\
-    R\x07setType\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\x05value\"D\n\x0eS\
-    _ROOM_SETTING\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
-    \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROO\
-    M\"B\n\x0cS_LEAVE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isS\
-    ucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"6\n\x12C_CHOOS\
-    E_CHARACTER\x12\x20\n\x0ccter_temp_id\x18\x01\x20\x01(\rR\ncterTempId\"H\
-    \n\x12S_CHOOSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06i\
-    sSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"V\n\x19S_CHO\
-    OSE_CHARACTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x20\n\x0ccter_temp_id\x18\x02\x20\x01(\rR\ncterTempId\"(\n\x0eC_CHO\
-    OSE_SKILL\x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_C\
-    HOOSE_SKILL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
-    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\
-    \x03\x20\x03(\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\
-    \x01\x20\x01(\rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\
+    \x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"C\n\x0bC_JOIN_ROOM\
+    \x12\x17\n\x07room_id\x18\x01\x20\x01(\rR\x06roomId\x12\x1b\n\troom_type\
+    \x18\x02\x20\x01(\rR\x08roomType\",\n\rC_SEARCH_ROOM\x12\x1b\n\troom_typ\
+    e\x18\x01\x20\x01(\rR\x08roomType\"{\n\x06S_ROOM\x12\x17\n\x07is_succ\
     \x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\
-    \tR\x07errMess\"5\n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\
-    \x01(\rR\x0ctargetTeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_\
-    id\x18\x01\x20\x01(\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\r\
-    R\x06teamId\",\n\x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\
-    \x01(\x08R\x07prepare\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\
-    \x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\
-    \x07errMess\"L\n\x17S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\
-    \x20\x01(\rR\x06userId\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07pre\
-    pare\"\t\n\x07C_START\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\
-    \x01(\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMes\
-    s\"Z\n\x18S_ROOM_ADD_MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\r\
-    R\x05index\x12(\n\x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\
-    \x06member\"[\n\rS_ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\
-    \x07ownerId\x12/\n\x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSetti\
-    ngPtR\x07setting\"$\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\
-    \rR\x07emojiId\"=\n\x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08\
-    R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\
-    \x0eS_EMOJI_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x19\n\x08emoji_id\x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEM\
-    BER_LEAVE_NOTICE\x12\x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeTyp\
-    e\x12\x17\n\x07user_id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUC\
-    CESS_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CO\
-    NFIRM_INTO_ROOM\x12\x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\
-    \n\x1aS_CONFIRM_INTO_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\
-    \x05count\"\x1b\n\x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARC\
-    H\"\x11\n\x0fS_CANCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07\
-    user_id\x18\x01\x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\
-    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"G\n\x0bC_CHOICE_AI\
-    \x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\
-    \x18\x02\x20\x01(\rR\x0brobotTempId\"g\n\x12S_CHOICE_AI_NOTICE\x12\x14\n\
-    \x05index\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\
-    \x20\x01(\rR\x0brobotTempId\x12\x17\n\x07user_id\x18\x03\x20\x01(\rR\x06\
-    userIdb\x06proto3\
+    \tR\x07errMess\x12\x19\n\x08err_code\x18\x03\x20\x01(\rR\x07errCode\x12\
+    \"\n\x04room\x18\x04\x20\x01(\x0b2\x0e.protos.RoomPtR\x04room\"A\n\x0eC_\
+    ROOM_SETTING\x12\x19\n\x08set_type\x18\x01\x20\x01(\rR\x07setType\x12\
+    \x14\n\x05value\x18\x02\x20\x01(\x05R\x05value\"D\n\x0eS_ROOM_SETTING\
+    \x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err_m\
+    ess\x18\x02\x20\x01(\tR\x07errMess\"\x0e\n\x0cC_LEAVE_ROOM\"B\n\x0cS_LEA\
+    VE_ROOM\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\
+    \x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"6\n\x12C_CHOOSE_CHARACTER\
+    \x12\x20\n\x0ccter_temp_id\x18\x01\x20\x01(\rR\ncterTempId\"H\n\x12S_CHO\
+    OSE_CHARACTER\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\
+    \x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"V\n\x19S_CHOOSE_CHARA\
+    CTER_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x20\n\
+    \x0ccter_temp_id\x18\x02\x20\x01(\rR\ncterTempId\"(\n\x0eC_CHOOSE_SKILL\
+    \x12\x16\n\x06skills\x18\x01\x20\x03(\rR\x06skills\"\\\n\x0eS_CHOOSE_SKI\
+    LL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\n\x08err\
+    _mess\x18\x02\x20\x01(\tR\x07errMess\x12\x16\n\x06skills\x18\x03\x20\x03\
+    (\rR\x06skills\",\n\rC_KICK_MEMBER\x12\x1b\n\ttarget_id\x18\x01\x20\x01(\
+    \rR\x08targetId\"C\n\rS_KICK_MEMBER\x12\x17\n\x07is_succ\x18\x01\x20\x01\
+    (\x08R\x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"5\
+    \n\rC_CHANGE_TEAM\x12$\n\x0etarget_team_id\x18\x01\x20\x01(\rR\x0ctarget\
+    TeamId\"H\n\x14S_CHANGE_TEAM_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01\
+    (\rR\x06userId\x12\x17\n\x07team_id\x18\x02\x20\x01(\rR\x06teamId\",\n\
+    \x10C_PREPARE_CANCEL\x12\x18\n\x07prepare\x18\x01\x20\x01(\x08R\x07prepa\
+    re\"F\n\x10S_PREPARE_CANCEL\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\
+    \x06isSucc\x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"L\n\x17\
+    S_PREPARE_CANCEL_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06user\
+    Id\x12\x18\n\x07prepare\x18\x02\x20\x01(\x08R\x07prepare\"\t\n\x07C_STAR\
+    T\"=\n\x07S_START\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\
+    \x12\x19\n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"Z\n\x18S_ROOM_ADD\
+    _MEMBER_NOTICE\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05index\x12(\n\
+    \x06member\x18\x02\x20\x01(\x0b2\x10.protos.MemberPtR\x06member\"[\n\rS_\
+    ROOM_NOTICE\x12\x19\n\x08owner_id\x18\x01\x20\x01(\rR\x07ownerId\x12/\n\
+    \x07setting\x18\x02\x20\x01(\x0b2\x15.protos.RoomSettingPtR\x07setting\"\
+    $\n\x07C_EMOJI\x12\x19\n\x08emoji_id\x18\x01\x20\x01(\rR\x07emojiId\"=\n\
+    \x07S_EMOJI\x12\x17\n\x07is_succ\x18\x01\x20\x01(\x08R\x06isSucc\x12\x19\
+    \n\x08err_mess\x18\x02\x20\x01(\tR\x07errMess\"D\n\x0eS_EMOJI_NOTICE\x12\
+    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x19\n\x08emoji_id\
+    \x18\x02\x20\x01(\rR\x07emojiId\"V\n\x1aS_ROOM_MEMBER_LEAVE_NOTICE\x12\
+    \x1f\n\x0bnotice_type\x18\x01\x20\x01(\rR\nnoticeType\x12\x17\n\x07user_\
+    id\x18\x02\x20\x01(\rR\x06userId\".\n\x16S_MATCH_SUCCESS_NOTICE\x12\x14\
+    \n\x05count\x18\x01\x20\x01(\rR\x05count\"/\n\x13C_CONFIRM_INTO_ROOM\x12\
+    \x18\n\x07confirm\x18\x01\x20\x01(\x08R\x07confirm\"2\n\x1aS_CONFIRM_INT\
+    O_ROOM_NOTICE\x12\x14\n\x05count\x18\x01\x20\x01(\rR\x05count\"\x1b\n\
+    \x19S_INTO_ROOM_CANCEL_NOTICE\"\x11\n\x0fC_CANCEL_SEARCH\"\x11\n\x0fS_CA\
+    NCEL_SEARCH\"j\n\x15S_PUNISH_MATCH_NOTICE\x12\x17\n\x07user_id\x18\x01\
+    \x20\x01(\rR\x06userId\x128\n\x0cpunish_match\x18\x02\x20\x01(\x0b2\x15.\
+    protos.PunishMatchPtR\x0bpunishMatch\"G\n\x0bC_CHOICE_AI\x12\x14\n\x05in\
+    dex\x18\x01\x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\x20\x01(\
+    \rR\x0brobotTempId\"g\n\x12S_CHOICE_AI_NOTICE\x12\x14\n\x05index\x18\x01\
+    \x20\x01(\rR\x05index\x12\"\n\rrobot_temp_id\x18\x02\x20\x01(\rR\x0brobo\
+    tTempId\x12\x17\n\x07user_id\x18\x03\x20\x01(\rR\x06userIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

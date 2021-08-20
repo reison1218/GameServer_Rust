@@ -51,6 +51,7 @@ pub struct Member {
     pub chose_cter: Character,          //玩家已经选择的角色
     pub punish_match: PunishMatch,      //匹配惩罚数据
     pub join_time: u64,                 //玩家进入房间的时间
+    pub index: u32,                     //玩家所在位置
 }
 
 impl Member {
@@ -59,7 +60,17 @@ impl Member {
         self.user_id
     }
 
-    pub fn new_for_robot(robot_temp_id: u32, team_id: u8) -> Member {
+    pub fn is_world_boss(&self) -> bool {
+        if self.robot_temp_id == 0 {
+            return false;
+        }
+        crate::TEMPLATES
+            .worldboss_temp_mgr()
+            .temps
+            .contains_key(&self.robot_temp_id)
+    }
+
+    pub fn new_for_robot(robot_temp_id: u32, team_id: u8, index: Option<u32>) -> Member {
         let robot_temp = crate::TEMPLATES
             .robot_temp_mgr()
             .get_temp_ref(&robot_temp_id)
@@ -87,6 +98,9 @@ impl Member {
         cter.skills.extend_from_slice(robot_temp.skills.as_slice());
         //将角色加入到成员里
         member.chose_cter = cter;
+        if let Some(index) = index {
+            member.index = index;
+        }
         member
     }
 
@@ -163,6 +177,7 @@ impl Into<MemberPt> for &Member {
         mp.robot_temp_id = self.robot_temp_id;
         let cp = self.chose_cter.clone().into();
         mp.set_cter(cp);
+        mp.index = self.index;
         mp
     }
 }

@@ -3,13 +3,12 @@ use crate::battle::battle_enum::buff_type::{
     ADD_ATTACK_AND_AOE, MANUAL_MOVE_AND_PAIR_ADD_ENERGY, PAIR_SAME_ELEMENT_ADD_ATTACK,
     RESET_MAP_ADD_ATTACK,
 };
-use crate::battle::battle_enum::SkillConsumeType;
+use crate::battle::battle_enum::{DamageType, SkillConsumeType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
 use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::room::map_data::MapCellType;
 use crate::room::map_data::TileMap;
-use crate::room::RoomType;
 use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
@@ -38,26 +37,36 @@ impl BattleData {
         let mut need_summary = false;
         let mut bgs = Vec::new();
         let (leave_user, punishment) = self.leave_user;
-
-        //如果房间就只有最后一个人了，直接计算
+        let self_ptr = self as *mut BattleData;
+        //判断结算方式
         if allive_count <= 1 {
+            //如果房间就只有最后一个人了，直接计算
             need_summary = true;
             //如果达到结算条件，则进行结算
-            let self_ptr = self as *mut BattleData;
             unsafe {
                 let self_mut = self_ptr.as_mut().unwrap();
-                let mut user_id;
-                for battle_player in self.battle_player.values_mut() {
-                    if battle_player.is_died() {
-                        continue;
-                    }
+                if self_mut.room_type.is_boss_type() {
+                    self_mut.summary_for_world_boss();
+                } else {
+                    let mut user_id;
+                    for battle_player in self.battle_player.values_mut() {
+                        if battle_player.is_died() {
+                            continue;
+                        }
 
-                    let str = format!(
-                        "player died!because is battle_over,user_id:{}",
-                        battle_player.get_user_id()
-                    );
-                    user_id = battle_player.get_user_id();
-                    self_mut.after_player_died_trigger(user_id, user_id, true, false, Some(str));
+                        let str = format!(
+                            "player died!because is battle_over,user_id:{}",
+                            battle_player.get_user_id()
+                        );
+                        user_id = battle_player.get_user_id();
+                        self_mut.after_player_died_trigger(
+                            user_id,
+                            user_id,
+                            true,
+                            false,
+                            Some(str),
+                        );
+                    }
                 }
             }
         } else if leave_user > 0 {
@@ -69,7 +78,7 @@ impl BattleData {
                 for su in spa_v.iter_mut() {
                     let smp: SummaryDataPt = su.clone().into();
                     ssn.summary_datas.push(smp.clone());
-                    if !su.push_to_server && self.room_type == RoomType::OneVOneVOneVOneMatch {
+                    if !su.push_to_server && self.room_type.is_match_type() {
                         let mut bg = B_S_SUMMARY::new();
                         bg.set_room_type(self.room_type.into_u32());
                         bg.set_summary_data(smp);
@@ -230,46 +239,6 @@ impl BattleData {
         Ok(au_vec)
     }
 
-    ///处理收到攻击时触发对事件
-    pub fn attacked_handler_trigger(
-        &mut self,
-        cter_id: u32,
-        target_cter_id: u32,
-        au: &mut ActionUnitPt,
-        is_last_one: bool,
-    ) -> anyhow::Result<()> {
-        let mut target_pt = self.new_target_pt(target_cter_id)?;
-        //被攻击前触发
-        self.attacked_before_trigger(target_cter_id, &mut target_pt);
-        let hurt_damge;
-        //扣血
-        unsafe {
-            hurt_damge =
-                self.deduct_hp(cter_id, target_cter_id, None, &mut target_pt, is_last_one)?;
-        }
-        let target_cter = self.get_battle_cter(target_cter_id, true);
-        let mut v = vec![];
-        if target_cter.is_ok() {
-            //被攻击后触发
-            self.attacked_after_trigger(target_cter_id, &mut target_pt);
-
-            //收到攻击伤害触发
-            if hurt_damge > 0 {
-                v = self.attacked_hurted_trigger(
-                    cter_id,
-                    target_cter_id,
-                    hurt_damge,
-                    &mut target_pt,
-                );
-            }
-        }
-        au.targets.push(target_pt);
-        for target_pt in v {
-            au.targets.push(target_pt);
-        }
-        Ok(())
-    }
-
     ///普通攻击
     /// user_id:发动普通攻击的玩家
     /// targets:被攻击目标
@@ -319,13 +288,8 @@ impl BattleData {
         if aoe_buff.is_none() {
             is_last_one = true;
         }
-        //处理攻击触发事件
-        let res = self.attacked_handler_trigger(cter_id, target_cter_id, au, is_last_one);
-        if let Err(e) = res {
-            error!("{:?}", e);
-            anyhow::bail!("")
-        }
-
+        let mut target_v = vec![];
+        target_v.push((target_cter_id, DamageType::Attack(0)));
         //检查aoebuff
         if let Some(buff) = aoe_buff {
             let buff = TEMPLATES.buff_temp_mgr().get_temp(&buff);
@@ -356,17 +320,10 @@ impl BattleData {
                 if target_cter_id == target_user {
                     continue;
                 }
-                if index == v.len() - 1 {
-                    is_last_one = true;
-                }
-                //处理攻击触发事件
-                let res = self.attacked_handler_trigger(cter_id, target_user, au, is_last_one);
-                if let Err(e) = res {
-                    error!("{:?}", e);
-                    continue;
-                }
+                target_v.push((target_user, DamageType::Attack(0)));
             }
         }
+        self.batch_deduct_hp(cter_id, target_v, au);
 
         let battle_player = self_mut.get_battle_player_mut(None, true).unwrap();
         battle_player.change_attack_none();
@@ -383,23 +340,10 @@ impl BattleData {
     }
 
     ///刷新地图
-    pub fn reset_map(
-        &mut self,
-        room_type: RoomType,
-        season_id: i32,
-        last_map_id: u32,
-    ) -> anyhow::Result<()> {
+    pub fn reset_map(&mut self, season_is_open: bool, last_map_id: u32) -> anyhow::Result<()> {
         //地图刷新前触发buff
         self.before_map_refresh_buff_trigger();
-        let allive_count = self
-            .battle_player
-            .values()
-            .filter(|x| x.status.battle_state == BattlePlayerState::Normal)
-            .count();
-        let res = TileMap::init(room_type, season_id, allive_count as u8, last_map_id)?;
-        self.last_map_id = res.id;
-        self.tile_map = res;
-        self.reflash_map_turn = Some(self.next_turn_index);
+
         unsafe {
             let self_ptr = self as *mut BattleData;
             let self_mut = self_ptr.as_mut().unwrap();
@@ -443,6 +387,10 @@ impl BattleData {
                 self.cter_player.remove(&id);
             }
         }
+        let res = TileMap::init(self, season_is_open, last_map_id)?;
+        self.last_map_id = res.id;
+        self.tile_map = res;
+        self.reflash_map_turn = Some(self.next_turn_index);
         Ok(())
     }
 

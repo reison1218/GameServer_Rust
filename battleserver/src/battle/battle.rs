@@ -13,7 +13,7 @@ use crate::battle::battle_skill::{
 };
 use crate::mgr::League;
 use crate::room::map_data::TileMap;
-use crate::room::{RoomType, MEMBER_MAX};
+use crate::room::{RoomState, RoomType, MEMBER_MAX};
 use crate::task_timer::{Task, TaskCmd};
 use crossbeam::channel::Sender;
 use log::error;
@@ -24,6 +24,7 @@ use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::skill_type::SUMMON_MINON;
+use super::battle_enum::BattlePlayerState;
 use super::battle_player::BattlePlayer;
 use super::battle_skill::summon_minon;
 
@@ -91,6 +92,11 @@ impl Into<SummaryDataPt> for SummaryUser {
     }
 }
 
+pub enum DayNight {
+    Day,
+    Night,
+}
+
 ///房间战斗数据封装
 #[derive(Clone)]
 pub struct BattleData {
@@ -114,6 +120,7 @@ pub struct BattleData {
     pub task_sender: Sender<Task>,                 //任务sender
     pub tcp_sender: Sender<Vec<u8>>,               //sender
     pub cter_id: u32,                              //角色id动态id,从101开始
+    pub state: RoomState,
 }
 
 tools::get_mut_ref!(BattleData);
@@ -126,6 +133,93 @@ impl BattleData {
         let cter = self.get_battle_cter(cter_id, false).unwrap();
         cter.base_attr.team_id
     }
+
+    pub fn get_day_night(&self) -> DayNight {
+        let res = self.turn % 2;
+        let res = match res {
+            0 => DayNight::Night,
+            i if i >= 1 => DayNight::Day,
+            _ => DayNight::Day,
+        };
+        res
+    }
+
+    pub fn summary_for_world_boss(&mut self) {
+        self.summary_vec.clear();
+        //两个队伍
+        for _ in 0..2 {
+            self.summary_vec.push(vec![]);
+        }
+        let allive_player = self
+            .battle_player
+            .values()
+            .find(|x| x.status.battle_state == BattlePlayerState::Normal);
+        let allive_is_world_boss;
+        //直接判定玩家胜利
+        if allive_player.is_none() {
+            allive_is_world_boss = false;
+        } else {
+            allive_is_world_boss = allive_player.unwrap().is_world_boss;
+        }
+
+        for battle_player in self.battle_player.values() {
+            let mut sp = SummaryUser::default();
+            sp.user_id = battle_player.get_user_id();
+            sp.name = battle_player.name.clone();
+            sp.cter_temp_id = battle_player.get_cter_temp_id();
+            sp.league = battle_player.league.clone();
+            sp.grade = battle_player.grade;
+            if battle_player.is_world_boss {
+                if allive_is_world_boss {
+                    sp.grade = battle_player.grade + 1;
+                    sp.summary_rank = 0;
+                    if sp.grade > 2 {
+                        sp.grade = 2;
+                    }
+                } else {
+                    sp.grade = battle_player.grade - 1;
+                    sp.summary_rank = 1;
+                    if sp.grade == 0 {
+                        sp.grade = 1;
+                    }
+                }
+            } else {
+                if allive_is_world_boss {
+                    sp.grade = battle_player.grade - 1;
+                    sp.summary_rank = 1;
+                    if sp.grade == 0 {
+                        sp.grade = 1;
+                    }
+                } else {
+                    sp.grade = battle_player.grade + 1;
+                    sp.summary_rank = 0;
+                    if sp.grade > 2 {
+                        sp.grade = 2;
+                    }
+                }
+            }
+            if self.summary_vec.get(sp.summary_rank as usize).is_none() {
+                self.summary_vec.push(vec![]);
+            }
+            let v = self.summary_vec.get_mut(sp.summary_rank as usize).unwrap();
+            v.push(sp);
+        }
+    }
+
+    pub fn get_world_boss_ref(&self) -> Option<&BattlePlayer> {
+        let worldboss_temps = &crate::TEMPLATES.worldboss_temp_mgr().temps;
+        self.battle_player
+            .values()
+            .find(|x| x.is_robot() && worldboss_temps.contains_key(&x.get_cter_temp_id()))
+    }
+
+    pub fn get_world_boss_mut(&mut self) -> Option<&mut BattlePlayer> {
+        let worldboss_temps = &crate::TEMPLATES.worldboss_temp_mgr().temps;
+        self.battle_player
+            .values_mut()
+            .find(|x| x.is_robot() && worldboss_temps.contains_key(&x.get_cter_temp_id()))
+    }
+
     pub fn remove_player(&mut self, user_id: u32) {
         //移除战斗角色
         let battle_player = self.battle_player.remove(&user_id);
@@ -143,6 +237,7 @@ impl BattleData {
                         buff.trap_view_users.remove(&user_id);
                     }
                 }
+                self.cter_player.remove(&cter_id);
             }
         }
     }
@@ -302,6 +397,7 @@ impl BattleData {
             task_sender,
             tcp_sender,
             cter_id: 100,
+            state: RoomState::ChoiceIndex,
         };
 
         //初始化函数指针，封装到map里
@@ -358,17 +454,17 @@ impl BattleData {
         }
     }
 
-    pub fn next_turn_is_robot(&self) -> bool {
+    pub fn next_turn_is_robot(&self) -> (bool, bool) {
         let user_id = self.get_turn_user(None);
         match user_id {
             Ok(user_id) => {
                 let battle_plsyer = self.battle_player.get(&user_id);
                 match battle_plsyer {
-                    Some(battle_player) => battle_player.is_robot(),
-                    None => false,
+                    Some(battle_player) => (battle_player.is_robot(), battle_player.is_world_boss),
+                    None => (false, false),
                 }
             }
-            Err(_) => false,
+            Err(_) => (false, false),
         }
     }
 

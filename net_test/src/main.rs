@@ -527,6 +527,8 @@ impl DumbFuture {
 }
 
 fn main() -> anyhow::Result<()> {
+    let i = 1 % 2;
+    println!("{}", i);
     // let mut test1 = DumbFuture {
     //     a: String::from_str("test1").unwrap(),
     //     b: std::ptr::null(),

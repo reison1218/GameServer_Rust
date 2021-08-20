@@ -7,6 +7,7 @@ pub struct WorldBossTemp {
     pub keep_time: u64,
     pub robot_id: u32,
     pub map_ids: Vec<u32>,
+    pub turn_order_index: usize,
 }
 
 impl Template for WorldBossTemp {}

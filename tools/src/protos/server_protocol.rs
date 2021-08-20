@@ -467,6 +467,7 @@ impl ::protobuf::reflect::ProtobufValue for G_R_CREATE_ROOM {
 pub struct G_R_JOIN_ROOM {
     // message fields
     pub room_id: u32,
+    pub room_type: u32,
     pub pbp: ::protobuf::SingularPtrField<PlayerBattlePt>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
@@ -499,7 +500,22 @@ impl G_R_JOIN_ROOM {
         self.room_id = v;
     }
 
-    // .protos.PlayerBattlePt pbp = 2;
+    // uint32 room_type = 2;
+
+
+    pub fn get_room_type(&self) -> u32 {
+        self.room_type
+    }
+    pub fn clear_room_type(&mut self) {
+        self.room_type = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_room_type(&mut self, v: u32) {
+        self.room_type = v;
+    }
+
+    // .protos.PlayerBattlePt pbp = 3;
 
 
     pub fn get_pbp(&self) -> &PlayerBattlePt {
@@ -555,6 +571,13 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
                     self.room_id = tmp;
                 },
                 2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.room_type = tmp;
+                },
+                3 => {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.pbp)?;
                 },
                 _ => {
@@ -572,6 +595,9 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
         if self.room_id != 0 {
             my_size += ::protobuf::rt::value_size(1, self.room_id, ::protobuf::wire_format::WireTypeVarint);
         }
+        if self.room_type != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.room_type, ::protobuf::wire_format::WireTypeVarint);
+        }
         if let Some(ref v) = self.pbp.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
@@ -585,8 +611,11 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
         if self.room_id != 0 {
             os.write_uint32(1, self.room_id)?;
         }
+        if self.room_type != 0 {
+            os.write_uint32(2, self.room_type)?;
+        }
         if let Some(ref v) = self.pbp.as_ref() {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
@@ -633,6 +662,11 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
                 |m: &G_R_JOIN_ROOM| { &m.room_id },
                 |m: &mut G_R_JOIN_ROOM| { &mut m.room_id },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "room_type",
+                |m: &G_R_JOIN_ROOM| { &m.room_type },
+                |m: &mut G_R_JOIN_ROOM| { &mut m.room_type },
+            ));
             fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<PlayerBattlePt>>(
                 "pbp",
                 |m: &G_R_JOIN_ROOM| { &m.pbp },
@@ -655,6 +689,7 @@ impl ::protobuf::Message for G_R_JOIN_ROOM {
 impl ::protobuf::Clear for G_R_JOIN_ROOM {
     fn clear(&mut self) {
         self.room_id = 0;
+        self.room_type = 0;
         self.pbp.clear();
         self.unknown_fields.clear();
     }
@@ -2457,29 +2492,29 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x89\x01\n\x0fG_R_CREATE_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\
     \x08roomType\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattle\
     PtR\x03pbp\x12/\n\x07setting\x18\x03\x20\x01(\x0b2\x15.protos.RoomSettin\
-    gPtR\x07setting\"R\n\rG_R_JOIN_ROOM\x12\x17\n\x07room_id\x18\x01\x20\x01\
-    (\rR\x06roomId\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBatt\
-    lePtR\x03pbp\"X\n\x0fG_R_SEARCH_ROOM\x12\x1b\n\troom_type\x18\x01\x20\
-    \x01(\rR\x08roomType\x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.Play\
-    erBattlePtR\x03pbp\"z\n\x0bB_S_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\
-    \x01(\rR\x08roomType\x12\x14\n\x05cters\x18\x02\x20\x03(\rR\x05cters\x12\
-    8\n\x0csummary_data\x18\x03\x20\x01(\x0b2\x15.protos.SummaryDataPtR\x0bs\
-    ummaryData\"C\n\x0bB_R_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\
-    \x08roomType\x12\x17\n\x07room_id\x18\x02\x20\x01(\rR\x06roomId\"\xa0\
-    \x02\n\x0ePlayerBattlePt\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06use\
-    rId\x12\x1b\n\tnick_name\x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05gr\
-    ade\x18\x03\x20\x01(\rR\x05grade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\
-    \x01(\rR\ngradeFrame\x12\x12\n\x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\
-    \n\x06league\x18\x06\x20\x01(\x0b2\x10.protos.LeaguePtR\x06league\x128\n\
-    \x0cpunish_match\x18\x07\x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpuni\
-    shMatch\x12)\n\x05cters\x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\
-    \x05cters\"N\n\x12B_R_G_PUNISH_MATCH\x128\n\x0cpunish_match\x18\x01\x20\
-    \x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\"\x0f\n\rR_G_SYNC_RA\
-    NK\"p\n\x11R_S_UPDATE_SEASON\x12\x1b\n\tseason_id\x18\x01\x20\x01(\x05R\
-    \x08seasonId\x12\x14\n\x05round\x18\x02\x20\x01(\rR\x05round\x12(\n\x10n\
-    ext_update_time\x18\x03\x20\x01(\x04R\x0enextUpdateTime\"3\n\x14G_S_MODI\
-    FY_NICK_NAME\x12\x1b\n\tnick_name\x18\x01\x20\x01(\tR\x08nickNameb\x06pr\
-    oto3\
+    gPtR\x07setting\"o\n\rG_R_JOIN_ROOM\x12\x17\n\x07room_id\x18\x01\x20\x01\
+    (\rR\x06roomId\x12\x1b\n\troom_type\x18\x02\x20\x01(\rR\x08roomType\x12(\
+    \n\x03pbp\x18\x03\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"X\n\
+    \x0fG_R_SEARCH_ROOM\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\
+    \x12(\n\x03pbp\x18\x02\x20\x01(\x0b2\x16.protos.PlayerBattlePtR\x03pbp\"\
+    z\n\x0bB_S_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\
+    \x12\x14\n\x05cters\x18\x02\x20\x03(\rR\x05cters\x128\n\x0csummary_data\
+    \x18\x03\x20\x01(\x0b2\x15.protos.SummaryDataPtR\x0bsummaryData\"C\n\x0b\
+    B_R_SUMMARY\x12\x1b\n\troom_type\x18\x01\x20\x01(\rR\x08roomType\x12\x17\
+    \n\x07room_id\x18\x02\x20\x01(\rR\x06roomId\"\xa0\x02\n\x0ePlayerBattleP\
+    t\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1b\n\tnick_nam\
+    e\x18\x02\x20\x01(\tR\x08nickName\x12\x14\n\x05grade\x18\x03\x20\x01(\rR\
+    \x05grade\x12\x1f\n\x0bgrade_frame\x18\x04\x20\x01(\rR\ngradeFrame\x12\
+    \x12\n\x04soul\x18\x05\x20\x01(\rR\x04soul\x12(\n\x06league\x18\x06\x20\
+    \x01(\x0b2\x10.protos.LeaguePtR\x06league\x128\n\x0cpunish_match\x18\x07\
+    \x20\x01(\x0b2\x15.protos.PunishMatchPtR\x0bpunishMatch\x12)\n\x05cters\
+    \x18\x08\x20\x03(\x0b2\x13.protos.CharacterPtR\x05cters\"N\n\x12B_R_G_PU\
+    NISH_MATCH\x128\n\x0cpunish_match\x18\x01\x20\x01(\x0b2\x15.protos.Punis\
+    hMatchPtR\x0bpunishMatch\"\x0f\n\rR_G_SYNC_RANK\"p\n\x11R_S_UPDATE_SEASO\
+    N\x12\x1b\n\tseason_id\x18\x01\x20\x01(\x05R\x08seasonId\x12\x14\n\x05ro\
+    und\x18\x02\x20\x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\
+    \x01(\x04R\x0enextUpdateTime\"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnic\
+    k_name\x18\x01\x20\x01(\tR\x08nickNameb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

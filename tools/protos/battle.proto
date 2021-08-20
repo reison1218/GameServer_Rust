@@ -157,6 +157,7 @@ message S_MAP_REFRESH_NOTICE{
     uint32 room_status = 1;//房间状态
     uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
+    repeated BattlePlayerPt battle_players = 4;//所有玩家战斗数据
 }
 
 //结算推送

@@ -3,7 +3,7 @@ use crate::handlers::battle_handler::{
 };
 use crate::robot::robot_task_mgr::RobotTask;
 use crate::room::room::Room;
-use crate::room::{MemberLeaveNoticeType, RoomState, RoomType};
+use crate::room::{MemberLeaveNoticeType, RoomState};
 use crate::task_timer::Task;
 use crossbeam::channel::Sender;
 use log::{info, warn};
@@ -143,7 +143,7 @@ impl BattleMgr {
         let room_type = room.get_room_type();
         //如果是主动推出房间，房间为匹配房，玩家没死，不允许退出房间
         if notice_type == MemberLeaveNoticeType::Leave
-            && room_type == RoomType::OneVOneVOneVOneMatch
+            && room_type.is_match_type()
             && !battle_player.is_died()
         {
             warn!(
