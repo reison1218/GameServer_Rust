@@ -2,7 +2,7 @@ use crate::handlers::room_handler::{
     battle_kick_member, cancel_search_room, change_team, choice_ai, choice_skills,
     choose_character, confirm_into_room, create_room, emoji, join_room, kick_member, leave_room,
     off_line, prepare_cancel, reload_temps, room_setting, search_room, start, summary,
-    update_season,
+    update_season, update_worldboss,
 };
 use crate::room::custom_room::CustomRoom;
 use crate::room::match_room::MatchRoom;
@@ -340,5 +340,8 @@ impl RoomMgr {
         //选择ai
         self.cmd_map
             .insert(RoomCode::ChoiceAI.into_u32(), choice_ai);
+        //选择ai
+        self.cmd_map
+            .insert(RoomCode::UpdateWorldBossPush.into_u32(), update_worldboss);
     }
 }

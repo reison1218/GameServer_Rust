@@ -58,7 +58,7 @@ impl RobotStatusAction for OpenCellRobotAction {
             return;
         }
         let battle_data = battle_data.unwrap();
-        //校验为配对的地图块数量
+        //校验未配对的地图块数量
         if battle_data.tile_map.un_pair_map.is_empty() {
             warn!("un_pair_map is empty!");
             return;
@@ -130,10 +130,11 @@ impl RobotStatusAction for OpenCellRobotAction {
                 map_cell = battle_data.tile_map.map_cells.get(map_cell_index).unwrap();
                 cter_id = map_cell.cter_id;
                 if cter_id > 0 {
-                    let user_id = battle_data.get_user_id(cter_id).unwrap();
-                    let player = battle_data.battle_player.get(&user_id).unwrap();
-                    if !player.is_can_attack() {
-                        continue;
+                    let cter_res = battle_data.get_battle_cter(cter_id, true);
+                    if let Ok(cter_res) = cter_res {
+                        if !cter_res.can_be_move() {
+                            continue;
+                        }
                     }
                 }
                 if map_cell.open_cter > 0 {

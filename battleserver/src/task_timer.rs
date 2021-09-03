@@ -1,4 +1,3 @@
-use crate::battle::battle_enum::TURN_DEFAULT_MOVEMENT_POINTS;
 use crate::mgr::battle_mgr::BattleMgr;
 use crate::room::{MemberLeaveNoticeType, RoomState};
 use crate::{JsonValue, Lock, SCHEDULED_MGR};
@@ -30,6 +29,7 @@ pub struct Task {
     pub cmd: TaskCmd,    //要执行的命令
     pub delay: u64,      //要延迟执行的时间
     pub turn: u32,       //turn
+    pub battle_id: u32,  //战斗id
     pub data: JsonValue, //数据
 }
 
@@ -70,10 +70,11 @@ pub fn init_timer(bm: Lock) {
     }
     info!("初始化定时器任务执行器成功!");
 }
-fn none(bm: Arc<Mutex<BattleMgr>>, task: Task) {}
+fn none(_: Arc<Mutex<BattleMgr>>, _: Task) {}
 
 ///占位任务，没选的直接t出房间
 fn choice_index(bm: Arc<Mutex<BattleMgr>>, task: Task) {
+    let task_batlte_id = task.battle_id;
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
@@ -112,6 +113,10 @@ fn choice_index(bm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
 
+    if room.battle_data.battle_id != task_batlte_id {
+        return;
+    }
+
     //移除玩家
     room.remove_member(MemberLeaveNoticeType::Kicked, &user_id, true);
 
@@ -127,6 +132,7 @@ fn choice_index(bm: Arc<Mutex<BattleMgr>>, task: Task) {
 }
 
 fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
+    let task_batlte_id = task.battle_id;
     let json_value = task.data;
     let turn = task.turn;
     let res = json_value.as_object();
@@ -154,6 +160,10 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
     let room = room.unwrap();
+
+    if room.battle_data.battle_id != task_batlte_id {
+        return;
+    }
 
     //校验房间状态
     if room.state != RoomState::BattleStarted {
@@ -188,6 +198,11 @@ fn battle_turn_time(bm: Arc<Mutex<BattleMgr>>, task: Task) {
         return;
     }
     let battle_player = battle_player.unwrap();
+
+    //机器人不用管
+    if battle_player.is_robot() {
+        return;
+    }
 
     //如果玩家啥都没做，就T出房间
     let need_kick = battle_player.flow_data.open_map_cell_vec.is_empty();

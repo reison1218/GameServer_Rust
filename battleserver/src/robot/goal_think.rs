@@ -6,7 +6,7 @@ use crate::robot::goal_evaluator::unlock_goal_evaluator::UnlockGoalEvaluator;
 use crate::robot::goal_evaluator::GoalEvaluator;
 use crate::robot::robot_task_mgr::RobotTask;
 use crossbeam::channel::Sender;
-use log::info;
+use log::{info, warn};
 
 use super::goal_evaluator::choice_index_goal_evaluator::ChoiceIndexGoalEvaluator;
 use crate::robot::goal_evaluator::skip_goal_evaluator::SkipGoalEvaluator;
@@ -60,14 +60,20 @@ impl GoalThink {
         }
 
         //获得仲裁结果
-        let best_goal_evaluator = self
-            .goal_evaluators
-            .iter()
-            .max_by(|x, y| {
-                x.calculate_desirability(robot)
-                    .cmp(&y.calculate_desirability(robot))
-            })
-            .unwrap();
+        let best_goal_evaluator = self.goal_evaluators.iter().max_by(|x, y| {
+            x.calculate_desirability(robot)
+                .cmp(&y.calculate_desirability(robot))
+        });
+
+        if best_goal_evaluator.is_none() {
+            unsafe {
+                let battle_data_mut = battle_data.as_mut().unwrap();
+                battle_data_mut.next_turn(true);
+                warn!("robot nothing to do!robot_id:{}", robot.get_user_id());
+                return;
+            }
+        }
+        let best_goal_evaluator = best_goal_evaluator.unwrap();
         //设置状态
         best_goal_evaluator.set_status(robot, sender, battle_data);
     }

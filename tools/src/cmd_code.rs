@@ -50,6 +50,8 @@ pub enum GameCode {
     GetLastSeasonRank = 1015,
     //同步排行榜名字
     SyncRankNickName = 1016,
+    //更新worldboss通知
+    UpdateWorldBossPush = 9998,
     //卸载玩家数据
     UnloadUser = 9999,
     //范围最大值
@@ -108,6 +110,8 @@ pub enum RoomCode {
     Summary = 21000,
     //更新赛季通知
     UpdateSeasonPush = 22000,
+    //更新worldboss通知
+    UpdateWorldBossPush = 22001,
     //返回最大值
     Max = 30000,
 }
@@ -236,7 +240,7 @@ pub enum ClientCode {
     ChoiceRoundOrderNotice = 10026,
     //选择占位推送
     StartChoiceIndexNotice = 10027,
-    //“进入房间”取消通知
+    //进入房间”取消通知
     IntoRoomCancelNotice = 10028,
     //匹配成功通知
     MatchSuccessNotice = 10029,

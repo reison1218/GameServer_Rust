@@ -69,8 +69,9 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     }
 
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
+    let cter = battle_player.get_current_cter();
 
-    let res = check_skill_useable(battle_player.get_current_cter(), skill);
+    let res = check_skill_useable(cter, skill);
     if let Err(_) = res {
         return false;
     }
@@ -131,6 +132,33 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
                 }
             }
         }
+        13001 => {
+            if !skill.is_active {
+                return false;
+            }
+            for &minon_id in cter.minons.iter() {
+                let minon = battle_data.get_battle_cter(minon_id, true);
+                if minon.is_err() {
+                    continue;
+                }
+                let minon = minon.unwrap();
+                let minon_index = minon.get_map_cell_index();
+                let res = battle_data.cal_scope(
+                    minon_id,
+                    minon_index as isize,
+                    TargetType::MapCellEnemys,
+                    None,
+                    None,
+                );
+                if !res.1.is_empty() {
+                    return true;
+                }
+            }
+        }
+        13004 => {
+            can_use = !cter.minons.is_empty();
+        }
+
         _ => {}
     }
     can_use
@@ -230,7 +258,7 @@ pub fn skill_target(
                 }
             }
         }
-        i if 11004 == i => {
+        11004 => {
             let mut v = vec![];
             for &cter_id in battle_data.cter_player.keys() {
                 let cter = battle_data.get_battle_cter(cter_id, true);
@@ -256,97 +284,69 @@ pub fn skill_target(
             let &target_cter_index = v.get(index).unwrap();
             targets.push(target_cter_index);
         }
-        i if 11002 == i => {
-            let mut unopen_v = vec![];
-            let mut open_v = vec![];
-            for map_cell in battle_data.tile_map.map_cells.iter() {
-                if map_cell.cter_id > 0 {
-                    continue;
-                }
-                if map_cell.cell_type != MapCellType::Valid {
-                    continue;
-                }
-                if map_cell.pair_index.is_some() {
-                    open_v.push(map_cell.index);
-                } else {
-                    unopen_v.push(map_cell.index);
-                }
+        11002 => {}
+        11005 => {
+            let target_cter_index = get_hp_max_cter(battle_data, robot_id, Some(team_id));
+            if let Some(target_cter_index) = target_cter_index {
+                targets.push(target_cter_index);
             }
-            let mut random = rand::thread_rng();
-            let index;
-            let target_index;
-            if !unopen_v.is_empty() {
-                index = random.gen_range(0..unopen_v.len());
-                target_index = *unopen_v.get(index).unwrap();
-            } else {
-                index = random.gen_range(0..open_v.len());
-                target_index = *open_v.get(index).unwrap();
-            }
-            targets.push(target_index);
         }
-        i if 11005 == i => {
-            let scope_id;
-
-            match battle_data.round {
-                1 => {
-                    scope_id = 1;
-                }
-                2 => {
-                    scope_id = skill.skill_temp.par2;
-                }
-                3 => {
-                    scope_id = skill.skill_temp.par3;
-                }
-                i if i >= 4 => {
-                    scope_id = skill.skill_temp.par4;
-                }
-                _ => {
-                    scope_id = 0;
+        11007 => {
+            let res = get_triangle_aoe(cter_id, battle_data, Some(team_id));
+            if let Some(res) = res {
+                targets.extend_from_slice(res.as_slice());
+            }
+        }
+        11008 => {
+            let res = get_roundness_aoe(
+                cter_id,
+                battle_data,
+                false,
+                false,
+                false,
+                false,
+                Some(team_id),
+            );
+            if let Some(res) = res {
+                targets.extend_from_slice(res.as_slice());
+            }
+        }
+        11009 => {
+            for &id in battle_data.cter_player.keys() {
+                let cter_res = battle_data.get_battle_cter(id, true);
+                match cter_res {
+                    Ok(cter) => {
+                        if cter.base_attr.team_id == team_id {
+                            continue;
+                        } else {
+                            targets.push(cter.get_map_cell_index());
+                        }
+                    }
+                    Err(_) => continue,
                 }
             }
-
-            crate::TEMPLATES
-                .skill_scope_temp_mgr()
-                .get_temp(&scope_id)
-                .unwrap();
-
-            if scope_id == 1 {
-                let target_cter_index = get_hp_max_cter(battle_data, robot_id, Some(team_id));
-                if let Some(target_cter_index) = target_cter_index {
-                    targets.push(target_cter_index);
+        }
+        13002 => {
+            let res = get_nearest_cter(battle_data, cter_id, Some(team_id));
+            if let Some(index) = res {
+                targets.push(index);
+            }
+        }
+        13004 => {
+            let target_cter_index = get_hp_max_cter(battle_data, robot_id, Some(team_id));
+            if let Some(target_cter_index) = target_cter_index {
+                targets.push(target_cter_index);
+            }
+        }
+        13005 => {
+            let res = battle_data.get_enemys(team_id);
+            for id in res {
+                let cter_res = battle_data.get_battle_cter(id, true);
+                if cter_res.is_err() {
+                    continue;
                 }
-            } else if scope_id == 5 {
-                let res = get_roundness_aoe(
-                    cter_id,
-                    battle_data,
-                    false,
-                    false,
-                    false,
-                    false,
-                    Some(team_id),
-                );
-                if let Some(res) = res {
-                    targets.extend_from_slice(res.as_slice());
-                }
-            } else if scope_id == 3 {
-                let res = get_triangle_aoe(cter_id, battle_data, Some(team_id));
-                if let Some(res) = res {
-                    targets.extend_from_slice(res.as_slice());
-                }
-            } else if scope_id == 6 {
-                for &id in battle_data.cter_player.keys() {
-                    let cter_res = battle_data.get_battle_cter(id, true);
-                    match cter_res {
-                        Ok(cter) => {
-                            if cter.base_attr.team_id == team_id {
-                                continue;
-                            } else {
-                                targets.push(cter.get_map_cell_index());
-                            }
-                        }
-                        Err(_) => continue,
-                    }
-                }
+                let cter_res = cter_res.unwrap();
+                targets.push(cter_res.get_map_cell_index());
             }
         }
         _ => {}
@@ -454,6 +454,57 @@ pub fn skill_open_near_cell_robot(
         let index = v.get(index).unwrap();
         Some(*index)
     }
+}
+
+pub fn get_nearest_cter(
+    battle_data: &BattleData,
+    cter_id: u32,
+    team_id: Option<u8>,
+) -> Option<usize> {
+    let cter = battle_data.get_battle_cter(cter_id, true);
+    if cter.is_err() {
+        return None;
+    }
+    let cter = cter.unwrap();
+    let cter_index = cter.get_map_cell_index();
+    let map_cell = battle_data.tile_map.map_cells.get(cter_index).unwrap();
+
+    let mut res_v = vec![];
+
+    let res = map_cell.x + map_cell.y;
+    let mut team = 0;
+    if let Some(team_id) = team_id {
+        team = team_id;
+    }
+    for &id in battle_data.cter_player.keys() {
+        let other_cter = battle_data.get_battle_cter(id, true);
+        if other_cter.is_err() {
+            continue;
+        }
+        let other_cter = other_cter.unwrap();
+        if other_cter.base_attr.team_id == team {
+            continue;
+        }
+
+        let other_cell = battle_data
+            .tile_map
+            .map_cells
+            .get(other_cter.get_map_cell_index());
+        if other_cell.is_none() {
+            continue;
+        }
+        let other_cell = other_cell.unwrap();
+        let value = res - (other_cell.x + other_cell.y);
+        let value_res = value.abs();
+        let res = (value_res, other_cter.get_map_cell_index());
+        res_v.push(res);
+    }
+    let min_value = res_v.iter().min_by(|a, b| a.cmp(b));
+    if min_value.is_none() {
+        return None;
+    }
+    let res = min_value.unwrap();
+    Some(res.1)
 }
 
 ///获得除robot_id生命值最高的角色位置

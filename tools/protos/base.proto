@@ -96,6 +96,12 @@ message CharacterPt{
     repeated uint32 skills = 3;//玩家次角色所有已解锁的技能id
 }
 
+message SkillPt{
+    uint32 skill_id = 1;//技能id
+    uint32 cd = 2;//技能当前cd
+    bool is_active = 3;//技能释放激活
+}
+
 //玩家战斗角色数据
 message BattleCharacterPt{
     uint32 user_id = 1;                 //玩家id
@@ -108,9 +114,14 @@ message BattleCharacterPt{
     uint32 index = 8;                   //角色当前位置
     bool is_major=9;                    //是否是主角色
     repeated uint32 buffs = 10;         //角色身上的buff
-    repeated uint32 skills = 11;        //玩家选择的技能
+    repeated SkillPt skills = 11;        //角色技能
     repeated uint32 items = 12;         //玩家身上的道具
     repeated uint32 minons = 13;        //召唤物集合
+}
+
+message IndexCter{
+    uint32 cter_id = 1;                 //角色id（服务器生成的唯一id）
+    uint32 index = 2;                 //角色在地图上的位置
 }
 
 //玩家战斗数据
@@ -168,6 +179,7 @@ message ActionUnitPt{
     repeated uint32 action_value = 3;//行动对应类型的值，如果action_type=0，则此值一定为0
     repeated TargetPt targets = 4;//目标列表，对目标造成对影响
     repeated uint32 lost_buffs= 5;//from_cter失效的buff
+    bool is_reward_move_points = 6;//是否奖励移动点数
 
 }
 

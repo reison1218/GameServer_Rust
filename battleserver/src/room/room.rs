@@ -19,7 +19,7 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, RoomCode};
 use tools::macros::GetMutRef;
-use tools::protos::base::{RoomPt, WorldCellPt};
+use tools::protos::base::{IndexCter, RoomPt, WorldCellPt};
 use tools::protos::battle::{
     S_BATTLE_START_NOTICE, S_CHOOSE_INDEX_NOTICE, S_MAP_REFRESH_NOTICE, S_START_NOTICE,
 };
@@ -255,9 +255,12 @@ impl Room {
             wcp.world_cell_id = self.battle_data.tile_map.world_cell.1;
             smrn.world_cell.push(wcp);
         }
-        for battle_player in self.battle_data.battle_player.values() {
-            smrn.battle_players
-                .push(battle_player.convert_to_battle_player_pt());
+        if self.room_type.is_boss_type() {
+            let mut index_cter = IndexCter::new();
+            index_cter.set_cter_id(self.battle_data.get_world_boss_ref().unwrap().major_cter.0);
+            index_cter.set_index(self.battle_data.tile_map.world_boss_init_index as u32);
+
+            smrn.index_cters.push(index_cter);
         }
         let bytes = smrn.write_to_bytes().unwrap();
         let self_mut_ref = self.get_mut_ref();
@@ -305,8 +308,6 @@ impl Room {
             "start_choice_index!turn_order:{:?}",
             self.battle_data.turn_orders
         );
-        //增加round
-        self.battle_data.round += 1;
         //开始执行占位逻辑
         self.build_choice_index_task();
     }
@@ -896,6 +897,7 @@ impl Room {
             error!("{:?}", e);
             return;
         }
+        self.battle_data.round_start_trigger();
         //下发通知
         self.start_notice();
         //初始化玩家任务
@@ -982,11 +984,15 @@ impl Room {
         if self.setting.turn_limit_time == 0 {
             return;
         }
+        if self.state != RoomState::ChoiceIndex {
+            return;
+        }
         let user_id = self.get_turn_user(None);
         if let Err(e) = user_id {
             error!("{:?}", e);
             return;
         }
+
         let user_id = user_id.unwrap();
         let time_limit = TEMPLATES.constant_temp_mgr().temps.get("choice_index_time");
         let mut task = Task::default();
@@ -1006,7 +1012,7 @@ impl Room {
                     }
                 }
             } else {
-                task.delay = 5000_u64;
+                task.delay = 20000_u64;
                 warn!("the choice_index_time of Constant config is None!pls check!");
             }
         }

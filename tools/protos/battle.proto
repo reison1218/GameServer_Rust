@@ -131,9 +131,10 @@ message S_ACTION_NOTICE{
 //turn玩家状态结算，turn开始的时候
 //cmd = 10032
 message S_BATTLE_TURN_NOTICE{
-    uint32 user_id = 1;//当前turn的玩家id
-    repeated BattlePlayerPt battle_players = 2;//所有玩家战斗数据
-    repeated CellBuffPt cell_buffs = 3;//地图块上的buff
+    uint32 cycle_count = 1;//当前周期计数，用于白天黑夜
+    uint32 user_id = 2;//当前turn的玩家id
+    repeated BattlePlayerPt battle_players = 3;//所有玩家战斗数据
+    repeated CellBuffPt cell_buffs = 4;//地图块上的buff
 }
 
 //架势请求
@@ -157,7 +158,7 @@ message S_MAP_REFRESH_NOTICE{
     uint32 room_status = 1;//房间状态
     uint32 tile_map_id = 2;//地图配置id
     repeated WorldCellPt world_cell = 3;//世界块
-    repeated BattlePlayerPt battle_players = 4;//所有玩家战斗数据
+    repeated IndexCter index_cters = 4;//地图上先生成位置的角色
 }
 
 //结算推送

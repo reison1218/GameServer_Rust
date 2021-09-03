@@ -1,5 +1,5 @@
 use crate::battle::battle_enum::{
-    AttackState, BattleCterState, BattlePlayerState, TURN_DEFAULT_MOVEMENT_POINTS,
+    AttackState, BattleCterState, BattlePlayerState, FromType, TURN_DEFAULT_MOVEMENT_POINTS,
 };
 use crate::battle::mission::MissionData;
 use crate::battle::mission::MissionResetType;
@@ -426,8 +426,14 @@ impl BattlePlayer {
 
         for owner in owner_v {
             let cter = self.cters.get_mut(&owner.0).unwrap();
-            let skill = cter.skills.get_mut(&owner.1).unwrap();
-            skill.is_active = false;
+            let from_type = owner.1;
+            match from_type {
+                FromType::Skill(skill_id) => {
+                    let skill = cter.skills.get_mut(&skill_id).unwrap();
+                    skill.is_active = false;
+                }
+                _ => {}
+            }
         }
         self.current_cter = self.major_cter;
         rm_v

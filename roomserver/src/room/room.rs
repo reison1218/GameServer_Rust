@@ -548,6 +548,15 @@ impl Room {
         self.members.len()
     }
 
+    pub fn get_world_boss_id(&self) -> u32 {
+        for member in self.members.values() {
+            if member.is_world_boss() {
+                return member.get_user_id();
+            }
+        }
+        0
+    }
+
     ///添加成员
     pub fn add_member(
         &mut self,

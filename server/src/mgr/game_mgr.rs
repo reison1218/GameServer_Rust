@@ -15,7 +15,7 @@ use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
 use tools::protos::base::{PlayerPt, PunishMatchPt, WorldBossPt};
 use tools::protos::base::{RankInfoPt, SeasonPt};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA, S_USER_LOGIN};
-use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME};
+use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME, UPDATE_WORLD_BOSS_PUSH};
 use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 use tools::{cmd_code::RankCode, protos::base::LeaguePt};
@@ -249,6 +249,8 @@ impl GameMgr {
         self.cmd_map.insert(GameCode::Summary.into_u32(), summary);
         self.cmd_map
             .insert(GameCode::SyncRankNickName.into_u32(), sync_rank_nick_name);
+        self.cmd_map
+            .insert(GameCode::UpdateWorldBossPush.into_u32(), update_worldboss);
     }
 
     ///user结构体转proto
@@ -430,6 +432,21 @@ pub fn sync_rank_nick_name(gm: &mut GameMgr, packet: Packet) {
     let rank_pt = gm.get_ri_mut(user_id);
     if let Some(rank_pt) = rank_pt {
         rank_pt.set_name(nick_name);
+    }
+}
+
+pub fn update_worldboss(_: &mut GameMgr, packet: Packet) {
+    let mut proto = UPDATE_WORLD_BOSS_PUSH::new();
+    let res = proto.merge_from_bytes(packet.get_data());
+    if let Err(err) = res {
+        error!("{:?}", err);
+        return;
+    }
+    let world_boss_id = proto.world_boss_id;
+    let next_update_time = proto.next_update_time;
+    unsafe {
+        crate::WORLD_BOSS.world_boss_id = world_boss_id;
+        crate::WORLD_BOSS.next_update_time = next_update_time;
     }
 }
 

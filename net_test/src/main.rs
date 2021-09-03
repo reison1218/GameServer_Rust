@@ -15,6 +15,8 @@ use log::info;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::cell::RefCell;
+use std::collections::BTreeSet;
+use std::collections::HashSet;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
@@ -526,9 +528,19 @@ impl DumbFuture {
     }
 }
 
+pub struct Rust {
+    a: u32,
+    b: u16,
+    c: u8,
+}
+
 fn main() -> anyhow::Result<()> {
-    let i = 1 % 2;
-    println!("{}", i);
+    // Print some basic info about the response to standard output.
+    // println!("Status: {}", response.status());
+    // println!("Headers: {:#?}", response.headers());
+
+    // Read the response body as text into a string and print it.
+
     // let mut test1 = DumbFuture {
     //     a: String::from_str("test1").unwrap(),
     //     b: std::ptr::null(),
@@ -573,7 +585,6 @@ fn main() -> anyhow::Result<()> {
     //     message_io::run(Transport::Tcp, socket);
     // };
     // std::thread::spawn(m);
-    message_io::connect();
     // std::thread::sleep(Duration::from_micros(1));
     // let mut tcp = std::net::TcpStream::connect("localhost:16888").unwrap();
     // let buf = "hello".as_bytes();

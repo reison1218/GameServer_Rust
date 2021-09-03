@@ -7,6 +7,12 @@ pub enum DamageType {
     Skill(i16),
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum FromType {
+    Skill(u32),
+    Buff(u32),
+}
+
 ///默认每个turn移动点数
 pub const TURN_DEFAULT_MOVEMENT_POINTS: u8 = 2;
 
@@ -53,9 +59,10 @@ pub mod skill_type {
     ///相临玩家造成技能伤害并恢复生命
     pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 8] = [999, 123, 20004, 20005, 323, 433, 331, 11001];
+    pub const SKILL_DAMAGE: [u32; 10] =
+        [999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 13002];
     ///技能aoe
-    pub const SKILL_AOE: [u32; 5] = [121, 411, 412, 432, 11005];
+    pub const SKILL_AOE: [u32; 8] = [121, 411, 412, 432, 11007, 11008, 11009, 13005];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///对已其他翻开元素块上对玩家造成技能伤害
@@ -87,13 +94,22 @@ pub mod skill_type {
     ///配对可用，造成伤害
     pub const SKILL_PAIR_LIMIT_DAMAGE: [u32; 1] = [331];
     ///召唤宠物
-    pub const SUMMON_MINON: [u32; 1] = [11002];
+    pub const SUMMON_MINON: [u32; 2] = [11002, 13003];
 
     ///减少最大行动点数
     pub const SUB_MAX_MOVE_POINT: u32 = 11004;
 
     ///范围变化的aoe技能
     pub const SCOPE_CHANGE_SKILL_AOE: u32 = 11005;
+
+    ///命令宠物进行攻击
+    pub const ORDER_MINON_ATTACK: [u32; 2] = [13001, 13004];
+
+    ///命令宠物攻击同一
+    pub const ORDER_MINON_ATTACK_SAME_TARGET: u32 = 13004;
+
+    ///召唤宠物并且展示地图块
+    pub const SUMMON_MINONS_AND_SHOW_INDEX: u32 = 13003;
 }
 
 ///buff类型
@@ -105,7 +121,7 @@ pub mod buff_type {
     ///增加攻击力并变成AOE
     pub const ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
-    pub const ADD_ATTACK: [u32; 5] = [4, 7, 16, 1001, 1002];
+    pub const ADD_ATTACK: [u32; 6] = [4, 7, 16, 1001, 1002, 20011];
     ///减伤buff
     pub const SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
     ///获得道具
@@ -179,6 +195,24 @@ pub mod buff_type {
 
     ///自杀造成技能伤害
     pub const SUICIDE_SKILL_DAMAGE: u32 = 20006;
+
+    ///召唤乌鸦
+    pub const SUMMON_CROW: u32 = 20007;
+
+    ///乌鸦死完刷新技能cd
+    pub const ALL_CROW_DIE_REFRESH_SKILL_CD: u32 = 20008;
+
+    ///乌鸦提高攻击力
+    pub const CROW_ALIVE_ADD_ATTACK: u32 = 20009;
+
+    ///round变技能
+    pub const ROUND_CHANGE_SKILL: u32 = 20010;
+
+    ///白昼技能组
+    pub const DAY_SKILLS: u32 = 20012;
+
+    ///黑夜技能组
+    pub const NIGHT_SKILLS: u32 = 20013;
 
     ///世界树buff,在战斗开始的时候就开始加载，
     pub const WORLD_CELL_BUFFS: u32 = 30051;

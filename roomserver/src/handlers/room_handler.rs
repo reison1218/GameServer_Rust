@@ -6,7 +6,7 @@ use crate::room::member::{Member, PunishMatch};
 use crate::room::room::{MemberLeaveNoticeType, RoomSettingType, RoomState, MEMBER_MAX};
 use crate::room::room_model::{RoomModel, RoomSetting, RoomType, TeamId};
 use crate::task_timer::build_match_room_ready_task;
-use crate::SEASON;
+use crate::{SEASON, WORLD_BOSS};
 use log::error;
 use log::info;
 use log::warn;
@@ -23,10 +23,10 @@ use tools::protos::room::{
     S_CHOOSE_CHARACTER_NOTICE, S_CHOOSE_SKILL, S_INTO_ROOM_CANCEL_NOTICE, S_LEAVE_ROOM,
     S_PUNISH_MATCH_NOTICE, S_ROOM_SETTING, S_START,
 };
-use tools::protos::server_protocol::B_R_SUMMARY;
 use tools::protos::server_protocol::{
     B_R_G_PUNISH_MATCH, G_R_CREATE_ROOM, G_R_JOIN_ROOM, G_R_SEARCH_ROOM, R_S_UPDATE_SEASON,
 };
+use tools::protos::server_protocol::{B_R_SUMMARY, UPDATE_WORLD_BOSS_PUSH};
 use tools::templates::emoji_temp::EmojiTemp;
 use tools::util::packet::Packet;
 
@@ -109,6 +109,47 @@ pub fn update_season(rm: &mut RoomMgr, packet: Packet) {
         if let Some(rank) = rank {
             let ri: RankInfo = serde_json::from_str(rank.as_str()).unwrap();
             member.league = ri.league.into();
+        }
+    }
+}
+
+///更新赛季
+pub fn update_worldboss(rm: &mut RoomMgr, packet: Packet) {
+    let mut usn = UPDATE_WORLD_BOSS_PUSH::new();
+    let res = usn.merge_from_bytes(packet.get_data());
+    if let Err(e) = res {
+        error!("{:?}", e);
+        return;
+    }
+    let world_boss_id = usn.get_world_boss_id();
+    let next_update_time = usn.get_next_update_time();
+    unsafe {
+        WORLD_BOSS.world_boss_id = world_boss_id;
+        WORLD_BOSS.next_update_time = next_update_time;
+    }
+    let player_room = rm.player_room.clone();
+    //更新boss
+    for (user_id, _) in player_room {
+        let room = rm.get_room_mut_by_user_id(&user_id);
+        if room.is_none() {
+            continue;
+        }
+        let room = room.unwrap();
+        let boss_id = room.get_world_boss_id();
+        //删除旧boss
+        room.remove_member_without_push(boss_id);
+        unsafe {
+            //加入新worldboss
+            let world_boss_id = crate::WORLD_BOSS.world_boss_id as u32;
+            let worldboss_temp = crate::TEMPLATES
+                .worldboss_temp_mgr()
+                .temps
+                .get(&world_boss_id)
+                .unwrap();
+
+            let member = Member::new_for_robot(worldboss_temp.robot_id, 2, Some(3));
+            room.robots.insert(member.get_user_id());
+            let _ = room.add_member(member, Some(3), false);
         }
     }
 }

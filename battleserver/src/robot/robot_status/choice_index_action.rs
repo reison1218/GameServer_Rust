@@ -63,6 +63,9 @@ impl RobotStatusAction for ChoiceIndexRobotAction {
             if map_cell.id <= MapCellType::UnUse.into_u32() {
                 continue;
             }
+            if map_cell.index == battle_data.tile_map.world_boss_init_index {
+                continue;
+            }
             v.push(index);
         }
         let mut rand = rand::thread_rng();

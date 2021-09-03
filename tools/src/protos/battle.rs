@@ -1522,6 +1522,7 @@ impl ::protobuf::reflect::ProtobufValue for S_ACTION_NOTICE {
 #[derive(PartialEq,Clone,Default)]
 pub struct S_BATTLE_TURN_NOTICE {
     // message fields
+    pub cycle_count: u32,
     pub user_id: u32,
     pub battle_players: ::protobuf::RepeatedField<super::base::BattlePlayerPt>,
     pub cell_buffs: ::protobuf::RepeatedField<super::base::CellBuffPt>,
@@ -1541,7 +1542,22 @@ impl S_BATTLE_TURN_NOTICE {
         ::std::default::Default::default()
     }
 
-    // uint32 user_id = 1;
+    // uint32 cycle_count = 1;
+
+
+    pub fn get_cycle_count(&self) -> u32 {
+        self.cycle_count
+    }
+    pub fn clear_cycle_count(&mut self) {
+        self.cycle_count = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cycle_count(&mut self, v: u32) {
+        self.cycle_count = v;
+    }
+
+    // uint32 user_id = 2;
 
 
     pub fn get_user_id(&self) -> u32 {
@@ -1556,7 +1572,7 @@ impl S_BATTLE_TURN_NOTICE {
         self.user_id = v;
     }
 
-    // repeated .protos.BattlePlayerPt battle_players = 2;
+    // repeated .protos.BattlePlayerPt battle_players = 3;
 
 
     pub fn get_battle_players(&self) -> &[super::base::BattlePlayerPt] {
@@ -1581,7 +1597,7 @@ impl S_BATTLE_TURN_NOTICE {
         ::std::mem::replace(&mut self.battle_players, ::protobuf::RepeatedField::new())
     }
 
-    // repeated .protos.CellBuffPt cell_buffs = 3;
+    // repeated .protos.CellBuffPt cell_buffs = 4;
 
 
     pub fn get_cell_buffs(&self) -> &[super::base::CellBuffPt] {
@@ -1631,12 +1647,19 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.user_id = tmp;
+                    self.cycle_count = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.user_id = tmp;
                 },
                 3 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
+                },
+                4 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.cell_buffs)?;
                 },
                 _ => {
@@ -1651,8 +1674,11 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.cycle_count != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.cycle_count, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.user_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.user_id, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, self.user_id, ::protobuf::wire_format::WireTypeVarint);
         }
         for value in &self.battle_players {
             let len = value.compute_size();
@@ -1668,16 +1694,19 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.cycle_count != 0 {
+            os.write_uint32(1, self.cycle_count)?;
+        }
         if self.user_id != 0 {
-            os.write_uint32(1, self.user_id)?;
+            os.write_uint32(2, self.user_id)?;
         }
         for v in &self.battle_players {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
         for v in &self.cell_buffs {
-            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
@@ -1720,6 +1749,11 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                "cycle_count",
+                |m: &S_BATTLE_TURN_NOTICE| { &m.cycle_count },
+                |m: &mut S_BATTLE_TURN_NOTICE| { &mut m.cycle_count },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
                 "user_id",
                 |m: &S_BATTLE_TURN_NOTICE| { &m.user_id },
                 |m: &mut S_BATTLE_TURN_NOTICE| { &mut m.user_id },
@@ -1750,6 +1784,7 @@ impl ::protobuf::Message for S_BATTLE_TURN_NOTICE {
 
 impl ::protobuf::Clear for S_BATTLE_TURN_NOTICE {
     fn clear(&mut self) {
+        self.cycle_count = 0;
         self.user_id = 0;
         self.battle_players.clear();
         self.cell_buffs.clear();
@@ -2184,7 +2219,7 @@ pub struct S_MAP_REFRESH_NOTICE {
     pub room_status: u32,
     pub tile_map_id: u32,
     pub world_cell: ::protobuf::RepeatedField<super::base::WorldCellPt>,
-    pub battle_players: ::protobuf::RepeatedField<super::base::BattlePlayerPt>,
+    pub index_cters: ::protobuf::RepeatedField<super::base::IndexCter>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -2256,29 +2291,29 @@ impl S_MAP_REFRESH_NOTICE {
         ::std::mem::replace(&mut self.world_cell, ::protobuf::RepeatedField::new())
     }
 
-    // repeated .protos.BattlePlayerPt battle_players = 4;
+    // repeated .protos.IndexCter index_cters = 4;
 
 
-    pub fn get_battle_players(&self) -> &[super::base::BattlePlayerPt] {
-        &self.battle_players
+    pub fn get_index_cters(&self) -> &[super::base::IndexCter] {
+        &self.index_cters
     }
-    pub fn clear_battle_players(&mut self) {
-        self.battle_players.clear();
+    pub fn clear_index_cters(&mut self) {
+        self.index_cters.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_battle_players(&mut self, v: ::protobuf::RepeatedField<super::base::BattlePlayerPt>) {
-        self.battle_players = v;
+    pub fn set_index_cters(&mut self, v: ::protobuf::RepeatedField<super::base::IndexCter>) {
+        self.index_cters = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_battle_players(&mut self) -> &mut ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
-        &mut self.battle_players
+    pub fn mut_index_cters(&mut self) -> &mut ::protobuf::RepeatedField<super::base::IndexCter> {
+        &mut self.index_cters
     }
 
     // Take field
-    pub fn take_battle_players(&mut self) -> ::protobuf::RepeatedField<super::base::BattlePlayerPt> {
-        ::std::mem::replace(&mut self.battle_players, ::protobuf::RepeatedField::new())
+    pub fn take_index_cters(&mut self) -> ::protobuf::RepeatedField<super::base::IndexCter> {
+        ::std::mem::replace(&mut self.index_cters, ::protobuf::RepeatedField::new())
     }
 }
 
@@ -2289,7 +2324,7 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
                 return false;
             }
         };
-        for v in &self.battle_players {
+        for v in &self.index_cters {
             if !v.is_initialized() {
                 return false;
             }
@@ -2319,7 +2354,7 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.world_cell)?;
                 },
                 4 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.battle_players)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.index_cters)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -2343,7 +2378,7 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
-        for value in &self.battle_players {
+        for value in &self.index_cters {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
@@ -2364,7 +2399,7 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
-        for v in &self.battle_players {
+        for v in &self.index_cters {
             os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
@@ -2422,10 +2457,10 @@ impl ::protobuf::Message for S_MAP_REFRESH_NOTICE {
                 |m: &S_MAP_REFRESH_NOTICE| { &m.world_cell },
                 |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.world_cell },
             ));
-            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::BattlePlayerPt>>(
-                "battle_players",
-                |m: &S_MAP_REFRESH_NOTICE| { &m.battle_players },
-                |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.battle_players },
+            fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<super::base::IndexCter>>(
+                "index_cters",
+                |m: &S_MAP_REFRESH_NOTICE| { &m.index_cters },
+                |m: &mut S_MAP_REFRESH_NOTICE| { &mut m.index_cters },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<S_MAP_REFRESH_NOTICE>(
                 "S_MAP_REFRESH_NOTICE",
@@ -2446,7 +2481,7 @@ impl ::protobuf::Clear for S_MAP_REFRESH_NOTICE {
         self.room_status = 0;
         self.tile_map_id = 0;
         self.world_cell.clear();
-        self.battle_players.clear();
+        self.index_cters.clear();
         self.unknown_fields.clear();
     }
 }
@@ -3208,26 +3243,27 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     =\n\x0ebattle_players\x18\x01\x20\x03(\x0b2\x16.protos.BattlePlayerPtR\r\
     battlePlayers\x12\x19\n\x08map_data\x18\x02\x20\x01(\tR\x07mapData\"J\n\
     \x0fS_ACTION_NOTICE\x127\n\x0caction_uints\x18\x01\x20\x03(\x0b2\x14.pro\
-    tos.ActionUnitPtR\x0bactionUints\"\xa1\x01\n\x14S_BATTLE_TURN_NOTICE\x12\
-    \x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12=\n\x0ebattle_players\
-    \x18\x02\x20\x03(\x0b2\x16.protos.BattlePlayerPtR\rbattlePlayers\x121\n\
-    \ncell_buffs\x18\x03\x20\x03(\x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\
-    \n\x05C_POS\x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08s\
-    kill_id\x18\x02\x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\
-    \x07cter_id\x18\x01\x20\x01(\rR\x06cterId\x12\x12\n\x04type\x18\x02\x20\
-    \x01(\rR\x04type\x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\
-    \xca\x01\n\x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\
-    \x01(\rR\nroomStatus\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileM\
-    apId\x122\n\nworld_cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tw\
-    orldCell\x12=\n\x0ebattle_players\x18\x04\x20\x03(\x0b2\x16.protos.Battl\
-    ePlayerPtR\rbattlePlayers\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary_datas\
-    \x18\x01\x20\x03(\x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"k\n\
-    \x10S_MISSION_NOTICE\x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\
-    \x12\x1d\n\nmission_id\x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnotic\
-    e_type\x18\x03\x20\x01(\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchandi\
-    se_id\x18\x01\x20\x01(\rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\n\
-    \x07user_id\x18\x01\x20\x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\
-    \x02\x20\x01(\rR\rmerchandiseIdb\x06proto3\
+    tos.ActionUnitPtR\x0bactionUints\"\xc2\x01\n\x14S_BATTLE_TURN_NOTICE\x12\
+    \x1f\n\x0bcycle_count\x18\x01\x20\x01(\rR\ncycleCount\x12\x17\n\x07user_\
+    id\x18\x02\x20\x01(\rR\x06userId\x12=\n\x0ebattle_players\x18\x03\x20\
+    \x03(\x0b2\x16.protos.BattlePlayerPtR\rbattlePlayers\x121\n\ncell_buffs\
+    \x18\x04\x20\x03(\x0b2\x12.protos.CellBuffPtR\tcellBuffs\"6\n\x05C_POS\
+    \x12\x12\n\x04type\x18\x01\x20\x01(\rR\x04type\x12\x19\n\x08skill_id\x18\
+    \x02\x20\x01(\rR\x07skillId\"V\n\x0cS_POS_NOTICE\x12\x17\n\x07cter_id\
+    \x18\x01\x20\x01(\rR\x06cterId\x12\x12\n\x04type\x18\x02\x20\x01(\rR\x04\
+    type\x12\x19\n\x08skill_id\x18\x03\x20\x01(\rR\x07skillId\"\xbf\x01\n\
+    \x14S_MAP_REFRESH_NOTICE\x12\x1f\n\x0broom_status\x18\x01\x20\x01(\rR\nr\
+    oomStatus\x12\x1e\n\x0btile_map_id\x18\x02\x20\x01(\rR\ttileMapId\x122\n\
+    \nworld_cell\x18\x03\x20\x03(\x0b2\x13.protos.WorldCellPtR\tworldCell\
+    \x122\n\x0bindex_cters\x18\x04\x20\x03(\x0b2\x11.protos.IndexCterR\ninde\
+    xCters\"N\n\x10S_SUMMARY_NOTICE\x12:\n\rsummary_datas\x18\x01\x20\x03(\
+    \x0b2\x15.protos.SummaryDataPtR\x0csummaryDatas\"k\n\x10S_MISSION_NOTICE\
+    \x12\x17\n\x07user_id\x18\x01\x20\x01(\rR\x06userId\x12\x1d\n\nmission_i\
+    d\x18\x02\x20\x01(\rR\tmissionId\x12\x1f\n\x0bnotice_type\x18\x03\x20\
+    \x01(\rR\nnoticeType\".\n\x05C_BUY\x12%\n\x0emerchandise_id\x18\x01\x20\
+    \x01(\rR\rmerchandiseId\"N\n\x0cS_BUY_NOTICE\x12\x17\n\x07user_id\x18\
+    \x01\x20\x01(\rR\x06userId\x12%\n\x0emerchandise_id\x18\x02\x20\x01(\rR\
+    \rmerchandiseIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

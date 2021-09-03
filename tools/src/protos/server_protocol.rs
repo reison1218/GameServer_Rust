@@ -2486,6 +2486,193 @@ impl ::protobuf::reflect::ProtobufValue for G_S_MODIFY_NICK_NAME {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct UPDATE_WORLD_BOSS_PUSH {
+    // message fields
+    pub world_boss_id: i32,
+    pub next_update_time: u64,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a UPDATE_WORLD_BOSS_PUSH {
+    fn default() -> &'a UPDATE_WORLD_BOSS_PUSH {
+        <UPDATE_WORLD_BOSS_PUSH as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl UPDATE_WORLD_BOSS_PUSH {
+    pub fn new() -> UPDATE_WORLD_BOSS_PUSH {
+        ::std::default::Default::default()
+    }
+
+    // int32 world_boss_id = 1;
+
+
+    pub fn get_world_boss_id(&self) -> i32 {
+        self.world_boss_id
+    }
+    pub fn clear_world_boss_id(&mut self) {
+        self.world_boss_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_world_boss_id(&mut self, v: i32) {
+        self.world_boss_id = v;
+    }
+
+    // uint64 next_update_time = 2;
+
+
+    pub fn get_next_update_time(&self) -> u64 {
+        self.next_update_time
+    }
+    pub fn clear_next_update_time(&mut self) {
+        self.next_update_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_next_update_time(&mut self, v: u64) {
+        self.next_update_time = v;
+    }
+}
+
+impl ::protobuf::Message for UPDATE_WORLD_BOSS_PUSH {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int32()?;
+                    self.world_boss_id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.next_update_time = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.world_boss_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.world_boss_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.next_update_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.next_update_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.world_boss_id != 0 {
+            os.write_int32(1, self.world_boss_id)?;
+        }
+        if self.next_update_time != 0 {
+            os.write_uint64(2, self.next_update_time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> UPDATE_WORLD_BOSS_PUSH {
+        UPDATE_WORLD_BOSS_PUSH::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                "world_boss_id",
+                |m: &UPDATE_WORLD_BOSS_PUSH| { &m.world_boss_id },
+                |m: &mut UPDATE_WORLD_BOSS_PUSH| { &mut m.world_boss_id },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "next_update_time",
+                |m: &UPDATE_WORLD_BOSS_PUSH| { &m.next_update_time },
+                |m: &mut UPDATE_WORLD_BOSS_PUSH| { &mut m.next_update_time },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<UPDATE_WORLD_BOSS_PUSH>(
+                "UPDATE_WORLD_BOSS_PUSH",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static UPDATE_WORLD_BOSS_PUSH {
+        static instance: ::protobuf::rt::LazyV2<UPDATE_WORLD_BOSS_PUSH> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(UPDATE_WORLD_BOSS_PUSH::new)
+    }
+}
+
+impl ::protobuf::Clear for UPDATE_WORLD_BOSS_PUSH {
+    fn clear(&mut self) {
+        self.world_boss_id = 0;
+        self.next_update_time = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for UPDATE_WORLD_BOSS_PUSH {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for UPDATE_WORLD_BOSS_PUSH {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x15server_protocol.proto\x12\x06protos\x1a\nbase.proto\"4\n\tR_B_STAR\
     T\x12'\n\x07room_pt\x18\x01\x20\x01(\x0b2\x0e.protos.RoomPtR\x06roomPt\"\
@@ -2514,7 +2701,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     N\x12\x1b\n\tseason_id\x18\x01\x20\x01(\x05R\x08seasonId\x12\x14\n\x05ro\
     und\x18\x02\x20\x01(\rR\x05round\x12(\n\x10next_update_time\x18\x03\x20\
     \x01(\x04R\x0enextUpdateTime\"3\n\x14G_S_MODIFY_NICK_NAME\x12\x1b\n\tnic\
-    k_name\x18\x01\x20\x01(\tR\x08nickNameb\x06proto3\
+    k_name\x18\x01\x20\x01(\tR\x08nickName\"f\n\x16UPDATE_WORLD_BOSS_PUSH\
+    \x12\"\n\rworld_boss_id\x18\x01\x20\x01(\x05R\x0bworldBossId\x12(\n\x10n\
+    ext_update_time\x18\x02\x20\x01(\x04R\x0enextUpdateTimeb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

@@ -132,3 +132,29 @@ impl HttpServerHandler for UpdateSeasonHandler {
         Ok(value)
     }
 }
+
+pub struct UpdateWorldBossHandler {
+    gm: Lock,
+}
+
+impl UpdateWorldBossHandler {
+    pub fn new(gm: Lock) -> Self {
+        UpdateWorldBossHandler { gm }
+    }
+}
+
+impl HttpServerHandler for UpdateWorldBossHandler {
+    fn get_path(&self) -> &str {
+        "update_world_boss"
+    }
+
+    fn execute(
+        &mut self,
+        data: Option<Value>,
+    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+        let mut lock = block_on(self.gm.lock());
+        lock.notice_update_worldboss(data.unwrap());
+        let value = json!({ "status":"OK" });
+        Ok(value)
+    }
+}

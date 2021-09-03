@@ -9,18 +9,19 @@ use tools::{
     templates::character_temp::{CharacterTemp, TransformInheritType},
 };
 
-use crate::room::member::Member;
 use crate::TEMPLATES;
+use crate::{battle::battle_enum::buff_type::SUB_MOVE_POINT, room::member::Member};
 
 use super::{
-    battle::Item,
+    battle::{DayNight, Item},
     battle_buff::Buff,
     battle_enum::{
         buff_type::{
             ADD_ATTACK, ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED, CHANGE_SKILL,
-            GD_ATTACK_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, SUB_ATTACK_DAMAGE,
+            DAY_SKILLS, GD_ATTACK_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NIGHT_SKILLS,
+            SUB_ATTACK_DAMAGE,
         },
-        BattleCterState,
+        BattleCterState, FromType,
     },
     battle_player::{IndexData, TransformInheritValue},
     battle_skill::Skill,
@@ -45,10 +46,10 @@ pub struct BaseAttr {
 ///角色战斗buff
 #[derive(Clone, Debug, Default)]
 pub struct BattleBuff {
-    buffs: HashMap<u32, Buff>,          //角色身上的buff
-    passive_buffs: HashMap<u32, Buff>,  //被动技能id
-    add_damage_buffs: HashMap<u32, u8>, //伤害加深buff key:buffid value:叠加次数
-    sub_damage_buffs: HashMap<u32, u8>, //减伤buff  key:buffid value:叠加次数
+    buffs: HashMap<u32, Buff>,           //角色身上的buff
+    passive_buffs: HashMap<u32, Buff>,   //被动技能id
+    add_damage_buffs: HashMap<u32, u32>, //伤害加深buff key:buffid value:叠加次数
+    sub_damage_buffs: HashMap<u32, u32>, //减伤buff  key:buffid value:叠加次数
 }
 
 impl BattleBuff {
@@ -72,8 +73,8 @@ impl BattleBuff {
         if !self.add_damage_buffs.contains_key(&buff_id) {
             self.add_damage_buffs.insert(buff_id, 1);
         } else {
-            let res = self.add_damage_buffs.get(&buff_id).unwrap();
-            let res = *res + 1;
+            let &res = self.add_damage_buffs.get(&buff_id).unwrap();
+            let res = res + 1;
             self.add_damage_buffs.insert(buff_id, res);
         }
     }
@@ -82,8 +83,8 @@ impl BattleBuff {
         if !self.sub_damage_buffs.contains_key(&buff_id) {
             self.sub_damage_buffs.insert(buff_id, 1);
         } else {
-            let res = self.sub_damage_buffs.get(&buff_id).unwrap();
-            let res = *res + 1;
+            let &res = self.sub_damage_buffs.get(&buff_id).unwrap();
+            let res = res + 1;
             self.sub_damage_buffs.insert(buff_id, res);
         }
     }
@@ -92,7 +93,7 @@ impl BattleBuff {
         self.buffs.insert(buff.get_id(), buff);
     }
 
-    pub fn sub_damage_buffs(&self) -> &HashMap<u32, u8> {
+    pub fn sub_damage_buffs(&self) -> &HashMap<u32, u32> {
         &self.sub_damage_buffs
     }
 
@@ -136,9 +137,10 @@ pub struct BattleCharacter {
     pub items: HashMap<u32, Item>,                         //角色身上的道具
     pub self_transform_cter: Option<Box<BattleCharacter>>, //自己变身的角色
     pub self_cter: Option<Box<BattleCharacter>>,           //原本的角色
-    pub owner: Option<(u32, u32)>,                         //主人id,技能id
+    pub owner: Option<(u32, FromType)>,                    //主人id,来源类型
     pub minons: HashSet<u32>,                              //宠物id
     pub is_major: bool,                                    //是否是主角色
+    pub day_night: DayNight,                               //当前角色日夜状态，用于切换技能和buff
 }
 
 tools::get_mut_ref!(BattleCharacter);
@@ -155,7 +157,10 @@ impl BattleCharacter {
         for skill_id in cter.skills.iter() {
             let res = skill_ref.temps.get(skill_id);
             if res.is_none() {
-                let str = format!("there is no skill for skill_id:{}!", skill_id);
+                let str = format!(
+                    "there is no skill for skill_id:{}!cter_temp_id:{}",
+                    skill_id, cter_temp_id
+                );
                 warn!("{:?}", str.as_str());
                 anyhow::bail!(str)
             }
@@ -195,7 +200,7 @@ impl BattleCharacter {
         user_id: u32,
         team_id: u8,
         from_cter_id: u32,
-        from_skill_id: u32,
+        from_type: FromType,
         cter_id: u32,
         cter_temp_id: u32,
         index: usize,
@@ -239,7 +244,7 @@ impl BattleCharacter {
         battle_cter.base_attr.item_max = cter_temp.usable_item_count;
         battle_cter.base_attr.team_id = team_id;
         battle_cter.is_major = false;
-        battle_cter.owner = Some((from_cter_id, from_skill_id));
+        battle_cter.owner = Some((from_cter_id, from_type));
         battle_cter.index_data.map_cell_index = Some(index);
         cter_temp.passive_buff.iter().for_each(|buff_id| {
             let buff_temp = buff_ref.temps.get(buff_id).unwrap();
@@ -249,6 +254,25 @@ impl BattleCharacter {
         });
         Ok(battle_cter)
     }
+
+    pub fn get_day_night_buff(&self, day_night: DayNight) -> Option<&Buff> {
+        for buff in self.battle_buffs.buffs().values() {
+            match day_night {
+                DayNight::Day => {
+                    if buff.function_id == DAY_SKILLS {
+                        return Some(buff);
+                    }
+                }
+                DayNight::Night => {
+                    if buff.function_id == NIGHT_SKILLS {
+                        return Some(buff);
+                    }
+                }
+            }
+        }
+        None
+    }
+
     pub fn can_be_move(&self) -> bool {
         let mut buff_function_id;
         for buff in self.battle_buffs.buffs().values() {
@@ -596,8 +620,8 @@ impl BattleCharacter {
             .values()
             .for_each(|buff| battle_cter_pt.buffs.push(buff.get_id()));
         self.skills
-            .keys()
-            .for_each(|&skill_id| battle_cter_pt.skills.push(skill_id));
+            .values()
+            .for_each(|skill| battle_cter_pt.skills.push(skill.into()));
         self.items
             .keys()
             .for_each(|&item_id| battle_cter_pt.items.push(item_id));
@@ -629,13 +653,14 @@ impl BattleCharacter {
         }
 
         //拷贝需要继承的属性
-        let transform_inherits = transform_inherit_copy(self, clone.base_attr.cter_temp_id);
-
+        let transform_att_inherits = transform_att_inherit_copy(self, clone.base_attr.cter_temp_id);
+        //拷贝需要继承的buff
+        let transform_buff_inherits = transform_buff_inherit_copy(self);
         //开始数据转换
         let _ = std::mem::replace(self, *clone);
 
         //处理保留数据
-        self.transform_inherit(transform_inherits);
+        self.transform_inherit(transform_att_inherits, transform_buff_inherits);
 
         //如果是从自己变身的角色变回去，则清空自己变身角色
         if is_self_transform {
@@ -651,8 +676,12 @@ impl BattleCharacter {
     }
 
     ///处理变身继承
-    pub fn transform_inherit(&mut self, transform_inherits: Vec<TransformInherit>) {
-        for ti in transform_inherits {
+    pub fn transform_inherit(
+        &mut self,
+        transform_att_inherits: Vec<TransformInherit>,
+        transform_buff_inherits: Vec<Buff>,
+    ) {
+        for ti in transform_att_inherits {
             let ti_type = ti.0;
             match ti_type {
                 TransformInheritType::Hp => {
@@ -670,6 +699,9 @@ impl BattleCharacter {
                 _ => {}
             }
         }
+        for buff in transform_buff_inherits {
+            self.battle_buffs.buffs.insert(buff.get_id(), buff);
+        }
     }
 
     ///变身
@@ -686,17 +718,21 @@ impl BattleCharacter {
         }
         let cter_temp = cter_temp.unwrap();
         //拷贝需要继承的属性
-        let transform_inherits = transform_inherit_copy(self, cter_temp_id);
+        let transform_inherits = transform_att_inherit_copy(self, cter_temp_id);
+
+        //拷贝需要继承的buff
+        let transform_buff_inherits = transform_buff_inherit_copy(self);
 
         //保存原本角色
         if self.self_cter.is_none() {
             self.self_cter = Some(Box::new(self.clone()));
         }
+
         //初始化数据成另外一个角色
         self.init_from_temp(cter_temp);
 
         //将继承属性给当前角色
-        self.transform_inherit(transform_inherits);
+        self.transform_inherit(transform_inherits, transform_buff_inherits);
 
         //给新变身加变身buff
         let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
@@ -740,7 +776,7 @@ impl BattleCharacter {
 
 pub struct TransformInherit(TransformInheritType, TransformInheritValue);
 
-pub fn transform_inherit_copy(
+pub fn transform_att_inherit_copy(
     battle_cter: &BattleCharacter,
     target_cter_temp_id: u32,
 ) -> Vec<TransformInherit> {
@@ -775,5 +811,22 @@ pub fn transform_inherit_copy(
         v.push(TransformInherit(ti_type, res));
     }
 
+    v
+}
+
+pub fn transform_buff_inherit_copy(battle_cter: &mut BattleCharacter) -> Vec<Buff> {
+    let mut v = vec![];
+    let mut buff_function_id;
+    let mut need_remove = vec![];
+    for buff in battle_cter.battle_buffs.buffs().values() {
+        buff_function_id = buff.function_id;
+        if buff_function_id == SUB_MOVE_POINT {
+            v.push(buff.clone());
+            need_remove.push(buff.get_id());
+        }
+    }
+    for buff_id in need_remove {
+        battle_cter.remove_buff(buff_id);
+    }
     v
 }

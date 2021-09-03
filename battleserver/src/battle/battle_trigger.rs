@@ -21,18 +21,24 @@ use tools::macros::GetMutRef;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::protos::battle::S_ACTION_NOTICE;
 
+use super::battle::DayNight;
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
-    ATTACKED_SUB_CD, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, SUICIDE_SKILL_DAMAGE,
+    ALL_CROW_DIE_REFRESH_SKILL_CD, ATTACKED_SUB_CD, CROW_ALIVE_ADD_ATTACK, DAY_SKILLS,
+    NIGHT_SKILLS, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, ROUND_CHANGE_SKILL, SUICIDE_SKILL_DAMAGE,
+    SUMMON_CROW,
 };
 use super::battle_enum::buff_type::{DIE_END_TURN, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
-use super::battle_enum::TargetType;
+use super::battle_enum::{FromType, TargetType};
 use super::battle_helper::build_action_unit_pt;
 use super::mission::{trigger_mission, MissionTriggerType};
 
 ///触发事件trait
 pub trait TriggerEvent {
+    ///round开始时候触发
+    fn round_start_trigger(&mut self);
+
     ///回合开始时候触发，主要触发buff
     fn turn_start_trigger(&mut self);
 
@@ -94,7 +100,7 @@ pub trait TriggerEvent {
     fn buff_lost_trigger(&mut self, cter_id: u32, buff_id: u32);
 
     ///角色死亡触发
-    fn after_cter_died_trigger(&mut self, cter_id: u32);
+    fn after_cter_died_trigger(&mut self, cter_id: u32) -> Option<TargetPt>;
 
     ///玩家死亡触发
     fn after_player_died_trigger(
@@ -128,6 +134,11 @@ impl BattleData {
                 let buff_id = buff.get_id();
                 let buff_function_id = buff.function_id;
                 let mut target_pt = None;
+                let mut aup = build_action_unit_pt(
+                    buff.from_cter.unwrap(),
+                    ActionType::Buff,
+                    Some(buff.get_id()),
+                );
                 //判断是否是上buff的陷阱
                 if TRAP_ADD_BUFF.contains(&buff_function_id) {
                     let buff_id = buff.buff_temp.par1;
@@ -156,10 +167,19 @@ impl BattleData {
                         &mut target_pt_temp,
                         true,
                     );
-                    if let Err(e) = res {
-                        error!("{:?}", e);
-                        continue;
+
+                    match res {
+                        Ok((_, other_target_pts)) => {
+                            for i in other_target_pts {
+                                aup.targets.push(i);
+                            }
+                        }
+                        Err(e) => {
+                            error!("{:?}", e);
+                            continue;
+                        }
                     }
+
                     target_pt = Some(target_pt_temp);
                 }
 
@@ -171,8 +191,6 @@ impl BattleData {
                 }
                 let mut target_pt = target_pt.unwrap();
 
-                let mut aup =
-                    build_action_unit_pt(buff.from_cter.unwrap(), ActionType::Buff, buff.get_id());
                 let lost_buff = self.consume_buff(buff_id, None, Some(index), false);
                 if let Some(lost_buff) = lost_buff {
                     target_pt.lost_buffs.push(lost_buff);
@@ -374,7 +392,8 @@ impl TriggerEvent for BattleData {
                         if index != res {
                             continue;
                         }
-
+                        let mut other_aupt =
+                            build_action_unit_pt(other_cter_id, ActionType::Buff, Some(buff_id));
                         unsafe {
                             let mut target_pt = self.new_target_pt(target_cter).unwrap();
                             let res = self_mut.deduct_hp(
@@ -384,12 +403,18 @@ impl TriggerEvent for BattleData {
                                 &mut target_pt,
                                 true,
                             );
-                            if let Err(e) = res {
-                                error!("{:?}", e);
+
+                            match res {
+                                Ok((_, other_target_pts)) => {
+                                    for i in other_target_pts {
+                                        other_aupt.targets.push(i);
+                                    }
+                                }
+                                Err(e) => {
+                                    error!("{:?}", e);
+                                }
                             }
 
-                            let mut other_aupt =
-                                build_action_unit_pt(other_cter_id, ActionType::Buff, buff_id);
                             other_aupt.targets.push(target_pt);
                             v.push((0, other_aupt));
                             break;
@@ -659,13 +684,18 @@ impl TriggerEvent for BattleData {
                                 )
                                 .unwrap();
                             target_pt.effects.clear();
-                            let _ = battle_data_ptr.as_mut().unwrap().deduct_hp(
+                            let res = battle_data_ptr.as_mut().unwrap().deduct_hp(
                                 target_cter_id,
                                 cter_id,
                                 Some(damage as i16),
                                 &mut target_pt,
                                 true,
                             );
+                            if let Ok((_, res)) = res {
+                                for i in res {
+                                    v.push(i);
+                                }
+                            }
                             v.push(target_pt);
                         }
                     }
@@ -726,7 +756,8 @@ impl TriggerEvent for BattleData {
     }
 
     ///此函数只管角色死亡，不要管玩家死亡
-    fn after_cter_died_trigger(&mut self, cter_id: u32) {
+    fn after_cter_died_trigger(&mut self, cter_id: u32) -> Option<TargetPt> {
+        let mut target_pt_res = None;
         let map_cell = self.tile_map.get_map_cell_mut_by_cter_id(cter_id);
         if let Some(map_cell) = map_cell {
             map_cell.cter_id = 0;
@@ -736,7 +767,7 @@ impl TriggerEvent for BattleData {
         let battle_cter = self.get_battle_cter(cter_id, false);
         if let Err(e) = battle_cter {
             warn!("{:?}", e);
-            return;
+            return target_pt_res;
         }
         let battle_cter = battle_cter.unwrap();
         //是否主角色
@@ -746,13 +777,16 @@ impl TriggerEvent for BattleData {
         //是否是主人
         let is_owner = !battle_cter.minons.is_empty();
 
+        let cter_temp_id = battle_cter.get_cter_temp_id();
+
         //-----------------------以下处理召唤物相关的死亡逻辑
         //如果是随从死了，就触发相关buff
         if is_minon {
-            let (owner_cter_id, from_skill_id) = battle_cter.owner.unwrap();
+            let (owner_cter_id, from_type) = battle_cter.owner.unwrap();
             unsafe {
                 let self_mut = self_mut_ptr.as_mut().unwrap();
                 let owner_battle_cter = self_mut.get_battle_cter_mut(owner_cter_id, true).unwrap();
+                let owner_cter_index = owner_battle_cter.get_map_cell_index();
                 //删除宠物id
                 owner_battle_cter.minons.remove(&cter_id);
                 let battle_player = self_mut_ptr
@@ -762,8 +796,63 @@ impl TriggerEvent for BattleData {
                     .unwrap();
                 battle_player.cters.remove(&cter_id);
                 if owner_battle_cter.minons.is_empty() {
-                    let skill = owner_battle_cter.skills.get_mut(&from_skill_id).unwrap();
-                    skill.is_active = false;
+                    match from_type {
+                        FromType::Skill(skill_id) => {
+                            let skill = owner_battle_cter.skills.get_mut(&skill_id).unwrap();
+                            skill.is_active = false;
+                        }
+                        _ => {}
+                    }
+                }
+
+                for buff in owner_battle_cter.battle_buffs.buffs().values() {
+                    if buff.function_id == SUMMON_CROW {
+                        let crow_buff = crate::TEMPLATES
+                            .buff_temp_mgr()
+                            .get_temp(&buff.get_id())
+                            .unwrap();
+                        let crow_temp_id = crow_buff.par1;
+
+                        //判断是否是小乌鸦
+                        if cter_temp_id == crow_temp_id {
+                            let count = self.get_minon_count(crow_temp_id);
+                            if count == 0 {
+                                let mut buff_function_id;
+                                let mut buff_id;
+                                for buff in owner_battle_cter.battle_buffs.buffs().values() {
+                                    buff_function_id = buff.function_id;
+                                    buff_id = buff.get_id();
+                                    if buff_function_id == ALL_CROW_DIE_REFRESH_SKILL_CD {
+                                        let day_night = self.get_day_night();
+                                        let refresh_skill_id;
+                                        match day_night {
+                                            DayNight::Day => {
+                                                refresh_skill_id = buff.buff_temp.par1;
+                                            }
+                                            DayNight::Night => {
+                                                refresh_skill_id = buff.buff_temp.par2;
+                                            }
+                                        }
+                                        let mut target_pt = TargetPt::new();
+                                        target_pt.target_value.push(owner_cter_index as u32);
+                                        let mut tep = TriggerEffectPt::new();
+
+                                        let skill = owner_battle_cter
+                                            .skills
+                                            .get_mut(&refresh_skill_id)
+                                            .unwrap();
+                                        tep.set_field_type(EffectType::RefreshSkillCd.into_u32());
+                                        tep.buff_id = buff_id;
+                                        tep.set_value(skill.id);
+                                        skill.clean_cd();
+                                        target_pt.passiveEffect.push(tep);
+                                        target_pt_res = Some(target_pt);
+                                    }
+                                }
+                            } else {
+                            }
+                        }
+                    }
                 }
 
                 let mut buff_function_id;
@@ -791,6 +880,7 @@ impl TriggerEvent for BattleData {
         if battle_player.current_cter.0 == cter_id {
             battle_player.current_cter = battle_player.major_cter;
         }
+        target_pt_res
     }
 
     ///此函数只管玩家死亡逻辑
@@ -957,111 +1047,211 @@ impl TriggerEvent for BattleData {
     }
 
     fn turn_start_trigger(&mut self) {
+        let frist_order_user_id = self.get_frist_order_user_id();
         let battle_player = self.get_battle_player_mut(None, true);
-        if let Ok(battle_player) = battle_player {
-            battle_player.turn_start_reset();
+        match battle_player {
+            Ok(battle_player) => {
+                battle_player.turn_start_reset();
+                if frist_order_user_id == battle_player.user_id {
+                    self.cycle_count += 1;
+                }
+            }
+            Err(_) => {}
         }
-        let mut res_cter_id = None;
-        let mut team_id = None;
-        let mut skill_demage = 0;
-        let mut buff_id = None;
         let turn_index = self.next_turn_index;
         let turn_user = self.get_turn_user(None).unwrap();
         let mut user_id;
-        for &cter_id in self.cter_player.keys() {
-            user_id = self.get_user_id(cter_id);
-            if user_id.is_none() {
-                continue;
-            }
-            //如果不是当前玩家的turn，直接跳过
-            if user_id.unwrap() != turn_user {
-                continue;
-            }
-            let battle_cter = self.get_battle_cter(cter_id, true);
-            if let Err(_) = battle_cter {
-                continue;
-            }
-            let battle_cter = battle_cter.unwrap();
-
-            let buff = battle_cter
-                .battle_buffs
-                .buffs()
-                .values()
-                .find(|buff| buff.function_id == SUICIDE_SKILL_DAMAGE);
-            if let None = buff {
-                continue;
-            }
-            let buff = buff.unwrap();
-            if buff.turn_index.is_none() {
-                continue;
-            }
-            if buff.turn_index.unwrap() != turn_index {
-                continue;
-            }
-            team_id = Some(battle_cter.base_attr.team_id);
-            skill_demage = battle_cter.base_attr.hp;
-            res_cter_id = Some(cter_id);
-            buff_id = Some(buff.get_id());
-            break;
-        }
-        //没有找到就直接返回
-        if res_cter_id.is_none() {
-            return;
-        }
-        let cter_id = res_cter_id.unwrap();
-        let mut target_pt = self
-            .build_target_pt(
-                Some(cter_id),
-                cter_id,
-                EffectType::SkillDamage,
-                skill_demage as u32,
-                Some(buff_id.unwrap()),
-            )
-            .unwrap();
         unsafe {
-            //扣血
-            let mut au = build_action_unit_pt(cter_id, ActionType::Buff, buff_id.unwrap());
+            let self_ptr = self as *mut BattleData;
+            let self_mut = self_ptr.as_mut().unwrap();
+            //判断该玩家回合的
+            for &cter_id in self.cter_player.keys() {
+                user_id = self.get_user_id(cter_id);
+                if user_id.is_none() {
+                    continue;
+                }
+                //如果不是当前玩家的turn，直接跳过
+                if user_id.unwrap() != turn_user {
+                    continue;
+                }
+                let battle_cter = self.get_battle_cter(cter_id, true);
+                if let Err(_) = battle_cter {
+                    continue;
+                }
+                let battle_cter = battle_cter.unwrap();
 
-            let cters = self.get_enemys(team_id.unwrap());
-            for target_cter_id in cters {
-                let mut _target_pt = self
-                    .build_target_pt(
-                        Some(cter_id),
-                        target_cter_id,
-                        EffectType::SkillDamage,
-                        skill_demage as u32,
-                        Some(buff_id.unwrap()),
-                    )
-                    .unwrap();
-                _target_pt.effects.clear();
-                let _ = self.deduct_hp(
-                    cter_id,
-                    target_cter_id,
-                    Some(skill_demage),
-                    &mut _target_pt,
-                    true,
-                );
-                au.targets.push(_target_pt);
+                let mut buff_id;
+                let mut buff_function_id;
+                for buff in battle_cter.battle_buffs.buffs().values() {
+                    buff_id = buff.get_id();
+                    buff_function_id = buff.function_id;
+                    match buff_function_id {
+                        SUICIDE_SKILL_DAMAGE => {
+                            if buff.turn_index.is_none() {
+                                continue;
+                            }
+                            if buff.turn_index.unwrap() != turn_index {
+                                continue;
+                            }
+                            self_mut.suicide_skill_damage(cter_id, buff_id);
+                        }
+                        CROW_ALIVE_ADD_ATTACK => {
+                            self_mut.crow_alive_add_attack(cter_id, buff_id);
+                        }
+                        _ => {
+                            continue;
+                        }
+                    }
+                }
             }
-            let _ = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
-            //此处不需要effect
-            target_pt.effects.clear();
-            au.targets.insert(0, target_pt);
-            let mut proto = S_ACTION_NOTICE::new();
-            proto.action_uints.push(au);
-            self.send_2_all_client(ClientCode::ActionNotice, proto.write_to_bytes().unwrap());
+
+            //判断周期的
+            for &cter_id in self.cter_player.keys() {
+                let battle_cter = self.get_battle_cter(cter_id, true);
+                if let Err(_) = battle_cter {
+                    continue;
+                }
+                let battle_cter = battle_cter.unwrap();
+                let mut buff_function_id;
+                for buff in battle_cter.battle_buffs.buffs().values() {
+                    buff_function_id = buff.function_id;
+                    match buff_function_id {
+                        DAY_SKILLS | NIGHT_SKILLS => {
+                            self_mut.day_night_change_skills(cter_id);
+                        }
+                        _ => {
+                            continue;
+                        }
+                    }
+                }
+            }
         }
     }
 
     fn turn_end_trigger(&mut self) {
         //清空翻开地图玩家id
         self.clear_open_cells();
+        let self_ptr = self as *mut BattleData;
         let battle_player = self.get_battle_player_mut(None, true);
         if battle_player.is_err() {
             return;
         }
         let battle_player = battle_player.unwrap();
+        let major_cter_id = battle_player.major_cter.0;
+
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            let mut buff;
+            let mut crow_count = 0;
+            let buff_temp = crate::TEMPLATES
+                .buff_temp_mgr()
+                .get_temp(&SUMMON_CROW)
+                .unwrap();
+            let count = buff_temp.par2;
+            for cter in battle_player.cters.values() {
+                buff = cter.battle_buffs.get_buff(SUMMON_CROW);
+                if buff.is_some() {
+                    crow_count = cter.minons.iter().count() as u32;
+                }
+            }
+            //如果不满足3个就召唤
+            if crow_count >= 1 && crow_count < 3 {
+                let mut au =
+                    build_action_unit_pt(major_cter_id, ActionType::Buff, Some(SUMMON_CROW));
+                let res = self_mut.summon_minon(
+                    major_cter_id,
+                    FromType::Buff(SUMMON_CROW),
+                    Some(count - crow_count),
+                    &mut au,
+                );
+
+                match res {
+                    Ok(res) => {
+                        let mut proto = S_ACTION_NOTICE::new();
+                        proto.action_uints.push(au);
+                        for (_, aupt) in res.1 {
+                            proto.action_uints.push(aupt);
+                        }
+                        let bytes = proto.write_to_bytes().unwrap();
+                        self_mut.send_2_all_client(ClientCode::ActionNotice, bytes);
+                    }
+                    Err(e) => warn!("{:?}", e),
+                }
+            }
+        }
+
         //turn结束重制
         battle_player.turn_end_reset();
+    }
+
+    fn round_start_trigger(&mut self) {
+        let mut buff_function_id;
+        //增加round
+        self.round += 1;
+        let round = self.round;
+        unsafe {
+            let self_ptr = self as *mut BattleData;
+            let self_mut = self_ptr.as_mut().unwrap();
+            for &cter_id in self_mut.cter_player.keys() {
+                let cter = self.get_battle_cter_mut(cter_id, true);
+                if cter.is_err() {
+                    continue;
+                }
+                let cter = cter.unwrap();
+                for buff in cter.battle_buffs.buffs().clone().values() {
+                    buff_function_id = buff.function_id;
+
+                    //round开始变技能
+                    if buff_function_id == ROUND_CHANGE_SKILL {
+                        let mut skills = vec![];
+                        skills.push(buff.buff_temp.par1);
+                        skills.push(buff.buff_temp.par2);
+                        skills.push(buff.buff_temp.par3);
+                        skills.push(buff.buff_temp.par4);
+
+                        let mut skill_id = 0;
+
+                        for id in skills {
+                            let skill_res = cter.skills.get(&id);
+                            if let Some(skill_res) = skill_res {
+                                skill_id = skill_res.id;
+                                break;
+                            }
+                        }
+                        let change_skill_id;
+                        let skill = cter.skills.get(&skill_id).unwrap();
+                        match round {
+                            2 => {
+                                change_skill_id = buff.buff_temp.par2;
+                            }
+                            3 => {
+                                change_skill_id = buff.buff_temp.par3;
+                            }
+                            i if i >= 4 => {
+                                change_skill_id = buff.buff_temp.par4;
+                            }
+                            _ => {
+                                change_skill_id = skill.id;
+                            }
+                        }
+                        //如果是原技能，就直接return
+                        if change_skill_id == skill_id {
+                            return;
+                        }
+                        let cd = skill.cd_times;
+                        let is_active = skill.is_active;
+                        cter.skills.remove(&skill_id);
+                        let change_skill_temp = crate::TEMPLATES
+                            .skill_temp_mgr()
+                            .get_temp(&change_skill_id)
+                            .unwrap();
+                        let mut change_skill = Skill::from(change_skill_temp);
+                        change_skill.cd_times = cd;
+                        change_skill.is_active = is_active;
+                        cter.skills.insert(change_skill.id, change_skill);
+                    }
+                }
+            }
+        }
     }
 }

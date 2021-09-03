@@ -4,7 +4,7 @@ use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, RoomCode, ServerCommonCode};
-use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON};
+use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON, UPDATE_WORLD_BOSS_PUSH};
 use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
@@ -71,6 +71,52 @@ impl GameCenterMgr {
         let res = self.get_rank_center_mut().send(bytes);
         if let Err(e) = res {
             warn!("{:?}", e);
+        }
+    }
+
+    ///通知更新服务器更新赛季
+    pub fn notice_update_worldboss(&mut self, value: Value) {
+        let map = value.as_object();
+        if let None = map {
+            return;
+        }
+        let map = map.unwrap();
+        let world_boss_id = map.get("cter_id");
+        if world_boss_id.is_none() {
+            warn!("the worldboss_id is None!");
+            return;
+        }
+        let world_boss_id = world_boss_id.unwrap();
+        let world_boss_id = world_boss_id.as_u64().unwrap() as i32;
+
+        let next_update_time = map.get("next_update_time");
+        if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
+            return;
+        }
+        let next_update_time = next_update_time.unwrap().as_u64();
+        if next_update_time.is_none() {
+            warn!("the next_update_time is None!");
+            return;
+        }
+        let next_update_time = next_update_time.unwrap();
+
+        let mut usn = UPDATE_WORLD_BOSS_PUSH::new();
+        usn.set_world_boss_id(world_boss_id);
+        usn.set_next_update_time(next_update_time);
+
+        let mut packet = Packet::new(RoomCode::UpdateWorldBossPush.into_u32(), 0, 0);
+        packet.set_is_client(false);
+        packet.set_is_broad(true);
+        packet.set_data(&usn.write_to_bytes().unwrap()[..]);
+        let bytes = packet.build_server_bytes();
+        let _ = self.get_room_center_mut().send(bytes);
+
+        packet.set_cmd(GameCode::UpdateWorldBossPush.into_u32());
+        let bytes = packet.build_server_bytes();
+        //推送给所有游戏服
+        for gate_client in self.gate_clients.values_mut() {
+            gate_client.send(bytes.as_slice());
         }
     }
 

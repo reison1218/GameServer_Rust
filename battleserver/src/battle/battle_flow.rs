@@ -43,13 +43,13 @@ impl BattleData {
             //如果房间就只有最后一个人了，直接计算
             need_summary = true;
             //如果达到结算条件，则进行结算
-            unsafe {
-                let self_mut = self_ptr.as_mut().unwrap();
-                if self_mut.room_type.is_boss_type() {
-                    self_mut.summary_for_world_boss();
-                } else {
-                    let mut user_id;
-                    for battle_player in self.battle_player.values_mut() {
+            if self.room_type.is_boss_type() {
+                self.summary_for_world_boss();
+            } else {
+                let mut user_id;
+                unsafe {
+                    let self_mut = self_ptr.as_mut().unwrap();
+                    for battle_player in self.battle_player.values() {
                         if battle_player.is_died() {
                             continue;
                         }
@@ -283,11 +283,7 @@ impl BattleData {
             warn!("the attack target can not be Self!user_id:{}", cter_id);
             anyhow::bail!("")
         }
-        let mut is_last_one = false;
 
-        if aoe_buff.is_none() {
-            is_last_one = true;
-        }
         let mut target_v = vec![];
         target_v.push((target_cter_id, DamageType::Attack(0)));
         //检查aoebuff
@@ -329,6 +325,7 @@ impl BattleData {
         battle_player.change_attack_none();
         //攻击奖励移动点数
         battle_player.attack_reward_movement_points();
+        au.set_is_reward_move_points(true);
         //触发翻地图块任务
         trigger_mission(
             self,
@@ -391,6 +388,8 @@ impl BattleData {
         self.last_map_id = res.id;
         self.tile_map = res;
         self.reflash_map_turn = Some(self.next_turn_index);
+        //回合开始的时候触发
+        self.round_start_trigger();
         Ok(())
     }
 
@@ -431,7 +430,7 @@ impl BattleData {
             let v = self_ptr
                 .as_mut()
                 .unwrap()
-                .handler_cter_move(cter_id, index, au);
+                .handler_cter_move(cter_id, index, au, true);
             if let Err(e) = v {
                 warn!("{:?}", e);
                 anyhow::bail!("{:?}", fail_err_str.as_str())
@@ -508,7 +507,7 @@ impl BattleData {
         let user_id = user_id.unwrap();
         unsafe {
             let self_mut = self;
-
+            self_mut.turn_start_trigger();
             //容错处理，如果没有地图块可以翻了，就允许不翻块的情况下结束turn
             if user_id > 0 {
                 let battle_player = self_mut.get_battle_player(Some(user_id), true);
@@ -570,7 +569,6 @@ impl BattleData {
                     );
                 }
             }
-            self_mut.turn_start_trigger();
         }
     }
 }

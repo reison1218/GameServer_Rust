@@ -4,6 +4,8 @@ use crate::battle::battle_enum::skill_type::{
     SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_MAP_CELL, TRANSFORM,
 };
 use crate::JsonValue;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 
 use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
@@ -23,10 +25,10 @@ use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_cter::BattleCharacter;
-use super::battle_enum::skill_type::SUMMON_MINON;
+use super::battle_enum::skill_type::{ORDER_MINON_ATTACK, SUMMON_MINON};
 use super::battle_enum::BattlePlayerState;
 use super::battle_player::BattlePlayer;
-use super::battle_skill::summon_minon;
+use super::battle_skill::{order_minon_attack, summon_minon};
 
 ///物品结构体
 #[derive(Clone, Debug)]
@@ -92,9 +94,24 @@ impl Into<SummaryDataPt> for SummaryUser {
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 pub enum DayNight {
-    Day,
-    Night,
+    Day = 1,
+    Night = 2,
+}
+
+impl DayNight {
+    pub fn into_u8(self) -> u8 {
+        let res = self.into();
+        res
+    }
+}
+
+impl Default for DayNight {
+    fn default() -> Self {
+        DayNight::Day
+    }
 }
 
 ///房间战斗数据封装
@@ -114,6 +131,8 @@ pub struct BattleData {
     pub turn_limit_time: u64,                      //战斗turn时间限制
     pub turn: u32,                                 //turn
     pub round: u16,                                //round
+    pub cycle_count: u32,                          //周期
+    pub battle_id: u32,                            //战斗id
     pub skill_function_cmd_map: SkillFn,           //技能函数指针map
     pub total_turn_times: u16,                     //总的turn次数
     pub last_map_id: u32,                          //上次地图id
@@ -134,8 +153,38 @@ impl BattleData {
         cter.base_attr.team_id
     }
 
+    pub fn get_frist_order_user_id(&self) -> u32 {
+        for index in 0..self.turn_orders.len() {
+            let res = self.turn_orders[index];
+            if res != 0 {
+                return res;
+            }
+        }
+        0
+    }
+
+    pub fn get_minon_count(&self, cter_temp_id: u32) -> u8 {
+        let mut count_res = 0;
+
+        for &cter_id in self.cter_player.keys() {
+            let cter = self.get_battle_cter(cter_id, true);
+            if cter.is_err() {
+                continue;
+            }
+            let cter = cter.unwrap();
+            if cter.get_cter_temp_id() != cter_temp_id {
+                continue;
+            }
+            count_res += 1;
+        }
+        return count_res;
+    }
+
     pub fn get_day_night(&self) -> DayNight {
-        let res = self.turn % 2;
+        if self.cycle_count == 0 {
+            return DayNight::Day;
+        }
+        let res = self.cycle_count % 2;
         let res = match res {
             0 => DayNight::Night,
             i if i >= 1 => DayNight::Day,
@@ -376,6 +425,7 @@ impl BattleData {
         for _ in 0..MEMBER_MAX {
             v.push(Vec::new());
         }
+        let time = chrono::Local::now();
         let mut bd = BattleData {
             room_type,
             tile_map: TileMap::default(),
@@ -391,6 +441,8 @@ impl BattleData {
             turn_limit_time: 60000, //默认一分钟
             turn: 0,
             round: 0,
+            cycle_count: 0,
+            battle_id: time.timestamp_subsec_millis(),
             skill_function_cmd_map: HashMap::new(),
             total_turn_times: 0,
             last_map_id: 0,
@@ -430,6 +482,8 @@ impl BattleData {
         bd.skill_function_cmd_map.insert(&TRANSFORM[..], transform);
         bd.skill_function_cmd_map
             .insert(&SUMMON_MINON[..], summon_minon);
+        bd.skill_function_cmd_map
+            .insert(&ORDER_MINON_ATTACK[..], order_minon_attack);
 
         bd
     }

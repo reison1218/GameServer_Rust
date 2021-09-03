@@ -194,7 +194,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     let value = ca.value;
 
     //行动方actionunitpt
-    let mut au = build_action_unit_pt(cter_id, ActionType::None, ca.value);
+    let mut au = build_action_unit_pt(cter_id, ActionType::None, Some(ca.value));
 
     let res;
     let action_type = ActionType::try_from(action_type as u8).unwrap();
@@ -604,6 +604,14 @@ fn use_skill(
         anyhow::bail!(str)
     }
     let current_cter = battle_player.get_current_cter();
+    if current_cter.is_died() {
+        let str = format!(
+            "battle_cter is already died!could not use skill!cter_id:{}",
+            current_cter.get_cter_id()
+        );
+        warn!("{:?}", str);
+        anyhow::bail!(str)
+    }
     let cter_id = current_cter.base_attr.cter_id;
     let skill = current_cter.skills.get(&skill_id);
     if skill.is_none() {
@@ -657,7 +665,7 @@ fn skip_turn(
 
     //没有翻过地图块，则跳过
     let battle_player = battle_player.unwrap();
-    if !battle_player.get_is_can_end_turn() {
+    if !battle_player.get_is_can_end_turn() && !battle_player.is_robot() {
         warn!("this player not open any map_cell yet!user_id:{}", user_id);
         anyhow::bail!("")
     }
@@ -665,7 +673,7 @@ fn skip_turn(
     //如果需要刷新地图，走地图刷新next turn逻辑
     if need_refresh_map {
         rm.refresh_map();
-        rm.battle_data.choice_index_next_turn();
+        rm.check_next_choice_index();
     } else {
         //否则走战斗next turn逻辑
         rm.battle_data.next_turn(true);

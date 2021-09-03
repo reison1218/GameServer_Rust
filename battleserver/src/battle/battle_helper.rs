@@ -3,6 +3,7 @@ use crate::battle::battle_enum::skill_judge_type::{
     HP_LIMIT_GT, LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES,
 };
 use crate::battle::battle_enum::{AttackState, EffectType, TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
+use crate::battle::battle_skill::Skill;
 use crate::battle::battle_trigger::TriggerEvent;
 use crate::robot::robot_trigger::RobotTriggerType;
 use crate::room::map_data::{MapCell, MapCellType, TileMap};
@@ -11,13 +12,14 @@ use crate::task_timer::{Task, TaskCmd};
 use crate::TEMPLATES;
 use log::{error, info, warn};
 use protobuf::Message;
+use rand::Rng;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, BuffPt, CellBuffPt, EffectPt, TargetPt, TriggerEffectPt};
-use tools::protos::battle::S_BATTLE_TURN_NOTICE;
+use tools::protos::battle::{S_ACTION_NOTICE, S_BATTLE_TURN_NOTICE};
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
@@ -25,7 +27,7 @@ use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
     ATTACKED_SUB_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NEAR_SUB_ATTACK_DAMAGE, TRAPS,
 };
-use super::battle_enum::{ActionType, BattlePlayerState, DamageType};
+use super::battle_enum::{ActionType, BattlePlayerState, DamageType, FromType};
 use super::mission::{trigger_mission, MissionTriggerType};
 use super::{battle_enum::skill_judge_type::PAIR_LIMIT, battle_player::BattlePlayer};
 use crate::JsonValue;
@@ -72,6 +74,151 @@ impl BattleData {
         }
     }
 
+    ///召唤宠物
+    pub unsafe fn summon_minon(
+        &mut self,
+        cter_id: u32,
+        from_type: FromType,
+        count: Option<u32>,
+        au: &mut ActionUnitPt,
+    ) -> anyhow::Result<(Vec<usize>, Vec<(u32, ActionUnitPt)>)> {
+        let turn_index = self.next_turn_index;
+        let battle_data_ptr = self as *mut BattleData;
+        let battle_player = self.get_battle_player_mut_by_cter_id(cter_id, true);
+        if let Err(err) = battle_player {
+            anyhow::bail!("{:?}", err)
+        }
+        let battle_player = battle_player.unwrap();
+
+        let team_id = battle_player.team_id;
+        let from_user_id = battle_player.get_user_id();
+
+        let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+        let battle_cter = battle_data_ptr
+            .as_mut()
+            .unwrap()
+            .get_battle_cter_mut(cter_id, true)
+            .unwrap();
+        let mut targets_res = vec![];
+        let minon_temp_id;
+        let mut minon_count;
+
+        match from_type {
+            FromType::Skill(skill_id) => {
+                let skill_temp = crate::TEMPLATES.skill_temp_mgr().get_temp(&skill_id);
+                if let Err(e) = skill_temp {
+                    anyhow::bail!("{:?}", e)
+                }
+                let skill_temp = skill_temp.unwrap();
+                minon_temp_id = skill_temp.par1;
+                minon_count = skill_temp.par2;
+                battle_cter.skills.get_mut(&skill_id).unwrap().is_active = true;
+            }
+            FromType::Buff(buff_id) => {
+                let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+                minon_temp_id = buff_temp.par1;
+                minon_count = buff_temp.par2;
+            }
+        }
+        if let Some(count) = count {
+            minon_count = count;
+        }
+        let mut un_open_v = vec![];
+        let mut open_v = vec![];
+        for map_cell in battle_data_mut.tile_map.map_cells.iter() {
+            if map_cell.cell_type == MapCellType::WorldCell {
+                continue;
+            }
+            if map_cell.cell_type == MapCellType::MarketCell {
+                continue;
+            }
+            if map_cell.cell_type != MapCellType::Valid {
+                continue;
+            }
+            if map_cell.cter_id > 0 {
+                continue;
+            }
+            if map_cell.open_cter > 0 || map_cell.pair_index.is_some() {
+                open_v.push(map_cell.index);
+            } else {
+                un_open_v.push(map_cell.index);
+            }
+        }
+
+        let mut random = rand::thread_rng();
+        loop {
+            //如果满了就break
+            if targets_res.len() == minon_count as usize {
+                break;
+            }
+            //如果没得了就break
+            if un_open_v.is_empty() && open_v.is_empty() {
+                break;
+            }
+
+            let index;
+            //优先未翻开的地图
+            if !un_open_v.is_empty() {
+                let res = random.gen_range(0..un_open_v.len());
+                index = un_open_v.remove(res);
+            } else {
+                let res = random.gen_range(0..open_v.len());
+                index = open_v.remove(res);
+            }
+            targets_res.push(index as u32);
+        }
+        let mut res_v = vec![];
+        let mut summon_indexs = vec![];
+        if targets_res.is_empty() {
+            return Ok((summon_indexs, res_v));
+        }
+
+        //遍历选中的地图块下标
+        for index in targets_res {
+            let index = index as usize;
+            //生成新的角色id
+            let new_cter_id: u32 = battle_data_mut.generate_cter_id();
+            //创建新角色
+            let minon = BattleCharacter::init_for_minon(
+                from_user_id,
+                team_id,
+                cter_id,
+                from_type,
+                new_cter_id,
+                minon_temp_id,
+                index,
+                turn_index,
+            );
+            if let Err(e) = minon {
+                anyhow::bail!("{:?}", e)
+            }
+            let minon = minon.unwrap();
+            let battle_cter_pt = minon.convert_to_battle_cter_pt();
+            let map_cell = battle_data_mut.tile_map.map_cells.get_mut(index).unwrap();
+            map_cell.cter_id = minon.get_cter_id();
+            //封装数据
+            battle_data_mut
+                .cter_player
+                .insert(new_cter_id, from_user_id);
+            battle_player.cters.insert(new_cter_id, minon);
+            battle_cter.minons.insert(new_cter_id);
+            //封装客户的消息
+            let mut target_pt = battle_data_mut.new_target_pt(new_cter_id).unwrap();
+            target_pt.set_new_cter(battle_cter_pt);
+            au.targets.push(target_pt);
+            summon_indexs.push(index);
+            //处理移动事件
+            let res = battle_data_mut.handler_cter_move(new_cter_id, index, au, false);
+            if let Err(e) = res {
+                warn!("{:?}", e);
+                continue;
+            }
+            let (_, v) = res.unwrap();
+            res_v.extend_from_slice(v.as_slice());
+        }
+        Ok((summon_indexs, res_v))
+    }
+
     pub fn choice_index_next_turn(&mut self) {
         let battle_data_ptr = self as *mut BattleData;
         self.next_turn_index += 1;
@@ -93,7 +240,16 @@ impl BattleData {
                         self.choice_index_next_turn();
                         return;
                     }
-                    if battle_player.robot_data.is_some() {
+                    let robot_data = battle_player.robot_data.as_mut();
+                    //如果是机器人，并且没有选择占位
+                    if robot_data.is_some()
+                        && battle_player
+                            .get_major_cter_mut()
+                            .index_data
+                            .map_cell_index
+                            .is_none()
+                        && !battle_player.is_world_boss
+                    {
                         battle_player.robot_start_action(battle_data_ptr);
                     }
                 }
@@ -157,6 +313,7 @@ impl BattleData {
         cter_id: u32,
         target_index: usize,
         au: &mut ActionUnitPt,
+        need_wrap_map: bool,
     ) -> anyhow::Result<(bool, Vec<(u32, ActionUnitPt)>)> {
         let self_ptr = self as *mut BattleData;
         let battle_cter = self_ptr
@@ -205,7 +362,7 @@ impl BattleData {
         //移动位置后触发事件
         let res = self.after_move_trigger(battle_cter, index, is_change_index_both);
         //如果角色没死，就把翻的地图块id传给客户端
-        if !res.0 {
+        if !res.0 && need_wrap_map {
             au.action_value.push(target_map_cell.id);
         }
         Ok(res)
@@ -579,7 +736,11 @@ impl BattleData {
             }
             //判断目标角色是否死亡
             if is_die {
-                self.after_cter_died_trigger(target_cter_id);
+                let target_pt = self.after_cter_died_trigger(target_cter_id);
+                if let Some(target_pt) = target_pt {
+                    au.targets.push(target_pt);
+                }
+
                 //处理玩家死亡
                 let target_battle_player = self
                     .get_battle_player_mut(Some(target_user_id), false)
@@ -611,7 +772,7 @@ impl BattleData {
         skill_damege: Option<i16>,
         target_pt: &mut TargetPt,
         is_last_one: bool,
-    ) -> anyhow::Result<u32> {
+    ) -> anyhow::Result<(u32, Vec<TargetPt>)> {
         let battle_data_ptr = self as *mut BattleData;
 
         let mut ep = EffectPt::new();
@@ -677,9 +838,13 @@ impl BattleData {
         target_pt.effects.push(ep);
         let is_die = target_cter.add_hp(-res);
 
+        let mut other_target_pts = vec![];
         //判断目标角色是否死亡
         if is_die {
-            self.after_cter_died_trigger(target_cter_id);
+            let res = self.after_cter_died_trigger(target_cter_id);
+            if let Some(res) = res {
+                other_target_pts.push(res);
+            }
             //处理玩家死亡
             let target_battle_player = self
                 .get_battle_player_mut(Some(target_user_id), false)
@@ -695,7 +860,8 @@ impl BattleData {
                 );
             }
         }
-        Ok(res as u32)
+
+        Ok((res as u32, other_target_pts))
     }
 
     ///更新翻地图块队列
@@ -843,6 +1009,7 @@ impl BattleData {
         for battle_player in self.battle_player.values() {
             let user_id = battle_player.get_user_id();
             let mut sbtn = S_BATTLE_TURN_NOTICE::new();
+            sbtn.set_cycle_count(self.cycle_count);
             sbtn.set_user_id(self.get_turn_user(None).unwrap());
             push_map.insert(user_id, sbtn);
             cell_buff_map.insert(user_id, HashMap::new());
@@ -1297,6 +1464,7 @@ impl BattleData {
         task.delay = time_limit;
         task.cmd = TaskCmd::BattleTurnTime;
         task.turn = self.turn;
+        task.battle_id = self.battle_id;
         let mut map = serde_json::Map::new();
         map.insert("user_id".to_owned(), JsonValue::from(*user_id));
         task.data = JsonValue::from(map);
@@ -1515,16 +1683,41 @@ impl BattleData {
                 }
             }
         }
-        //如果是地图块上的地方，塞选出地图块上的敌人
-        if target_type == TargetType::MapCellEnemys {
-            let team_id = self.get_team_id(target_cter_id);
-            for &id in v_u.clone().iter() {
-                if team_id != self.get_team_id(id) {
-                    continue;
+        if scope_temp.is_some() {
+            let scope_temp = scope_temp.unwrap();
+            //代表全图
+            if scope_temp.scope.is_empty() && scope_temp.id == 6 {
+                v_u.clear();
+                v.clear();
+                for &id in self.cter_player.keys() {
+                    let cter = self.get_battle_cter(id, true);
+                    if cter.is_err() {
+                        continue;
+                    }
+                    let cter = cter.unwrap();
+                    v_u.push(cter.get_cter_id());
+                    v.push(cter.get_map_cell_index());
                 }
-                let (index, _) = v_u.iter().enumerate().find(|(_, &_id)| _id == id).unwrap();
-                v_u.remove(index);
             }
+        }
+
+        //如果是地图块上的地方，塞选出地图块上的敌人
+
+        match target_type {
+            TargetType::MapCellEnemys
+            | TargetType::AnyEnemyCter
+            | TargetType::AllEnemyCters
+            | TargetType::SelfScopeAnyEnemyCters => {
+                let team_id = self.get_team_id(target_cter_id);
+                for &id in v_u.clone().iter() {
+                    if team_id != self.get_team_id(id) {
+                        continue;
+                    }
+                    let (index, _) = v_u.iter().enumerate().find(|(_, &_id)| _id == id).unwrap();
+                    v_u.remove(index);
+                }
+            }
+            _ => {}
         }
         (v, v_u)
     }
@@ -1602,16 +1795,181 @@ impl BattleData {
         }
         Ok(())
     }
+    pub fn suicide_skill_damage(&mut self, cter_id: u32, buff_id: u32) {
+        let cter = self.get_battle_cter(cter_id, true).unwrap();
+        let team_id = cter.base_attr.team_id;
+        let cter_index = cter.get_map_cell_index();
+        let skill_demage = cter.base_attr.hp;
+        let mut target_pt = self
+            .build_target_pt(
+                Some(cter_id),
+                cter_id,
+                EffectType::SkillDamage,
+                skill_demage as u32,
+                Some(buff_id),
+            )
+            .unwrap();
+        unsafe {
+            //找范围
+            let mut au = build_action_unit_pt(cter_id, ActionType::Buff, Some(buff_id));
+            let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+            let scope_temp = crate::TEMPLATES
+                .skill_scope_temp_mgr()
+                .get_temp(&buff_temp.par1)
+                .unwrap();
+            let target_type = TargetType::try_from(buff_temp.target).unwrap();
+            let target_cters = self.cal_scope(
+                cter_id,
+                cter_index as isize,
+                target_type,
+                None,
+                Some(scope_temp),
+            );
+            let cters;
+            if target_cters.1.is_empty() {
+                cters = self.get_enemys(team_id);
+            } else {
+                cters = target_cters.1;
+            }
+
+            //扣血
+            for target_cter_id in cters {
+                let mut _target_pt = self
+                    .build_target_pt(
+                        Some(cter_id),
+                        target_cter_id,
+                        EffectType::SkillDamage,
+                        skill_demage as u32,
+                        Some(buff_id),
+                    )
+                    .unwrap();
+                _target_pt.effects.clear();
+                let res = self.deduct_hp(
+                    cter_id,
+                    target_cter_id,
+                    Some(skill_demage),
+                    &mut _target_pt,
+                    true,
+                );
+                if let Ok((_, res)) = res {
+                    for i in res {
+                        au.targets.push(i);
+                    }
+                }
+                au.targets.push(_target_pt);
+            }
+            let res = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
+            if let Ok((_, res)) = res {
+                for i in res {
+                    au.targets.push(i);
+                }
+            }
+            //此处不需要effect
+            target_pt.effects.clear();
+            au.targets.insert(0, target_pt);
+            let mut proto = S_ACTION_NOTICE::new();
+            proto.action_uints.push(au);
+            self.send_2_all_client(ClientCode::ActionNotice, proto.write_to_bytes().unwrap());
+        }
+    }
+
+    pub fn crow_alive_add_attack(&mut self, cter_id: u32, buff_id: u32) {
+        let self_ptr = self as *mut BattleData;
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            let buff_temp = crate::TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+            let cter = self.get_battle_cter_mut(cter_id, true).unwrap();
+            let minon_count = cter.minons.iter().count();
+            if minon_count == 0 {
+                return;
+            }
+            let add_buff_id = buff_temp.par1;
+            let add_buff_temp = crate::TEMPLATES
+                .buff_temp_mgr()
+                .get_temp(&add_buff_id)
+                .unwrap();
+            //给宠物加
+            for &id in cter.minons.iter() {
+                let minon = self_mut.get_battle_cter_mut(id, true);
+                if minon.is_err() {
+                    continue;
+                }
+                let minon = minon.unwrap();
+                for _ in 0..minon_count {
+                    minon.add_buff(None, None, add_buff_temp.id, None);
+                }
+            }
+            //给自己加
+            for _ in 0..minon_count {
+                cter.add_buff(None, None, add_buff_temp.id, None);
+            }
+        }
+    }
+
+    pub fn day_night_change_skills(&mut self, cter_id: u32) {
+        let day_night = self.get_day_night();
+        let cter = self.get_battle_cter_mut(cter_id, true);
+        if cter.is_err() {
+            return;
+        }
+        let cter = cter.unwrap();
+        let cter_day_night = cter.day_night;
+        //如果当前周期相等就直接退出
+        if day_night == cter_day_night {
+            return;
+        }
+        let mut new_skills = vec![];
+        let mut old_skills = vec![];
+
+        let old_buff = cter.get_day_night_buff(cter_day_night);
+        if let Some(old_buff) = old_buff {
+            old_skills.push(old_buff.buff_temp.par2);
+            old_skills.push(old_buff.buff_temp.par3);
+            old_skills.push(old_buff.buff_temp.par4);
+        }
+
+        let new_buff = cter.get_day_night_buff(day_night);
+        if let Some(new_buff) = new_buff {
+            new_skills.push(new_buff.buff_temp.par2);
+            new_skills.push(new_buff.buff_temp.par3);
+            new_skills.push(new_buff.buff_temp.par4);
+        }
+
+        if new_skills.is_empty() {
+            return;
+        }
+
+        for index in 0..old_skills.len() {
+            let &old_skill_id = old_skills.get(index).unwrap();
+            let &new_skill_id = new_skills.get(index).unwrap();
+            let old_skill = cter.skills.remove(&old_skill_id);
+            if let Some(old_skill) = old_skill {
+                let cd = old_skill.cd_times;
+                let is_active = old_skill.is_active;
+                let new_skill_temp = crate::TEMPLATES
+                    .skill_temp_mgr()
+                    .get_temp(&new_skill_id)
+                    .unwrap();
+                let mut new_skill = Skill::from(new_skill_temp);
+                new_skill.cd_times = cd;
+                new_skill.is_active = is_active;
+                cter.skills.insert(new_skill.id, new_skill);
+            }
+        }
+        cter.day_night = day_night;
+    }
 }
 
 pub fn build_action_unit_pt(
     cter_id: u32,
     action_type: ActionType,
-    action_value: u32,
+    action_value: Option<u32>,
 ) -> ActionUnitPt {
     let mut au = ActionUnitPt::new();
     au.set_from_cter(cter_id);
     au.set_action_type(action_type.into_u32());
-    au.action_value.push(action_value);
+    if let Some(action_value) = action_value {
+        au.action_value.push(action_value);
+    }
     au
 }

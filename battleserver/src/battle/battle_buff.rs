@@ -355,8 +355,11 @@ impl BattleData {
                     is_last_one,
                 );
                 match res {
-                    Ok(_) => {
+                    Ok((_, other_target_pts)) => {
                         au.targets.push(target_pt);
+                        for i in other_target_pts {
+                            au.targets.push(i);
+                        }
                     }
                     Err(e) => {
                         error!("{:?}", e);
