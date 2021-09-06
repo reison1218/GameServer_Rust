@@ -25,7 +25,8 @@ use tools::util::packet::Packet;
 
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
-    ATTACKED_SUB_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NEAR_SUB_ATTACK_DAMAGE, TRAPS,
+    ATTACKED_SUB_DAMAGE, CROW_ALIVE_ADD_ATTACK, DAY_SKILLS, NEAR_ATTACKED_DAMAGE_ZERO,
+    NEAR_SUB_ATTACK_DAMAGE, NIGHT_SKILLS, SUICIDE_SKILL_DAMAGE, TRAPS,
 };
 use super::battle_enum::{ActionType, BattlePlayerState, DamageType, FromType};
 use super::mission::{trigger_mission, MissionTriggerType};
@@ -636,7 +637,7 @@ impl BattleData {
 
         let from_user_id = from_cter.get_user_id();
         let mut res_map = HashMap::new();
-        let mut res;
+        let mut res = 0;
         let mut is_last_one = false;
 
         let mut damage_v = vec![];
@@ -667,6 +668,7 @@ impl BattleData {
                         self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
                     ep.effect_type = EffectType::AttackDamage as u32;
                     res = attack_damage - reduce_damage;
+
                     if res < 0 {
                         res = 0;
                     }
@@ -689,13 +691,20 @@ impl BattleData {
                             .unwrap();
                         battle_player.status.is_attacked = true;
                     }
-                    damage_v.push((target_cter_id, DamageType::Attack(res)));
                 }
                 DamageType::Skill(skill_damage) => {
                     ep.effect_type = EffectType::SkillDamage as u32;
                     res = skill_damage;
-                    damage_v.push((target_cter_id, DamageType::Skill(res)));
                 }
+            }
+            //计算石化buff
+            let stone_buff = target_cter.get_stone_buff();
+            if let Some(stone_buff) = stone_buff {
+                res *= stone_buff.buff_temp.par1 as i16;
+            }
+            match damage_type {
+                DamageType::Attack(_) => damage_v.push((target_cter_id, DamageType::Attack(res))),
+                DamageType::Skill(_) => damage_v.push((target_cter_id, DamageType::Skill(res))),
             }
 
             //扣血
@@ -706,6 +715,7 @@ impl BattleData {
             res_map.insert(target_cter_id, target_pt);
         }
         let mut other_target_pt_v = vec![];
+        let mut hurted_trigger_target_pt = None;
         for &(target_cter_id, damage) in damage_v.iter() {
             let target_user_id;
             let is_die;
@@ -733,6 +743,10 @@ impl BattleData {
                     }
                 }
                 DamageType::Skill(_) => {}
+            }
+
+            if res > 0 {
+                hurted_trigger_target_pt = self.hurted_trigger(target_cter_id);
             }
             //判断目标角色是否死亡
             if is_die {
@@ -762,6 +776,9 @@ impl BattleData {
         for target_pt in other_target_pt_v {
             au.targets.push(target_pt);
         }
+        if let Some(hurted_trigger_target_pt) = hurted_trigger_target_pt {
+            au.targets.push(hurted_trigger_target_pt);
+        }
     }
 
     ///扣血
@@ -769,7 +786,7 @@ impl BattleData {
         &mut self,
         from_cter_id: u32,
         target_cter_id: u32,
-        skill_damege: Option<i16>,
+        dt: DamageType,
         target_pt: &mut TargetPt,
         is_last_one: bool,
     ) -> anyhow::Result<(u32, Vec<TargetPt>)> {
@@ -798,41 +815,50 @@ impl BattleData {
         }
 
         let mut res;
-        //如果是普通攻击，要算上减伤
-        if skill_damege.is_none() {
-            let from_cter = battle_data_ptr
-                .as_mut()
-                .unwrap()
-                .get_battle_cter_mut(from_cter_id, false)
-                .unwrap();
-            let attack_damage = from_cter.calc_damage();
-            let reduce_damage = self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
-            ep.effect_type = EffectType::AttackDamage as u32;
-            res = attack_damage - reduce_damage;
-            if res < 0 {
-                res = 0;
-            }
-            let (gd_buff_id, gd_is_remove) = target_cter.trigger_attack_damge_gd();
-            if gd_buff_id > 0 {
-                let mut te_pt = TriggerEffectPt::new();
-                te_pt.set_buff_id(gd_buff_id);
-                target_pt.passiveEffect.push(te_pt);
-                if gd_is_remove {
-                    let lost_buff =
-                        self.consume_buff(gd_buff_id, Some(target_cter_id), None, false);
-                    if let Some(lost_buff) = lost_buff {
-                        target_pt.lost_buffs.push(lost_buff);
-                    }
-                }
-                res = 0;
-            } else {
-                let battle_player = self
-                    .get_battle_player_mut(Some(target_cter.base_attr.user_id), true)
+
+        match dt {
+            DamageType::Attack(_) => {
+                //被攻击前触发
+                self.attacked_before_trigger(target_cter_id, target_pt);
+                let from_cter = battle_data_ptr
+                    .as_mut()
+                    .unwrap()
+                    .get_battle_cter_mut(from_cter_id, false)
                     .unwrap();
-                battle_player.status.is_attacked = true;
+                let attack_damage = from_cter.calc_damage();
+                let reduce_damage =
+                    self.calc_reduce_damage(from_cter_id, target_cter, attack_damage);
+                ep.effect_type = EffectType::AttackDamage as u32;
+                res = attack_damage - reduce_damage;
+                if res < 0 {
+                    res = 0;
+                }
+                let (gd_buff_id, gd_is_remove) = target_cter.trigger_attack_damge_gd();
+                if gd_buff_id > 0 {
+                    let mut te_pt = TriggerEffectPt::new();
+                    te_pt.set_buff_id(gd_buff_id);
+                    target_pt.passiveEffect.push(te_pt);
+                    if gd_is_remove {
+                        let lost_buff =
+                            self.consume_buff(gd_buff_id, Some(target_cter_id), None, false);
+                        if let Some(lost_buff) = lost_buff {
+                            target_pt.lost_buffs.push(lost_buff);
+                        }
+                    }
+                    res = 0;
+                } else {
+                    let battle_player = self
+                        .get_battle_player_mut(Some(target_cter.base_attr.user_id), true)
+                        .unwrap();
+                    battle_player.status.is_attacked = true;
+                }
             }
-        } else {
-            res = skill_damege.unwrap();
+            DamageType::Skill(skill_damege) => res = skill_damege,
+        }
+        //计算石化buff
+        let stone_buff = target_cter.get_stone_buff();
+        if let Some(stone_buff) = stone_buff {
+            res *= stone_buff.buff_temp.par1 as i16;
         }
         ep.effect_value = res as u32;
         target_pt.effects.push(ep);
@@ -858,6 +884,28 @@ impl BattleData {
                     false,
                     None,
                 );
+            }
+        } else {
+            match dt {
+                DamageType::Attack(_) => {
+                    //被攻击后触发
+                    self.attacked_after_trigger(target_cter_id, target_pt);
+                    //收到攻击伤害触发
+                    if res > 0 {
+                        let res_v = self.attacked_hurted_trigger(
+                            from_cter_id,
+                            target_cter_id,
+                            res as u32,
+                            target_pt,
+                        );
+                        other_target_pts.extend_from_slice(res_v.as_slice());
+                    }
+                }
+                DamageType::Skill(_) => {}
+            }
+            let pt = self.hurted_trigger(target_cter_id);
+            if let Some(pt) = pt {
+                other_target_pts.push(pt);
             }
         }
 
@@ -1795,6 +1843,72 @@ impl BattleData {
         }
         Ok(())
     }
+
+    pub fn player_turn_start_cal(&mut self) {
+        let self_ptr = self as *mut BattleData;
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            let battle_player = self.get_battle_player_mut(None, true);
+            if let Err(_) = battle_player {
+                return;
+            }
+            let battle_player = battle_player.unwrap();
+            battle_player.turn_start_reset();
+
+            let mut cter_id;
+            //判断该玩家回合的
+            for battle_cter in battle_player.cters.values() {
+                if battle_cter.is_died() {
+                    continue;
+                }
+                cter_id = battle_cter.get_cter_id();
+                let mut buff_id;
+                let mut buff_function_id;
+                for buff in battle_cter.battle_buffs.buffs().values() {
+                    buff_id = buff.get_id();
+                    buff_function_id = buff.function_id;
+                    match buff_function_id {
+                        SUICIDE_SKILL_DAMAGE => {
+                            self_mut.suicide_skill_damage(cter_id, buff_id);
+                        }
+                        CROW_ALIVE_ADD_ATTACK => {
+                            self_mut.crow_alive_add_attack(cter_id, buff_id);
+                        }
+                        _ => {
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn cycle_cal(&mut self) {
+        let self_ptr = self as *mut BattleData;
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            for &cter_id in self.cter_player.keys() {
+                let battle_cter = self.get_battle_cter(cter_id, true);
+                if let Err(_) = battle_cter {
+                    continue;
+                }
+                let battle_cter = battle_cter.unwrap();
+                let mut buff_function_id;
+                for buff in battle_cter.battle_buffs.buffs().values() {
+                    buff_function_id = buff.function_id;
+                    match buff_function_id {
+                        DAY_SKILLS | NIGHT_SKILLS => {
+                            self_mut.day_night_change_skills(cter_id);
+                        }
+                        _ => {
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     pub fn suicide_skill_damage(&mut self, cter_id: u32, buff_id: u32) {
         let cter = self.get_battle_cter(cter_id, true).unwrap();
         let team_id = cter.base_attr.team_id;
@@ -1844,10 +1958,11 @@ impl BattleData {
                     )
                     .unwrap();
                 _target_pt.effects.clear();
+
                 let res = self.deduct_hp(
                     cter_id,
                     target_cter_id,
-                    Some(skill_demage),
+                    DamageType::Skill(skill_demage),
                     &mut _target_pt,
                     true,
                 );
@@ -1858,7 +1973,13 @@ impl BattleData {
                 }
                 au.targets.push(_target_pt);
             }
-            let res = self.deduct_hp(cter_id, cter_id, Some(skill_demage), &mut target_pt, true);
+            let res = self.deduct_hp(
+                cter_id,
+                cter_id,
+                DamageType::Skill(skill_demage),
+                &mut target_pt,
+                true,
+            );
             if let Ok((_, res)) = res {
                 for i in res {
                     au.targets.push(i);

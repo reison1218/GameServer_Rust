@@ -4,7 +4,7 @@ use crate::battle::battle_enum::buff_type::{
     TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
-use crate::battle::battle_enum::skill_type::WATER_TURRET;
+use crate::battle::battle_enum::skill_type::{CHARGE_SKILL_DAMGE, WATER_TURRET};
 use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
@@ -24,13 +24,12 @@ use tools::protos::battle::S_ACTION_NOTICE;
 use super::battle::DayNight;
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
-    ALL_CROW_DIE_REFRESH_SKILL_CD, ATTACKED_SUB_CD, CROW_ALIVE_ADD_ATTACK, DAY_SKILLS,
-    NIGHT_SKILLS, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, ROUND_CHANGE_SKILL, SUICIDE_SKILL_DAMAGE,
-    SUMMON_CROW,
+    ALL_CROW_DIE_REFRESH_SKILL_CD, ATTACKED_SUB_CD, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE,
+    ROUND_CHANGE_SKILL, SUMMON_CROW,
 };
 use super::battle_enum::buff_type::{DIE_END_TURN, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
-use super::battle_enum::{FromType, TargetType};
+use super::battle_enum::{DamageType, FromType, TargetType};
 use super::battle_helper::build_action_unit_pt;
 use super::mission::{trigger_mission, MissionTriggerType};
 
@@ -111,6 +110,8 @@ pub trait TriggerEvent {
         is_punishment: bool,
         str: Option<String>,
     );
+
+    fn hurted_trigger(&mut self, target_cter_id: u32) -> Option<TargetPt>;
 }
 
 impl BattleData {
@@ -163,7 +164,7 @@ impl BattleData {
                     let res = self.deduct_hp(
                         buff.from_cter.unwrap(),
                         cter_id,
-                        Some(skill_damage),
+                        DamageType::Skill(skill_damage),
                         &mut target_pt_temp,
                         true,
                     );
@@ -399,7 +400,7 @@ impl TriggerEvent for BattleData {
                             let res = self_mut.deduct_hp(
                                 from_user,
                                 target_cter,
-                                Some(buff.buff_temp.par1 as i16),
+                                DamageType::Skill(buff.buff_temp.par1 as i16),
                                 &mut target_pt,
                                 true,
                             );
@@ -514,33 +515,38 @@ impl TriggerEvent for BattleData {
             }
             if let Some(skill) = skill {
                 let skill_function_id = skill.function_id;
-                //替换技能,水炮
-                if skill_function_id == WATER_TURRET {
-                    let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
-                    battle_cter.skills.remove(&skill_id);
-                    if let Err(e) = skill_temp {
-                        error!("{:?}", e);
-                        return;
-                    }
-                    let st = skill_temp.unwrap();
 
-                    let mut target_pt = TargetPt::new();
-                    //封装角色位置
-                    target_pt
-                        .target_value
-                        .push(battle_cter.get_map_cell_index() as u32);
-                    //封装丢失技能
-                    target_pt.lost_skills.push(skill_id);
-                    //封装增加的技能
-                    let mut ep = EffectPt::new();
-                    ep.effect_type = AddSkill.into_u32();
-                    ep.effect_value = st.id;
-                    target_pt.effects.push(ep);
-                    //将新技能封装到内存
-                    let skill = Skill::from(st);
-                    battle_cter.skills.insert(skill.id, skill);
-                    //将target封装到proto
-                    au.targets.push(target_pt);
+                //替换技能,水炮
+                match skill_function_id {
+                    WATER_TURRET | CHARGE_SKILL_DAMGE => {
+                        let skill_temp =
+                            TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
+                        battle_cter.skills.remove(&skill_id);
+                        if let Err(e) = skill_temp {
+                            error!("{:?}", e);
+                            return;
+                        }
+                        let st = skill_temp.unwrap();
+
+                        let mut target_pt = TargetPt::new();
+                        //封装角色位置
+                        target_pt
+                            .target_value
+                            .push(battle_cter.get_map_cell_index() as u32);
+                        //封装丢失技能
+                        target_pt.lost_skills.push(skill_id);
+                        //封装增加的技能
+                        let mut ep = EffectPt::new();
+                        ep.effect_type = AddSkill.into_u32();
+                        ep.effect_value = st.id;
+                        target_pt.effects.push(ep);
+                        //将新技能封装到内存
+                        let skill = Skill::from(st);
+                        battle_cter.skills.insert(skill.id, skill);
+                        //将target封装到proto
+                        au.targets.push(target_pt);
+                    }
+                    _ => {}
                 }
 
                 //使用后删除可用状态
@@ -651,7 +657,7 @@ impl TriggerEvent for BattleData {
                 buff_function_id = buff.function_id;
 
                 //被攻击打断技能
-                if CHANGE_SKILL.contains(&buff_function_id) {
+                if CHANGE_SKILL == buff_function_id {
                     battle_data_ptr.as_mut().unwrap().consume_buff(
                         buff_id,
                         Some(target_cter_id),
@@ -687,7 +693,7 @@ impl TriggerEvent for BattleData {
                             let res = battle_data_ptr.as_mut().unwrap().deduct_hp(
                                 target_cter_id,
                                 cter_id,
-                                Some(damage as i16),
+                                DamageType::Skill(damage as i16),
                                 &mut target_pt,
                                 true,
                             );
@@ -1048,84 +1054,21 @@ impl TriggerEvent for BattleData {
 
     fn turn_start_trigger(&mut self) {
         let frist_order_user_id = self.get_frist_order_user_id();
-        let battle_player = self.get_battle_player_mut(None, true);
-        match battle_player {
-            Ok(battle_player) => {
-                battle_player.turn_start_reset();
-                if frist_order_user_id == battle_player.user_id {
+        let user_id = self.get_turn_user(None);
+        match user_id {
+            Ok(user_id) => {
+                if frist_order_user_id == user_id {
                     self.cycle_count += 1;
                 }
             }
             Err(_) => {}
         }
-        let turn_index = self.next_turn_index;
-        let turn_user = self.get_turn_user(None).unwrap();
-        let mut user_id;
-        unsafe {
-            let self_ptr = self as *mut BattleData;
-            let self_mut = self_ptr.as_mut().unwrap();
-            //判断该玩家回合的
-            for &cter_id in self.cter_player.keys() {
-                user_id = self.get_user_id(cter_id);
-                if user_id.is_none() {
-                    continue;
-                }
-                //如果不是当前玩家的turn，直接跳过
-                if user_id.unwrap() != turn_user {
-                    continue;
-                }
-                let battle_cter = self.get_battle_cter(cter_id, true);
-                if let Err(_) = battle_cter {
-                    continue;
-                }
-                let battle_cter = battle_cter.unwrap();
 
-                let mut buff_id;
-                let mut buff_function_id;
-                for buff in battle_cter.battle_buffs.buffs().values() {
-                    buff_id = buff.get_id();
-                    buff_function_id = buff.function_id;
-                    match buff_function_id {
-                        SUICIDE_SKILL_DAMAGE => {
-                            if buff.turn_index.is_none() {
-                                continue;
-                            }
-                            if buff.turn_index.unwrap() != turn_index {
-                                continue;
-                            }
-                            self_mut.suicide_skill_damage(cter_id, buff_id);
-                        }
-                        CROW_ALIVE_ADD_ATTACK => {
-                            self_mut.crow_alive_add_attack(cter_id, buff_id);
-                        }
-                        _ => {
-                            continue;
-                        }
-                    }
-                }
-            }
+        //计算玩家回合的
+        self.player_turn_start_cal();
 
-            //判断周期的
-            for &cter_id in self.cter_player.keys() {
-                let battle_cter = self.get_battle_cter(cter_id, true);
-                if let Err(_) = battle_cter {
-                    continue;
-                }
-                let battle_cter = battle_cter.unwrap();
-                let mut buff_function_id;
-                for buff in battle_cter.battle_buffs.buffs().values() {
-                    buff_function_id = buff.function_id;
-                    match buff_function_id {
-                        DAY_SKILLS | NIGHT_SKILLS => {
-                            self_mut.day_night_change_skills(cter_id);
-                        }
-                        _ => {
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
+        //判断周期的
+        self.cycle_cal();
     }
 
     fn turn_end_trigger(&mut self) {
@@ -1253,5 +1196,19 @@ impl TriggerEvent for BattleData {
                 }
             }
         }
+    }
+
+    fn hurted_trigger(&mut self, target_cter_id: u32) -> Option<TargetPt> {
+        let target_cter = self.get_battle_cter_mut(target_cter_id, true);
+        if let Err(_) = target_cter {
+            return None;
+        }
+        let target_cter = target_cter.unwrap();
+        let stone_buff = target_cter.get_stone_buff();
+        if stone_buff.is_none() {
+            return None;
+        }
+        let target_pt = target_cter.transform_back();
+        Some(target_pt)
     }
 }

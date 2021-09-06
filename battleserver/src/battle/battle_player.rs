@@ -340,9 +340,14 @@ impl BattlePlayer {
                 .battle_buffs
                 .buffs()
                 .values()
-                .find(|buff| buff.function_id == SUB_MOVE_POINT);
+                .find(|buff| SUB_MOVE_POINT.contains(&buff.function_id));
             if let Some(buff) = res {
-                reward_count = reward_count - buff.buff_temp.par1 as u8;
+                if buff.buff_temp.par1 == 0 {
+                    reward_count = 0;
+                } else {
+                    reward_count = reward_count - buff.buff_temp.par1 as u8;
+                }
+
                 break;
             }
         }

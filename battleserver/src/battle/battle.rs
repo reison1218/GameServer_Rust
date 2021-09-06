@@ -1,7 +1,7 @@
 use crate::battle::battle_enum::skill_type::{
-    ADD_BUFF, AUTO_PAIR_MAP_CELL, CHANGE_MAP_CELL_INDEX, MOVE_USER, NEAR_SKILL_DAMAGE_AND_CURE,
-    RED_SKILL_CD, SCOPE_CURE, SHOW_INDEX, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE,
-    SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_MAP_CELL, TRANSFORM,
+    ADD_BUFF, AUTO_PAIR_MAP_CELL, CHANGE_MAP_CELL_INDEX, MOVE_USER, RED_SKILL_CD, SCOPE_CURE,
+    SHOW_INDEX, SHOW_MAP_CELL, SKILL_AOE, SKILL_DAMAGE, SKILL_DAMAGE_AND_CURE,
+    SKILL_DAMAGE_OPENED_ELEMENT, SKILL_OPEN_MAP_CELL, TRANSFORM_SELF,
 };
 use crate::JsonValue;
 use num_enum::IntoPrimitive;
@@ -11,7 +11,7 @@ use crate::battle::battle_enum::LIMIT_TOTAL_TURN_TIMES;
 use crate::battle::battle_skill::{
     add_buff, auto_pair_map_cell, change_map_cell_index, move_user, scope_cure, show_index,
     show_map_cell, single_skill_damage, skill_aoe_damage, skill_damage_and_cure,
-    skill_damage_opened_element, skill_open_map_cell, sub_cd, transform,
+    skill_damage_opened_element, skill_open_map_cell, sub_cd, transform_self,
 };
 use crate::mgr::League;
 use crate::room::map_data::TileMap;
@@ -25,10 +25,10 @@ use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_cter::BattleCharacter;
-use super::battle_enum::skill_type::{ORDER_MINON_ATTACK, SUMMON_MINON};
+use super::battle_enum::skill_type::{ORDER_MINON_ATTACK, SUMMON_MINON, TRANSFORM};
 use super::battle_enum::BattlePlayerState;
 use super::battle_player::BattlePlayer;
-use super::battle_skill::{order_minon_attack, summon_minon};
+use super::battle_skill::{order_minon_attack, summon_minon, transform};
 
 ///物品结构体
 #[derive(Clone, Debug)]
@@ -465,7 +465,7 @@ impl BattleData {
 
         bd.skill_function_cmd_map.insert(&MOVE_USER[..], move_user);
         bd.skill_function_cmd_map
-            .insert(&NEAR_SKILL_DAMAGE_AND_CURE[..], skill_damage_and_cure);
+            .insert(&SKILL_DAMAGE_AND_CURE[..], skill_damage_and_cure);
         bd.skill_function_cmd_map
             .insert(&SKILL_DAMAGE[..], single_skill_damage);
         bd.skill_function_cmd_map
@@ -479,7 +479,10 @@ impl BattleData {
         );
         bd.skill_function_cmd_map
             .insert(&SCOPE_CURE[..], scope_cure);
+        bd.skill_function_cmd_map
+            .insert(&TRANSFORM_SELF[..], transform_self);
         bd.skill_function_cmd_map.insert(&TRANSFORM[..], transform);
+
         bd.skill_function_cmd_map
             .insert(&SUMMON_MINON[..], summon_minon);
         bd.skill_function_cmd_map

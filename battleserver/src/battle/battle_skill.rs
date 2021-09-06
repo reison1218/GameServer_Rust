@@ -2,9 +2,9 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::battle::battle_enum::skill_type::{
-    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_INDEX_SAME_ELEMENT,
-    SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
-    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
+    ABSORPTION, HURT_SELF_ADD_BUFF, NEXT_SKILL_DAMAGE_AND_CURE, SHOW_ALL_USERS_CELL,
+    SHOW_INDEX_SAME_ELEMENT, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP,
+    SKILL_AOE_RED_SKILL_CD, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
 };
 use crate::battle::battle_enum::{ActionType, DamageType, EffectType, ElementType, TargetType};
 use crate::battle::battle_helper::build_action_unit_pt;
@@ -614,7 +614,7 @@ pub unsafe fn add_buff(
         let res = battle_data.deduct_hp(
             cter_id,
             target_cter_id,
-            Some(skill_temp.par1 as i16),
+            DamageType::Skill(skill_temp.par1 as i16),
             &mut target_pt,
             true,
         );
@@ -678,7 +678,7 @@ pub fn skill_damage_opened_element(
             let res = battle_data.deduct_hp(
                 cter_id,
                 target_cter_id,
-                Some(skill_damage),
+                DamageType::Skill(skill_damage),
                 &mut target_pt,
                 is_last_one,
             );
@@ -940,7 +940,7 @@ pub unsafe fn skill_damage_and_cure(
     battle_data: &mut BattleData,
     cter_id: u32,
     skill_id: u32,
-    _: Vec<u32>,
+    targets: Vec<u32>,
     au: &mut ActionUnitPt,
 ) -> Option<Vec<(u32, ActionUnitPt)>> {
     let battle_data_ptr = battle_data as *mut BattleData;
@@ -954,6 +954,8 @@ pub unsafe fn skill_damage_and_cure(
     let battle_cter = battle_cter.unwrap();
     let cter_index = battle_cter.get_map_cell_index() as isize;
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
+
+    let skill_function_id = skill.function_id;
     let res = TEMPLATES
         .skill_scope_temp_mgr()
         .get_temp(&skill.skill_temp.scope);
@@ -963,14 +965,42 @@ pub unsafe fn skill_damage_and_cure(
     }
     let scope_temp = res.unwrap();
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
-    let (_, v) =
-        battle_data_mut.cal_scope(cter_id, cter_index, target_type, None, Some(scope_temp));
+    let res_v;
+
+    match skill_function_id {
+        ABSORPTION => {
+            if targets.is_empty() {
+                error!("the targets is empty! skill_id:{}", skill_id);
+                return None;
+            }
+            let index = *targets.get(0).unwrap() as isize;
+            let (_, v) =
+                battle_data_mut.cal_scope(cter_id, index, target_type, None, Some(scope_temp));
+            res_v = v;
+        }
+        NEXT_SKILL_DAMAGE_AND_CURE => {
+            let (_, v) =
+                battle_data_mut.cal_scope(cter_id, cter_index, target_type, None, Some(scope_temp));
+            res_v = v;
+        }
+        _ => res_v = vec![],
+    }
+
+    //如果为空就直接返回
+    if res_v.is_empty() {
+        return None;
+    }
 
     let mut add_hp = 0_u32;
-    let skill_damge = skill.skill_temp.par1 as i16;
+    let mut skill_damge = skill.skill_temp.par1 as i16;
+
+    if skill_function_id == ABSORPTION {
+        skill_damge = (skill.skill_temp.par1 as usize / res_v.len()) as i16;
+    }
+
     let mut targets: Vec<(u32, DamageType)> = vec![];
     let mut skill_damge_res;
-    for target_cter_id in v {
+    for target_cter_id in res_v {
         let target_cter = battle_data_mut
             .get_battle_cter(target_cter_id, true)
             .unwrap();
@@ -1149,7 +1179,7 @@ pub unsafe fn single_skill_damage(
     let res = battle_data.deduct_hp(
         cter_id,
         target_cter_id,
-        Some(skill_damage),
+        DamageType::Skill(skill_damage),
         &mut target_pt,
         true,
     );
@@ -1267,8 +1297,57 @@ pub unsafe fn scope_cure(
     None
 }
 
-///变身系列技能
 pub unsafe fn transform(
+    battle_data: &mut BattleData,
+    cter_id: u32,
+    skill_id: u32,
+    targets: Vec<u32>,
+    au: &mut ActionUnitPt,
+) -> Option<Vec<(u32, ActionUnitPt)>> {
+    if targets.is_empty() {
+        warn!("targets is empty! skill_id:{}", skill_id);
+        return None;
+    }
+    let index = *targets.get(0).unwrap() as usize;
+
+    let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(index);
+    if let Err(e) = target_cter {
+        warn!("{:?}", e);
+        return None;
+    }
+    let target_cter = target_cter.unwrap();
+    let cter_temp_id = target_cter.get_cter_temp_id();
+
+    let skill_temp = crate::TEMPLATES
+        .skill_temp_mgr()
+        .get_temp(&skill_id)
+        .unwrap();
+    let buff_id = skill_temp.buff;
+    let mut new_cter_temp_id = skill_temp.par1;
+    if new_cter_temp_id == 0 {
+        let cter_temp = crate::TEMPLATES
+            .character_temp_mgr()
+            .get_temp_ref(&cter_temp_id)
+            .unwrap();
+        new_cter_temp_id = cter_temp.pl_cter_id;
+    }
+    //处理变身
+    let res = target_cter.transform(cter_id, new_cter_temp_id, buff_id, None);
+    match res {
+        Err(e) => {
+            error!("{:?}", e);
+            return None;
+        }
+        Ok(mut target_pt) => {
+            target_pt.target_value.push(index as u32);
+            au.targets.push(target_pt);
+        }
+    }
+    return None;
+}
+
+///变身系列技能
+pub unsafe fn transform_self(
     battle_data: &mut BattleData,
     cter_id: u32,
     skill_id: u32,
@@ -1323,7 +1402,12 @@ pub unsafe fn transform(
         battle_cter.add_energy(v);
     }
     //处理变身
-    let res = battle_cter.transform(cter_id, transform_cter_temp_id, buff_id, next_turn_index);
+    let res = battle_cter.transform(
+        cter_id,
+        transform_cter_temp_id,
+        buff_id,
+        Some(next_turn_index),
+    );
     match res {
         Err(e) => {
             error!("{:?}", e);
@@ -1382,7 +1466,7 @@ pub unsafe fn transform(
         let res = battle_data.as_mut().unwrap().deduct_hp(
             cter_id,
             user,
-            Some(skill_damage),
+            DamageType::Skill(skill_damage),
             &mut target_pt,
             is_last_one,
         );
@@ -1498,7 +1582,13 @@ pub unsafe fn order_minon_attack(
             let mut other_au =
                 build_action_unit_pt(minon_id, ActionType::Attack, Some(target_index));
             //扣血
-            let res = battle_data_mut.deduct_hp(minon_id, target_id, None, &mut target_pt, true);
+            let res = battle_data_mut.deduct_hp(
+                minon_id,
+                target_id,
+                DamageType::Attack(0),
+                &mut target_pt,
+                true,
+            );
             match res {
                 Ok((_, res)) => {
                     other_au.targets.push(target_pt);

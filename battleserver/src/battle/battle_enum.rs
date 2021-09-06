@@ -49,15 +49,21 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 9] = [122, 211, 221, 311, 312, 322, 324, 11004, 20002];
+    pub const ADD_BUFF: [u32; 10] = [122, 211, 221, 311, 312, 322, 324, 11004, 12003, 20002];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
     pub const SHOW_MAP_CELL: [u32; 5] = [112, 113, 421, 423, 20001];
     ///移动玩家
     pub const MOVE_USER: [u32; 1] = [222];
-    ///相临玩家造成技能伤害并恢复生命
-    pub const NEAR_SKILL_DAMAGE_AND_CURE: [u32; 1] = [321];
+    ///造成技能伤害并恢复生命
+    pub const SKILL_DAMAGE_AND_CURE: [u32; 2] = [321, 12001];
+
+    ///临近的受伤
+    pub const NEXT_SKILL_DAMAGE_AND_CURE: u32 = 321;
+
+    ///分摊伤害
+    pub const ABSORPTION: u32 = 12001;
     ///技能伤害
     pub const SKILL_DAMAGE: [u32; 10] =
         [999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 13002];
@@ -69,8 +75,8 @@ pub mod skill_type {
     pub const SKILL_DAMAGE_OPENED_ELEMENT: [u32; 1] = [213];
     ///范围治疗
     pub const SCOPE_CURE: [u32; 1] = [313];
-    ///变身
-    pub const TRANSFORM: [u32; 1] = [431];
+    ///自己变身
+    pub const TRANSFORM_SELF: [u32; 1] = [431];
     ///展示地图块
     pub const SHOW_INDEX: [u32; 1] = [422];
 
@@ -110,6 +116,12 @@ pub mod skill_type {
 
     ///召唤宠物并且展示地图块
     pub const SUMMON_MINONS_AND_SHOW_INDEX: u32 = 13003;
+
+    ///蓄力技能伤害
+    pub const CHARGE_SKILL_DAMGE: u32 = 12004;
+
+    ///变身
+    pub const TRANSFORM: [u32; 1] = [12002];
 }
 
 ///buff类型
@@ -117,7 +129,7 @@ pub mod buff_type {
     ///格挡伤害
     pub const GD_ATTACK_DAMAGE: [u32; 1] = [2];
     ///变成技能
-    pub const CHANGE_SKILL: [u32; 1] = [3];
+    pub const CHANGE_SKILL: u32 = 3;
     ///增加攻击力并变成AOE
     pub const ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
@@ -179,7 +191,7 @@ pub mod buff_type {
     pub const ATTACKED_SUB_DAMAGE: u32 = 17;
 
     ///扣行动点数上限
-    pub const SUB_MOVE_POINT: u32 = 20;
+    pub const SUB_MOVE_POINT: [u32; 2] = [20, 20015];
 
     ///受到攻击伤害变成0
     pub const NEAR_ATTACKED_DAMAGE_ZERO: u32 = 20001;
@@ -213,6 +225,12 @@ pub mod buff_type {
 
     ///黑夜技能组
     pub const NIGHT_SKILLS: u32 = 20013;
+
+    ///石化buf
+    pub const STONE_BUFF: u32 = 20014;
+
+    ///蓄力
+    pub const CHARGE: u32 = 20016;
 
     ///世界树buff,在战斗开始的时候就开始加载，
     pub const WORLD_CELL_BUFFS: u32 = 30051;

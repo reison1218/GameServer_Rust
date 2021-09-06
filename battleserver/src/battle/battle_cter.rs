@@ -18,8 +18,8 @@ use super::{
     battle_enum::{
         buff_type::{
             ADD_ATTACK, ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED, CHANGE_SKILL,
-            DAY_SKILLS, GD_ATTACK_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NIGHT_SKILLS,
-            SUB_ATTACK_DAMAGE,
+            CHARGE, DAY_SKILLS, GD_ATTACK_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NIGHT_SKILLS,
+            STONE_BUFF, SUB_ATTACK_DAMAGE,
         },
         BattleCterState, FromType,
     },
@@ -282,6 +282,15 @@ impl BattleCharacter {
             }
         }
         true
+    }
+
+    pub fn get_stone_buff(&self) -> Option<&Buff> {
+        let res = self
+            .battle_buffs
+            .buffs()
+            .values()
+            .find(|x| x.function_id == STONE_BUFF);
+        res
     }
 
     pub fn get_cter_temp_id(&self) -> u32 {
@@ -563,23 +572,26 @@ impl BattleCharacter {
         let mut buff_function_id;
         for buff in self.battle_buffs.buffs.values() {
             buff_function_id = buff.function_id;
-            if CHANGE_SKILL.contains(&buff_function_id) {
-                let skill_id = buff.buff_temp.par1;
+            match buff_function_id {
+                CHANGE_SKILL | CHARGE => {
+                    let skill_id = buff.buff_temp.par1;
 
-                let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);
-                match skill_temp {
-                    None => {
-                        error!(
-                            "trigger_turn_start the skill_temp can not find!skill_id:{}",
-                            skill_id
-                        );
-                    }
-                    Some(st) => {
-                        let skill = Skill::from(st);
-                        self.skills.remove(&buff.buff_temp.par2);
-                        self.skills.insert(skill_id, skill);
+                    let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);
+                    match skill_temp {
+                        None => {
+                            error!(
+                                "trigger_turn_start the skill_temp can not find!skill_id:{}",
+                                skill_id
+                            );
+                        }
+                        Some(st) => {
+                            let skill = Skill::from(st);
+                            self.skills.remove(&buff.buff_temp.par2);
+                            self.skills.insert(skill_id, skill);
+                        }
                     }
                 }
+                _ => {}
             }
         }
     }
@@ -710,7 +722,7 @@ impl BattleCharacter {
         from_cter: u32,
         cter_temp_id: u32,
         buff_id: u32,
-        next_turn_index: usize,
+        next_turn_index: Option<usize>,
     ) -> anyhow::Result<TargetPt> {
         let cter_temp = TEMPLATES.character_temp_mgr().get_temp_ref(&cter_temp_id);
         if cter_temp.is_none() {
@@ -741,7 +753,7 @@ impl BattleCharacter {
             anyhow::bail!("")
         }
         let buff_temp = buff_temp.unwrap();
-        self.add_buff(Some(from_cter), None, buff_id, Some(next_turn_index));
+        self.add_buff(Some(from_cter), None, buff_id, next_turn_index);
 
         //添加变身附带的攻击buff
         let attack_buff_id = buff_temp.par1;
@@ -750,12 +762,7 @@ impl BattleCharacter {
             let attack_buff_function_id = attack_buff.function_id;
             if ADD_ATTACK.contains(&attack_buff_function_id) {
                 let buff_from_cter = self.base_attr.cter_id;
-                self.add_buff(
-                    Some(buff_from_cter),
-                    None,
-                    attack_buff_id,
-                    Some(next_turn_index),
-                );
+                self.add_buff(Some(buff_from_cter), None, attack_buff_id, next_turn_index);
             }
         }
 
@@ -820,7 +827,7 @@ pub fn transform_buff_inherit_copy(battle_cter: &mut BattleCharacter) -> Vec<Buf
     let mut need_remove = vec![];
     for buff in battle_cter.battle_buffs.buffs().values() {
         buff_function_id = buff.function_id;
-        if buff_function_id == SUB_MOVE_POINT {
+        if SUB_MOVE_POINT.contains(&buff_function_id) {
             v.push(buff.clone());
             need_remove.push(buff.get_id());
         }

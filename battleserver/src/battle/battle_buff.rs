@@ -15,6 +15,7 @@ use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
 use super::battle_enum::buff_type::PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD;
+use super::battle_enum::DamageType;
 
 #[derive(Clone, Debug)]
 pub struct Buff {
@@ -350,7 +351,7 @@ impl BattleData {
                 let res = self.deduct_hp(
                     cter_id,
                     *target_user,
-                    Some(buff_temp.par1 as i16),
+                    DamageType::Skill(buff_temp.par1 as i16),
                     &mut target_pt,
                     is_last_one,
                 );
