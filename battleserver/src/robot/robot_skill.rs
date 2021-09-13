@@ -132,6 +132,26 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
                 }
             }
         }
+        12002 => {
+            //如果激活中就直接返回
+            if skill.is_active {
+                return false;
+            }
+            //有其他技能可以用就直接返回
+            for cter_skill in cter.skills.values() {
+                if cter_skill.cd_times == 0 {
+                    return false;
+                }
+            }
+            //如果还可以攻击就返回
+            if battle_player.is_can_attack() {
+                return false;
+            }
+            //还可以移动就返回
+            if battle_player.flow_data.residue_movement_points > 0 {
+                return false;
+            }
+        }
         13001 => {
             if !skill.is_active {
                 return false;
@@ -326,6 +346,77 @@ pub fn skill_target(
                 }
             }
         }
+        12001 => {
+            //⭕️aoe，包括中心，人数越多越好
+            let res = get_roundness_aoe(
+                cter_id,
+                battle_data,
+                false,
+                false,
+                false,
+                false,
+                Some(team_id),
+            );
+            match res {
+                Some(res) => {
+                    targets.extend_from_slice(res.as_slice());
+                }
+                None => {
+                    warn!("get_roundness_aoe could not find any target!")
+                }
+            }
+        }
+        12002 => {
+            let last_cter_id = skill.last_target_cter;
+            let mut cter_id;
+            let mut res_v = vec![];
+            for player in battle_data.battle_player.values() {
+                if player.team_id == team_id {
+                    continue;
+                }
+                cter_id = player.major_cter.0;
+                if cter_id == last_cter_id {
+                    continue;
+                }
+
+                let cter = battle_data.get_battle_cter(cter_id, true);
+                match cter {
+                    Ok(cter) => {
+                        res_v.push(cter.get_map_cell_index());
+                    }
+                    Err(_) => continue,
+                }
+            }
+            if res_v.is_empty() {
+                for player in battle_data.battle_player.values() {
+                    if player.team_id == team_id {
+                        continue;
+                    }
+                    cter_id = player.major_cter.0;
+                    let cter = battle_data.get_battle_cter(cter_id, true);
+                    match cter {
+                        Ok(cter) => {
+                            res_v.push(cter.get_map_cell_index());
+                        }
+                        Err(_) => continue,
+                    }
+                }
+            }
+            let mut random = rand::thread_rng();
+            let random_index = random.gen_range(0..res_v.len());
+            let &index = res_v.get(random_index).unwrap();
+            targets.push(index);
+        }
+        12003 => {
+            let cter = battle_data.get_battle_cter(cter_id, true).unwrap();
+            targets.push(cter.get_map_cell_index());
+        }
+        12004 => {
+            let target_cter_index = get_hp_min_cter(battle_data, Some(team_id));
+            if let Some(target_cter_index) = target_cter_index {
+                targets.push(target_cter_index);
+            }
+        }
         13002 => {
             let res = get_nearest_cter(battle_data, cter_id, Some(team_id));
             if let Some(index) = res {
@@ -504,6 +595,34 @@ pub fn get_nearest_cter(
         return None;
     }
     let res = min_value.unwrap();
+    Some(res.1)
+}
+
+///获得生命值最低点角色
+pub fn get_hp_min_cter(battle_data: &BattleData, team_id: Option<u8>) -> Option<usize> {
+    let mut res = (0, 0);
+    for &cter_id in battle_data.cter_player.values() {
+        let cter = battle_data.get_battle_cter(cter_id, true);
+        if cter.is_err() {
+            continue;
+        }
+        let cter = cter.unwrap();
+        if team_id.is_some() && (team_id.unwrap() == cter.base_attr.team_id) {
+            continue;
+        }
+        if res.0 == 0 {
+            res.0 = cter.base_attr.hp;
+            res.1 = cter.get_map_cell_index();
+        }
+        if res.0 < cter.base_attr.hp {
+            res.0 = cter.base_attr.hp;
+            res.1 = cter.get_map_cell_index();
+        }
+    }
+    //校验返回结果
+    if res.1 == 0 {
+        return None;
+    }
     Some(res.1)
 }
 

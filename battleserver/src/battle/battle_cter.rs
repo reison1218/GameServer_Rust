@@ -304,12 +304,6 @@ impl BattleCharacter {
         self.base_attr.user_id
     }
 
-    pub fn died(&mut self, str: &str) {
-        self.base_attr.hp = 0;
-        self.state = BattleCterState::Died;
-        info!("{:?}", str);
-    }
-
     ///加血
     pub fn add_hp(&mut self, hp: i16) -> bool {
         self.base_attr.hp += hp;
@@ -645,7 +639,7 @@ impl BattleCharacter {
     }
 
     ///变回来
-    pub fn transform_back(&mut self) -> TargetPt {
+    pub fn transform_back(&mut self) -> (TargetPt, Vec<Buff>) {
         let clone;
         let is_self_transform;
 
@@ -662,6 +656,18 @@ impl BattleCharacter {
         } else {
             clone = self.self_cter.as_mut().unwrap().clone();
             is_self_transform = false;
+        }
+
+        let mut other_buff = vec![];
+        //拷贝其他状态buff
+        for buff in self.battle_buffs.buffs.values() {
+            if buff.from_cter.is_none() {
+                continue;
+            }
+            if buff.from_skill.is_none() {
+                continue;
+            }
+            other_buff.push(buff.clone());
         }
 
         //拷贝需要继承的属性
@@ -684,7 +690,7 @@ impl BattleCharacter {
         let mut target_pt = TargetPt::new();
         let cter_pt = self.convert_to_battle_cter_pt();
         target_pt.set_transform_cter(cter_pt);
-        target_pt
+        (target_pt, other_buff)
     }
 
     ///处理变身继承
@@ -720,6 +726,7 @@ impl BattleCharacter {
     pub fn transform(
         &mut self,
         from_cter: u32,
+        from_skill: Option<u32>,
         cter_temp_id: u32,
         buff_id: u32,
         next_turn_index: Option<usize>,
@@ -753,7 +760,7 @@ impl BattleCharacter {
             anyhow::bail!("")
         }
         let buff_temp = buff_temp.unwrap();
-        self.add_buff(Some(from_cter), None, buff_id, next_turn_index);
+        self.add_buff(Some(from_cter), from_skill, buff_id, next_turn_index);
 
         //添加变身附带的攻击buff
         let attack_buff_id = buff_temp.par1;

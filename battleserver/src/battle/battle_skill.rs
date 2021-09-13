@@ -994,6 +994,7 @@ pub unsafe fn skill_damage_and_cure(
     let mut add_hp = 0_u32;
     let mut skill_damge = skill.skill_temp.par1 as i16;
 
+    //处理分摊伤害
     if skill_function_id == ABSORPTION {
         skill_damge = (skill.skill_temp.par1 as usize / res_v.len()) as i16;
     }
@@ -1332,7 +1333,7 @@ pub unsafe fn transform(
         new_cter_temp_id = cter_temp.pl_cter_id;
     }
     //处理变身
-    let res = target_cter.transform(cter_id, new_cter_temp_id, buff_id, None);
+    let res = target_cter.transform(cter_id, Some(skill_id), new_cter_temp_id, buff_id, None);
     match res {
         Err(e) => {
             error!("{:?}", e);
@@ -1404,6 +1405,7 @@ pub unsafe fn transform_self(
     //处理变身
     let res = battle_cter.transform(
         cter_id,
+        Some(skill_id),
         transform_cter_temp_id,
         buff_id,
         Some(next_turn_index),

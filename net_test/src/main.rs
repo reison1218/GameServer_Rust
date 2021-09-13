@@ -7,6 +7,7 @@ mod web;
 mod web_socket;
 
 use ::message_io::network::Transport;
+use bma_benchmark::benchmark;
 use futures::future::Fuse;
 use futures::select;
 use futures::Future;

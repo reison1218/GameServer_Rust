@@ -1208,7 +1208,24 @@ impl TriggerEvent for BattleData {
         if stone_buff.is_none() {
             return None;
         }
-        let target_pt = target_cter.transform_back();
+        let (target_pt, other_buffs) = target_cter.transform_back();
+        let mut from_cter_id;
+        let mut from_skill_id;
+        for buff in other_buffs {
+            from_cter_id = buff.from_cter.unwrap();
+            from_skill_id = buff.from_skill.unwrap();
+            let cter = self.get_battle_cter_mut(from_cter_id, true);
+            match cter {
+                Ok(cter) => {
+                    let skill = cter.skills.get_mut(&from_skill_id);
+                    match skill {
+                        Some(skill) => skill.is_active = false,
+                        None => {}
+                    }
+                }
+                Err(_) => {}
+            }
+        }
         Some(target_pt)
     }
 }
