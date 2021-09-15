@@ -4,7 +4,7 @@ use crate::battle::battle_enum::buff_type::{
     TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
-use crate::battle::battle_enum::skill_type::{CHARGE_SKILL_DAMGE, WATER_TURRET};
+use crate::battle::battle_enum::skill_type::{CHARGE_SKILL_DAMGE_ABSORPTION, WATER_TURRET};
 use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
@@ -505,7 +505,7 @@ impl TriggerEvent for BattleData {
                     return;
                 }
                 let skill_temp = res.unwrap();
-                skill_s = Skill::from(skill_temp);
+                skill_s = Skill::from_skill_temp(skill_temp, true);
                 skill = Some(&mut skill_s);
             } else {
                 let res = battle_cter.skills.get_mut(&skill_id);
@@ -518,7 +518,7 @@ impl TriggerEvent for BattleData {
 
                 //替换技能,水炮
                 match skill_function_id {
-                    WATER_TURRET | CHARGE_SKILL_DAMGE => {
+                    WATER_TURRET | CHARGE_SKILL_DAMGE_ABSORPTION => {
                         let skill_temp =
                             TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
                         battle_cter.skills.remove(&skill_id);
@@ -541,7 +541,7 @@ impl TriggerEvent for BattleData {
                         ep.effect_value = st.id;
                         target_pt.effects.push(ep);
                         //将新技能封装到内存
-                        let skill = Skill::from(st);
+                        let skill = Skill::from_skill_temp(st, false);
                         battle_cter.skills.insert(skill.id, skill);
                         //将target封装到proto
                         au.targets.push(target_pt);
@@ -1188,7 +1188,7 @@ impl TriggerEvent for BattleData {
                             .skill_temp_mgr()
                             .get_temp(&change_skill_id)
                             .unwrap();
-                        let mut change_skill = Skill::from(change_skill_temp);
+                        let mut change_skill = Skill::from_skill_temp(change_skill_temp, true);
                         change_skill.cd_times = cd;
                         change_skill.is_active = is_active;
                         cter.skills.insert(change_skill.id, change_skill);

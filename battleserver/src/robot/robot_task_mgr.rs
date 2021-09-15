@@ -200,6 +200,10 @@ pub fn skip_turn(rm: Lock, task: RobotTask) {
     let json_value = task.data;
     let res = json_value.as_object();
     if res.is_none() {
+        error!(
+            "skip_turn error!json_value could not as_object!json_value:{:?}",
+            json_value
+        );
         return;
     }
     let map = res.unwrap();

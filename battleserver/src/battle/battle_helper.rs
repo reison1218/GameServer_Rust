@@ -706,7 +706,6 @@ impl BattleData {
                 DamageType::Attack(_) => damage_v.push((target_cter_id, DamageType::Attack(res))),
                 DamageType::Skill(_) => damage_v.push((target_cter_id, DamageType::Skill(res))),
             }
-
             //扣血
             target_cter.add_hp(-res);
             //封装客户端消息
@@ -2071,7 +2070,7 @@ impl BattleData {
                     .skill_temp_mgr()
                     .get_temp(&new_skill_id)
                     .unwrap();
-                let mut new_skill = Skill::from(new_skill_temp);
+                let mut new_skill = Skill::from_skill_temp(new_skill_temp, true);
                 new_skill.cd_times = cd;
                 new_skill.is_active = is_active;
                 cter.skills.insert(new_skill.id, new_skill);

@@ -1,7 +1,7 @@
 use crate::battle::battle::{BattleData, Direction};
 use crate::battle::battle_enum::buff_type::{
     AWARD_BUFF, AWARD_ITEM, NEAR_ADD_CD, NEAR_SKILL_DAMAGE_PAIR, PAIR_CLEAN_SKILL_CD, PAIR_CURE,
-    PAIR_SAME_ELEMENT_ADD_ATTACK, PAIR_SAME_ELEMENT_CURE,
+    PAIR_SAME_ELEMENT_CURE, PAIR_WOOD_ADD_ATTACK,
 };
 use crate::battle::battle_enum::EffectType;
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR};
@@ -14,7 +14,9 @@ use std::convert::TryFrom;
 use tools::protos::base::{ActionUnitPt, EffectPt, TargetPt, TriggerEffectPt};
 use tools::templates::buff_temp::BuffTemp;
 
-use super::battle_enum::buff_type::PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD;
+use super::battle_enum::buff_type::{
+    PAIR_LAND_ADD_ATTACK, PAIR_SAME_ELEMENT_CLEAN_OR_SUB_SKILL_CD,
+};
 use super::battle_enum::DamageType;
 
 #[derive(Clone, Debug)]
@@ -452,6 +454,15 @@ impl BattleData {
         au.targets.push(target_pt);
     }
 
+    fn pair_land_add_attack(&mut self, cter_id: u32, buff_id: u32) {
+        let res = self.get_battle_cter_mut(cter_id, true);
+        if let Err(_) = res {
+            return;
+        }
+        let battle_cter = res.unwrap();
+        battle_cter.add_buff(Some(cter_id), None, buff_id, None);
+    }
+
     ///匹配同元素治疗
     fn pair_same_element_cure(
         &mut self,
@@ -625,6 +636,12 @@ impl BattleData {
                                 buff_id,
                                 au,
                             );
+                        } else if PAIR_LAND_ADD_ATTACK == buff_function_id {
+                            let buff_element = buff.buff_temp.par1 as u8;
+                            let buff_id = buff.buff_temp.par2;
+                            if buff_element == map_cell_element {
+                                self_mut.pair_land_add_attack(open_cter_id, buff_id);
+                            }
                         }
                     }
                 }
@@ -645,7 +662,7 @@ impl BattleData {
                         buff_function_id = buff.function_id;
                         buff_id = buff.id;
                         //匹配属性一样的地图块+攻击
-                        if PAIR_SAME_ELEMENT_ADD_ATTACK == buff_function_id {
+                        if PAIR_WOOD_ADD_ATTACK == buff_function_id {
                             let buff_element = buff.buff_temp.par1 as u8;
                             let from_user = match_user;
                             //先清除

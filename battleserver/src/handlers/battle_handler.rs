@@ -156,6 +156,7 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
         return;
     }
     let room = res.unwrap();
+    let room_id = room.get_room_id();
     let battle_player = room.battle_data.get_battle_player(None, true);
     if let Err(e) = battle_player {
         warn!("{:?}", e);
@@ -294,34 +295,36 @@ pub fn action(bm: &mut BattleMgr, packet: Packet) {
     }
 
     unsafe {
+        let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room_id);
+        if is_summary {
+            return;
+        }
         let battle_data_ptr = &mut room.battle_data as *mut BattleData;
         let battle_player = room.battle_data.get_battle_player_mut(None, false).unwrap();
         let current_cter_is_died = battle_player.is_died();
+
         //如果角色没死，并且是机器人，则通知机器人执行完了,并且启动机器人action
         if !current_cter_is_died
             && battle_player.is_robot()
             && battle_player.get_user_id() == user_id
         {
-            // let robot_data = battle_player.robot_data.as_ref().unwrap();
-            // if !robot_data.is_action {
-            //     battle_player.robot_start_action(battle_data_ptr);
-            // }
             battle_player.robot_start_action(battle_data_ptr);
         }
         //判断是否进行结算
-        let is_summary = process_summary(rm_ptr.as_mut().unwrap(), room);
         if !is_summary && current_cter_is_died {
             room.battle_data.next_turn(true);
         }
-        // else if action_type == ActionType::Skip && room.state == RoomState::BattleStarted {
-        //     room.battle_data.send_battle_turn_notice();
-        // }
     }
 }
 
 ///处理战斗结算
 /// 在action末尾处,用于处理战斗推进过程中的战斗结算
-pub unsafe fn process_summary(bm: &mut BattleMgr, room: &mut Room) -> bool {
+pub unsafe fn process_summary(bm: &mut BattleMgr, room_id: u32) -> bool {
+    let room = bm.rooms.get_mut(&room_id);
+    if room.is_none() {
+        return false;
+    }
+    let room = room.unwrap();
     let is_summary = room.battle_summary();
     let room_id = room.get_room_id();
     //如果要结算,卸载数据

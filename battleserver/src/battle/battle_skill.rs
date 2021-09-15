@@ -2,9 +2,9 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::battle::battle_enum::skill_type::{
-    ABSORPTION, HURT_SELF_ADD_BUFF, NEXT_SKILL_DAMAGE_AND_CURE, SHOW_ALL_USERS_CELL,
-    SHOW_INDEX_SAME_ELEMENT, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP,
-    SKILL_AOE_RED_SKILL_CD, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
+    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_INDEX_SAME_ELEMENT,
+    SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
+    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
 };
 use crate::battle::battle_enum::{ActionType, DamageType, EffectType, ElementType, TargetType};
 use crate::battle::battle_helper::build_action_unit_pt;
@@ -21,9 +21,10 @@ use tools::protos::base::{ActionUnitPt, EffectPt, SkillPt, TargetPt};
 use tools::templates::skill_temp::SkillTemp;
 
 use super::battle_enum::skill_type::{
-    ORDER_MINON_ATTACK_SAME_TARGET, SCOPE_CHANGE_SKILL_AOE, SUMMON_MINONS_AND_SHOW_INDEX,
+    CHARGE_SKILL_DAMGE_ABSORPTION, ORDER_MINON_ATTACK_SAME_TARGET, SCOPE_CHANGE_SKILL_AOE,
+    SUMMON_MINONS_AND_SHOW_INDEX,
 };
-use super::battle_enum::{FromType, SkillConsumeType};
+use super::battle_enum::{FromType, SkillConsumeType, TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID};
 
 #[derive(Clone, Debug)]
 pub struct Skill {
@@ -53,6 +54,14 @@ impl Skill {
     pub fn reset_cd(&mut self) {
         self.cd_times = self.skill_temp.cd as i8;
     }
+
+    pub fn from_skill_temp(skill_temp: &'static SkillTemp, need_clear_cd: bool) -> Self {
+        let mut skill = Skill::from(skill_temp);
+        if need_clear_cd {
+            skill.cd_times = 0;
+        }
+        skill
+    }
 }
 
 impl From<&'static SkillTemp> for Skill {
@@ -60,7 +69,7 @@ impl From<&'static SkillTemp> for Skill {
         Skill {
             id: skill_temp.id,
             function_id: skill_temp.function_id,
-            cd_times: 0,
+            cd_times: skill_temp.cd as i8,
             skill_temp,
             is_active: false,
             last_target_cter: 0,
@@ -955,7 +964,6 @@ pub unsafe fn skill_damage_and_cure(
     let cter_index = battle_cter.get_map_cell_index() as isize;
     let skill = battle_cter.skills.get_mut(&skill_id).unwrap();
 
-    let skill_function_id = skill.function_id;
     let res = TEMPLATES
         .skill_scope_temp_mgr()
         .get_temp(&skill.skill_temp.scope);
@@ -965,26 +973,22 @@ pub unsafe fn skill_damage_and_cure(
     }
     let scope_temp = res.unwrap();
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
-    let res_v;
 
-    match skill_function_id {
-        ABSORPTION => {
-            if targets.is_empty() {
-                error!("the targets is empty! skill_id:{}", skill_id);
-                return None;
-            }
-            let index = *targets.get(0).unwrap() as isize;
-            let (_, v) =
-                battle_data_mut.cal_scope(cter_id, index, target_type, None, Some(scope_temp));
-            res_v = v;
+    let index;
+    if target_type == TargetType::MapCellEnemys {
+        if targets.is_empty() {
+            error!("the targets is empty! skill_id:{}", skill_id);
+            return None;
         }
-        NEXT_SKILL_DAMAGE_AND_CURE => {
-            let (_, v) =
-                battle_data_mut.cal_scope(cter_id, cter_index, target_type, None, Some(scope_temp));
-            res_v = v;
-        }
-        _ => res_v = vec![],
+        index = *targets.get(0).unwrap() as isize;
+    } else if target_type == TargetType::SelfScopeOthers {
+        index = cter_index;
+    } else {
+        index = 0;
     }
+
+    let (_, v) = battle_data_mut.cal_scope(cter_id, index, target_type, None, Some(scope_temp));
+    let res_v = v;
 
     //如果为空就直接返回
     if res_v.is_empty() {
@@ -994,21 +998,21 @@ pub unsafe fn skill_damage_and_cure(
     let mut add_hp = 0_u32;
     let mut skill_damge = skill.skill_temp.par1 as i16;
 
-    //处理分摊伤害
-    if skill_function_id == ABSORPTION {
-        skill_damge = (skill.skill_temp.par1 as usize / res_v.len()) as i16;
-    }
-
     let mut targets: Vec<(u32, DamageType)> = vec![];
     let mut skill_damge_res;
     for target_cter_id in res_v {
         let target_cter = battle_data_mut
             .get_battle_cter(target_cter_id, true)
             .unwrap();
+        //计算石化buff
+        let stone_buff = target_cter.get_stone_buff();
+        if let Some(stone_buff) = stone_buff {
+            skill_damge *= stone_buff.buff_temp.par1 as i16;
+        }
         let res = target_cter.base_attr.hp - skill_damge;
         if res < 0 {
-            skill_damge_res = res.abs();
-            add_hp += res.abs() as u32;
+            skill_damge_res = target_cter.base_attr.hp;
+            add_hp += target_cter.base_attr.hp as u32;
         } else {
             skill_damge_res = skill_damge;
             add_hp += skill_damge as u32;
@@ -1146,6 +1150,7 @@ pub unsafe fn single_skill_damage(
         );
         return None;
     }
+    let battle_data_ptr = battle_data as *mut BattleData;
     let target_index = *target_array.get(0).unwrap();
     let target_cter = battle_data.get_battle_cter_mut_by_map_cell_index(target_index as usize);
     if let Err(e) = target_cter {
@@ -1153,11 +1158,16 @@ pub unsafe fn single_skill_damage(
         return None;
     }
     let target_cter = target_cter.unwrap();
+    let target_index = target_cter.get_map_cell_index();
     let target_cter_id = target_cter.get_cter_id();
     let skill_damage;
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
+    let target_type = TargetType::try_from(skill_temp.target).unwrap();
     let skill_function_id = skill_temp.function_id;
+
+    let mut targets_res = vec![];
+    let mut target_cters = vec![target_cter_id];
     //目标在附近伤害加深
     if skill_function_id == SKILL_DAMAGE_NEAR_DEEP {
         let (_, users) = battle_data.cal_scope(
@@ -1172,33 +1182,32 @@ pub unsafe fn single_skill_damage(
         } else {
             skill_damage = skill_temp.par1 as i16;
         }
+    } else if skill_function_id == CHARGE_SKILL_DAMGE_ABSORPTION {
+        let battle_data_mut = battle_data_ptr.as_mut().unwrap();
+        let skill_scopt_temp = crate::TEMPLATES
+            .skill_scope_temp_mgr()
+            .get_temp(&TRIGGER_SCOPE_CENTER_NEAR_TEMP_ID)
+            .unwrap();
+        let (_, res) = battle_data_mut.cal_scope(
+            cter_id,
+            target_index as isize,
+            target_type,
+            None,
+            Some(skill_scopt_temp),
+        );
+        skill_damage = skill_temp.par1 as i16 / res.len() as i16;
+        target_cters.clear();
+        target_cters.extend_from_slice(res.as_slice());
     } else {
         skill_damage = skill_temp.par1 as i16;
     }
 
-    let mut target_pt = battle_data.new_target_pt(target_cter_id).unwrap();
-    let res = battle_data.deduct_hp(
-        cter_id,
-        target_cter_id,
-        DamageType::Skill(skill_damage),
-        &mut target_pt,
-        true,
-    );
-    if let Err(e) = res {
-        error!("{:?}", e);
-        return None;
+    for id in target_cters {
+        targets_res.push((id, DamageType::Skill(skill_damage)));
     }
-    match res {
-        Ok((_, _other_target_pts)) => {
-            au.targets.push(target_pt);
-            for i in _other_target_pts {
-                au.targets.push(i);
-            }
-        }
-        Err(e) => {
-            warn!("{:?}", e)
-        }
-    }
+
+    //批量扣血
+    battle_data.batch_deduct_hp(cter_id, targets_res, au);
 
     None
 }
@@ -1342,6 +1351,9 @@ pub unsafe fn transform(
         Ok(mut target_pt) => {
             target_pt.target_value.push(index as u32);
             au.targets.push(target_pt);
+            let cter = battle_data.get_battle_cter_mut(cter_id, true).unwrap();
+            let skill = cter.skills.get_mut(&skill_id).unwrap();
+            skill.is_active = true;
         }
     }
     return None;

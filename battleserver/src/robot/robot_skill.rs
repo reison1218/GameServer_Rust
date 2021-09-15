@@ -139,7 +139,7 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
             }
             //有其他技能可以用就直接返回
             for cter_skill in cter.skills.values() {
-                if cter_skill.cd_times == 0 {
+                if cter_skill.function_id != 12002 && cter_skill.cd_times == 0 {
                     return false;
                 }
             }
@@ -601,7 +601,7 @@ pub fn get_nearest_cter(
 ///获得生命值最低点角色
 pub fn get_hp_min_cter(battle_data: &BattleData, team_id: Option<u8>) -> Option<usize> {
     let mut res = (0, 0);
-    for &cter_id in battle_data.cter_player.values() {
+    for &cter_id in battle_data.cter_player.keys() {
         let cter = battle_data.get_battle_cter(cter_id, true);
         if cter.is_err() {
             continue;
@@ -614,7 +614,7 @@ pub fn get_hp_min_cter(battle_data: &BattleData, team_id: Option<u8>) -> Option<
             res.0 = cter.base_attr.hp;
             res.1 = cter.get_map_cell_index();
         }
-        if res.0 < cter.base_attr.hp {
+        if res.0 > cter.base_attr.hp {
             res.0 = cter.base_attr.hp;
             res.1 = cter.get_map_cell_index();
         }
@@ -791,7 +791,22 @@ pub fn get_roundness_aoe(
         }
         res_v.push(v);
     }
-    res_v.iter().max().cloned()
+    let (mut index_temp, mut size) = (-1, 0);
+    for (index, v) in res_v.iter().enumerate() {
+        if index_temp == -1 {
+            index_temp = index as isize;
+            size = v.len();
+        }
+        if size < v.len() {
+            index_temp = index as isize;
+            size = v.len();
+        }
+    }
+    if index_temp < 0 {
+        return None;
+    } else {
+        Some(res_v.get(index_temp as usize).unwrap().clone())
+    }
 }
 
 ///获得三角aoe范围
@@ -859,7 +874,22 @@ pub fn get_triangle_aoe(
         }
         res_v.push(v);
     }
-    res_v.iter().max().cloned()
+    let (mut index_temp, mut size) = (-1, 0);
+    for (index, v) in res_v.iter().enumerate() {
+        if index_temp == -1 {
+            index_temp = index as isize;
+            size = v.len();
+        }
+        if size < v.len() {
+            index_temp = index as isize;
+            size = v.len();
+        }
+    }
+    if index_temp < 0 {
+        return None;
+    } else {
+        Some(res_v.get(index_temp as usize).unwrap().clone())
+    }
 }
 
 ///获得打一排三个的位置

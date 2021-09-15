@@ -859,7 +859,7 @@ impl Room {
 
     ///判断房间是否有成员
     pub fn is_empty(&self) -> bool {
-        self.members.is_empty()
+        self.members.is_empty() || self.is_all_robot()
     }
 
     pub fn cter_2_battle_cter(&mut self) {

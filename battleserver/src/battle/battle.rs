@@ -123,7 +123,7 @@ pub struct BattleData {
     pub turn_orders: [u32; MEMBER_MAX],            //turn行动队列，里面放玩家id
     pub reflash_map_turn: Option<usize>,           //刷新地图时的turn下标
     pub battle_player: HashMap<u32, BattlePlayer>, //玩家战斗数据
-    pub cter_player: HashMap<u32, u32>,            //角色对应玩家
+    pub cter_player: HashMap<u32, u32>,            //角色对应玩家,cter_id user_id
     pub summary_vec: Vec<Vec<SummaryUser>>,        //排名  user_id
     pub summary_vec_temp: Vec<SummaryUser>,        //同一批挂掉的人
     pub leave_user: (u32, bool),                   //离开玩家id,是否惩罚

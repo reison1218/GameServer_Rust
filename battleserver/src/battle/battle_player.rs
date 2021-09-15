@@ -19,7 +19,7 @@ use tools::macros::GetMutRef;
 use tools::protos::base::BattlePlayerPt;
 
 use super::battle_cter::BattleCharacter;
-use super::battle_enum::buff_type::SUB_MOVE_POINT;
+use super::battle_enum::buff_type::{STONE_BUFF, SUB_MOVE_POINT_ARRAY};
 
 ///角色战斗基础属性
 #[derive(Clone, Debug, Default)]
@@ -173,6 +173,17 @@ impl BattlePlayer {
 
     pub fn clear_residue_movement_points(&mut self) {
         self.flow_data.residue_movement_points = 0;
+    }
+
+    pub fn has_stone_buff(&self) -> bool {
+        let res = self.cters.values().find(|x| {
+            x.battle_buffs
+                .buffs()
+                .values()
+                .find(|x| x.function_id == STONE_BUFF)
+                .is_some()
+        });
+        res.is_some()
     }
 
     pub fn get_major_cter_mut(&mut self) -> &mut BattleCharacter {
@@ -340,7 +351,7 @@ impl BattlePlayer {
                 .battle_buffs
                 .buffs()
                 .values()
-                .find(|buff| SUB_MOVE_POINT.contains(&buff.function_id));
+                .find(|buff| SUB_MOVE_POINT_ARRAY.contains(&buff.function_id));
             if let Some(buff) = res {
                 if buff.buff_temp.par1 == 0 {
                     reward_count = 0;
@@ -352,6 +363,9 @@ impl BattlePlayer {
             }
         }
         self.flow_data.residue_movement_points = reward_count;
+        if self.flow_data.residue_movement_points == 0 {
+            self.set_is_can_end_turn(true);
+        }
     }
 
     pub fn set_is_can_end_turn(&mut self, value: bool) {

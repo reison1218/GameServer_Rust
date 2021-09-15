@@ -58,15 +58,10 @@ pub mod skill_type {
     pub const MOVE_USER: [u32; 1] = [222];
     ///造成技能伤害并恢复生命
     pub const SKILL_DAMAGE_AND_CURE: [u32; 2] = [321, 12001];
-
-    ///临近的受伤
-    pub const NEXT_SKILL_DAMAGE_AND_CURE: u32 = 321;
-
-    ///分摊伤害
-    pub const ABSORPTION: u32 = 12001;
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 10] =
-        [999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 13002];
+    pub const SKILL_DAMAGE: [u32; 11] = [
+        999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 12004, 13002,
+    ];
     ///技能aoe
     pub const SKILL_AOE: [u32; 8] = [121, 411, 412, 432, 11007, 11008, 11009, 13005];
     ///减技能cd
@@ -118,7 +113,7 @@ pub mod skill_type {
     pub const SUMMON_MINONS_AND_SHOW_INDEX: u32 = 13003;
 
     ///蓄力技能伤害
-    pub const CHARGE_SKILL_DAMGE: u32 = 12004;
+    pub const CHARGE_SKILL_DAMGE_ABSORPTION: u32 = 12004;
 
     ///变身
     pub const TRANSFORM: [u32; 1] = [12002];
@@ -133,7 +128,7 @@ pub mod buff_type {
     ///增加攻击力并变成AOE
     pub const ADD_ATTACK_AND_AOE: [u32; 1] = [4];
     ///增加攻击力
-    pub const ADD_ATTACK: [u32; 6] = [4, 7, 16, 1001, 1002, 20011];
+    pub const ADD_ATTACK: [u32; 7] = [4, 7, 16, 1001, 1002, 20011, 20018];
     ///减伤buff
     pub const SUB_ATTACK_DAMAGE: [u32; 2] = [8, 10001];
     ///获得道具
@@ -150,8 +145,11 @@ pub mod buff_type {
     pub const DEFENSE_NEAR_MOVE_SKILL_DAMAGE: [u32; 1] = [1];
     ///被攻击时增加能量
     pub const ATTACKED_ADD_ENERGY: [u32; 1] = [10004];
-    /// 匹配属性一样的地图块+攻击
-    pub const PAIR_SAME_ELEMENT_ADD_ATTACK: u32 = 1001;
+    /// 匹配土的地图块+攻击
+    pub const PAIR_LAND_ADD_ATTACK: u32 = 20017;
+    /// 匹配木的地图块+攻击
+    pub const PAIR_WOOD_ADD_ATTACK: u32 = 1001;
+
     ///当地图重制，+攻击力
     pub const RESET_MAP_ADD_ATTACK: [u32; 1] = [1002];
     /// 移动干点啥，配对又干点啥
@@ -191,7 +189,13 @@ pub mod buff_type {
     pub const ATTACKED_SUB_DAMAGE: u32 = 17;
 
     ///扣行动点数上限
-    pub const SUB_MOVE_POINT: [u32; 2] = [20, 20015];
+    pub const SUB_MOVE_POINT_ARRAY: [u32; 2] = [20, 20015];
+
+    ///扣行动点
+    pub const SUB_MOVE_POINT: u32 = 20;
+
+    ///行动点数为0
+    pub const MOVE_POINT_ZERO: u32 = 20015;
 
     ///受到攻击伤害变成0
     pub const NEAR_ATTACKED_DAMAGE_ZERO: u32 = 20001;
@@ -234,6 +238,9 @@ pub mod buff_type {
 
     ///世界树buff,在战斗开始的时候就开始加载，
     pub const WORLD_CELL_BUFFS: u32 = 30051;
+
+    ///永久加攻击力buff
+    pub const ADD_ATTACK_BUFF_PERPETUAL: [u32; 2] = [20011, 20018];
 }
 
 ///pos操作类型

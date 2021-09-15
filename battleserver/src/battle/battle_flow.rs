@@ -1,7 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_enum::buff_type::{
-    ADD_ATTACK_AND_AOE, MANUAL_MOVE_AND_PAIR_ADD_ENERGY, PAIR_SAME_ELEMENT_ADD_ATTACK,
-    RESET_MAP_ADD_ATTACK,
+    ADD_ATTACK_AND_AOE, MANUAL_MOVE_AND_PAIR_ADD_ENERGY, PAIR_WOOD_ADD_ATTACK, RESET_MAP_ADD_ATTACK,
 };
 use crate::battle::battle_enum::{DamageType, SkillConsumeType};
 use crate::battle::battle_enum::{TargetType, TRIGGER_SCOPE_NEAR_TEMP_ID};
@@ -180,7 +179,7 @@ impl BattleData {
                     anyhow::bail!("")
                 }
                 let skill_temp = res.unwrap();
-                skill_s = Some(Skill::from(skill_temp));
+                skill_s = Some(Skill::from_skill_temp(skill_temp, true));
                 skill = skill_s.as_mut().unwrap();
             } else {
                 skill = battle_cter.skills.get_mut(&skill_id).unwrap();
@@ -374,7 +373,7 @@ impl BattleData {
                             );
                         }
                         //匹配相同元素的地图块加攻击，在地图刷新的时候，攻击要减回来
-                        if PAIR_SAME_ELEMENT_ADD_ATTACK == buff_function_id {
+                        if PAIR_WOOD_ADD_ATTACK == buff_function_id {
                             cter_mut.remove_damage_buff(buff_id);
                         }
                     }
@@ -528,7 +527,9 @@ impl BattleData {
 
                     //turn结算玩家
                     let battle_player = self_mut.battle_player.get_mut(&user_id).unwrap();
-
+                    if battle_player.has_stone_buff() {
+                        is_can_skip_turn = true;
+                    }
                     battle_player.set_is_can_end_turn(is_can_skip_turn);
                 }
             }
