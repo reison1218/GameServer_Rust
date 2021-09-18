@@ -104,70 +104,6 @@ impl From<&'static BuffTemp> for Buff {
 }
 
 impl BattleData {
-    ///获得道具
-    fn reward_item(&mut self, _: Option<u32>, _: u32, _: u32, _: u32, _: &mut ActionUnitPt) {
-        // let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id);
-        // if let Err(e) = buff_temp {
-        //     error!("{:?}", e);
-        //     return;
-        // }
-        // let buff_temp = buff_temp.unwrap();
-        // let item_id = buff_temp.par1;
-
-        // let battle_player = self.battle_player.get_mut(&user_id);
-        // if let None = battle_player {
-        //     error!("battle_player is not find!user_id:{}", user_id);
-        //     return;
-        // }
-        // let battle_player = battle_player.unwrap();
-        // let res = battle_player.get_current_cter_mut().add_item(item_id);
-        // if let Err(e) = res {
-        //     warn!("{:?}", e);
-        //     return;
-        // }
-        // let target_pt = self.build_target_pt(
-        //     from_user,
-        //     user_id,
-        //     EffectType::RewardItem,
-        //     item_id,
-        //     Some(buff_id),
-        // );
-        // match target_pt {
-        //     Ok(target_pt) => {
-        //         au.targets.push(target_pt);
-        //     }
-        //     Err(e) => {
-        //         warn!("{:?}", e);
-        //         return;
-        //     }
-        // }
-        // //判断目标类型，若是地图块上的玩家，则判断之前那个地图块上有没有玩家，有就给他道具
-        // if buff_temp.target == TargetType::MapCellPlayer.into_u8() {
-        //     let last_map_cell_user = self.battle_player.get_mut(&last_map_cell_user_id);
-        //     if let None = last_map_cell_user {
-        //         return;
-        //     }
-        //     let last_map_cell_user = last_map_cell_user.unwrap();
-        //     let res = last_map_cell_user.get_current_cter_mut().add_item(item_id);
-        //     if let Err(e) = res {
-        //         warn!("{:?}", e);
-        //         return;
-        //     }
-        //     let target_pt = self.build_target_pt(
-        //         from_user,
-        //         last_map_cell_user_id,
-        //         EffectType::RewardItem,
-        //         item_id,
-        //         Some(buff_id),
-        //     );
-        //     if let Err(e) = target_pt {
-        //         warn!("{:?}", e);
-        //         return;
-        //     }
-        //     au.targets.push(target_pt.unwrap());
-        // }
-    }
-
     ///匹配获得治疗
     fn pair_cure(
         &mut self,
@@ -722,7 +658,7 @@ impl BattleData {
             }
             let open_cter = open_cter.unwrap();
 
-            let map_cell = self_mut.tile_map.map_cells.get(map_cell_index);
+            let map_cell = self_mut.tile_map.map_cells.get_mut(map_cell_index);
             if let None = map_cell {
                 warn!("could not find map_cell!index:{}", map_cell_index);
                 return;
@@ -731,7 +667,7 @@ impl BattleData {
             if map_cell.buffs.is_empty() {
                 return;
             }
-            let map_cell_ptr = map_cell as *const MapCell;
+            let map_cell_ptr = map_cell as *mut MapCell;
 
             let last_index = open_cter.index_data.last_map_cell_index;
             let last_map_cell_cter_id;
@@ -788,6 +724,14 @@ impl BattleData {
                         self.near_skill_damage(open_cter_id, map_cell_index as u32, buff_id, au);
                     }
                 }
+            }
+            //删掉火buff
+            let res = map_cell_ptr.as_mut().unwrap().remove_fire_buff();
+            if let Some(fire_buff_id) = res {
+                let mut target_pt = TargetPt::new();
+                target_pt.target_value.push(map_cell_index as u32);
+                target_pt.lost_buffs.push(fire_buff_id);
+                au.targets.push(target_pt);
             }
         }
     }

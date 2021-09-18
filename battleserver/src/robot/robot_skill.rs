@@ -5,6 +5,7 @@ use rand::Rng;
 use serde_json::{Map, Value};
 use tools::cmd_code::BattleCode;
 
+use crate::battle::battle_enum::SkillConsumeType;
 use crate::battle::{battle_enum::TargetType, battle_player::BattlePlayer};
 use crate::handlers::battle_handler::check_skill_useable;
 use crate::room::map_data::MapCellType;
@@ -66,6 +67,14 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
     //如果cd好了就设置状态
     if skill.cd_times == 0 {
         can_use = true;
+    }
+
+    //如果是消耗能量
+    if skill.skill_temp.consume_type == SkillConsumeType::Energy.into_u8() {
+        let cter = robot_player.get_current_cter();
+        if cter.base_attr.energy < skill.skill_temp.consume_value {
+            return false;
+        }
     }
 
     let battle_player = battle_data.battle_player.get(&robot_id).unwrap();
@@ -178,6 +187,43 @@ pub fn skill_condition(battle_data: &BattleData, skill: &Skill, robot: &RobotDat
         13004 => {
             can_use = !cter.minons.is_empty();
         }
+        14001 => {
+            let skill_temp = cter.skills.values().find(|x| x.function_id == 14003);
+            if skill_temp.is_none() && skill.turn_use_times < 2 {
+                can_use = true;
+            } else {
+                can_use = false;
+            }
+        }
+        14002 => {
+            let fire_buff_count = battle_data
+                .tile_map
+                .map_cells
+                .iter()
+                .filter(|x| x.has_fire_buff())
+                .count();
+            if fire_buff_count > 2 {
+                return false;
+            }
+
+            let unopen_unfire_count = battle_data
+                .tile_map
+                .map_cells
+                .iter()
+                .filter(|x| x.open_cter == 0 && !x.has_fire_buff())
+                .count();
+            if unopen_unfire_count < 2 {
+                return false;
+            }
+            can_use = true;
+        }
+        14003 => {
+            //能量判定，能用就用，此处不需要加入判定逻辑
+        }
+
+        14004 => {
+            //能量判定，能用就用，此处不需要加入判定逻辑
+        }
 
         _ => {}
     }
@@ -247,8 +293,16 @@ pub fn skill_target(
         }
         //变身技能，计算⭕️
         i if [431].contains(&i) => {
-            let res =
-                get_roundness_aoe(cter_id, battle_data, true, false, true, true, Some(team_id));
+            let res = get_roundness_aoe(
+                cter_id,
+                battle_data,
+                true,
+                false,
+                true,
+                true,
+                Some(team_id),
+                false,
+            );
             match res {
                 Some(res) => {
                     targets.extend_from_slice(res.as_slice());
@@ -268,6 +322,7 @@ pub fn skill_target(
                 false,
                 false,
                 Some(team_id),
+                false,
             );
             match res {
                 Some(res) => {
@@ -326,6 +381,7 @@ pub fn skill_target(
                 false,
                 false,
                 Some(team_id),
+                false,
             );
             if let Some(res) = res {
                 targets.extend_from_slice(res.as_slice());
@@ -356,6 +412,7 @@ pub fn skill_target(
                 false,
                 false,
                 Some(team_id),
+                false,
             );
             match res {
                 Some(res) => {
@@ -439,6 +496,81 @@ pub fn skill_target(
                 let cter_res = cter_res.unwrap();
                 targets.push(cter_res.get_map_cell_index());
             }
+        }
+        14001 => {
+            let res = get_roundness_aoe(
+                cter_id,
+                battle_data,
+                false,
+                false,
+                false,
+                false,
+                Some(team_id),
+                true,
+            );
+            if let Some(res) = res {
+                let (mut cter_index, mut hp) = (-1, 0);
+                //找出血量最多的那个
+                for &index in res.iter() {
+                    let cter = battle_data.get_battle_cter_by_map_cell_index(index);
+                    if cter.is_err() {
+                        continue;
+                    }
+                    let cter = cter.unwrap();
+                    if hp == 0 {
+                        hp = cter.base_attr.hp;
+                        cter_index = index as isize;
+                    }
+                    if hp < cter.base_attr.hp {
+                        hp = cter.base_attr.hp;
+                        cter_index = index as isize;
+                    }
+                }
+                if cter_index >= 0 {
+                    targets.push(cter_index as usize);
+                }
+            }
+        }
+        14002 => {
+            let mut res_v = vec![];
+            for map_cell in battle_data.tile_map.map_cells.iter() {
+                if map_cell.open_cter > 0 {
+                    continue;
+                }
+                if map_cell.cell_type != MapCellType::Valid {
+                    continue;
+                }
+                if map_cell.pair_index.is_some() {
+                    continue;
+                }
+                if map_cell.has_fire_buff() {
+                    continue;
+                }
+                if map_cell.cter_id > 0 {
+                    continue;
+                }
+                res_v.push(map_cell.index);
+            }
+            if res_v.is_empty() {
+                return Ok(targets);
+            }
+            let mut random = rand::thread_rng();
+
+            for _ in 0..2 {
+                if res_v.is_empty() {
+                    break;
+                }
+                let index = random.gen_range(0..res_v.len());
+                let res_index = res_v.remove(index);
+                targets.push(res_index);
+            }
+        }
+        14003 => {
+            let cter = battle_data.get_battle_cter(cter_id, true).unwrap();
+            targets.push(cter.get_map_cell_index());
+        }
+        14004 => {
+            //目标是全图，这里不需要选择目标
         }
         _ => {}
     }
@@ -675,29 +807,6 @@ pub fn near_user(battle_data: &BattleData, cter_id: u32) -> bool {
     !res.1.is_empty()
 }
 
-///检测是否还有未知地图块，有就随机一块出来并返回
-pub fn check_unknow_map_cell(tile_map: &TileMap, robot: &RobotData) -> Option<usize> {
-    let mut v = vec![];
-    for map_cell in tile_map.map_cells.iter() {
-        if map_cell.is_world() {
-            continue;
-        }
-        let index = map_cell.index;
-        for rem_map_cell in robot.remember_map_cell.iter() {
-            if rem_map_cell.cell_index == index {
-                continue;
-            }
-            v.push(index);
-        }
-    }
-    if v.is_empty() {
-        return None;
-    }
-    let rand_index = rand::thread_rng().gen_range(0..v.len());
-    let &index = v.get(rand_index).unwrap();
-    Some(index)
-}
-
 ///获得圆形范围aoe范围
 pub fn get_roundness_aoe(
     cter_id: u32,
@@ -707,6 +816,7 @@ pub fn get_roundness_aoe(
     is_opened: bool,
     is_check_world_cell: bool,
     team_id: Option<u8>,
+    need_hp_max: bool,
 ) -> Option<Vec<usize>> {
     let mut res_v = vec![];
     for map_cell in battle_data.tile_map.map_cells.iter() {
@@ -791,17 +901,58 @@ pub fn get_roundness_aoe(
         }
         res_v.push(v);
     }
+
     let (mut index_temp, mut size) = (-1, 0);
-    for (index, v) in res_v.iter().enumerate() {
-        if index_temp == -1 {
-            index_temp = index as isize;
-            size = v.len();
+    if need_hp_max {
+        let mut vec = vec![];
+        for (index, v) in res_v.iter().enumerate() {
+            vec.push((index, v.len()));
         }
-        if size < v.len() {
-            index_temp = index as isize;
-            size = v.len();
+
+        //找人最多的
+        let &max_count = vec.iter().max_by(|x, y| x.1.cmp(&y.1)).unwrap();
+        //看最多人数的有多少个
+        let res: Vec<&(usize, usize)> = vec.iter().filter(|x| x.1 == max_count.1).collect();
+
+        //在里面找血量最大的
+        let mut cters_hp = vec![];
+
+        for (index, _) in res {
+            let res = res_v.get(*index).unwrap();
+            let mut max_hp_index = 0;
+            let mut hp = 0;
+            res.iter().for_each(|x| {
+                let cter = battle_data.get_battle_cter_by_map_cell_index(*x).unwrap();
+                if hp == 0 {
+                    hp = cter.base_attr.hp;
+                    max_hp_index = cter.get_map_cell_index();
+                }
+                if hp < cter.base_attr.hp {
+                    hp = cter.base_attr.hp;
+                    max_hp_index = cter.get_map_cell_index();
+                }
+            });
+            cters_hp.push((index, hp));
+        }
+        //找到cters_hp里面血量最大的那一个队列下标
+        let res = cters_hp.iter().max_by(|x, y| x.1.cmp(&y.1)).unwrap();
+
+        let &index = res.0;
+
+        index_temp = index as isize;
+    } else {
+        for (index, v) in res_v.iter().enumerate() {
+            if index_temp == -1 {
+                index_temp = index as isize;
+                size = v.len();
+            }
+            if size < v.len() {
+                index_temp = index as isize;
+                size = v.len();
+            }
         }
     }
+
     if index_temp < 0 {
         return None;
     } else {

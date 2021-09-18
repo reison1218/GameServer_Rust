@@ -110,42 +110,6 @@ impl BattleData {
         bgs
     }
 
-    ///使用道具,道具都是一次性的，用完了就删掉
-    /// user_id:使用道具的玩家
-    /// item_id:道具id
-    pub fn use_item(
-        &mut self,
-        _: u32,
-        _: u32,
-        _: Vec<u32>,
-        _: &mut ActionUnitPt,
-    ) -> anyhow::Result<Option<Vec<(u32, ActionUnitPt)>>> {
-        // let battle_player = self.get_battle_player(Some(user_id), true);
-        // if let Err(e) = battle_player {
-        //     error!("{:?}", e);
-        //     anyhow::bail!("")
-        // }
-        // let battle_player = battle_player.unwrap();
-        // let item = battle_player.get_current_cter().items.get(&item_id);
-        // if let None = item {
-        //     error!("item is None!user_id:{},item_id:{}", user_id, item_id);
-        //     anyhow::bail!("")
-        // }
-        // let item = item.unwrap();
-        // let skill_id = item.skill_temp.id;
-        // let res = self.use_skill(user_id, skill_id, true, targets, au)?;
-        // let battle_player = self.get_battle_player_mut(Some(user_id), true);
-        // if let Err(e) = battle_player {
-        //     error!("{:?}", e);
-        //     anyhow::bail!("")
-        // }
-        // let battle_player = battle_player.unwrap();
-        // //用完了就删除
-        // battle_player.get_current_cter_mut().items.remove(&item_id);
-        // Ok(res)
-        Ok(None)
-    }
-
     ///使用技能
     /// user_id:使用技能的玩家id
     /// target_array目标数组

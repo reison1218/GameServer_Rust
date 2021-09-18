@@ -262,13 +262,6 @@ impl BattleData {
             .find(|x| x.is_robot() && worldboss_temps.contains_key(&x.get_cter_temp_id()))
     }
 
-    pub fn get_world_boss_mut(&mut self) -> Option<&mut BattlePlayer> {
-        let worldboss_temps = &crate::TEMPLATES.worldboss_temp_mgr().temps;
-        self.battle_player
-            .values_mut()
-            .find(|x| x.is_robot() && worldboss_temps.contains_key(&x.get_cter_temp_id()))
-    }
-
     pub fn remove_player(&mut self, user_id: u32) {
         //移除战斗角色
         let battle_player = self.battle_player.remove(&user_id);
@@ -289,24 +282,6 @@ impl BattleData {
                 self.cter_player.remove(&cter_id);
             }
         }
-    }
-
-    pub fn get_teammates(&self, team_id: u8) -> Vec<u32> {
-        let mut res_v = vec![];
-
-        for battle_player in self.battle_player.values() {
-            if battle_player.team_id != team_id {
-                continue;
-            }
-            for &cter_id in battle_player.cters.keys() {
-                let cter = self.get_battle_cter(cter_id, true);
-                if cter.is_err() {
-                    continue;
-                }
-                res_v.push(cter_id);
-            }
-        }
-        res_v
     }
 
     pub fn get_enemys(&self, team_id: u8) -> Vec<u32> {
@@ -554,32 +529,6 @@ impl BattleData {
             anyhow::bail!(
                 "this battle_player is already died!user_id:{},cter_id:{}",
                 _user_id,
-                battle_player.get_cter_temp_id()
-            )
-        }
-        Ok(battle_player)
-    }
-
-    ///获得战斗角色借用指针
-    pub fn get_battle_player_by_cter_id(
-        &self,
-        cter_id: u32,
-        is_alive: bool,
-    ) -> anyhow::Result<&BattlePlayer> {
-        let user_id = self.cter_player.get(&cter_id);
-        if let None = user_id {
-            anyhow::bail!("there is no user_id!cter_id:{}", cter_id)
-        }
-        let user_id = user_id.unwrap();
-        let battle_player = self.battle_player.get(&user_id);
-        if let None = battle_player {
-            anyhow::bail!("there is no battle_player!user_id:{}", user_id)
-        }
-        let battle_player = battle_player.unwrap();
-        if is_alive && battle_player.is_died() {
-            anyhow::bail!(
-                "this battle_player is already died!user_id:{},cter_id:{}",
-                user_id,
                 battle_player.get_cter_temp_id()
             )
         }

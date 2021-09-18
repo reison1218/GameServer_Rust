@@ -2,9 +2,9 @@ use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
 use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::battle::battle_enum::skill_type::{
-    HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL, SHOW_INDEX_SAME_ELEMENT,
-    SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP, SKILL_AOE_RED_SKILL_CD,
-    SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
+    DAMAGE_DIFFUSION, FULL_MAP_DAMAGE, HURT_SELF_ADD_BUFF, SHOW_ALL_USERS_CELL,
+    SHOW_INDEX_SAME_ELEMENT, SHOW_SAME_ELMENT_CELL_ALL_AND_CURE, SKILL_AOE_CENTER_DAMAGE_DEEP,
+    SKILL_AOE_RED_SKILL_CD, SKILL_DAMAGE_NEAR_DEEP, SKILL_OPEN_NEAR_CELL, SUB_MAX_MOVE_POINT,
 };
 use crate::battle::battle_enum::{ActionType, DamageType, EffectType, ElementType, TargetType};
 use crate::battle::battle_helper::build_action_unit_pt;
@@ -34,6 +34,7 @@ pub struct Skill {
     pub cd_times: i8,    //剩余cd,如果是消耗能量则无视这个值
     pub is_active: bool, //是否激活
     pub last_target_cter: u32,
+    pub turn_use_times: u8, //本回合使用次数
 }
 impl Skill {
     ///加减技能cd,
@@ -73,6 +74,7 @@ impl From<&'static SkillTemp> for Skill {
             skill_temp,
             is_active: false,
             last_target_cter: 0,
+            turn_use_times: 0,
         }
     }
 }
@@ -523,25 +525,24 @@ pub unsafe fn add_buff(
 
     let target_type = TargetType::try_from(skill_temp.target as u8).unwrap();
     let view_target_type = TargetType::try_from(skill_temp.view_target).unwrap();
-    let mut target_pt = TargetPt::new();
+
     let mut au_vec = vec![];
-    let mut index = 0;
-    if target_type != TargetType::PlayerSelf {
-        let res = target_array.get(0);
-        if let None = res {
-            warn!("the target_array is empty!skill_id:{}", skill_id);
-            return None;
-        }
-        index = *res.unwrap() as usize;
+    if target_type != TargetType::PlayerSelf && target_array.is_empty() {
+        warn!("the target_array is empty!skill_id:{}", skill_id);
+        return None;
     }
     match target_type {
         TargetType::PlayerSelf => {
+            let mut target_pt = TargetPt::new();
             battle_cter.add_buff(Some(cter_id), Some(skill_id), buff_id, Some(turn_index));
             target_pt.target_value.push(cter_index as u32);
             target_pt.add_buffs.push(buff_id);
             au.targets.push(target_pt);
         }
         TargetType::AnyEnemyCter => {
+            let mut target_pt = TargetPt::new();
+            let res = target_array.get(0);
+            let index = *res.unwrap() as usize;
             let target_cter = battle_data_ptr
                 .as_mut()
                 .unwrap()
@@ -566,34 +567,43 @@ pub unsafe fn add_buff(
         | TargetType::UnPairNullMapCell
         | TargetType::OpenedMapCell
         | TargetType::UnOpenMapCellAndUnLock
+        | TargetType::UnOpenNullMapCell
         | TargetType::UnLockNullMapCell => {
-            let map_cell = battle_data_mut.tile_map.map_cells.get_mut(index).unwrap();
-            let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
-            let mut buff = Buff::new(
-                buff_temp,
-                Some(battle_data_mut.next_turn_index),
-                Some(cter_id),
-                Some(skill_id),
-            );
-            target_pt.target_value.push(index as u32);
-            target_pt.add_buffs.push(buff_id);
-            //处理视野目标
-            if view_target_type == TargetType::PlayerSelf {
-                let mut au_pt = build_action_unit_pt(cter_id, ActionType::Skill, Some(skill_id));
-                au_pt.targets.push(target_pt);
-                au_vec.push((user_id, au_pt));
-                if TRAPS.contains(&buff_function_id) {
-                    buff.trap_view_users.insert(user_id);
-                }
-            } else {
-                au.targets.push(target_pt);
-                if TRAPS.contains(&buff_function_id) {
-                    for &user_id in battle_data_mut.battle_player.keys() {
+            for &index in target_array.iter() {
+                let map_cell = battle_data_mut
+                    .tile_map
+                    .map_cells
+                    .get_mut(index as usize)
+                    .unwrap();
+                let buff_temp = TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+                let mut buff = Buff::new(
+                    buff_temp,
+                    Some(battle_data_mut.next_turn_index),
+                    Some(cter_id),
+                    Some(skill_id),
+                );
+                let mut target_pt = TargetPt::new();
+                target_pt.target_value.push(index as u32);
+                target_pt.add_buffs.push(buff_id);
+                //处理视野目标
+                if view_target_type == TargetType::PlayerSelf {
+                    let mut au_pt =
+                        build_action_unit_pt(cter_id, ActionType::Skill, Some(skill_id));
+                    au_pt.targets.push(target_pt);
+                    au_vec.push((user_id, au_pt));
+                    if TRAPS.contains(&buff_function_id) {
                         buff.trap_view_users.insert(user_id);
                     }
+                } else {
+                    au.targets.push(target_pt);
+                    if TRAPS.contains(&buff_function_id) {
+                        for &user_id in battle_data_mut.battle_player.keys() {
+                            buff.trap_view_users.insert(user_id);
+                        }
+                    }
                 }
+                map_cell.buffs.insert(buff.get_id(), buff);
             }
-            map_cell.buffs.insert(buff.get_id(), buff);
         }
         _ => {}
     }
@@ -606,6 +616,8 @@ pub unsafe fn add_buff(
 
     //处理其他的全局要看到的，此处为自残扣血和｜｜除最大行动点数技能
     if HURT_SELF_ADD_BUFF.contains(&skill_function_id) || SUB_MAX_MOVE_POINT == skill_function_id {
+        let res = target_array.get(0);
+        let index = *res.unwrap() as usize;
         let target_cter_id;
         if SUB_MAX_MOVE_POINT == skill_function_id {
             let target_cter = battle_data_ptr
@@ -1077,17 +1089,31 @@ pub unsafe fn skill_aoe_damage(
     }
     let scope_temp = scope_temp.unwrap();
 
-    let center_index = *target_array.get(0).unwrap() as isize;
+    let center_index;
     let target_type = TargetType::try_from(skill.skill_temp.target as u8).unwrap();
-
-    //计算符合中心范围内的玩家
-    let (_, v) = battle_data.cal_scope(
-        cter_id,
-        center_index,
-        target_type,
-        Some(target_array),
-        Some(scope_temp),
-    );
+    let v;
+    let mut near_v = None;
+    //全图伤害
+    if skill_function_id == FULL_MAP_DAMAGE {
+        center_index = battle_cter.get_map_cell_index() as isize;
+        //计算全图
+        let res = battle_data.cal_scope(cter_id, center_index, target_type, None, Some(scope_temp));
+        v = res.1;
+        //再计算临近
+        let res = battle_data.cal_scope(cter_id, center_index, target_type, None, None);
+        near_v = Some(res.1);
+    } else {
+        center_index = *target_array.get(0).unwrap() as isize;
+        //计算符合中心范围内的玩家
+        let res = battle_data.cal_scope(
+            cter_id,
+            center_index,
+            target_type,
+            Some(target_array),
+            Some(scope_temp),
+        );
+        v = res.1;
+    }
 
     let mut targets = vec![];
     for index in 0..v.len() {
@@ -1098,6 +1124,12 @@ pub unsafe fn skill_aoe_damage(
         if cter.get_map_cell_index() == center_index as usize
             && skill_function_id == SKILL_AOE_CENTER_DAMAGE_DEEP
         {
+            damage_res = par2;
+        } else if skill_function_id == FULL_MAP_DAMAGE
+            && (near_v.is_some() && near_v.as_ref().unwrap().contains(&target_cter_id))
+        {
+            damage_res = par1;
+        } else if skill_function_id == FULL_MAP_DAMAGE {
             damage_res = par2;
         } else {
             damage_res = par1;
@@ -1160,12 +1192,11 @@ pub unsafe fn single_skill_damage(
     let target_cter = target_cter.unwrap();
     let target_index = target_cter.get_map_cell_index();
     let target_cter_id = target_cter.get_cter_id();
-    let skill_damage;
 
     let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id).unwrap();
     let target_type = TargetType::try_from(skill_temp.target).unwrap();
     let skill_function_id = skill_temp.function_id;
-
+    let mut skill_damage = skill_temp.par1 as i16;
     let mut targets_res = vec![];
     let mut target_cters = vec![target_cter_id];
     //目标在附近伤害加深
@@ -1182,7 +1213,9 @@ pub unsafe fn single_skill_damage(
         } else {
             skill_damage = skill_temp.par1 as i16;
         }
-    } else if skill_function_id == CHARGE_SKILL_DAMGE_ABSORPTION {
+    } else if skill_function_id == CHARGE_SKILL_DAMGE_ABSORPTION
+        || skill_function_id == DAMAGE_DIFFUSION
+    {
         let battle_data_mut = battle_data_ptr.as_mut().unwrap();
         let skill_scopt_temp = crate::TEMPLATES
             .skill_scope_temp_mgr()
@@ -1195,7 +1228,10 @@ pub unsafe fn single_skill_damage(
             None,
             Some(skill_scopt_temp),
         );
-        skill_damage = skill_temp.par1 as i16 / res.len() as i16;
+        if skill_function_id == CHARGE_SKILL_DAMGE_ABSORPTION {
+            skill_damage = skill_temp.par1 as i16 / res.len() as i16;
+        }
+
         target_cters.clear();
         target_cters.extend_from_slice(res.as_slice());
     } else {
@@ -1203,6 +1239,13 @@ pub unsafe fn single_skill_damage(
     }
 
     for id in target_cters {
+        if skill_function_id == DAMAGE_DIFFUSION {
+            if id == target_cter_id {
+                skill_damage = skill_temp.par1 as i16;
+            } else {
+                skill_damage = skill_temp.par2 as i16;
+            }
+        }
         targets_res.push((id, DamageType::Skill(skill_damage)));
     }
 

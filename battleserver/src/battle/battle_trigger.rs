@@ -4,7 +4,9 @@ use crate::battle::battle_enum::buff_type::{
     TRANSFORM_BUFF, TRAP_ADD_BUFF, TRAP_SKILL_DAMAGE,
 };
 use crate::battle::battle_enum::skill_judge_type::{LIMIT_ROUND_TIMES, LIMIT_TURN_TIMES};
-use crate::battle::battle_enum::skill_type::{CHARGE_SKILL_DAMGE_ABSORPTION, WATER_TURRET};
+use crate::battle::battle_enum::skill_type::{
+    CHARGE_SKILL_DAMGE_ABSORPTION, FULL_MAP_DAMAGE, WATER_TURRET,
+};
 use crate::battle::battle_enum::EffectType::AddSkill;
 use crate::battle::battle_enum::{ActionType, EffectType, TRIGGER_SCOPE_NEAR};
 use crate::battle::battle_skill::Skill;
@@ -24,8 +26,8 @@ use tools::protos::battle::S_ACTION_NOTICE;
 use super::battle::DayNight;
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
-    ALL_CROW_DIE_REFRESH_SKILL_CD, ATTACKED_SUB_CD, RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE,
-    ROUND_CHANGE_SKILL, SUMMON_CROW,
+    ALL_CROW_DIE_REFRESH_SKILL_CD, ATTACKED_SUB_CD, FIRE_MAP_CELL,
+    RETURN_ATTACKED_DAMAGE_TO_SKILL_AOE, ROUND_CHANGE_SKILL, SUMMON_CROW,
 };
 use super::battle_enum::buff_type::{DIE_END_TURN, OPEN_ELEMENT_CELL_CLEAR_CD};
 use super::battle_enum::skill_type::SKILL_PAIR_LIMIT_DAMAGE;
@@ -64,6 +66,7 @@ pub trait TriggerEvent {
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
+        au: &mut ActionUnitPt,
     ) -> (bool, Vec<(u32, ActionUnitPt)>);
 
     ///使用技能后触发
@@ -120,6 +123,7 @@ impl BattleData {
         &mut self,
         battle_cter: &mut BattleCharacter,
         index: usize,
+        au: &mut ActionUnitPt,
     ) -> Option<Vec<(u32, ActionUnitPt)>> {
         let map_cell = self.tile_map.map_cells.get_mut(index);
         if let None = map_cell {
@@ -157,6 +161,27 @@ impl BattleData {
                     target_pt_tmp.add_buffs.push(buff_id);
                     target_pt = Some(target_pt_tmp);
                 } else if TRAP_SKILL_DAMAGE.contains(&buff_function_id) {
+                    if buff_function_id == FIRE_MAP_CELL {
+                        let fire_protect_buff = battle_cter.get_fire_protect_buff();
+                        match fire_protect_buff {
+                            Some(fire_protect_buff) => {
+                                let add_energy = fire_protect_buff.buff_temp.par2 as i8;
+                                let mut target_pt = TargetPt::new();
+                                target_pt
+                                    .target_value
+                                    .push(battle_cter.get_map_cell_index() as u32);
+                                let mut ep = EffectPt::new();
+                                ep.set_effect_type(EffectType::AddEnergy.into_u32());
+                                ep.set_effect_value(add_energy as u32);
+                                target_pt.effects.push(ep);
+                                au.targets.push(target_pt);
+                                battle_cter.add_energy(add_energy);
+                                continue;
+                            }
+                            None => {}
+                        }
+                    }
+
                     //造成技能伤害的陷阱
                     let skill_damage = buff.buff_temp.par1 as i16;
 
@@ -353,11 +378,12 @@ impl TriggerEvent for BattleData {
         battle_cter: &mut BattleCharacter,
         index: isize,
         is_change_index_both: bool,
+        au: &mut ActionUnitPt,
     ) -> (bool, Vec<(u32, ActionUnitPt)>) {
         let mut v = Vec::new();
         let self_mut = self.get_mut_ref();
         //触发陷阱
-        let res = self_mut.trigger_trap(battle_cter, index as usize);
+        let res = self_mut.trigger_trap(battle_cter, index as usize, au);
         if let Some(res) = res {
             v.extend_from_slice(res.as_slice());
         }
@@ -514,13 +540,20 @@ impl TriggerEvent for BattleData {
                 }
             }
             if let Some(skill) = skill {
+                skill.turn_use_times += 1;
                 let skill_function_id = skill.function_id;
 
                 //替换技能,水炮
                 match skill_function_id {
-                    WATER_TURRET | CHARGE_SKILL_DAMGE_ABSORPTION => {
-                        let skill_temp =
-                            TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
+                    WATER_TURRET | CHARGE_SKILL_DAMGE_ABSORPTION | FULL_MAP_DAMAGE => {
+                        let skill_temp;
+                        if skill_function_id == FULL_MAP_DAMAGE {
+                            skill_temp =
+                                TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par3);
+                        } else {
+                            skill_temp =
+                                TEMPLATES.skill_temp_mgr().get_temp(&skill.skill_temp.par2);
+                        }
                         battle_cter.skills.remove(&skill_id);
                         if let Err(e) = skill_temp {
                             error!("{:?}", e);
@@ -1091,7 +1124,8 @@ impl TriggerEvent for BattleData {
                 .get_temp(&SUMMON_CROW)
                 .unwrap();
             let count = buff_temp.par2;
-            for cter in battle_player.cters.values() {
+            for cter in battle_player.cters.values_mut() {
+                cter.skills.values_mut().for_each(|x| x.turn_use_times = 0);
                 buff = cter.battle_buffs.get_buff(SUMMON_CROW);
                 if buff.is_some() {
                     crow_count = cter.minons.iter().count() as u32;

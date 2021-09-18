@@ -49,7 +49,9 @@ pub mod skill_type {
     ///自动配对地图块
     pub const AUTO_PAIR_MAP_CELL: [u32; 1] = [212];
     ///上buff
-    pub const ADD_BUFF: [u32; 10] = [122, 211, 221, 311, 312, 322, 324, 11004, 12003, 20002];
+    pub const ADD_BUFF: [u32; 12] = [
+        122, 211, 221, 311, 312, 322, 324, 11004, 12003, 20002, 14002, 14003,
+    ];
     ///地图块换位置
     pub const CHANGE_MAP_CELL_INDEX: [u32; 1] = [111];
     ///展示地图块
@@ -59,11 +61,11 @@ pub mod skill_type {
     ///造成技能伤害并恢复生命
     pub const SKILL_DAMAGE_AND_CURE: [u32; 2] = [321, 12001];
     ///技能伤害
-    pub const SKILL_DAMAGE: [u32; 11] = [
-        999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 12004, 13002,
+    pub const SKILL_DAMAGE: [u32; 12] = [
+        999, 123, 20004, 20005, 323, 433, 331, 11001, 11005, 12004, 13002, 14001,
     ];
     ///技能aoe
-    pub const SKILL_AOE: [u32; 8] = [121, 411, 412, 432, 11007, 11008, 11009, 13005];
+    pub const SKILL_AOE: [u32; 9] = [121, 411, 412, 432, 11007, 11008, 11009, 13005, 14004];
     ///减技能cd
     pub const RED_SKILL_CD: [u32; 1] = [20003];
     ///对已其他翻开元素块上对玩家造成技能伤害
@@ -117,6 +119,12 @@ pub mod skill_type {
 
     ///变身
     pub const TRANSFORM: [u32; 1] = [12002];
+
+    ///伤害扩散
+    pub const DAMAGE_DIFFUSION: u32 = 14001;
+
+    ///全图伤害
+    pub const FULL_MAP_DAMAGE: u32 = 14004;
 }
 
 ///buff类型
@@ -161,7 +169,7 @@ pub mod buff_type {
     ///配对与自己相同元素时恢复生命
     pub const PAIR_SAME_ELEMENT_CURE: u32 = 9;
     ///陷阱类buff
-    pub const TRAPS: [u32; 2] = [10, 12];
+    pub const TRAPS: [u32; 3] = [10, 12, 21];
     ///配对成功刷新技能cd
     pub const PAIR_CLEAN_SKILL_CD: u32 = 13;
     ///配对成功，刷新技能cd或者减少技能cd
@@ -177,7 +185,7 @@ pub mod buff_type {
     pub const TRAP_ADD_BUFF: [u32; 1] = [10];
 
     ///陷阱造成技能伤害
-    pub const TRAP_SKILL_DAMAGE: [u32; 1] = [12];
+    pub const TRAP_SKILL_DAMAGE: [u32; 2] = [12, 21];
 
     ///锁定技能
     pub const LOCK_SKILLS: [u32; 1] = [11];
@@ -194,8 +202,11 @@ pub mod buff_type {
     ///扣行动点
     pub const SUB_MOVE_POINT: u32 = 20;
 
+    ///燃烧buff，上给地图块
+    pub const FIRE_MAP_CELL: u32 = 21;
+
     ///行动点数为0
-    pub const MOVE_POINT_ZERO: u32 = 20015;
+    ///pub const MOVE_POINT_ZERO: u32 = 20015;
 
     ///受到攻击伤害变成0
     pub const NEAR_ATTACKED_DAMAGE_ZERO: u32 = 20001;
@@ -234,13 +245,18 @@ pub mod buff_type {
     pub const STONE_BUFF: u32 = 20014;
 
     ///蓄力
-    pub const CHARGE: u32 = 20016;
+    pub const CHARGE: [u32; 2] = [20016, 20019];
 
-    ///世界树buff,在战斗开始的时候就开始加载，
-    pub const WORLD_CELL_BUFFS: u32 = 30051;
+    ///火保护buff
+    pub const FIRE_PROTECT_BUFF: u32 = 20020;
+    ///结束回合点燃buff
+    pub const END_TURN_FIRE_BUFF: u32 = 20021;
 
-    ///永久加攻击力buff
-    pub const ADD_ATTACK_BUFF_PERPETUAL: [u32; 2] = [20011, 20018];
+    //世界树buff,在战斗开始的时候就开始加载，
+    //pub const WORLD_CELL_BUFFS: u32 = 30051;
+
+    //永久加攻击力buff
+    //pub const ADD_ATTACK_BUFF_PERPETUAL: [u32; 2] = [20011, 20018];
 }
 
 ///pos操作类型

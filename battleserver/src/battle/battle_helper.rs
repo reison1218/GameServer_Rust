@@ -23,6 +23,7 @@ use tools::protos::battle::{S_ACTION_NOTICE, S_BATTLE_TURN_NOTICE};
 use tools::templates::skill_scope_temp::SkillScopeTemp;
 use tools::util::packet::Packet;
 
+use super::battle_buff::Buff;
 use super::battle_cter::BattleCharacter;
 use super::battle_enum::buff_type::{
     ATTACKED_SUB_DAMAGE, CROW_ALIVE_ADD_ATTACK, DAY_SKILLS, NEAR_ATTACKED_DAMAGE_ZERO,
@@ -53,26 +54,78 @@ impl BattleData {
         false
     }
 
-    pub fn clear_open_cells(&mut self) {
+    pub fn clear_open_cells(&mut self) -> Option<Vec<(u32, ActionUnitPt)>> {
+        let self_ptr = self as *mut BattleData;
         let index = self.next_turn_index;
         let res = self.turn_orders.get(index);
         if res.is_none() {
-            return;
+            return None;
         }
         let user_id = *res.unwrap();
         let battle_player = self.battle_player.get(&user_id);
         if let None = battle_player {
-            return;
+            return None;
         }
-        let battle_player = battle_player.unwrap();
-        for index in battle_player.flow_data.open_map_cell_vec_history.iter() {
-            let map_cell = self.tile_map.map_cells.get_mut(*index);
-            if let Some(map_cell) = map_cell {
-                if map_cell.pair_index.is_none() {
-                    map_cell.open_cter = 0;
+        let mut res_v = vec![];
+        unsafe {
+            let self_mut = self_ptr.as_mut().unwrap();
+            let self_const = self_ptr.as_ref().unwrap();
+            let battle_player = battle_player.unwrap();
+            for index in battle_player.flow_data.open_map_cell_vec_history.iter() {
+                let map_cell = self.tile_map.map_cells.get_mut(*index);
+                if let Some(map_cell) = map_cell {
+                    if map_cell.pair_index.is_none() {
+                        map_cell.open_cter = 0;
+                        if map_cell.cter_id == 0 {
+                            //添加点燃buff
+                            for (&cter_id, _) in self_const.cter_player.iter() {
+                                let cter = self_mut.get_battle_cter(cter_id, true);
+                                if cter.is_err() {
+                                    continue;
+                                }
+                                let cter = cter.unwrap();
+                                let end_turn_fire_buff = cter.get_end_turn_fire_buff();
+                                match end_turn_fire_buff {
+                                    Some(end_turn_fire_buff) => {
+                                        let buff_id = end_turn_fire_buff.buff_temp.par1;
+                                        let buff_temp =
+                                            TEMPLATES.buff_temp_mgr().get_temp(&buff_id).unwrap();
+                                        let buff_function_id = buff_temp.function_id;
+                                        let mut buff = Buff::new(
+                                            buff_temp,
+                                            Some(self_const.next_turn_index),
+                                            Some(cter_id),
+                                            None,
+                                        );
+                                        let mut target_pt = TargetPt::new();
+                                        target_pt.target_value.push(*index as u32);
+                                        target_pt.add_buffs.push(buff_id);
+                                        if TRAPS.contains(&buff_function_id) {
+                                            for &user_id in self_const.battle_player.keys() {
+                                                buff.trap_view_users.insert(user_id);
+                                            }
+                                        }
+                                        map_cell.buffs.insert(buff_id, buff);
+                                        let mut au_pt = build_action_unit_pt(
+                                            cter_id,
+                                            ActionType::Buff,
+                                            Some(buff_id),
+                                        );
+                                        au_pt.targets.push(target_pt);
+                                        res_v.push((0, au_pt));
+                                    }
+                                    None => continue,
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+        if res_v.is_empty() {
+            return None;
+        }
+        Some(res_v)
     }
 
     ///召唤宠物
@@ -361,7 +414,7 @@ impl BattleData {
 
         let index = target_index as isize;
         //移动位置后触发事件
-        let res = self.after_move_trigger(battle_cter, index, is_change_index_both);
+        let res = self.after_move_trigger(battle_cter, index, is_change_index_both, au);
         //如果角色没死，就把翻的地图块id传给客户端
         if !res.0 && need_wrap_map {
             au.action_value.push(target_map_cell.id);
@@ -1590,55 +1643,31 @@ impl BattleData {
         //没有目标，只有范围
         if targets.is_none() && scope_temp.is_some() {
             let scope_temp = scope_temp.unwrap();
-
-            for direction_temp2d in scope_temp.scope2d.iter() {
-                for coord_temp in direction_temp2d.direction2d.iter() {
-                    let x = center_map_cell.x + coord_temp.x;
-                    let y = center_map_cell.y + coord_temp.y;
-                    let map_cell_index = self.tile_map.coord_map.get(&(x, y));
-                    if let None = map_cell_index {
+            //代表全图
+            if scope_temp.scope.is_empty() && scope_temp.scope2d.is_empty() {
+                for &cter_id in self.cter_player.keys() {
+                    let cter = self.get_battle_cter(cter_id, true);
+                    if cter.is_err() {
                         continue;
                     }
-                    let map_cell_index = map_cell_index.unwrap();
-                    let map_cell = self.tile_map.map_cells.get(*map_cell_index);
-                    if map_cell.is_none() {
-                        continue;
-                    }
-                    v.push(*map_cell_index);
-                    let map_cell = map_cell.unwrap();
-                    if map_cell.cter_id <= 0 {
-                        continue;
-                    }
+                    let cter = cter.unwrap();
                     //如果目标不能是自己，就跳过
                     if (target_type == TargetType::OtherAllPlayer
                         || target_type == TargetType::SelfScopeOthers
                         || target_type == TargetType::SelfScopeAnyOthers
                         || target_type == TargetType::OtherAnyPlayer)
-                        && map_cell.cter_id == target_cter_id
+                        && cter_id == target_cter_id
                     {
                         continue;
                     }
 
-                    let other_cter = map_cell.cter_id;
-                    //如果玩家id大于0
-                    if other_cter == 0 {
-                        continue;
-                    }
-
-                    let battle_cter = self.get_battle_cter(other_cter, true);
-                    if let Err(e) = battle_cter {
-                        warn!("{:?}", e);
-                        continue;
-                    }
-
                     //判断敌方队伍信息
-                    let battle_cter = battle_cter.unwrap();
                     if target_type == TargetType::AllEnemyCters
                         || target_type == TargetType::AnyEnemyCter
                         || target_type == TargetType::SelfScopeAllEnemyCters
                         || target_type == TargetType::SelfScopeAnyEnemyCters
                     {
-                        if battle_cter.base_attr.team_id == team_id {
+                        if cter.base_attr.team_id == team_id {
                             continue;
                         }
                     }
@@ -1647,15 +1676,83 @@ impl BattleData {
                     if target_type == TargetType::AllTeamCters
                         || target_type == TargetType::AnyTeamCter
                     {
-                        if battle_cter.base_attr.team_id != team_id {
+                        if cter.base_attr.team_id != team_id {
                             continue;
                         }
                     }
 
-                    if v_u.contains(&other_cter) {
+                    if v_u.contains(&cter_id) {
                         continue;
                     }
-                    v_u.push(other_cter);
+                    v_u.push(cter_id);
+                }
+            } else {
+                for direction_temp2d in scope_temp.scope2d.iter() {
+                    for coord_temp in direction_temp2d.direction2d.iter() {
+                        let x = center_map_cell.x + coord_temp.x;
+                        let y = center_map_cell.y + coord_temp.y;
+                        let map_cell_index = self.tile_map.coord_map.get(&(x, y));
+                        if let None = map_cell_index {
+                            continue;
+                        }
+                        let map_cell_index = map_cell_index.unwrap();
+                        let map_cell = self.tile_map.map_cells.get(*map_cell_index);
+                        if map_cell.is_none() {
+                            continue;
+                        }
+                        v.push(*map_cell_index);
+                        let map_cell = map_cell.unwrap();
+                        if map_cell.cter_id <= 0 {
+                            continue;
+                        }
+                        //如果目标不能是自己，就跳过
+                        if (target_type == TargetType::OtherAllPlayer
+                            || target_type == TargetType::SelfScopeOthers
+                            || target_type == TargetType::SelfScopeAnyOthers
+                            || target_type == TargetType::OtherAnyPlayer)
+                            && map_cell.cter_id == target_cter_id
+                        {
+                            continue;
+                        }
+
+                        let other_cter = map_cell.cter_id;
+                        //如果玩家id大于0
+                        if other_cter == 0 {
+                            continue;
+                        }
+
+                        let battle_cter = self.get_battle_cter(other_cter, true);
+                        if let Err(e) = battle_cter {
+                            warn!("{:?}", e);
+                            continue;
+                        }
+
+                        //判断敌方队伍信息
+                        let battle_cter = battle_cter.unwrap();
+                        if target_type == TargetType::AllEnemyCters
+                            || target_type == TargetType::AnyEnemyCter
+                            || target_type == TargetType::SelfScopeAllEnemyCters
+                            || target_type == TargetType::SelfScopeAnyEnemyCters
+                        {
+                            if battle_cter.base_attr.team_id == team_id {
+                                continue;
+                            }
+                        }
+
+                        //判断友方队伍信息
+                        if target_type == TargetType::AllTeamCters
+                            || target_type == TargetType::AnyTeamCter
+                        {
+                            if battle_cter.base_attr.team_id != team_id {
+                                continue;
+                            }
+                        }
+
+                        if v_u.contains(&other_cter) {
+                            continue;
+                        }
+                        v_u.push(other_cter);
+                    }
                 }
             }
         } else {

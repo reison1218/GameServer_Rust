@@ -18,8 +18,8 @@ use super::{
     battle_enum::{
         buff_type::{
             ADD_ATTACK, ADD_ATTACK_AND_AOE, ATTACKED_SUB_DAMAGE, CAN_NOT_MOVED, CHANGE_SKILL,
-            CHARGE, DAY_SKILLS, GD_ATTACK_DAMAGE, NEAR_ATTACKED_DAMAGE_ZERO, NIGHT_SKILLS,
-            STONE_BUFF, SUB_ATTACK_DAMAGE,
+            CHARGE, DAY_SKILLS, END_TURN_FIRE_BUFF, FIRE_PROTECT_BUFF, GD_ATTACK_DAMAGE,
+            NEAR_ATTACKED_DAMAGE_ZERO, NIGHT_SKILLS, STONE_BUFF, SUB_ATTACK_DAMAGE,
         },
         BattleCterState, FromType,
     },
@@ -255,6 +255,24 @@ impl BattleCharacter {
         Ok(battle_cter)
     }
 
+    pub fn get_fire_protect_buff(&self) -> Option<&Buff> {
+        let res = self
+            .battle_buffs
+            .buffs()
+            .values()
+            .find(|x| x.function_id == FIRE_PROTECT_BUFF);
+        res
+    }
+
+    pub fn get_end_turn_fire_buff(&self) -> Option<&Buff> {
+        let res = self
+            .battle_buffs
+            .buffs()
+            .values()
+            .find(|x| x.function_id == END_TURN_FIRE_BUFF);
+        res
+    }
+
     pub fn get_day_night_buff(&self, day_night: DayNight) -> Option<&Buff> {
         for buff in self.battle_buffs.buffs().values() {
             match day_night {
@@ -429,25 +447,6 @@ impl BattleCharacter {
         self.index_data.map_cell_index.unwrap()
     }
 
-    ///添加道具
-    pub fn add_item(&mut self, item_id: u32) -> anyhow::Result<()> {
-        let item_temp = TEMPLATES.item_temp_mgr().get_temp(&item_id)?;
-        let skill_id = item_temp.trigger_skill;
-        let skill_temp = TEMPLATES.skill_temp_mgr().get_temp(&skill_id)?;
-        let item = Item {
-            id: item_id,
-            skill_temp,
-        };
-        if self.items.len() as u8 >= self.base_attr.item_max {
-            anyhow::bail!(
-                "this cter's item is full!item_max:{}",
-                self.base_attr.item_max
-            )
-        }
-        self.items.insert(item.id, item);
-        Ok(())
-    }
-
     pub fn move_index(&mut self, index: usize) {
         self.index_data.last_map_cell_index = Some(self.index_data.map_cell_index.unwrap());
         self.index_data.map_cell_index = Some(index);
@@ -566,7 +565,7 @@ impl BattleCharacter {
         for buff in self.battle_buffs.buffs.values() {
             buff_function_id = buff.function_id;
             match buff_function_id {
-                CHANGE_SKILL | CHARGE => {
+                id if id == CHANGE_SKILL || CHARGE.contains(&id) => {
                     let skill_id = buff.buff_temp.par1;
 
                     let skill_temp = TEMPLATES.skill_temp_mgr().temps.get(&skill_id);

@@ -1,5 +1,6 @@
 use crate::battle::battle::BattleData;
 use crate::battle::battle_buff::Buff;
+use crate::battle::battle_enum::buff_type::FIRE_MAP_CELL;
 use crate::battle::battle_enum::buff_type::LOCKED;
 use crate::battle::battle_enum::buff_type::TRAPS;
 use crate::battle::battle_enum::BattlePlayerState;
@@ -69,20 +70,6 @@ impl TileMap {
     pub fn pair_element_map_cells(&self, element: u8) -> Vec<&MapCell> {
         let mut res = vec![];
         for map in self.map_cells.iter() {
-            if map.pair_index.is_none() {
-                continue;
-            }
-            if map.element != element {
-                continue;
-            }
-            res.push(map);
-        }
-        res
-    }
-
-    pub fn pair_element_map_cells_mut(&mut self, element: u8) -> Vec<&mut MapCell> {
-        let mut res = vec![];
-        for map in self.map_cells.iter_mut() {
             if map.pair_index.is_none() {
                 continue;
             }
@@ -163,6 +150,32 @@ impl MapCell {
     ///移除buff
     pub fn remove_buff(&mut self, buff_id: u32) {
         self.buffs.remove(&buff_id);
+    }
+
+    pub fn remove_fire_buff(&mut self) -> Option<u32> {
+        let mut rm_id = None;
+        for buff in self.buffs.values() {
+            if buff.function_id == FIRE_MAP_CELL {
+                rm_id = Some(buff.get_id());
+                break;
+            }
+        }
+        match rm_id {
+            Some(id) => {
+                self.remove_buff(id);
+                Some(id)
+            }
+            None => None,
+        }
+    }
+
+    pub fn has_fire_buff(&self) -> bool {
+        for buff in self.buffs.values() {
+            if buff.function_id == FIRE_MAP_CELL {
+                return true;
+            }
+        }
+        false
     }
 }
 

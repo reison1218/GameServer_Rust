@@ -413,15 +413,6 @@ impl Room {
         self.battle_data.battle_player.get_mut(key)
     }
 
-    pub fn get_battle_cter_ref(&self, key: &u32) -> Option<&BattleCharacter> {
-        let res = self.battle_data.battle_player.get(key);
-        if res.is_none() {
-            return None;
-        }
-        let battle_player = res.unwrap();
-        battle_player.cters.get(key)
-    }
-
     pub fn get_battle_cter_mut(&mut self, cter_id: u32) -> anyhow::Result<&mut BattleCharacter> {
         self.battle_data.get_battle_cter_mut(cter_id, true)
     }
