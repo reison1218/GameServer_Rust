@@ -58,18 +58,8 @@ impl tools::tcp_message_io::MessageHandler for TcpServerHandler {
     }
 }
 
-async fn handler_mess_s(gm: Lock, packet: Packet) {
+async fn unorder_message(gm: Lock, packet: Packet) {
     let cmd = packet.get_cmd();
-    //如果为空，什么都不执行
-    if cmd != GameCode::Login.into_u32()
-        && cmd != GameCode::UnloadUser.into_u32()
-        && cmd != GameCode::SyncRank.into_u32()
-        && cmd != ServerCommonCode::ReloadTemps.into_u32()
-        && packet.get_data().is_empty()
-    {
-        error!("packet bytes is null!cmd:{}", packet.get_cmd());
-        return;
-    }
     //判断是否执行登录
     if cmd == GameCode::Login.into_u32() {
         let mut c_login = C_USER_LOGIN::new();
@@ -88,6 +78,54 @@ async fn handler_mess_s(gm: Lock, packet: Packet) {
     } else {
         //不登录就执行其他命令
         gm.lock().await.invok(packet);
+    }
+}
+static ORDER_MESSAGE: std::sync::Once = std::sync::Once::new();
+async fn order_message(gm: Lock, packet: Packet) {
+    let mut mess_sender = None;
+    ORDER_MESSAGE.call_once(|| {
+        let (sender, rec) = crossbeam::channel::unbounded();
+        mess_sender = Some(sender.clone());
+        let f = async move {
+            loop {
+                let res = rec.recv();
+                match res {
+                    Ok(packet) => {
+                        unorder_message(gm.clone(), packet).await;
+                    }
+                    Err(e) => error!("{:?}", e),
+                }
+            }
+        };
+        async_std::task::spawn(f);
+    });
+
+    let res = mess_sender.as_ref().unwrap().send(packet);
+    match res {
+        Ok(_) => {}
+        Err(e) => error!("{:?}", e),
+    }
+}
+
+async fn handler_mess_s(gm: Lock, packet: Packet) {
+    let cmd = packet.get_cmd();
+    //如果为空，什么都不执行
+    if cmd != GameCode::Login.into_u32()
+        && cmd != GameCode::UnloadUser.into_u32()
+        && cmd != GameCode::SyncRank.into_u32()
+        && cmd != ServerCommonCode::ReloadTemps.into_u32()
+        && packet.get_data().is_empty()
+    {
+        error!("packet bytes is null!cmd:{}", packet.get_cmd());
+        return;
+    }
+
+    //保证执行顺序
+    if cmd == 9999 || cmd == 1009 {
+        order_message(gm, packet).await;
+    } else {
+        //不保证执行顺序
+        unorder_message(gm, packet).await;
     }
 }
 
