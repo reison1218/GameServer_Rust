@@ -152,16 +152,16 @@ pub fn run(transport: TransportWay, addr: &str, handler: impl MessageHandler) {
                             Some(client) => {
                                 // For connection oriented protocols
                                 client.count += 1;
-                                println!("Ping from {}, {} times", endpoint.addr(), client.count);
+                                info!("Ping from {}, {} times", endpoint.addr(), client.count);
                                 FromServerMessage::Pong(client.count)
                             }
                             None => {
                                 // For non-connection oriented protocols
-                                println!("Ping from {}", endpoint.addr());
+                                info!("Ping from {}", endpoint.addr());
                                 FromServerMessage::UnknownPong
                             }
                         };
-                        println!("server Received: {}", String::from_utf8_lossy(input_data));
+                        info!("server Received: {}", String::from_utf8_lossy(input_data));
                         let output_data = bincode::serialize(&message).unwrap();
                         node_handler.network().send(endpoint, &output_data);
                     }
