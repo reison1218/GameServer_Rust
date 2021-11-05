@@ -18,6 +18,7 @@ use num_enum::TryFromPrimitive;
 use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::collections::HashSet;
+use std::iter::FromIterator;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
@@ -529,13 +530,35 @@ impl DumbFuture {
     }
 }
 
+#[derive(Default)]
 pub struct Rust {
-    a: u32,
+    a: String,
     b: u16,
     c: u8,
 }
 
+pub fn find_median_sorted_arrays(nums1: Vec<i32>, nums2: Vec<i32>) -> f64 {
+    let mut array = nums1;
+    array.extend_from_slice(nums2.as_slice());
+    array.sort();
+    if array.len() >= 3 {
+        array.remove(0);
+        array.pop();
+    }
+
+    let res: i32 = array.iter().sum();
+    let res = res as f64;
+    let len = array.len() as f64;
+    res / len
+}
+
+extern "C" {
+    fn rand() -> u32;
+}
+
 fn main() -> anyhow::Result<()> {
+    // let res = find_median_sorted_arrays(Vec::from([1, 2, 3]), Vec::from([4, 5, 6]));
+    // println!("{}", res);
     // Print some basic info about the response to standard output.
     // println!("Status: {}", response.status());
     // println!("Headers: {:#?}", response.headers());
