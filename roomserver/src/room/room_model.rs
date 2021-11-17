@@ -8,8 +8,8 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
 use std::str::FromStr;
+use tools::net_message_io::NetHandler;
 use tools::protos::base::RoomSettingPt;
-use tools::tcp_message_io::TcpHandler;
 
 ///teamID枚举
 #[derive(Debug, Clone, Copy, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -139,7 +139,7 @@ pub trait RoomModel {
         &mut self,
         owner: Member,
         room_setting: Option<RoomSetting>,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32>;
 

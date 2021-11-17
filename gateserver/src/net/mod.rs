@@ -1,6 +1,7 @@
 pub mod http;
 pub mod tcp_client;
 pub mod tcp_server;
+pub mod websocket;
 use crate::{CONF_MAP, REDIS_INDEX_USERS, REDIS_KEY_UID_2_PID};
 use crate::{REDIS_KEY_USERS, REDIS_POOL};
 use log::{debug, error, info, warn};

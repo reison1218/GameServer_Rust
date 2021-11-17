@@ -6,6 +6,7 @@ use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
 use async_std::sync::Mutex;
 use log::info;
+use net::websocket;
 use std::sync::Arc;
 use tools::conf::Conf;
 
@@ -99,8 +100,8 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
             //初始化tcp服务端
             init_tcp_server(cm);
         }
-        "webSocket" => {
-            //初始化websocket
+        "ws" => {
+            init_ws_server(cm);
         }
         _ => {
             //初始化tcp服务端
@@ -135,4 +136,10 @@ fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
 fn init_tcp_server(cm: Arc<Mutex<ChannelMgr>>) {
     let str = CONF_MAP.get_str("tcp_port");
     tcp_server::new(str, cm);
+}
+
+///初始化tcp服务端
+fn init_ws_server(cm: Arc<Mutex<ChannelMgr>>) {
+    let str = CONF_MAP.get_str("web_socket_port");
+    websocket::new(str, cm);
 }

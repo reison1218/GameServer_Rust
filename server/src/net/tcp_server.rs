@@ -1,5 +1,5 @@
+use tools::net_message_io::{NetHandler, TransportWay};
 use tools::protos::server_protocol::G_S_MODIFY_NICK_NAME;
-use tools::tcp_message_io::{TcpHandler, TransportWay};
 
 use crate::entity::character::Characters;
 use crate::entity::grade_frame::GradeFrame;
@@ -28,14 +28,14 @@ unsafe impl Send for TcpServerHandler {}
 unsafe impl Sync for TcpServerHandler {}
 
 #[async_trait]
-impl tools::tcp_message_io::MessageHandler for TcpServerHandler {
+impl tools::net_message_io::MessageHandler for TcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
-    async fn on_open(&mut self, tcp_handler: TcpHandler) {
+    async fn on_open(&mut self, net_handler: NetHandler) {
         let mut lock = self.gm.lock().await;
-        lock.set_tcp_handler(tcp_handler);
+        lock.set_net_handler(net_handler);
     }
 
     async fn on_close(&mut self) {
@@ -261,5 +261,5 @@ fn init_user_data(user_id: u32) -> anyhow::Result<UserData> {
 
 pub fn new(address: &str, gm: Lock) {
     let sh = TcpServerHandler { gm };
-    tools::tcp_message_io::run(TransportWay::Tcp, address, sh);
+    tools::net_message_io::run(TransportWay::Tcp, address, sh);
 }

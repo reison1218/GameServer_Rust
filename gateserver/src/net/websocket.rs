@@ -12,23 +12,23 @@ use tools::net_message_io::TransportWay;
 use tools::protos::protocol::HEART_BEAT;
 
 #[derive(Clone)]
-struct TcpServerHandler {
-    pub tcp_handler: Option<NetHandler>, //相当于channel
-    cm: Arc<Mutex<ChannelMgr>>,          //channel管理器
+struct WsServerHandler {
+    pub ws_handler: Option<NetHandler>, //相当于channel
+    cm: Arc<Mutex<ChannelMgr>>,         //channel管理器
 }
 
-unsafe impl Send for TcpServerHandler {}
+unsafe impl Send for WsServerHandler {}
 
-unsafe impl Sync for TcpServerHandler {}
+unsafe impl Sync for WsServerHandler {}
 
 #[async_trait]
-impl tools::net_message_io::MessageHandler for TcpServerHandler {
+impl tools::net_message_io::MessageHandler for WsServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
     async fn on_open(&mut self, tcp_handler: NetHandler) {
-        self.tcp_handler = Some(tcp_handler);
+        self.ws_handler = Some(tcp_handler);
     }
 
     async fn on_close(&mut self) {
@@ -67,15 +67,15 @@ impl tools::net_message_io::MessageHandler for TcpServerHandler {
     }
 }
 
-impl TcpServerHandler {
+impl WsServerHandler {
     pub fn shut_down(&self) {
-        let tcp = self.tcp_handler.as_ref().unwrap();
+        let tcp = self.ws_handler.as_ref().unwrap();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().remove(endpoint.resource_id());
     }
 
     pub fn get_token(&self) -> usize {
-        self.tcp_handler
+        self.ws_handler
             .as_ref()
             .unwrap()
             .endpoint
@@ -85,7 +85,7 @@ impl TcpServerHandler {
 
     ///写到客户端
     fn write_to_client(&mut self, bytes: &[u8]) {
-        let tcp = self.tcp_handler.as_ref().unwrap();
+        let tcp = self.ws_handler.as_ref().unwrap();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes);
         // let res = self.tcp.as_mut();
@@ -148,7 +148,7 @@ impl TcpServerHandler {
                     return false;
                 }
             }
-            lock.temp_channels.insert(u_id, self.tcp_handler.clone());
+            lock.temp_channels.insert(u_id, self.ws_handler.clone());
         } else {
             u_id = *user_id.unwrap();
         }
@@ -204,8 +204,8 @@ impl TcpServerHandler {
 
 ///创建新的tcpserver并开始监听
 pub fn new(address: &str, cm: Lock) {
-    let sh = TcpServerHandler {
-        tcp_handler: None,
+    let sh = WsServerHandler {
+        ws_handler: None,
         cm,
     };
     tools::net_message_io::run(TransportWay::Tcp, address, sh);

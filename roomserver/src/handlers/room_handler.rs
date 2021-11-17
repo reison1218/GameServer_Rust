@@ -266,7 +266,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             res = rm.custom_room.create_room(
                 owner,
                 Some(room_setting),
-                rm.get_tcp_handler_clone(),
+                rm.get_net_handler_clone(),
                 rm.get_task_sender_clone(),
             );
         }
@@ -274,7 +274,7 @@ pub fn create_room(rm: &mut RoomMgr, packet: Packet) {
             res = rm.world_boss_custom_room.create_room(
                 owner,
                 Some(room_setting),
-                rm.get_tcp_handler_clone(),
+                rm.get_net_handler_clone(),
                 rm.get_task_sender_clone(),
             );
             if res.is_ok() {
@@ -488,7 +488,7 @@ pub fn search_room(rm: &mut RoomMgr, packet: Packet) {
         return;
     }
     //执行正常流程
-    let sender = rm.get_tcp_handler_clone();
+    let sender = rm.get_net_handler_clone();
     let task_sender = rm.get_task_sender_clone();
 
     let mut member = Member::from(grs.get_pbp());

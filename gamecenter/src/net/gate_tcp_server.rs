@@ -2,7 +2,7 @@ use crate::net::Forward;
 use crate::Lock;
 use async_trait::async_trait;
 use log::{error, info};
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 use tools::util::packet::Packet;
 
 use super::new_gate_server_tcp;
@@ -33,15 +33,15 @@ impl Forward for GateTcpServerHandler {
 }
 
 #[async_trait]
-impl tools::tcp_message_io::MessageHandler for GateTcpServerHandler {
+impl tools::net_message_io::MessageHandler for GateTcpServerHandler {
     async fn try_clone(&self) -> Self {
         self.clone()
     }
 
     ///客户端tcp链接激活事件
-    async fn on_open(&mut self, tcp_handler: TcpHandler) {
-        self.token = tcp_handler.endpoint.resource_id().raw();
-        self.gm.lock().await.add_gate_client(tcp_handler);
+    async fn on_open(&mut self, net_handler: NetHandler) {
+        self.token = net_handler.endpoint.resource_id().raw();
+        self.gm.lock().await.add_gate_client(net_handler);
         info!("new gate_client is connect!token:{}", self.token);
     }
 

@@ -21,6 +21,7 @@ pub trait MessageHandler {
         let transport = match transport {
             TransportWay::Tcp => Transport::Tcp,
             TransportWay::Udp => Transport::Udp,
+            TransportWay::Ws => Transport::Ws,
         };
         let (handler, listener) = node::split::<()>();
 
@@ -29,7 +30,7 @@ pub trait MessageHandler {
         listener.for_each(move |event| match event.network() {
             NetEvent::Connected(endpoint, ok) => match ok {
                 true => {
-                    let th = TcpHandler::new(handler.clone(), server);
+                    let th = NetHandler::new(handler.clone(), server);
                     block_on(self.on_open(th));
                     info!("connect server({:?}) success!", endpoint.addr());
                 }
@@ -49,7 +50,7 @@ pub trait MessageHandler {
     }
 
     ///Triggered when there is a new client connection
-    async fn on_open(&mut self, tcp_handler: TcpHandler);
+    async fn on_open(&mut self, net_handler: NetHandler);
 
     ///Disconnect triggered when client was closed
     async fn on_close(&mut self);
@@ -60,14 +61,14 @@ pub trait MessageHandler {
 }
 
 #[derive(Clone)]
-pub struct TcpHandler {
+pub struct NetHandler {
     pub node_handler: NodeHandler<()>,
     pub endpoint: Endpoint,
 }
 
-impl TcpHandler {
+impl NetHandler {
     pub fn new(node_handler: NodeHandler<()>, endpoint: Endpoint) -> Self {
-        TcpHandler {
+        NetHandler {
             node_handler: node_handler,
             endpoint: endpoint,
         }
@@ -97,6 +98,7 @@ struct ClientInfo {
 pub enum TransportWay {
     Tcp,
     Udp,
+    Ws,
 }
 
 pub fn run(transport: TransportWay, addr: &str, handler: impl MessageHandler) {
@@ -109,6 +111,7 @@ pub fn run(transport: TransportWay, addr: &str, handler: impl MessageHandler) {
     let transport = match transport {
         TransportWay::Tcp => Transport::Tcp,
         TransportWay::Udp => Transport::Udp,
+        TransportWay::Ws => Transport::Ws,
     };
     let address = address.unwrap();
     let (node_handler, listener) = node::split::<()>();
@@ -133,7 +136,7 @@ pub fn run(transport: TransportWay, addr: &str, handler: impl MessageHandler) {
 
             let mut hd = block_on(handler.try_clone());
             //trigger the open event
-            let th = TcpHandler::new(node_handler.clone(), endpoint);
+            let th = NetHandler::new(node_handler.clone(), endpoint);
             block_on(hd.on_open(th));
             handler_map.insert(endpoint, hd);
             info!(

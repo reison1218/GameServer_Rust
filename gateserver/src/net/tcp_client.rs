@@ -83,7 +83,7 @@ fn handler_mess_s(cp: Lock, packet_array: VecDeque<Packet>) {
             let gate_user = lock.get_mut_user_channel(&user_id);
             match gate_user {
                 Some(user) => {
-                    let tcp = user.get_tcp_mut_ref();
+                    let tcp = user.get_net_mut_ref();
                     let endpoint = tcp.endpoint;
                     tcp.node_handler
                         .network()

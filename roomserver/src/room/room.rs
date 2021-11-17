@@ -13,6 +13,7 @@ use std::borrow::{Borrow, BorrowMut};
 use std::collections::{HashMap, HashSet};
 use tools::cmd_code::{BattleCode, ClientCode, GameCode};
 use tools::macros::GetMutRef;
+use tools::net_message_io::NetHandler;
 use tools::protos::base::{MemberPt, RoomPt};
 use tools::protos::room::{
     S_CHANGE_TEAM_NOTICE, S_CONFIRM_INTO_ROOM_NOTICE, S_EMOJI, S_EMOJI_NOTICE, S_KICK_MEMBER,
@@ -20,7 +21,6 @@ use tools::protos::room::{
     S_ROOM, S_ROOM_ADD_MEMBER_NOTICE, S_ROOM_MEMBER_LEAVE_NOTICE, S_ROOM_NOTICE,
 };
 use tools::protos::server_protocol::{B_R_G_PUNISH_MATCH, R_B_START};
-use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 ///最大成员数量
@@ -80,7 +80,7 @@ pub struct Room {
     pub member_index: [u32; MEMBER_MAX], //玩家对应的位置
     pub robots: HashSet<u32>,            //机器人
     pub setting: RoomSetting,            //房间设置
-    pub tcp_handler: TcpHandler,         //tcpsender
+    pub net_handler: NetHandler,         //tcpsender
     task_sender: Sender<Task>,           //任务sender
     time: DateTime<Utc>,                 //房间创建时间
 }
@@ -109,7 +109,7 @@ impl Room {
     pub fn new(
         mut owner: Member,
         room_type: RoomType,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<Room> {
         //转换成tilemap数据
@@ -130,7 +130,7 @@ impl Room {
             state: room_state,
             setting: RoomSetting::default(),
             room_type,
-            tcp_handler: sender,
+            net_handler: sender,
             task_sender,
             time,
         };
@@ -237,7 +237,7 @@ impl Room {
     ///转发到游戏中心服
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
-        let tcp = self.tcp_handler.borrow();
+        let tcp = self.net_handler.borrow();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
@@ -261,7 +261,7 @@ impl Room {
             return;
         }
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        let tcp = self.tcp_handler.borrow();
+        let tcp = self.net_handler.borrow();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
@@ -298,7 +298,7 @@ impl Room {
                 true,
                 true,
             );
-            let tcp = self.tcp_handler.borrow();
+            let tcp = self.net_handler.borrow();
             let endpoint = tcp.endpoint;
             tcp.node_handler.network().send(endpoint, datas.as_slice());
         }
@@ -313,7 +313,7 @@ impl Room {
                 continue;
             }
             let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes.clone(), true, true);
-            let tcp = self.tcp_handler.borrow();
+            let tcp = self.net_handler.borrow();
             let endpoint = tcp.endpoint;
             tcp.node_handler.network().send(endpoint, bytes.as_slice());
         }

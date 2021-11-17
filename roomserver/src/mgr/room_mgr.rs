@@ -18,7 +18,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use tools::cmd_code::{ClientCode, RoomCode, ServerCommonCode};
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut RoomMgr, Packet), RandomState>;
@@ -32,7 +32,7 @@ pub struct RoomMgr {
     pub world_boss_custom_room: WorldBossCustomRoom, //世界boss自定义房间
     pub player_room: HashMap<u32, u64>, //玩家对应的房间，key:u32,value:采用一个u64存，通过位运算分出高低位,低32位是房间模式,高32位是房间id
     pub cmd_map: CmdFn,                 //命令管理 key:cmd,value:函数指针
-    tcp_handler: Option<TcpHandler>,    //tcp channel的发送方
+    net_handler: Option<NetHandler>,    //tcp channel的发送方
     pub task_sender: Option<Sender<Task>>, //task channel的发送方
 }
 
@@ -187,24 +187,24 @@ impl RoomMgr {
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd.into_u32(), user_id, bytes, true, true);
-        let tcp = self.tcp_handler.as_ref().unwrap();
+        let tcp = self.net_handler.as_ref().unwrap();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd, user_id, bytes, true, false);
-        let tcp = self.tcp_handler.as_ref().unwrap();
+        let tcp = self.net_handler.as_ref().unwrap();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
-    pub fn set_tcp_handler(&mut self, sender: TcpHandler) {
-        self.tcp_handler = Some(sender);
+    pub fn set_net_handler(&mut self, sender: NetHandler) {
+        self.net_handler = Some(sender);
     }
 
-    pub fn get_tcp_handler_clone(&self) -> TcpHandler {
-        self.tcp_handler.clone().unwrap()
+    pub fn get_net_handler_clone(&self) -> NetHandler {
+        self.net_handler.clone().unwrap()
     }
 
     ///检查玩家是否已经在房间里

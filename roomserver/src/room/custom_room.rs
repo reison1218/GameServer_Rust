@@ -5,7 +5,7 @@ use std::{
 
 use log::info;
 use protobuf::Message;
-use tools::{cmd_code::ClientCode, protos::room::S_LEAVE_ROOM, tcp_message_io::TcpHandler};
+use tools::{cmd_code::ClientCode, net_message_io::NetHandler, protos::room::S_LEAVE_ROOM};
 
 use crate::{room::room::recycle_room_id, task_timer::Task};
 
@@ -41,7 +41,7 @@ impl RoomModel for CustomRoom {
         &mut self,
         owner: Member,
         room_setting: Option<RoomSetting>,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;

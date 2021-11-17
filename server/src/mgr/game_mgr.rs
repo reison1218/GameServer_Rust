@@ -12,11 +12,11 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use tools::cmd_code::{ClientCode, GameCode, ServerCommonCode};
+use tools::net_message_io::NetHandler;
 use tools::protos::base::{PlayerPt, PunishMatchPt, WorldBossPt};
 use tools::protos::base::{RankInfoPt, SeasonPt};
 use tools::protos::protocol::{C_SYNC_DATA, S_SYNC_DATA, S_USER_LOGIN};
 use tools::protos::server_protocol::{B_S_SUMMARY, G_S_MODIFY_NICK_NAME, UPDATE_WORLD_BOSS_PUSH};
-use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 use tools::{cmd_code::RankCode, protos::base::LeaguePt};
 
@@ -33,7 +33,7 @@ pub struct GameMgr {
     pub rank: Vec<RankInfoPt>,                    //排行榜快照，从排行榜服务器那边过来的
     pub last_season_rank: Vec<RankInfoPt>,        //上一赛季排行榜
     pub user_best_rank: HashMap<u32, RankInfoPt>, //玩家最佳排行
-    tcp_handler: Option<TcpHandler>,              //tcpchannel
+    net_handler: Option<NetHandler>,              //tcpchannel
     pub cmd_map: HashMap<u32, fn(&mut GameMgr, Packet), RandomState>, //命令管理
 }
 
@@ -43,7 +43,7 @@ impl GameMgr {
         let users: HashMap<u32, UserData> = HashMap::new();
         let mut gm = GameMgr {
             users,
-            tcp_handler: None,
+            net_handler: None,
             rank: Vec::new(),
             last_season_rank: Vec::new(),
             user_best_rank: HashMap::new(),
@@ -124,24 +124,24 @@ impl GameMgr {
         }
     }
 
-    pub fn set_tcp_handler(&mut self, tcp_handler: TcpHandler) {
-        self.tcp_handler = Some(tcp_handler);
+    pub fn set_net_handler(&mut self, net_handler: NetHandler) {
+        self.net_handler = Some(net_handler);
     }
 
-    pub fn get_tcp_handler(&self) -> &TcpHandler {
-        self.tcp_handler.as_ref().unwrap()
+    pub fn get_net_handler(&self) -> &NetHandler {
+        self.net_handler.as_ref().unwrap()
     }
 
     pub fn send_2_client(&mut self, cmd: ClientCode, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, true);
-        let tcp = self.get_tcp_handler();
+        let tcp = self.get_net_handler();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }
 
     pub fn send_2_server(&mut self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_packet_bytes(cmd as u32, user_id, bytes, true, false);
-        let tcp = self.get_tcp_handler();
+        let tcp = self.get_net_handler();
         let endpoint = tcp.endpoint;
         tcp.node_handler.network().send(endpoint, bytes.as_slice());
     }

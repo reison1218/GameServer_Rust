@@ -10,7 +10,7 @@ use crate::Lock;
 use async_trait::async_trait;
 use log::warn;
 use tools::cmd_code::{BattleCode, ClientCode, GameCode, RankCode, RoomCode};
-use tools::tcp_message_io::TransportWay;
+use tools::net_message_io::TransportWay;
 use tools::util::packet::Packet;
 
 use self::battle_tcp_server::BattleTcpServerHandler;
@@ -133,9 +133,9 @@ trait Forward {
 }
 
 async fn new_battle_server_tcp(address: String, handler: BattleTcpServerHandler) {
-    tools::tcp_message_io::run(TransportWay::Tcp, address.as_str(), handler);
+    tools::net_message_io::run(TransportWay::Tcp, address.as_str(), handler);
 }
 
 async fn new_gate_server_tcp(address: String, handler: GateTcpServerHandler) {
-    tools::tcp_message_io::run(TransportWay::Tcp, address.as_str(), handler);
+    tools::net_message_io::run(TransportWay::Tcp, address.as_str(), handler);
 }

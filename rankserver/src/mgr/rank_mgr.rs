@@ -10,7 +10,7 @@ use log::warn;
 use rayon::slice::ParallelSliceMut;
 use std::collections::hash_map::RandomState;
 use tools::cmd_code::RankCode;
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 use tools::util::packet::Packet;
 
 type CmdFn = HashMap<u32, fn(&mut RankMgr, Packet), RandomState>;
@@ -22,7 +22,7 @@ pub struct RankMgr {
     pub need_rank: bool,                        //是否需要排序
     pub last_rank: Vec<RankInfo>,               //上一赛季排行榜数据
     pub user_best_rank: HashMap<u32, RankInfo>, //玩家历史最好排行数据
-    tcp_handler: Option<TcpHandler>,            //tcp channel的发送方
+    net_handler: Option<NetHandler>,            //tcp channel的发送方
     pub task_sender: Option<Sender<Task>>,      //任务发送方
 }
 
@@ -47,7 +47,7 @@ impl RankMgr {
     ///比如cmd是游戏服要处理的命令，那么就会推送给全部游戏服
     pub fn push_2_server(&self, cmd: u32, user_id: u32, bytes: Vec<u8>) {
         let bytes = Packet::build_push_packet_bytes(cmd, user_id, bytes, true, false);
-        let tcp_handler = self.tcp_handler.as_ref().unwrap();
+        let tcp_handler = self.net_handler.as_ref().unwrap();
         let endpoint = tcp_handler.endpoint;
         tcp_handler
             .node_handler
@@ -55,8 +55,8 @@ impl RankMgr {
             .send(endpoint, bytes.as_slice());
     }
 
-    pub fn set_sender(&mut self, tcp_handler: TcpHandler) {
-        self.tcp_handler = Some(tcp_handler);
+    pub fn set_sender(&mut self, net_handler: NetHandler) {
+        self.net_handler = Some(net_handler);
     }
 
     ///命令初始化

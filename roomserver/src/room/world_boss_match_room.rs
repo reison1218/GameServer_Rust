@@ -16,7 +16,7 @@ use log::info;
 use rayon::slice::ParallelSliceMut;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 ///worldboss匹配房结构体
 #[derive(Clone, Default)]
 pub struct WorldBossMatchRoom {
@@ -55,7 +55,7 @@ impl WorldBossMatchRoom {
     pub fn quickly_start(
         &mut self,
         mut member: Member,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;
@@ -142,7 +142,7 @@ impl RoomModel for WorldBossMatchRoom {
         &mut self,
         owner: Member,
         _: Option<RoomSetting>,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let mut room = Room::new(owner, RoomType::WorldBoseMatch, sender, task_sender)?;

@@ -35,7 +35,7 @@ impl RoomModel for WorldBossCustomRoom {
         &mut self,
         owner: super::member::Member,
         room_setting: Option<super::room_model::RoomSetting>,
-        sender: tools::tcp_message_io::TcpHandler,
+        sender: tools::net_message_io::NetHandler,
         task_sender: crossbeam::channel::Sender<crate::task_timer::Task>,
     ) -> anyhow::Result<u32> {
         let user_id = owner.user_id;

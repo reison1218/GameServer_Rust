@@ -6,7 +6,7 @@ use log::warn;
 use log::{error, info};
 use std::collections::HashMap;
 use tools::cmd_code::RoomCode;
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 use tools::util::packet::Packet;
 
 ///channel管理结构体
@@ -22,7 +22,7 @@ pub struct ChannelMgr {
     //token,user_id
     pub channels: HashMap<usize, u32>,
     //临时会话map
-    pub temp_channels: HashMap<u32, Option<TcpHandler>>,
+    pub temp_channels: HashMap<u32, Option<NetHandler>>,
 }
 
 impl ChannelMgr {
@@ -150,7 +150,7 @@ impl ChannelMgr {
     }
 
     //添加gateuser
-    pub fn add_gate_user(&mut self, user_id: u32, tcp: Option<TcpHandler>) {
+    pub fn add_gate_user(&mut self, user_id: u32, tcp: Option<NetHandler>) {
         let mut token = 0;
         if tcp.is_some() {
             token = tcp.as_ref().unwrap().endpoint.resource_id().raw();

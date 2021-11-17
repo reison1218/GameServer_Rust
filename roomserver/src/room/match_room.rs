@@ -6,7 +6,7 @@ use std::{
 use crossbeam::channel::Sender;
 use log::{error, info};
 use rayon::slice::ParallelSliceMut;
-use tools::tcp_message_io::TcpHandler;
+use tools::net_message_io::NetHandler;
 
 use crate::{
     room::room::recycle_room_id,
@@ -54,7 +54,7 @@ impl RoomModel for MatchRoom {
         &mut self,
         owner: Member,
         _: Option<RoomSetting>,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: crossbeam::channel::Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room = Room::new(owner, RoomType::OneVOneVOneVOneMatch, sender, task_sender)?;
@@ -174,7 +174,7 @@ impl MatchRoom {
     pub fn quickly_start(
         &mut self,
         member: Member,
-        sender: TcpHandler,
+        sender: NetHandler,
         task_sender: Sender<Task>,
     ) -> anyhow::Result<u32> {
         let room_id: u32;

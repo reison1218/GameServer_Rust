@@ -4,8 +4,8 @@ use protobuf::Message;
 use serde_json::Value;
 use std::collections::HashMap;
 use tools::cmd_code::{BattleCode, GameCode, GateCode, RankCode, RoomCode, ServerCommonCode};
+use tools::net_message_io::NetHandler;
 use tools::protos::server_protocol::{R_B_START, R_S_UPDATE_SEASON, UPDATE_WORLD_BOSS_PUSH};
-use tools::tcp_message_io::TcpHandler;
 use tools::util::packet::Packet;
 
 #[derive(Default)]
@@ -230,7 +230,7 @@ impl GameCenterMgr {
             return;
         }
         let bc_res = bc_res.unwrap();
-        let battle_token = bc_res.tcp_handler.endpoint.resource_id().raw();
+        let battle_token = bc_res.net_handler.endpoint.resource_id().raw();
         for member in proto.get_room_pt().members.iter() {
             let user_id = member.user_id;
             self.user_w_battle.insert(user_id, battle_token);
@@ -302,32 +302,32 @@ impl GameCenterMgr {
         self.rank_server = Some(sender);
     }
 
-    pub fn add_gate_client(&mut self, tcp_handler: TcpHandler) {
-        let key = tcp_handler.endpoint.resource_id().raw();
-        let gc = GateClient::new(tcp_handler);
+    pub fn add_gate_client(&mut self, net_handler: NetHandler) {
+        let key = net_handler.endpoint.resource_id().raw();
+        let gc = GateClient::new(net_handler);
         self.gate_clients.insert(key, gc);
     }
 
-    pub fn add_battle_client(&mut self, tcp_handler: TcpHandler) {
-        let key = tcp_handler.endpoint.resource_id().raw();
-        let rc = BattleClient::new(tcp_handler);
+    pub fn add_battle_client(&mut self, net_handler: NetHandler) {
+        let key = net_handler.endpoint.resource_id().raw();
+        let rc = BattleClient::new(net_handler);
         self.battle_clients.insert(key, rc);
     }
 }
 
 pub struct GateClient {
-    tcp_handler: TcpHandler,
+    net_handler: NetHandler,
 }
 
 impl GateClient {
-    pub fn new(tcp_handler: TcpHandler) -> Self {
-        let gc = GateClient { tcp_handler };
+    pub fn new(net_handler: NetHandler) -> Self {
+        let gc = GateClient { net_handler };
         gc
     }
 
     pub fn send(&self, bytes: &[u8]) {
-        let endpoint = self.tcp_handler.endpoint;
-        self.tcp_handler
+        let endpoint = self.net_handler.endpoint;
+        self.net_handler
             .node_handler
             .network()
             .send(endpoint, bytes);
@@ -335,22 +335,22 @@ impl GateClient {
 }
 
 pub struct BattleClient {
-    tcp_handler: TcpHandler,
+    net_handler: NetHandler,
     room_num: u32,
 }
 
 impl BattleClient {
-    pub fn new(tcp_handler: TcpHandler) -> Self {
+    pub fn new(net_handler: NetHandler) -> Self {
         let rc = BattleClient {
-            tcp_handler,
+            net_handler,
             room_num: 0,
         };
         rc
     }
 
     pub fn send(&self, bytes: &[u8]) {
-        let endpoint = self.tcp_handler.endpoint;
-        self.tcp_handler
+        let endpoint = self.net_handler.endpoint;
+        self.net_handler
             .node_handler
             .network()
             .send(endpoint, bytes);
