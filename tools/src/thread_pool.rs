@@ -1,3 +1,5 @@
+use log::error;
+use rand::Rng;
 use threadpool::ThreadPool;
 
 //线程池类型枚举
@@ -83,5 +85,88 @@ impl MyThreadPool {
             sys_pool: stp,
         };
         mtp
+    }
+}
+
+#[derive(Debug)]
+pub enum ThreadIndex {
+    Rankdom,
+    Index(usize),
+}
+
+pub(crate) type Thunk<'a> = Box<dyn FnBox + Send + 'a>;
+
+pub struct ThreadWorkPool {
+    pool: Vec<ThreadWork>,
+}
+
+impl ThreadWorkPool {
+    pub fn new(name: &str, thread_count: usize) -> Self {
+        // let mut threads: [ThreadWork<F>; thread_count] = [ThreadWork; thread_count];
+
+        let mut v = std::vec::Vec::with_capacity(thread_count);
+        for i in 0..thread_count {
+            let s = format!("{}-{}", name, i + 1);
+            let res: ThreadWork = ThreadWork::new(s.as_str());
+            v.push(res);
+        }
+
+        ThreadWorkPool { pool: v }
+    }
+
+    pub fn execute<F>(&self, thread_index: ThreadIndex, job: F)
+    where
+        F: FnOnce() + Send + 'static,
+    {
+        let index = match thread_index {
+            ThreadIndex::Rankdom => {
+                let mut rand = rand::thread_rng();
+                let index = rand.gen_range(0..self.pool.len());
+                index
+            }
+            ThreadIndex::Index(index) => index,
+        };
+
+        let res = self.pool.get(index);
+
+        match res {
+            Some(thread) => thread.execute(Box::new(job)),
+            None => error!("there is no Thread for index {:?}", thread_index),
+        }
+    }
+}
+
+struct ThreadWork {
+    sender: crossbeam::channel::Sender<Thunk<'static>>,
+}
+impl ThreadWork {
+    pub(crate) fn new(name: &str) -> Self {
+        let (sender, rec) = crossbeam::channel::unbounded();
+        let tw = ThreadWork { sender };
+        std::thread::Builder::new()
+            .name(name.to_owned())
+            .spawn(move || loop {
+                let job = rec.recv();
+                match job {
+                    Ok(job) => job.call_box(),
+                    Err(e) => error!("{:?}", e),
+                }
+            })
+            .expect("build thread failed!");
+        tw
+    }
+
+    pub(crate) fn execute(&self, job: Thunk<'static>) {
+        self.sender.send(job).unwrap();
+    }
+}
+
+pub(crate) trait FnBox {
+    fn call_box(self: Box<Self>);
+}
+
+impl<F: FnOnce()> FnBox for F {
+    fn call_box(self: Box<F>) {
+        (*self)()
     }
 }
