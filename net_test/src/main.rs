@@ -27,9 +27,10 @@ use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use std::task::Poll;
 use std::time::{Duration, SystemTime};
+use tools::http::HttpMethod;
+use tools::net_message_io::MessageHandler;
+use tools::net_message_io::TransportWay;
 use tools::tcp::ClientHandler;
-use tools::tcp_message_io::MessageHandler;
-use tools::tcp_message_io::TransportWay;
 use tracing_subscriber::EnvFilter;
 
 //use tcp::thread_pool::{MyThreadPool, ThreadPoolHandler};
@@ -458,12 +459,12 @@ fn test_close(mut a: impl FnMut(u32)) {
 pub struct MessageClient;
 use async_trait::async_trait;
 #[async_trait]
-impl tools::tcp_message_io::MessageHandler for MessageClient {
+impl tools::net_message_io::MessageHandler for MessageClient {
     async fn try_clone(&self) -> Self {
         todo!()
     }
 
-    async fn on_open(&mut self, tcp_handler: tools::tcp_message_io::TcpHandler) {
+    async fn on_open(&mut self, tcp_handler: tools::net_message_io::NetHandler) {
         println!("链接上了");
         let str = String::from_str("ss").unwrap();
         tcp_handler.send(str.as_bytes());
@@ -557,6 +558,16 @@ extern "C" {
 }
 
 fn main() -> anyhow::Result<()> {
+    let m = tools::http::send_http_request(
+        "https://",
+        "github.com",
+        "/sbstp/attohttpc",
+        HttpMethod::GET,
+        None,
+    );
+    let res = async_std::task::block_on(m).unwrap();
+    println!("{:?}", res);
+
     // let res = find_median_sorted_arrays(Vec::from([1, 2, 3]), Vec::from([4, 5, 6]));
     // println!("{}", res);
     // Print some basic info about the response to standard output.

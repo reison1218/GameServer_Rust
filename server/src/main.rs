@@ -8,7 +8,7 @@ use crate::mgr::game_mgr::GameMgr;
 use crate::net::http::{SavePlayerHttpHandler, StopServerHttpHandler};
 use crate::net::tcp_server;
 use async_std::task::block_on;
-use tools::thread_pool::MyThreadPool;
+use tools::thread_pool::ThreadWorkPool;
 
 use async_std::sync::Mutex;
 use std::sync::Arc;
@@ -28,12 +28,12 @@ extern crate lazy_static;
 lazy_static! {
 
     ///线程池
-    static ref THREAD_POOL: MyThreadPool = {
-        let game_model = "game_model".to_string();
-        let user_model = "user_model".to_string();
-        let sys_model = "sys_model".to_string();
-        let mtp = MyThreadPool::init(game_model, 8, user_model, 8, sys_model, 2);
-        mtp
+    static ref GAME_THREAD_POOL: ThreadWorkPool = {
+        ThreadWorkPool::new("game_model", 2)
+    };
+
+    static ref USER_THREAD_POOL: ThreadWorkPool = {
+        ThreadWorkPool::new("user_model", 9)
     };
 
     ///数据库链接池

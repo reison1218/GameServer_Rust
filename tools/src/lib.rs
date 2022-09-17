@@ -1,9 +1,13 @@
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
+    use crate::thread_pool::ThreadIndex;
+
     #[test]
     fn it_works() {
         //crate::redis_pool::test_api("redis://localhost/","reison");
-        crate::protos::proto();
+        // crate::protos::proto();
         // let m = || {
         //     crate::rpc_server::test_rpc_server();
         // };
@@ -12,6 +16,17 @@ mod tests {
         // let time = std::time::SystemTime::now();
         // crate::rpc_client::test_rpc_client();
         // println!("{:?}", time.elapsed().unwrap());
+        let pool = crate::thread_pool::ThreadWorkPool::new("test", 8 as usize);
+        let m = move || {
+            println!(
+                "test now Thread name:{}",
+                std::thread::current().name().unwrap()
+            );
+        };
+        for i in 0..10 {
+            std::thread::sleep(Duration::from_secs(1));
+            pool.execute(ThreadIndex::Index(i), m);
+        }
     }
 }
 pub mod binary;
