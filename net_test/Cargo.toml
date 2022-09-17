@@ -32,7 +32,7 @@ libc = "0.2.68"
 ws="0.9.1"
 num_cpus="1.10.1"
 protobuf="2.14.0"
-async-std = "1.9"
+async-std = "1.10.0"
 http-types = "2.5"
 async-h1 = "2.1"
 futures = "0.3"
@@ -72,7 +72,7 @@ color-eyre = "0.5"
 tracing-subscriber = "0.2"
 tracing = "0.1"
 bma-benchmark = "0.0.15"
-isahc = {version="1.5.1",fesatures=["static-ssl"]}
-reqwest = { version = "0.11.6",features = ["rustls-tls"]}
+#isahc = {version="1.5.1",fesatures=["static-ssl"]}
+#reqwest = { version = "0.11.6",features = ["rustls-tls"]}
 tools = { path = "../tools" }
 #Zellij
