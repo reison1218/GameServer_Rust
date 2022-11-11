@@ -45,5 +45,8 @@ pub mod templates;
 pub mod thread_pool;
 pub mod util;
 use log::{error, info, warn};
-
+use once_cell::sync::Lazy;
 type JsonValue = serde_json::Value;
+
+pub static TOKIO_RT: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().unwrap());

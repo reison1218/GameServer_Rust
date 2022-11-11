@@ -558,15 +558,8 @@ extern "C" {
 }
 
 fn main() -> anyhow::Result<()> {
-    let m = tools::http::send_http_request(
-        "https://",
-        "github.com",
-        "/sbstp/attohttpc",
-        HttpMethod::GET,
-        None,
-    );
-    let res = async_std::task::block_on(m).unwrap();
-    println!("{:?}", res);
+    let m = 1;
+    print!("{}", m);
 
     // let res = find_median_sorted_arrays(Vec::from([1, 2, 3]), Vec::from([4, 5, 6]));
     // println!("{}", res);

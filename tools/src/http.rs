@@ -5,21 +5,21 @@ use async_std::prelude::*;
 use async_std::sync::{Arc as AsyncArc, RwLock as AsyncRwLock};
 use async_std::task;
 use http_types::{Body, Error as HttpTypesError, Method, Request, Response, StatusCode, Url};
-use serde_json::Error;
+use serde_json::{json, Error};
 
 pub enum HttpMethod {
     POST,
     GET,
 }
 
-pub trait HttpServerHandler: Send + Sync {
+trait HttpServerHandlerAsyncStd: Send + Sync {
     fn get_path(&self) -> &str;
     fn execute(&mut self, params: Option<JsonValue>) -> Result<JsonValue, HttpTypesError>;
 }
 
-pub async fn http_server(
+async fn http_server_async_std(
     address: &str,
-    handler_vec: Vec<Box<dyn HttpServerHandler>>,
+    handler_vec: Vec<Box<dyn HttpServerHandlerAsyncStd>>,
 ) -> http_types::Result<()> {
     // Open up a TCP connection and create a URL.
     let listener = TcpListener::bind(address).await?;
@@ -33,7 +33,7 @@ pub async fn http_server(
         let stream = stream?;
         let h_c = handler_vec_arc.clone();
         task::spawn(async move {
-            if let Err(err) = accept(stream, h_c).await {
+            if let Err(err) = accept_async_std(stream, h_c).await {
                 error!("{:?}", err);
             }
         });
@@ -42,9 +42,9 @@ pub async fn http_server(
 }
 
 // Take a TCP stream, and convert it into sequential HTTP request / response pairs.
-async fn accept(
+async fn accept_async_std(
     stream: TcpStream,
-    handler_vec: AsyncArc<AsyncRwLock<Vec<Box<dyn HttpServerHandler>>>>,
+    handler_vec: AsyncArc<AsyncRwLock<Vec<Box<dyn HttpServerHandlerAsyncStd>>>>,
 ) -> http_types::Result<()> {
     info!(
         "there is new connection from {}",
@@ -186,4 +186,78 @@ pub async fn send_http_request(
     }
 
     Ok(result.unwrap())
+}
+
+pub trait HttpServerHandler: Send + Sync {
+    fn get_path(&self) -> &str;
+    fn get_method(&self) -> HttpMethod;
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value>;
+}
+
+pub struct Builder {
+    app: axum::Router,
+}
+
+impl Builder {
+    ///create new axum server size
+    pub fn new() -> Self {
+        let app = axum::Router::new();
+        Builder { app }
+    }
+
+    ///add route for axum server
+    pub fn route(mut self, handler: Box<dyn HttpServerHandler>) -> Self {
+        let handler = AsyncArc::new(AsyncRwLock::new(handler));
+
+        let handler_lock = TOKIO_RT.block_on(handler.write());
+
+        let http_methond = handler_lock.get_method();
+
+        let path = handler_lock.get_path().to_owned();
+
+        std::mem::drop(handler_lock);
+
+        let m = |axum::Json(params): axum::Json<serde_json::Value>| async move {
+            let handler_lock = handler.clone();
+            let mut handler_lock = handler_lock.write().await;
+            //receive the http request
+            let res = handler_lock.on_message(params);
+            if let Err(e) = res {
+                error!("{:?}", e);
+                return (
+                    axum::http::StatusCode::PRECONDITION_FAILED,
+                    axum::Json(json!({"key":"fail"})),
+                );
+            }
+            match res {
+                Ok(json) => (axum::http::StatusCode::CREATED, axum::Json(json)),
+                Err(e) => {
+                    error!("{:?}", e);
+                    return (
+                        axum::http::StatusCode::PRECONDITION_FAILED,
+                        axum::Json(json!({"key":"fail"})),
+                    );
+                }
+            }
+        };
+        let http_methond: axum::routing::MethodRouter = match http_methond {
+            HttpMethod::POST => axum::routing::post(m),
+            HttpMethod::GET => axum::routing::get(m),
+        };
+        self.app = self.app.route(path.as_str(), http_methond);
+        self
+    }
+
+    ///bind ip and listening the port
+    pub fn bind(self, port: u16) {
+        let m = async move {
+            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+            axum::Server::bind(&addr)
+                .serve(self.app.into_make_service())
+                .await
+                .unwrap();
+        };
+        TOKIO_RT.spawn(m);
+        info!("http-server listening on {:?}:{}", "127.0.0,.1", port);
+    }
 }

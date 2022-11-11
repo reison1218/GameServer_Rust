@@ -17,13 +17,14 @@ impl StopAllServerHandler {
 
 impl HttpServerHandler for StopAllServerHandler {
     fn get_path(&self) -> &str {
-        "stop_all"
+        "/stop_all"
     }
 
-    fn execute(
-        &mut self,
-        _: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.stop_all_server_handler();
         let value = json!({ "status":"OK" });
@@ -43,18 +44,18 @@ impl KickPlayerHandler {
 
 impl HttpServerHandler for KickPlayerHandler {
     fn get_path(&self) -> &str {
-        "kick"
+        "/kick"
     }
 
-    fn execute(
-        &mut self,
-        params: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
-        if let None = params {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+        if params == serde_json::Value::Null {
             let value = json!({ "status":"false ","error":"the params is none!" });
             return Ok(value);
         }
-        let params = params.unwrap();
         let res = params.as_object();
         if let None = res {
             let value = json!({ "status":"false ","error":"the params is none!" });
@@ -93,13 +94,14 @@ impl ReloadTempsHandler {
 
 impl HttpServerHandler for ReloadTempsHandler {
     fn get_path(&self) -> &str {
-        "reload_temps"
+        "/reload_temps"
     }
 
-    fn execute(
-        &mut self,
-        _: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_reload_temps();
         let value = json!({ "status":"OK" });
@@ -119,15 +121,16 @@ impl UpdateSeasonHandler {
 
 impl HttpServerHandler for UpdateSeasonHandler {
     fn get_path(&self) -> &str {
-        "update_season"
+        "/update_season"
     }
 
-    fn execute(
-        &mut self,
-        data: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
-        lock.notice_update_season(data.unwrap());
+        lock.notice_update_season(params);
         let value = json!({ "status":"OK" });
         Ok(value)
     }
@@ -145,15 +148,16 @@ impl UpdateWorldBossHandler {
 
 impl HttpServerHandler for UpdateWorldBossHandler {
     fn get_path(&self) -> &str {
-        "update_world_boss"
+        "/update_world_boss"
     }
 
-    fn execute(
-        &mut self,
-        data: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
-        lock.notice_update_worldboss(data.unwrap());
+        lock.notice_update_worldboss(params);
         let value = json!({ "status":"OK" });
         Ok(value)
     }

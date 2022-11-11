@@ -4,9 +4,11 @@ mod mgr;
 mod net;
 use crate::mgr::channel_mgr::ChannelMgr;
 use crate::net::tcp_client::TcpClientHandler;
+use async_std::path;
 use async_std::sync::Mutex;
 use log::info;
 use net::websocket;
+use std::fs::{DirEntry, File};
 use std::sync::Arc;
 use tools::conf::Conf;
 
@@ -85,10 +87,10 @@ fn init_log() {
 ///初始化http服务端
 fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
     std::thread::sleep(Duration::from_millis(10));
-    let mut http_vec: Vec<Box<dyn HttpServerHandler>> = Vec::new();
-    http_vec.push(Box::new(KickPlayerHttpHandler::new(cm)));
-    let http_port: &str = CONF_MAP.get_str("http_port");
-    async_std::task::spawn(tools::http::http_server(http_port, http_vec));
+    let http_port = CONF_MAP.get_usize("http_port");
+    tools::http::Builder::new()
+        .route(Box::new(KickPlayerHttpHandler::new(cm)))
+        .bind(http_port as u16);
 }
 
 ///初始化网络服务这块

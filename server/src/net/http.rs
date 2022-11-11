@@ -20,10 +20,14 @@ impl SavePlayerHttpHandler {
 
 impl HttpServerHandler for SavePlayerHttpHandler {
     fn get_path(&self) -> &str {
-        "save"
+        "/save"
     }
 
-    fn execute(&mut self, _: Option<JsonValue>) -> Result<JsonValue, http_types::Error> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         Ok(value)
@@ -42,13 +46,14 @@ impl StopServerHttpHandler {
 
 impl HttpServerHandler for StopServerHttpHandler {
     fn get_path(&self) -> &str {
-        "exit"
+        "/exit"
     }
 
-    fn execute(
-        &mut self,
-        _: Option<JsonValue>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
+    }
+
+    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         let exit = async {

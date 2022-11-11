@@ -59,13 +59,13 @@ impl KickPlayerHttpHandler {
 
 impl HttpServerHandler for KickPlayerHttpHandler {
     fn get_path(&self) -> &str {
-        "kick"
+        "/kick"
+    }
+    fn get_method(&self) -> tools::http::HttpMethod {
+        tools::http::HttpMethod::POST
     }
 
-    fn execute(
-        &mut self,
-        _: Option<Value>,
-    ) -> core::result::Result<serde_json::Value, HttpTypesError> {
+    fn on_message(&mut self, _: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.kick_all();
         let value = json!({ "status":"OK" });
