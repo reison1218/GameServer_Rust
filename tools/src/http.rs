@@ -194,6 +194,8 @@ pub trait HttpServerHandler: Send + Sync {
     fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value>;
 }
 
+
+///axum server builder
 pub struct Builder {
     app: axum::Router,
 }
@@ -226,7 +228,7 @@ impl Builder {
                 error!("{:?}", e);
                 return (
                     axum::http::StatusCode::PRECONDITION_FAILED,
-                    axum::Json(json!({"key":"fail"})),
+                    axum::Json(json!({"result":"fail"})),
                 );
             }
             match res {
@@ -235,7 +237,7 @@ impl Builder {
                     error!("{:?}", e);
                     return (
                         axum::http::StatusCode::PRECONDITION_FAILED,
-                        axum::Json(json!({"key":"fail"})),
+                        axum::Json(json!({"result":"fail"})),
                     );
                 }
             }
