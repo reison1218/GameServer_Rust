@@ -24,7 +24,7 @@ impl HttpServerHandler for StopAllServerHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.stop_all_server_handler();
         let value = json!({ "status":"OK" });
@@ -51,7 +51,7 @@ impl HttpServerHandler for KickPlayerHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         if params == serde_json::Value::Null {
             let value = json!({ "status":"false ","error":"the params is none!" });
             return Ok(value);
@@ -101,7 +101,7 @@ impl HttpServerHandler for ReloadTempsHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_reload_temps();
         let value = json!({ "status":"OK" });
@@ -128,7 +128,7 @@ impl HttpServerHandler for UpdateSeasonHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_update_season(params);
         let value = json!({ "status":"OK" });
@@ -155,7 +155,7 @@ impl HttpServerHandler for UpdateWorldBossHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_update_worldboss(params);
         let value = json!({ "status":"OK" });

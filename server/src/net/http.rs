@@ -53,7 +53,7 @@ impl HttpServerHandler for StopServerHttpHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         let exit = async {

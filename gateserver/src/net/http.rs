@@ -65,7 +65,7 @@ impl HttpServerHandler for KickPlayerHttpHandler {
         tools::http::HttpMethod::POST
     }
 
-    fn on_message(&mut self, _: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(&mut self, _: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.kick_all();
         let value = json!({ "status":"OK" });
