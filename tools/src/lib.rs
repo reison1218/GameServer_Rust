@@ -32,6 +32,7 @@ mod tests {
 pub mod binary;
 pub mod cmd_code;
 pub mod conf;
+pub mod excel;
 pub mod http;
 pub mod macros;
 pub mod my_log;
