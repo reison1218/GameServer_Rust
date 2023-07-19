@@ -63,7 +63,12 @@ impl Builder {
         let handler_lock = handler.clone();
         let do_get_c = |uri: axum::http::Uri| async move {
             let mut handler_lock = handler_lock.write().await;
-            let query = uri.query().unwrap();
+            let query = uri.query();
+            if query.is_none() {
+                let res = handler_lock.do_get(HashMap::new());
+                return (axum::http::StatusCode::CREATED, res.unwrap());
+            }
+            let query = query.unwrap();
             let v: Vec<&str> = query.split("&").collect();
             let mut map = HashMap::new();
 
