@@ -1,11 +1,10 @@
+use crate::json::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::str::FromStr;
-
-use crate::JsonValue;
 
 ///conf of struct
 #[derive(Default)]
@@ -23,29 +22,45 @@ impl Conf {
         conf
     }
 
-    ///拿整数
-    pub fn get_usize(&self, key: &str) -> usize {
+    pub fn get_f64(&self, key: &str, default: f64) -> f64 {
         let value = self.conf.get(key);
         if value.is_none() {
-            return 0;
+            return default;
+        }
+        value.unwrap().as_f64().unwrap()
+    }
+
+    ///拿整数
+    pub fn get_usize(&self, key: &str, default: usize) -> usize {
+        let value = self.conf.get(key);
+        if value.is_none() {
+            return default;
         }
         value.unwrap().as_i64().unwrap() as usize
     }
 
-    ///拿bool
-    pub fn get_bool(&self, key: &str) -> bool {
+    pub fn get_isize(&self, key: &str, default: isize) -> isize {
         let value = self.conf.get(key);
         if value.is_none() {
-            return false;
+            return default;
+        }
+        value.unwrap().as_i64().unwrap() as isize
+    }
+
+    ///拿bool
+    pub fn get_bool(&self, key: &str, default: bool) -> bool {
+        let value = self.conf.get(key);
+        if value.is_none() {
+            return default;
         }
         value.unwrap().as_bool().unwrap()
     }
 
     ///拿字符切片
-    pub fn get_str(&self, key: &str) -> &str {
+    pub fn get_str(&self, key: &str, default: &'static str) -> &str {
         let value = self.conf.get(key);
         if value.is_none() {
-            return "";
+            return default;
         }
         let res = value.unwrap();
         res.as_str().unwrap()

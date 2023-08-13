@@ -1,7 +1,6 @@
 use crate::templates::template::{Template, TemplateMgrTrait};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use std::borrow::Borrow;
 use std::collections::HashMap;
 
 ///变身继承类型
@@ -57,7 +56,7 @@ pub struct CharacterTemp {
     pub usable_item_count: u8,
     pub transform_inherit: Vec<u8>,
     pub character_type: Vec<u8>,
-    pub pl_cter_id:u32,
+    pub pl_cter_id: u32,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
@@ -83,7 +82,7 @@ pub struct CharacterTempMgr {
 
 impl CharacterTempMgr {
     pub fn get_init_character(&self) -> &Vec<CharacterTemp> {
-        self.init_temps.borrow()
+        &self.init_temps
     }
     pub fn init(&mut self, t: Vec<CharacterTemp>) {
         let v: Vec<CharacterTemp> = t;
