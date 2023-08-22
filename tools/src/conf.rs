@@ -57,13 +57,21 @@ impl Conf {
     }
 
     ///拿字符切片
-    pub fn get_str(&self, key: &str, default: &'static str) -> &str {
+    pub fn get_str(&self, key: &str, default: &'static str) -> String {
         let value = self.conf.get(key);
         if value.is_none() {
-            return default;
+            return default.to_string();
         }
         let res = value.unwrap();
-        res.as_str().unwrap()
+        let str_res = res.as_str();
+        if str_res.is_none() {
+            let i64_res = res.as_i64();
+            match i64_res {
+                Some(i64) => return i64.to_string(),
+                None => return default.to_string(),
+            }
+        }
+        str_res.unwrap().to_string()
     }
 
     pub fn new(map: HashMap<String, JsonValue>) -> Self {

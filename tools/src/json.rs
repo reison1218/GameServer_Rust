@@ -18,6 +18,7 @@ pub trait JsonValueTrait {
     fn get_array(&self, key: &str) -> Option<&Vec<JsonValue>>;
     fn get_array_mut(&mut self, key: &str) -> Option<&mut Vec<JsonValue>>;
     fn get_null(&self, key: &str) -> Option<()>;
+    fn insert(&mut self, key: String, value: JsonValue);
 }
 
 impl JsonValueTrait for JsonValue {
@@ -231,6 +232,11 @@ impl JsonValueTrait for JsonValue {
         }
         Some(res.unwrap())
     }
+
+    fn insert(&mut self, key: String, value: JsonValue) {
+        let map = self.as_object_mut().unwrap();
+        map.insert(key, value);
+    }
 }
 
 impl JsonValueTrait for serde_json::Map<String, JsonValue> {
@@ -436,5 +442,9 @@ impl JsonValueTrait for serde_json::Map<String, JsonValue> {
             return None;
         }
         Some(res.unwrap())
+    }
+
+    fn insert(&mut self, key: String, value: JsonValue) {
+        self.insert(key, value);
     }
 }

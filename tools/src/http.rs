@@ -15,8 +15,8 @@ pub trait HttpServerHandler: Send + Sync {
     fn do_post(&mut self, _: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         Ok(json!(r#"{"statue","success"}"#))
     }
-    fn do_get(&mut self, _: HashMap<&str, &str>) -> anyhow::Result<&'static str> {
-        Ok(r#"{"statue","success"}"#)
+    fn do_get(&mut self, _: HashMap<&str, &str>) -> anyhow::Result<String> {
+        Ok(r#"{"statue","success"}"#.to_string())
     }
 }
 
@@ -49,6 +49,7 @@ impl Builder {
             let mut handler_lock = handler_lock.write().await;
             //receive the http request
             let res = handler_lock.do_post(params);
+            drop(handler_lock);
             if let Err(e) = res {
                 error!("{:?}", e);
                 return (
@@ -81,12 +82,12 @@ impl Builder {
             }
             //receive the http request
             let res = handler_lock.do_get(map);
-
+            drop(handler_lock);
             if let Err(e) = res {
                 error!("{:?}", e);
                 return (
                     axum::http::StatusCode::PRECONDITION_FAILED,
-                    r#"{"result":"fail"}"#,
+                    r#"{"result":"fail"}"#.to_string(),
                 );
             }
             (axum::http::StatusCode::CREATED, res.unwrap())
