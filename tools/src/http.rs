@@ -103,13 +103,61 @@ impl Builder {
     ///bind ip and listening the port
     pub fn bind(self, port: u16) {
         let m = async move {
-            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+            let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
             axum::Server::bind(&addr)
                 .serve(self.app.into_make_service())
                 .await
                 .unwrap();
         };
         TOKIO_RT.spawn(m);
-        info!("http-server listening on {:?}:{}", "127.0.0,.1", port);
+        info!("http-server listening on {:?}:{}", "0.0.0.0", port);
     }
+}
+
+pub fn send_post(url: &str, json: Option<serde_json::Value>) -> anyhow::Result<String> {
+    let res = match json {
+        Some(json) => ureq::post(url).send_json(json).unwrap().into_string()?,
+        None => ureq::post(url).call().unwrap().into_string()?,
+    };
+    Ok(res)
+}
+
+pub fn send_get(
+    url: &str,
+    url_params: Option<HashMap<&str, &str>>,
+    json: Option<serde_json::Value>,
+) -> anyhow::Result<String> {
+    let url_res;
+
+    match url_params {
+        Some(params) => {
+            let mut str = String::new();
+            str.push_str(url);
+            str.push_str("?");
+            str.push_str(map_url(params).as_str());
+            url_res = str;
+        }
+        None => url_res = url.to_string(),
+    }
+    let res = match json {
+        Some(json) => ureq::get(url_res.as_str()).send_json(json)?.into_string()?,
+        None => ureq::get(url_res.as_str()).call()?.into_string()?,
+    };
+    Ok(res)
+}
+
+fn map_url(map: HashMap<&str, &str>) -> String {
+    let mut s = String::new();
+    let mut index = 0;
+    let size = map.len();
+    map.iter().for_each(|(key, value)| {
+        s.push_str(key);
+        s.push_str("=");
+        s.push_str(value);
+        if index != size - 1 {
+            s.push_str("&");
+        }
+        index += 1;
+    });
+    s
 }
