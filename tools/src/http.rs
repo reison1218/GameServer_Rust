@@ -123,7 +123,7 @@ impl Builder {
 
 pub fn send_post(url: &str, json: Option<serde_json::Value>) -> anyhow::Result<String> {
     let res = match json {
-        Some(json) => ureq::post(url).send_json(json).unwrap().into_string()?,
+        Some(json) => ureq::post(url).send_json(json)?.into_string()?,
         None => ureq::post(url).call().unwrap().into_string()?,
     };
     Ok(res)
