@@ -53,6 +53,7 @@ impl Builder {
             |uri: axum::http::Uri,
              Query(uri_params): Query<HashMap<String, String>>,
              axum::Json(json_params): axum::Json<serde_json::Value>| async move {
+                //body: Bytes 以bytes的方式处理数据
                 let mut headers = HeaderMap::new();
                 headers.insert(
                     "Content-Type",
