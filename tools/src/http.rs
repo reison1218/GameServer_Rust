@@ -51,16 +51,12 @@ impl Builder {
         let handler_lock = handler.clone();
         let do_post_c =
             |uri: axum::http::Uri,
-             mut headers: HeaderMap,
              Query(uri_params): Query<HashMap<String, String>>,
              axum::Json(json_params): axum::Json<serde_json::Value>| async move {
+                let mut headers = HeaderMap::new();
                 headers.insert(
                     "Content-Type",
                     HeaderValue::from_str("text/html;application/json;charset=utf-8").unwrap(),
-                );
-                headers.insert(
-                    "Access-Control-Allow-Origin",
-                    HeaderValue::from_str("*").unwrap(),
                 );
                 let mut handler_lock = handler_lock.write().await;
                 //receive the http request
@@ -70,23 +66,23 @@ impl Builder {
                     error!("{:?}", e);
                     return (
                         axum::http::StatusCode::PRECONDITION_FAILED,
+                        headers,
                         axum::Json(json!({"result":"fail"})),
                     );
                 }
-                (axum::http::StatusCode::CREATED, axum::Json(res.unwrap()))
+                (
+                    axum::http::StatusCode::CREATED,
+                    headers,
+                    axum::Json(res.unwrap()),
+                )
             };
 
         let handler_lock = handler.clone();
-        let do_get_c = |uri: axum::http::Uri,
-                        mut headers: HeaderMap,
-                        Query(uri_params): Query<HashMap<String, String>>| async move {
+        let do_get_c = |uri: axum::http::Uri, Query(uri_params): Query<HashMap<String, String>>| async move {
+            let mut headers = HeaderMap::new();
             headers.insert(
                 "Content-Type",
                 HeaderValue::from_str("text/html;application/json;charset=utf-8").unwrap(),
-            );
-            headers.insert(
-                "Access-Control-Allow-Origin",
-                HeaderValue::from_str("*").unwrap(),
             );
             let mut handler_lock = handler_lock.write().await;
             //receive the http request
@@ -96,10 +92,11 @@ impl Builder {
                 error!("{:?}", e);
                 return (
                     axum::http::StatusCode::PRECONDITION_FAILED,
+                    headers,
                     r#"{"result":"fail"}"#.to_string(),
                 );
             }
-            (axum::http::StatusCode::CREATED, res.unwrap())
+            (axum::http::StatusCode::CREATED, headers, res.unwrap())
         };
 
         self.app = self.app.route(path.as_str(), get(do_get_c));
