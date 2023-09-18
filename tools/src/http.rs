@@ -72,7 +72,7 @@ impl Builder {
                     );
                 }
                 (
-                    axum::http::StatusCode::CREATED,
+                    axum::http::StatusCode::OK,
                     headers,
                     axum::Json(res.unwrap()),
                 )
@@ -97,7 +97,7 @@ impl Builder {
                     r#"{"result":"fail"}"#.to_string(),
                 );
             }
-            (axum::http::StatusCode::CREATED, headers, res.unwrap())
+            (axum::http::StatusCode::OK, headers, res.unwrap())
         };
 
         self.app = self.app.route(path.as_str(), get(do_get_c));
