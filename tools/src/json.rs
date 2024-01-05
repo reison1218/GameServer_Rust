@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use anyhow::Ok;
+
 pub type JsonValue = serde_json::Value;
 
 pub trait JsonValueTrait {
@@ -21,6 +23,7 @@ pub trait JsonValueTrait {
     fn get_array(&self, key: &str) -> Option<&Vec<JsonValue>>;
     fn get_array_mut(&mut self, key: &str) -> Option<&mut Vec<JsonValue>>;
     fn get_null(&self, key: &str) -> Option<()>;
+
     fn insert(&mut self, key: String, value: JsonValue);
 }
 
@@ -30,6 +33,7 @@ impl JsonValueTrait for JsonValue {
         let res = JsonValue::from_str(res.as_str())?;
         Ok(res)
     }
+
     fn get_bool(&self, key: &str) -> Option<bool> {
         let res = self.get(key);
         if res.is_none() {
@@ -242,17 +246,16 @@ impl JsonValueTrait for JsonValue {
     }
 
     fn insert(&mut self, key: String, value: JsonValue) {
-        let map = self.as_object_mut().unwrap();
+        let map = self.as_object_mut();
+        if map.is_none() {
+            return;
+        }
+        let map = map.unwrap();
         map.insert(key, value);
     }
 }
 
 impl JsonValueTrait for serde_json::Map<String, JsonValue> {
-    fn from_bytes(bytes: &[u8]) -> anyhow::Result<JsonValue> {
-        let res = String::from_utf8(bytes.to_vec())?;
-        let res = JsonValue::from_str(res.as_str())?;
-        Ok(res)
-    }
     fn get_bool(&self, key: &str) -> Option<bool> {
         let res = self.get(key);
         if res.is_none() {
@@ -346,7 +349,7 @@ impl JsonValueTrait for serde_json::Map<String, JsonValue> {
         if res.is_none() {
             return None;
         }
-        Some(res.unwrap() as i64)
+        Some(res.unwrap())
     }
 
     fn get_u64(&self, key: &str) -> Option<u64> {
@@ -459,5 +462,11 @@ impl JsonValueTrait for serde_json::Map<String, JsonValue> {
 
     fn insert(&mut self, key: String, value: JsonValue) {
         self.insert(key, value);
+    }
+
+    fn from_bytes(bytes: &[u8]) -> anyhow::Result<JsonValue> {
+        let res = String::from_utf8(bytes.to_vec())?;
+        let res = JsonValue::from_str(res.as_str())?;
+        Ok(res)
     }
 }
