@@ -1,0 +1,7 @@
+2023-12-11 18:36:42 [INFO] tools::my_log: [E:\rust-code\tools\src\my_log.rs:45] 日志模块初始化完成！耗时:11ms
+2023-12-11 18:36:42 [INFO] httpserver: [src\main.rs:17] 初始化server.config完成!
+2023-12-11 18:36:42 [INFO] httpserver: [src\main.rs:34] 初始化数据库完成!
+2023-12-11 18:36:42 [INFO] httpserver::db: [src\db.rs:17] 当前数据库版本：7
+2023-12-11 18:36:42 [INFO] tools::http: [E:\rust-code\tools\src\http.rs:134] http-server listening on "0.0.0.0":8888
+2023-12-11 18:36:42 [INFO] httpserver: [src\main.rs:47] httpserver启动成功!耗时:120ms
+2023-12-11 18:37:31 [INFO] httpserver::handler::add_server_handler: [src\handler\add_server_handler.rs:19] 收到add_server,uri:"/slg/add_server?name=server_123&ws=121.5.175.87|30001/wb"

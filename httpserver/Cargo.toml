@@ -1,0 +1,22 @@
+[package]
+name = "httpserver"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3 #优化等级最大
+lto = true #链接时优化,所有crate贯穿所有进行优化
+codegen-units = 1 #将每一个crate作为一整块进行编译
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+serde_json = "1.0.87"
+serde = "1.0.173"
+chrono = "0.4.23"
+anyhow = "1.0.31"
+ureq = { version = "*", features = ["json","charset"] }
+async-std = "1.12.0"
+lazy_static = "1.4.0"
+log = "0.4.19"
+sqlx = { version="0.7.1", features = [ "mysql","runtime-async-std","chrono","json" ] }
+tools = { path = "../tools" }
