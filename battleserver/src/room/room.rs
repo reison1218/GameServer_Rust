@@ -947,7 +947,7 @@ impl Room {
             }
         }
         let mut sbsn = S_BATTLE_START_NOTICE::new();
-        let debug = crate::CONF_MAP.borrow().get_bool("debug");
+        let debug = crate::CONF_MAP.borrow().get_bool("debug", false);
         for battle_player in self.battle_data.battle_player.values() {
             let battle_player_pt = battle_player.convert_to_battle_player_pt();
             sbsn.battle_players.push(battle_player_pt);

@@ -12,7 +12,6 @@ use crate::TEMPLATES;
 use log::{error, warn};
 use protobuf::Message;
 use std::convert::TryFrom;
-use std::ops::Deref;
 use tools::cmd_code::ClientCode;
 use tools::protos::base::{ActionUnitPt, SummaryDataPt};
 use tools::protos::battle::S_SUMMARY_NOTICE;
@@ -175,12 +174,12 @@ impl BattleData {
             //根据技能id去找函数指针里面的函数，然后进行执行
             let self_ptr = self as *mut BattleData;
             for skill_function_ids in self_ptr.as_ref().unwrap().skill_function_cmd_map.keys() {
-                if !skill_function_ids.deref().contains(&skill_function_id) {
+                if !skill_function_ids.contains(&skill_function_id) {
                     continue;
                 }
                 let fn_ptr = self
                     .skill_function_cmd_map
-                    .get_mut(skill_function_ids.deref())
+                    .get_mut(skill_function_ids)
                     .unwrap();
                 au_vec = fn_ptr(self, cter_id, skill_id, target_array, au);
                 break;

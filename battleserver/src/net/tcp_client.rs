@@ -27,7 +27,7 @@ impl ClientHandler for TcpClientHandler {
     }
 
     async fn on_close(&mut self) {
-        let address = crate::CONF_MAP.get_str("tcp_port");
+        let address = crate::CONF_MAP.get_str("tcp_port", "");
 
         self.on_read(address.to_string()).await;
     }

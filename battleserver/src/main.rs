@@ -51,8 +51,8 @@ lazy_static! {
 
     ///reids客户端
     static ref REDIS_POOL:Arc<std::sync::Mutex<RedisPoolTool>>={
-        let add: &str = CONF_MAP.get_str("redis_add");
-        let pass: &str = CONF_MAP.get_str("redis_pass");
+        let add: &str = &CONF_MAP.get_str("redis_add","");
+        let pass: &str = &CONF_MAP.get_str("redis_pass","");
         let redis = RedisPoolTool::init(add,pass);
         let redis:Arc<std::sync::Mutex<RedisPoolTool>> = Arc::new(std::sync::Mutex::new(redis));
         redis
@@ -117,8 +117,8 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn init_log() {
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
+    let info_log = &CONF_MAP.get_str("info_log_path", "");
+    let error_log = &CONF_MAP.get_str("error_log_path", "");
     tools::my_log::init_log(info_log, error_log);
 }
 
@@ -131,7 +131,7 @@ fn init_temps() {
 
 ///初始化tcp服务端
 fn init_tcp_client(bm: Lock) {
-    let tcp_port: &str = CONF_MAP.get_str("tcp_port");
+    let tcp_port: &str = &CONF_MAP.get_str("tcp_port", "");
     tcp_client::new(tcp_port, bm);
 }
 
