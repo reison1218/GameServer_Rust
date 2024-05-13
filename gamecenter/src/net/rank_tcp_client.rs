@@ -35,7 +35,7 @@ impl ClientHandler for RankTcpClientHandler {
     }
 
     async fn on_close(&mut self) {
-        let address = crate::CONF_MAP.get_str("rank_port");
+        let address = crate::CONF_MAP.get_str("rank_port", "");
 
         self.on_read(address.to_string()).await;
     }

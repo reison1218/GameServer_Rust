@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use crate::Lock;
 
 use async_std::task::block_on;
-use http_types::Error as HttpTypesError;
-use serde_json::{json, Value};
-use tools::http::HttpServerHandler;
+use serde_json::json;
+use tools::{
+    http::HttpServerHandler,
+    json::{JsonValue, JsonValueTrait},
+};
 
 pub struct StopAllServerHandler {
     gm: Lock,
@@ -20,11 +24,12 @@ impl HttpServerHandler for StopAllServerHandler {
         "/stop_all"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.stop_all_server_handler();
         let value = json!({ "status":"OK" });
@@ -47,15 +52,19 @@ impl HttpServerHandler for KickPlayerHandler {
         "/kick"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
-        if params == serde_json::Value::Null {
-            let value = json!({ "status":"false ","error":"the params is none!" });
-            return Ok(value);
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<serde_json::Value> {
+        let _json_params = JsonValue::from_bytes(_json_params);
+        if let Err(err) = _json_params {
+            log::warn!("{:?}", err);
+            return Ok(json!(r#"{"result": "fail!","errMessage":"参数有问题!"}"#));
         }
+        let params = _json_params.unwrap();
+
         let res = params.as_object();
         if let None = res {
             let value = json!({ "status":"false ","error":"the params is none!" });
@@ -97,11 +106,12 @@ impl HttpServerHandler for ReloadTempsHandler {
         "/reload_temps"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_reload_temps();
         let value = json!({ "status":"OK" });
@@ -124,11 +134,20 @@ impl HttpServerHandler for UpdateSeasonHandler {
         "/update_season"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<serde_json::Value> {
+        log::info!("收到modify_server,uri:{:?}", _uri);
+        let _json_params = JsonValue::from_bytes(_json_params);
+        if let Err(err) = _json_params {
+            log::warn!("{:?}", err);
+            return Ok(json!(r#"{"result": "fail!","errMessage":"参数有问题!"}"#));
+        }
+        let params = _json_params.unwrap();
 
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut lock = block_on(self.gm.lock());
         lock.notice_update_season(params);
         let value = json!({ "status":"OK" });
@@ -151,11 +170,18 @@ impl HttpServerHandler for UpdateWorldBossHandler {
         "/update_world_boss"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<JsonValue> {
+        let _json_params = JsonValue::from_bytes(_json_params);
+        if let Err(err) = _json_params {
+            log::warn!("{:?}", err);
+            return Ok(json!(r#"{"result": "fail!","errMessage":"参数有问题!"}"#));
+        }
+        let params = _json_params.unwrap();
         let mut lock = block_on(self.gm.lock());
         lock.notice_update_worldboss(params);
         let value = json!({ "status":"OK" });

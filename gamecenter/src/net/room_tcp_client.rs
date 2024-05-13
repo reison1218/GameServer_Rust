@@ -35,7 +35,7 @@ impl ClientHandler for RoomTcpClientHandler {
     }
 
     async fn on_close(&mut self) {
-        let address = crate::CONF_MAP.get_str("room_port");
+        let address = crate::CONF_MAP.get_str("room_port", "");
 
         self.on_read(address.to_string()).await;
     }

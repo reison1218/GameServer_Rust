@@ -46,7 +46,7 @@ mio = "0.8"
 tokio = { version = "1", features = ["full"] }
 axum = "0.6.0"
 rand = "0.8"
-message-io = "0.14.3"
+message-io = "0.18.1"
 bincode = "1.3.3"
 color-eyre = "0.5"
 once_cell = "1.16.0"

@@ -24,7 +24,7 @@ use crate::templates::template_name_constants::{
 use crate::templates::tile_map_temp::{TileMapTemp, TileMapTempMgr};
 use crate::templates::world_cell_temp::{WorldCellTemp, WorldCellTempMgr};
 use log::error;
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -248,7 +248,7 @@ fn read_templates_from_dir<P: AsRef<Path>>(
             continue;
         }
         let mut str = String::new();
-        str.push_str(file.path().parent().unwrap().to_str().unwrap().borrow());
+        str.push_str(file.path().parent().unwrap().to_str().unwrap());
         str.push_str("/");
         str.push_str(name.to_str().unwrap());
         let file = File::open(str)?;
