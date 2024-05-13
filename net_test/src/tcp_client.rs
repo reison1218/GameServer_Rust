@@ -16,7 +16,6 @@ use serde_json::Value;
 use std::str::FromStr;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering;
-use tools::http::send_http_request;
 use tools::protos::base::{CharacterPt, PlayerPt};
 use tools::protos::room::{
     C_CHOOSE_CHARACTER, C_CREATE_ROOM, C_JOIN_ROOM, C_PREPARE_CANCEL, C_SEARCH_ROOM,

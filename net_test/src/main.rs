@@ -27,7 +27,6 @@ use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use std::task::Poll;
 use std::time::{Duration, SystemTime};
-use tools::http::HttpMethod;
 use tools::net_message_io::MessageHandler;
 use tools::net_message_io::TransportWay;
 use tools::tcp::ClientHandler;
