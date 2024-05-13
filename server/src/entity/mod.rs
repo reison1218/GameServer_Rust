@@ -88,7 +88,7 @@ pub trait Dao: Entity {
         if tem_id.is_some() {
             sql.push_str("and tem_id=:tem_id");
         }
-        let qr: Result<QueryResult, Error> = DB_POOL.exe_sql(sql.as_str(), Some(v));
+        let qr = DB_POOL.exe_sql(sql.as_str(), Some(v));
         if qr.is_err() {
             let err = qr.err().unwrap();
             error!("{:?}", err);

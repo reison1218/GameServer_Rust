@@ -4,6 +4,7 @@ use http_types::Error as HttpTypesError;
 use log::info;
 use serde_json::json;
 use serde_json::value::Value as JsonValue;
+use std::collections::HashMap;
 use std::time::Duration;
 use tools::http::HttpServerHandler;
 
@@ -23,14 +24,14 @@ impl HttpServerHandler for SavePlayerHttpHandler {
         "/save"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn on_message(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_get(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+    ) -> anyhow::Result<String> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
-        Ok(value)
+        Ok(value.to_string())
     }
 }
 
@@ -49,11 +50,12 @@ impl HttpServerHandler for StopServerHttpHandler {
         "/exit"
     }
 
-    fn get_method(&self) -> tools::http::HttpMethod {
-        tools::http::HttpMethod::POST
-    }
-
-    fn do_post(&mut self, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    fn do_post(
+        &mut self,
+        _uri: String,
+        _uri_params: HashMap<String, String>,
+        _json_params: &[u8],
+    ) -> anyhow::Result<serde_json::Value> {
         save_player_http(self.gm.clone());
         let value = json!({ "status":"OK" });
         let exit = async {

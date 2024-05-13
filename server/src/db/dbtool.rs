@@ -9,7 +9,7 @@ pub struct DbPool {
 impl DbPool {
     ///创建一个db结构体
     pub fn new() -> DbPool {
-        let str: &str = CONF_MAP.get_str("mysql");
+        let str: &str = &CONF_MAP.get_str("mysql", "");
         let pool = mysql::Pool::new(str).unwrap();
         info!("初始化dbpool完成!");
         DbPool { pool: pool }
