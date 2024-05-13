@@ -38,8 +38,8 @@ lazy_static! {
 
         ///reids客户端
     static ref REDIS_POOL:Arc<Mutex<RedisPoolTool>>={
-        let add: &str = CONF_MAP.get_str("redis_add");
-        let pass: &str = CONF_MAP.get_str("redis_pass");
+        let add: &str = &CONF_MAP.get_str("redis_add","");
+        let pass: &str = &CONF_MAP.get_str("redis_pass","");
         let redis = RedisPoolTool::init(add,pass);
         let redis:Arc<Mutex<RedisPoolTool>> = Arc::new(Mutex::new(redis));
         redis
@@ -89,14 +89,14 @@ fn main() {
 }
 
 fn init_log() {
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
+    let info_log = &CONF_MAP.get_str("info_log_path", "");
+    let error_log = &CONF_MAP.get_str("error_log_path", "");
     tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化tcp服务端
 fn init_tcp_server(rm: Lock) {
-    let tcp_port: &str = CONF_MAP.get_str("tcp_port");
+    let tcp_port: &str = &CONF_MAP.get_str("tcp_port", "");
     tcp_server::new(tcp_port, rm);
 }
 
