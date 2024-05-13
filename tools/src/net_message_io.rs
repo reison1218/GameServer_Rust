@@ -19,7 +19,7 @@ pub trait MessageHandler {
     ///this func just for tcp client
     async fn connect(&mut self, transport: TransportWay, addr: &str) {
         let transport = match transport {
-            TransportWay::Tcp => Transport::Tcp,
+            TransportWay::Tcp => Transport::FramedTcp,
             TransportWay::Udp => Transport::Udp,
             TransportWay::Ws => Transport::Ws,
         };
