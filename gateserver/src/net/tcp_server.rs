@@ -218,7 +218,7 @@ fn handle_login(
     platform_value: &str,
     user_id: u32,
 ) -> anyhow::Result<u32> {
-    let debug = crate::CONF_MAP.get_bool("debug");
+    let debug = crate::CONF_MAP.get_bool("debug", false);
 
     // if debug {
     //     query_user_id_from_redis(platform_value)?;

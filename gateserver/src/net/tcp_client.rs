@@ -45,16 +45,19 @@ impl ClientHandler for TcpClientHandler {
     }
 
     async fn on_close(&mut self) {
-        let address: Option<&str>;
+        let address: Option<String>;
         match self.client_type {
             TcpClientType::GameServer => {
-                address = Some(CONF_MAP.get_str("game_port"));
+                address = Some(CONF_MAP.get_str("game_port", ""));
             }
             TcpClientType::GameCenter => {
-                address = Some(CONF_MAP.get_str("game_center_port"));
+                address = Some(CONF_MAP.get_str("game_center_port", ""));
+            }
+            _ => {
+                address = None;
             }
         }
-        self.on_read(address.unwrap().to_string()).await;
+        self.on_read(address.unwrap()).await;
     }
 
     async fn on_message(&mut self, mess: Vec<u8>) {

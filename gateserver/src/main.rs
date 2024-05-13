@@ -45,8 +45,8 @@ lazy_static! {
 
    ///reids客户端
     static ref REDIS_POOL:Arc<std::sync::Mutex<RedisPoolTool>>={
-        let add: &str = CONF_MAP.get_str("redis_add");
-        let pass: &str = CONF_MAP.get_str("redis_pass");
+        let add: &str = &CONF_MAP.get_str("redis_add","");
+        let pass: &str = &CONF_MAP.get_str("redis_pass","");
         let redis = RedisPoolTool::init(add,pass);
         let redis:Arc<std::sync::Mutex<RedisPoolTool>> = Arc::new(std::sync::Mutex::new(redis));
         redis
@@ -79,15 +79,15 @@ fn main() {
 }
 
 fn init_log() {
-    let info_log = CONF_MAP.get_str("info_log_path");
-    let error_log = CONF_MAP.get_str("error_log_path");
+    let info_log = &CONF_MAP.get_str("info_log_path", "");
+    let error_log = &CONF_MAP.get_str("error_log_path", "");
     tools::my_log::init_log(info_log, error_log);
 }
 
 ///初始化http服务端
 fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
     std::thread::sleep(Duration::from_millis(10));
-    let http_port = CONF_MAP.get_usize("http_port");
+    let http_port = CONF_MAP.get_usize("http_port", 0);
     tools::http::Builder::new()
         .route(Box::new(KickPlayerHttpHandler::new(cm)))
         .bind(http_port as u16);
@@ -96,8 +96,8 @@ fn init_http_server(cm: Arc<Mutex<ChannelMgr>>) {
 ///初始化网络服务这块
 fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
     //获取通信模块
-    let net_module = CONF_MAP.get_str("net_module");
-    match net_module {
+    let net_module = CONF_MAP.get_str("net_module", "");
+    match net_module.as_str() {
         "tcp" => {
             //初始化tcp服务端
             init_tcp_server(cm);
@@ -116,7 +116,7 @@ fn init_net_server(cm: Arc<Mutex<ChannelMgr>>) {
 fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
     let game = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameServer);
-        let address = CONF_MAP.get_str("game_port");
+        let address = CONF_MAP.get_str("game_port", "");
         info!("开始链接游戏服:{:?}...", address);
         tch.on_read(address.to_string()).await;
     };
@@ -127,7 +127,7 @@ fn init_game_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
 fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
     let room = async {
         let mut tch = TcpClientHandler::new(cp, TcpClientType::GameCenter);
-        let address = CONF_MAP.get_str("game_center_port");
+        let address = CONF_MAP.get_str("game_center_port", "");
         info!("开始链接游戏中心服:{:?}...", address);
         tch.on_read(address.to_string()).await;
     };
@@ -136,12 +136,12 @@ fn init_game_center_tcp_connect(cp: Arc<Mutex<ChannelMgr>>) {
 
 ///初始化tcp服务端
 fn init_tcp_server(cm: Arc<Mutex<ChannelMgr>>) {
-    let str = CONF_MAP.get_str("tcp_port");
+    let str = &CONF_MAP.get_str("tcp_port", "");
     tcp_server::new(str, cm);
 }
 
 ///初始化tcp服务端
 fn init_ws_server(cm: Arc<Mutex<ChannelMgr>>) {
-    let str = CONF_MAP.get_str("web_socket_port");
+    let str = &CONF_MAP.get_str("web_socket_port", "");
     websocket::new(str, cm);
 }
