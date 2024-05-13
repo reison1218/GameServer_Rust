@@ -9,7 +9,6 @@ use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU32, Ordering};
-use tools::cmd_code::RobotCode;
 use tools::macros::GetMutRef;
 use tools::tcp::TcpSender;
 use tools::util::packet::Packet;
@@ -27,12 +26,15 @@ pub struct RobotMgr {
 
 tools::get_mut_ref!(RobotMgr);
 
+static ROBOT_CODE:AtomicU32 = AtomicU32::new(1000);
+
 impl RobotMgr {
     pub fn new() -> Self {
         let mut rm = RobotMgr::default();
         rm.add_robot();
+        let code = ROBOT_CODE.fetch_add(1, Ordering::Acquire);
         rm.cmd_map
-            .insert(RobotCode::RequestRobot.into_u32(), request_robot);
+            .insert(code, request_robot);
         rm
     }
 

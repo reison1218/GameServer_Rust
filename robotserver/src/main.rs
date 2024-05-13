@@ -37,14 +37,14 @@ lazy_static! {
 
 fn main() {
     //test_goal();
-    test_fsm();
-    // let info_log = CONF_MAP.get_str("info_log_path");
-    // let error_log = CONF_MAP.get_str("error_log_path");
-    // //初始化日志
-    // init_log(info_log, error_log);
-    // let rm = Arc::new(Mutex::new(RobotMgr::new()));
-    // ///初始化机器人服务器网络
-    // init_tcp_server(rm.clone());
+    // test_fsm();
+    let info_log = &CONF_MAP.get_str("info_log_path","");
+    let error_log = &CONF_MAP.get_str("error_log_path","");
+    //初始化日志
+    init_log(info_log, error_log);
+    let rm = Arc::new(Mutex::new(RobotMgr::new()));
+    ///初始化机器人服务器网络
+    init_tcp_server(rm.clone());
 }
 
 fn test_fsm() {
@@ -72,12 +72,16 @@ fn test_goal() {
 ///初始化tcp服务端
 fn init_tcp_server(rm: Arc<Mutex<RobotMgr>>) {
     let sh = TcpServerHandler { sender: None, rm };
-    let tcp_port: &str = CONF_MAP.get_str("tcp_port");
-    let res = tcp_server::new(tcp_port, sh);
-    if let Err(e) = res {
-        error!("{:?}", e);
-        std::process::abort();
-    }
+    let tcp_port = CONF_MAP.get_str("tcp_port","");
+    
+    async_std::task::block_on(async{
+        let res = tcp_server::new(tcp_port, sh).await;
+        if let Err(e) = res {
+            error!("{:?}", e);
+            std::process::abort();
+        } 
+    });
+    
 }
 
 ///初始化日志

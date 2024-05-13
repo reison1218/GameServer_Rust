@@ -20,9 +20,10 @@ log="0.4.8"
 lazy_static = "1.4.0"
 simplelog = "0.7.5"
 crossbeam ="0.8"
-async-std = "1.6"
+async-std = "1.7"
 anyhow = "1.0.31"
 rayon = "1.4.1"
 rand = "0.7.3"
 reqwest = { version = "0.11.6",features = ["rustls-tls"]}
+async-trait = "0.1.41"
 tools = { path = "../tools" }

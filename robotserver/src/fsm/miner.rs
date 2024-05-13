@@ -1,4 +1,3 @@
-use super::*;
 use crate::fsm::status::{
     EnterMineAndDigForNugget, GoHomeAndSleepTilRested, LocationType, Status, StatusAction,
 };
@@ -70,9 +69,7 @@ pub trait Robot {
 impl Robot for Miner {
     fn update(&self) {
         std::thread::sleep(Duration::from_secs(2));
-        unsafe {
-            self.status.execute(self);
-        }
+        self.status.execute(self);
     }
 
     ///改变状态函数
