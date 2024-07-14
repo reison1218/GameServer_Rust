@@ -20,19 +20,17 @@ pub fn main() {
 pub fn server_fn() {
     let mut client = Client { handler: None };
     spawn(move || {
-        tcp_tokio::Builder::new()
-            .build(1080, move |event| match event {
-                NetEvent::Connected(tcp_handler) => {
-                    client.on_open(tcp_handler);
-                }
-                NetEvent::Message(data) => {
-                    client.on_message(&data);
-                    client.handler.as_mut().unwrap().close();
-                }
-                NetEvent::Disconnected => {
-                    client.on_close();
-                }
-            });
+        tcp_tokio::Builder::new().build(1080, move |event| match event {
+            NetEvent::Connected(tcp_handler) => {
+                client.on_open(tcp_handler);
+            }
+            NetEvent::Message(data) => {
+                client.on_message(&data);
+            }
+            NetEvent::Disconnected => {
+                client.on_close();
+            }
+        });
     });
 }
 

@@ -2,11 +2,7 @@ use std::net::{TcpListener, TcpStream};
 
 use log::info;
 use std::thread::spawn;
-use tungstenite::{
-    accept,
-    protocol::{Role, WebSocketConfig},
-    Message, WebSocket,
-};
+use tungstenite::{accept, protocol::Role, Message, WebSocket};
 
 pub trait MessageHandler: Send + Sync + Clone {
     ///Triggered when has client connected
