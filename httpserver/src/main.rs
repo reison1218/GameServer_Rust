@@ -3,6 +3,8 @@ pub mod entity;
 pub mod handler;
 pub mod http_server;
 pub mod wx;
+use std::env;
+
 use lazy_static::lazy_static;
 use sqlx::MySqlPool;
 use tools::conf::Conf;
@@ -58,15 +60,12 @@ pub fn init_http_server() {
 }
 
 pub fn init_log() {
-    let path = std::env::current_dir()
+    let path = env::current_dir()
         .unwrap()
         .as_os_str()
         .to_str()
         .unwrap()
         .to_owned()
-        + "/log";
-    std::fs::create_dir_all(path.clone()).unwrap();
-    let info_path = path.clone() + "/info.log";
-    let error_path = path + "/error.log";
-    tools::my_log::init_log(info_path.as_str(), error_path.as_str());
+        + "\\log_config.yaml";
+    tools::my_log::init_log(path.as_str());
 }

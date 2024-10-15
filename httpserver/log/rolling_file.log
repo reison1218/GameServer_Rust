@@ -1,0 +1,19 @@
+2024-10-15 17:43:29.422278 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2024-10-15 17:43:29.423172 [src/main.rs:19] INFO  httpserver:初始化server.config完成!
+2024-10-15 17:43:29.452477 [src/main.rs:36] INFO  httpserver:初始化数据库完成!
+2024-10-15 17:43:29.458856 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：6
+2024-10-15 17:43:29.460572 [src\db.rs:154] INFO  httpserver::db:升级数据库，从6号升级到7号
+2024-10-15 17:53:05.202892 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2024-10-15 17:53:05.203390 [src/main.rs:19] INFO  httpserver:初始化server.config完成!
+2024-10-15 17:53:05.248894 [src/main.rs:36] INFO  httpserver:初始化数据库完成!
+2024-10-15 17:53:05.252755 [src\db.rs:11] INFO  httpserver::db:数据库里不存在表，重新创建所有表
+2024-10-15 17:53:05.284388 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：0
+2024-10-15 17:53:05.285531 [src\db.rs:60] INFO  httpserver::db:升级数据库, 从0号升级到1号
+2024-10-15 17:53:05.317240 [src\db.rs:75] INFO  httpserver::db:升级数据库, 从1号升级到2号
+2024-10-15 17:53:05.355702 [src\db.rs:92] INFO  httpserver::db:升级数据库, 从2号升级到3号
+2024-10-15 17:53:05.387220 [src\db.rs:108] INFO  httpserver::db:升级数据库, 从3号升级到4号
+2024-10-15 17:53:05.394579 [src\db.rs:123] INFO  httpserver::db:升级数据库，从4号升级到5号
+2024-10-15 17:53:05.423437 [src\db.rs:139] INFO  httpserver::db:升级数据库，从5号升级到6号
+2024-10-15 17:53:05.432737 [src\db.rs:154] INFO  httpserver::db:升级数据库，从6号升级到7号
+2024-10-15 17:53:05.439590 [F:\rust-work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8888
+2024-10-15 17:53:05.439835 [src/main.rs:49] INFO  httpserver:httpserver启动成功!耗时:239ms

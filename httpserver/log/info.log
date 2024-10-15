@@ -5,3 +5,22 @@
 2023-12-11 18:36:42 [INFO] tools::http: [E:\rust-code\tools\src\http.rs:134] http-server listening on "0.0.0.0":8888
 2023-12-11 18:36:42 [INFO] httpserver: [src\main.rs:47] httpserver启动成功!耗时:120ms
 2023-12-11 18:37:31 [INFO] httpserver::handler::add_server_handler: [src\handler\add_server_handler.rs:19] 收到add_server,uri:"/slg/add_server?name=server_123&ws=121.5.175.87|30001/wb"
+2024-10-15 17:43:29.421365 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2024-10-15 17:43:29.423145 [src/main.rs:19] INFO  httpserver:初始化server.config完成!
+2024-10-15 17:43:29.452437 [src/main.rs:36] INFO  httpserver:初始化数据库完成!
+2024-10-15 17:43:29.458809 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：6
+2024-10-15 17:43:29.460525 [src\db.rs:154] INFO  httpserver::db:升级数据库，从6号升级到7号
+2024-10-15 17:53:05.202830 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2024-10-15 17:53:05.203370 [src/main.rs:19] INFO  httpserver:初始化server.config完成!
+2024-10-15 17:53:05.248841 [src/main.rs:36] INFO  httpserver:初始化数据库完成!
+2024-10-15 17:53:05.252712 [src\db.rs:11] INFO  httpserver::db:数据库里不存在表，重新创建所有表
+2024-10-15 17:53:05.284355 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：0
+2024-10-15 17:53:05.285501 [src\db.rs:60] INFO  httpserver::db:升级数据库, 从0号升级到1号
+2024-10-15 17:53:05.317192 [src\db.rs:75] INFO  httpserver::db:升级数据库, 从1号升级到2号
+2024-10-15 17:53:05.355529 [src\db.rs:92] INFO  httpserver::db:升级数据库, 从2号升级到3号
+2024-10-15 17:53:05.387174 [src\db.rs:108] INFO  httpserver::db:升级数据库, 从3号升级到4号
+2024-10-15 17:53:05.394536 [src\db.rs:123] INFO  httpserver::db:升级数据库，从4号升级到5号
+2024-10-15 17:53:05.423383 [src\db.rs:139] INFO  httpserver::db:升级数据库，从5号升级到6号
+2024-10-15 17:53:05.432692 [src\db.rs:154] INFO  httpserver::db:升级数据库，从6号升级到7号
+2024-10-15 17:53:05.439551 [F:\rust-work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8888
+2024-10-15 17:53:05.439799 [src/main.rs:49] INFO  httpserver:httpserver启动成功!耗时:239ms
