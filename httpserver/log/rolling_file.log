@@ -17,3 +17,15 @@
 2024-10-15 17:53:05.432737 [src\db.rs:154] INFO  httpserver::db:升级数据库，从6号升级到7号
 2024-10-15 17:53:05.439590 [F:\rust-work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8888
 2024-10-15 17:53:05.439835 [src/main.rs:49] INFO  httpserver:httpserver启动成功!耗时:239ms
+2024-10-16 15:55:44.220322 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:15ms
+2024-10-16 15:55:44.226919 [src/main.rs:19] INFO  httpserver:初始化server.config完成!
+2024-10-16 15:55:44.380818 [src/main.rs:36] INFO  httpserver:初始化数据库完成!
+2024-10-16 15:55:44.385336 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：7
+2024-10-16 15:55:44.396403 [F:\rust-work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8888
+2024-10-16 15:55:44.396684 [src/main.rs:49] INFO  httpserver:httpserver启动成功!耗时:195ms
+2024-10-16 16:22:28.229850 [F:\rust-work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2024-10-16 16:22:28.230793 [src/main.rs:28] INFO  httpserver:初始化server.config完成!
+2024-10-16 16:22:28.365850 [src/main.rs:45] INFO  httpserver:初始化数据库完成!
+2024-10-16 16:22:28.371390 [src\db.rs:17] INFO  httpserver::db:当前数据库版本：7
+2024-10-16 16:22:28.373507 [F:\rust-work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8888
+2024-10-16 16:22:28.373729 [src/main.rs:75] INFO  httpserver:httpserver启动成功!耗时:147ms

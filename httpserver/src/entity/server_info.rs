@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-
+use serde_json::Value;
 use sqlx::{MySqlPool, Row};
+use std::collections::HashMap;
 
 #[derive(sqlx::FromRow, sqlx::Decode, sqlx::Encode, Debug, Default, Clone)]
 pub struct ServerInfo {
@@ -17,6 +17,91 @@ pub struct ServerInfo {
     pub manager: String,
     pub inner_manager: String,
     pub server_type: i32,
+}
+
+impl ServerInfo {
+    pub fn can_show(
+        &self,
+        acc_name: &str,
+        sources: &Vec<String>,
+        server_type: i32,
+        ctime: i64,
+    ) -> bool {
+        if self.server_type != server_type {
+            return false;
+        }
+        let read = crate::WHITE_USER_MAP.read().unwrap();
+        if read.contains_key(acc_name) {
+            return true;
+        }
+        let res = self.is_contains(&sources);
+        if !res {
+            return false;
+        }
+        if ctime < self.get_open_time() {
+            return false;
+        }
+        true
+    }
+
+    pub fn to_json(&self) -> Value {
+        let mut value = serde_json::Map::new();
+        value.insert("server_id".to_owned(), Value::from(self.server_id));
+        value.insert("name".to_owned(), Value::from(self.name.as_str()));
+        value.insert("ws_url".to_owned(), Value::from(self.ws.as_str()));
+        value.insert(
+            "open_time".to_owned(),
+            Value::from(self.open_time.to_string()),
+        );
+        value.insert(
+            "register_state".to_owned(),
+            Value::from(self.register_state),
+        );
+        value.insert("state".to_owned(), Value::from(self.state));
+        value.insert("letter".to_owned(), Value::from(self.letter));
+        value.insert(
+            "target_server_id".to_owned(),
+            Value::from(self.target_server_id),
+        );
+        value.insert("merge_times".to_owned(), Value::from(self.merge_times));
+        value.insert("type".to_owned(), Value::from(self.r#type.as_str()));
+        value.insert(
+            "questionnaire_http_url".to_owned(),
+            Value::from(self.server_id),
+        );
+
+        Value::from(value)
+    }
+
+    fn is_contains(&self, source: &Vec<String>) -> bool {
+        let res = self.r#type.split(",");
+        for s in res {
+            if source.contains(&s.to_owned()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn get_open_time(&self) -> i64 {
+        return self.open_time.timestamp_micros();
+    }
+}
+
+pub fn query_all() -> HashMap<i32, ServerInfo> {
+    let mut res = HashMap::new();
+    let pool: &MySqlPool = &crate::POOL;
+    let a = async_std::task::block_on(async {
+        let row = sqlx::query_as::<_, ServerInfo>("select * from server_list")
+            .fetch_all(pool)
+            .await
+            .unwrap();
+        row
+    });
+    for user in a {
+        res.insert(user.server_id, user);
+    }
+    res
 }
 
 pub fn query(server_id: i32) -> Option<ServerInfo> {

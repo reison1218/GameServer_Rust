@@ -3,8 +3,17 @@ pub mod entity;
 pub mod handler;
 pub mod http_server;
 pub mod wx;
-use std::env;
+use std::{
+    collections::HashMap,
+    env::{self},
+    sync::{Arc, RwLock},
+};
 
+use crate::entity::{
+    server_info::{self, ServerInfo},
+    white_user::{self, WhiteUserInfo},
+    wx_user_subscribe::{self, WxUsersSubscribe},
+};
 use lazy_static::lazy_static;
 use sqlx::MySqlPool;
 use tools::conf::Conf;
@@ -35,6 +44,23 @@ lazy_static! {
 
             log::info!("初始化数据库完成!");
             pool
+        };
+
+        ///初始化mgr
+        static ref USER_LOGIN_MAP : Arc<RwLock<HashMap<String, serde_json::Value>>> = {
+            Arc::new(RwLock::new(HashMap::new()))
+        };
+        ///初始化mgr
+        static ref WX_USERS_SUBSCRIBE_MAP : Arc<RwLock<HashMap<String, WxUsersSubscribe>>> = {
+            Arc::new(RwLock::new(HashMap::new()))
+        };
+        ///初始化mgr
+        static ref SERVER_MAP : Arc<RwLock<HashMap<i32, ServerInfo>>> = {
+            Arc::new(RwLock::new(HashMap::new()))
+        };
+        ///初始化mgr
+        static ref WHITE_USER_MAP : Arc<RwLock<HashMap<String, WhiteUserInfo>>> = {
+             Arc::new(RwLock::new(HashMap::new()))
         };
 }
 
@@ -68,4 +94,39 @@ pub fn init_log() {
         .to_owned()
         + "\\log_config.yaml";
     tools::my_log::init_log(path.as_str());
+}
+
+pub fn reload() {
+    let time = std::time::Instant::now();
+    //reload server_list
+    let server_infos = server_info::query_all();
+    let mut write = crate::SERVER_MAP.write().unwrap();
+    write.clear();
+    for (server_id, server_info) in server_infos {
+        write.insert(server_id, server_info);
+    }
+    drop(write);
+
+    //reload 白名单
+    let res = white_user::query_all();
+    let mut write = crate::WHITE_USER_MAP.write().unwrap();
+    write.clear();
+    for info in res {
+        write.insert(info.name.clone(), info);
+    }
+    drop(write);
+
+    //reload 微信订阅
+    let res = wx_user_subscribe::query();
+    let mut write = crate::WX_USERS_SUBSCRIBE_MAP.write().unwrap();
+    write.clear();
+    for wx in res {
+        write.insert(wx.name.clone(), wx);
+    }
+    drop(write);
+
+    //reload users
+    let mut write = crate::USER_LOGIN_MAP.write().unwrap();
+    write.clear();
+    log::info!("reload数据完成！耗时:{}ms", time.elapsed().as_millis());
 }

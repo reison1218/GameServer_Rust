@@ -63,12 +63,12 @@ pub async fn insert(wx: &WxUsersSubscribe) {
     }
 }
 
-pub fn querys_by_names(names:String) -> HashMap<String,WxUsersSubscribe> {
+pub fn querys_by_names(names: String) -> HashMap<String, WxUsersSubscribe> {
     let pool: &MySqlPool = &crate::POOL;
 
     let a = async_std::task::block_on(async {
         sqlx::query("select * from wx_users_subscribe where name in(?)")
-        .bind(names)
+            .bind(names)
             .fetch_all(pool)
             .await
             .unwrap()
@@ -83,7 +83,31 @@ pub fn querys_by_names(names:String) -> HashMap<String,WxUsersSubscribe> {
         wx.open_id = open_id;
         wx.set_templ_ids(templ_ids);
         wx.name = name.clone();
-        res.insert(name,wx);
+        res.insert(name, wx);
+    }
+    res
+}
+
+pub fn query() -> Vec<WxUsersSubscribe> {
+    let pool: &MySqlPool = &crate::POOL;
+
+    let a = async_std::task::block_on(async {
+        sqlx::query("select * from wx_users_subscribe ")
+            .fetch_all(pool)
+            .await
+            .unwrap()
+    });
+
+    let mut res = Vec::new();
+    for row in a {
+        let name: String = row.get(0);
+        let open_id: String = row.get(1);
+        let templ_ids: String = row.get(2);
+        let mut wx = WxUsersSubscribe::default();
+        wx.open_id = open_id;
+        wx.set_templ_ids(templ_ids);
+        wx.name = name;
+        res.push(wx);
     }
     res
 }
