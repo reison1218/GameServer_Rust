@@ -6,14 +6,25 @@ appenders:
     filters:
       - kind: threshold
         level: info
-  file:
+  info_file:
     kind: file
-    path: "e:/log/file.log"
+    path: "./log/info.log"
+    filters:
+      - kind: threshold
+        level: info
     encoder:
       pattern: "{d(%Y-%m-%d %H:%M:%S%.6f)} [{f}:{L}] {h({l}):<5.5} {M}:{m}{n}" #"[{d(%Y-%m-%dT%H:%M:%S%.6f)} {h({l}):<5.5} {M}] {m}{n}"
-  rollingfile:
+  error_file:
+    kind: file
+    path: "./log/error.log"
+    filters:
+      - kind: threshold
+        level: error
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S%.6f)} [{f}:{L}] {h({l}):<5.5} {M}:{m}{n}" #"[{d(%Y-%m-%dT%H:%M:%S%.6f)} {h({l}):<5.5} {M}] {m}{n}"
+  rolling_file:
     kind: rolling_file
-    path: "e:/log/rolling_file.log"
+    path: "./log/rolling_file.log"
     encoder:
       pattern: "{d(%Y-%m-%d %H:%M:%S%.6f)} [{f}:{L}] {h({l}):<5.5} {M}:{m}{n}"
     policy:
@@ -22,12 +33,13 @@ appenders:
         interval: 1 hour
       roller:
         kind: fixed_window
-        pattern: "e:/log/old-rolling_file-{}.log"
+        pattern: "./log/old-rolling_file-{}.log"
         base: 0
         count: 2
 root:
   level: info
   appenders:
     - stdout
-    - file
-    - rollingfile
+    - info_file
+    - error_file
+    - rolling_file
