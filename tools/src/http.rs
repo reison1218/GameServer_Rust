@@ -18,14 +18,14 @@ pub trait HttpServerHandler: Send + Sync {
         _uri_params: HashMap<String, String>,
         _json_params: &[u8],
     ) -> anyhow::Result<serde_json::Value> {
-        Ok(json!(r#"{"statue","success"}"#))
+        Ok(json!(r#"{"code":200,"mess":"success"}"#))
     }
     fn do_get(
         &mut self,
         _uri: String,
         _uri_params: HashMap<String, String>,
     ) -> anyhow::Result<String> {
-        Ok(r#"{"statue","success"}"#.to_string())
+        Ok(r#"{"statue":200,"mess":"success"}"#.to_string())
     }
 }
 
@@ -74,7 +74,7 @@ impl Builder {
                 return (
                     axum::http::StatusCode::PRECONDITION_FAILED,
                     headers,
-                    axum::Json(json!({"result":"fail"})),
+                    axum::Json(json!({"code":-100,"mess":"fail"})),
                 );
             }
             (
@@ -105,7 +105,7 @@ impl Builder {
                 return (
                     axum::http::StatusCode::PRECONDITION_FAILED,
                     headers,
-                    r#"{"result":"fail"}"#.to_string(),
+                    r#"{"code":-100,"mess":"fail"}"#.to_string(),
                 );
             }
             (axum::http::StatusCode::OK, headers, res.unwrap())

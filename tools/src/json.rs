@@ -3,6 +3,8 @@ use std::str::FromStr;
 pub type JsonValue = serde_json::Value;
 
 pub trait JsonValueTrait {
+
+    fn new()->Self;
     fn from_bytes(bytes: &[u8]) -> anyhow::Result<JsonValue>;
     fn get_bool(&self, key: &str) -> Option<bool>;
     fn get_u8(&self, key: &str) -> Option<u8>;
@@ -26,6 +28,10 @@ pub trait JsonValueTrait {
 }
 
 impl JsonValueTrait for JsonValue {
+
+    fn new()->Self{
+        JsonValue::from(serde_json::Map::new())
+    }
     fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
         let res = String::from_utf8(bytes.to_vec())?;
         let res = JsonValue::from_str(res.as_str())?;
@@ -254,6 +260,17 @@ impl JsonValueTrait for JsonValue {
 }
 
 impl JsonValueTrait for serde_json::Map<String, JsonValue> {
+
+    fn new() -> Self {
+        serde_json::Map::new()
+    }
+
+    fn from_bytes(bytes: &[u8]) -> anyhow::Result<JsonValue> {
+        let res = String::from_utf8(bytes.to_vec())?;
+        let res = JsonValue::from_str(res.as_str())?;
+        Ok(res)
+    }
+
     fn get_bool(&self, key: &str) -> Option<bool> {
         let res = self.get(key);
         if res.is_none() {
@@ -460,11 +477,5 @@ impl JsonValueTrait for serde_json::Map<String, JsonValue> {
 
     fn insert(&mut self, key: String, value: JsonValue) {
         self.insert(key, value);
-    }
-
-    fn from_bytes(bytes: &[u8]) -> anyhow::Result<JsonValue> {
-        let res = String::from_utf8(bytes.to_vec())?;
-        let res = JsonValue::from_str(res.as_str())?;
-        Ok(res)
     }
 }
