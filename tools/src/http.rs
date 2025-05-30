@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use super::*;
-use async_std::sync::{Arc as AsyncArc, RwLock as AsyncRwLock};
 use axum::{
     body::Bytes,
     extract::Query,
@@ -43,9 +42,10 @@ impl Builder {
 
     ///add route for axum server
     pub fn route(mut self, handler: Box<dyn HttpServerHandler>) -> Self {
-        let handler = AsyncArc::new(AsyncRwLock::new(handler));
 
-        let handler_lock = TOKIO_RT.block_on(handler.write());
+        let handler = std::sync::Arc::new(async_lock::Mutex::new(handler));
+
+        let handler_lock = handler.lock_blocking();
 
         let path = handler_lock.get_path().to_owned();
 
@@ -65,7 +65,7 @@ impl Builder {
                 HeaderValue::from_str("*").unwrap(),
             );
             headers.insert("Accept", HeaderValue::from_str("*/*").unwrap());
-            let mut handler_lock = handler_lock.write().await;
+            let mut handler_lock = handler_lock.lock_blocking();
             //receive the http request
             let res = handler_lock.do_post(uri.to_string(), uri_params, body_res.as_slice());
             drop(handler_lock);
@@ -96,7 +96,7 @@ impl Builder {
                 HeaderValue::from_str("*").unwrap(),
             );
 
-            let mut handler_lock = handler_lock.write().await;
+            let mut handler_lock = handler_lock.lock_blocking();
             //receive the http request
             let res = handler_lock.do_get(uri.to_string(), uri_params);
             drop(handler_lock);
