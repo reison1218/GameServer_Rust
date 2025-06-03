@@ -123,8 +123,6 @@ impl Builder {
 
             info!("tcp server start,listen port {}", port);
 
-            println!("tcp server start,listen port {}", port);
-
             loop {
                 let res = listener.accept().await;
                 if let Err(e) = res {
@@ -172,6 +170,7 @@ impl Builder {
                             }
                             Err(e) => {
                                 log::error!("failed to read from socket; err = {:?}", e);
+                                println!("server failed to read from socket; err = {:?}", e);
                                 break;
                             }
                         }
@@ -181,6 +180,46 @@ impl Builder {
         });
     }
 }
+
+
+pub fn connect(
+    ip: &str,
+    port: u16,
+    mut event_callback: impl FnMut(NetEvent) + Send + Clone + 'static,
+) {
+    let ip = ip.to_owned();
+    let m = move ||{
+        let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        runtime.block_on( async move{
+            let (mut read_stream,write_stream) = tokio::net::TcpStream::connect(format!("{}:{}", ip, port)).await.unwrap().into_split();
+            event_callback(NetEvent::Connected(TcpHandler(write_stream)));
+            let mut buf = [0; u16::MAX as usize];
+            loop{
+                match read_stream.read(&mut buf).await {
+                    Ok(n) => {
+                        // socket closed
+                        if n == 0 {
+                            event_callback(NetEvent::Disconnected);
+                            break;
+                        }
+
+                        let mut received_data = Vec::new();
+                        received_data.extend_from_slice(&buf[..n]);
+
+                        //call on_message
+                        event_callback(NetEvent::Message(received_data));
+                    }
+                    Err(e) => {
+                        log::error!("failed to read from socket; err = {:?}", e);
+                        break;
+                    }
+                }
+            }
+        });
+    };
+    std::thread::spawn(m);
+}
+
 
 pub enum NetEvent {
     Connected(TcpHandler),
