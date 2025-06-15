@@ -1,7 +1,5 @@
 use std::thread::spawn;
-
-use tools::ws::{self, MessageHandler, NetEvent, WsHandler, WsMessage};
-use tungstenite::connect;
+use tools::ws::{self, ClientMessageHandler, ClientNetEvent, MessageHandler, NetEvent, WsClientHandler, WsHandler, WsMessage};
 
 pub fn main() {
     spawn(move || {
@@ -21,6 +19,7 @@ fn server() {
         }
         NetEvent::Message(data) => {
             client.on_message(data);
+
         }
         NetEvent::Disconnected => {
             client.on_close();
@@ -68,31 +67,66 @@ impl MessageHandler for Client {
     }
 
     fn on_message(&mut self, mess: WsMessage) {
-        println!("rec mess from client{:?}", mess);
+        println!("rec mess from client {:?}", mess);
         self.handler
             .as_mut()
-            .unwrap()
-            .0
-            .send(WsMessage::text("hello".to_string()))
-            .unwrap();
+            .unwrap().send(WsMessage::text("hello client".to_string()));
+        self.handler.as_mut().unwrap().close();
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+#[derive(Default)]
+struct WsClient {
+    pub handler: Option<WsClientHandler>,
+}
+
+impl Clone for WsClient {
+    fn clone(&self) -> Self {
+        Self { handler: None }
+    }
+}
+
+impl ClientMessageHandler for WsClient {
+    fn on_open(&mut self, ws_handler: WsClientHandler) {
+        self.handler = Some(ws_handler);
+        self.handler.as_mut().unwrap().send(WsMessage::text("hello server".to_string()));
+    }
+
+    fn on_close(&mut self) {
+        println!(
+            "tcp server close!",
+        );
+    }
+
+    fn on_message(&mut self, mess: WsMessage) {
+        println!("rec mess from server {:?}", mess);
+        self.handler
+            .as_mut()
+            .unwrap()
+            .send(WsMessage::text("hello server".to_string()));
+    }
+}
 fn client() {
-    let (mut socket, response) = connect("ws://localhost:1090/socket").expect("Can't connect");
-
-    println!("Connected to the server");
-    println!("Response HTTP code: {}", response.status());
-    println!("Response contains the following headers:");
-    for (ref header, _value) in response.headers() {
-        println!("* {}", header);
-    }
-
-    socket
-        .send(WsMessage::Text("Hello WebSocket".into()))
-        .unwrap();
-    loop {
-        let msg = socket.read().expect("Error reading message");
-        println!("from server message: {:?}", msg);
-    }
+    let mut client = WsClient { handler: None };
+    tools::ws::client_build("ws://localhost:1090/socket",move |event| match event {
+        ClientNetEvent::Connected(tcp_handler) => {
+            client.on_open(tcp_handler);
+        }
+        ClientNetEvent::Message(data) => {
+            client.on_message(data);
+        }
+        ClientNetEvent::Disconnected => {
+            client.on_close();
+        }
+    });
 }
