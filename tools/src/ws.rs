@@ -1,13 +1,10 @@
-use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
 use log::{error, info};
-use std::thread::spawn;
-use futures::{SinkExt, StreamExt};
-use futures::stream::SplitSink;
-use tokio_tungstenite::tungstenite::{accept, protocol::Role, Message, WebSocket};
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use tokio_tungstenite::tungstenite::protocol::CloseFrame;
-use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
+use tokio::net::{TcpListener,TcpStream};
+use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::{accept_async, connect_async, MaybeTlsStream, WebSocketStream};
+use futures_util::{StreamExt, SinkExt};
+use futures_util::stream::SplitSink;
 
 pub trait MessageHandler: Send + Sync + Clone {
     ///Triggered when has client connected
@@ -20,56 +17,59 @@ pub trait MessageHandler: Send + Sync + Clone {
     fn on_message(&mut self, mess: WsMessage);
 }
 
-pub struct WsHandler(pub WebSocket<TcpStream>);
+pub struct WsHandler(pub Arc<async_lock::Mutex<SplitSink<WebSocketStream<TcpStream>,Message>>>);
 
 impl WsHandler {
     pub fn close(&mut self) {
-            let close_frame = CloseFrame {
-                code: CloseCode::Normal,  // 正常关闭
-                reason: "Normal closure".into(),
-            };
-            let res = self.0.close(Some(close_frame));
-            if let Err(e) = res {
-                error!("Error while closing WebSocket connection: {}", e);
-            }
+        let res = smol::block_on(async { self.0.lock().await.close().await });
+        if let Err(e) = res {
+            error!("Error while closing WebSocket connection: {}", e);
+        }
     }
     pub fn send(&mut self, mess: WsMessage) {
-        let res = self.0.send(mess);
+        let res = smol::block_on(async { self.0.lock().await.send(mess).await });
         if let Err(e)=res {
             info!("ws send error: {:?}", e);
         }
     }
 }
 
-pub fn build(port: u16, event_callback: impl FnMut(NetEvent) + Send + Clone + 'static) {
+pub async fn build(port: u16, event_callback: impl FnMut(NetEvent) + Send + Clone + 'static) {
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
-    let server = TcpListener::bind(addr).unwrap();
-    for stream in server.incoming() {
-        let stream = stream.unwrap();
+    let server = TcpListener::bind(addr).await.unwrap();
+
+    while let Ok((stream, _)) = server.accept().await {
         let mut call_back = event_callback.clone();
-        spawn(move || {
-            info!("new client from {}", stream.peer_addr().unwrap());
-            let (mut read_socket, write_socket) = split(stream);
+        tokio::spawn(async move {
+            let client_add = stream.peer_addr().unwrap();
+            info!("new client from {}", client_add);
 
-            call_back(NetEvent::Connected(WsHandler(write_socket)));
-            loop {
-                let msg = read_socket.read();
+            let ws_stream = match accept_async(stream).await {
+                Ok(ws) => ws,
+                Err(e) => {
+                    error!("Error during WebSocket handshake: {}", e);
+                    return;
+                }
+            };
 
+            let (write_socket, mut read_socket) = ws_stream.split();
+
+            let write_lock = Arc::new(async_lock::Mutex::new(write_socket));
+
+            call_back(NetEvent::Connected(WsHandler(write_lock.clone())));
+
+            while let Some(msg) = read_socket.next().await{
                 match msg {
                     Ok(msg) => {
                         match msg {
                             Message::Ping(ping) => {
-                                read_socket.send(Message::from(ping)).unwrap();
+                                write_lock.lock().await.send(WsMessage::Ping(ping)).await.unwrap();
                             }
                             Message::Pong(pong) => {
-                                read_socket.send(Message::from(pong)).unwrap();
+                                write_lock.lock().await.send(WsMessage::Pong(pong)).await.unwrap();
                             }
                             Message::Close(code) => {
-                                info!(
-                            "client {} disconnect!code:{:?}",
-                            read_socket.get_ref().peer_addr().unwrap(),
-                            code
-                        );
+                                info!("client {} disconnect!code:{:?}",client_add,code);
                                 call_back(NetEvent::Disconnected);
                                 break;
                             }
@@ -89,22 +89,6 @@ pub fn build(port: u16, event_callback: impl FnMut(NetEvent) + Send + Clone + 's
     }
 }
 
-fn split(tcp_stream: TcpStream) -> (WebSocket<TcpStream>, WebSocket<TcpStream>) {
-    //WebSocketConfig::default() 这里websocket配置就用默认配置了
-    // WebSocketConfig {
-    //     max_send_queue: None,
-    //     write_buffer_size: 128 * 1024,
-    //     max_write_buffer_size: usize::MAX,
-    //     max_message_size: Some(64 << 20),
-    //     max_frame_size: Some(16 << 20),
-    //     accept_unmasked_frames: false,
-    // }
-    // 详情请看WebSocketConfig
-    let read_socket = accept(tcp_stream.try_clone().unwrap()).unwrap();
-    let write_socket =
-        WebSocket::from_raw_socket(tcp_stream.try_clone().unwrap(), Role::Server, None);
-    (read_socket, write_socket)
-}
 pub enum NetEvent {
     Connected(WsHandler),
 
@@ -142,7 +126,7 @@ pub trait ClientMessageHandler: Send + Sync + Clone {
     fn on_message(&mut self, mess: WsMessage);
 }
 
-pub struct WsClientHandler(pub Arc<async_lock::Mutex<SplitSink<WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>, Message>>>);
+pub struct WsClientHandler(pub Arc<async_lock::Mutex<SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>);
 
 impl WsClientHandler{
     pub fn send(&self, mess: WsMessage) {
@@ -167,16 +151,18 @@ impl WsClientHandler{
 
 
 pub fn client_build(url:&str,mut event_callback: impl FnMut(ClientNetEvent) + Send + Clone + 'static){
-    let m = async{
+
+    let url = url.to_owned();
+    let m = async move {
         // 建立连接
-        let (ws_stream, response) = connect_async(url)
+        let (ws_stream, _) = connect_async(url.clone())
             .await
             .expect("Failed to connect");
         info!("Connected to {}", url);
         // 分离读写部分
         let (write, mut read) = ws_stream.split();
 
-        let mut write_lock = Arc::new(async_lock::Mutex::new(write));
+        let write_lock = Arc::new(async_lock::Mutex::new(write));
         event_callback(ClientNetEvent::Connected(WsClientHandler(write_lock.clone())));
 
         loop{
@@ -210,9 +196,5 @@ pub fn client_build(url:&str,mut event_callback: impl FnMut(ClientNetEvent) + Se
             }
         }
     };
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .enable_all()  // 启用IO和定时器
-        .build()
-        .unwrap();
-    rt.block_on(m);
+    tokio::spawn(m);
 }
