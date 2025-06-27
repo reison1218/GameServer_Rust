@@ -24,4 +24,4 @@ once_cell = "1.16.0"
 tokio-tungstenite = "0.27.0"
 futures = "0.3"
 url = "2.0"
-tools = { path = "../GameServer_Rust/tools" }
+tools = { path = "../tools" }
