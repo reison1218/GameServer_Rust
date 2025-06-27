@@ -1,0 +1,147 @@
+2025-06-19 18:21:16.844395 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 18:22:16.843227 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 18:23:16.844879 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 21:10:22.142559 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:181] ERROR tools::ws:server:ws://192.168.110.130:16801/gateway/     disconnect! code:None
+2025-06-19 21:11:28.047344 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:181] ERROR tools::ws:server:ws://192.168.110.130:16801/gateway/     disconnect! code:None
+2025-06-20 00:05:23.382603 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:24.402081 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:25.418762 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:26.434940 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:27.452168 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:28.469526 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:06:11.674030 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:12.688654 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:13.705797 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:14.723646 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:15.740730 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:16.758573 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:17.775916 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:18.793419 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:07:53.905225 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:07:54.922030 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:07:55.943969 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:55.689500 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:56.706261 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:57.723732 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:58.740963 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:59.758181 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:09:00.776677 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:12:58.854661 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:12:59.871985 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:13:00.889073 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:13:01.906426 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:35.650334 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:36.666749 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:37.684383 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:38.701550 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:39.719050 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:40.736585 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:41.753873 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:16:14.148853 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:15.165637 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:16.184299 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:17.200885 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:18.217715 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:35.464445 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:36.481327 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:37.498325 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:38.518022 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:22:07.456821 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:08.470555 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:09.488229 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:10.505318 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:46.885926 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:47.902091 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:48.918456 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:49.935832 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:50.953489 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:51.970411 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:24.421539 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:25.430741 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:26.448193 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:27.470395 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:28.483017 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:31.269350 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:32.282502 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:33.300401 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:34.317150 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:43.365719 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:44.375024 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:45.392575 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:07.547305 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:08.560624 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:09.577912 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:34:04.270393 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/arena.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609&lan=cn: status code 500
+2025-06-20 00:34:04.295880 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/bless_hero_npc.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&lan=cn&v=20250617152609&um=-1|-1: status code 500
+2025-06-20 00:34:04.316206 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/attack_city_npc.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&v=20250617152609&um=-1|-1&lan=cn: status code 500
+2025-06-20 00:34:04.355643 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/city_build.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609&lan=cn: status code 500
+2025-06-20 00:34:04.382315 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/climb_new.json?um=-1%7C-1&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609: status code 500
+2025-06-20 00:34:04.397342 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/color.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&v=20250617152609&um=-1|-1&lan=cn: status code 500
+2025-06-20 00:34:04.418230 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/country_club.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&lan=cn&v=20250617152610&um=-1|-1: status code 500
+2025-06-20 00:34:04.445673 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/ctask.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.467319 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/duplicate_shop.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152610: status code 500
+2025-06-20 00:34:04.518796 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/equip.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&v=20250617152610&um=-1|-1: status code 500
+2025-06-20 00:34:04.542886 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/fate.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.557833 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/festival.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&v=20250617152610&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:04.572673 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/fight.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&lan=cn&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.669262 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/hero_skin.json?um=-1%7C-1&lan=cn&v=20250617152611&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152611: status code 500
+2025-06-20 00:34:04.700393 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/home_effect.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.721773 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/homeland.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.739511 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/homeland_build.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&um=-1|-1&v=20250617152611: status code 500
+2025-06-20 00:34:04.812497 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/native.json?um=-1%7C-1&lan=cn&v=20250617152611&zone=101?zone=101&lan=cn&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.872477 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/ploy.json?um=-1%7C-1&lan=cn&v=20250619115744&zone=101?zone=101&um=-1|-1&lan=cn&v=20250619115744: status code 500
+2025-06-20 00:34:04.934313 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/pve.json?um=-1%7C-1&lan=cn&v=20250617152612&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152612: status code 500
+2025-06-20 00:34:05.024256 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/revived_tower.json?um=-1%7C-1&lan=cn&v=20250617152613&zone=101?zone=101&v=20250617152613&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:05.053809 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/sgame.json?um=-1%7C-1&v=20250617152614&zone=101?zone=101&v=20250617152614&um=-1|-1: status code 500
+2025-06-20 00:34:05.167950 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/tomb.json?um=-1%7C-1&lan=cn&v=20250617152614&zone=101?zone=101&v=20250617152614&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:09.400190 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:39:25.616259 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:43:41.882270 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:45:12.937082 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:47:05.797253 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:54:46.210186 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 01:06:52.992875 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 04:45:38.078132 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 10:46:24.826948 [src\main.rs:228] ERROR relay_server:Error receiving from target: WebSocket protocol error: Connection reset without closing handshake
+2025-06-20 10:46:33.411669 [src\main.rs:206] ERROR relay_server:Error forwarding to target: Trying to work with closed connection   error:ws://192.168.110.130:16801/gateway/
+2025-06-20 10:46:36.460273 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:39.522132 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:42.573196 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:45.635714 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:48.686909 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:51.723826 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:54.768018 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:57.826976 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:00.873497 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:03.943449 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:07.007270 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:10.051787 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:13.091844 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:16.135787 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:19.180827 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:37:50.992534 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.992801 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993091 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993354 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016451 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016728 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.017029 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.017271 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033701 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033947 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034175 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034398 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050560 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050803 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.051020 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.051249 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067456 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067681 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067867 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.068075 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:43:11.309516 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:14.367066 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:17.420342 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 12:03:17.226044 [src\ws\ws.rs:56] ERROR relay_server::ws::ws:Error forwarding to target: WebSocket protocol error: Sending after closing is not allowed   error:ws://192.168.110.130:16801/gateway/
+2025-06-20 14:25:59.471192 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection
+2025-06-20 14:26:08.200861 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection

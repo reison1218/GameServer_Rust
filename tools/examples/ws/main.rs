@@ -2,9 +2,9 @@ use tools::ws::{self, ClientMessageHandler, ClientNetEvent, MessageHandler, NetE
 
 #[tokio::main]
 pub async fn main() {
-    tokio::spawn(async {
-        server().await;
-    });
+    // tokio::spawn(async {
+    //     server().await;
+    // });
     tokio::spawn(async{
         client();
     });
@@ -97,7 +97,7 @@ impl ClientMessageHandler for WsClient {
 }
 fn client() {
     let mut client = WsClient { handler: None };
-    ws::client_build("ws://localhost:1090/socket",move |event| match event {
+    ws::client_build("ws://localhost:16801/socket",move |event| match event {
         ClientNetEvent::Connected(tcp_handler) => {
             client.on_open(tcp_handler);
         }

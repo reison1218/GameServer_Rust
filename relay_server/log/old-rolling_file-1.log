@@ -1,0 +1,94 @@
+2025-06-20 10:46:24.827651 [src\main.rs:228] ERROR relay_server:Error receiving from target: WebSocket protocol error: Connection reset without closing handshake
+2025-06-20 10:46:33.411694 [src\main.rs:206] ERROR relay_server:Error forwarding to target: Trying to work with closed connection   error:ws://192.168.110.130:16801/gateway/
+2025-06-20 10:46:34.432304 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56756
+2025-06-20 10:46:36.460303 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:37.469309 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56758
+2025-06-20 10:46:39.522171 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:40.535382 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56760
+2025-06-20 10:46:42.573248 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:43.589046 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56762
+2025-06-20 10:46:45.635731 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:46.639853 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56767
+2025-06-20 10:46:48.686984 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:49.691975 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56769
+2025-06-20 10:46:51.723843 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:52.730891 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56771
+2025-06-20 10:46:54.768078 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:55.780890 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56780
+2025-06-20 10:46:57.827058 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:58.834058 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56786
+2025-06-20 10:47:00.873525 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:01.888183 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56788
+2025-06-20 10:47:03.943501 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:04.954926 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56791
+2025-06-20 10:47:07.007304 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:08.023957 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56793
+2025-06-20 10:47:10.051808 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:11.059831 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56795
+2025-06-20 10:47:13.091903 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:14.097489 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56798
+2025-06-20 10:47:16.135803 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:17.148526 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56800
+2025-06-20 10:47:19.180926 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:34:34.805765 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:34:34.806175 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:34:34.807488 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:34:34.807787 [src\main.rs:59] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 11:35:27.339360 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:35:27.339817 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:35:27.341128 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:35:27.341901 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:35:27.342049 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:35:27.342219 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:35:27.342384 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:37:49.959515 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:37:49.959974 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:37:49.961815 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:37:49.962203 [src\main.rs:59] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 11:37:49.978082 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:37:49.978362 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:37:49.978629 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:37:49.978903 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:37:50.992612 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.992829 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993117 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993434 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016484 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016754 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.017053 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.017302 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033730 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033961 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034198 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034417 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050587 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050828 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.051043 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.051261 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067471 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067695 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067876 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.068083 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:42:45.944983 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-20 11:42:45.945525 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:42:45.946824 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:42:45.947181 [src\main.rs:59] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 11:42:45.961970 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:42:45.962230 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:42:45.962501 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:42:45.962743 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:43:09.274379 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58174
+2025-06-20 11:43:11.309585 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:12.332173 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58182
+2025-06-20 11:43:14.367097 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:15.378394 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58187
+2025-06-20 11:43:17.420371 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:47.093393 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:43:47.093781 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:43:47.094878 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:43:47.095208 [src\main.rs:59] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 11:43:47.102449 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:43:47.102760 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:43:47.103105 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:43:47.103369 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:43:55.628108 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58262

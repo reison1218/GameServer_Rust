@@ -37,7 +37,7 @@ impl WsHandler {
 pub async fn build(port: u16, event_callback: impl FnMut(NetEvent) + Send + Clone + 'static) {
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
     let server = TcpListener::bind(addr).await.unwrap();
-
+    info!("ws-server listening on: {}", addr);
     while let Ok((stream, _)) = server.accept().await {
         let mut call_back = event_callback.clone();
         tokio::spawn(async move {

@@ -1,0 +1,22 @@
+2025-06-20 14:25:56.218112 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:55933
+2025-06-20 14:25:59.471257 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection
+2025-06-20 14:26:03.619094 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56044
+2025-06-20 14:26:08.200887 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection
+2025-06-20 14:26:50.657668 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56251
+2025-06-20 14:34:15.433410 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 14:34:15.433976 [src\main.rs:22] INFO  relay_server:初始化server.config完成!
+2025-06-20 14:34:15.435286 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 14:34:15.435676 [src\main.rs:80] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 14:34:15.444097 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 14:34:15.444349 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 14:34:15.444625 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 14:34:15.444861 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 14:34:22.793608 [src\ws\ws.rs:36] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56619
+2025-06-20 17:19:51.079925 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 17:19:51.080386 [src\main.rs:22] INFO  relay_server:初始化server.config完成!
+2025-06-20 17:19:51.081693 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 17:19:51.082036 [src\main.rs:35] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 17:19:51.097396 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 17:19:51.097596 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 17:19:51.097757 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 17:19:51.097960 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803

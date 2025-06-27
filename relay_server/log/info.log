@@ -1,0 +1,930 @@
+2025-06-16 17:06:03.716869 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:06:03.717528 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:06:03.719019 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:06:03.719374 [src\main.rs:54] INFO  gateway:启动成功!耗时:4ms
+2025-06-16 17:45:06.148409 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:45:06.148781 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:45:06.149783 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:45:06.150072 [src\main.rs:54] INFO  gateway:启动成功!耗时:3ms
+2025-06-16 17:47:25.547235 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:47:25.547944 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:47:25.549628 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:47:25.549930 [src\main.rs:54] INFO  gateway:启动成功!耗时:4ms
+2025-06-16 17:53:01.628164 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:53:01.628711 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:53:01.630689 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:53:01.631056 [src\main.rs:54] INFO  gateway:启动成功!耗时:4ms
+2025-06-16 17:54:02.607174 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:54:02.607927 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:54:02.609509 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:54:02.609855 [src\main.rs:54] INFO  gateway:启动成功!耗时:4ms
+2025-06-16 17:54:56.446389 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:54:56.446914 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:54:56.448261 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:54:56.448557 [src\main.rs:54] INFO  gateway:启动成功!耗时:3ms
+2025-06-16 17:56:34.984876 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 17:56:34.985576 [src\main.rs:18] INFO  gateway:初始化server.config完成!
+2025-06-16 17:56:34.987515 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 17:56:34.987846 [src\main.rs:54] INFO  gateway:启动成功!耗时:4ms
+2025-06-16 18:11:20.306723 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-16 18:11:20.307454 [src\main.rs:18] INFO  relay_server:初始化server.config完成!
+2025-06-16 18:11:20.309553 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 18:11:20.309788 [src\main.rs:54] INFO  relay_server:启动成功!耗时:6ms
+2025-06-16 18:13:40.062955 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 18:13:40.063653 [src\main.rs:18] INFO  relay_server:初始化server.config完成!
+2025-06-16 18:13:40.065131 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 18:13:40.065408 [src\main.rs:54] INFO  relay_server:启动成功!耗时:4ms
+2025-06-16 18:19:52.497945 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 18:19:52.498436 [src\main.rs:18] INFO  relay_server:初始化server.config完成!
+2025-06-16 18:19:52.499969 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 18:19:52.500185 [src\main.rs:54] INFO  relay_server:启动成功!耗时:4ms
+2025-06-16 18:28:06.042828 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-16 18:28:06.043400 [src\main.rs:18] INFO  relay_server:初始化server.config完成!
+2025-06-16 18:28:06.044974 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 18:28:06.045186 [src\main.rs:54] INFO  relay_server:启动成功!耗时:5ms
+2025-06-16 18:39:19.407144 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-16 18:39:19.407649 [src\main.rs:18] INFO  relay_server:初始化server.config完成!
+2025-06-16 18:39:19.408960 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-16 18:39:19.409167 [src\main.rs:54] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 17:00:48.358116 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 17:00:48.359209 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:00:48.361709 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:00:48.362089 [src\main.rs:106] INFO  relay_server:启动成功!耗时:7ms
+2025-06-19 17:01:48.728623 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:01:48.729136 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:01:48.730807 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:01:48.731200 [src\main.rs:106] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:04:26.100267 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:04:26.100948 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:04:26.102531 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:04:26.102883 [src\main.rs:106] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:07:06.995442 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 17:07:06.996203 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:07:06.997991 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:07:06.998329 [src\main.rs:106] INFO  relay_server:启动成功!耗时:6ms
+2025-06-19 17:10:00.016264 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:10:00.017010 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:10:00.018654 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:10:00.018925 [src\main.rs:109] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:11:48.360016 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 17:11:48.360841 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:11:48.363085 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:11:48.363575 [src\main.rs:107] INFO  relay_server:启动成功!耗时:7ms
+2025-06-19 17:12:54.225135 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:12:54.226145 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:12:54.229417 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:12:54.230096 [src\main.rs:107] INFO  relay_server:启动成功!耗时:6ms
+2025-06-19 17:15:35.132700 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:15:35.133539 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:15:35.136049 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":15001
+2025-06-19 17:15:35.136366 [src\main.rs:107] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 17:15:37.179787 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 17:19:22.212545 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:19:22.213083 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:19:22.214444 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:19:22.214803 [src\main.rs:104] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:19:22.263240 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 17:26:19.067826 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:26:19.068334 [src\main.rs:24] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:26:19.069472 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:26:19.069775 [src\main.rs:107] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 17:33:31.376361 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 17:33:31.376948 [src\main.rs:25] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:33:31.378274 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:33:31.378687 [src\main.rs:117] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:39:15.539284 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:39:15.539785 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:39:15.541348 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:39:15.541605 [src\main.rs:120] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:39:15.618857 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 17:39:15.619074 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 17:39:15.619212 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 17:39:15.619392 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 17:39:15.619516 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 17:39:15.619695 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 17:39:15.619859 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 17:39:15.620020 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 17:39:15.620135 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 17:39:48.819317 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 17:39:48.819880 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:39:48.821542 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:39:48.821936 [src\main.rs:120] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 17:39:48.891790 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 17:39:48.892008 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 17:39:48.892252 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 17:39:48.892513 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 17:39:48.892760 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 17:39:48.892997 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 17:39:48.893259 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 17:39:48.893487 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 17:39:48.893631 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 17:54:19.653417 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 17:54:19.654144 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 17:54:19.655896 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 17:54:19.656170 [src\main.rs:119] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 17:54:19.734341 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 17:54:19.734553 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 17:54:19.734741 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 17:54:19.734917 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 17:54:19.735125 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 17:54:19.735281 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 17:54:19.735480 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 17:54:19.735704 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 17:54:19.735854 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:00:23.574911 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:00:23.575530 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:00:23.577101 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:00:23.577474 [src\main.rs:122] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:00:23.702813 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:00:23.704368 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:00:23.705523 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:00:23.708497 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:00:23.709725 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:00:23.710799 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:00:23.712356 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:02:23.658871 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:02:23.659469 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:02:23.660996 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:02:23.661199 [src\main.rs:122] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:02:47.807311 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:02:47.807863 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:02:47.809916 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:02:47.810193 [src\main.rs:122] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:02:47.883775 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:02:47.885200 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:02:47.890790 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:03:47.907196 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:03:47.912311 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:03:47.915354 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:03:47.917543 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:03:47.919562 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:03:47.921236 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:03:47.922869 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:03:47.924447 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:03:47.925755 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:04:47.897960 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:04:47.902398 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:04:47.905431 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:04:47.907370 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:04:47.908691 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:04:47.909980 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:04:47.911592 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:04:47.913077 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:04:47.914468 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:05:47.896788 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:05:47.899797 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:05:47.901778 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:05:47.903848 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:05:47.905643 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:05:47.907387 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:05:47.908906 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:05:47.910466 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:05:47.911818 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:06:47.890942 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:06:47.892301 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:06:47.893781 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:06:47.895043 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:06:47.896979 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:06:47.898347 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:06:47.900572 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:07:47.884687 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:07:47.886276 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:07:47.887727 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:07:47.889108 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:07:47.890517 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:07:47.891879 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:07:47.893461 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:07:47.894817 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:07:47.896137 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:08:47.899537 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:08:47.905897 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:08:47.909817 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:08:47.915072 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:08:47.916964 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:08:47.918542 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:08:47.919823 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:08:47.921074 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:09:47.891488 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:09:47.894855 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:09:47.899129 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:09:47.900668 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:11:39.890402 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:11:39.890939 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:11:39.892357 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:11:39.892597 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:11:39.950971 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:11:39.953062 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:11:39.954191 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:11:39.955434 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:12:38.141595 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:12:38.141986 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:12:38.143197 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:12:38.143542 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 18:12:38.206822 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:12:38.207936 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:12:38.208818 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:12:38.209848 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:12:38.210703 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:12:38.212472 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:13:16.829901 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 18:13:16.830526 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:13:16.832308 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:13:16.832707 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 18:13:16.910169 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20007
+2025-06-19 18:13:16.910300 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16853
+2025-06-19 18:13:16.910485 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20009
+2025-06-19 18:13:16.910628 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16954
+2025-06-19 18:13:16.910758 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22001
+2025-06-19 18:13:16.910899 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22003
+2025-06-19 18:13:16.911018 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:20006
+2025-06-19 18:13:16.911154 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16852
+2025-06-19 18:13:16.911306 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:22002
+2025-06-19 18:21:16.844347 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 18:22:16.843156 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 18:23:16.844830 [src\main.rs:51] ERROR relay_server:http://192.168.110.130:8500/get_json_config/zone.json: status code 502
+2025-06-19 18:38:33.867761 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:38:33.868080 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:38:33.869815 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:38:33.870074 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 18:38:33.887910 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:38:33.888031 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:38:33.888147 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:38:33.888253 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:39:55.626169 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:39:55.626654 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:39:55.628087 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:39:55.628490 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 18:39:55.637499 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:39:55.637749 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:39:55.637919 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:39:55.638076 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:41:42.909892 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:41:42.910391 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:41:42.911895 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:41:42.912284 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:41:44.366281 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:41:44.366531 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:41:44.366790 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:41:44.366997 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:41:47.617028 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:42:22.604971 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:42:22.605372 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:42:22.607159 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:42:22.607426 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:42:22.623784 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:42:22.623911 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:42:22.624020 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:42:22.624118 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:42:26.423728 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:48:01.340253 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:49:44.639417 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:49:52.096012 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:50:12.453971 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:52:53.106405 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:52:53.106934 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:52:53.108436 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:52:53.108738 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 18:52:53.117915 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:52:53.118143 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:52:53.118326 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:52:53.118522 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:53:12.577370 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 18:53:12.577769 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 18:53:12.578875 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 18:53:12.579290 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 18:53:12.592417 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 18:53:12.592576 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 18:53:12.592725 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 18:53:12.592869 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 18:53:16.704365 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:53:55.164114 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:54:15.237073 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 18:57:50.499508 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:24:35.127165 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 19:24:35.127723 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:24:35.129388 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:24:35.129689 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 19:24:35.148167 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:24:35.148346 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:24:35.148546 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:24:35.148720 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:24:41.214721 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:24:41.444695 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:24:41.482638 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:25:40.129200 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 19:25:40.130049 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:25:40.132119 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:25:40.132453 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 19:25:40.149391 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:25:40.149617 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:25:40.149833 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:25:40.150062 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:25:44.113491 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:30:47.473111 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 19:30:47.474135 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:30:47.475728 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:30:47.476067 [src\main.rs:123] INFO  relay_server:启动成功!耗时:6ms
+2025-06-19 19:30:47.494389 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:30:47.494550 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:30:47.494717 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:30:47.494843 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:30:51.019253 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:33:49.719403 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 19:33:49.720160 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:33:49.721921 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:33:49.722357 [src\main.rs:123] INFO  relay_server:启动成功!耗时:7ms
+2025-06-19 19:33:49.727727 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:33:49.727882 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:33:49.728018 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:33:49.728138 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:33:55.767597 [src\http\gateway_handler.rs:19] INFO  relay_server::http::gateway_handler:gateway
+2025-06-19 19:39:26.985280 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 19:39:26.985901 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:39:26.987612 [D:\rust_work\GameServer_Rust\tools\src\http.rs:140] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:39:26.987945 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 19:39:27.004498 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:39:27.004691 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:39:27.004867 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:39:27.005036 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:46:25.156708 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 19:46:25.157185 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:46:25.159641 [D:\rust_work\GameServer_Rust\tools\src\http.rs:137] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:46:25.160058 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 19:46:25.180344 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:46:25.180487 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:46:25.180600 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:46:25.180711 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:47:46.366198 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-19 19:47:46.366768 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:47:46.368779 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:47:46.369146 [src\main.rs:123] INFO  relay_server:启动成功!耗时:6ms
+2025-06-19 19:47:46.381018 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:47:46.381137 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:47:46.381264 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:47:46.381376 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:49:43.679608 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 19:49:43.680352 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:49:43.682335 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:49:43.682725 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 19:49:44.944670 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:49:44.944829 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:49:44.944972 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:49:44.945129 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:50:24.170118 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54717
+2025-06-19 19:50:25.454936 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54720
+2025-06-19 19:50:26.540105 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54722
+2025-06-19 19:50:27.622118 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54724
+2025-06-19 19:50:28.689921 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54727
+2025-06-19 19:50:29.756930 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54730
+2025-06-19 19:50:30.827848 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54733
+2025-06-19 19:50:31.908965 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54736
+2025-06-19 19:50:32.993300 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54738
+2025-06-19 19:50:34.060733 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54741
+2025-06-19 19:50:35.131674 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54743
+2025-06-19 19:51:53.570141 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 19:51:53.570730 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:51:53.572233 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:51:53.572430 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 19:51:53.577946 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:51:53.578112 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:51:53.578270 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:51:53.578399 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:51:57.529171 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54884
+2025-06-19 19:51:58.796994 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54886
+2025-06-19 19:51:59.864111 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:54890
+2025-06-19 19:54:36.814500 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 19:54:36.815078 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:54:36.816713 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:54:36.817033 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 19:54:36.822125 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:54:36.822295 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:54:36.822477 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:54:36.822653 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:54:43.049266 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:55092
+2025-06-19 19:56:13.908933 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 19:56:13.909368 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 19:56:13.910826 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 19:56:13.911100 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 19:56:13.925686 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 19:56:13.925801 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 19:56:13.925915 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 19:56:13.926016 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 19:56:17.542086 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:55231
+2025-06-19 19:56:17.758354 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:00:16.395565 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:00:16.395906 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:00:16.397471 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:00:16.397746 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:00:16.414387 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:00:16.414512 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:00:16.414612 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:00:16.414711 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:01:08.587136 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:01:08.587594 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:01:08.588779 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:01:08.589213 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:01:08.602735 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:01:08.602927 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:01:08.603111 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:01:08.603282 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:01:17.974142 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:01:17.974471 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:01:17.976108 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:01:17.976433 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:01:17.995066 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:01:17.995214 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:01:17.995368 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:01:17.995548 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:01:24.560953 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:55672
+2025-06-19 20:01:24.787810 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:02:22.390377 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:55732
+2025-06-19 20:02:22.434658 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:08:18.154999 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:08:18.155483 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:08:18.156956 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:08:18.157231 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:08:18.170698 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:08:18.170814 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:08:18.170916 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:08:18.171031 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:08:24.837590 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:56180
+2025-06-19 20:08:25.558434 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:20:30.837371 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 20:20:30.838052 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:20:30.839848 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:20:30.840224 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 20:20:30.853551 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:20:30.853734 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:20:30.853934 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:20:30.854104 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:20:41.472310 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:57179
+2025-06-19 20:20:43.720810 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:21:33.555667 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:21:33.555990 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:21:33.557657 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:21:33.557921 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:21:33.576827 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:21:33.576957 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:21:33.577058 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:21:33.577158 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:21:38.848072 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:57299
+2025-06-19 20:21:41.077292 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 20:33:36.691956 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 20:33:36.692661 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:33:36.694807 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:33:36.695192 [src\main.rs:123] INFO  relay_server:启动成功!耗时:5ms
+2025-06-19 20:33:36.709209 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:33:36.709345 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:33:36.709484 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:33:36.709619 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:33:45.012968 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58180
+2025-06-19 20:34:05.592938 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:34:05.593298 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:34:05.594606 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:34:05.595077 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:34:05.611844 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:34:05.612089 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:34:05.612264 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:34:05.612406 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:34:05.934888 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58206
+2025-06-19 20:34:20.432777 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:34:20.433265 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:34:20.434308 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:34:20.434675 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:34:20.451450 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:34:20.451665 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:34:20.451834 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:34:20.451985 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:34:27.064217 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58246
+2025-06-19 20:34:47.792052 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:34:47.792379 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:34:47.793932 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:34:47.794213 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:34:47.812572 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:34:47.812734 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:34:47.812859 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:34:47.813003 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:34:48.153750 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58271
+2025-06-19 20:35:39.395436 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:35:39.395764 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:35:39.397287 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:35:39.397489 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:35:39.413619 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:35:39.413847 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:35:39.414078 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:35:39.414317 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:35:48.113457 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58413
+2025-06-19 20:37:07.977692 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:37:07.978175 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:37:07.980025 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:37:07.980330 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:37:07.989628 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:37:07.989868 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:37:07.990078 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:37:07.990275 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:37:14.116940 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58527
+2025-06-19 20:38:05.798124 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:38:05.798592 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:38:05.800573 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:38:05.801025 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:38:05.820953 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:38:05.821200 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:38:05.821418 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:38:05.821654 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:38:05.878967 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58597
+2025-06-19 20:38:17.797170 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:38:17.797652 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:38:17.799350 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:38:17.799639 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:38:17.816908 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:38:17.817228 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:38:17.817469 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:38:17.817721 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:38:52.349851 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:58678
+2025-06-19 20:43:53.066536 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:43:53.066988 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:43:53.069030 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:43:53.069433 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:43:53.081110 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:43:53.081230 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:43:53.081341 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:43:53.081449 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:43:59.383398 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59086
+2025-06-19 20:45:11.853421 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:45:11.853759 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:45:11.855407 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:45:11.855703 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:45:11.875767 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:45:11.876006 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:45:11.876203 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:45:11.876432 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:45:11.897088 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59171
+2025-06-19 20:45:28.905805 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 20:45:28.906655 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:45:28.909368 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:45:28.909730 [src\main.rs:123] INFO  relay_server:启动成功!耗时:8ms
+2025-06-19 20:45:28.929690 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:45:28.929887 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:45:28.930054 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:45:28.930216 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:45:37.579205 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59231
+2025-06-19 20:47:57.853291 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 20:47:57.853722 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:47:57.855600 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:47:57.855971 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:48:00.275978 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:48:00.276324 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:48:00.276619 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:48:00.276967 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:48:00.309248 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59397
+2025-06-19 20:54:38.028560 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:54:38.029281 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:54:38.031013 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:54:38.031345 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 20:54:38.047705 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 20:54:38.048032 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:54:38.048180 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:54:38.048319 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:54:38.048887 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59841
+2025-06-19 20:54:38.291780 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16804/gateway/
+2025-06-19 20:55:54.082217 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:59936
+2025-06-19 20:55:54.113355 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16804/gateway/
+2025-06-19 20:57:42.207305 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 20:57:42.207872 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 20:57:42.209112 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 20:57:42.209484 [src\main.rs:123] INFO  relay_server:启动成功!耗时:3ms
+2025-06-19 20:57:42.225261 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 20:57:42.225498 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 20:57:42.225745 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 20:57:42.225966 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 21:03:04.098015 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 127.0.0.1:60603
+2025-06-19 21:03:04.335585 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 21:03:44.377882 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 21:03:44.378439 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 21:03:44.379986 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 21:03:44.380231 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 21:03:44.396443 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 21:03:44.396593 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 21:03:44.396732 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 21:03:44.396867 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 21:03:54.680533 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 127.0.0.1:60664
+2025-06-19 21:03:54.911409 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 21:09:54.890458 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-19 21:09:54.890980 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 21:09:54.892533 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 21:09:54.892750 [src\main.rs:123] INFO  relay_server:启动成功!耗时:4ms
+2025-06-19 21:09:56.213391 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 21:09:56.214121 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 21:09:56.214861 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 21:09:56.215564 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 21:10:07.130251 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:61120
+2025-06-19 21:10:07.133560 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 21:10:22.141551 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:72] INFO  tools::ws:client 192.168.110.85:61120 disconnect!code:None
+2025-06-19 21:10:22.142536 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:181] ERROR tools::ws:server:ws://192.168.110.130:16801/gateway/     disconnect! code:None
+2025-06-19 21:10:23.159672 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:61131
+2025-06-19 21:10:23.163130 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 21:10:53.827943 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-19 21:10:53.828586 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-19 21:10:53.832065 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-19 21:10:53.832589 [src\main.rs:123] INFO  relay_server:启动成功!耗时:7ms
+2025-06-19 21:10:53.853221 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16802
+2025-06-19 21:10:53.853392 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16803
+2025-06-19 21:10:53.853541 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16804
+2025-06-19 21:10:53.853661 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:40] INFO  tools::ws:ws-server listening on: 0.0.0.0:16801
+2025-06-19 21:11:13.034452 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:61243
+2025-06-19 21:11:17.958599 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-19 21:11:28.045532 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:72] INFO  tools::ws:client 192.168.110.85:61243 disconnect!code:None
+2025-06-19 21:11:28.047315 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:181] ERROR tools::ws:server:ws://192.168.110.130:16801/gateway/     disconnect! code:None
+2025-06-19 21:11:29.063424 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:45] INFO  tools::ws:new client from 192.168.110.85:61265
+2025-06-19 21:11:29.066827 [D:\rust_work\GameServer_Rust\tools\src\ws.rs:161] INFO  tools::ws:Connected to ws://192.168.110.130:16801/gateway/
+2025-06-20 00:01:43.101297 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:02:39.120143 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:02:39.120680 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:02:39.121935 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:05:17.294157 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:05:17.294649 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:05:17.295904 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:05:23.382545 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:24.402007 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:25.418694 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:26.434876 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:27.452117 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:05:28.469481 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:06:06.720271 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:06:06.720949 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:06:06.722446 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:06:11.673988 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:12.688531 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:13.705742 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:14.723580 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:15.740671 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:16.758500 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:17.775865 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:06:18.793363 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:07:49.333918 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-20 00:07:49.334419 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:07:49.335761 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:07:53.905168 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:07:54.921987 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:07:55.943866 [src\main.rs:169] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:50.065865 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:08:50.066504 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:08:50.068062 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:08:55.689453 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:56.706216 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:57.723684 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:58.740908 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:08:59.758135 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:09:00.776624 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:12:53.485050 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:12:53.485556 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:12:53.486773 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:12:58.854610 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:12:59.871943 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:13:00.889028 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:13:01.906380 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:30.883779 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-06-20 00:15:30.884601 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:15:30.886579 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:15:35.650281 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:36.666633 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:37.684322 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:38.701504 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:39.718996 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:40.736526 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:15:41.753818 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: invalid port value
+2025-06-20 00:16:10.209622 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:16:10.210134 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:16:10.211768 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:16:14.148806 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:15.165594 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:16.184252 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:17.200832 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:16:18.217673 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:30.850006 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:18:30.850508 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:18:30.851890 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:18:35.464391 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:36.481269 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:37.498280 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:18:38.517967 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: URL error: URL scheme not supported
+2025-06-20 00:22:04.082758 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:22:04.083372 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:22:04.084818 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:22:07.456766 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:08.470496 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:09.488176 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:22:10.505264 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:44.721146 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:24:44.721644 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:24:44.723021 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:24:46.885819 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:47.902029 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:48.918400 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:49.935784 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:50.953419 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:24:51.970354 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:18.419599 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:26:18.420103 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:26:18.421255 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:26:24.421486 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:25.430699 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:26.448140 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:27.470300 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:26:28.482952 [src\main.rs:170] ERROR relay_server:Error in connection on port 16803: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:25.893681 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:30:25.894160 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:30:25.895423 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:30:31.269312 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:32.282458 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:33.300360 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:30:34.317103 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:38.630978 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:31:38.631560 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:31:38.633038 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:31:43.365654 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:44.374988 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:31:45.392517 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:06.280537 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:33:06.281132 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:33:06.282423 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:33:07.547187 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:08.560559 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:33:09.577860 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 不知道这样的主机。 (os error 11001)
+2025-06-20 00:34:01.996873 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:34:01.997367 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:34:01.998578 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:34:04.270337 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/arena.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609&lan=cn: status code 500
+2025-06-20 00:34:04.295836 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/bless_hero_npc.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&lan=cn&v=20250617152609&um=-1|-1: status code 500
+2025-06-20 00:34:04.316168 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/attack_city_npc.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&v=20250617152609&um=-1|-1&lan=cn: status code 500
+2025-06-20 00:34:04.355586 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/city_build.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609&lan=cn: status code 500
+2025-06-20 00:34:04.382277 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/climb_new.json?um=-1%7C-1&v=20250617152609&zone=101?zone=101&um=-1|-1&v=20250617152609: status code 500
+2025-06-20 00:34:04.397309 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/color.json?um=-1%7C-1&lan=cn&v=20250617152609&zone=101?zone=101&v=20250617152609&um=-1|-1&lan=cn: status code 500
+2025-06-20 00:34:04.418183 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/country_club.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&lan=cn&v=20250617152610&um=-1|-1: status code 500
+2025-06-20 00:34:04.445636 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/ctask.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.467274 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/duplicate_shop.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152610: status code 500
+2025-06-20 00:34:04.518758 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/equip.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&v=20250617152610&um=-1|-1: status code 500
+2025-06-20 00:34:04.542842 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/fate.json?um=-1%7C-1&v=20250617152610&zone=101?zone=101&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.557794 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/festival.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&v=20250617152610&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:04.572633 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/fight.json?um=-1%7C-1&lan=cn&v=20250617152610&zone=101?zone=101&lan=cn&um=-1|-1&v=20250617152610: status code 500
+2025-06-20 00:34:04.669094 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/hero_skin.json?um=-1%7C-1&lan=cn&v=20250617152611&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152611: status code 500
+2025-06-20 00:34:04.700344 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/home_effect.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.721723 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/homeland.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.739456 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/homeland_build.json?um=-1%7C-1&v=20250617152611&zone=101?zone=101&um=-1|-1&v=20250617152611: status code 500
+2025-06-20 00:34:04.812439 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/native.json?um=-1%7C-1&lan=cn&v=20250617152611&zone=101?zone=101&lan=cn&v=20250617152611&um=-1|-1: status code 500
+2025-06-20 00:34:04.872425 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/ploy.json?um=-1%7C-1&lan=cn&v=20250619115744&zone=101?zone=101&um=-1|-1&lan=cn&v=20250619115744: status code 500
+2025-06-20 00:34:04.934275 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/pve.json?um=-1%7C-1&lan=cn&v=20250617152612&zone=101?zone=101&um=-1|-1&lan=cn&v=20250617152612: status code 500
+2025-06-20 00:34:05.024204 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/revived_tower.json?um=-1%7C-1&lan=cn&v=20250617152613&zone=101?zone=101&v=20250617152613&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:05.053767 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/sgame.json?um=-1%7C-1&v=20250617152614&zone=101?zone=101&v=20250617152614&um=-1|-1: status code 500
+2025-06-20 00:34:05.167903 [src\http\get_json_config.rs:26] ERROR relay_server::http::get_json_config:http://192.168.110.130:8500/get_json_config/tomb.json?um=-1%7C-1&lan=cn&v=20250617152614&zone=101?zone=101&v=20250617152614&lan=cn&um=-1|-1: status code 500
+2025-06-20 00:34:09.400152 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:38:16.184202 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:38:16.184729 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:38:16.186156 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:39:25.616200 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:43:31.756888 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 00:43:31.757353 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 00:43:31.758604 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 00:43:31.759472 [src\main.rs:161] INFO  relay_server:Listening on port 16801
+2025-06-20 00:43:31.759654 [src\main.rs:161] INFO  relay_server:Listening on port 16804
+2025-06-20 00:43:31.759804 [src\main.rs:161] INFO  relay_server:Listening on port 16802
+2025-06-20 00:43:31.759948 [src\main.rs:161] INFO  relay_server:Listening on port 16803
+2025-06-20 00:43:32.192368 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:59829
+2025-06-20 00:43:41.882159 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:43:44.764189 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:59866
+2025-06-20 00:45:03.077599 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:60070
+2025-06-20 00:45:12.937022 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:45:24.228733 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:60187
+2025-06-20 00:47:05.797199 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:54:40.033758 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:60740
+2025-06-20 00:54:46.210135 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 00:55:29.397373 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:60898
+2025-06-20 01:06:47.063551 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-20 01:06:47.064387 [src\main.rs:26] INFO  relay_server:初始化server.config完成!
+2025-06-20 01:06:47.066061 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 01:06:47.067778 [src\main.rs:161] INFO  relay_server:Ws-Server Listening on port 16803
+2025-06-20 01:06:47.068001 [src\main.rs:161] INFO  relay_server:Ws-Server Listening on port 16804
+2025-06-20 01:06:47.068217 [src\main.rs:161] INFO  relay_server:Ws-Server Listening on port 16801
+2025-06-20 01:06:47.068412 [src\main.rs:161] INFO  relay_server:Ws-Server Listening on port 16802
+2025-06-20 01:06:47.447197 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:61282
+2025-06-20 01:06:52.992827 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 01:06:54.068393 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:61308
+2025-06-20 01:06:56.118326 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:61312
+2025-06-20 04:45:38.077908 [src\main.rs:223] ERROR relay_server:Error forwarding to client: Trying to work with closed connection
+2025-06-20 10:46:24.826885 [src\main.rs:228] ERROR relay_server:Error receiving from target: WebSocket protocol error: Connection reset without closing handshake
+2025-06-20 10:46:33.411622 [src\main.rs:206] ERROR relay_server:Error forwarding to target: Trying to work with closed connection   error:ws://192.168.110.130:16801/gateway/
+2025-06-20 10:46:34.432208 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56756
+2025-06-20 10:46:36.460218 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:37.469193 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56758
+2025-06-20 10:46:39.522048 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:40.535325 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56760
+2025-06-20 10:46:42.573103 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:43.588954 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56762
+2025-06-20 10:46:45.635667 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:46.639789 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56767
+2025-06-20 10:46:48.686634 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:49.691930 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56769
+2025-06-20 10:46:51.723791 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:52.730733 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56771
+2025-06-20 10:46:54.767901 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:55.780827 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56780
+2025-06-20 10:46:57.826786 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:46:58.833958 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56786
+2025-06-20 10:47:00.873435 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:01.888042 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56788
+2025-06-20 10:47:03.943358 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:04.954860 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56791
+2025-06-20 10:47:07.007203 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:08.023907 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56793
+2025-06-20 10:47:10.051732 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:11.059770 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56795
+2025-06-20 10:47:13.091722 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:14.097384 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56798
+2025-06-20 10:47:16.135745 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 10:47:17.148456 [src\main.rs:184] INFO  relay_server:Client WebSocket connected 192.168.110.85:56800
+2025-06-20 10:47:19.180671 [src\main.rs:170] ERROR relay_server:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:34:34.805690 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:34:34.806143 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:34:34.807456 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:34:34.807766 [src\main.rs:59] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 11:35:27.339286 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:35:27.339784 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:35:27.341093 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:35:27.341870 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:35:27.342035 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:35:27.342194 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:35:27.342340 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:37:49.959462 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:37:49.959936 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:37:49.961771 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:37:49.962172 [src\main.rs:59] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 11:37:49.978036 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:37:49.978334 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:37:49.978593 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:37:49.978867 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:37:50.992480 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.992773 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993053 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:50.993325 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016401 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016696 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.016989 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:52.017244 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033648 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.033916 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034137 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:53.034365 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050509 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050764 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.050990 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:54.051228 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067415 [src\main.rs:82] ERROR relay_server:Error on port 16802: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067623 [src\main.rs:82] ERROR relay_server:Error on port 16804: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.067854 [src\main.rs:82] ERROR relay_server:Error on port 16801: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:37:55.068060 [src\main.rs:82] ERROR relay_server:Error on port 16803: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048)
+2025-06-20 11:42:45.944894 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-06-20 11:42:45.945493 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:42:45.946796 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:42:45.947144 [src\main.rs:59] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 11:42:45.961913 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:42:45.962200 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:42:45.962459 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:42:45.962704 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:43:09.274313 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58174
+2025-06-20 11:43:11.309465 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:12.331979 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58182
+2025-06-20 11:43:14.367005 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:15.378338 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58187
+2025-06-20 11:43:17.420276 [src\ws\ws.rs:20] ERROR relay_server::ws::ws:Error in connection on port 16801: 由于目标计算机积极拒绝，无法连接。 (os error 10061)
+2025-06-20 11:43:47.093348 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 11:43:47.093742 [src\main.rs:27] INFO  relay_server:初始化server.config完成!
+2025-06-20 11:43:47.094846 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 11:43:47.095184 [src\main.rs:59] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 11:43:47.102384 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 11:43:47.102731 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 11:43:47.103050 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 11:43:47.103326 [src\ws\ws.rs:10] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 11:43:55.628062 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:58262
+2025-06-20 12:03:17.225997 [src\ws\ws.rs:56] ERROR relay_server::ws::ws:Error forwarding to target: WebSocket protocol error: Sending after closing is not allowed   error:ws://192.168.110.130:16801/gateway/
+2025-06-20 14:25:56.216796 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:55933
+2025-06-20 14:25:59.471134 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection
+2025-06-20 14:26:03.619013 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56044
+2025-06-20 14:26:08.200816 [src\ws\ws.rs:73] ERROR relay_server::ws::ws:Error forwarding to client: Trying to work with closed connection
+2025-06-20 14:26:50.657487 [src\ws\ws.rs:34] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56251
+2025-06-20 14:34:15.433345 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 14:34:15.433949 [src\main.rs:22] INFO  relay_server:初始化server.config完成!
+2025-06-20 14:34:15.435250 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 14:34:15.435648 [src\main.rs:80] INFO  relay_server:启动成功!耗时:3ms
+2025-06-20 14:34:15.444047 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 14:34:15.444327 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 14:34:15.444586 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803
+2025-06-20 14:34:15.444829 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 14:34:22.793549 [src\ws\ws.rs:36] INFO  relay_server::ws::ws:Client WebSocket connected 192.168.110.85:56619
+2025-06-20 17:19:51.079834 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-06-20 17:19:51.080362 [src\main.rs:22] INFO  relay_server:初始化server.config完成!
+2025-06-20 17:19:51.081660 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":8500
+2025-06-20 17:19:51.082002 [src\main.rs:35] INFO  relay_server:启动成功!耗时:4ms
+2025-06-20 17:19:51.097357 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16804
+2025-06-20 17:19:51.097558 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16802
+2025-06-20 17:19:51.097729 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16801
+2025-06-20 17:19:51.097937 [src\ws\ws.rs:12] INFO  relay_server::ws::ws:Ws-Server Listening on port 16803

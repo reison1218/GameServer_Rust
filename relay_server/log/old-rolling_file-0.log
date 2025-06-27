@@ -1,0 +1,1 @@
+2025-06-20 12:03:17.227461 [src\ws\ws.rs:56] ERROR relay_server::ws::ws:Error forwarding to target: WebSocket protocol error: Sending after closing is not allowed   error:ws://192.168.110.130:16801/gateway/
