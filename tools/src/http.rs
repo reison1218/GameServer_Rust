@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+use std::future::Future;
 use super::*;
 use axum::{
     body::Bytes,
@@ -39,7 +39,7 @@ impl Builder {
         let app = axum::Router::new();
         Builder { app }
     }
-
+    
     ///add route for axum server
     pub fn route(mut self, handler: Box<dyn HttpServerHandler>) -> Self {
 
