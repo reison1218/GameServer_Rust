@@ -1,0 +1,1303 @@
+2025-08-12 19:04:57.057572 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-12 19:04:57.057897 [src\main.rs:18] INFO  gg_check:初始化server.config完成!
+2025-08-12 19:04:57.059405 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":16888
+2025-08-12 19:04:57.059676 [src\main.rs:43] INFO  gg_check:启动成功!耗时:5ms
+2025-08-18 15:28:58.748620 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-18 15:28:58.749292 [src\main.rs:22] INFO  gg_check:初始化server.config完成!
+2025-08-18 15:28:58.750642 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-18 15:28:58.750998 [src\main.rs:124] INFO  gg_check:启动成功!耗时:5ms
+2025-08-19 11:00:39.046631 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-19 11:00:39.047346 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-19 11:00:39.048980 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 11:00:39.049185 [src\main.rs:128] INFO  gg_check:启动成功!耗时:5ms
+2025-08-19 16:33:06.239497 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-19 16:33:06.240395 [src\main.rs:26] INFO  gg_check:初始化server.config完成!
+2025-08-19 16:33:06.529724 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 16:33:06.530053 [src\main.rs:156] INFO  gg_check:启动成功!耗时:293ms
+2025-08-19 16:37:23.353387 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-08-19 16:37:23.354331 [src\main.rs:27] INFO  gg_check:初始化server.config完成!
+2025-08-19 16:37:23.500846 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 16:37:23.501136 [src\main.rs:159] INFO  gg_check:启动成功!耗时:151ms
+2025-08-19 16:37:39.166323 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-19 16:37:39.166689 [src\main.rs:27] INFO  gg_check:初始化server.config完成!
+2025-08-19 16:37:39.442385 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 16:37:39.442753 [src\main.rs:159] INFO  gg_check:启动成功!耗时:277ms
+2025-08-19 16:37:43.805321 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-19 16:37:43.805676 [src\main.rs:27] INFO  gg_check:初始化server.config完成!
+2025-08-19 16:37:44.454265 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 16:37:44.455067 [src\main.rs:159] INFO  gg_check:启动成功!耗时:650ms
+2025-08-19 16:49:36.173214 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-19 16:49:36.173700 [src\main.rs:27] INFO  gg_check:初始化server.config完成!
+2025-08-19 16:49:36.485085 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-19 16:49:36.485764 [src\main.rs:159] INFO  gg_check:启动成功!耗时:314ms
+2025-08-20 11:54:14.825916 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 11:54:14.826476 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 11:54:15.516098 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 11:54:15.516386 [src\main.rs:117] INFO  gg_check:启动成功!耗时:693ms
+2025-08-20 16:49:53.169839 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 16:49:53.170478 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 16:49:53.398366 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 16:49:53.398688 [src\main.rs:117] INFO  gg_check:启动成功!耗时:231ms
+2025-08-20 17:01:14.651334 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:01:14.651697 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:01:14.795861 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:01:14.796151 [src\main.rs:117] INFO  gg_check:启动成功!耗时:146ms
+2025-08-20 17:11:51.159665 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:11:51.160035 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:11:56.340519 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:11:56.341104 [src\main.rs:117] INFO  gg_check:启动成功!耗时:5182ms
+2025-08-20 17:12:16.429535 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 17:12:16.430350 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:12:16.707754 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:12:16.707998 [src\main.rs:117] INFO  gg_check:启动成功!耗时:281ms
+2025-08-20 17:13:42.405750 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 17:13:42.406243 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:13:42.638277 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:13:42.638530 [src\main.rs:117] INFO  gg_check:启动成功!耗时:235ms
+2025-08-20 17:14:47.444427 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:14:47.444709 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:14:47.652030 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:14:47.652276 [src\main.rs:117] INFO  gg_check:启动成功!耗时:209ms
+2025-08-20 17:15:54.865413 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 17:15:54.865941 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:15:55.061260 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:15:55.061523 [src\main.rs:117] INFO  gg_check:启动成功!耗时:198ms
+2025-08-20 17:17:16.477646 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:17:16.478170 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:20:50.021604 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:20:50.022071 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:20:50.231601 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:20:50.231807 [src\main.rs:117] INFO  gg_check:启动成功!耗时:212ms
+2025-08-20 17:48:51.822121 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 17:48:51.823049 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:48:52.040382 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:48:52.040689 [src\main.rs:119] INFO  gg_check:启动成功!耗时:220ms
+2025-08-20 17:49:53.242317 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 17:49:53.242926 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 17:49:53.534337 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 17:49:53.534531 [src\main.rs:119] INFO  gg_check:启动成功!耗时:295ms
+2025-08-20 18:01:08.170654 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-08-20 18:01:08.171554 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:01:08.310412 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:01:08.310572 [src\main.rs:118] INFO  gg_check:启动成功!耗时:143ms
+2025-08-20 18:01:21.014327 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-20 18:01:21.015130 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:01:21.150997 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:01:21.151296 [src\main.rs:117] INFO  gg_check:启动成功!耗时:139ms
+2025-08-20 18:02:04.520870 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:02:04.521213 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:02:04.737041 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:02:04.737535 [src\main.rs:117] INFO  gg_check:启动成功!耗时:217ms
+2025-08-20 18:10:01.518703 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:10:01.519333 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:10:01.823063 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:10:01.823432 [src\main.rs:117] INFO  gg_check:启动成功!耗时:306ms
+2025-08-20 18:10:35.620599 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:10:35.621227 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:10:35.842603 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:10:35.842922 [src\main.rs:117] INFO  gg_check:启动成功!耗时:223ms
+2025-08-20 18:12:41.513980 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:12:41.514448 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:13:45.433982 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:13:45.434496 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:13:45.565342 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:13:45.565585 [src\main.rs:117] INFO  gg_check:启动成功!耗时:133ms
+2025-08-20 18:14:26.623139 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-08-20 18:14:26.623949 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:14:26.757981 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:14:26.758248 [src\main.rs:117] INFO  gg_check:启动成功!耗时:138ms
+2025-08-20 18:23:29.383280 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:23:29.383788 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:23:29.515291 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:23:29.515614 [src\main.rs:117] INFO  gg_check:启动成功!耗时:134ms
+2025-08-20 18:23:39.335498 [src\http\check_pay.rs:97] ERROR gg_check::http::check_pay:Invalid purchase state
+
+Stack backtrace:
+   0: std::backtrace_rs::backtrace::win64::trace
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1: std::backtrace_rs::backtrace::trace_unsynchronized
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2: std::backtrace::Backtrace::create
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:331
+   3: std::backtrace::Backtrace::capture
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:296
+   4: anyhow::Error::msg<ref$<str$> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\backtrace.rs:27
+   5: anyhow::__private::format_err
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\lib.rs:695
+   6: gg_check::check::pay::validate_purchase_response
+             at .\src\check\pay.rs:204
+   7: gg_check::http::check_pay::impl$0::do_get::closure$0::async_block$0
+             at .\src\http\check_pay.rs:57
+   8: tokio::runtime::park::impl$4::block_on::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+   9: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  10: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  11: tokio::runtime::park::CachedParkThread::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+  12: tokio::runtime::context::blocking::BlockingRegionGuard::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\blocking.rs:66
+  13: tokio::runtime::handle::impl$0::block_on_inner::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:327
+  14: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::handle::impl$0::block_on_inner::closure_env$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >,enum2$<core::result::Result<gg_check::check::pay::GooglePurchase
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  15: tokio::runtime::handle::Handle::block_on_inner<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:326
+  16: tokio::runtime::handle::Handle::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:305
+  17: gg_check::http::check_pay::impl$0::do_get::closure$0
+             at .\src\http\check_pay.rs:34
+  18: tokio::runtime::context::runtime_mt::exit_runtime<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime_mt.rs:35
+  19: tokio::runtime::scheduler::multi_thread::worker::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:448
+  20: tokio::runtime::scheduler::block_in_place::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\block_in_place.rs:8
+  21: tokio::task::blocking::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\blocking.rs:78
+  22: gg_check::http::check_pay::impl$0::do_get
+             at .\src\http\check_pay.rs:33
+  23: tools::http::impl$0::route::closure$1::async_block$0
+             at D:\rust_work\GameServer_Rust\tools\src\http.rs:101
+  24: axum::handler::impl$7::call::async_block$0<tools::http::impl$0::route::closure_env$1,enum2$<tools::http::impl$0::route::closure$1::async_block_env$0>,tuple$<>,hyper::body::body::Body,tuple$<http::status::StatusCode,http::header::map::HeaderMap<http::header
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\handler\mod.rs:248
+  25: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::Send>,alloc::allo
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  26: futures_util::future::future::map::impl$2::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  27: futures_util::future::future::impl$15::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::m
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  28: axum::handler::future::impl$4::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::S
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\macros.rs:42
+  29: futures_core::future::impl$2::try_poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,ax
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-core-0.3.31\src\future.rs:92
+  30: futures_util::future::try_future::into_future::impl$2::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<b
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\try_future\into_future.rs:34
+  31: futures_util::future::future::map::impl$2::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<htt
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  32: futures_util::future::future::impl$15::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_bo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  33: futures_util::future::try_future::impl$56::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  34: tower::util::map_response::impl$10::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\macros.rs:38
+  35: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,enum2$<core::result::Result<http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  36: tower::util::oneshot::impl$3::poll<tower::util::boxed_clone::BoxCloneService<http::request::Request<hyper::body::body::Body>,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<core
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\util\oneshot.rs:97
+  37: axum::routing::route::impl$5::poll<hyper::body::body::Body,enum2$<core::convert::Infallible> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\routing\route.rs:161
+  38: hyper::proto::h1::dispatch::impl$6::poll_msg<axum::routing::Router<tuple$<>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:502
+  39: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:303
+  40: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:164
+  41: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:140
+  42: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:119
+  43: hyper::proto::h1::dispatch::impl$1::poll<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:435
+  44: hyper::server::conn::impl$8::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::common::exec::E
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1006
+  45: hyper::server::conn::upgrades::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::commo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1066
+  46: hyper::server::server::new_svc::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<tuple$<>,hyper::body::body::Bod
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\server.rs:792
+  47: tokio::runtime::task::core::impl$6::poll::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  48: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  49: tokio::runtime::task::core::Core<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  50: tokio::runtime::task::harness::poll_future::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,a
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  51: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_mak
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  52: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_servi
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  53: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::impl$2::complete::closure_env$0<hyper::proto::h2::server::H2Stream<axum::routing::route::RouteFuture<hyper::body::body::Body,enum2$<core::convert::Infallible
+  54: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  55: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeS
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  56: tokio::runtime::task::harness::poll_future<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routin
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  57: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  58: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  59: tokio::runtime::task::raw::poll<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<t
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  60: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  61: tokio::runtime::task::LocalNotified<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >::run<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:509
+  62: tokio::runtime::scheduler::multi_thread::worker::impl$1::run_task::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:600
+  63: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  64: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  65: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:591
+  66: tokio::runtime::scheduler::multi_thread::worker::Context::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:539
+  67: tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:504
+  68: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\scoped.rs:40
+  69: tokio::runtime::context::set_scheduler::closure$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  70: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:315
+  71: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:279
+  72: tokio::runtime::context::set_scheduler<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  73: tokio::runtime::scheduler::multi_thread::worker::run::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:499
+  74: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::multi_thread::worker::run::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  75: tokio::runtime::scheduler::multi_thread::worker::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:491
+  76: tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:457
+  77: tokio::runtime::blocking::task::impl$2::poll<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\task.rs:42
+  78: tokio::runtime::task::core::impl$6::poll::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  79: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0> > > >::with_mut
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  80: tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::Blocki
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  81: tokio::runtime::task::harness::poll_future::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  82: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  83: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  84: tokio::util::trace::caller_location
+  85: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  86: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  87: tokio::runtime::task::harness::poll_future<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  88: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll_inner<tokio::runtime::blocking::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  89: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  90: tokio::runtime::task::raw::poll<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  91: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  92: tokio::runtime::task::UnownedTask<tokio::runtime::blocking::schedule::BlockingSchedule>::run<tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:546
+  93: tokio::runtime::blocking::pool::Task::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:161
+  94: tokio::runtime::blocking::pool::Inner::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:516
+  95: tokio::runtime::blocking::pool::impl$6::spawn_thread::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:474
+  96: core::hint::black_box
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\hint.rs:482
+  97: std::sys::backtrace::__rust_begin_short_backtrace<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\backtrace.rs:152
+  98: std::thread::impl$0::spawn_unchecked_::closure$1::closure$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:559
+  99: core::panic::unwind_safe::impl$25::call_once<tuple$<>,std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+ 100: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+ 101: tokio::time::error::impl$5::fmt
+ 102: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+ 103: std::panic::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+ 104: std::thread::impl$0::spawn_unchecked_::closure$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:557
+ 105: core::ops::function::FnOnce::call_once<std::thread::impl$0::spawn_unchecked_::closure_env$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\function.rs:250
+ 106: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 107: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 108: std::sys::pal::windows::thread::impl$0::new::thread_start
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\sys\pal\windows\thread.rs:60
+ 109: BaseThreadInitThunk
+ 110: RtlUserThreadStart
+2025-08-20 18:25:42.071647 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:25:42.072111 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:25:42.284831 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:25:42.285019 [src\main.rs:117] INFO  gg_check:启动成功!耗时:215ms
+2025-08-20 18:25:49.704776 [src\http\check_pay.rs:96] ERROR gg_check::http::check_pay:dddddddddddddddddddddddddddddddd:Invalid purchase state
+
+Stack backtrace:
+   0: std::backtrace_rs::backtrace::win64::trace
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1: std::backtrace_rs::backtrace::trace_unsynchronized
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2: std::backtrace::Backtrace::create
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:331
+   3: std::backtrace::Backtrace::capture
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:296
+   4: anyhow::Error::msg<ref$<str$> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\backtrace.rs:27
+   5: anyhow::__private::format_err
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\lib.rs:695
+   6: gg_check::check::pay::validate_purchase_response
+             at .\src\check\pay.rs:204
+   7: gg_check::http::check_pay::impl$0::do_get::closure$0::async_block$0
+             at .\src\http\check_pay.rs:57
+   8: tokio::runtime::park::impl$4::block_on::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+   9: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  10: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  11: tokio::runtime::park::CachedParkThread::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+  12: tokio::runtime::context::blocking::BlockingRegionGuard::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\blocking.rs:66
+  13: tokio::runtime::handle::impl$0::block_on_inner::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:327
+  14: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::handle::impl$0::block_on_inner::closure_env$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >,enum2$<core::result::Result<gg_check::check::pay::GooglePurchase
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  15: tokio::runtime::handle::Handle::block_on_inner<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:326
+  16: tokio::runtime::handle::Handle::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:305
+  17: gg_check::http::check_pay::impl$0::do_get::closure$0
+             at .\src\http\check_pay.rs:34
+  18: tokio::runtime::context::runtime_mt::exit_runtime<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime_mt.rs:35
+  19: tokio::runtime::scheduler::multi_thread::worker::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:448
+  20: tokio::runtime::scheduler::block_in_place::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\block_in_place.rs:8
+  21: tokio::task::blocking::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\blocking.rs:78
+  22: gg_check::http::check_pay::impl$0::do_get
+             at .\src\http\check_pay.rs:33
+  23: tools::http::impl$0::route::closure$1::async_block$0
+             at D:\rust_work\GameServer_Rust\tools\src\http.rs:101
+  24: axum::handler::impl$7::call::async_block$0<tools::http::impl$0::route::closure_env$1,enum2$<tools::http::impl$0::route::closure$1::async_block_env$0>,tuple$<>,hyper::body::body::Body,tuple$<http::status::StatusCode,http::header::map::HeaderMap<http::header
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\handler\mod.rs:248
+  25: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::Send>,alloc::allo
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  26: futures_util::future::future::map::impl$2::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  27: futures_util::future::future::impl$15::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::m
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  28: axum::handler::future::impl$4::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::S
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\macros.rs:42
+  29: futures_core::future::impl$2::try_poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,ax
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-core-0.3.31\src\future.rs:92
+  30: futures_util::future::try_future::into_future::impl$2::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<b
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\try_future\into_future.rs:34
+  31: futures_util::future::future::map::impl$2::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<htt
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  32: futures_util::future::future::impl$15::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_bo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  33: futures_util::future::try_future::impl$56::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  34: tower::util::map_response::impl$10::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\macros.rs:38
+  35: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,enum2$<core::result::Result<http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  36: tower::util::oneshot::impl$3::poll<tower::util::boxed_clone::BoxCloneService<http::request::Request<hyper::body::body::Body>,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<core
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\util\oneshot.rs:97
+  37: axum::routing::route::impl$5::poll<hyper::body::body::Body,enum2$<core::convert::Infallible> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\routing\route.rs:161
+  38: hyper::proto::h1::dispatch::impl$6::poll_msg<axum::routing::Router<tuple$<>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:502
+  39: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:303
+  40: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:164
+  41: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:140
+  42: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:119
+  43: hyper::proto::h1::dispatch::impl$1::poll<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:435
+  44: hyper::server::conn::impl$8::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::common::exec::E
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1006
+  45: hyper::server::conn::upgrades::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::commo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1066
+  46: hyper::server::server::new_svc::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<tuple$<>,hyper::body::body::Bod
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\server.rs:792
+  47: tokio::runtime::task::core::impl$6::poll::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  48: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  49: tokio::runtime::task::core::Core<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  50: tokio::runtime::task::harness::poll_future::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,a
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  51: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_mak
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  52: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_servi
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  53: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::impl$2::complete::closure_env$0<hyper::proto::h2::server::H2Stream<axum::routing::route::RouteFuture<hyper::body::body::Body,enum2$<core::convert::Infallible
+  54: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  55: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeS
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  56: tokio::runtime::task::harness::poll_future<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routin
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  57: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  58: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  59: tokio::runtime::task::raw::poll<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<t
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  60: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  61: tokio::runtime::task::LocalNotified<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >::run<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:509
+  62: tokio::runtime::scheduler::multi_thread::worker::impl$1::run_task::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:600
+  63: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  64: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  65: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:591
+  66: tokio::runtime::scheduler::multi_thread::worker::Context::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:539
+  67: tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:504
+  68: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\scoped.rs:40
+  69: tokio::runtime::context::set_scheduler::closure$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  70: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:315
+  71: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:279
+  72: tokio::runtime::context::set_scheduler<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  73: tokio::runtime::scheduler::multi_thread::worker::run::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:499
+  74: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::multi_thread::worker::run::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  75: tokio::runtime::scheduler::multi_thread::worker::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:491
+  76: tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:457
+  77: tokio::runtime::blocking::task::impl$2::poll<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\task.rs:42
+  78: tokio::runtime::task::core::impl$6::poll::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  79: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0> > > >::with_mut
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  80: tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::Blocki
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  81: tokio::runtime::task::harness::poll_future::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  82: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  83: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  84: tokio::util::trace::caller_location
+  85: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  86: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  87: tokio::runtime::task::harness::poll_future<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  88: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll_inner<tokio::runtime::blocking::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  89: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  90: tokio::runtime::task::raw::poll<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  91: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  92: tokio::runtime::task::UnownedTask<tokio::runtime::blocking::schedule::BlockingSchedule>::run<tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:546
+  93: tokio::runtime::blocking::pool::Task::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:161
+  94: tokio::runtime::blocking::pool::Inner::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:516
+  95: tokio::runtime::blocking::pool::impl$6::spawn_thread::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:474
+  96: core::hint::black_box
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\hint.rs:482
+  97: std::sys::backtrace::__rust_begin_short_backtrace<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\backtrace.rs:152
+  98: std::thread::impl$0::spawn_unchecked_::closure$1::closure$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:559
+  99: core::panic::unwind_safe::impl$25::call_once<tuple$<>,std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+ 100: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+ 101: tokio::time::error::impl$5::fmt
+ 102: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+ 103: std::panic::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+ 104: std::thread::impl$0::spawn_unchecked_::closure$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:557
+ 105: core::ops::function::FnOnce::call_once<std::thread::impl$0::spawn_unchecked_::closure_env$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\function.rs:250
+ 106: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 107: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 108: std::sys::pal::windows::thread::impl$0::new::thread_start
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\sys\pal\windows\thread.rs:60
+ 109: BaseThreadInitThunk
+ 110: RtlUserThreadStart
+2025-08-20 18:44:33.323567 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-20 18:44:33.324351 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-20 18:44:33.948706 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-20 18:44:33.948960 [src\main.rs:122] INFO  gg_check:启动成功!耗时:627ms
+2025-08-20 18:44:44.441775 [src\http\check_pay.rs:66] ERROR gg_check::http::check_pay:Invalid purchase state
+
+Stack backtrace:
+   0: std::backtrace_rs::backtrace::win64::trace
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1: std::backtrace_rs::backtrace::trace_unsynchronized
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2: std::backtrace::Backtrace::create
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:331
+   3: std::backtrace::Backtrace::capture
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:296
+   4: anyhow::Error::msg<ref$<str$> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\backtrace.rs:27
+   5: anyhow::__private::format_err
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\lib.rs:695
+   6: gg_check::check::pay::validate_purchase_response
+             at .\src\check\pay.rs:204
+   7: gg_check::http::check_pay::impl$0::do_get::closure$0::async_block$0
+             at .\src\http\check_pay.rs:57
+   8: tokio::runtime::park::impl$4::block_on::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+   9: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  10: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  11: tokio::runtime::park::CachedParkThread::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+  12: tokio::runtime::context::blocking::BlockingRegionGuard::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\blocking.rs:66
+  13: tokio::runtime::handle::impl$0::block_on_inner::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:327
+  14: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::handle::impl$0::block_on_inner::closure_env$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >,enum2$<core::result::Result<gg_check::check::pay::GooglePurchase
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  15: tokio::runtime::handle::Handle::block_on_inner<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:326
+  16: tokio::runtime::handle::Handle::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:305
+  17: gg_check::http::check_pay::impl$0::do_get::closure$0
+             at .\src\http\check_pay.rs:34
+  18: tokio::runtime::context::runtime_mt::exit_runtime<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime_mt.rs:35
+  19: tokio::runtime::scheduler::multi_thread::worker::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:448
+  20: tokio::runtime::scheduler::block_in_place::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\block_in_place.rs:8
+  21: tokio::task::blocking::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\blocking.rs:78
+  22: gg_check::http::check_pay::impl$0::do_get
+             at .\src\http\check_pay.rs:33
+  23: tools::http::impl$0::route::closure$1::async_block$0
+             at D:\rust_work\GameServer_Rust\tools\src\http.rs:101
+  24: axum::handler::impl$7::call::async_block$0<tools::http::impl$0::route::closure_env$1,enum2$<tools::http::impl$0::route::closure$1::async_block_env$0>,tuple$<>,hyper::body::body::Body,tuple$<http::status::StatusCode,http::header::map::HeaderMap<http::header
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\handler\mod.rs:248
+  25: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::Send>,alloc::allo
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  26: futures_util::future::future::map::impl$2::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  27: futures_util::future::future::impl$15::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::m
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  28: axum::handler::future::impl$4::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::S
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\macros.rs:42
+  29: futures_core::future::impl$2::try_poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,ax
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-core-0.3.31\src\future.rs:92
+  30: futures_util::future::try_future::into_future::impl$2::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<b
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\try_future\into_future.rs:34
+  31: futures_util::future::future::map::impl$2::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<htt
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  32: futures_util::future::future::impl$15::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_bo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  33: futures_util::future::try_future::impl$56::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  34: tower::util::map_response::impl$10::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\macros.rs:38
+  35: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,enum2$<core::result::Result<http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  36: tower::util::oneshot::impl$3::poll<tower::util::boxed_clone::BoxCloneService<http::request::Request<hyper::body::body::Body>,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<core
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\util\oneshot.rs:97
+  37: axum::routing::route::impl$5::poll<hyper::body::body::Body,enum2$<core::convert::Infallible> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\routing\route.rs:161
+  38: hyper::proto::h1::dispatch::impl$6::poll_msg<axum::routing::Router<tuple$<>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:502
+  39: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:303
+  40: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:164
+  41: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:140
+  42: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:119
+  43: hyper::proto::h1::dispatch::impl$1::poll<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:435
+  44: hyper::server::conn::impl$8::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::common::exec::E
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1006
+  45: hyper::server::conn::upgrades::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::commo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1066
+  46: hyper::server::server::new_svc::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<tuple$<>,hyper::body::body::Bod
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\server.rs:792
+  47: tokio::runtime::task::core::impl$6::poll::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  48: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  49: tokio::runtime::task::core::Core<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  50: tokio::runtime::task::harness::poll_future::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,a
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  51: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_mak
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  52: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_servi
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  53: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::impl$2::complete::closure_env$0<hyper::proto::h2::server::H2Stream<axum::routing::route::RouteFuture<hyper::body::body::Body,enum2$<core::convert::Infallible
+  54: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  55: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeS
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  56: tokio::runtime::task::harness::poll_future<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routin
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  57: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  58: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  59: tokio::runtime::task::raw::poll<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<t
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  60: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  61: tokio::runtime::task::LocalNotified<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >::run<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:509
+  62: tokio::runtime::scheduler::multi_thread::worker::impl$1::run_task::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:600
+  63: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  64: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  65: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:591
+  66: tokio::runtime::scheduler::multi_thread::worker::Context::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:539
+  67: tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:504
+  68: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\scoped.rs:40
+  69: tokio::runtime::context::set_scheduler::closure$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  70: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:315
+  71: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:279
+  72: tokio::runtime::context::set_scheduler<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  73: tokio::runtime::scheduler::multi_thread::worker::run::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:499
+  74: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::multi_thread::worker::run::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  75: tokio::runtime::scheduler::multi_thread::worker::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:491
+  76: tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:457
+  77: tokio::runtime::blocking::task::impl$2::poll<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\task.rs:42
+  78: tokio::runtime::task::core::impl$6::poll::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  79: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0> > > >::with_mut
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  80: tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::Blocki
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  81: tokio::runtime::task::harness::poll_future::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  82: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  83: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  84: tokio::util::trace::caller_location
+  85: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  86: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  87: tokio::runtime::task::harness::poll_future<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  88: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll_inner<tokio::runtime::blocking::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  89: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  90: tokio::runtime::task::raw::poll<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  91: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  92: tokio::runtime::task::UnownedTask<tokio::runtime::blocking::schedule::BlockingSchedule>::run<tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:546
+  93: tokio::runtime::blocking::pool::Task::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:161
+  94: tokio::runtime::blocking::pool::Inner::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:516
+  95: tokio::runtime::blocking::pool::impl$6::spawn_thread::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:474
+  96: core::hint::black_box
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\hint.rs:482
+  97: std::sys::backtrace::__rust_begin_short_backtrace<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\backtrace.rs:152
+  98: std::thread::impl$0::spawn_unchecked_::closure$1::closure$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:559
+  99: core::panic::unwind_safe::impl$25::call_once<tuple$<>,std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+ 100: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+ 101: tokio::time::error::impl$5::fmt
+ 102: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+ 103: std::panic::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+ 104: std::thread::impl$0::spawn_unchecked_::closure$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:557
+ 105: core::ops::function::FnOnce::call_once<std::thread::impl$0::spawn_unchecked_::closure_env$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\function.rs:250
+ 106: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 107: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 108: std::sys::pal::windows::thread::impl$0::new::thread_start
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\sys\pal\windows\thread.rs:60
+ 109: BaseThreadInitThunk
+ 110: RtlUserThreadStart
+2025-08-21 14:23:16.651605 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:3ms
+2025-08-21 14:23:16.652352 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-21 14:23:17.342188 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-21 14:23:17.342510 [src\main.rs:121] INFO  gg_check:启动成功!耗时:694ms
+2025-08-21 16:03:07.502017 [src\http\check_login.rs:31] ERROR gg_check::http::check_login:Google API returned error: 400 Bad Request
+
+Stack backtrace:
+   0: std::backtrace_rs::backtrace::win64::trace
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1: std::backtrace_rs::backtrace::trace_unsynchronized
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2: std::backtrace::Backtrace::create
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:331
+   3: std::backtrace::Backtrace::capture
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:296
+   4: anyhow::Error::msg<alloc::string::String>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\backtrace.rs:27
+   5: gg_check::check::login::verify_google_id_token::async_fn$0
+             at .\src\check\login.rs:64
+   6: gg_check::http::check_login::impl$0::do_get::closure$0::async_block$0
+             at .\src\http\check_login.rs:26
+   7: tokio::runtime::park::impl$4::block_on::closure$0<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+   8: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+   9: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  10: tokio::runtime::park::CachedParkThread::block_on<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+  11: tokio::runtime::context::blocking::BlockingRegionGuard::block_on<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\blocking.rs:66
+  12: tokio::runtime::handle::impl$0::block_on_inner::closure$0<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:327
+  13: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::handle::impl$0::block_on_inner::closure_env$0<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >,enum2$<core::result::Result<gg_check::check::login::GoogleUser
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  14: tokio::runtime::handle::Handle::block_on_inner<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:326
+  15: tokio::runtime::handle::Handle::block_on<enum2$<gg_check::http::check_login::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:305
+  16: gg_check::http::check_login::impl$0::do_get::closure$0
+             at .\src\http\check_login.rs:25
+  17: tokio::runtime::context::runtime_mt::exit_runtime<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUserTokenInfo,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime_mt.rs:35
+  18: tokio::runtime::scheduler::multi_thread::worker::block_in_place<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUserTokenInfo,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:448
+  19: tokio::runtime::scheduler::block_in_place::block_in_place<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUserTokenInfo,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\block_in_place.rs:8
+  20: tokio::task::blocking::block_in_place<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUserTokenInfo,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\blocking.rs:78
+  21: gg_check::http::check_login::impl$0::do_get
+             at .\src\http\check_login.rs:24
+  22: tools::http::impl$0::route::closure$1::async_block$0
+             at D:\rust_work\GameServer_Rust\tools\src\http.rs:101
+  23: axum::handler::impl$7::call::async_block$0<tools::http::impl$0::route::closure_env$1,enum2$<tools::http::impl$0::route::closure$1::async_block_env$0>,tuple$<>,hyper::body::body::Body,tuple$<http::status::StatusCode,http::header::map::HeaderMap<http::header
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\handler\mod.rs:248
+  24: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::Send>,alloc::allo
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  25: futures_util::future::future::map::impl$2::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  26: futures_util::future::future::impl$15::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::m
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  27: axum::handler::future::impl$4::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::S
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\macros.rs:42
+  28: futures_core::future::impl$2::try_poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,ax
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-core-0.3.31\src\future.rs:92
+  29: futures_util::future::try_future::into_future::impl$2::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<b
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\try_future\into_future.rs:34
+  30: futures_util::future::future::map::impl$2::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<htt
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  31: futures_util::future::future::impl$15::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_bo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  32: futures_util::future::try_future::impl$56::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  33: tower::util::map_response::impl$10::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\macros.rs:38
+  34: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,enum2$<core::result::Result<http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  35: tower::util::oneshot::impl$3::poll<tower::util::boxed_clone::BoxCloneService<http::request::Request<hyper::body::body::Body>,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<core
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\util\oneshot.rs:97
+  36: axum::routing::route::impl$5::poll<hyper::body::body::Body,enum2$<core::convert::Infallible> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\routing\route.rs:161
+  37: hyper::proto::h1::dispatch::impl$6::poll_msg<axum::routing::Router<tuple$<>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:502
+  38: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:303
+  39: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:164
+  40: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:140
+  41: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:119
+  42: hyper::proto::h1::dispatch::impl$1::poll<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:435
+  43: hyper::server::conn::impl$8::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::common::exec::E
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1006
+  44: hyper::server::conn::upgrades::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::commo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1066
+  45: hyper::server::server::new_svc::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<tuple$<>,hyper::body::body::Bod
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\server.rs:792
+  46: tokio::runtime::task::core::impl$6::poll::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  47: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  48: tokio::runtime::task::core::Core<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  49: tokio::runtime::task::harness::poll_future::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,a
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  50: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_mak
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  51: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_servi
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  52: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::impl$2::complete::closure_env$0<hyper::proto::h2::server::H2Stream<axum::routing::route::RouteFuture<hyper::body::body::Body,enum2$<core::convert::Infallible
+  53: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  54: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeS
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  55: tokio::runtime::task::harness::poll_future<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routin
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  56: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  57: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  58: tokio::runtime::task::raw::poll<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<t
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  59: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  60: tokio::runtime::task::LocalNotified<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >::run<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:509
+  61: tokio::runtime::scheduler::multi_thread::worker::impl$1::run_task::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:600
+  62: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  63: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  64: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:591
+  65: tokio::runtime::scheduler::multi_thread::worker::Context::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:539
+  66: tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:504
+  67: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\scoped.rs:40
+  68: tokio::runtime::context::set_scheduler::closure$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  69: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:315
+  70: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:279
+  71: tokio::runtime::context::set_scheduler<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  72: tokio::runtime::scheduler::multi_thread::worker::run::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:499
+  73: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::multi_thread::worker::run::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  74: tokio::runtime::scheduler::multi_thread::worker::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:491
+  75: tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:457
+  76: tokio::runtime::blocking::task::impl$2::poll<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\task.rs:42
+  77: tokio::runtime::task::core::impl$6::poll::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  78: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0> > > >::with_mut
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  79: tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::Blocki
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  80: tokio::runtime::task::harness::poll_future::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  81: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  82: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  83: tokio::util::trace::caller_location
+  84: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  85: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  86: tokio::runtime::task::harness::poll_future<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  87: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll_inner<tokio::runtime::blocking::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  88: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>::poll<tokio::runtime::blocking::task::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  89: tokio::runtime::task::raw::poll<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::impl$0::launch::closure_env$0>,tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  90: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  91: tokio::runtime::task::UnownedTask<tokio::runtime::blocking::schedule::BlockingSchedule>::run<tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:546
+  92: tokio::runtime::blocking::pool::Task::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:161
+  93: tokio::runtime::blocking::pool::Inner::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:516
+  94: tokio::runtime::blocking::pool::impl$6::spawn_thread::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:474
+  95: core::hint::black_box
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\hint.rs:482
+  96: std::sys::backtrace::__rust_begin_short_backtrace<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\backtrace.rs:152
+  97: std::thread::impl$0::spawn_unchecked_::closure$1::closure$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:559
+  98: core::panic::unwind_safe::impl$25::call_once<tuple$<>,std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  99: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+ 100: tokio::time::error::impl$5::fmt
+ 101: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+ 102: std::panic::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+ 103: std::thread::impl$0::spawn_unchecked_::closure$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:557
+ 104: core::ops::function::FnOnce::call_once<std::thread::impl$0::spawn_unchecked_::closure_env$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\function.rs:250
+ 105: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 106: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 107: std::sys::pal::windows::thread::impl$0::new::thread_start
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\sys\pal\windows\thread.rs:60
+ 108: BaseThreadInitThunk
+ 109: RtlUserThreadStart
+2025-08-21 17:10:34.220410 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-21 17:10:34.220970 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-21 17:10:34.431797 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-21 17:10:34.432089 [src\main.rs:121] INFO  gg_check:启动成功!耗时:214ms
+2025-08-21 17:16:54.297968 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-21 17:16:54.298440 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-21 17:16:54.596901 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-21 17:16:54.597176 [src\main.rs:121] INFO  gg_check:启动成功!耗时:301ms
+2025-08-21 18:11:46.603343 [src\http\check_pay.rs:66] ERROR gg_check::http::check_pay:Invalid purchase state
+
+Stack backtrace:
+   0: std::backtrace_rs::backtrace::win64::trace
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\win64.rs:85
+   1: std::backtrace_rs::backtrace::trace_unsynchronized
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\..\..\backtrace\src\backtrace\mod.rs:66
+   2: std::backtrace::Backtrace::create
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:331
+   3: std::backtrace::Backtrace::capture
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\backtrace.rs:296
+   4: anyhow::Error::msg<ref$<str$> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\backtrace.rs:27
+   5: anyhow::__private::format_err
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anyhow-1.0.99\src\lib.rs:695
+   6: gg_check::check::pay::validate_purchase_response
+             at .\src\check\pay.rs:204
+   7: gg_check::http::check_pay::impl$0::do_get::closure$0::async_block$0
+             at .\src\http\check_pay.rs:57
+   8: tokio::runtime::park::impl$4::block_on::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+   9: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  10: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  11: tokio::runtime::park::CachedParkThread::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\park.rs:285
+  12: tokio::runtime::context::blocking::BlockingRegionGuard::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\blocking.rs:66
+  13: tokio::runtime::handle::impl$0::block_on_inner::closure$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:327
+  14: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::handle::impl$0::block_on_inner::closure_env$0<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >,enum2$<core::result::Result<gg_check::check::pay::GooglePurchase
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  15: tokio::runtime::handle::Handle::block_on_inner<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:326
+  16: tokio::runtime::handle::Handle::block_on<enum2$<gg_check::http::check_pay::impl$0::do_get::closure$0::async_block_env$0> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\handle.rs:305
+  17: gg_check::http::check_pay::impl$0::do_get::closure$0
+             at .\src\http\check_pay.rs:34
+  18: tokio::runtime::context::runtime_mt::exit_runtime<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime_mt.rs:35
+  19: tokio::runtime::scheduler::multi_thread::worker::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:448
+  20: tokio::runtime::scheduler::block_in_place::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\block_in_place.rs:8
+  21: tokio::task::blocking::block_in_place<gg_check::http::check_pay::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::pay::GooglePurchaseResponse,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\blocking.rs:78
+  22: gg_check::http::check_pay::impl$0::do_get
+             at .\src\http\check_pay.rs:33
+  23: tools::http::impl$0::route::closure$1::async_block$0
+             at D:\rust_work\GameServer_Rust\tools\src\http.rs:101
+  24: axum::handler::impl$7::call::async_block$0<tools::http::impl$0::route::closure_env$1,enum2$<tools::http::impl$0::route::closure$1::async_block_env$0>,tuple$<>,hyper::body::body::Body,tuple$<http::status::StatusCode,http::header::map::HeaderMap<http::header
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\handler\mod.rs:248
+  25: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::Send>,alloc::allo
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  26: futures_util::future::future::map::impl$2::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  27: futures_util::future::future::impl$15::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::m
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  28: axum::handler::future::impl$4::poll<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> > > >,core::marker::S
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\macros.rs:42
+  29: futures_core::future::impl$2::try_poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,ax
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-core-0.3.31\src\future.rs:92
+  30: futures_util::future::try_future::into_future::impl$2::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<b
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\try_future\into_future.rs:34
+  31: futures_util::future::future::map::impl$2::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<htt
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\future\future\map.rs:55
+  32: futures_util::future::future::impl$15::poll<futures_util::future::try_future::into_future::IntoFuture<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_bo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  33: futures_util::future::try_future::impl$56::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\futures-util-0.3.31\src\lib.rs:86
+  34: tower::util::map_response::impl$10::poll<axum::handler::future::IntoServiceFuture<core::pin::Pin<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\macros.rs:38
+  35: core::future::future::impl$1::poll<alloc::boxed::Box<dyn$<core::future::future::Future<assoc$<Output,enum2$<core::result::Result<http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\future\future.rs:124
+  36: tower::util::oneshot::impl$3::poll<tower::util::boxed_clone::BoxCloneService<http::request::Request<hyper::body::body::Body>,http::response::Response<http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >,enum2$<core
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tower-0.4.13\src\util\oneshot.rs:97
+  37: axum::routing::route::impl$5::poll<hyper::body::body::Body,enum2$<core::convert::Infallible> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\axum-0.6.20\src\routing\route.rs:161
+  38: hyper::proto::h1::dispatch::impl$6::poll_msg<axum::routing::Router<tuple$<>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:502
+  39: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:303
+  40: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:164
+  41: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:140
+  42: hyper::proto::h1::dispatch::Dispatcher<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper::s
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:119
+  43: hyper::proto::h1::dispatch::impl$1::poll<hyper::proto::h1::dispatch::Server<axum::routing::Router<tuple$<>,hyper::body::body::Body>,hyper::body::body::Body>,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,hyper:
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\proto\h1\dispatch.rs:435
+  44: hyper::server::conn::impl$8::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::common::exec::E
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1006
+  45: hyper::server::conn::upgrades::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,http_body::combinators::box_body::UnsyncBoxBody<bytes::bytes::Bytes,axum_core::error::Error>,axum::routing::Router<tuple$<>,hyper::body::body::Body>,enum2$<hyper::commo
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\conn.rs:1066
+  46: hyper::server::server::new_svc::impl$1::poll<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<tuple$<>,hyper::body::body::Bod
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-0.14.32\src\server\server.rs:792
+  47: tokio::runtime::task::core::impl$6::poll::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  48: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  49: tokio::runtime::task::core::Core<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  50: tokio::runtime::task::harness::poll_future::closure$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,a
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  51: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_mak
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  52: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_servi
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  53: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::impl$2::complete::closure_env$0<hyper::proto::h2::server::H2Stream<axum::routing::route::RouteFuture<hyper::body::body::Body,enum2$<core::convert::Infallible
+  54: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  55: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeS
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  56: tokio::runtime::task::harness::poll_future<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routin
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  57: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  58: tokio::runtime::task::harness::Harness<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::R
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  59: tokio::runtime::task::raw::poll<hyper::server::server::new_svc::NewSvcTask<hyper::server::tcp::addr_stream::AddrStream,axum::routing::into_make_service::IntoMakeServiceFuture<axum::routing::Router<tuple$<>,hyper::body::body::Body> >,axum::routing::Router<t
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  60: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  61: tokio::runtime::task::LocalNotified<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >::run<alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle,alloc::alloc::Global> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:509
+  62: tokio::runtime::scheduler::multi_thread::worker::impl$1::run_task::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:600
+  63: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:167
+  64: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\task\coop\mod.rs:133
+  65: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:591
+  66: tokio::runtime::scheduler::multi_thread::worker::Context::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:539
+  67: tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:504
+  68: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\scoped.rs:40
+  69: tokio::runtime::context::set_scheduler::closure$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  70: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:315
+  71: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\local.rs:279
+  72: tokio::runtime::context::set_scheduler<tuple$<>,tokio::runtime::scheduler::multi_thread::worker::run::closure$0::closure_env$0>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context.rs:176
+  73: tokio::runtime::scheduler::multi_thread::worker::run::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:499
+  74: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::multi_thread::worker::run::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\context\runtime.rs:65
+  75: tokio::runtime::scheduler::multi_thread::worker::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:491
+  76: tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUserTokenInfo,anyhow::Error> > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\scheduler\multi_thread\worker.rs:432
+  77: tokio::runtime::blocking::task::impl$2::poll<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg_check::check::login::GoogleUser
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\task.rs:42
+  78: tokio::runtime::task::core::impl$6::poll::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<cor
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:365
+  79: tokio::loom::std::unsafe_cell::UnsafeCell<enum2$<tokio::runtime::task::core::Stage<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::d
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\loom\std\unsafe_cell.rs:16
+  80: tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<g
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\core.rs:354
+  81: tokio::runtime::task::harness::poll_future::closure$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<c
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:535
+  82: core::panic::unwind_safe::impl$25::call_once<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+  83: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+  84: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_e
+  85: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+  86: std::panic::catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<tokio::runtime::task::harness::poll_future::closure_env$0<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_e
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+  87: tokio::runtime::task::harness::poll_future<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:523
+  88: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Re
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:210
+  89: tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Re
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\harness.rs:155
+  90: tokio::runtime::task::raw::poll<tokio::runtime::blocking::task::BlockingTask<tokio::runtime::scheduler::multi_thread::worker::block_in_place::closure$0::closure_env$0<gg_check::http::check_login::impl$0::do_get::closure_env$0,enum2$<core::result::Result<gg
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:325
+  91: tokio::runtime::task::raw::RawTask::poll
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\raw.rs:255
+  92: tokio::runtime::task::UnownedTask<tokio::runtime::blocking::schedule::BlockingSchedule>::run<tokio::runtime::blocking::schedule::BlockingSchedule>
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\task\mod.rs:546
+  93: tokio::runtime::blocking::pool::Task::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:161
+  94: tokio::runtime::blocking::pool::Inner::run
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:516
+  95: tokio::runtime::blocking::pool::impl$6::spawn_thread::closure$0
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.47.1\src\runtime\blocking\pool.rs:474
+  96: core::hint::black_box
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\hint.rs:482
+  97: std::sys::backtrace::__rust_begin_short_backtrace<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\backtrace.rs:152
+  98: std::thread::impl$0::spawn_unchecked_::closure$1::closure$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:559
+  99: core::panic::unwind_safe::impl$25::call_once<tuple$<>,std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\panic\unwind_safe.rs:272
+ 100: std::panicking::catch_unwind::do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::impl$0::spawn_unchecked_::closure$1::closure_env$0<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> > >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:589
+ 101: tokio::time::error::impl$5::fmt
+ 102: std::panicking::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panicking.rs:552
+ 103: std::panic::catch_unwind
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\panic.rs:359
+ 104: std::thread::impl$0::spawn_unchecked_::closure$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\thread\mod.rs:557
+ 105: core::ops::function::FnOnce::call_once<std::thread::impl$0::spawn_unchecked_::closure_env$1<tokio::runtime::blocking::pool::impl$6::spawn_thread::closure_env$0,tuple$<> >,tuple$<> >
+             at C:\Users\Administrator\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\function.rs:250
+ 106: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 107: alloc::boxed::impl$28::call_once
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\alloc\src\boxed.rs:1966
+ 108: std::sys::pal::windows::thread::impl$0::new::thread_start
+             at /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library\std\src\sys\pal\windows\thread.rs:60
+ 109: BaseThreadInitThunk
+ 110: RtlUserThreadStart
+2025-08-22 16:18:21.964696 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-22 16:18:21.965190 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-22 16:18:22.650784 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-22 16:18:22.651022 [src\main.rs:121] INFO  gg_check:启动成功!耗时:688ms
+2025-08-28 16:06:35.823566 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-28 16:06:35.824106 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 16:06:36.171142 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 16:06:36.171353 [src\main.rs:120] INFO  gg_check:启动成功!耗时:350ms
+2025-08-28 16:10:25.951889 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-28 16:10:25.952382 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 16:10:26.243043 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 16:10:26.243316 [src\main.rs:121] INFO  gg_check:启动成功!耗时:293ms
+2025-08-28 16:10:56.599912 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-28 16:10:56.600403 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 16:10:56.875314 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 16:10:56.875601 [src\main.rs:121] INFO  gg_check:启动成功!耗时:277ms
+2025-08-28 17:47:58.515402 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-28 17:47:58.515857 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 17:47:58.517098 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 17:47:58.517286 [src\main.rs:147] INFO  gg_check:启动成功!耗时:3ms
+2025-08-28 17:47:58.933681 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:15.132831 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-28 17:48:15.133326 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 17:48:15.134677 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 17:48:15.134837 [src\main.rs:147] INFO  gg_check:启动成功!耗时:4ms
+2025-08-28 17:48:15.497971 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:16.188846 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GYXcQsAOvquAnu5RymXzNE_3L0Hhw0j25pOGDGDlCJfTNRtA_s_tw4Cc2fraiLqVNSsI5EXFoaZ1avFQy6kiS4S8gp-RpCUrtuKU0n1Z-5Tro_BT5LzTWgo9xw1Ad2ZtvPql87up-c7DS6uE8tVGY73cHrq-9cFGbhvE9KbH9Cmilz7X0X7-oGWc9E4pnrqoRfPPoek5XpnYNjgIWByvC3FnNaA2gUXwBrO4AMqwjianqgqVOMUIMnlEmkPlWbXykrrIcjFCnc57T_nkCo-mtgD9o6LjqrveLWkypmB5bL0ThxRlAzvlVbyVKgWHAqEgf-OgY38ZI9sxvAuqEPPyFdnEr5SlUBAT8h4IT23sExniW1JZ1YG384PxfkxoosalrkfO0SSh6Sr6Of6xp40nytrjRsiw-SJjq7wyMbzuS_Fin_ZbqxXp0m7jJqceYxWm9w0MMF0r0oYurYwtWV1dQXsmfMqiIZh2gtQwt2VJZuJuR-FgaizVBnhvXVxjfRVVlksy9Bglrq-gXIMx98tYJZgwisRZUR6rcYzfvqd53tmSXbRrXdBsuOeg6VZnxm0qtRmvUcUlRxaJsdOWxQsIk2O1c1ZsFm_WtmrpmM0q-SJrXUuSRiRswsiqevsOR6yIyFV2o_aW_u2YSei3B_-gnfvRgocc44z5z16WfVSf5pBsdbw_QYtJyfnxnhuYO7aFvOv9q6wn2YbhvZkgy99vfa8mr_j92S14ZeI5j7fOaJwv-lqSeZRUatzVISFe_i6VqdcMXX-SJoOqR00a99agSib1ev6bS9szVRxqFqlJipVVhIkYaalOkclax3S2qbgno-SiMJ0_w3ciB2Smkp2Juiyswvdz81oZa8YawvcRmyhegrYleYOmdW_WkIkewj1Wlo9U2y3Xvl1UmZae2dIwee21JchJ_1fonJS4WerUVRYrymOvartMY2FBsjX5x0jFkZs_F0b6BhYfS87_lz6tM5Uxb8Wm8R4Q5bMfhlBuvwY_-8c7Ml", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:16.204476 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:16.411272 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0Gb_TA6B2xCUsmkhBOPBnP0afvQrVgEPEF5-2mBtSrHGXpYj1NxuA0BMwGbGVI9YYzFo3UBkQ-5l2yBGMB0QoBm5pQPTtq1CpB_uMFkLyT6zDPA42fy4l7F42OuSE3L3Bm4o3vZOoovKfPWMdmig9QLSQ0L6jRIpbrUCYft3606NLmjyb5FSssh0EtKd_ycsgHixhcpryn72VT6y2zTO2Ky94RRloKRw3nXtRw-zdDRucRHBIEYlZX5MPP27SPsN7UTmCc7s-mS16BAYQIDXbDSWvxBkjOJ4MWRw_XL-JadhBqKpOEzJoP73pGmDMc_JkJsANcmt-_921H258VK4aL96mEQ7Y6thWw-iGGwzp19DsW93FbkvT385D9lVW-qa2wxYls325Q_pzBdjYFwbwktn-X4ymuYwertqhF9BBsOgpzjnXO6w3X7yXiQFfYF-kOhyoW_0J5O7wwR38t5eoskkByhBYFt8WF68yUmZye3zwg2psWJ3kMYuFFSjbZailVYknJgZw9SfdStet0Muik6dj3rWovXVXakh9sR3UV32_QgF3W-0gZwmi4cns6V4_U_u72rzJbrQgo9t4BskoYFr8F3udMjSao073kIqS7m8URljg8Vukdyigv9Ss_QpvUQ98uXX-n0-y-snYZvUfSit63F9nwVm9pFlwB4b_Wp690xdBnYJz7MwlmRpVnUpoxkJI5X47mFdRUualUIIsybMYRhMoezg4Yj0m2RIl9XxRUya-YXclrpv58BtlYw6FwBWhXY1rFzuxkVIhBfkIggMWy9jyVlb-elSuX8-B5joYWO3ecwOw13k2pibO37_ZhY7a92-1FlbZR9sX_Qe5bY-Og72wb34-3S0hMQ28rFcOc_wOUglFO2-I-kzS0QxfsqQ5Zkp219luOJsSBab3znr2RxgwMgZtmiclX_gaVoa8yoiekuUfBOwuZ4lW_Bq82f-a8YgYjbk-aj0wmkryksoiuBMUpVjqS8erMa0WchejZ1rzuB", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:16.421281 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:16.748653 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GY8SNChwzioDOziJkGYPTokBmPy_qvEcM1YH9kWT6pj15bl4ss0__rhZkl4YzZhDcnTMUxCdHvIiR7Ovd6ngsd8qTQbR-yaUxGg6psgILHXRh7ebeun9WfsavOYkKaSZZkQqPypFHGTBlkQbT4QcRlit5twj7rWnLLS7yuxWv6froriZkx6XZJsb2DLGt620O5ay1yCRciQPbUhSntIrFpiUGozSjQRDI3c3LVYHbjx8BDE3dtY3vkxSwWtf6YVLrHrHU-GnNvROPzhqlXVtZ_KQyNDyHLELbnyNiixUzOuW4ntNU8XGLSoZ2YYau3QuyM3bQt7P3Xn5vHYpr2-UujDINF8gQ16Hpo1R1iY5ou_JX23YeoL384D07WSZ0tyiOFkeczyh92ZcJJVxfWInR7ziFFM4f1c5eJ5Ue3qagOnxV2v-Ft28cvswySla5cmI29BWbae4YaYvIYJFsxctd1wYXSydt5Ipun0y4Fz1m8wzl3653pwYxgU55FJl5g35lSvt2Vm7iu9pk74s_wJI8Xerj2MytZVrtJb90imYl5_SUOwRl-9pb7rp9WXcnYBansnoF01eastWd6FSQ7qpjvutqJm7_I9vsySY-U0WdbmS7240_uj894ZpFVpVvumXknQ4MMu0zhUuUJknhS38Ou5f6R3X-13ZpfdqXwOOvB9iS8tcb7Rwho-8yIxUt9Yfw57bIMWcSWbdS2l9IYFgzryyivaJymMj_SScxF1fa3400Qpfg2lV-Rraw2dXY1yYkBqdBaFy6uwB0lne11ctmcJdgs-J3wXeVvq3F0zVmpyzBtQp-UF-fcsrJzUR39-ovf2Bw3e6VUckM5pMs5Z20cwaUYckOsiRROi3MROagSoImIYRilav96MpU5gfw6M6VWQeUMBuaMZq50Z_bWwY__ryrOnIb5YwUpbvQlB6I4ldfZ1Ux9qbeIk664_2bV9nbxUqVo-vY45ValtVqJ9mz2VBs7rgQ4uYr5lgu59y6XncQqBYcB", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:16.760165 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:17.433092 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GaWyDtTKkYAv94nLbU-BSvVv9x0w0nEmf7UrI00XGVcjM6dYjAEEjjQO7D3HdQnXydr4lryLbvgt7unp-sBfC6jKnL5RVmML33S-6LBLJTVY6BFwKhst89CBLtbw6CUX9W3khz-lFDTc-Y_bKbPy4zN4gO4WLF5zAVMf-vZ4LRuw4U_V3QIeiAJt9lPxBjSQgdchtIiMu_iMFKueWa0Tnh8Xjs3mZr2WGH1dr21ZkBipjjfmpump6C-XbZbUasz2J8IUNUvoF6tHg5bqBjcTRuo9unOrwXveMNAmnSpUhcUPtKHxiTU1GEKtd3Mnj8IQsox3ytXNdg3NC_VtzyBUou7LYYyrssPuc3nfWmJcgXFVuyo5HA1G385DxWprysmJ5gwns0qckqMquguefb8Mige_BSRYhoQx4umJsU3oeX5fBOR221iXgp51cO7viwUM28ph4-IFWfvmysc18WrQV2qvaR-ycf8_BVaq6ckzMuSY6g8201Yej_fZ3giQbtu7j7ack4Zwb-eY1iO-9heV-0W2Q0YY9Ib33fRJQ9ZQype3rI2W3tRn7aq76U5sngnuWzsFJBF2pIwjozmQz1YvV4c1dupvajXJjaOug_tXfbR17xwiU24kUBzhYQ0tt--d6jJhi_UoR4e_hoYOodU2XeqdtBWFq6yJgMUJ5akJQ5naMVY3p4R_t9QYYcc0lth9uOBk55UM25J_B51JVbWrawOmRM2ryctn3V_Qvumz6rIug77u_kIcy1WvO4-B33gts0z02n3Zizr2IlokIwj1Z4vWd73h_BQJFU_qw4U8r3gkwROZxuURsimyIS4o9v-bn-O3UxSa9F8VBOMwYvBr0uOxYy2lwMdfpuuwM4n3QOJ3Xs-pt8j2JtSMtvoSZf_0ZbXsazqVc8ZqByqsmXu0omJ4jjgcOqd1WRmSiefj5MYlke02MYc3nzJa3nWdq7z4933s7damVkMbRj3axm2cWYsh1JQWI4uv7V_vxbOmyqUXzQXz-5", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:17.437924 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:17.643479 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GYgYqtrcdkWb_OSYRHfodACL-aW4LVxPBQIkKgCquL5aVCtblrtXxPQZZyQdzctX6WUcxjOs1TcTapoE1KjXT-3ObqZ1JrSvLV7xoM2G6W3NlGNtwVx2WA3kpY1pL77z_h-PWozAe6QtPDD2VCfFsj7GikwAOmZLBvPyG13wFHSomkdY926UntBJrrDdNoyk2eISj3YjW2GmGcoqfzGCWTS5B8fv8Un0-Ef74oq6QanW0CWD6kiZhiyT1p8m-rP9jfMy7J3WnKFfMGq5sOVMIbbx-EuJx1-aY0zlxj5Y9l7gtZZEaHSTlJ8ImEZ2kkh585AG-Y9hVIT1JU6h_c87pxxp16HNaTjCXaE2LvlSwTbChcaFImAN385Cv1Rx2_r8yvMWa8hB8cd06nnMcFS59cqyffioO4sfZw2VuFldgOez101V8Fy4s9m4sy9np4FawefF80XZUpoU9XOm80s4et1bwp6ss7o1VSqqWnYph_55YFBv8fU3nfoJRMOVXlvpO8gVOhoBfsph6q17MXFc4RJkgen9b7ZjfQSvRJip7QosJ0bXJe4vIiSa_IcIbt9Mf0dg002Q2rwuuryIguOjbV_7qBXzwW3fSsaiWXbnRXYpboQ2vfJ9J3vOyW-m6MUyfWJQ9M051oxgi5472ps1n6mfSZzxrQ0_hvS6grRI8ieuyirXFmoeQ1dS-dbYpg92II4-rOscv39vvtt4VJ0x4-64ztr4f7U_IevUy1tWl5txYxQ6aVWec8eX-fJeeUweUoex-o6q9UXjkarys3k_lpo7pc894b4tf0Zy1zb1VMB2kjuF5uOfRlR5idvpt-wXcxaMf6oIjO_IYb2dYcxv9Xrxrsiwieju3X3OZ06R2Mui62qd57eQ8cpMzzpa8tUthBm4_nkc8O1dkacf2Sby745ycqkUr5OOp8I9g8yjWhmR1htjewYkfRlMzju5x_ivmObo1wVwiaW-v77MxSi-SS6VM92ifn87xZR6YeZniQWfdmdtzn", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:17.655400 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:18.207187 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GZket0gXFjSuhAinjW09Bnj3egArVRjQFcvEvW8w9CEbwXOcQD8PTIIfN_6DU5U28r3-aMsggBpB1nhWOWs5RCUjTkKR87IzJxa2_fNVkkor5j9eYPHLdM6g80WpAlZMzdM-TnzaTP9oGkVqx90gELq3oMt1LxUbLMrE3I1n-blI5WlF1uJVPR0kxnOgy6ZCuvIcAGlWO4_drVidybDh06OsbbmNdO3spN2TlWetvqPgm2qGKSXMWgKnU76CKruTzmKG6KDeVgFcIPu80FtPEXCdrZtrOxjm87cr-GSg_Bw8cMIBptxhEABFVsCy_8kuioW3jgsiCUUi9CMmDFBS3XfKJyXOAoXlGw1BP1rnPMpWmJuTb3OnAT387CZ-OStmvyOcvZeBlZFvW8q8tx2aJFssJ5X-Sce_18X_Yi1MayaroJht8Fdyf42UooqY_5kMBUuri6pr0Y4X8h4ewuS85sjSw8gmUopFufcV796uM6bxZUcxuyar4aufWWjm0FtMdW1izwmYk51ZX1jxQUv0Z5bzUR62tWmcWkSogq0a1bOiFRvf4pO0ZiXmsr2cq_55x3xqhm8eSg5g4jYo5zyolr4YdVYnxyvJ5gUJbhJYwh4k7ucWQbqmt-pgXguzjRz_q3Itm8XoSrXi3Mr2z3IzY0XnR4rs4Z5RyvVBh4FUVwYdfYp7uUfRcoYMcUJmp-fRVIgb3F46XRX2acXcYZQym16BZRSpUwuq49OFopg12oR44Q3VxVt2BMFyYk7Bun_idkZ5z8wdQQeXoXSlo7krd48RuJ_SJjkl9ksz_sJ8jO3j39kwIOVa387ijfJf9jeOQmaMj6c-l-grn57IW2qf7fbxOhy3JmZfg3dcIb15m5_h7nekBZ1Mp5Qj862OfyyM0biebVYnVdx3cXn8O0hdI3Jxex0nv5W-SJIv5Mutc4ZgihbuvXwwB3j3hVRamY378Mg1vZsl0JOrBsR68hhtRFQflarybwUX9fU465ezph8kBjFVMJ", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:18.212321 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:18.755929 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GYtrFi8B9lsnjshi58UwO19dJQMFLQuyBFHkjSVW_qJe8GA4cU2X49_dLO04zeQDuGForMz4UkrO7JyIju4U2c5zS73b_uWQLyqwT59WFCBljZGN5YX-QQ21blkRErkU86WxX32GwHiWiJNSDefQJJibHOvvksJDDYmOXKqm5mGXA4CKzzBzzucixXISE1ZmEgaBa4JPUBzZXZ-hs4TUXeTPB6uhJ1LPNoYtOmCyuHqKLY1pRhgC9-toYxfDBl2prLnKhgBfxTcBFYbrtD9ZYnnFl4srA1L9WovlICrDh0uITY1g-hM7zNR7QMLlIQ_9BxqYRmAuiHaljQeCl9AeKlRLh7tJHUdaCbjPFoBXOHvyJq0cH3AH385CQ-l6qv0vxU1xfxBh4RmaMahW9Qs4vhJqy-7eqe26RUv8BoSUiofvBt1SsuF-gd3hQ8u1qbRUUUjown5zBkkt1w8l7k5FdZjqxpSb7R9detiwit0Webb4vu3vd-6WF1h4Oq7jeXrSVcSpsJVdt_f-xxF3036-nFFSic-y3nqur_VhXcRZys1ibmfUU8-vR16MSmO_l6S3-rduR_9p89uZ48yu3So_31mtOXeZwZecOXMi40WaM3emZpgQS5cW5gs0hQRqatrqs6wFRwivwtUqR-h9WxM_jYzO2prVyeIaf5Ru0Q_6-3qYI2_xunFBSaZ3ubUFv6qSsfj60ban4mdMqBIJnJtQbo0sBSf6X_Z6_0aUxJI3F3yyfR7Y5FOapaahJ5_tF7-fRVsrnr472WgcZBUnbVaS4m2976feipdwRlWk9au1jOtXlYkq3nwas5pjdfB_2-QuJewMgacVqVQj57uf1wvj72cnlsdISeJiF6jgaohjigfr4ydcJo7bIJ1kXmrmrsh5IpaqcM_n-t4vM4Br8jYqV0VFVejxlRJFlnyvg8rZ8Uyyo6zc_1Mb7v-9lx-kw0rBfa7sOyps1F5iffJBggBRRvieq9xawbu5kXOtgiy58p4kgm7ZmQ", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:18.762924 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:18.954279 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GZ0LzFNAm761GU3EZvh7Pfxf7aQLNsMS9nn7F_QHjhvBXLTyC1MHw18biXHujZXQjAAKcAwS0YoBppB6QeqHbqT1DajW8aZtZ8fSm9MiwVy5gE4CrZihhM0_M6mYFS4klsebHEQl-tAR-6fTG5X_VU7egw_jH39DqGEO3rEcGqIQqiNOKXe3iIo-LfOW_9af1Xfllrws6nPmvldsb4dSblyCAPCJYT2vUv6CBQwrCsr7XMjfLipp077VryZ6fe7tE2zw_bkofpXvmE3mc4TnLVEMlse0OH43si9OvVBbi-_Yoyv12USVrvNScQP-x4d49zo0cYszq4dy4_AFa3tqnxVtfb18zoPcwIRyDyVHYwZSZLup3k1N385KIcfQ2i4f4zbcwdFcmMVW29svpySOeqdU0uBtYm6rkInwi8uabfQQ9B6V3rig_-cz4QhIqy2owYlYa7XoxJeUcrd06rqFfU7JInBWSMqgBlYdibtajXsgOXVz-RXr8UZfYFqg9YpI0-WFpZug4pSfyztqihStfwiljOam50vijudu39kw45nfZzdl0uJ743_n1R7eh5B9-oWBkS1R4tmwYelUZXZrvj9hmkadi7jplxW7u5zxvhlM7QftQpqYhWazvhkmvnl6Ifjxv_uihlcpe7XFdWhI6pRX0OQFYZgb3Br5rk_6ZptaXI1Omq4mMjdbs-MYrplxri1un6i8o_S9JQg4rojcXUSz19SFRvQioWi4iv5mctJc4VbikYsjVMlefFZOB4BwJef_7xe3wyo-18p881gMsRiq10W3q6Fb1l1b0ftO9y7brZXQ6pbVvVQvRVr25ad-mxmYt6-eBpyhZlWpMb9WIxeaM4Wfm2r6vO5hWFg481vwUcoi6f6O9BMpaQb0hnvOZJ03mWVgmhylR9e9FWm8igYRI39lsRMlltt4yur9S26-nOR3-XYonOWgBgqdijjI6hk8icy84hY5UhgrnrRYo3m-vq4Z9FXBc0y6I2Je_JqBx-xicy", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:18.963394 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:19.299880 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GYzBfgpv6gz6zO4TlzAYIWUS3u3tyqferUBnAu2yCsGL9h1kh0JkYl39FHIxB7qX7qRJj2BAfYp03GwvSVTHJMhneaa57tuSl27b69MujN3Q2_1UUoubDUrLoI7Lh8p8rC_0_cq90KpyZGkTE-K2A1HA4E6CfNECAfxrwV1Cw3BSc1WOP59i657YSQykqG9WHyrewXd17xZllgtpqOBSwzYumOS8yeAyD2fp_pB4A-h20Bz_VattnXj7QPOl7Jt6EgR0KlWx8kMPGX7mkQPIHNSbabvgxyTyjuXhw4_qdAaqDYfxCWCmQC69O1eP2EWs_6d8eQ6S2KrDeGKwnShgKxtUq-zDz8Ehwh8cQsI7sAEuh9CMBAT384DhqyOl9gchecbrs1BIM0Vuus0Y5oXzBrgeRxth1Yf-J5W6XYJ8w9-3Xdxr0Ir5Sp825iSVvqdjp_wfVVgmtzMiYq7Vs-m4dv7erBaOM301gabQp-v99WUq3mRgtXQO_73q86OcW_ohbOQosynYdoh0j1a10XrU9rRM6BhngUg_xxUMjSQXoOhq8srd01_I-OFRFzkUi8dcugiSclwperzuf6SZV6eO7-18YwFFZvUfv7Wz6xtrjUng3xOxY8v26x3nzJsvQwVlx97mMjJxalQyadVft6z6vc7xOri55VYussX90mqql7y8k08JUi9V5h5Jb4jz4fv4_x1Ym7OraznxzpgnvF83QOptf5mU3fzR664xVj8WhSFWFdfV39Z277B0mUojOsx7MJ9IO52Q3IafU7Bnp6Ig3r2qs9V8aqUv55Xr3alhqip_IhdJkJwf4vl4lZBRy4kxQws1MyS8xziQB8fpsc4S1a2e71lbtYSQJMp0r0w_YmzhVUt_I5mSszsql-m3ZVpjfb_n4nuJ66sxdhSearYkI3t4JXtbjgulSh2r8IRzBVfo5J-hMa15Sz28osF90-giejtJgnh8Yn1o7jxbe8Rj-Sjaao1YZY0rVexmMu_raquVpMsdvO", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:19.303776 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:20.222284 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0Ga2vXIh6CG1skp2RvqwbpfWzOAgKcbCDzK8EFjw0STSc7ICsb2WXnvlg7pkSN8NTG8k9QiA8haODzA3lPw6IlwxkgBBm3tqLTCFqfOLyM4e3j85fjXwAPQUC_rlFgFqfKKC3-r9YGfboHfxGHqQ5MZL6FZb1sC6Invm6cWFU_m1vfsTfi-1x-RLa43Ckd8J4EgEH-5VVy1Mw0pq37GKbMhiusYSZstVQL-ASzdtnJWppSZAXJpnvQsUwl31rnM-izznUy8PLtGDEV_tStWcDghPHoJetPYyu5XqOD88rv75rgspQjAS1LR0nx1qwYaUmvjgwf_k7ZZO2qw0Ea5kf-LU8tfktHKeu8C6jOxrTOfKg7cauGsVT385CgSc5udnQzSjMaQWsqIcidsoJSvmIcYeUeBxbn7tFVU_YZbfJlI8Xe4Qw5nmsnaYllc4q0iv9ovdwsujv0-4oY4SpBxfRxygt0OW_RaYukjpO5xVU46dll3xIa438pQ-X6yp5I2xnmlfh8zWlJd55yxkdZ2cr00k-4jZ4obgt9dpi0iIszjVV6YmW67-t04XYSU81eon8sr39XdZ8oxqYU6sX3IhJYwkXgt9h3lnQ2U3oBxRMJUo_M31373QtfqcqXohpJ5dppsRJFbheJIyiZ6IJqJdl82o0M2k7XIgMfvU2nrOV7mq2hiyf5xVI1lrenllUMhXxSrvv5vZvg0JcmBUi5l-fn-omXQdxFzJfsvp1owlqSuuZZsfB6SV1j6gvdvXvJBukB8WF-biZ3g0ZFsfWXFkm-njYOM72Om0q8hQexvjjbSV3Us_-eifoY10whmM0x0aV60twbeWpVsowV_Xeq3hgZ7oo02V2Rg2g-ymoXfYIOWWiw1ieZy32nI4IsbxJYVRFVlw3qkukFsMYBsZ9eIaxOcdMZB9z748RYldd78ufabue-fugvaBWqUuZOxitSF6fY2bSrIY7Yav_sSehzn18IquMkaYgcegmr6lVuQpi4u26m9spYI", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:20.236204 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:20.918701 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GbOF7WDANmZ87wmC8J8QoZ9-tLOPHCyGIPgQ8SXGh4wT1dr5pb8J4S7Txu47tzkyO5HQJrzcYtPdDa71t5cuYetmrY8gC7jHhDKshUU_tizJcME8okd-ez6Q8nEenJEWLWj-CzVFaT1WXXd-upJY2J-qy9cZVBrBQcPbyxPU_xwETIfm5TnHJkXv94cOXt_Zci-N79jNz0ELXWqo2Nb0hCezm1ki7bPlf9eSb-Y8cH2sFYSYEKKRi_dBoVfzM-1lMRTeXrXJf9bhlJFinTsrl-oxsahSRCvV8o6lV2t8CfvJRSoPg8d5yuqCEA6YEPQRnoKPJ0aUq_t5qTR7MI4nNN4c0ZcP0AqiaZ2op3tN_gVogZX0yQH384Apb8YkhWJBb_cuhVky7bIhbRkV2IfwJyy5rR6gwls_FvydXbJqXjbhFl6MJb0szpUuIeQoYr47Zh2ux9OOBYkqWeaUIgMaBnUF528iWUQdSQYbM4g2SImIzYx7n_wB_VF3m4bXZ_hVbpOV3Qw96ik6cRwIW3J4i1petd7wWw2S_2Q8wXXmoIjXhUVfIZxia5qMUasoj0MefFJRnu7k-zQZjZB3S4rxr1l3tSQVz9e0VeU1ims27FY8FVYOXu3I5ohUr1YvupY0doOhvFB1i4J8zOsiQlU8yZhuxruQqh_Srn3dip1QWmSFWn-06k1rq4XSnY7otnIS32q6nefgytW6yqoF9eqUov-QWf-UJUgkn7foflZo0YUawt1pkYx_k2J9gYuxYedBgOBk16zSrF44kz6wMd9n_tZQ-7urJaq93JgUMedkMw2VJb9YOyw-FV60orwSchROjBud1ofh0VWF8JmuQ3R9ao2hb71O_-fFXYV7MFIr82l3eoxf1jQpc9W1hnrp77zga-dBk0VzR6Qq1cJSFSaJebc05igqIgf4aMgFfzw5mYe08h0UrmX_aW7rYQR__wRcRU6-5lnn89x5Wo2f5hmt_lWig6VOvrB-1l7q5a-sRi85FmXpde", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:20.931446 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:21.119212 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GZdSu560SWJsuth45BHZgCttoCBZ72BPYo3PxyZQ_ZlODCRnX819RIGZd74xhsqxggK8NEvBgWPxcmNxFcVqptAFZsDI1gTfoVh74A-6ZKvsP1b-TexQSA5KVqVY4qoy8qEoc_mkmfbro9p3Zgp4ogFJ0AKO7vpWQWqLLjbgjmfmqMYl7Aw2Gn8aY1Vb7JCKcXbiaAiHd2z7ellyfsnAyh7oXAnBMVlNHnmLn1dalcK2hk82VTZrPBWM7QsK_fxEeVT8-F6znQe4EFHsark6XUrd4p-8xmp3UBmtuka85qBw8Tr0yH_Ypa7GWoqGYSy9WLjS41mVEo24b5LqSrh2gpQI47ia28EBmlOTQkC_Pd75mNS_z7vH385KirxoQSFI6v21zpzF8OkM7QXdBv2knstcke28qrI0tt1kztOSgwyoSy7qIo2q5Xfsj9ZB8uklgXg9waaRk8m8YsJujpu7sj21Fwrxa1rrRQB5OtoxYwYIfQVhsno4t_OpJZjieF-7FIQVVR7OqUxau34BMf17k6Qg4VQm1RB3ceBtxaZwdMdyZdlc6USu_xfIzdJu2i4rbFYO64WOrlb69-9xaIahQJrluVm_qvOBbZh_8IqcrFlMwye796a08uh4lsmefM8rx-6MRJJ7cZ7-Q1xrIl1xoqolhR8bOwjZSsjzSgpIYwVzkmB7m3__VrtmfptMI2zkY8frJRJnQRUQm83kgIjd_ZZOBefM5M4hxZ2dY65Vt7JWYpyOzhQYaqUkg3hB-k3dthrxSJkpguOiisg19FXp0nzXhBc9jzMf20ibJ9f3Xxl_qiRqtiodata7Jdqo9t2vS1jSZff6xydSbmO9B7uMyzM9rOwxMveBbd3Ru39VtVwUwr-6FqqsefIjQs3eb-QU9gtuUhxgda9BOxQvFXdmrOBIoliIW9gsW8X7x2_1cxn5VRMwO-50cVh5ywWh1naOciyQ4W33fsJvybMV_jgv0Fcka5F-MSY0_q_af2nI-OyjagIp6m", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:48:21.133048 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:51.953519 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-28 17:48:51.954062 [src\main.rs:24] INFO  gg_check:初始化server.config完成!
+2025-08-28 17:48:51.955442 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-28 17:48:51.955638 [src\main.rs:147] INFO  gg_check:启动成功!耗时:4ms
+2025-08-28 17:48:57.239031 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:48:57.577744 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GaJ8k43_CKw8CvX-9bPOlCnVd4W-M-MTuE09GeHu-eo-dY3WVZs7d8V8Uaglydvd-XQKXvIzqZndvkrZ7ATD3ACuXr3vwRm6MN0PYVvfZ-LJyuu8RqygbtOwYYYPHALr_JO2BRolf0ARqNDxKBNwVcx0kHslAES07EDAkpy7ueRiHYwYb0XOP-7n5iMpZfTcOJ64AlrRPKhQCuchqUaxJMJATXWs2VftY8eG883OZ6Ig97DYv_bJYay-AVY1heAvsyF5jJsC1_z1OJeuAww9UKNgBqpvyOP0eg-SAM65zq72-LnF7FvjOtFt1KrEzVtAhXhf6bJszfg4NSNeMusg_F1eQHFvDt9hFUGYPaGL_PAJf-jd9AG384Kyit3cSkUj8vhaw0B5buUro65VzqJoep1kc84UuZFi1_oIwQIixnQi436_B8WdlxfFkWR9JxRZJeg_rv2frZlm66zs9shF6ykci6BOI4W271qJVMrcIRSF2uw2Md6k1RJ1MXWc6dRtzo2qaZwZfgz9ck7a--3jsiRia3bMlMiBumf37QiwmeaqFox48tcSgcVi9aZ3_ocoqtZJ-7brtg62t83_4r3hh1F1OkR0Z1ktRR0696YgB4ZFpMpOX8oM39-qeQac6jgj8Y6v45F159lhIIfUqm5W_5kXmcZURb0jh8hceJbcFvwXJ66ZRqj6V95qVYBv70jyB1nkOxjzwk82Jx83ssj1ytyF1XvWVOlO6nfsw3j0ajBRXqQVVMzUi4UulsRy1je2m6MUOInRW7eihO8vRfxbRIlSrQ-3Brpfj6uni94Qz5cxypq0lxJXbr6cgne2wuhefaYdgst4ibcOl2ewj_fmVRmZ8aXSgoSO_mRgdpzOWkJFV1k5UacW_odvfvZtr3naiu0lW8gbnUuY7R0ymn588ufbk12lrg1-xBxywB5SOvIUd6MjF52Wgyuo_7X7V6v6456sf1WigzB2gf-ru_RvOVnhjk-Vz0Jys_3f43hQyv9ZlS7FbB", token_type: "Bearer", expires_in: 3599 }
+2025-08-28 17:49:02.583256 [src\main.rs:84] INFO  gg_check:start refresh_google_api_token
+2025-08-28 17:49:03.217045 [src\main.rs:95] INFO  gg_check:refresh_google_api_token finished!,GoogleApiToken { access_token: "ya29.c.c0ASRK0GYxtqk0EWhEBme8e1am97XZtdvHEEMcHgZ_WT5wiITvyADTov6oN91W6Gm9Ab3m9nRqo7_HKeivaHi0Bl1udKbnwqvPbE6boWK9TJkDUc9o4ktUQBOuNuHkZxa1A9LsG1ucaM88ytHFDN6FY2kLlVYl8e4BCEwqInVBAQBFIvHWuxJbVcg_bv-M5kC5facF9TtShCmmrr9eehxuYEy0HXOmcv6dNA0Lr_EnyYWIE_xO4bYESGOAiyYk6inA2ERkDP1skCHZkXjjshYINp8WggXdJbLqEer0omFG8sdqM-k3dDun0IWejhuvqEKq43hB2u6NPn0jlNJzU8aXkUWdj2y3irSVffz5cmlZHsRGnhtajhSXbQFoL385KhMX2tuVbFXrsM11QBsplg5b__dmBiJq9OSMfm7Qw8sFkW9Oy_d3MadYWh_O9BufWvVg3xaotbBI9s_2-VZ2k1RvpzS58laYQYg-drbWjtv6BlX8J-uVb0e0nnzc_QsYvUMYzjuo75V__Xur88QQuagomQ5gcVZba-6QUVIyBWBWRdvYYhQ-smclae_xstgBlYOos19e6QBBIBW3zejqxz4cQBqSbxYhvUq4g5FRy4khBlsZXSjyjSV6tZ6QfJQFBc66j0UMcYmqowlw3XpjXS3UsVyWwlqsa69SsbjVOQc8ith1_5M5xS8W9pyxblaX4USjbq918BScpzpc52-ogO69bsuMQ_Su8MpViSip69Sgl0k-bZ7zxFmF2eIknFh9j2iRe5Jaec86St0WottolcenQUOfkyvSMrUweUy25Rf4k3xWb619RJ4ljdibu7k4xphZJqFcpQogWnqYZz-9yiIJiwqdYcZ0hMti46sbs_-wvn2WzQuVXJ6ouYRe1u-IWmOjnXUOoy68151oflB8cgkSpwoIX3hFQ48grztXznbJWfUpXJnmWYOrYIdrprvryelteQ6W8mfp3F-wk-JaaMR5ee6zYQn_YZ11BUQ7pJfhx_0w9s60j7aQ-41", token_type: "Bearer", expires_in: 3599 }
+2025-08-30 10:00:39.569715 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-30 10:00:39.570725 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-30 10:00:39.572510 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-30 10:00:39.861101 [src\main.rs:127] INFO  gg_check:启动成功!耗时:294ms
+2025-08-30 10:05:20.904202 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-08-30 10:05:20.905062 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-30 10:05:20.906948 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-30 11:18:37.084043 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:1ms
+2025-08-30 11:18:37.084718 [src\main.rs:23] INFO  gg_check:初始化server.config完成!
+2025-08-30 11:18:37.086009 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-08-30 11:18:37.086240 [src\main.rs:125] INFO  gg_check:启动成功!耗时:4ms
+2025-09-13 17:35:15.194632 [D:\rust_work\GameServer_Rust\tools\src\my_log.rs:9] INFO  tools::my_log:日志模块初始化完成！耗时:2ms
+2025-09-13 17:35:15.195448 [src\main.rs:25] INFO  gg_check:初始化server.config完成!
+2025-09-13 17:35:15.305622 [D:\rust_work\GameServer_Rust\tools\src\http.rs:134] INFO  tools::http:http-server listening on "0.0.0.0":5158
+2025-09-13 17:35:15.306030 [src\main.rs:120] INFO  gg_check:启动成功!耗时:113ms

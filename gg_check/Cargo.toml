@@ -1,0 +1,23 @@
+[package]
+name = "gg_check"
+version = "0.1.0"
+edition = "2024"
+
+[profile.release]
+debug = false
+opt-level = 3 #优化等级最大
+lto = true #链接时优化,所有crate贯穿所有进行优化
+codegen-units = 1 #将每一个crate作为一整块进行编译
+
+[dependencies]
+reqwest = { version = "0.11", default-features = false,features = ["json","rustls-tls","blocking"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+once_cell = "1.21.3"
+log = "0.4.19"
+anyhow = "1.0.98"
+jsonwebtoken = "8.3"                                # JWT 生成
+chrono = "0.4"                                      # 时间处理
+percent-encoding = "2.3.1"
+scheduled-thread-pool = "0.2.7"
+tools = { path = "../tools" }
